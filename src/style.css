@@ -1,0 +1,178 @@
+/* M0 placeholder styling. The pixel-font HUD comes later. */
+
+:root {
+  --bg: #0b1020;
+  --text: #d8dde8;
+  --dim: #8a93a8;
+  --accent: #c9a24a;
+  --ok: #7fd18b;
+  --panel: rgba(5, 8, 16, 0.72);
+  --safe: 5vmin; /* TV-safe margin from DESIGN.md "HUD" */
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Tap to start */
+.start-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: var(--safe);
+  background: rgba(5, 8, 16, 0.85);
+  text-align: center;
+  cursor: pointer;
+}
+
+.start-title {
+  margin: 0;
+  font-size: clamp(2rem, 8vmin, 5rem);
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+
+.start-prompt {
+  margin: 0;
+  font-size: clamp(1.2rem, 4vmin, 2.2rem);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.start-controller {
+  margin: 0;
+  color: var(--dim);
+}
+
+.start-controller.connected {
+  color: var(--ok);
+}
+
+.start-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Toast */
+.toast {
+  position: absolute;
+  top: var(--safe);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  background: var(--panel);
+  border-radius: 4px;
+  pointer-events: none;
+  max-width: 80vw;
+  text-align: center;
+}
+
+/* Debug overlay */
+.debug-overlay {
+  position: absolute;
+  top: var(--safe);
+  left: var(--safe);
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--panel);
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+  max-width: calc(100vw - 2 * var(--safe));
+  white-space: pre-wrap;
+}
+
+/* Debug menu */
+.debug-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 18rem;
+  padding: 1rem 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--dim);
+}
+
+.debug-menu h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+.debug-menu ul {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.debug-menu li {
+  padding: 0.3rem 0.5rem;
+}
+
+.debug-menu li.selected {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.debug-menu-note,
+.debug-menu-help {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--dim);
+}
+
+/* Shown only on touch devices held in portrait */
+.rotate-notice {
+  display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-notice {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-size: 1.4rem;
+    z-index: 10;
+  }
+}
