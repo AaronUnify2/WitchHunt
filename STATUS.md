@@ -14,7 +14,7 @@ npm run preview   # serve the build at http://localhost:4173/WitchHunt/
 npm test          # Vitest unit tests
 ```
 
-Live build (after the first deploy from `main`): **https://aaronunify2.github.io/WitchHunt/**
+Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Source must be "GitHub Actions"; "Deploy from a branch" serves raw source and shows a blank page.)
 
 Dev conveniences: `?seed=1234` in the URL fixes the run seed. In dev builds, `window.game` exposes the running Game in the browser console.
 
@@ -45,10 +45,15 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed. In dev builds, `wi
 - `npm run dev`, `npm run build`, `npm run preview` and `npm test` (30/30) all pass.
 - Headless Chromium smoke test against the production build at `/WitchHunt/`, with a mocked Xbox controller: no console errors; tap to start enters fullscreen; keyboard W and left stick both move the camera forward at the configured speed; right stick turns at the configured rate; RT shows as `attack` with its analogue value; controller connect and disconnect toasts appear and the active device switches; holding View + Menu toggles the overlay; holding L3 + R3 opens the debug menu; D-pad moves the selection; A selects; B closes; F3 toggles the overlay.
 
-## Not verified
+## Play-tested on the tablet (Aaron)
 
-- **Not yet run on the Samsung tablet or with a real Xbox controller.** That is the M0 "done when" check, and it needs Aaron: see the play-test script in HANDOVER.md.
-- Headless Chromium uses a software GPU, so its fps (~20–50) says nothing about the tablet.
+- The live GitHub Pages build loads and runs on the Galaxy Tab S10 FE in Android Chrome with the Xbox controller.
+- Movement and look feel good; every button tried showed the correct action in the overlay.
+- Box trees are acceptable as placeholders.
+
+## Not yet confirmed on the tablet
+
+The overlay fps figure, B-button vs Android Back, controller hot-plug, wake lock, the two debug combos, and back gesture then "Tap to resume". These are listed in HANDOVER.md for the M1 play-test. (Headless Chromium uses a software GPU, so its fps says nothing about the tablet.)
 
 ## Stubbed / placeholder (by design)
 
