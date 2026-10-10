@@ -1,62 +1,84 @@
 # Handover
 
-## Just finished: Session 1, Lead Engineer, M0 (Project skeleton)
+## Just finished: Session 2, Graphics Engineer, M1 (Look and feel)
 
-M0 is built, deployed and **play-tested by Aaron on the Galaxy Tab S10 FE with the Xbox controller**:
+Sessions 1 (M0) and 2 (M1) ran back to back in one conversation, at Aaron's request.
 
-- The live GitHub Pages build loads on the tablet and runs.
-- Walking and looking with the controller "feels good".
-- Every button tried showed the right action in the debug overlay (interact, jump, reload, switchWeapon, etc.), so the Xbox mapping is correct on Android Chrome.
-- Aaron finds the placeholder box trees acceptable for now (see "Trees" below).
+M1 is built and verified headless (details in `STATUS.md`):
 
-Full details of what exists: `STATUS.md`. Decisions waiting on Aaron: `OPEN_QUESTIONS.md`.
+- Renderer with dynamic resolution, tone mapping and post-processing.
+- Sky and day/night driven by the clock.
+- Fog that ends at the draw distance.
+- The flashlight with its shadow and a procedural torch pattern.
+- One clearing ringed by ~3,500 instanced billboard trees (Aaron's decision: every tree is a sprite).
+- First-person movement with sprint and stamina, crouch, jump and collision.
+- Low / Medium / High quality presets.
+- A debug menu with time and quality tools.
 
-### Deployment (working; for reference)
+**What's left is M1's "done when", which only Aaron can check:** walking around at night with the torch feels good on the tablet and holds the frame target for 20 minutes. If the frame target isn't held, the next session fixes performance before starting M2 (DESIGN.md "Performance gates").
 
-- Live at **https://aaronunify2.github.io/WitchHunt/**.
-- `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` (or Actions > "Deploy to GitHub Pages" > Run workflow).
-- **Settings > Pages > Source must stay "GitHub Actions".** On the first deploy it was still "Deploy from a branch". GitHub's branch job then overwrote the build with the raw source: a white page showing only "Turn the tablet to landscape", with `/src/main.js` returning 404. If that symptom ever comes back, check this setting first and re-run the workflow.
+### Changed from M0 (tell Aaron)
 
-### Not yet confirmed on the tablet
+- **The debug menu combo is now hold View + D-pad down** (was L3 + R3, which now sprint and crouch). The overlay combo is still View + Menu.
+- **The game now starts at night** (20:00), so the torch test needs no skipping. Use the debug menu's "Skip to next phase" to see dusk, dawn and day.
 
-Aaron's first session covered loading, movement, look and buttons. These M0 checks haven't been reported yet; fold them into the M1 play-test:
+## Next: Session 3, Gameplay Programmer, M2 (Combat feel)
 
-1. The fps reading in the overlay (M1's performance gate needs a baseline).
-2. Whether the **B** button also triggers Android Back (leaving fullscreen or the page). This is a known Android risk; if it happens, the Lead Engineer adds a guard.
-3. Controller off/on mid-game (hot-plug toasts, active device switching).
-4. Screen staying awake during controller-only play (Screen Wake Lock).
-5. Hold View + Menu (overlay) and hold L3 + R3 (debug menu) combos on the real controller.
-6. Back gesture, then "Tap to resume".
+Goal: shovel, service rifle, shotgun; one zombie sprite type; hits, death, aim assist, aim slowdown, health and armour bars, first aid kits. Done when fighting five zombies at night is fun on the controller.
 
-## Next: Session 2, Graphics Engineer, M1 (Look and feel)
-
-Goal from the build plan: renderer with dynamic resolution and post-processing, sky and day/night, the flashlight with its shadow, one clearing with an instanced forest, fog, first-person movement, sprint, crouch, flashlight. Done when walking around at night with the torch feels good on the tablet and holds the frame target for 20 minutes. M1 ends with a performance gate on the tablet.
-
-### Trees: talk to Aaron before building
-
-After the play-test Aaron said the box trees are fine for now, but the plan is a **"more realistic 2D billboard sprite"** as development goes on. `docs/DESIGN.md` currently says **near trees are low-poly instanced 3D (alpha-cut leaf cards, wind sway)** and only **far trees are billboard impostors**. These don't fully agree. Before building M1's forest, settle with Aaron whether billboards are meant for all trees or only distant ones (logged as OPEN_QUESTIONS #13). Whatever the answer, keep trees instanced and in one atlas so draw calls stay low.
+**Rule 10 applies:** zombies and weapons are content, so write a short build plan and workshop it with Aaron before building.
 
 ### Look at first
 
-- `src/config.js`: add every new number here, never in code.
-- `src/core/Game.js`: wiring and the loop. Replace `debug/TestScene.js` and `debug/FreeCamera.js` with the real scene (`render/Sky.js`, `render/Forest.js`, `render/PostFX.js`) and `player/Player.js`.
-- `src/debug/FreeCamera.js`: Aaron liked how movement feels. Carry its speed (`config.testCamera.moveSpeed` 4.5 m/s) and look settings (`config.input.gamepad`) into the Player as the starting point, rather than retuning from scratch.
-- `src/render/Renderer.js`: make the fixed `renderScale` (0.65) dynamic.
-- `src/core/Input.js`: query actions with `isDown`, `wasPressed`, `getMove()` and `getLook()` (already in radians this frame). Sprint (L3/Shift), crouch (R3/C) and flashlight (D-pad left/L) are already mapped and verified.
-- `src/core/Clock.js`: `phase`, `hourOfDay` and `phase:*` events, to drive the sky and fog.
-- `src/debug/DebugOverlay.js` `addStat()` and `src/debug/DebugMenu.js` `addItem()`: add a render-scale line and any M1 debug toggles.
+- `src/config.js`: every number goes here.
+- `src/player/Player.js`: add aim slowdown as a multiplier next to `sprintMultiplier` and `crouchMultiplier` in `updateMovement()`. `stance`, `speed` and `stamina` are already exposed.
+- `src/render/Forest.js`: the billboard shader patch (`BILLBOARD_*` chunks plus a matching `MeshDepthMaterial`). Zombies are billboard sprites too; reuse it and add an 8-angle frame pick.
+- `src/world/SpatialGrid.js` and `collision.js`: static colliders; zombies will want the same circle collision.
+- `src/core/Input.js`: `attack` (RT), `aim` (LT), `reload` (B), `switchWeapon` (Y/RB), `interact` (X) are mapped and verified on the tablet. RT/LT analogue values are in `input.rawPad.values` if needed.
+- `src/debug/DebugOverlay.js` `addStat()`: add "active enemies" (DESIGN.md debug overlay list).
 
 ### Gotchas and decisions
 
-- Systems follow `init()` / `update(dt)` / `dispose()` and talk through `EventBus`.
-- Use `rng.fork('label')` for each system's randomness so systems don't shift each other's sequences.
-- The Vite `base` is `/WitchHunt/` for build and preview only. Asset URLs (textures, sprite atlases) must be imported or go through `import.meta.env.BASE_URL`; a hard-coded `/assets/...` path will 404 on Pages.
-- Lights in three.js r155+ are physically based: placeholder intensities around 1.5–2.
-- The overlay's "render" time is CPU-side only, not GPU time.
-- OPEN_QUESTIONS #4 (debug combos also fire inventory/pause and sprint/crouch) matters in M1, since sprint and crouch start doing something. A held L3 + R3 to open the debug menu will briefly sprint and crouch.
+- Systems follow `init()` / `update(dt)` / `dispose()` and talk through `EventBus`. Use `rng.fork('label')` per system.
+- Draw calls are ~55 at Medium; the budget is ~100. One zombie atlas = one instanced draw (plus one in the torch shadow pass).
+- The torch is the only shadow-casting light; DESIGN.md allows at most ~4 point lights (muzzle flash etc.) and they must not cast shadows.
+- Toggling lights changes the shader light count and can hitch once while shaders compile. Pool muzzle-flash lights and toggle `intensity`, not `visible`.
+- Vite `base` is `/WitchHunt/`: import assets or use `import.meta.env.BASE_URL`, never a hard-coded `/assets/...` path.
+- View still fires `inventory` on press during View-based combos (OPEN_QUESTIONS #4).
 
-## M1 play-test script
+## M1 play-test script (for Aaron)
 
-The Graphics Engineer writes this at the end of M1. It should include the six "not yet confirmed" checks above.
+On the tablet, in Chrome, with the Xbox controller. Open https://aaronunify2.github.io/WitchHunt/, press a button on the controller, then tap the screen.
 
-> **✅ HANDOVER READY**: Session 1 (Lead Engineer) complete. Next: Session 2, Graphics Engineer: M1 look and feel.
+**First look (night):**
+1. *Good:* a dark clearing ringed by tall pines and a few dead trees, silhouetted against a starry sky with a haloed moon. Stars twinkle, treetops sway slightly, and the torch throws a warm, slightly uneven beam.
+2. Read the overlay: `fps`, `buffer … (scale …)` and `draws`. *Good:* fps near 60 or above (the 90 Hz screen may show up to 90), draws under 100. The scale settles somewhere in 0.45–0.75.
+
+**Torch and atmosphere:**
+
+3. D-pad left: torch off and on. *Good:* off, you can just make out the treeline by moonlight; on, the beam lights the ground and trunks. The beam trails your view very slightly when you whip round.
+4. Walk up to a tree and shine the torch past it. *Good:* trees cast shadows away from you. Note if they look wrong or flicker.
+5. Is the night too dark, too bright, or right? Is the torch too strong or too weak? (Both are single config numbers.)
+
+**Movement:**
+
+6. Walk with the left stick. *Good:* same speed and feel as M0, with a gentle head bob.
+7. Click L3 while moving. *Good:* you sprint until you stop or run out. The overlay's `stamina` falls while sprinting and refills a second after you stop.
+8. R3: crouch. *Good:* the view drops smoothly and you move at half speed; R3 again stands you up.
+9. A: jump. A while crouched just stands you up.
+10. Walk into trees and rocks. *Good:* you stop and slide round them, never through.
+
+**Day/night and tools:**
+
+11. Hold **View + D-pad down** (new combo) to open the debug menu. Use "Skip to next phase" a few times. *Good:* dawn has a pink horizon, day has blue-grey fog and sunlight, and dusk has a warm orange horizon. Try "Time speed x60" to watch it change.
+12. In the menu, try "Quality: low / medium / high". *Good:* Low looks flatter (no shadow, no glow) but should be the smoothest; note the fps for each.
+
+**The 20-minute gate:**
+
+13. Set Quality back to medium, close the menu and walk around at night with the torch for **20 minutes** (time speed x1). *Good:* fps stays near the target the whole time, the scale doesn't sink to 0.45 and stay there, and the tablet doesn't get uncomfortably hot. Note the fps and scale at the start, at 10 minutes and at 20 minutes.
+
+**Still to confirm from M0:** whether B ever leaves fullscreen or goes back a page; switching the controller off and on (toasts and no reload); the screen not dimming; the View + Menu overlay combo; the back gesture then "Tap to resume".
+
+Send screenshots of the overlay at the start and at 20 minutes, and your answers to steps 5 and 12.
+
+> **✅ HANDOVER READY**: Session 2 (Graphics Engineer) complete. Next: Session 3, Gameplay Programmer: M2 combat feel.

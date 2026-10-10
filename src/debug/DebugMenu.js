@@ -1,10 +1,10 @@
-// Debug menu stub: an empty, controller-navigable list that later
+// Debug menu: a controller-navigable list of debug tools that later
 // milestones fill with addItem() (set seed, skip time, spawn, ...).
-// Open: hold L3 + R3, or the ` key. Navigate: D-pad / left stick / arrows.
+// Open: hold View + D-pad down, or the ` key. Navigate: D-pad / left stick / arrows.
 // Select: A / Enter. Close: B / Esc.
 // Emits 'debug:menuOpened' and 'debug:menuClosed'.
 
-const EMPTY_NOTE = 'Empty for now. Later milestones add tools here.';
+const NOTE = 'Later milestones add more tools here.';
 
 export class DebugMenu {
   constructor(menuConfig, input, bus) {
@@ -28,7 +28,9 @@ export class DebugMenu {
     this.el.remove();
   }
 
-  // Returns a function that removes the item again.
+  // label is a string, or a function returning one (re-read after every
+  // selection, e.g. "Quality: medium"). Returns a function that removes
+  // the item again.
   addItem(label, onSelect) {
     const item = { label, onSelect };
     this.items.push(item);
@@ -67,7 +69,10 @@ export class DebugMenu {
     if (input.wasPressed('menuUp')) this.moveSelection(-1);
     if (input.wasPressed('menuDown')) this.moveSelection(1);
     this.updateStick(dt);
-    if (input.wasPressed('menuConfirm')) this.items[this.selected]?.onSelect();
+    if (input.wasPressed('menuConfirm') && this.items[this.selected]) {
+      this.items[this.selected].onSelect();
+      if (this.isOpen) this.render();
+    }
     if (input.wasPressed('menuBack')) this.close();
   }
 
@@ -100,15 +105,19 @@ export class DebugMenu {
 
   render() {
     const rows = this.items
-      .map((item, i) => `<li class="${i === this.selected ? 'selected' : ''}">${escapeHtml(item.label)}</li>`)
+      .map((item, i) => `<li class="${i === this.selected ? 'selected' : ''}">${escapeHtml(labelOf(item))}</li>`)
       .join('');
     this.el.innerHTML = `
       <h2>DEBUG MENU</h2>
-      <p class="debug-menu-note">${EMPTY_NOTE}</p>
+      <p class="debug-menu-note">${NOTE}</p>
       <ul>${rows}</ul>
       <p class="debug-menu-help">D-pad / stick: move &middot; A: select &middot; B: close</p>
     `;
   }
+}
+
+function labelOf(item) {
+  return typeof item.label === 'function' ? item.label() : item.label;
 }
 
 function escapeHtml(text) {

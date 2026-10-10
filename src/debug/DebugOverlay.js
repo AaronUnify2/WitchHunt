@@ -77,7 +77,7 @@ export class DebugOverlay {
       `fps      ${a.fps.toFixed(1)}`,
       `frame    ${ms(a.frameMs)} ms  (sim ${ms(a.simMs)} / render ${ms(a.renderMs)} cpu)`,
       `draws    ${r.drawCalls}   tris ${r.triangles}`,
-      `buffer   ${r.bufferWidth}x${r.bufferHeight}  (scale ${r.renderScale})`,
+      `buffer   ${r.bufferWidth}x${r.bufferHeight}  (scale ${r.renderScale.toFixed(2)})`,
       `seed     ${game.seed}`,
       `clock    Day ${clock.day}  ${clock.phase}  ${clock.formatTime()}  (${Math.ceil(clock.phaseRemaining)}s left)`,
       `state    ${game.state}${game.display.isFullscreen ? '  fullscreen' : ''}`,

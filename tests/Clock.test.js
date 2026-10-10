@@ -78,4 +78,20 @@ describe('Clock', () => {
     clock.update(5);
     expect(clock.phase).toBe('dusk');
   });
+
+  it('skipPhase() jumps to the start of the next phase', () => {
+    const { clock, events } = makeClock();
+    clock.update(4);
+    clock.skipPhase();
+    expect(clock.phase).toBe('dusk');
+    expect(clock.phaseElapsed).toBe(0);
+    expect(events).toHaveLength(1);
+  });
+
+  it('setTimeScale() changes the speed', () => {
+    const { clock } = makeClock();
+    clock.setTimeScale(10);
+    clock.update(1);
+    expect(clock.phase).toBe('dusk');
+  });
 });

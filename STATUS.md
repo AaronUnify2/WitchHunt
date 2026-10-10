@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 1 (Lead Engineer), milestone **M0: Project skeleton**.
+Last updated: Session 2 (Graphics Engineer), milestone **M1: Look and feel**. (Sessions 1 and 2 ran back to back in one conversation, at Aaron's request.)
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -16,80 +16,87 @@ npm test          # Vitest unit tests
 
 Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Source must be "GitHub Actions"; "Deploy from a branch" serves raw source and shows a blank page.)
 
-Dev conveniences: `?seed=1234` in the URL fixes the run seed. In dev builds, `window.game` exposes the running Game in the browser console.
+Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the forest layout). In dev builds, `window.game` exposes the running Game in the browser console.
 
-## What was built in M0
+## What exists
+
+### M1: Look and feel (Session 2)
 
 | Area | Files | Notes |
 | --- | --- | --- |
-| Tooling | `package.json`, `vite.config.js` | Vite 8.3.4, three.js 0.186.1, Vitest 5.0.3. Plain JS ES modules. `base` is `/WitchHunt/` for build and preview, `/` for dev. |
-| Deploy | `.github/workflows/deploy.yml` | On every push to `main` (and manually): `npm ci`, `npm test`, `npm run build`, deploy `dist/` to GitHub Pages. A failing test blocks the deploy. |
-| Config | `src/config.js` | Every tuning number: loop, seed, clock, display, render, input (dead zones, sensitivity, bindings, combos), test scene, UI, debug. |
-| Game | `src/core/Game.js` | Owns all systems; rAF loop with clamped dt; app states `boot` / `running` / `suspended`; turns clock phase changes into `phase:day`, `phase:dusk`, `phase:night`, `phase:dawn` events. |
-| Clock | `src/core/Clock.js` | Day/dusk/night/dawn cycle from config (8/1/6/1 min), day counter, clock-face time ("HH:MM"), pause, time scale. |
-| EventBus | `src/core/EventBus.js` | `on` / `once` / `off` / `emit`; safe against unsubscribe-during-emit; one throwing handler doesn't stop the rest. |
-| Rng | `src/core/Rng.js` | Seeded mulberry32; number or string seeds; `next`, `range`, `int`, `chance`, `pick`, `fork(label)` for independent sub-streams. |
-| Input | `src/core/Input.js`, `GamepadInput.js`, `KeyboardMouseInput.js`, `stickMath.js` | Xbox controller (Gamepad API, standard mapping) and keyboard/mouse mapped to every action in DESIGN.md "Controls", plus menu and debug actions. Radial dead zones with rescaling, look response curve, sensitivity and invert-Y, all in config. Tracks the active device. Hot-plug: the controller can connect or disconnect at any time. |
-| Display | `src/core/Display.js` | Fullscreen + landscape lock on the start tap; Screen Wake Lock (see below). |
-| Renderer | `src/render/Renderer.js` | WebGLRenderer at a fixed render scale (0.65 of native). Exposes draw calls, triangles, buffer size. Handles resize and context loss. |
-| Test scene | `src/debug/TestScene.js` | Ground plane, 220 seeded box trees (2 instanced draw calls), night sky colour, fog, ambient + moonlight. 3 draw calls total. |
-| Test camera | `src/debug/FreeCamera.js` | First-person look (right stick / mouse) and walk (left stick / WASD) on the ground plane. |
-| Start screen | `src/ui/StartScreen.js` | "Tap to start" (fullscreen + landscape), "Tap to resume" after leaving fullscreen, live controller status. Portrait on a touch device shows "Turn the tablet to landscape". |
-| Toasts | `src/ui/Toast.js` | "Controller connected / disconnected", context-loss messages. |
-| Debug overlay | `src/debug/DebugOverlay.js` | fps, frame time split sim/render (CPU), draw calls, triangles, buffer size, seed, clock, app state, active device, controller name and mapping, live pressed actions, move vector, raw sticks, raw buttons with analogue values. `addStat()` lets later milestones add lines. **F3** or hold **View + Menu**. Visible by default in M0. |
-| Debug menu | `src/debug/DebugMenu.js` | Controller-navigable stub with `addItem(label, fn)`. Has only "Toggle debug overlay" and "Close menu" for now. Hold **L3 + R3** or press **`** (backquote). D-pad/stick/arrows to move, A/Enter to select, B/Esc to close. |
-| Tests | `tests/*.test.js` | 30 tests: Rng (determinism, bounds, fork), EventBus, Clock (phase order, day count, clock face, pause, time scale), stick maths (dead zone, curve, clamp). |
+| Renderer | `src/render/Renderer.js` | ACES filmic tone mapping, PCF shadow map for the torch, render scale set by dynamic resolution, draw calls counted across all passes. |
+| Dynamic resolution | `src/render/DynamicResolution.js` | Averages frame time over 1 s. Drops the render scale one step (0.05) after a slow window; raises one step only after 4 s on target. Bounds come from the quality preset. Target = 60 fps, or the frame cap if set. |
+| Post-processing | `src/render/PostFX.js` | Bloom (bright pixels only: torch hot spot, moon), then tone mapping, then one cheap pass for colour grade (saturation, cold tint), vignette and animated film grain. Uses three.js's bundled add-ons (no new dependency). Off in the Low preset. |
+| Sky and day/night | `src/render/Sky.js`, `skyPalette.js` | Gradient dome, 1,400 twinkling stars, moon with halo, sun/moon directional light, ambient light and fog colour, all blended from hour-keyed colours in config and driven by the Clock. The sun rises in the east, crosses the south and sets in the west. |
+| Fog | `Sky.js` | Linear fog ending at the preset's draw distance (fog end = draw distance, as DESIGN.md asks). Colour follows the sky's horizon. |
+| Forest | `src/render/Forest.js`, `src/world/forestLayout.js` | About 3,500 billboard trees from a seeded jittered grid around a 16 m clearing. Camera-facing sprites (rotate about the vertical only) with wind sway, from one 3-variant atlas (two conifers and a dead tree). Grouped into 32 m chunks; chunks beyond the draw distance aren't drawn. Trees cast and receive the torch shadow through a matching depth material. |
+| Ground | `src/world/Terrain.js` | Tiled procedural forest floor, a soft dirt patch in the clearing, and 9 rocks (instanced; they cast shadows and block the player). |
+| Placeholder textures | `src/render/proceduralTextures.js` | Tree atlas, ground, clearing, moon and torch cookie, all drawn on canvases from the seed. Swapped for real art in the art pass. |
+| Flashlight | `src/player/Flashlight.js` | Spotlight held low and to the right with a procedural "imperfect torch" pattern; the one real-time shadow. The beam lags the view slightly so it feels hand-held. D-pad left / L. |
+| Player | `src/player/Player.js`, `Stamina.js` | Walk 4.5 m/s (the speed signed off in M0), sprint ×1.6 using stamina (L3 click latches; Shift holds), toggle crouch ×0.5 with eased eye height (R3 / C), jump (A / Space), acceleration and deceleration, subtle head bob, and collision against trunks and rocks. |
+| Collision | `src/world/SpatialGrid.js`, `collision.js` | Circle-vs-circle on the ground plane with a spatial grid for lookups; the player slides round trunks. A boundary keeps the player within 100 m of the clearing. |
+| Quality presets | `config.quality` | Low / Medium (default) / High: render-scale bounds, draw distance, torch shadow and its resolution, post-processing, bloom, frame cap. Switchable live in the debug menu. |
+| Debug menu | `src/debug/DebugMenu.js` | Now has: toggle overlay, skip to next phase, time speed ×1/×10/×60, quality preset, frame cap (off/30/60), dynamic resolution on/off, close. |
+| Debug overlay | `src/debug/DebugOverlay.js` | Adds the current render scale, quality line, player line (stance, speed, stamina, position) and world line (tree count, torch on/off). |
+| Tests | `tests/*.test.js` | 61 tests (31 new in M1): sky keyframes and sun path, dynamic resolution, stamina, collision and spatial grid, forest layout (determinism, empty clearing, minimum spacing), clock skip and time scale. |
 
-## What works (verified this session)
+### M0: Project skeleton (Session 1)
 
-- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (30/30) all pass.
-- Headless Chromium smoke test against the production build at `/WitchHunt/`, with a mocked Xbox controller: no console errors; tap to start enters fullscreen; keyboard W and left stick both move the camera forward at the configured speed; right stick turns at the configured rate; RT shows as `attack` with its analogue value; controller connect and disconnect toasts appear and the active device switches; holding View + Menu toggles the overlay; holding L3 + R3 opens the debug menu; D-pad moves the selection; A selects; B closes; F3 toggles the overlay.
+Vite + three.js + Vitest; GitHub Pages deploy on every push to `main` (tests must pass first); `config.js` with every tuning number; Game loop and phases; Clock; EventBus; seeded Rng; Input for the Xbox controller and keyboard/mouse with dead zones, hot-plug and active-device tracking; tap-to-start with fullscreen, landscape lock, "tap to resume" and screen wake lock; debug overlay and menu. M0's test scene and free camera were removed in M1.
 
-## Play-tested on the tablet (Aaron)
+## What works (verified)
 
-- The live GitHub Pages build loads and runs on the Galaxy Tab S10 FE in Android Chrome with the Xbox controller.
-- Movement and look feel good; every button tried showed the correct action in the overlay.
-- Box trees are acceptable as placeholders.
+- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (61/61) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- **On the tablet (Aaron, M0):** the live build loads, controller movement and look feel good, and every button shows the right action.
+- **Headless Chromium with a simulated Xbox controller (M1):**
+  - L3 click latches sprint at 7.2 m/s; stopping clears it; stamina drains and refills.
+  - R3 toggles crouch; A while crouched stands up; A otherwise jumps.
+  - D-pad left toggles the torch.
+  - Hold View + D-pad down opens the debug menu without firing "radio". Quality switches live (High shows the torch shadow at 1024 px).
+  - Walking into a trunk stops exactly at player radius + trunk radius and slides round it.
+- **Screenshots (software GPU):**
+  - Night: moonlit tree silhouettes against stars, a warm torch beam picking out trees and rocks.
+  - Day: blue-grey fog, lit pines and dead trees, readable ground.
+  - Dusk: warm horizon.
+  - Draw calls: 53–55 at medium (budget ~100).
 
-## Not yet confirmed on the tablet
+## Not verified
 
-The overlay fps figure, B-button vs Android Back, controller hot-plug, wake lock, the two debug combos, and back gesture then "Tap to resume". These are listed in HANDOVER.md for the M1 play-test. (Headless Chromium uses a software GPU, so its fps says nothing about the tablet.)
+- **Anything on the tablet for M1.** Frame rate, dynamic resolution behaviour, thermal throttling over 20 minutes, and how the torch and night brightness look on a real screen. That is M1's "done when" and needs Aaron (play-test script in HANDOVER.md).
+- Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.
+- The M0 checks still unconfirmed on the tablet (B vs Android Back, hot-plug, wake lock, combos, resume), carried into the M1 script.
 
 ## Stubbed / placeholder (by design)
 
-- Test scene and free camera are throwaway M0 scaffolding; M1 replaces them with the real Renderer, Sky, Forest and Player.
-- Render scale is fixed (0.65). Dynamic resolution is M1.
-- No pause menu, HUD, sprint, crouch or jump yet. Gameplay actions (attack, reload, map...) are detected and shown in the overlay but do nothing.
-- The debug menu has no real tools yet; later milestones add them with `addItem`.
-- The overlay has no "active enemies" line yet; M2/M4 add it with `addStat`.
-- `src/world`, `player`, `ai`, `sigils`, `base`, `encounters`, `story`, `meta`, `audio` and `data` are empty folders (`.gitkeep`).
-
-## Additions outside the brief (with reasons)
-
-- **Screen Wake Lock** (`config.display.keepScreenAwake`): during controller-only play nobody touches the screen, and Android may dim or lock the tablet mid-session. It uses a built-in browser API (no dependency). Turn it off in config if it isn't wanted.
-- **`?seed=` URL parameter**: the simplest form of the design's debug "set seed" tool, and handy for checking that a seed reproduces a scene.
-- **Raw button/stick readout** in the overlay: shows what the tablet actually reports, so a mapping problem can be diagnosed from a screenshot.
+- All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
+- One clearing only; M3 generates the real map, terrain and chunked forest from the seed.
+- No HUD (the stamina value shows in the overlay only), no pause menu.
+- Not built from "Visual ambition": ground mist layers, height fog, fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
+- Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
+- The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 
 ## Dependencies
 
-Only `three` (runtime), `vite` and `vitest` (dev). No others.
+Only `three` (runtime), `vite` and `vitest` (dev). Post-processing uses three.js's own `three/addons` modules, which ship inside the `three` package.
 
 ## Known issues and risks
 
-1. **Android "Back" on the B button.** On some Android/Chrome versions the controller's B button also acts as the system Back button, which can leave fullscreen or navigate away. If the play-test hits this, the next Lead Engineer session needs a guard (e.g. a history entry that catches `popstate`).
-2. **The Xbox (Guide) button** belongs to Android and the browser; the game never sees it.
-3. **Chrome only exposes a controller after a button press on it**, so a freshly loaded page shows "No controller yet" until any button is pressed. The start screen says so.
-4. **Controller can't start the game.** Browsers only allow fullscreen from a touch, click or key press, not a gamepad button, so the first start needs one tap on the screen.
-5. **Debug combos overlap gameplay actions**: View + Menu also registers `inventory` and `pause`; L3 + R3 also registers `sprint` and `crouch`. Harmless in M0 (those actions do nothing); see OPEN_QUESTIONS.md.
-6. **Frame times are CPU-side only**: "render" is the CPU cost of submitting the frame, not GPU time. If M1 needs GPU timing, the `EXT_disjoint_timer_query_webgl2` extension is the usual route (often unavailable on mobile).
-7. **Desktop Esc** releases pointer lock and exits fullscreen, which shows "Tap to resume". Expected; click to carry on.
-8. Production sourcemaps are deployed (helps remote-debugging the tablet via `chrome://inspect`). They add ~3 MB to the Pages site but are only downloaded when devtools are open.
+1. **Performance on the tablet is unmeasured.** The biggest costs are probably the torch's shadow pass over ~3,500 sprites, bloom's blur chain, and alpha-tested overdraw at the forest edge. Levers in order: the Low preset; shadow map 512 to off; `bloom: false`; a lower `drawDistance`; bigger `forest.cellSize` (fewer trees). All are config.
+2. **Switching quality or toggling the torch can hitch once** (around 100 ms on mobile) while shaders compile for the new light setup. Later toggles are instant.
+3. **Android "Back" on the B button** (carried from M0): unconfirmed.
+4. **The Xbox (Guide) button** belongs to Android and the browser.
+5. **Chrome only exposes a controller after a button press on it.**
+6. **The controller can't start the game**: the first start needs a tap (browser rule for fullscreen).
+7. **View still fires `inventory` on press** during the View + Menu and View + D-pad down combos. Harmless until the inventory screen exists (OPEN_QUESTIONS #4).
+8. **Frame times are CPU-side only.** "render" is the CPU cost of submitting the frame, not GPU time.
+9. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
+10. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M1 needs next
+## What M2 needs next
 
-M1, **Look and feel** (Session 2, Graphics Engineer):
+M2, **Combat feel** (Session 3, Gameplay Programmer): shovel, service rifle, shotgun; one zombie sprite type; hits, death, aim assist, aim slowdown, health and armour bars, first aid kits. Done when fighting five zombies at night is fun on the controller.
 
-- Replace `src/debug/TestScene.js` and `src/debug/FreeCamera.js` with `render/Sky.js`, `render/Forest.js`, `render/PostFX.js` and `player/Player.js` (movement, sprint, crouch, flashlight).
-- Make `render/Renderer.js` dynamic resolution (start at `config.render.renderScale`, adjust to hold the frame target); report the current scale in the overlay.
-- Drive sky and fog from `Clock` (`clock.phase`, `clock.hourOfDay`, `phase:*` events).
-- Keep the overlay's draw calls under ~100 and run the 20-minute performance gate on the tablet.
+- Gate first: Aaron's M1 tablet play-test. If the frame target isn't held for 20 minutes, fix performance before M2 (DESIGN.md "Performance gates").
+- Zombies are billboard sprites like the trees: reuse `Forest.js`'s billboard shader patch, adding an 8-angle frame pick.
+- Aim slowdown multiplies `config.player.walkSpeed`; add it next to `sprintMultiplier` and `crouchMultiplier` in `Player.updateMovement()`.
+- Rule 10 applies: workshop the zombie and weapon build plans with Aaron before building them.

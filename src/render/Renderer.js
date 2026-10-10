@@ -1,22 +1,38 @@
-// Wraps three.js WebGLRenderer. M0: a fixed render scale from config.
-// M1 replaces this with dynamic resolution and post-processing.
+// Wraps three.js WebGLRenderer: render scale (driven by dynamic
+// resolution), tone mapping, the flashlight's shadow map, and the
+// optional post-processing chain. Emits 'render:contextLost'.
 
 import * as THREE from 'three';
+import { PostFX } from './PostFX.js';
 
 export class Renderer {
-  constructor(renderConfig, bus) {
+  constructor(renderConfig, postConfig, bus) {
     this.cfg = renderConfig;
+    this.postCfg = postConfig;
     this.bus = bus;
     this.bufferSize = new THREE.Vector2();
+    this.scale = renderConfig.renderScale;
+    this.postEnabled = false;
   }
 
-  init(container) {
+  init(container, scene, camera) {
     this.container = container;
+    this.scene = scene;
+    this.camera = camera;
     this.renderer = new THREE.WebGLRenderer({
       antialias: this.cfg.antialias,
       powerPreference: this.cfg.powerPreference,
     });
+    this.renderer.toneMapping = THREE[`${this.cfg.toneMapping}ToneMapping`];
+    this.renderer.toneMappingExposure = this.cfg.exposure;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    // Post passes each call render(); count the whole frame, not the last pass.
+    this.renderer.info.autoReset = false;
     container.appendChild(this.renderer.domElement);
+
+    this.postFX = new PostFX(this.postCfg);
+    this.postFX.init(this.renderer, scene, camera);
 
     this.onResize = () => this.resize();
     window.addEventListener('resize', this.onResize);
@@ -33,6 +49,7 @@ export class Renderer {
   dispose() {
     window.removeEventListener('resize', this.onResize);
     this.renderer.domElement.removeEventListener('webglcontextlost', this.onContextLost);
+    this.postFX.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -42,7 +59,18 @@ export class Renderer {
   }
 
   get pixelRatio() {
-    return Math.min(window.devicePixelRatio || 1, this.cfg.maxDevicePixelRatio) * this.cfg.renderScale;
+    return Math.min(window.devicePixelRatio || 1, this.cfg.maxDevicePixelRatio) * this.scale;
+  }
+
+  // Render scale = fraction of native resolution.
+  setScale(scale) {
+    this.scale = scale;
+    this.resize();
+  }
+
+  setPostFX(enabled, bloom) {
+    this.postEnabled = enabled;
+    this.postFX.setBloom(bloom);
   }
 
   resize() {
@@ -50,15 +78,19 @@ export class Renderer {
     this.height = this.container.clientHeight;
     this.renderer.setPixelRatio(this.pixelRatio);
     this.renderer.setSize(this.width, this.height);
+    this.postFX.setSize(this.width, this.height, this.pixelRatio);
   }
 
-  render(scene, camera) {
+  render(dt) {
+    const camera = this.camera;
     const aspect = this.width / this.height;
     if (camera.aspect !== aspect) {
       camera.aspect = aspect;
       camera.updateProjectionMatrix();
     }
-    this.renderer.render(scene, camera);
+    this.renderer.info.reset();
+    if (this.postEnabled) this.postFX.render(dt);
+    else this.renderer.render(this.scene, camera);
   }
 
   // Numbers for the debug overlay (valid after render()).
@@ -70,7 +102,7 @@ export class Renderer {
       triangles: info.triangles,
       bufferWidth: this.bufferSize.x,
       bufferHeight: this.bufferSize.y,
-      renderScale: this.cfg.renderScale,
+      renderScale: this.scale,
     };
   }
 }

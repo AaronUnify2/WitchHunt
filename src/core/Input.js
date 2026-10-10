@@ -113,9 +113,23 @@ export class Input {
   }
 
   readGamepadButtons(pad) {
+    const suppressed = this.suppressedButtons(pad);
     for (const [action, names] of Object.entries(this.cfg.gamepadBindings)) {
-      if (names.some((name) => pad.pressed[GAMEPAD_BUTTONS[name]])) this.down.add(action);
+      if (names.some((name) => pad.pressed[GAMEPAD_BUTTONS[name]] && !suppressed.has(name))) {
+        this.down.add(action);
+      }
     }
+  }
+
+  // While a combo's first button (its modifier) is held, its other
+  // buttons don't fire their own actions.
+  suppressedButtons(pad) {
+    const suppressed = new Set();
+    for (const combo of Object.values(this.cfg.combos)) {
+      const [modifier, ...rest] = combo.buttons;
+      if (pad.pressed[GAMEPAD_BUTTONS[modifier]]) rest.forEach((b) => suppressed.add(b));
+    }
+    return suppressed;
   }
 
   // A combo fires once (one frame of "down") after its buttons are held

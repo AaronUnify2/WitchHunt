@@ -9,6 +9,7 @@ export class Clock {
   }
 
   init() {
+    this.timeScale = this.cfg.timeScale;
     const index = this.cfg.phases.findIndex((p) => p.name === this.cfg.startPhase);
     this.phaseIndex = Math.max(0, index);
     this.day = this.cfg.startDay;
@@ -18,7 +19,7 @@ export class Clock {
 
   update(dt) {
     if (this.paused) return;
-    this.phaseElapsed += dt * this.cfg.timeScale;
+    this.phaseElapsed += dt * this.timeScale;
     // A loop, not an if: a long frame or a big time skip can cross
     // several phases at once.
     while (this.phaseElapsed >= this.currentPhase.seconds) {
@@ -38,6 +39,16 @@ export class Clock {
 
   setPaused(paused) {
     this.paused = paused;
+  }
+
+  setTimeScale(scale) {
+    this.timeScale = scale;
+  }
+
+  // Jump to the start of the next phase (debug tool).
+  skipPhase() {
+    this.phaseElapsed = 0;
+    this.advancePhase();
   }
 
   get currentPhase() {

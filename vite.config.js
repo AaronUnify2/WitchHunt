@@ -13,8 +13,9 @@ export default defineConfig(({ command, isPreview }) => ({
   build: {
     target: 'es2022',
     sourcemap: true,
-    // three.js alone is ~550 kB minified; that's expected, not a problem.
-    chunkSizeWarningLimit: 800,
+    // three.js plus its post-processing add-ons is ~800 kB minified
+    // (~210 kB gzipped); that's expected, not a problem.
+    chunkSizeWarningLimit: 1000,
   },
   test: {
     environment: 'node',

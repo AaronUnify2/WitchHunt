@@ -875,7 +875,7 @@ Cheap techniques to do well:
 
 - **Night sky:** gradient dome, dense starfield with twinkle, a moon with a soft halo, thin clouds drifting across it from a scrolling noise texture, moonlight tinting the whole scene.
 - **Fog and mist:** height fog plus distance fog; low ground-mist layers drifting between trees; fake light shafts (soft billboards) where moonlight or the flashlight cuts through.
-- **Trees:** instanced low-poly trunks with alpha-cut leaf cards, wind sway in the vertex shader, baked ambient occlusion darkening their bases, impostors in the distance.
+- **Trees:** instanced camera-facing billboard sprites (alpha-cut, several variants in one atlas), wind sway in the vertex shader. Decided with Aaron in M1: every tree is a billboard, near and far.
 - **Ground:** blended tiled textures (dirt, grass, moss, mud, leaf litter) with a detail texture up close, normal maps, scattered rocks, roots and fallen logs.
 - **The flashlight:** a spotlight with a cookie texture (that imperfect torch pattern) and the one real-time shadow in the game. One shadow-casting light is affordable and is the single biggest atmosphere win.
 - **Post-processing:** filmic tone mapping, bloom on lights and witchfire, colour grading, vignette, subtle film grain.
@@ -900,8 +900,7 @@ All of this is tiered by the Quality setting so the tablet gets a version that h
 | --- | --- |
 | Zombies | Billboard sprites with 8 facing angles, pre-rendered from lit 3D models so they sit naturally in the scene |
 | Mutants, beetles, the Mothman, aliens, Bigfoot, the witch | Low-poly 3D, animated |
-| Near trees | Low-poly 3D, instanced |
-| Far trees | Billboard impostors |
+| Trees | Billboard sprites, instanced, camera-facing (near and far) |
 | Bushes, grass, ferns | Instanced sprites |
 | Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D |
 | Pickups and sigils | Small 3D or sprite with a glow |
