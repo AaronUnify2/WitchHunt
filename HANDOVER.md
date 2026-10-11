@@ -55,6 +55,7 @@ Details in `STATUS.md` ("M4: Sigils and zombies"):
 
 - Dawn thinning works as expected.
 - **The mutant felt like a bit of a bullet sponge.** Aaron's fix: health stays; headshots on it do 4×, and a glowing red spot on its back does 8× (shots from behind, or the shovel from behind). It also charges now: 3 sprinting steps when it becomes aware of you, then 2 every 3 s (Aaron: vary its pace). Built; waiting on his next test.
+- Fixed: far too much ammo dropped (a headshot kill often paid back six rounds). Ammo drop rates are cut hard: about 0.1 rifle rounds per kill on average.
 - Fixed: the drops glared under the torch. They're darker now, and in the torch's glare check.
 
 ### Unfinished or for later
