@@ -1,7 +1,9 @@
 // The abandoned vehicles (placeholder boxes; M5 part 2). Every box of
 // every vehicle is one instance of a single unit cube, so the whole
-// fleet is one draw call (plus one for the lamps, which are unlit so an
-// alarm's flashing shows at night). Shapes and colours come from
+// fleet is one draw call, plus one for the lamps (unlit, so an alarm's
+// flashing shows at night) and one for the wheels: every 'tyre' part is
+// a round wheel with a hub, instances of one low-poly cylinder (Aaron:
+// square wheels didn't read as a car). Shapes and colours come from
 // data/vehicles.json; each vehicle sits on the ground, tilted to its
 // slope (and a flat tyre now and then).
 //
@@ -27,9 +29,12 @@ export class VehicleRenderer {
     this.colours = Object.fromEntries(Object.entries(data.colours).map(([k, v]) => [k, new THREE.Color(v)]));
     let solids = 0;
     let lamps = 0;
+    let wheels = 0;
     for (const v of vehicles) {
       const t = data.types[v.type];
-      solids += t.parts.length + 3 + 2 + 1; // parts, lids, battery (body and top), engine bay
+      const tyres = t.parts.filter((p) => p[6] === 'tyre').length;
+      solids += t.parts.length - tyres + 3 + 2 + 1; // parts, lids, battery (body and top), engine bay
+      wheels += tyres * 2; // a tyre and its hub
       lamps += t.lamps.length;
     }
     this.box = new THREE.BoxGeometry(1, 1, 1);
@@ -39,6 +44,10 @@ export class VehicleRenderer {
     this.lamp = new THREE.InstancedMesh(this.box, this.lampMaterial, Math.max(1, lamps));
     this.solid.castShadow = true;
     this.solid.receiveShadow = true;
+    // A cylinder with its axle along x, so a part's [w, h, l] is [tread width, diameter, diameter].
+    this.cylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, this.cfg.looks.wheelSegments).rotateZ(Math.PI / 2);
+    this.wheel = new THREE.InstancedMesh(this.cylinder, this.solidMaterial, Math.max(1, wheels));
+    this.wheel.castShadow = true;
 
     this.base = new THREE.Matrix4();
     this.local = new THREE.Matrix4();
@@ -49,6 +58,7 @@ export class VehicleRenderer {
 
     let si = 0;
     let li = 0;
+    let wi = 0;
     for (const v of vehicles) {
       const t = data.types[v.type];
       const [length, width] = t.size;
@@ -78,6 +88,14 @@ export class VehicleRenderer {
       v.groundY = y;
 
       for (const part of t.parts) {
+        if (part[6] === 'tyre') {
+          const [w, d, , x, y, z] = part;
+          this.setBox(this.wheel, wi, base, part);
+          this.wheel.setColorAt(wi++, this.colours.tyre);
+          this.setBox(this.wheel, wi, base, [w + 0.03, d * this.cfg.looks.hubSize, d * this.cfg.looks.hubSize, x, y, z]);
+          this.wheel.setColorAt(wi++, this.colours.hub);
+          continue;
+        }
         this.setBox(this.solid, si, base, part);
         this.solid.setColorAt(si, this.resolve(part[6], look));
         si++;
@@ -110,10 +128,13 @@ export class VehicleRenderer {
     this.solid.instanceColor.needsUpdate = true;
     this.lamp.instanceMatrix.needsUpdate = true;
     if (this.lamp.instanceColor) this.lamp.instanceColor.needsUpdate = true;
+    this.wheel.instanceMatrix.needsUpdate = true;
+    if (this.wheel.instanceColor) this.wheel.instanceColor.needsUpdate = true;
     this.solid.computeBoundingSphere();
     this.lamp.computeBoundingSphere();
+    this.wheel.computeBoundingSphere();
     this.group = new THREE.Group();
-    this.group.add(this.solid, this.lamp);
+    this.group.add(this.solid, this.lamp, this.wheel);
     scene.add(this.group);
   }
 
@@ -203,6 +224,8 @@ export class VehicleRenderer {
   dispose() {
     this.group?.removeFromParent();
     this.box?.dispose();
+    this.cylinder?.dispose();
+    this.wheel?.dispose();
     this.solidMaterial?.dispose();
     this.lampMaterial?.dispose();
     this.solid?.dispose();

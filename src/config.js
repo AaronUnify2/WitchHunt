@@ -914,6 +914,8 @@ export const config = {
       dirtiness: 0.25, // each paint varies by up to this much darker
       flatTyreChance: 0.3, // a flat tyre leaves it leaning
       flatTyreTilt: 0.05, // radians
+      wheelSegments: 12, // sides on each round wheel (Aaron: square wheels didn't read as a car)
+      hubSize: 0.5, // the hub's diameter as a fraction of the wheel's
     },
   },
 

@@ -36,6 +36,14 @@ Agreed with Aaron before building: **four types** (car, pickup truck, police car
 | Debug | `Vehicles.addDebugItems()` | **Vehicles: teleport to the nearest unsearched** (stands you at its door; the toast says if it has a battery or an alarm), **show all on the map**, **restock them all**. Overlay: new `vehicles` line (how many, seen, emptied, batteries left, alarms ringing). |
 | Tests | `tests/vehicles.test.js` | 12 new: the data (types, lids, spots, loot items, placement weights), the frame maths, the box test, weighted picks and rule lookup; placement over 5 seeds: the same for a seed, 25-55 a map averaging 35-55, the campsite's sure battery, the battery share, alarms only with a battery, open ground and spots, slopes, no overlaps, clear of the station, signs and cliff, roadblocks and army trucks at checkpoints. |
 
+### M5 part 2 follow-up: Aaron's first look at the vehicles
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| "Looking pretty cool"; the cab only comes up to the player's sternum | Taller cabs: a car's roof is now 1.75 m (was 1.37), a pickup's 1.95, a police car's 1.78 (light bar on top), an army truck's 2.5. The glass is a touch wider and longer than each cab, so windscreens and rear windows show too. | `data/vehicles.json` `parts` |
+| The door overlaps the window | Doors now run from the sill to just below the window line on every type. | `data/vehicles.json` `lids.door` |
+| Square wheels; can they be round? | Every `tyre` part is drawn as a round wheel (a 12-sided cylinder) with a grey hub, all instances of one mesh: one more draw call (plus its shadow). | `config.vehicles.looks.wheelSegments`, `hubSize` |
+
 ### M5 part 1 follow-up: Aaron's night-defence play-test
 
 | Feedback | Change | Tune in |
