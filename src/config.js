@@ -868,7 +868,12 @@ export const config = {
     bob: 0.06,
     spin: 1.8,
     lift: 0.22,
-    emissive: 0x262626, // a faint glint so they show at night
+    emissive: 0x1a1a1a, // a faint glint so they show at night
+    // The torch blew the bright boxes out up close (Aaron's M4 test, like
+    // the rocks and signs before): colours are darkened by this, and drops
+    // near you are in the torch's glare check so the beam dims on them.
+    albedoScale: 0.2,
+    glareRange: 6, // metres
   },
 
   // Hit and hurt feedback

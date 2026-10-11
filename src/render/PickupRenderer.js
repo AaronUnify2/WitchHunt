@@ -1,6 +1,7 @@
 // Pickups on the ground: small placeholder boxes, coloured by item
-// (data/loot.json), turning slowly and bobbing just above the ground with
-// a faint glint so they show at night. One instanced mesh, one draw call.
+// (data/loot.json, darkened so the torch doesn't burn them out), turning
+// slowly and bobbing just above the ground with a faint glint so they
+// show at night. One instanced mesh, one draw call.
 
 import * as THREE from 'three';
 
@@ -16,7 +17,8 @@ export class PickupRenderer {
     this.material = new THREE.MeshLambertMaterial({ emissive: c.emissive });
     this.mesh = new THREE.InstancedMesh(geometry, this.material, poolSize);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    this.colours = Object.fromEntries(Object.entries(items).map(([id, def]) => [id, new THREE.Color(def.color)]));
+    // Darkened: lit head-on by the torch, the data's colours burn out.
+    this.colours = Object.fromEntries(Object.entries(items).map(([id, def]) => [id, new THREE.Color(def.color).multiplyScalar(c.albedoScale)]));
     this.fallback = new THREE.Color(0xffffff);
     for (let i = 0; i < poolSize; i++) this.mesh.setColorAt(i, this.fallback);
     this.mesh.frustumCulled = false;

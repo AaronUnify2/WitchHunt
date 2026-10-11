@@ -51,6 +51,12 @@ Details in `STATUS.md` ("M4: Sigils and zombies"):
 - **64 zombies cost about 0.1 ms of simulation per frame; 47 draw calls at night** (budget ~100).
 - No console errors.
 
+### Aaron's play-test (first round)
+
+- Dawn thinning works as expected.
+- **The mutant feels like a bit of a bullet sponge: workshop it with Aaron** (health, weak spot, or how often it appears; OPEN_QUESTIONS #60).
+- Fixed: the drops glared under the torch. They're darker now, and in the torch's glare check.
+
 ### Unfinished or for later
 
 - The dawn thinning over a real 60 s dawn hasn't been watched in the browser. The unit test covers it, and the time speed-up can't hurry it.

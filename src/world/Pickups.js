@@ -12,7 +12,10 @@ export class Pickups {
   }
 
   init() {
-    this.pool = Array.from({ length: this.cfg.poolSize }, () => ({ active: false, item: null, amount: 0, x: 0, y: 0, z: 0, age: 0, phase: 0 }));
+    this.pool = Array.from({ length: this.cfg.poolSize }, () => ({
+      active: false, item: null, amount: 0, x: 0, y: 0, z: 0, age: 0, phase: 0,
+      glareCircle: { x: 0, z: 0, r: 0, vr: 0, base: 0, top: 0 }, // reused for the torch's glare check
+    }));
   }
 
   dispose() {
@@ -58,6 +61,25 @@ export class Pickups {
       }
     }
     return taken;
+  }
+
+  // Pickups within `range` of origin as circles for the torch's glare check,
+  // appended to `out` (so the beam dims when it's right on one).
+  glareCircles(origin, range, out) {
+    const c = this.cfg;
+    const half = c.size / 2;
+    for (const p of this.pool) {
+      if (!p.active || Math.hypot(p.x - origin.x, p.z - origin.z) > range) continue;
+      const g = p.glareCircle;
+      g.x = p.x;
+      g.z = p.z;
+      g.r = half;
+      g.vr = half;
+      g.base = p.y;
+      g.top = p.y + c.lift + c.bob + c.size * 0.6;
+      out.push(g);
+    }
+    return out;
   }
 
   get activeCount() {

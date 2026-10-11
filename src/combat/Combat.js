@@ -275,9 +275,10 @@ export class Combat {
     }
   }
 
-  // Close zombies, for the torch's glare check.
+  // Close zombies and pickups, for the torch's glare check.
   glareExtras(origin) {
-    return this.enemies.glareCircles(origin, this.cfg.zombies.glareRange, this.glareCircles);
+    this.enemies.glareCircles(origin, this.cfg.zombies.glareRange, this.glareCircles);
+    return this.pickups.glareCircles(origin, this.cfg.pickups.glareRange, this.glareCircles);
   }
 
   // ---- debug tools ----------------------------------------------------------

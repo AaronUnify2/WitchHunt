@@ -44,6 +44,15 @@ Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model
 | Debug menu | `ZombieDirector.addDebugItems()`, `Combat.addDebugItems()` | **Zombie level: auto / fixed L1-L5** (cycles; auto counts the sigils); plant sigil (stand-in witch); plant sigil right here; raise zombies now (every sigil); teleport: next sigil; remove all sigils; **sigils on the map** (green diamonds on the minimap and map screen); spawn a horde near me; spawn a mutant near me; spawn 5 zombies near me (now with the local variant mix). The M2 "Zombie speed" toggle is replaced by the level. |
 | Overlay | `Combat.zombieOverlayLine()`, `ZombieDirector.overlayLines()` | New `zombies` line: level, alive and active, by variant (citizen/police/army/mutant), how many in hordes, by what they're doing (chase/search/wander/rising), stragglers, and **how far you can be seen and heard from right now**. New `sigils` line: count (and how many on grounds), level, the next raising, the nearest sigil. The `combat` line adds scrap, pistol rounds and pickups lying about. |
 
+### M4 follow-up: Aaron's tablet play-test (first round)
+
+- **Dawn works:** all the zombies thin out at dawn as expected.
+- **The mutant feels like a bit of a bullet sponge.** To be workshopped with Aaron (OPEN_QUESTIONS #60); not changed yet.
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| The drops glare under the torch, like the signs and rocks did | Pickup colours are darkened to 0.2× (the near-white first aid kit and grey pistol rounds also got mid-tone colours), and drops within 6 m are now in the torch's glare check, so the beam dims when it's right on one. Checked side by side at night in headless Chromium: the boxes no longer burn out and still read as different items. | `config.pickups.albedoScale`, `glareRange`, `data/loot.json` colours |
+
 ### M3: The map (Session 4)
 
 Decided with Aaron before building: the map is **1 km wide by 1.4 km north to south** ("we'll see how it goes"); off the pathways, **undergrowth slows you but never blocks you** ("something the player can choose to do, but it comes at a cost"); **gentle rolling ground**; a simple but usable minimap and map screen (the final look is Session 19); runs **start at home on the cliff edge, by day**.

@@ -3,9 +3,9 @@
   "items": {
     "rifleAmmo": { "name": "rifle rounds", "ammo": "rifle", "color": "#c8a040" },
     "shotgunAmmo": { "name": "shotgun shells", "ammo": "shotgun", "color": "#b03424" },
-    "pistolAmmo": { "name": "pistol rounds", "ammo": "pistol", "color": "#9aa0a8" },
+    "pistolAmmo": { "name": "pistol rounds", "ammo": "pistol", "color": "#6e747c" },
     "scrap": { "name": "scrap", "inventory": "scrap", "color": "#6e6a5c" },
-    "firstAid": { "name": "first aid kit", "firstAid": true, "color": "#e6e2d6" },
+    "firstAid": { "name": "first aid kit", "firstAid": true, "color": "#a8a294" },
     "vest": { "name": "police vest", "armour": "ballistic", "amount": 40, "color": "#465a78" },
     "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" }
   },
