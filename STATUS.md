@@ -22,7 +22,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the forest 
 
 ### M2: Combat feel (Session 3)
 
-Plan workshopped and approved by Aaron before building (rule 10).
+Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 tablet play-test: "Fighting the zombies at night was fun... real lot of fun."** M2's "done when" is met.
 
 | Area | Files | Notes |
 | --- | --- | --- |
@@ -33,14 +33,20 @@ Plan workshopped and approved by Aaron before building (rule 10).
 | Aim assist | `src/combat/aimAssist.js` | Light: controller look slows (to 0.45×, 0.35× aimed) over a zombie's body or head, fading out over 3°. No magnetism. Never on the mouse. Toggle in the debug menu. |
 | Zombie | `src/ai/Zombie.js`, `EnemyManager.js` | One "citizen" type using level 1 rules. Pool of 25 (the active cap). Walks straight at you at 0.35–0.45× your sprint (debug: level 5 is 0.5–1.3×, skewed slow). Slides round trees and rocks, keeps apart from other zombies. Swipe: 0.5 s wind-up, 10 damage, only lands if you're still in reach. Hits flash it red, stagger and knock it back (a hit in the wind-up cancels the swipe). 60 health. Falls when killed; the body stays 20 s, then sinks away. Close zombies are fed into the torch glare check. |
 | Zombie sprite | `src/render/ZombieRenderer.js`, `zombieSprite.js` | Doom-style billboard: 8 facing angles × 11 frames (walk 4, swipe 2, flinch 1, fall 4) in one procedural atlas, crisp nearest-neighbour pixels up close. One instanced draw call plus one in the torch shadow pass. Lit by the torch, casts its shadow. Dark albedo (`albedoScale`) because sprites face the torch head-on. |
-| In-hand weapons | `src/player/ViewModel.js` | Placeholder box-and-cylinder models (one mesh each), walk sway, recoil kick, pump slide, reload dip, lower and raise on switch, shovel swing, muzzle flash card. Baked shading (the torch would blow them out). |
+| In-hand weapons | `src/player/ViewModel.js` | Placeholder box-and-cylinder models (one mesh each), footstep-paced sway (`config.viewModel.bob`: one dip per step, 1.8 steps/s walking, 2.3 sprinting), recoil kick, pump slide, reload dip, lower and raise on switch, shovel swing, muzzle flash card. Baked shading (the torch would blow them out). |
 | Effects | `src/render/CombatFx.js` | Blood spurts (more on a headshot) and dust puffs where misses land: one pooled `Points` object. A pooled muzzle-flash point light (always in the scene, intensity only, no shadow). Camera kick and shake. |
 | Health, armour, healing | `src/player/Health.js`, `Armour.js`, `Inventory.js` | Health 0–100, no regen. Three armour bars soak damage ballistic → energy → nature → health. First aid kits (start with 2): **D-pad right** / H heals 30 at 10 per second; a second kit queues; nothing heals past 100. |
 | HUD (placeholder) | `src/ui/Hud.js`, `style.css` | Crosshair (dot only while aiming), hit marker (yellow on headshots, red and bigger on kills), "B: reload" / "Out of ammo" prompt, health in 10 segments (pulses red at 30 or below), a healing "+", three armour bars, weapon name, ammo, reload bar, first aid count, red screen edge when hurt, "You died" screen (A / Enter: try again). |
 | Sounds (placeholder) | `src/audio/Sfx.js` | **Placeholder, to be upgraded in the audio pass (Session 20).** Synthesised on the fly: rifle, shotgun and pump, shovel swing and hit, flesh hit, headshot, kill, positional zombie groans and swipes, hurt, reload clicks, empty click, switch, heal, death. |
 | Debug menu | `Combat.addDebugItems()` | Spawn 5 zombies, zombie speed level 1 / 5, kill all, god mode, aim assist on/off, give ammo, give armour, give first aid kits, hurt me (−25). |
 | Debug overlay | `Combat.overlayLine()` | New `combat` line: living / active enemies, level, health, armour, weapon and ammo, current aim-assist factor, kills, GOD. |
-| Tests | `tests/*.test.js` | 113 tests (52 new): armour order, healing queue, aim assist, weapon state (fire rate, magazine and shell reloads, melee), hit-scan geometry (body / head / blockers / falloff / spread / melee arc), zombie behaviour (walk, swipe timing, stagger, death, corpse, knockback, frames, speed rolls), rock-top glare. |
+| Tests | `tests/*.test.js` | 116 tests (55 new): weapon sway pacing, armour order, healing queue, aim assist, weapon state (fire rate, magazine and shell reloads, melee), hit-scan geometry (body / head / blockers / falloff / spread / melee arc), zombie behaviour (walk, swipe timing, stagger, death, corpse, knockback, frames, speed rolls), rock-top glare. |
+
+### M2 follow-up: Aaron's tablet play-test
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| The weapon bobs far too fast, and vibrates at a sprint | The sway was driven by the camera's head-bob cycle and folded with an absolute value, doubling it: about 8 bounces a second walking and 13 sprinting. It now has its own footstep pace: one smooth dip per step at 1.8 steps a second walking and 2.3 sprinting (a little deeper), side to side once every two steps, easing in and out as you start and stop. The camera's head bob is unchanged. | `config.viewModel.bob` |
 
 ### M1 follow-up round 2 (Session 3, from Aaron's 20-minute tablet test)
 
@@ -86,8 +92,9 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (113/113) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (116/116) all pass. Production build at `/WitchHunt/` runs with no console errors.
 - **M1 performance gate passed on the tablet (Aaron):** a steady 60 fps for 20+ minutes of night walking at Medium, the tablet warm but not hot. Locking and unlocking, controller off and on, and leaving fullscreen all recover.
+- **M2 on the tablet (Aaron):** fighting zombies at night is fun. **60 fps the whole time, even with 20+ zombies spawned at once.** B always reloads and never leaves fullscreen. The torch is enough to fight by. The dead trees look "much, much better" and the rock glare is gone.
 - **M2 in headless Chromium with a simulated Xbox controller:**
   - RT fires the rifle and shotgun and hits zombies (body and head); LT zooms; B reloads; RB / Y cycle weapons both ways; the shovel connects and kills; D-pad right uses a kit; zombies walk in, swipe and hurt the player; death shows the screen and A restarts.
   - Screenshots: all 8 facing angles and the fall frames read correctly; zombies are dark and lit by the torch; crisp pixels up close; the red hurt edge, hit markers and HUD.
@@ -107,9 +114,9 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- **M2's "done when": fighting five zombies at night is fun on the controller.** That needs Aaron on the tablet (play-test script in HANDOVER.md). Feel numbers (aim assist strength, recoil, zombie speed and damage) are first guesses.
-- Frame rate on the tablet with M2's extra lights (the torch spill and the muzzle-flash light) and a fight in view.
-- Whether the placeholder sounds play on Android Chrome (they need the start tap to unlock audio).
+- The weapon-sway fix on the tablet (made after the play-test; checked headless only).
+- Whether the placeholder sounds play on Android Chrome (Aaron didn't mention them either way).
+- Feel numbers (aim assist strength, recoil, zombie damage, headshot ×3) passed a first play-test; they get their real tuning in M14.
 - Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.
 
 ## Stubbed / placeholder (by design)
@@ -131,11 +138,11 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 
 ## Known issues and risks
 
-1. **M2 adds two lights** (the torch spill and the muzzle flash), which every lit pixel pays for. M1 held 60 fps for 20 minutes without them. If the frame rate drops, the levers are: `flashlight.spill.intensity: 0` (or remove the spill), then the M1 levers: the Low preset; shadow map 512 to off; `bloom: false`; a lower `drawDistance`; bigger `forest.cellSize`.
+1. **M2 added two lights** (the torch spill and the muzzle flash). The tablet held 60 fps with them and 20+ zombies. If later milestones push the frame rate down, the levers are: `flashlight.spill.intensity: 0` (or remove the spill), then the M1 levers: the Low preset; shadow map 512 to off; `bloom: false`; a lower `drawDistance`; bigger `forest.cellSize`.
 2. **Zombie sprites are lit head-on by the torch**, so their colours are pulled down with `zombies.albedoScale`. The final pre-rendered sprites need the same care (dark, mossy albedos).
 3. **The zombie atlas is drawn mirrored for angles 5–7**, so its painted moonlight comes from the right on those rows. Invisible at night; the art pass replaces it.
 4. **Switching quality or toggling the torch can hitch once** (around 100 ms on mobile) while shaders compile for the new light setup. Later toggles are instant.
-5. **Android "Back" on the B button** (carried from M0): unconfirmed.
+5. **Android "Back" on the B button:** confirmed fine in M2 (B always reloads, never leaves fullscreen).
 6. **The Xbox (Guide) button** belongs to Android and the browser.
 7. **Chrome only exposes a controller after a button press on it.**
 8. **The controller can't start the game**: the first start needs a tap (browser rule for fullscreen).
@@ -148,7 +155,7 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 
 M3, **The map** (Session 4, Lead Engineer): seeded generation of 22 clearings in bands, the cliff, pathways, chunked forest, colliders, fog of war, minimap and map screen, encounter placeholders from data. Done when a whole map generates the same from a seed and walking end to end holds the frame target on the tablet.
 
-- Gate first: Aaron's M2 play-test ("fighting five zombies at night is fun on the controller"). Fix feel before moving on.
+- M2's gate is passed (Aaron: fun, 60 fps with 20+ zombies).
 - Zombies and the player both clamp to `config.world.boundaryRadius` round the M1 clearing; M3 replaces that with the map's bounds.
 - `EnemyManager` resolves zombies against the same static collider grid as the player, so M3's colliders work for zombies with no changes.
 - Shots are blocked by colliders' `r` (trunks) and `top` (rocks): new colliders should carry those.

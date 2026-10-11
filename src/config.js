@@ -405,7 +405,19 @@ export const config = {
     hip: { x: 0.2, y: -0.21, z: -0.46 },
     aim: { x: 0, y: -0.105, z: -0.36 }, // centred under the crosshair
     shovelHip: { x: 0.2, y: -0.28, z: -0.5 },
-    bobAmount: 0.012, // metres of sway at walking pace
+    // Weapon sway while moving, paced like footsteps (Aaron's M2 play-test:
+    // tying it to the head bob made it vibrate at a sprint). One vertical dip
+    // per step; side to side once every two steps.
+    bob: {
+      amount: 0.012, // metres of vertical dip at walking pace
+      sideRatio: 0.8, // side-to-side sway as a fraction of the dip
+      walkStepsPerSecond: 1.8,
+      sprintStepsPerSecond: 2.3,
+      minStepsPerSecond: 1.1, // slow creeping (crouch) never drops below this
+      sprintAmount: 1.5, // dip at a full sprint, as a multiple of `amount`
+      response: 6, // how quickly the sway grows and settles when you start and stop
+      aimDamping: 0.85, // fraction of the sway removed while aiming
+    },
     kickBack: 0.07, // metres the gun jumps back on a shot
     kickRotate: 0.12, // radians the muzzle climbs
     kickRecover: 14,

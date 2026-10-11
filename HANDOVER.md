@@ -29,13 +29,20 @@ Details in `STATUS.md` ("M2: Combat feel"):
 2. A wide, dim spill light round the torch beam, so the edges of the view aren't black.
 3. The torch now dims on rock tops: the "magnifying glass" spot. Aaron's screenshot never arrived, so please re-check on the tablet.
 
-### Still open
+### Aaron's M2 play-test on the tablet: passed
 
-- **M2's "done when" needs Aaron:** "fighting five zombies at night is fun on the controller". Use the play-test script below.
-- **The tablet frame rate with the two new lights** (spill and muzzle flash) during a fight.
-- **Does B (now reload) ever trigger Android "Back"** or leave fullscreen? This was never confirmed in M0, and B is pressed constantly now.
+- **"Fighting the zombies at night was fun... real lot of fun."** M2's "done when" is met.
+- **60 fps the entire time, even with 20+ zombies spawned at once.**
+- **B** always reloads and never leaves fullscreen (the M0 worry is closed).
+- The torch is enough to see by in a fight.
+- The dead trees look "much, much better", and the rock glare is gone.
+- **One fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). This was checked headless only, so give it a quick look on the tablet.
 
-## Play-test script for Aaron (M2)
+### Unfinished
+
+Nothing in M2's scope. The sounds weren't commented on: worth a listen.
+
+## Play-test script for Aaron (M2, as used)
 
 **Setup:** open the live build on the tablet with the controller. The overlay is on. Hold **View + D-pad down** for the debug menu.
 

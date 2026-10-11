@@ -37,6 +37,31 @@ function shade(geometry, hex, brightness) {
   return geometry;
 }
 
+// Weapon sway for a ground speed: steps per second (walk pace up to sprint
+// pace, never below a floor when creeping) and the dip size in metres.
+// Fills and returns `out`.
+export function weaponBob(speed, walkSpeed, sprintSpeed, cfg, out = {}) {
+  if (speed <= 0.01) {
+    out.stepsPerSecond = cfg.minStepsPerSecond;
+    out.amount = 0;
+    return out;
+  }
+  let stepsPerSecond;
+  let amount;
+  if (speed <= walkSpeed) {
+    const t = speed / walkSpeed;
+    stepsPerSecond = Math.max(cfg.minStepsPerSecond, cfg.walkStepsPerSecond * t);
+    amount = cfg.amount * t;
+  } else {
+    const t = Math.min(1, (speed - walkSpeed) / (sprintSpeed - walkSpeed));
+    stepsPerSecond = cfg.walkStepsPerSecond + (cfg.sprintStepsPerSecond - cfg.walkStepsPerSecond) * t;
+    amount = cfg.amount * (1 + (cfg.sprintAmount - 1) * t);
+  }
+  out.stepsPerSecond = stepsPerSecond;
+  out.amount = amount;
+  return out;
+}
+
 export class ViewModel {
   constructor(viewModelConfig, weaponsConfig) {
     this.cfg = viewModelConfig;
@@ -68,6 +93,9 @@ export class ViewModel {
     this.flash.visible = false;
     this.root.add(this.flash);
     this.kick = 0;
+    this.bobPhase = 0;
+    this.bobAmount = 0;
+    this.bob = { stepsPerSecond: 0, amount: 0 };
     this.current = null;
   }
 
@@ -136,9 +164,14 @@ export class ViewModel {
       z: hip.z + (c.aim.z - hip.z) * z,
     };
 
-    // Walk sway, damped while aiming.
-    const sway = (player.bobOffset / Math.max(player.cfg.headBob.amplitude, 1e-6)) * c.bobAmount * (1 - z * 0.8);
-    const swayX = Math.cos(player.bobPhase * 0.5) * sway;
+    // Walk sway, paced like footsteps, damped while aiming.
+    const pc = player.cfg;
+    const bob = weaponBob(player.onGround ? player.speed : 0, pc.walkSpeed, pc.walkSpeed * pc.sprintMultiplier, c.bob, this.bob);
+    this.bobAmount += (bob.amount - this.bobAmount) * Math.min(1, c.bob.response * dt);
+    this.bobPhase = (this.bobPhase + bob.stepsPerSecond * dt * Math.PI * 2) % (Math.PI * 4);
+    const sway = this.bobAmount * (1 - z * c.bob.aimDamping);
+    const swayX = Math.sin(this.bobPhase * 0.5) * sway * c.bob.sideRatio;
+    const swayY = (Math.cos(this.bobPhase) - 1) * 0.5 * sway; // one dip per step
 
     // Recoil kick: jumps on a shot, settles back.
     if (weapons.shotTime === 0) this.kick = 1;
@@ -149,7 +182,7 @@ export class ViewModel {
     const dip = s.reloading ? Math.sin(Math.min(1, s.reloadProgress) * Math.PI) * c.reloadDip : 0;
     const dipHold = s.reloading && s.cfg.reloadStyle === 'magazine' ? c.reloadDip * 0.6 : dip;
 
-    g.position.set(base.x + swayX, base.y + Math.abs(sway) - drop, base.z + this.kick * c.kickBack);
+    g.position.set(base.x + swayX, base.y + swayY - drop, base.z + this.kick * c.kickBack);
     g.rotation.set(this.kick * c.kickRotate - dipHold, 0, 0);
 
     if (melee) this.updateSwing(g, weapons);
