@@ -144,7 +144,10 @@ export class Station {
           list.push(col);
         }
       }
-      if (barrier) this.barrierColliders.set(barrier, list);
+      // By id, not by object: "try again" rebuilds the barriers (state.init()),
+      // and colliders keyed to the old objects never followed the new ones
+      // (Aaron's M5 test: after a death the fence and doors stayed shut).
+      if (barrier) this.barrierColliders.set(barrier.id, list);
       return list;
     };
     const s = this.state;
@@ -201,7 +204,9 @@ export class Station {
 
   // Broken, unbuilt or open barriers let bodies through.
   syncColliders() {
-    for (const [b, list] of this.barrierColliders) {
+    for (const b of this.state.barriers()) {
+      const list = this.barrierColliders.get(b.id);
+      if (!list) continue;
       const off = passable(b);
       for (const col of list) col.off = off;
     }

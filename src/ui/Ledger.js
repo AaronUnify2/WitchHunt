@@ -131,6 +131,9 @@ export class Ledger {
         return `<li class="${cls}"><span class="ledger-label">${escapeHtml(r.label)}</span><span class="ledger-value">${escapeHtml(r.value ?? '')}</span></li>`;
       })
       .join('');
+    // Keep the list's scroll across the redraw, so moving up climbs the
+    // highlight to the top before the list scrolls (Aaron, M5).
+    const scroll = this.el.querySelector('ul')?.scrollTop ?? 0;
     this.el.innerHTML = `
       <div class="ledger-book">
         <h2>${this.only ? escapeHtml(page.title.toUpperCase()) : 'STATION LEDGER'}</h2>
@@ -141,6 +144,9 @@ export class Ledger {
         <p class="ledger-help">${this.only ? '' : 'LB / RB: tab &middot; '}D-pad / stick: move &middot; A: do it &middot; B: close &middot; the night goes on while you read</p>
       </div>
     `;
+    const list = this.el.querySelector('ul');
+    if (list) list.scrollTop = this.lastTab === this.tab ? scroll : 0;
+    this.lastTab = this.tab;
     this.el.querySelector('li.selected')?.scrollIntoView({ block: 'nearest' });
   }
 

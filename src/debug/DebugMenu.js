@@ -107,12 +107,17 @@ export class DebugMenu {
     const rows = this.items
       .map((item, i) => `<li class="${i === this.selected ? 'selected' : ''}">${escapeHtml(labelOf(item))}</li>`)
       .join('');
+    // Keep the list's scroll across the redraw, so moving up climbs the
+    // highlight to the top before the list scrolls (Aaron, M5).
+    const scroll = this.el.querySelector('ul')?.scrollTop ?? 0;
     this.el.innerHTML = `
       <h2>DEBUG MENU</h2>
       <p class="debug-menu-note">${NOTE}</p>
       <ul>${rows}</ul>
       <p class="debug-menu-help">D-pad / stick: move &middot; A: select &middot; B: close</p>
     `;
+    const list = this.el.querySelector('ul');
+    if (list) list.scrollTop = scroll;
     this.el.querySelector('li.selected')?.scrollIntoView({ block: 'nearest' });
   }
 }
