@@ -3,7 +3,8 @@
 // fleet is a handful of draw calls:
 //  - a cube for bodies, cabs, glass bands, trim, lids and the battery;
 //  - a wedge for the sloped windscreens and rear windows (Aaron: a car
-//    needs its windscreen's slope to read as a car);
+//    needs its windscreen's slope to read as a car), with painted pillars
+//    (thin cubes laid along the slope) down both edges;
 //  - a low-poly cylinder for round wheels and their hubs (Aaron: square
 //    wheels didn't read as a car);
 // plus unlit cubes for the lamps, so an alarm's flashing shows at night.
@@ -73,8 +74,8 @@ export class VehicleRenderer {
       const t = data.types[v.type];
       for (const p of t.parts) {
         if (p[6] === 'tyre') wheels += 2; // a tyre and its hub
-        else if (p[7]) wedges++;
-        else solids++;
+        else if (p[7] === 'wedgeF' || p[7] === 'wedgeB') wedges++;
+        else solids++; // boxes and pillars
       }
       for (const name of LIDS) {
         const lid = this.lids[v.type][name];
@@ -141,9 +142,12 @@ export class VehicleRenderer {
           this.wheel.setColorAt(wi++, this.colours.tyre);
           this.setBox(this.wheel, wi, base, [w + 0.03, d * looks.hubSize, d * looks.hubSize, x, py, z]);
           this.wheel.setColorAt(wi++, this.colours.hub);
-        } else if (part[7]) {
+        } else if (part[7] === 'wedgeF' || part[7] === 'wedgeB') {
           this.setBox(this.wedge, di, base, part, part[7] === 'wedgeB');
           this.wedge.setColorAt(di++, this.resolve(part[6], look));
+        } else if (part[7] === 'pillarF' || part[7] === 'pillarB') {
+          this.setPillar(si, base, part, part[7] === 'pillarB');
+          this.solid.setColorAt(si++, this.resolve(part[6], look));
         } else {
           this.setBox(this.solid, si, base, part);
           this.solid.setColorAt(si++, this.resolve(part[6], look));
@@ -204,6 +208,22 @@ export class VehicleRenderer {
     if (turned) this.local.multiply(this.turn);
     this.local.multiply(this.tmp.makeScale(w, h, l));
     mesh.setMatrixAt(index, this.out.multiplyMatrices(base, this.local));
+  }
+
+  // A windscreen pillar: a thin bar down the slope of the wedge whose
+  // bounds are [w, h, l, x, y, z] (w: the pillar's width), sitting just
+  // proud of the glass. rear: along a rear window's slope instead.
+  setPillar(index, base, [w, h, l, x, y, z], rear) {
+    const t = this.cfg.looks.pillarThickness;
+    const angle = Math.atan2(h, l); // the slope, from horizontal
+    const length = Math.hypot(h, l);
+    // Out from the glass: up and forward on a windscreen, up and back on a rear window.
+    const ny = Math.cos(angle) * (t / 2);
+    const nz = Math.sin(angle) * (t / 2) * (rear ? -1 : 1);
+    this.local.makeTranslation(x, y + ny, z + nz);
+    this.local.multiply(this.tmp.makeRotationX(rear ? -angle : angle));
+    this.local.multiply(this.tmp.makeScale(w, t, length));
+    this.solid.setMatrixAt(index, this.out.multiplyMatrices(base, this.local));
   }
 
   // Redraw a vehicle's moving parts: lids at their open amounts (with

@@ -916,6 +916,7 @@ export const config = {
       flatTyreTilt: 0.05, // radians
       wheelSegments: 12, // sides on each round wheel (Aaron: square wheels didn't read as a car)
       hubSize: 0.5, // the hub's diameter as a fraction of the wheel's
+      pillarThickness: 0.06, // metres: the windscreen and rear window pillars (Aaron)
     },
   },
 
