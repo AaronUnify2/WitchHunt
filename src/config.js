@@ -763,6 +763,16 @@ export const config = {
     turnRate: 3,
     staggerScale: 0.25, // shrugs off most of a hit's stun
     knockbackScale: 0.2,
+    // Aaron (M4 test): vary its pace. When it becomes aware of you it charges
+    // three sprinting steps at you, then two more every 3 s while chasing.
+    charge: {
+      speed: 7, // m/s while charging (your sprint is 7.2)
+      stepLength: 1.3, // metres per sprinting step
+      firstSteps: 3,
+      steps: 2,
+      interval: 3, // seconds between bursts while it chases you
+      lean: 0.3, // radians: head down while charging
+    },
     // Aaron (M4 test, "a bit of a bullet sponge"): health stays, but aim pays.
     headshotMultiplier: 4, // its own (other zombies use weapons.headshotMultiplier)
     // A glowing red spot on its back. A sphere that stands out from the body,

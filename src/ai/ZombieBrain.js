@@ -41,7 +41,10 @@ export class ZombieBrain {
     z.followX = this.rng.range(-1, 1);
     z.followZ = this.rng.range(-1, 1);
     this.setMode(z, mode);
-    if (mode === 'chase') z.memory = this.cfg.memorySeconds;
+    if (mode === 'chase') {
+      z.memory = this.cfg.memorySeconds;
+      z.noticed?.();
+    }
   }
 
   setMode(z, mode) {
@@ -52,7 +55,10 @@ export class ZombieBrain {
 
   // Go for the player, remembering them for `memory` seconds.
   chase(z, x, zz, memory) {
-    if (z.mode !== 'chase') this.setMode(z, 'chase');
+    if (z.mode !== 'chase') {
+      this.setMode(z, 'chase');
+      z.noticed?.(); // the mutant charges
+    }
     z.memory = Math.max(z.memory, memory);
     z.lastX = x;
     z.lastZ = zz;

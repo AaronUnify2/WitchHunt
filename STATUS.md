@@ -53,6 +53,7 @@ Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model
 | --- | --- | --- |
 | The drops glare under the torch, like the signs and rocks did | Pickup colours are darkened to 0.2× (the near-white first aid kit and grey pistol rounds also got mid-tone colours), and drops within 6 m are now in the torch's glare check, so the beam dims when it's right on one. Checked side by side at night in headless Chromium: the boxes no longer burn out and still read as different items. | `config.pickups.albedoScale`, `glareRange`, `data/loot.json` colours |
 | The mutant is a bullet sponge (Aaron: keep its health, add a weak spot) | **Headshots on the mutant do 4×** (other zombies stay at 3×). **A glowing red spot on its back does 8×:** a throbbing, unlit blob (it shows in the dark) that only shots from behind can reach, and a shovel swing from within 50° of straight behind lands on it too. It goes dark when the mutant dies. At level 3 (360 health) that's 3 rifle shots to the spot instead of 15 to the body. Weak-spot hits use the headshot blood, sound and hit marker. Checked in headless Chromium: one rifle shot to the spot from behind took a level 1 mutant from 300 to 100. | `config.mutant.headshotMultiplier`, `config.mutant.weakSpot` |
+| The mutant moves too slowly and evenly (Aaron: vary its pace) | **It charges.** When it becomes aware of you (sight, a gunshot or its pack) it sprints three steps at you (3.9 m at 7 m/s, about your sprint), then two more every 3 s while it chases. Head down and bouncing as it charges, with a grunt and heavy footfalls. A stagger or a swipe ends the burst; it never charges while wandering. | `config.mutant.charge` |
 
 ### M3: The map (Session 4)
 
@@ -160,7 +161,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build` and `npm test` (**238/238**, 70 new) all pass.
+- `npm run dev`, `npm run build` and `npm test` (**241/241**, 73 new) all pass.
 - **M4 in headless Chromium (software GPU, so no timings for the tablet):**
   - The stand-in planted five sigils on seed 1234 (four on sigil grounds, one in the woods by the gas station) and refused a sixth; level went to 5. Five sigils on six other seeds all follow the planting rules (tests).
   - At night the sigils raised zombies that climbed out of the ground and wandered off; a police zombie came from the roadside mix. The glyph reads clearly at night, faintly by day; the halo fades as you walk up.

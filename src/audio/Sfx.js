@@ -216,6 +216,14 @@ const RECIPES = {
     s.tone(o, { seconds: 0.08, wave: 'square', freq: 880, gain: 0.2 });
     s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 2000, q: 3, gain: 0.4 });
   },
+  // The mutant bursting forward: a grunt and heavy, fast footfalls.
+  charge(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 75, endFreq: 50, gain: 0.45, attack: 0.03, vibrato: 4 });
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => s.ready && s.tone(o, { seconds: 0.14, freq: 70, endFreq: 38, gain: 0.7 }), i * 170);
+    }
+  },
   mutantGroan(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.7);
     const base = 45 + Math.random() * 15;

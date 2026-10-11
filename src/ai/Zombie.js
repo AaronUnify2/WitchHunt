@@ -62,6 +62,7 @@ export class Zombie {
     this.staggerScale = s.staggerScale ?? 1;
     this.headshotMultiplier = s.headshotMultiplier ?? null; // null: the weapons' default
     this.weakSpot = s.weakSpot ?? null; // { back, height, radius, multiplier }: the mutant's
+    this.charge = s.charge ?? null; // the mutant's bursts of sprinting steps while chasing
     this.knockbackScale = s.knockbackScale ?? 1;
     this.glareCircle.r = this.hitRadius;
     this.glareCircle.vr = this.hitRadius;
@@ -92,6 +93,27 @@ export class Zombie {
     this.kbZ = 0;
     this.flash = 0;
     this.sink = opts.rise ? 1 : 0; // 0..1, how far into the ground (rising, burrowing, a sinking corpse)
+    this.chargeLeft = 0; // metres of sprinting still to go in this burst
+    this.chargeTimer = 0; // seconds to the next burst while chasing
+    this.chargeStarted = false; // set on the frame a burst starts (EnemyManager reports it)
+  }
+
+  // It has just become aware of the player: a mutant charges a few fast
+  // steps at them, then keeps bursting forward every few seconds.
+  noticed() {
+    const c = this.charge;
+    if (!c) return;
+    this.startCharge(c.firstSteps);
+    this.chargeTimer = c.interval;
+  }
+
+  startCharge(steps) {
+    this.chargeLeft = steps * this.charge.stepLength;
+    this.chargeStarted = true;
+  }
+
+  get charging() {
+    return this.chargeLeft > 0;
   }
 
   get alive() {
@@ -119,8 +141,13 @@ export class Zombie {
         }
         break;
       case 'walk':
-        if (this.mode === 'chase') this.walkToPlayer(dt, player);
-        else if (this.hasGoal) this.walkToGoal(dt);
+        if (this.mode === 'chase') {
+          this.updateCharge(dt);
+          this.walkToPlayer(dt, player);
+        } else {
+          this.chargeLeft = 0; // bursts are only ever at the player
+          if (this.hasGoal) this.walkToGoal(dt);
+        }
         break;
       case 'attack': {
         const dx = player.x - this.x;
@@ -169,9 +196,23 @@ export class Zombie {
       this.state = 'attack';
       this.timer = 0;
       this.struck = false;
+      this.chargeLeft = 0; // a burst ends in a swipe
       return;
     }
-    this.stepForward(Math.min(this.speed * this.pace * this.moveScale * dt, dist - this.attackReach * 0.9));
+    const speed = this.charging ? this.charge.speed * this.moveScale : this.speed * this.pace * this.moveScale;
+    const step = Math.min(speed * dt, dist - this.attackReach * 0.9);
+    this.stepForward(step);
+    if (this.charging) this.chargeLeft = Math.max(0, this.chargeLeft - Math.max(0, step));
+  }
+
+  // Every `interval` seconds of chasing, another burst of sprinting steps.
+  updateCharge(dt) {
+    const c = this.charge;
+    if (!c) return;
+    this.chargeTimer -= dt; // counts from the start of the last burst
+    if (this.chargeTimer > 0 || this.charging) return;
+    this.startCharge(c.steps);
+    this.chargeTimer = c.interval;
   }
 
   walkToGoal(dt) {
@@ -222,6 +263,7 @@ export class Zombie {
     if (stun > 0 && this.state !== 'rise' && !(this.state === 'attack' && this.struck)) {
       const left = this.state === 'stagger' ? this.timer : 0;
       this.state = 'stagger';
+      this.chargeLeft = 0;
       this.timer = Math.max(left, stun);
     }
     return false;

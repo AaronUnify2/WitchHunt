@@ -10,7 +10,8 @@
 // roll), its damage and how far it notices the player.
 //
 // Events: 'enemy:hit' { x, y, z, part, killed, zombie }, 'enemy:killed'
-// { zombie }, 'enemy:strike' { zombie, damage }, 'enemy:spawned' { count }.
+// { zombie }, 'enemy:strike' { zombie, damage }, 'enemy:spawned' { count },
+// 'enemy:charge' { zombie } (a mutant bursts forward).
 
 import { Zombie } from './Zombie.js';
 import { ZombieBrain } from './ZombieBrain.js';
@@ -189,6 +190,10 @@ export class EnemyManager {
       }
       z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
       z.update(dt, player, this.onStrike);
+      if (z.chargeStarted) {
+        z.chargeStarted = false;
+        this.bus.emit('enemy:charge', { zombie: z });
+      }
       if (z.alive) {
         resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
         this.ground.clamp(z);

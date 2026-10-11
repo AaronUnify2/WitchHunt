@@ -160,3 +160,60 @@ describe('Zombie (M4)', () => {
     expect(z.attackReach).toBe(cfg.attackReach);
   });
 });
+
+describe('mutant charge (Aaron, M4 test)', () => {
+  const m4 = { ...cfg, riseSeconds: 1.6, burrowSeconds: 2.5, attackDamage: 10, radius: 0.35 };
+  const charge = { speed: 7, stepLength: 1.3, firstSteps: 3, steps: 2, interval: 3, lean: 0.3 };
+  const body = { attackReach: 1.9, attackWindup: 0.9, attackRecover: 1.3, turnRate: 100, charge };
+
+  function mutant(z = 40) {
+    const m = new Zombie(m4);
+    m.spawn(0, z, Math.PI, 3, { kind: 'mutant', body, health: 300 });
+    return m;
+  }
+
+  it('charges three sprinting steps when it notices you, then plods', () => {
+    const m = mutant();
+    m.noticed();
+    expect(m.charging).toBe(true);
+    let t = 0;
+    while (m.charging && t < 2) {
+      m.update(0.02, { x: 0, z: 0 });
+      t += 0.02;
+    }
+    expect(40 - m.z).toBeCloseTo(3 * 1.3, 1); // three steps
+    expect(t).toBeLessThan(0.65); // at a sprint
+    const z0 = m.z;
+    for (let i = 0; i < 50; i++) m.update(0.02, { x: 0, z: 0 });
+    expect(z0 - m.z).toBeCloseTo(3, 1); // 1 s at its own 3 m/s
+  });
+
+  it('bursts two more steps every 3 seconds while chasing', () => {
+    const m = mutant(200);
+    m.noticed();
+    let bursts = 0;
+    let was = m.charging;
+    for (let t = 0; t < 10; t += 0.02) {
+      m.update(0.02, { x: 0, z: 0 });
+      if (m.charging && !was) bursts++;
+      was = m.charging;
+    }
+    expect(bursts).toBe(3); // at about 3, 6 and 9 s
+  });
+
+  it('a stagger or a swipe ends the burst; wandering never charges', () => {
+    const m = mutant();
+    m.noticed();
+    m.hit(1, 1, 0, { x: 0, z: 0 });
+    expect(m.charging).toBe(false);
+    const w = mutant();
+    w.mode = 'wander';
+    for (let t = 0; t < 7; t += 0.1) w.update(0.1, { x: 0, z: 0 });
+    expect(w.charging).toBe(false);
+    // Plain zombies have no charge at all.
+    const z = new Zombie(m4);
+    z.spawn(0, 10, 0, 3);
+    z.noticed();
+    expect(z.charging).toBe(false);
+  });
+});

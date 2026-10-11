@@ -105,6 +105,7 @@ export class Combat {
         this.kills++;
         this.dropLoot(zombie);
       }),
+      bus.on('enemy:charge', ({ zombie }) => this.sfx.play('charge', zombie)),
       bus.on('weapon:hit', ({ killed, part, melee }) => {
         this.hud.hitMarker(killed, part === 'head' || part === 'weak');
         if (melee) this.sfx.play('shovelHit');

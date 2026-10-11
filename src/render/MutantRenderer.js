@@ -102,8 +102,9 @@ export class MutantRenderer {
       const stride = z.walked * zc.walkFrameRate * Math.PI;
       switch (z.state) {
         case 'walk':
-          bob = Math.abs(Math.sin(stride)) * 0.07;
+          bob = Math.abs(Math.sin(stride)) * (z.charging ? 0.14 : 0.07);
           roll = Math.sin(stride) * 0.07;
+          if (z.charging) lean = this.cfg.charge.lean; // head down, charging
           break;
         case 'attack':
           lean = z.struck ? 0.5 : -0.22 * Math.min(1, z.timer / z.attackWindup);
