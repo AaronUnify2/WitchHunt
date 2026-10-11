@@ -50,7 +50,8 @@ export class Flashlight {
     this.setOn(c.startOn);
   }
 
-  update(dt, input, camera) {
+  // extraCircles: moving things (close zombies) to include in the glare check.
+  update(dt, input, camera, extraCircles) {
     if (input.wasPressed('flashlight')) this.setOn(!this.on);
     if (!this.on) return;
 
@@ -64,7 +65,7 @@ export class Flashlight {
     }
     this.light.target.position.copy(this.light.position).addScaledVector(this.aim, this.cfg.aimDistance);
     this.spill.position.copy(this.light.position);
-    this.updateGlare(dt);
+    this.updateGlare(dt, extraCircles);
   }
 
   // How hard the beam hits a surface goes as facing / distance ^ decay
@@ -73,11 +74,12 @@ export class Flashlight {
   // so it's no brighter than that: close trees and rocks stop flooding the
   // view, while the ground ahead (a glancing hit) keeps the full beam. The
   // beam is a cone, so a ring of rays is checked as well as the centre.
-  updateGlare(dt) {
+  updateGlare(dt, extraCircles) {
     const g = this.cfg.glare;
     const decay = this.cfg.decay;
     const origin = this.light.position;
     const nearby = this.colliders.query(origin.x, origin.z, g.fullDistance + g.queryMargin, this.nearby);
+    if (extraCircles) for (const c of extraCircles) nearby.push(c);
 
     this.right.crossVectors(this.aim, THREE.Object3D.DEFAULT_UP).normalize();
     this.up.crossVectors(this.right, this.aim);

@@ -20,6 +20,7 @@ import { Terrain } from '../world/Terrain.js';
 import { SpatialGrid } from '../world/SpatialGrid.js';
 import { Player } from '../player/Player.js';
 import { Flashlight } from '../player/Flashlight.js';
+import { Combat } from '../combat/Combat.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
 import { StartScreen } from '../ui/StartScreen.js';
@@ -59,7 +60,7 @@ export class Game {
     this.scene = new THREE.Scene();
     this.colliders = new SpatialGrid(cfg.world.colliderCellSize);
 
-    this.player = new Player(cfg.player, cfg.render, this.colliders, cfg.world.boundaryRadius);
+    this.player = new Player(cfg.player, cfg.render, cfg.feedback, this.colliders, cfg.world.boundaryRadius);
     this.player.init();
     this.renderer = new Renderer(cfg.render, cfg.postFX, this.bus);
     this.renderer.init(root, this.scene, this.player.camera);
@@ -75,6 +76,8 @@ export class Game {
     this.forest.init(this.scene, this.colliders);
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
     this.flashlight.init(this.scene, this.colliders);
+    this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);
+    this.combat.init(root, this.scene, this.player, this.colliders);
   }
 
   initUi(root) {
@@ -106,12 +109,14 @@ export class Game {
       const torch = f.on ? `on ${Math.round(f.glareFactor * 100)}% (surface ${f.surfaceDistance.toFixed(1)}m)` : 'off';
       return `${this.forest.treeCount} trees  flashlight ${torch}`;
     });
+    this.overlay.addStat('combat', () => this.combat.overlayLine());
   }
 
   addDebugMenuItems() {
     const menu = this.debugMenu;
     const cfg = this.cfg;
     menu.addItem('Toggle debug overlay', () => this.overlay.toggle());
+    this.combat.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem(
       () => `Time speed: x${this.clock.timeScale}`,
@@ -195,6 +200,7 @@ export class Game {
   start() {
     if (hasFinePointer()) this.input.requestPointerLock();
     this.display.enter();
+    this.combat.start();
     const firstStart = this.state === 'boot';
     this.state = 'running';
     if (firstStart) this.bus.emit('game:started', { seed: this.seed });
@@ -230,12 +236,12 @@ export class Game {
     if (this.input.wasPressed('debugOverlay')) this.overlay.toggle();
     if (this.input.wasPressed('debugMenu')) this.debugMenu.toggle();
 
-    if (this.state === 'running') {
-      this.clock.update(dt);
-      if (!this.debugMenu.isOpen) {
-        this.player.update(dt, this.input);
-        this.flashlight.update(dt, this.input, this.player.camera);
-      }
+    const playing = this.state === 'running' && !this.debugMenu.isOpen;
+    if (this.state === 'running') this.clock.update(dt);
+    if (playing && this.combat.alive) this.player.update(dt, this.input);
+    this.combat.update(dt, this.input, playing);
+    if (playing) {
+      this.flashlight.update(dt, this.input, this.player.camera, this.combat.glareExtras(this.player.position));
     }
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.forest.update(dt, this.player.camera.position);
@@ -258,6 +264,7 @@ export class Game {
     this.debugMenu.dispose();
     this.overlay.dispose();
     this.toast.dispose();
+    this.combat.dispose();
     this.flashlight.dispose();
     this.forest.dispose();
     this.terrain.dispose();

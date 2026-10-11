@@ -1,78 +1,120 @@
 # Handover
 
-## Just finished: Session 2, Graphics Engineer, M1 (Look and feel)
+## Just finished: Session 3, Gameplay Programmer, M2 (Combat feel)
 
-Sessions 1 (M0) and 2 (M1) ran back to back in one conversation, at Aaron's request.
+Aaron approved the M2 build plan before anything was built (rule 10), and made these calls:
 
-M1 is built, deployed, and **play-tested by Aaron on the tablet: "really great work."** It includes:
+- **RB = next weapon, Y = previous**; **D-pad right = first aid**.
+- **Headshots: yes** ("×2 at least, open to ×3–4"); M2 uses ×3.
+- **Placeholder sounds: yes**, flagged everywhere as **to be upgraded** in the audio pass.
 
-- Renderer with dynamic resolution, tone mapping and post-processing.
-- Sky and day/night driven by the clock.
-- Fog that ends at the draw distance.
-- The flashlight with its shadow and a procedural torch pattern.
-- One clearing ringed by ~3,500 instanced billboard trees (Aaron's decision: every tree is a sprite).
-- First-person movement with sprint and stamina, crouch, jump and collision.
-- Low / Medium / High quality presets.
-- A debug menu with time and quality tools.
+DESIGN.md "Controls" is updated to match.
 
-Aaron's play-test asked for three changes. All three are made and live (details in `STATUS.md`, "M1 follow-up"):
+### What was built
 
-1. **Trees had no texture.** Each tree sprite now has dark dappling for depth, varied greens and bark streaks.
-2. **Rocks were too blocky.** They're now smooth, lumpy, mossy stones.
-3. **The torch glared back from close trees and rocks.** It now dims when its beam hits a close surface head-on, while the ground ahead keeps the full beam.
+Details in `STATUS.md` ("M2: Combat feel"):
 
-### Still open from the M1 play-test
+- **Weapons:** shovel, service rifle and shotgun. Fire, aim down sights, reload, switch, recoil and muzzle flash.
+- **Hits:** hit-scan with head and body hit boxes; trees and rocks block shots.
+- **Aim:** light aim assist (controller only), and the slowdown while aiming or firing.
+- **The zombie:** one Doom-style billboard type, 8 angles × 11 frames from one procedural atlas. It walks in, swipes, staggers, falls, then lies as a corpse.
+- **Health and healing:** health, three armour bars, first aid kits with the healing queue.
+- **Feedback:** blood and dust particles, a placeholder HUD, placeholder sounds, the death screen with "try again".
+- **Debug tools:** spawn zombies, zombie speed level 1/5, god mode, give items, aim assist toggle, and a combat line on the overlay.
+- **Tests:** 113 pass.
 
-Aaron hasn't reported these yet. Ask him at the start of Session 3:
+### M1 follow-ups from Aaron's 20-minute test (gate passed: 60 fps throughout)
 
-- **The 20-minute performance gate**: fps and render scale at the start, 10 and 20 minutes into a night walk at Medium, and whether the tablet ran hot. If the frame target isn't held, fix performance before starting M2 (DESIGN.md "Performance gates").
-- **Whether the three fixes landed**: trees read as textured, rocks look natural, and walking up to a tree or rock with the torch no longer floods the view.
-- **The M0 checks**: whether B ever leaves fullscreen or goes back a page; controller off/on mid-game; the screen not dimming; the View + Menu overlay combo; the back gesture then "Tap to resume".
+1. Dead trees have real bark detail up close.
+2. A wide, dim spill light round the torch beam, so the edges of the view aren't black.
+3. The torch now dims on rock tops: the "magnifying glass" spot. Aaron's screenshot never arrived, so please re-check on the tablet.
 
-### Changed from M0 (Aaron knows)
+### Still open
 
-- The debug menu combo is now **hold View + D-pad down** (was L3 + R3). The overlay combo is still View + Menu.
-- The game starts at night (20:00). The debug menu's "Skip to next phase" shows dusk, dawn and day.
+- **M2's "done when" needs Aaron:** "fighting five zombies at night is fun on the controller". Use the play-test script below.
+- **The tablet frame rate with the two new lights** (spill and muzzle flash) during a fight.
+- **Does B (now reload) ever trigger Android "Back"** or leave fullscreen? This was never confirmed in M0, and B is pressed constantly now.
 
-### Working agreement with Aaron
+## Play-test script for Aaron (M2)
 
-- Work happens on the session's feature branch. Aaron approves each push to `main` himself ("push to main"); a push to `main` deploys to GitHub Pages in about a minute.
-- After each round of fixes, Aaron play-tests on the tablet and sends feedback in plain language. Turn it into config-driven changes and verify them with screenshots before pushing.
+**Setup:** open the live build on the tablet with the controller. The overlay is on. Hold **View + D-pad down** for the debug menu.
 
-## Next: Session 3, Gameplay Programmer, M2 (Combat feel)
+1. **First fight:**
+   - Open the debug menu, pick **Spawn 5 zombies**, close it with B.
+   - Listen for groans and find them with the torch.
+   - Good: they read as figures in the beam, turn as they walk, and you can tell front from back.
+2. **Rifle (you start with it, RT):**
+   - Shoot one in the body three times, then another in the head.
+   - Good: hit markers, blood, a red flash on the zombie, and a stagger. A headshot (yellow marker) kills with one shot.
+   - B reloads. Firing on an empty magazine reloads too.
+3. **Aim (hold LT):**
+   - The view zooms and you slow down.
+   - Sweep the crosshair across a zombie.
+   - Good: the stick feels a little "sticky" over it, not grabby.
+   - Compare with **Aim assist: off** in the debug menu.
+4. **Shotgun (RB):**
+   - Let them get close, then fire.
+   - Good: a big kick; one close blast drops or nearly drops a zombie; distant shots are weak.
+5. **Shovel (RB again, or Y to go back):**
+   - Hold RT next to a zombie.
+   - Good: a swing you can see, a thunk, the zombie knocked back. Three hits kill.
+6. **Getting hurt:**
+   - Let one swipe you.
+   - Good: a red edge, a shake, a health segment gone.
+   - Back off during its wind-up and the swipe should miss.
+   - **D-pad right** uses a first aid kit: a green "+", and health climbs over 3 s.
+7. **Death:**
+   - Let them kill you, then press A to try again.
+8. **Fast zombies:**
+   - Pick **Zombie speed: level 5** and spawn 5 more.
+   - Good: one or two outrun you, so you have to stop, turn and shoot.
+9. **M1 checks:**
+   - Walk up to a dead tree (bark detail?).
+   - Look at the edges of the view with the torch on (better?).
+   - Aim the torch straight down onto a rock from close (no burning spot?).
+10. **Report:**
+    - fps during a fight.
+    - Whether B ever leaves fullscreen.
+    - What's not fun: too easy, too hard, too floaty, too sticky, too loud.
 
-Goal: shovel, service rifle, shotgun; one zombie sprite type; hits, death, aim assist, aim slowdown, health and armour bars, first aid kits. Done when fighting five zombies at night is fun on the controller.
+## Next: Session 4, Lead Engineer, M3 (The map)
 
-**Rule 10 applies:** zombies and weapons are content, so write a short build plan and workshop it with Aaron before building.
+**Goal:** seeded generation of 22 clearings in bands, the cliff, pathways, chunked forest, colliders, fog of war, minimap and map screen, and encounter placeholders from data. **Done when** a whole map generates the same from a seed, and walking end to end holds the frame target on the tablet (a performance gate).
 
 ### Look at first
 
-- `src/config.js`: every number goes here.
-- `src/player/Player.js`: add aim slowdown as a multiplier next to `sprintMultiplier` and `crouchMultiplier` in `updateMovement()`. `stance`, `speed` and `stamina` are already exposed.
-- `src/render/Forest.js`: the billboard shader patch (`BILLBOARD_*` chunks plus a matching `MeshDepthMaterial`). Zombies are billboard sprites too; reuse it and add an 8-angle frame pick.
-- `src/render/proceduralTextures.js`: how the tree sprites are drawn (dappling, `paintOnTree` for detail that keeps the outline). A placeholder zombie sprite can follow the same pattern.
-- `src/world/SpatialGrid.js` and `collision.js`: static colliders and `nearestHit()` (ray vs ground and upright cylinders). Zombies will want the same circle collision; `nearestHit` is a starting point for hit-scan shots.
-- `src/core/Input.js`: `attack` (RT), `aim` (LT), `reload` (B), `switchWeapon` (Y/RB), `interact` (X) are mapped and verified on the tablet. RT/LT analogue values are in `input.rawPad.values` if needed.
-- `src/debug/DebugOverlay.js` `addStat()`: add "active enemies" (DESIGN.md debug overlay list).
+- `src/world/forestLayout.js`, `Forest.js`, `Terrain.js`: the M1 clearing that M3 replaces. Forest chunks already exist (`config.forest.chunkSize`).
+- `src/world/SpatialGrid.js`: static colliders.
+  - The player, zombies (`ai/EnemyManager.js`), shots (`combat/hitscan.js` `rayBlockers`) and torch glare all use it.
+  - New colliders should carry `r` (blocks movement and bullets), and optionally `vr` (what the torch glare sees) and `top` (a height, for rocks: shots pass over it).
+- `config.world.boundaryRadius`: both the player and zombies clamp to it. Replace it with the map's bounds.
+- `src/combat/Combat.js`: the combat hub. `EnemyManager.spawnAround()` is the spawn entry point. M4 (AI Programmer) owns spawning from sigils.
 
 ### Gotchas and decisions
 
-- Systems follow `init()` / `update(dt)` / `dispose()` and talk through `EventBus`. Use `rng.fork('label')` per system.
-- Draw calls are ~55 at Medium; the budget is ~100. One zombie atlas = one instanced draw (plus one in the torch shadow pass).
-- **Torch glare only knows about static things.** `Flashlight.updateGlare()` queries the static collider grid (trees, rocks). A zombie right in the beam will glare like the rocks used to, until zombies are fed into that check too (a few close ones are enough).
-- The torch is the only shadow-casting light; DESIGN.md allows at most ~4 point lights (muzzle flash etc.) and they must not cast shadows.
-- Toggling lights changes the shader light count and can hitch once while shaders compile. Pool muzzle-flash lights and toggle `intensity`, not `visible`.
-- Light-coloured surfaces blow out under the torch: keep albedos dark and mossy (the rocks needed this).
-- Vite `base` is `/WitchHunt/`: import assets or use `import.meta.env.BASE_URL`, never a hard-coded `/assets/...` path.
-- View still fires `inventory` on press during View-based combos (OPEN_QUESTIONS #4).
+- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system.
+- **Draw calls:** about 48–57 at Medium in a fight (budget ~100). The zombie pool is one instanced draw plus one in the shadow pass; each in-hand weapon is one mesh.
+- **Lights:** the torch is the only shadow caster. Lights now present: torch, torch spill, muzzle flash (always in the scene, intensity only), moon/sun and ambient. DESIGN.md allows about 4 point lights. Never toggle a light's `visible` mid-game (it recompiles shaders): change its intensity.
+- **Dark albedos:** light colours blow out under the torch (rocks, zombies). Zombies use `albedoScale`.
+- **The camera is in the scene** (`scene.add(player.camera)`), because the in-hand weapon hangs off it.
+- **The start tap never fires a weapon:** `Weapons.holdFire()` waits for the trigger to be released. Call it again if a future pause menu resumes with a click.
+- **Combat events:** `enemy:hit`, `enemy:killed`, `enemy:strike`, `weapon:fired`, `weapon:hit`, `weapon:impact`, `player:hurt`, `player:died`.
+- **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
 
-## Session kickoff prompt for Session 3
+### Open questions for Aaron
+
+These are in `OPEN_QUESTIONS.md` #22–33. The main ones:
+
+- Is ×3 the right headshot multiplier?
+- How hard should zombies hit (10 per swipe, 0.5 s wind-up)?
+- Starting ammo (rifle 5 + 10, shotgun 4 + 12).
+- How strong should aim assist be?
+
+## Session kickoff prompt for Session 4
 
 ```
-You are the Gameplay Programmer on Witch Hunt, Session 3.
+You are the Lead Engineer on Witch Hunt, Session 4.
 Read docs/DESIGN.md (especially "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
 Then confirm your role, this session's goal and any questions before starting.
 Follow the handover protocol, and end with the HANDOVER READY signal.
 ```
-
-> **✅ HANDOVER READY**: Session 2 (Graphics Engineer) complete. Next: Session 3, Gameplay Programmer: M2 combat feel.

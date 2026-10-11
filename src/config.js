@@ -323,6 +323,208 @@ export const config = {
     aimingSlowFactor: 0.35, // stronger while aiming down sights (LT)
   },
 
+  // Weapons: one table (DESIGN.md "Weapons"); the turret's ammo conversion
+  // will read from it too. kind 'melee' swings in an arc; 'hitscan' fires
+  // `pellets` instant rays inside a spread cone.
+  weapons: {
+    // M2 starts with all three so they can be compared. M9 gives the
+    // shotgun at the campsite instead.
+    startingLoadout: ['shovel', 'rifle', 'shotgun'],
+    startingWeapon: 'rifle',
+    switchSeconds: 0.35, // lower one weapon and raise the next
+    headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
+    fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
+    shovel: {
+      name: 'Shovel',
+      kind: 'melee',
+      damage: 20,
+      reach: 2.2, // metres from the eye
+      arcDegrees: 70, // full width of the swing
+      fireInterval: 0.7,
+      hitDelay: 0.14, // seconds into the swing when it connects
+      stagger: 0.55, // seconds a hit zombie is stunned
+      knockback: 1.4, // metres a hit pushes the zombie back
+      magSize: 0,
+      recoilDegrees: 0,
+    },
+    rifle: {
+      name: 'Service rifle',
+      kind: 'hitscan',
+      damage: 25,
+      pellets: 1,
+      spreadDegrees: 1.2, // from the hip
+      aimSpreadDegrees: 0, // aimed down sights
+      range: 150,
+      falloffStart: 150, // no falloff
+      falloffEnd: 150,
+      falloffMin: 1,
+      fireInterval: 0.6, // bolt cycle
+      magSize: 5,
+      startReserve: 10, // "a handful of rounds"
+      reloadSeconds: 2.2,
+      reloadStyle: 'magazine',
+      stagger: 0.3,
+      knockback: 0.3,
+      recoilDegrees: 2.6,
+      aimFovMultiplier: 0.6, // zoom when aiming
+      shake: 0.15,
+    },
+    shotgun: {
+      name: 'Shotgun',
+      kind: 'hitscan',
+      damage: 6,
+      pellets: 8,
+      spreadDegrees: 6,
+      aimSpreadDegrees: 4,
+      range: 45,
+      falloffStart: 8, // full damage up to here
+      falloffEnd: 25, // falloffMin of the damage from here on
+      falloffMin: 0.3,
+      fireInterval: 0.9, // pump
+      magSize: 4,
+      startReserve: 12,
+      reloadSeconds: 0.55, // per shell
+      reloadStyle: 'single',
+      stagger: 0.45,
+      knockback: 0.8, // per pellet, capped by the zombie's maxKnockback
+      recoilDegrees: 5.5,
+      aimFovMultiplier: 0.85,
+      shake: 0.4,
+    },
+  },
+
+  // Aiming down sights (LT)
+  aiming: {
+    zoomSpeed: 12, // how fast the view eases in and out of the zoom
+  },
+
+  // Weapons in hand (placeholder shapes; real models in the art pass).
+  // Offsets are metres in camera space: x right, y up, z forward is negative.
+  viewModel: {
+    brightness: 0.3, // unlit colours are scaled by this (the torch sits beside the gun)
+    hip: { x: 0.2, y: -0.21, z: -0.46 },
+    aim: { x: 0, y: -0.105, z: -0.36 }, // centred under the crosshair
+    shovelHip: { x: 0.2, y: -0.28, z: -0.5 },
+    bobAmount: 0.012, // metres of sway at walking pace
+    kickBack: 0.07, // metres the gun jumps back on a shot
+    kickRotate: 0.12, // radians the muzzle climbs
+    kickRecover: 14,
+    reloadDip: 0.7, // radians the gun tips down while reloading
+    switchDrop: 0.35, // metres it drops out of view while switching
+    swingDegrees: 110, // shovel swing arc, right to left
+    muzzleFlashSeconds: 0.05,
+    muzzleFlashColor: 0xffd890,
+  },
+
+  // First aid kits (DESIGN.md "Healing"): kept in the inventory, used with
+  // D-pad right (H), no animation.
+  inventory: {
+    startFirstAid: 2,
+    maxFirstAid: 9,
+    firstAidHeal: 30,
+  },
+
+  // Zombies (M2: one "citizen" sprite type walking straight at the player;
+  // detection and targeting arrive in M4).
+  zombies: {
+    poolSize: 25, // the active enemy cap (DESIGN.md budgets)
+    health: 60,
+    radius: 0.35, // body collision radius, metres
+    hitRadius: 0.3, // body hit cylinder
+    height: 1.8,
+    headBottom: 1.42, // the head hit box runs from here to height
+    headRadius: 0.16,
+    spriteHeightRatio: 1.08, // sprite height = height x this; width follows the frame's aspect
+    // Speeds are multiples of the player's full sprint (DESIGN.md "Zombies"),
+    // rolled per zombie and skewed toward the slow end.
+    sprintSpeed: 7.2, // player walk 4.5 x sprint 1.6
+    speedSkew: 2, // 1 = even spread; higher = more slow zombies
+    levels: {
+      1: { speedMin: 0.35, speedMax: 0.45 },
+      5: { speedMin: 0.5, speedMax: 1.3 },
+    },
+    turnRate: 6, // how fast a zombie turns to face where it's going
+    separation: 0.8, // zombies push apart inside this distance
+    attackReach: 1.25, // metres between centres
+    attackWindup: 0.5, // seconds from starting the swipe to the hit (time to back off)
+    attackRecover: 0.75, // seconds after the hit before the next swipe
+    attackDamage: 10,
+    maxKnockback: 1.6,
+    knockbackSpeed: 8, // how fast the knockback is applied
+    deathSeconds: 0.8, // the fall
+    corpseSeconds: 20, // bodies stay this long
+    corpseSinkSeconds: 2, // then sink out of sight
+    hitFlashSeconds: 0.15,
+    spawnCount: 5, // debug "spawn" adds this many
+    spawnDistanceMin: 16,
+    spawnDistanceMax: 26,
+    walkFrameRate: 1.6, // walk cycles per metre
+    groanIntervalMin: 3,
+    groanIntervalMax: 9,
+    glareRange: 6, // zombies this close are fed into the torch glare check
+    // Placeholder sprite (drawn on a canvas; final sprites in the art pass)
+    texture: {
+      frameWidth: 96,
+      frameHeight: 128,
+      // Dark albedos: the torch blows out anything light (as with the rocks).
+      skin: 0x4e5844,
+      skinDark: 0x2c3428,
+      shirt: 0x20262e,
+      shirtAlt: 0x34221e,
+      trousers: 0x16161a,
+      hair: 0x120e0c,
+      blood: 0x2e0404,
+      eyes: 0xc8c090, // the pale eyes are meant to catch the torch
+      bloodSpots: 14,
+    },
+    alphaTest: 0.5,
+    normalUpBias: 0.4,
+    albedoScale: 0.45, // sprites face the torch head-on, so they need darker colours than the art suggests
+    hitFlashColor: 0x8a1010,
+  },
+
+  // Hit and hurt feedback
+  feedback: {
+    recoilRecover: 10, // how fast the camera kick settles
+    recoilKeep: 0.25, // fraction of each kick that stays (you re-aim)
+    shakeDecay: 6,
+    hurtShake: 0.35,
+    muzzleFlash: {
+      color: 0xffc070,
+      intensity: 40, // candela; a pooled point light, never casts shadows
+      distance: 14,
+      seconds: 0.06,
+    },
+    blood: {
+      poolSize: 96, // particles
+      perHit: 6,
+      perHeadshot: 12,
+      speed: 2.2,
+      gravity: 9,
+      seconds: 0.6,
+      size: 0.09,
+      color: 0x6a0a0a,
+      dustColor: 0x5a4c3a, // missed shots puff off trees and the ground
+      dustPerImpact: 4,
+    },
+  },
+
+  // Placeholder HUD (the final pixel-font HUD is Session 19).
+  hud: {
+    healthSegments: 10,
+    hitMarkerSeconds: 0.18,
+    hurtVignetteSeconds: 0.5,
+    lowHealth: 30, // the health bar pulses at or below this
+  },
+
+  // Placeholder sounds, synthesised with Web Audio. TO BE UPGRADED in the
+  // audio pass (Session 20): Aaron asked for this to be noted.
+  sfx: {
+    enabled: true,
+    volume: 0.6,
+    hearingDistance: 35, // metres; positional sounds fade to nothing here
+  },
+
   // Flashlight: the game's one shadow-casting light
   flashlight: {
     startOn: true,
@@ -378,6 +580,9 @@ export const config = {
 
   // Debug tools
   debug: {
+    giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
+    giveArmour: 40,
+    giveFirstAid: 3,
     overlayVisibleOnStart: true, // on by default so tablet tests show fps
     overlayRefreshSeconds: 0.1, // how often the overlay text refreshes
     fpsSampleSeconds: 0.5, // averaging window for fps and frame times
@@ -425,7 +630,9 @@ export const config = {
       aim: ['LT'],
       interact: ['X'],
       reload: ['B'],
-      switchWeapon: ['Y', 'RB'],
+      weaponNext: ['RB'],
+      weaponPrev: ['Y'],
+      firstAid: ['DpadRight'], // quick-use a first aid kit (Aaron, Session 3)
       flare: ['LB'],
       map: ['DpadUp'],
       flashlight: ['DpadLeft'],
@@ -448,7 +655,11 @@ export const config = {
       jump: ['Space'],
       interact: ['KeyE'],
       reload: ['KeyR'],
-      switchWeapon: ['Digit1', 'Digit2', 'Digit3', 'Digit4'],
+      weaponSlot1: ['Digit1'],
+      weaponSlot2: ['Digit2'],
+      weaponSlot3: ['Digit3'],
+      weaponSlot4: ['Digit4'],
+      firstAid: ['KeyH'],
       flare: ['KeyF'],
       map: ['KeyM'],
       flashlight: ['KeyL'],
@@ -467,6 +678,6 @@ export const config = {
       attack: [0],
       aim: [2],
     },
-    wheelAction: 'switchWeapon', // mouse wheel fires this action
+    wheelAction: 'weaponNext', // mouse wheel fires this action
   },
 };

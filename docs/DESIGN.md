@@ -72,15 +72,17 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 | LT | Right click | Aim down sights |
 | X (hold) | E (hold) | Interact: dig, search, build, repair, fit battery, plant charge |
 | B | R | Reload |
-| Y / RB | 1–4 / scroll | Switch weapon |
+| RB / Y | 1–4 / scroll | Next / previous weapon (decided with Aaron in M2) |
 | LB | F | Fire flare |
 | D-pad up | M | Full map |
 | D-pad left | L | Toggle flashlight |
+| D-pad right | H | Use a first aid kit (decided with Aaron in M2) |
 | D-pad down | V | Radio home (e.g. to check a suspicious call) |
 | View | Tab | Inventory |
 | Menu | Esc | Pause, save and quit |
 
 - Light aim assist (slowdown near targets), adjustable stick sensitivity and dead zones (config).
+- **Headshots** do extra damage (config multiplier; Aaron in M2: ×2 at least, open to ×3–4; M2 uses ×3).
 - Detonating planted charges: a remote, selected like a weapon (Y/RB) and fired with RT.
 
 ### Movement, flashlight and stealth
@@ -129,7 +131,7 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 - **Damage order** (one config list): ballistic → energy → nature → health, so the commonest armour goes first.
 - Energy and nature being limited is a starting position; revisit after play-testing.
 
-**Healing:** first aid kits are kept in the inventory (stackable) and used from it or a quick-use button. No animation: the player keeps moving.
+**Healing:** first aid kits are kept in the inventory (stackable) and used from it or a quick-use button (D-pad right / H). No animation: the player keeps moving.
 
 - Health climbs one point at a time at **10 per second**: a **first aid kit heals 30** (3 s), an **alien med kit heals 60** (6 s).
 - A second kit used while one is working queues rather than stacks, so the 10/sec cap holds and nobody can spam-heal out of a burst of damage.
@@ -856,7 +858,7 @@ Console style (mockup: the "Witch Hunt HUD" design canvas). Nothing in boxed pan
 | Centre | Small crosshair; interaction prompts below it (controller glyph with a hold-progress ring) |
 | Bottom left | Health (10 segments), three slim colour-coded armour bars, stealth eye icon when hidden |
 | Bottom centre | Subtitles: speaker name above, line on a dark strip |
-| Bottom right | Weapon icon and name with a Y glyph, ammo count, chips for flares (LB), charges and first aid kits; a small D-pad showing map, flashlight and radio |
+| Bottom right | Weapon icon and name with an RB glyph, ammo count, chips for flares (LB), charges and first aid kits; a small D-pad showing map, flashlight, radio and first aid |
 
 - Prompts always show the controller glyph (A green, B red, X blue, Y yellow), or the key when keyboard is in use.
 - The pause screen shows the three-prize checklist, documents found and the full map.

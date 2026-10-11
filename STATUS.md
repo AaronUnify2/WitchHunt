@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 2 (Graphics Engineer), milestone **M1: Look and feel**. (Sessions 1 and 2 ran back to back in one conversation, at Aaron's request.)
+Last updated: Session 3 (Gameplay Programmer), milestone **M2: Combat feel**.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -19,6 +19,36 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the forest layout). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M2: Combat feel (Session 3)
+
+Plan workshopped and approved by Aaron before building (rule 10).
+
+| Area | Files | Notes |
+| --- | --- | --- |
+| Combat hub | `src/combat/Combat.js` | Owns everything below and wires it through the event bus. Game calls `update()`; the player only moves while alive. |
+| Weapons | `src/player/Weapons.js`, `src/combat/WeaponState.js` | Shovel, service rifle and shotgun from one table in `config.weapons`. **RB** next, **Y** previous (keys 1–4, wheel). **RT** fires (guns once per pull; the shovel keeps swinging while held). **LT** aims down sights: zoom, tighter spread, stronger aim assist. **B** reloads (rifle: whole magazine; shotgun: shell by shell, and firing cuts the reload short); an empty gun reloads when you pull the trigger. Switching takes 0.35 s. The tap that starts the game never fires. |
+| Hit-scan and melee | `src/combat/hitscan.js` | Instant rays. A zombie is a body cylinder plus a narrower head cylinder (**headshots ×3**). Tree trunks and rock bodies block shots (canopies don't). Shotgun: 8 pellets in a cone, damage falls off from 8 m to 25 m, one hit per zombie per shot. Shovel: 2.2 m reach, 70° arc, connects 0.14 s into the swing, big stagger and knockback. |
+| Aim slowdown | `src/player/Player.js` | Aiming or firing slows you to 0.6× and stops a sprint (`config.player.aimMultiplier`). |
+| Aim assist | `src/combat/aimAssist.js` | Light: controller look slows (to 0.45×, 0.35× aimed) over a zombie's body or head, fading out over 3°. No magnetism. Never on the mouse. Toggle in the debug menu. |
+| Zombie | `src/ai/Zombie.js`, `EnemyManager.js` | One "citizen" type using level 1 rules. Pool of 25 (the active cap). Walks straight at you at 0.35–0.45× your sprint (debug: level 5 is 0.5–1.3×, skewed slow). Slides round trees and rocks, keeps apart from other zombies. Swipe: 0.5 s wind-up, 10 damage, only lands if you're still in reach. Hits flash it red, stagger and knock it back (a hit in the wind-up cancels the swipe). 60 health. Falls when killed; the body stays 20 s, then sinks away. Close zombies are fed into the torch glare check. |
+| Zombie sprite | `src/render/ZombieRenderer.js`, `zombieSprite.js` | Doom-style billboard: 8 facing angles × 11 frames (walk 4, swipe 2, flinch 1, fall 4) in one procedural atlas, crisp nearest-neighbour pixels up close. One instanced draw call plus one in the torch shadow pass. Lit by the torch, casts its shadow. Dark albedo (`albedoScale`) because sprites face the torch head-on. |
+| In-hand weapons | `src/player/ViewModel.js` | Placeholder box-and-cylinder models (one mesh each), walk sway, recoil kick, pump slide, reload dip, lower and raise on switch, shovel swing, muzzle flash card. Baked shading (the torch would blow them out). |
+| Effects | `src/render/CombatFx.js` | Blood spurts (more on a headshot) and dust puffs where misses land: one pooled `Points` object. A pooled muzzle-flash point light (always in the scene, intensity only, no shadow). Camera kick and shake. |
+| Health, armour, healing | `src/player/Health.js`, `Armour.js`, `Inventory.js` | Health 0–100, no regen. Three armour bars soak damage ballistic → energy → nature → health. First aid kits (start with 2): **D-pad right** / H heals 30 at 10 per second; a second kit queues; nothing heals past 100. |
+| HUD (placeholder) | `src/ui/Hud.js`, `style.css` | Crosshair (dot only while aiming), hit marker (yellow on headshots, red and bigger on kills), "B: reload" / "Out of ammo" prompt, health in 10 segments (pulses red at 30 or below), a healing "+", three armour bars, weapon name, ammo, reload bar, first aid count, red screen edge when hurt, "You died" screen (A / Enter: try again). |
+| Sounds (placeholder) | `src/audio/Sfx.js` | **Placeholder, to be upgraded in the audio pass (Session 20).** Synthesised on the fly: rifle, shotgun and pump, shovel swing and hit, flesh hit, headshot, kill, positional zombie groans and swipes, hurt, reload clicks, empty click, switch, heal, death. |
+| Debug menu | `Combat.addDebugItems()` | Spawn 5 zombies, zombie speed level 1 / 5, kill all, god mode, aim assist on/off, give ammo, give armour, give first aid kits, hurt me (−25). |
+| Debug overlay | `Combat.overlayLine()` | New `combat` line: living / active enemies, level, health, armour, weapon and ammo, current aim-assist factor, kills, GOD. |
+| Tests | `tests/*.test.js` | 113 tests (52 new): armour order, healing queue, aim assist, weapon state (fire rate, magazine and shell reloads, melee), hit-scan geometry (body / head / blockers / falloff / spread / melee arc), zombie behaviour (walk, swipe timing, stagger, death, corpse, knockback, frames, speed rolls), rock-top glare. |
+
+### M1 follow-up round 2 (Session 3, from Aaron's 20-minute tablet test)
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| Dead trees look too smooth up close at face height | The dead tree's trunk now has its own dense bark grain, round shading (lit left, dark right), long cracks and knots. | `config.forest.dead*` |
+| The torch is a touch too focused to navigate by | A second, wider (48°) and dimmer spotlight round the beam: no shadow, no pattern, dims with the glare check. The edges of the view are no longer black. | `config.flashlight.spill` |
+| A rock dead-on up close looks like a magnifying glass burning | The glare check treated rocks as cylinders with no lid, so a torch aimed down onto a rock's top didn't count it and the torch stayed at full power. Rock tops now count; the torch dims to about 7% there. (Aaron's screenshot didn't come through; check this on the tablet.) | `src/world/collision.js` `nearestHit()` |
 
 ### M1: Look and feel (Session 2)
 
@@ -56,7 +86,12 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (61/61) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (113/113) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- **M1 performance gate passed on the tablet (Aaron):** a steady 60 fps for 20+ minutes of night walking at Medium, the tablet warm but not hot. Locking and unlocking, controller off and on, and leaving fullscreen all recover.
+- **M2 in headless Chromium with a simulated Xbox controller:**
+  - RT fires the rifle and shotgun and hits zombies (body and head); LT zooms; B reloads; RB / Y cycle weapons both ways; the shovel connects and kills; D-pad right uses a kit; zombies walk in, swipe and hurt the player; death shows the screen and A restarts.
+  - Screenshots: all 8 facing angles and the fall frames read correctly; zombies are dark and lit by the torch; crisp pixels up close; the red hurt edge, hit markers and HUD.
+  - Draw calls 48–57 at Medium with 5 zombies (budget ~100).
 - **On the tablet (Aaron, M0):** the live build loads, controller movement and look feel good, and every button shows the right action.
 - **Headless Chromium with a simulated Xbox controller (M1):**
   - L3 click latches sprint at 7.2 m/s; stopping clears it; stamina drains and refills.
@@ -72,41 +107,48 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- **Anything on the tablet for M1.** Frame rate, dynamic resolution behaviour, thermal throttling over 20 minutes, and how the torch and night brightness look on a real screen. That is M1's "done when" and needs Aaron (play-test script in HANDOVER.md).
+- **M2's "done when": fighting five zombies at night is fun on the controller.** That needs Aaron on the tablet (play-test script in HANDOVER.md). Feel numbers (aim assist strength, recoil, zombie speed and damage) are first guesses.
+- Frame rate on the tablet with M2's extra lights (the torch spill and the muzzle-flash light) and a fight in view.
+- Whether the placeholder sounds play on Android Chrome (they need the start tap to unlock audio).
 - Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.
-- The M0 checks still unconfirmed on the tablet (B vs Android Back, hot-plug, wake lock, combos, resume), carried into the M1 script.
 
 ## Stubbed / placeholder (by design)
 
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - One clearing only; M3 generates the real map, terrain and chunked forest from the seed.
-- No HUD (the stamina value shows in the overlay only), no pause menu.
+- The HUD is a placeholder (no pixel font, no minimap, clock or glyphs); no pause menu.
+- Zombies only walk straight at the player. Detection, targeting, levels 2–4, variants, hordes, mutants and loot drops are M4. They don't spawn on their own: use the debug menu.
+- The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
+- Armour only comes from the debug menu (pickups arrive with the police and army variants in M4).
+- The inventory holds only first aid kits; the inventory screen is later.
 - Not built from "Visual ambition": ground mist layers, height fog, fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
 - Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 
 ## Dependencies
 
-Only `three` (runtime), `vite` and `vitest` (dev). Post-processing uses three.js's own `three/addons` modules, which ship inside the `three` package.
+Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry merging use three.js's own `three/addons` modules, which ship inside the `three` package. Sounds use the browser's Web Audio API.
 
 ## Known issues and risks
 
-1. **Performance on the tablet is unmeasured.** The biggest costs are probably the torch's shadow pass over ~3,500 sprites, bloom's blur chain, and alpha-tested overdraw at the forest edge. Levers in order: the Low preset; shadow map 512 to off; `bloom: false`; a lower `drawDistance`; bigger `forest.cellSize` (fewer trees). All are config.
-2. **Switching quality or toggling the torch can hitch once** (around 100 ms on mobile) while shaders compile for the new light setup. Later toggles are instant.
-3. **Android "Back" on the B button** (carried from M0): unconfirmed.
-4. **The Xbox (Guide) button** belongs to Android and the browser.
-5. **Chrome only exposes a controller after a button press on it.**
-6. **The controller can't start the game**: the first start needs a tap (browser rule for fullscreen).
-7. **View still fires `inventory` on press** during the View + Menu and View + D-pad down combos. Harmless until the inventory screen exists (OPEN_QUESTIONS #4).
-8. **Frame times are CPU-side only.** "render" is the CPU cost of submitting the frame, not GPU time.
-9. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
-10. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
+1. **M2 adds two lights** (the torch spill and the muzzle flash), which every lit pixel pays for. M1 held 60 fps for 20 minutes without them. If the frame rate drops, the levers are: `flashlight.spill.intensity: 0` (or remove the spill), then the M1 levers: the Low preset; shadow map 512 to off; `bloom: false`; a lower `drawDistance`; bigger `forest.cellSize`.
+2. **Zombie sprites are lit head-on by the torch**, so their colours are pulled down with `zombies.albedoScale`. The final pre-rendered sprites need the same care (dark, mossy albedos).
+3. **The zombie atlas is drawn mirrored for angles 5–7**, so its painted moonlight comes from the right on those rows. Invisible at night; the art pass replaces it.
+4. **Switching quality or toggling the torch can hitch once** (around 100 ms on mobile) while shaders compile for the new light setup. Later toggles are instant.
+5. **Android "Back" on the B button** (carried from M0): unconfirmed.
+6. **The Xbox (Guide) button** belongs to Android and the browser.
+7. **Chrome only exposes a controller after a button press on it.**
+8. **The controller can't start the game**: the first start needs a tap (browser rule for fullscreen).
+9. **View still fires `inventory` on press** during the View + Menu and View + D-pad down combos. Harmless until the inventory screen exists (OPEN_QUESTIONS #4).
+10. **Frame times are CPU-side only.** "render" is the CPU cost of submitting the frame, not GPU time.
+11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
+12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M2 needs next
+## What M3 needs next
 
-M2, **Combat feel** (Session 3, Gameplay Programmer): shovel, service rifle, shotgun; one zombie sprite type; hits, death, aim assist, aim slowdown, health and armour bars, first aid kits. Done when fighting five zombies at night is fun on the controller.
+M3, **The map** (Session 4, Lead Engineer): seeded generation of 22 clearings in bands, the cliff, pathways, chunked forest, colliders, fog of war, minimap and map screen, encounter placeholders from data. Done when a whole map generates the same from a seed and walking end to end holds the frame target on the tablet.
 
-- Gate first: Aaron's M1 tablet play-test. If the frame target isn't held for 20 minutes, fix performance before M2 (DESIGN.md "Performance gates").
-- Zombies are billboard sprites like the trees: reuse `Forest.js`'s billboard shader patch, adding an 8-angle frame pick.
-- Aim slowdown multiplies `config.player.walkSpeed`; add it next to `sprintMultiplier` and `crouchMultiplier` in `Player.updateMovement()`.
-- Rule 10 applies: workshop the zombie and weapon build plans with Aaron before building them.
+- Gate first: Aaron's M2 play-test ("fighting five zombies at night is fun on the controller"). Fix feel before moving on.
+- Zombies and the player both clamp to `config.world.boundaryRadius` round the M1 clearing; M3 replaces that with the map's bounds.
+- `EnemyManager` resolves zombies against the same static collider grid as the player, so M3's colliders work for zombies with no changes.
+- Shots are blocked by colliders' `r` (trunks) and `top` (rocks): new colliders should carry those.

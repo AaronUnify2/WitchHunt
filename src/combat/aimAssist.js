@@ -5,12 +5,14 @@
 // targets: [{ x, y, z, r }] (centre of mass and a body radius, metres).
 // origin, forward: { x, y, z } (forward a unit vector).
 // cfg: { maxDistance, marginDegrees, slowFactor, fadeDegrees }.
+// count: how many of `targets` to use (lets callers reuse a longer array).
 // Returns the look-speed multiplier: 1 = none, cfg.slowFactor = full slowdown.
-export function aimSlowdown(origin, forward, targets, cfg) {
+export function aimSlowdown(origin, forward, targets, cfg, count = targets.length) {
   const margin = (cfg.marginDegrees * Math.PI) / 180;
   const fade = (cfg.fadeDegrees * Math.PI) / 180;
   let best = 1;
-  for (const t of targets) {
+  for (let i = 0; i < count; i++) {
+    const t = targets[i];
     const dx = t.x - origin.x;
     const dy = t.y - origin.y;
     const dz = t.z - origin.z;

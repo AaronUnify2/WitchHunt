@@ -6,7 +6,7 @@ const TEXT = {
   start: 'Tap to start',
   resume: 'Tap to resume',
   noController: 'No controller yet: press any button on it to connect',
-  hint: 'Keyboard and mouse: click to start, WASD and mouse to move, Shift sprint, C crouch, Space jump, L flashlight, F3 overlay, ` debug menu',
+  hint: 'Keyboard and mouse: click to start, WASD and mouse to move, Shift sprint, C crouch, Space jump, L flashlight, left click fire, right click aim, R reload, 1-3 or wheel weapons, H first aid, F3 overlay, ` debug menu',
 };
 
 const START_KEYS = new Set(['Enter', 'Space']);

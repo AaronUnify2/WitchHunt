@@ -176,3 +176,199 @@ body {
     z-index: 10;
   }
 }
+
+/* ---- Placeholder HUD (M2). The final pixel-font HUD is Session 19. ---- */
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: clamp(12px, 2.2vmin, 20px);
+  text-shadow: 0 1px 2px #000;
+}
+
+.hud-hurt {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(120, 0, 0, 0) 45%, rgba(150, 0, 0, 0.75) 100%);
+}
+
+.hud-crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(230, 230, 220, 0.85);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), -10px 0 0 -1px rgba(230, 230, 220, 0.6), 10px 0 0 -1px rgba(230, 230, 220, 0.6),
+    0 -10px 0 -1px rgba(230, 230, 220, 0.6), 0 10px 0 -1px rgba(230, 230, 220, 0.6);
+}
+
+.hud-crosshair.aiming {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+.hud-hitmarker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  opacity: 0;
+  background:
+    linear-gradient(45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+  color: #f0f0e8;
+  -webkit-mask: radial-gradient(circle, transparent 4px, #000 5px);
+  mask: radial-gradient(circle, transparent 4px, #000 5px);
+}
+
+.hud-hitmarker.on {
+  opacity: 1;
+}
+
+.hud-hitmarker.head {
+  color: #ffd060;
+}
+
+.hud-hitmarker.kill {
+  color: #ff4030;
+  transform: scale(1.35);
+}
+
+.hud-prompt {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translateX(-50%);
+  color: var(--accent);
+}
+
+.hud-vitals {
+  position: absolute;
+  left: var(--safe);
+  bottom: var(--safe);
+  width: min(30vw, 260px);
+}
+
+.hud-health {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 5px;
+}
+
+.hud-seg {
+  flex: 1;
+  height: 12px;
+  background: rgba(40, 10, 10, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.hud-seg.on {
+  background: #c8c2b0;
+}
+
+.hud-health.low .hud-seg.on {
+  background: #d04030;
+}
+
+.hud-heal {
+  color: #7fd18b;
+  font-weight: bold;
+  opacity: 0;
+  margin-bottom: 2px;
+}
+
+.hud-heal.on {
+  opacity: 1;
+  animation: pulse 0.6s ease-in-out infinite;
+}
+
+.hud-armour {
+  height: 4px;
+  margin-top: 3px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.hud-armour span {
+  display: block;
+  height: 100%;
+  width: 0;
+}
+
+.hud-armour-ballistic span {
+  background: #8aa0c0; /* grey-blue */
+}
+
+.hud-armour-energy span {
+  background: #5ce0c8; /* green-cyan */
+}
+
+.hud-armour-nature span {
+  background: #6a8a48; /* mossy green */
+}
+
+.hud-weapon {
+  position: absolute;
+  right: var(--safe);
+  bottom: var(--safe);
+  text-align: right;
+}
+
+.hud-weapon-name {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hud-ammo {
+  font-size: 1.6em;
+}
+
+.hud-reload {
+  width: 100px;
+  height: 3px;
+  margin: 3px 0 3px auto;
+  background: rgba(0, 0, 0, 0.45);
+  visibility: hidden;
+}
+
+.hud-reload.on {
+  visibility: visible;
+}
+
+.hud-reload span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.hud-kits {
+  color: var(--dim);
+  font-size: 0.85em;
+}
+
+.hud-death {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 0, 0, 0.6);
+}
+
+.hud-death h2 {
+  margin: 0;
+  font-size: clamp(2rem, 9vmin, 5rem);
+  letter-spacing: 0.3em;
+  color: #c03020;
+}
+
+.hud-death-prompt {
+  animation: pulse 1.6s ease-in-out infinite;
+}

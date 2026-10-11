@@ -2,6 +2,10 @@
 // collision against trunks and rocks, and a subtle head bob. Owns the
 // main camera. Movement speed carries over from the M0 test camera,
 // whose feel was signed off on the tablet.
+//
+// Combat hooks (set by Weapons each frame): moveMultiplier (aim and fire
+// slowdown), lookScale (aim assist, controller only), fovMultiplier
+// (aim zoom), kick() (recoil) and shake().
 
 import * as THREE from 'three';
 import { Stamina } from './Stamina.js';
@@ -11,9 +15,10 @@ const DEG_TO_RAD = Math.PI / 180;
 const TWO_PI = Math.PI * 2;
 
 export class Player {
-  constructor(playerConfig, renderConfig, colliders, boundaryRadius) {
+  constructor(playerConfig, renderConfig, feedbackConfig, colliders, boundaryRadius) {
     this.cfg = playerConfig;
     this.renderCfg = renderConfig;
+    this.fbCfg = feedbackConfig;
     this.colliders = colliders;
     this.boundaryRadius = boundaryRadius;
   }
@@ -23,10 +28,21 @@ export class Player {
     const r = this.renderCfg;
     this.camera = new THREE.PerspectiveCamera(r.fov, 1, r.near, 1);
     this.camera.rotation.order = 'YXZ'; // yaw, then pitch: no roll creep
+    this.position = new THREE.Vector3(); // feet
+    this.velocity = { x: 0, z: 0 };
+    this.stamina = new Stamina(c.stamina);
+    this.nearby = [];
+    this.reset();
+  }
+
+  // Back to the start: position, facing, stance, stamina, combat hooks.
+  reset() {
+    const c = this.cfg;
     this.yaw = c.startYaw * DEG_TO_RAD;
     this.pitch = 0;
-    this.position = new THREE.Vector3(c.startPosition.x, 0, c.startPosition.z); // feet
-    this.velocity = { x: 0, z: 0 };
+    this.position.set(c.startPosition.x, 0, c.startPosition.z);
+    this.velocity.x = 0;
+    this.velocity.z = 0;
     this.verticalSpeed = 0;
     this.onGround = true;
     this.crouched = false;
@@ -35,14 +51,19 @@ export class Player {
     this.eyeHeight = c.eyeHeight;
     this.bobPhase = 0;
     this.bobOffset = 0;
-    this.stamina = new Stamina(c.stamina);
     this.stamina.init();
-    this.nearby = [];
+    this.moveMultiplier = 1;
+    this.lookScale = 1;
+    this.fovMultiplier = 1;
+    this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
+    this.shakeAmount = 0;
+    this.shakeTime = 0;
     this.applyCamera();
   }
 
   update(dt, input) {
     this.updateLook(input);
+    this.updateFeedback(dt);
     this.updateStance(input);
     this.updateMovement(dt, input);
     this.updateVertical(dt, input);
@@ -55,9 +76,35 @@ export class Player {
 
   updateLook(input) {
     const look = input.getLook();
+    const scale = input.activeDevice === 'gamepad' ? this.lookScale : 1; // the mouse is never assisted
     const limit = this.cfg.pitchLimit * DEG_TO_RAD;
-    this.yaw -= look.x;
-    this.pitch = THREE.MathUtils.clamp(this.pitch + look.y, -limit, limit);
+    this.yaw -= look.x * scale;
+    this.pitch = THREE.MathUtils.clamp(this.pitch + look.y * scale, -limit, limit);
+  }
+
+  // Recoil: kick the view up; most of it settles back, recoilKeep stays.
+  kick(degrees) {
+    const rad = degrees * DEG_TO_RAD;
+    const keep = rad * this.fbCfg.recoilKeep;
+    const limit = this.cfg.pitchLimit * DEG_TO_RAD;
+    this.pitch = Math.min(limit, this.pitch + keep);
+    this.recoilPitch += rad - keep;
+  }
+
+  shake(amount) {
+    this.shakeAmount = Math.max(this.shakeAmount, amount);
+  }
+
+  updateFeedback(dt) {
+    const f = this.fbCfg;
+    this.recoilPitch -= this.recoilPitch * Math.min(1, f.recoilRecover * dt);
+    this.shakeAmount -= this.shakeAmount * Math.min(1, f.shakeDecay * dt);
+    this.shakeTime += dt;
+    const fov = this.renderCfg.fov * this.fovMultiplier;
+    if (Math.abs(this.camera.fov - fov) > 1e-3) {
+      this.camera.fov = fov;
+      this.camera.updateProjectionMatrix();
+    }
   }
 
   updateStance(input) {
@@ -78,11 +125,12 @@ export class Player {
     const moving = amount >= c.sprintMinMove;
     if (!moving || this.stamina.empty) this.sprintLatched = false;
 
-    const wantSprint = (this.sprintLatched || input.isDown('sprint')) && moving && !this.crouched;
+    // No sprinting while aiming or just after firing (moveMultiplier < 1).
+    const wantSprint = (this.sprintLatched || input.isDown('sprint')) && moving && !this.crouched && this.moveMultiplier >= 1;
     this.sprinting = wantSprint && (this.sprinting ? !this.stamina.empty : this.stamina.canStart);
     this.stamina.update(dt, this.sprinting);
 
-    let speed = c.walkSpeed;
+    let speed = c.walkSpeed * this.moveMultiplier;
     if (this.sprinting) speed *= c.sprintMultiplier;
     else if (this.crouched) speed *= c.crouchMultiplier;
 
@@ -144,8 +192,11 @@ export class Player {
 
   applyCamera() {
     const p = this.position;
+    // Shake: two out-of-step sines, small angles (radians).
+    const sx = Math.sin(this.shakeTime * 47) * this.shakeAmount * 0.02;
+    const sy = Math.sin(this.shakeTime * 61 + 1.3) * this.shakeAmount * 0.02;
     this.camera.position.set(p.x, p.y + this.eyeHeight + this.bobOffset, p.z);
-    this.camera.rotation.set(this.pitch, this.yaw, 0);
+    this.camera.rotation.set(this.pitch + this.recoilPitch + sy, this.yaw + sx, 0);
     this.camera.updateMatrixWorld();
   }
 
