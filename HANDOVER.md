@@ -2,7 +2,7 @@
 
 ## Just finished: Session 6, Gameplay Programmer, M5 part 1 (The station)
 
-**Status: built, tested headless, and waiting on Aaron's tablet play-test** (script below). M5 is split in two, as agreed with Aaron:
+**Status: built, play-tested by Aaron on the tablet over two rounds, his fixes made; he confirmed the last fix (the retry bug) and called the handover.** His full night-defence verdict and the numbers are still to come (play-test script below). M5 is split in two, as agreed with Aaron:
 
 - **Part 1 (this session):** the compound and its defences.
 - **Part 2 (next session):** vehicles and battery pulling.
@@ -60,7 +60,7 @@ Details are in `STATUS.md` ("M5 part 1"):
 - **Draw calls 77-86 by day at home, 57-82 at night** (budget ~100).
 - No console errors.
 
-### Aaron's first play-test of part 1 (fixed, waiting on his next test)
+### Aaron's play-tests of part 1 (all fixed)
 
 - The turret, gate, fence box and tower railing glared under the torch: darker, plus glare-only shapes the torch dims on.
 - **Turret menu:** hold X at the turret, then load 1, 5 or all of each ammo type.
@@ -69,6 +69,10 @@ Details are in `STATUS.md` ("M5 part 1"):
 - Letting go of X drains the hold bar (digging too).
 - **LB is now previous weapon**; Y is the flare (later).
 - The floodlight beam looked like a grey wall; now a faint beam and a pool.
+- **Second round:** after dying or an overrun, zombies got stuck on the fence and he couldn't get into the cabin. "Try again" rebuilt the barriers but the fence and door colliders were keyed to the old ones; now keyed by id. **Aaron confirmed it's fixed.**
+- Scrolling up a menu (ledger, debug menu) kept the highlight pinned at the bottom: the list's scroll is now kept across redraws.
+
+Gotcha from this: `StationState.init()` replaces every barrier object on "try again". Anything that holds on to a barrier must look it up by id (`state.barriers()`), as `syncColliders()` now does.
 
 ### Unfinished
 

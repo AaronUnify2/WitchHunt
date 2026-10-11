@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 6 (Gameplay Programmer), milestone **M5: The station, part 1** (the compound, fence, gate, doors, siege, electric fence, turret, barricades, spike traps, floodlights, ledger, tower). Built and checked in headless Chromium; **waiting on Aaron's tablet play-test** (script in `HANDOVER.md`). **Part 2 (vehicles and battery pulling) is the next session.** M4 follow-ups confirmed by Aaron (the mutant's weak spot and charge work).
+Last updated: Session 6 (Gameplay Programmer), milestone **M5: The station, part 1** (the compound, fence, gate, doors, siege, electric fence, turret, barricades, spike traps, floodlights, ledger, tower). Built and checked in headless Chromium; **Aaron play-tested it on the tablet over two rounds, and all his fixes are in** (he confirmed the retry fix); his full verdict on a night's defence is still to come (script in `HANDOVER.md`). **Part 2 (vehicles and battery pulling) is the next session.** M4 follow-ups confirmed by Aaron (the mutant's weak spot and charge work).
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
