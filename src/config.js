@@ -276,10 +276,11 @@ export const config = {
     boardWidth: 2.4,
     boardHeight: 1.2,
     boardDepth: 0.08,
-    boardDrop: 0.1, // metres below the top of the post
-    boardColor: 0x8a6a44, // dark enough not to glare under the torch
-    boardGrain: 0x5a4028,
-    textColor: 0x1a120a,
+    boardDrop: 0.1, // metres from the top of the board to the sign's full height (postHeight)
+    postOverlap: 0.15, // metres the post reaches up behind the board's bottom edge
+    boardColor: 0x5c4630, // dark wood: lighter boards glared under the torch (Aaron, M3)
+    boardGrain: 0x3a2a1a,
+    textColor: 0xb8a67e, // dull cream paint, readable on the dark board
     textureWidth: 512, // pixels
     textureHeight: 256,
     offset: 3, // metres from the clearing's centre
@@ -298,7 +299,7 @@ export const config = {
   minimap: {
     sizeVmin: 24, // diameter as a share of the screen's short side
     metresAcross: 260, // ground shown across the minimap
-    refreshPerSecond: 20,
+    refreshPerSecond: 0, // 0 = redraw every frame: at 20 a second, turning looked jagged and made Aaron queasy (M3 test)
     pixelsPerMetre: 0.5, // resolution of the map image (one pixel per 2 m)
     enemyDotPixels: 3,
   },
@@ -389,9 +390,9 @@ export const config = {
     // Undergrowth (M3, Aaron): low bushes and ferns off the pathways that
     // slow you down. Cutting through the forest is allowed, at a cost.
     undergrowth: {
-      cellSize: 2.8, // jittered grid: at most one bush per cell
+      cellSize: 2.3, // jittered grid: at most one bush per cell (denser after Aaron's M3 test, to show you're in the brush)
       maxOpen: 0.35, // bushes grow where the ground is less open than this
-      densityMin: 0.45, // chance per cell in the sparsest patches (1 in the densest)
+      densityMin: 0.55, // chance per cell in the sparsest patches (1 in the densest)
       heightMin: 0.6, // metres
       heightMax: 1.3,
       widthRatio: 1.6, // sprite width as a multiple of its height

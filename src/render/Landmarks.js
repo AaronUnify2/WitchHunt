@@ -39,7 +39,9 @@ export class Landmarks {
     this.materials = [];
     const clearings = map.clearings;
 
-    const postGeometry = new THREE.BoxGeometry(c.postWidth, c.postHeight, c.postWidth).translate(0, c.postHeight / 2, 0);
+    // The post stops just inside the board's bottom edge, so it never covers the lettering.
+    const postTop = c.postHeight - c.boardDrop - c.boardHeight + c.postOverlap;
+    const postGeometry = new THREE.BoxGeometry(c.postWidth, postTop, c.postWidth).translate(0, postTop / 2, 0);
     this.postMaterial = new THREE.MeshLambertMaterial({ color: c.postColor });
     this.posts = new THREE.InstancedMesh(postGeometry, this.postMaterial, clearings.length);
     this.boardGeometry = new THREE.BoxGeometry(c.boardWidth, c.boardHeight, c.boardDepth);
@@ -53,7 +55,10 @@ export class Landmarks {
       const y = ground.heightAt(x, z);
       matrix.makeTranslation(x, y, z);
       this.posts.setMatrixAt(i, matrix);
-      colliders.insert({ x, z, r: c.postWidth, vr: c.postWidth });
+      // r: the post blocks movement and shots. vr and top: the torch's glare
+      // check sees the whole board, so the beam dims on it up close instead
+      // of burning a hot spot (as the rocks did in M1).
+      colliders.insert({ x, z, r: c.postWidth, vr: c.boardWidth / 2, top: y + c.postHeight });
 
       const text = signText(cl, typeNames[cl.clearingType]);
       const texture = makeSignTexture(c, text.title, text.lines.filter(Boolean));

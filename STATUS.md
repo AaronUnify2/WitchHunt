@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 4 (Lead Engineer), milestone **M3: The map**. The M3 performance gate (walking end to end on the tablet) is waiting on Aaron's play-test.
+Last updated: Session 4 (Lead Engineer), milestone **M3: The map**. **M3 gate passed on the tablet** (Aaron).
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -29,7 +29,7 @@ Decided with Aaron before building: the map is **1 km wide by 1.4 km north to so
 | Map generation | `src/world/MapGenerator.js`, `mapGraph.js`, `mapGeometry.js`, `noise.js` | Pure and seeded: the same seed always gives the same map (tested on 40 seeds). **Roster:** home, the hut, the encounters that appear this run (from `data/encounters.json`: "every", "common" 75%, "uncommon" 40%, stairs 2-3), 4-6 sigil grounds (`data/sigilGrounds.json`, weighted south), then plain clearings up to 22. Each clearing gets a band, a 0-1 southness and a clearing type (`data/clearingTypes.json`). **Placement:** home 32 m south of the cliff (the compound backs onto it), the campsite 95-150 m from home, the hut at southness 0.9+, the rest at random in their bands with a 70 m gap between clearings. **Pathways:** a minimum spanning tree, plus shortcuts (shortest first) where walking the existing pathways would be 1.8× longer, never crossing another pathway or passing through a clearing. **Rules,** retried from a forked seed if broken: the hut is 4+ pathways from home (5-11 in practice); every north clearing is at most 2.5× its straight-line distance from home by pathway; the outpost is moved to a clearing 2-3 pathways from home if one exists. About 1 ms per map. |
 | Ground | `src/world/GroundField.js`, `Terrain.js` | Heights from three layers of smooth noise (about ±5 m of rolling hills), levelled in clearings and smoothed along pathways, lifted onto the plateau behind the cliff. Two masks on a 2 m grid: **dirt** (bare ground on pathways and clearing centres, blended in by the ground shader from one small texture) and **open** (no trees, no undergrowth). Ground meshes are 128 m chunks; height lookups follow the mesh's exact triangles, so feet, zombies, trees and rocks sit on the drawn surface. About 1,000 rocks: round clearing edges (out of pathway mouths) and scattered through the forest, one instanced mesh per ground chunk. |
 | The cliff | `src/render/Cliff.js` | A rock wall the width of the map, 26 m ± 8 m tall, wandering ±14 m north and south. Bulging face with ledges, sloping foot and ragged top; procedural rock texture. Trees grow on the plateau above it. Collision circles along its foot, and the player and zombies stay 4.5 m south of the line. |
-| Forest and undergrowth | `src/render/Forest.js`, `src/world/forestLayout.js`, `src/render/mapTextures.js` | About 88,000 billboard trees and 120,000 bushes and ferns across the whole map (thicker and thinner patches), never on open ground. One atlas (3 trees + 4 undergrowth sprites); trees and bushes share each 48 m chunk's single draw call. **Undergrowth slows the player to 0.55×** (walk 4.5 → 2.5 m/s, sprint 7.2 → 4.0) **and zombies to 0.75×**, read from the ground's open mask, so the pathways matter when running. |
+| Forest and undergrowth | `src/render/Forest.js`, `src/world/forestLayout.js`, `src/render/mapTextures.js` | About 88,000 billboard trees and 190,000 bushes and ferns across the whole map (thicker and thinner patches), never on open ground. One atlas (3 trees + 4 undergrowth sprites); trees and bushes share each 48 m chunk's single draw call. **Undergrowth slows the player to 0.55×** (walk 4.5 → 2.5 m/s, sprint 7.2 → 4.0) **and zombies to 0.75×**, read from the ground's open mask, so the pathways matter when running. |
 | Distance culling | `src/render/ChunkCuller.js` | Forest chunks, ground chunks, rocks, cliff sections and signposts are filed in a grid; only those within the draw distance are drawn, re-checked every few metres of movement. |
 | Map bounds | `mapGeometry.js` `clampToWalkable()` | Replaces M1's 100 m circle. The cliff closes the north; the east, west and south edges stop 60 m inside the forest (the forest carries on beyond, darker on the map). Player and zombies use it. |
 | Encounter placeholders | `src/render/Landmarks.js`, `src/data/*.json` | A wooden signpost in every clearing naming what will be there ("ROADSIDE GAS STATION / Encounter: built in M9 / Roadside clearing", "SCARECROW FIELD / Sigil ground", "RANGER STATION", "WITCH'S HUT", "BOG / Clearing"). Content comes from data only: new encounters, sigil grounds and clearing types need no code. |
@@ -40,6 +40,16 @@ Decided with Aaron before building: the map is **1 km wide by 1.4 km north to so
 | Debug menu | `Game.addMapDebugItems()`, `MapUi` | Teleport: next clearing (cycles all 22, with names) / home / witch's hut; reveal whole map; map screen shows the whole graph (every clearing and pathway, ignoring fog); new map (new seed); restart this map (same seed); skip to night. |
 | Debug overlay | `Game.addOverlayStats()` | `player` shows your height and how deep in undergrowth you are; new `map` line: the clearing you're in or nearest (band, southness), clearing and pathway counts, % of the map seen; `world` shows tree and bush counts, chunks drawn and how long the world took to build. |
 | Tests | `tests/*.test.js` | 168 tests (50 new): map generation rules over 40 seeds (roster, bands, spacing, bounds, home and campsite, hut depth, connectivity, no crossing pathways, north detours, determinism), graph maths, ground heights and masks, plateau, rays and bounds, forest and undergrowth layout, fog of war, hit-scan and torch rays on hills. |
+
+### M3 follow-up: Aaron's tablet play-test
+
+**Gate passed.** Aaron: the frame rate never dropped walking the map; the hills are smooth; zombies fought on slopes work; the same seed restarts to the same map; "this feels like a really good size map for the game"; "everything looks really good". Happy with the map edges as plain forest and with empty clearings ("they almost add something to the game").
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| The minimap turns in jerks, like a jagged compass, which felt queasy | It redrew 20 times a second while the view turns at 60-90. It now redraws every frame. | `config.minimap.refreshPerSecond` (0 = every frame) |
+| The undergrowth slowdown feels right, but a few more bushes would show you're in the brush | About 60% more undergrowth: 2.3 m grid instead of 2.8, thinnest patches 55% instead of 45% (about 190,000 bushes; same draw calls) | `config.forest.undergrowth.cellSize`, `densityMin` |
+| The torch burns a hot spot on the signposts, like a magnifying glass (the M1 rock problem again) | The torch's glare check only saw each sign's thin post, so it never dimmed for the 2.4 m board. The board now counts, so the beam dims on it up close. The boards are darker wood with dull cream lettering. The post also stops at the board's bottom edge instead of covering the middle of the lettering. | `src/render/Landmarks.js`, `config.landmarks` |
 
 ### M2: Combat feel (Session 3)
 
@@ -145,8 +155,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- **The M3 performance gate:** walking the map end to end on the tablet at the frame target. Waiting on Aaron's play-test.
-- How long the world takes to build on the tablet (about 0.5 s on a desktop CPU; expect 1-2 s behind the start screen).
+- The M3 follow-ups (smooth minimap, more bushes, sign glare) on the tablet.
+- How long the world takes to build on the tablet (about 0.55 s on a desktop CPU).
 
 - Whether the placeholder sounds play on Android Chrome (Aaron didn't mention them either way).
 - Feel numbers (aim assist strength, recoil, zombie damage, headshot ×3) passed a first play-test; they get their real tuning in M14.
@@ -158,7 +168,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Encounters and sigil grounds are signposts only: each is built in its own milestone (M4 sigil grounds, M5 home, M7 hut, M9-M11 encounters).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) only tint the map and name the signpost; their look and zombie mix arrive with M4 and the style passes.
-- The east, west and south map edges are an invisible line inside dense forest (OPEN_QUESTIONS #37).
+- The east, west and south map edges are an invisible line inside dense forest (Aaron: fine as it is).
 - The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 19); no pause menu.
 - Zombies only walk straight at the player. Detection, targeting, levels 2–4, variants, hordes, mutants and loot drops are M4. They don't spawn on their own: use the debug menu.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
@@ -193,7 +203,7 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 
 M4, **Sigils and zombies** (Session 5, AI Programmer): sigils, night spawning, five-sigil cap, levels 1-5, variants, speed variance, hordes, mutants, loot, digging, sigil grounds, detection model, targeting. Done when raising the level by debug visibly changes the night.
 
-- M3's gate (walking end to end on the tablet) must pass first.
+- M3's gate is passed (Aaron: no frame drops walking the map).
 - `game.world.map.clearings` lists every clearing with `kind` ('home', 'hut', 'encounter', 'sigilGround', 'wild'), `band`, `southness`, `clearingType` and `hopsFromHome`. Sigil grounds are `kind: 'sigilGround'`. Clearing types carry a zombie variant mix in `data/clearingTypes.json` (`variants`).
 - `game.world.map.paths` (polylines) and `edges` (with lengths) are the pathway graph for "random walk along the pathway graph" targeting; `mapGraph.js` has `adjacency`, `hopCounts` and `graphDistance`.
 - `game.world.ground`: `heightAt`, `undergrowthAt`, `openAt`, `clamp`, `rayDistance` (line of sight over hills).

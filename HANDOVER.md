@@ -2,7 +2,7 @@
 
 ## Just finished: Session 4, Lead Engineer, M3 (The map)
 
-**Status: built and pushed; the performance gate (walking end to end on the tablet) is waiting on Aaron's play-test.** Session 5 starts once it passes.
+**Status: done. Aaron's tablet play-test passed the M3 gate** (no frame drops walking the map).
 
 Aaron's calls before building (rule 10 doesn't strictly apply to core systems, but these shape the game):
 
@@ -34,10 +34,24 @@ Details in `STATUS.md` ("M3: The map"):
 - **Debug:** teleports, reveal map, whole-graph map view, new map / same map, skip to night. New overlay lines.
 - **Tests:** 168 pass (50 new).
 
+### Aaron's M3 play-test on the tablet: passed
+
+- **The frame rate never dropped**, walking the pathways and cutting through the forest.
+- The hills are smooth; fighting zombies on slopes works; restarting gives the same map.
+- **"This feels like a really good size map for the game"**; "everything looks really good".
+- The undergrowth slowdown "feels appropriate".
+- The map edges stay plain forest; empty clearings stay empty ("they almost add something to the game").
+
+**Fixes made after the test** (STATUS.md "M3 follow-up"):
+
+- **The minimap now redraws every frame.** At 20 a second, turning looked jagged and was queasy.
+- **About 60% more undergrowth**, so you can see you're in the brush.
+- **No more torch hot spot on the signposts.** The glare check now sees the whole board, the wood is darker, and the post no longer covers the lettering.
+
 ### Unfinished
 
-- **The performance gate:** walking end to end on the tablet at the frame target (Aaron's play-test below).
 - Encounter placement hints (road edge, hillside, off-path) aren't honoured yet (OPEN_QUESTIONS #42).
+- Worth a glance on the tablet: the three fixes above.
 
 ## Play-test script for Aaron (M3)
 
@@ -79,8 +93,6 @@ Details in `STATUS.md` ("M3: The map"):
 
 ## Next: Session 5, AI Programmer, M4 (Sigils and zombies)
 
-(After the M3 gate passes.)
-
 **Goal:** sigils, night spawning, five-sigil cap, levels 1-5, variants, speed variance, hordes, mutants, loot, digging, sigil grounds, the detection model and targeting. **Done when** raising the level by debug visibly changes the night.
 
 ### Look at first
@@ -118,10 +130,8 @@ Details in `STATUS.md` ("M3: The map"):
 
 These are in `OPEN_QUESTIONS.md` #35-50. The main ones:
 
-- Is the undergrowth slowdown right (you 0.55×, zombies 0.75×)?
-- What's at the east, west and south edges? (An invisible line in dense forest for now.)
-- Should the map screen pause the game, or stay live?
-- Plain clearings (about 3 a run) hold nothing: should they?
+- Should the map screen pause the game, or stay live? (#39)
+- Encounter placement hints for the encounter sessions (#42).
 
 ## Session kickoff prompt for Session 5
 

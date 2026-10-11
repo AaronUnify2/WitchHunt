@@ -38,9 +38,10 @@ export class Minimap {
   // player: { position, yaw }. enemies: living zombies [{ x, z }].
   update(dt, player, enemies) {
     if (this.el.classList.contains('hidden')) return;
+    // refreshPerSecond 0 = every frame (smooth turning; Aaron's M3 test).
     this.timer -= dt;
     if (this.timer > 0) return;
-    this.timer = 1 / this.cfg.refreshPerSecond;
+    this.timer = this.cfg.refreshPerSecond > 0 ? 1 / this.cfg.refreshPerSecond : 0;
     this.resize();
     this.draw(player, enemies);
   }
