@@ -891,7 +891,7 @@ export const config = {
         cornerMargin: 1.4, // zombies round the cabin's corners this far out
       },
       tower: { offsetX: 11, offsetZ: 0, height: 9, platformHalf: 1.7, legSpread: 1.6, revealRadius: 260 },
-      turretPad: { offsetX: -4, offsetZ: 10 },
+      turretPad: { offsetX: 3, offsetZ: 17 }, // south of the cabin, east of the gate path: it sees every fence panel (at -4, 10 the cabin hid the east end; Aaron, M5)
       fenceBox: { gateOffset: 3.2, inside: 2.2 }, // metres along the fence from the gate's edge, and inside it
       desk: { offsetX: -2.5, fromNorthWall: 0.7 }, // the ledger, radio and monitors in the comms room
       spikeOutside: 2.6, // spike trap slots: one per segment, this far outside its middle
@@ -974,7 +974,7 @@ export const config = {
     // The automated turret (DESIGN.md "The automated turret"). One per run
     // from the Car Armory (M11); until then the debug menu gives it.
     turret: {
-      range: 42,
+      range: 45, // the fence's far ends are about 42 m from the pad
       turnRate: 200, // degrees per second
       aimTolerance: 4, // degrees: fires once it's this close to its target
       roundDamage: 10, // a "turret round" (DESIGN.md)
@@ -996,6 +996,8 @@ export const config = {
       loadOrder: ['pistol', 'shotgun', 'rifle'], // the order ammo is listed in the turret's menu
       menuAmounts: [1, 5, 0], // load choices per ammo type in the turret's menu (0 = all of it; Aaron, M5)
       targetEvery: 0.25, // seconds between picking targets
+      idleDelay: 2, // seconds with nothing to shoot before it swings back to face the gate (Aaron, M5: it idled facing the cabin)
+      idleTurnRate: 60, // degrees per second, swinging back
     },
     look: {
       wood: 0x3a2a1e, // the tower's railing glared at 0x4a3626

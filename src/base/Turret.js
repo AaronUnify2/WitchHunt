@@ -30,8 +30,13 @@ export class Turret {
     this.x = pad.x;
     this.z = pad.z;
     this.baseY = this.ground.heightAt(pad.x, pad.z);
-    this.yaw = Math.PI; // facing south, out of the compound (yaw: sin/cos like the zombies)
+    // Idle, it faces the gate, out over the fence (yaw: sin/cos like the
+    // zombies, so 0 is south; Aaron's M5 test: at pi it faced the cabin).
+    const gate = this.layout.gate.mid;
+    this.idleYaw = Math.atan2(gate.x - pad.x, gate.z - pad.z);
+    this.yaw = this.idleYaw;
     this.pitch = 0;
+    this.idleTimer = 0;
     this.target = null;
     this.targetTimer = 0;
     this.fireTimer = 0;
@@ -96,8 +101,10 @@ export class Turret {
     const t = this.target;
     if (!t) {
       this.status = 'watching';
+      this.returnToIdle(dt);
       return;
     }
+    this.idleTimer = 0;
     this.status = 'firing';
     const want = Math.atan2(t.x - this.x, t.z - this.z);
     this.yaw = turnToward(this.yaw, want, this.tc.turnRate * DEG * dt);
@@ -105,6 +112,14 @@ export class Turret {
     this.pitch = Math.atan2(t.y + t.headBottom * 0.6 - this.muzzleY, flat);
     if (this.fireTimer > 0 || angleBetween(this.yaw, want) > this.tc.aimTolerance * DEG) return;
     this.fire(t);
+  }
+
+  // With nothing to shoot for a moment, swing back to face the gate.
+  returnToIdle(dt) {
+    this.idleTimer += dt;
+    if (this.idleTimer < this.tc.idleDelay) return;
+    this.yaw = turnToward(this.yaw, this.idleYaw, this.tc.idleTurnRate * DEG * dt);
+    this.pitch = turnToward(this.pitch, 0, this.tc.idleTurnRate * DEG * dt);
   }
 
   fire(target) {
@@ -151,6 +166,8 @@ export class Turret {
   reset() {
     this.target = null;
     this.fireTimer = 0;
-    this.yaw = Math.PI;
+    this.idleTimer = 0;
+    this.yaw = this.idleYaw;
+    this.pitch = 0;
   }
 }

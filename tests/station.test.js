@@ -253,3 +253,38 @@ describe('siege routing', () => {
     expect(Math.hypot(out.x - layout.centre.x, out.z - layout.centre.z)).toBeLessThan(layout.radius);
   });
 });
+
+describe('the turret pad', () => {
+  // Aaron's M5 test: could the turret reach every panel? At its first spot
+  // the cabin hid the east end. Every panel, inside and out, must be in
+  // range and in sight of the muzzle past the cabin walls and tower legs.
+  it('sees and reaches every fence panel, inside and out', async () => {
+    const { segmentCollider } = await import('../src/world/collision.js');
+    const { rayBlockers } = await import('../src/combat/hitscan.js');
+    const L = config.station.layout;
+    const tc = config.station.turret;
+    for (const seed of SEEDS) {
+      const { ground: g, layout } = setup(seed);
+      const c = layout.cabin;
+      const floor = Math.max(...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => g.heightAt(c.x + a * c.halfW, c.z + b * c.halfD))) + 0.12;
+      const blockers = [...c.walls, c.frontDoor.line, c.commsDoor.line].map((p) => segmentCollider(p.ax, p.az, p.bx, p.bz, L.colliderThickness, -100, floor + L.cabin.wallHeight, true));
+      const tw = layout.tower;
+      for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) blockers.push({ x: tw.x + dx * tw.legSpread, z: tw.z + dz * tw.legSpread, r: 0.15, base: -100, top: g.heightAt(tw.x, tw.z) + tw.height });
+      const pad = layout.turretPad;
+      const m = { x: pad.x, y: g.heightAt(pad.x, pad.z) + tc.muzzleHeight, z: pad.z };
+      for (const s of layout.segments) {
+        for (let k = 0; k <= 8; k++) {
+          const a = s.a0 + ((s.a1 - s.a0) * k) / 8;
+          for (const r of [layout.radius + 0.9, layout.radius - 0.9]) {
+            const q = layout.at(a, r);
+            const ty = g.heightAt(q.x, q.z) + 1;
+            expect(Math.hypot(q.x - m.x, q.z - m.z)).toBeLessThan(tc.range);
+            const d = Math.hypot(q.x - m.x, ty - m.y, q.z - m.z);
+            const dir = { x: (q.x - m.x) / d, y: (ty - m.y) / d, z: (q.z - m.z) / d };
+            expect(rayBlockers(m, dir, blockers, d, g), `${s.name} on seed ${seed}`).toBeGreaterThanOrEqual(d - 0.3);
+          }
+        }
+      }
+    }
+  });
+});
