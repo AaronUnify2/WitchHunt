@@ -6,8 +6,8 @@
 //  - the boot (a pickup's bed, an army truck's back): search it (loot);
 //  - the bonnet: hold to lift it, then hold again to unbolt and pull the
 //    battery (Aaron: about 60% still have one). Pulling one is noisy.
-// Some with a battery have an alarm: opening the door or the boot sets
-// it off. It wails, flashes its lamps and draws every zombie in earshot
+// Some with a battery have an alarm: opening the door or the boot, or
+// putting a bullet in it (Aaron's M5 test), sets it off. It wails, flashes its lamps and draws every zombie in earshot
 // until the battery is pulled (Aaron: "pulling the battery would kill
 // the alarm") or it runs flat.
 // Vehicles block bodies and shots. Once you've been close, a vehicle
@@ -64,6 +64,7 @@ export class Vehicles {
     this.unsubscribers = [
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('player:respawned', () => this.reset()),
+      this.bus.on('weapon:impact', (at) => this.onImpact(at)),
     ];
   }
 
@@ -248,13 +249,40 @@ export class Vehicles {
   openUp(v, spot) {
     if (!v.opened[spot]) this.combat.sfx.play(spot === 'door' ? 'carDoor' : 'carBoot', v);
     v.opened[spot] = true;
-    if (v.alarmArmed && v.hasBattery) {
-      v.alarmArmed = false;
-      v.ringing = true;
-      v.ringTime = 0;
-      this.notify(`A car alarm! Pull the ${v.def.name}'s battery to shut it up`);
-      this.bus.emit('vehicle:alarm', { vehicle: v });
+    this.tripAlarm(v);
+  }
+
+  // A shot that stops on a vehicle sets its alarm off.
+  onImpact({ x, y, z }) {
+    const v = this.vehicleAt(x, y, z, 0.25);
+    if (v) this.tripAlarm(v);
+  }
+
+  // The vehicle whose body holds (x, y, z), give or take `pad` metres, or null.
+  vehicleAt(x, y, z, pad) {
+    for (const v of this.list) {
+      const [length, width, height] = v.def.size;
+      const dx = x - v.x;
+      const dz = z - v.z;
+      if (dx * dx + dz * dz > (length / 2 + pad) ** 2) continue;
+      const s = Math.sin(v.yaw);
+      const c = Math.cos(v.yaw);
+      const lz = s * dx + c * dz;
+      const lx = c * dx - s * dz;
+      const base = v.groundY ?? this.ground.heightAt(v.x, v.z);
+      if (Math.abs(lx) <= width / 2 + pad && Math.abs(lz) <= length / 2 + pad && y >= base - pad && y <= base + height + pad) return v;
     }
+    return null;
+  }
+
+  // An armed alarm goes off (once): a toast, then it wails until the battery's pulled.
+  tripAlarm(v) {
+    if (!v.alarmArmed || !v.hasBattery) return;
+    v.alarmArmed = false;
+    v.ringing = true;
+    v.ringTime = 0;
+    this.notify(`A car alarm! Pull the ${v.def.name}'s battery to shut it up`);
+    this.bus.emit('vehicle:alarm', { vehicle: v });
   }
 
   search(v, spot) {
@@ -303,6 +331,7 @@ export class Vehicles {
 
   addDebugItems(menu) {
     menu.addItem('Vehicles: teleport to the nearest unsearched', () => this.teleportToNearest());
+    menu.addItem('Vehicles: teleport to the nearest alarm', () => this.teleportToNearest((v) => v.alarmArmed && v.hasBattery));
     menu.addItem(
       () => `Vehicles: show all on the map (${this.showAll ? 'on' : 'off'})`,
       () => {
@@ -313,19 +342,20 @@ export class Vehicles {
     menu.addItem('Vehicles: restock them all', () => this.reset());
   }
 
-  teleportToNearest() {
+  // which(v): the vehicles to choose from (default: any not yet emptied).
+  teleportToNearest(which = (v) => !Vehicles.isDone(v)) {
     const p = this.player.position;
     let best = null;
     let bestD = Infinity;
     for (const v of this.list) {
-      if (Vehicles.isDone(v)) continue;
+      if (!which(v)) continue;
       const d = Math.hypot(v.x - p.x, v.z - p.z);
       if (d < bestD && d > 3) {
         bestD = d;
         best = v;
       }
     }
-    if (!best) return this.notify('Every vehicle has been searched');
+    if (!best) return this.notify('No vehicle like that left');
     // Stand by the driver's door, facing the car (the camera looks along -z at yaw 0).
     const at = best.spots.door;
     const yaw = Math.atan2(-(best.x - at.x), -(best.z - at.z));

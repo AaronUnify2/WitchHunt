@@ -42,6 +42,7 @@ Agreed with Aaron before building: **four types** (car, pickup truck, police car
 | --- | --- | --- |
 | "Looking pretty cool"; the cab only comes up to the player's sternum | Taller cabs: a car's roof is now 1.75 m (was 1.37), a pickup's 1.95, a police car's 1.78 (light bar on top), an army truck's 2.5. The glass is a touch wider and longer than each cab, so windscreens and rear windows show too. | `data/vehicles.json` `parts` |
 | The door overlaps the window | Doors now run from the sill to just below the window line on every type. | `data/vehicles.json` `lids.door` |
+| Couldn't set off an alarm, by looting or shooting a car | Alarms worked, but only a quarter of cars with a battery have one, and never the campsite's. **Now a bullet that hits a car with an alarm sets it off too.** New debug item: **Vehicles: teleport to the nearest alarm**. Checked: a rifle shot into an alarm truck set it ringing. | `Vehicles.onImpact()`, `config.vehicles.alarmChance` |
 | Square wheels; can they be round? | Every `tyre` part is drawn as a round wheel (a 12-sided cylinder) with a grey hub, all instances of one mesh: one more draw call (plus its shadow). | `config.vehicles.looks.wheelSegments`, `hubSize` |
 
 ### M5 part 1 follow-up: Aaron's night-defence play-test

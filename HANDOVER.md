@@ -69,7 +69,7 @@ Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle
      - Not too bright under the torch.
      - Roadblocks in roadside clearings, army trucks at checkpoints and the outpost.
 3. **An alarm:**
-   - The teleport toast says when a vehicle has an alarm. Open its door or boot.
+   - **Vehicles: teleport to the nearest alarm** takes you to one (the campsite's never has one, and only about a quarter of cars with a battery do). Open its door or boot, or shoot it.
    - Good:
      - A toast, a wail, and the lamps flash (best seen at night).
      - Zombies nearby come for it.
