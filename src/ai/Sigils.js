@@ -5,7 +5,7 @@
 //
 // A sigil: { id, x, z, y, groundId (the sigil ground clearing's id, or
 // -1), clearingId (the nearest clearing, for the variant mix), variants,
-// timer, raised (zombies raised so far) }.
+// timer, raised (zombies raised so far), nightRaised (raised tonight; M6) }.
 
 export class Sigils {
   constructor(sigilConfig, rng) {
@@ -51,6 +51,7 @@ export class Sigils {
       variants: spot.variants ?? null,
       timer: this.firstDelay(),
       raised: 0,
+      nightRaised: 0,
     };
     this.list.push(sigil);
     return sigil;
@@ -94,20 +95,24 @@ export class Sigils {
 
   // Nightfall: every sigil starts raising after a short, staggered delay.
   startNight() {
-    for (const s of this.list) s.timer = this.firstDelay();
+    for (const s of this.list) {
+      s.timer = this.firstDelay();
+      s.nightRaised = 0;
+    }
   }
 
   // Tick the timers while sigils are raising. owned(sigil) -> how many of
   // its zombies are still alive. Fills `out` with the sigils due to raise
   // now (each then waits a fresh interval) and returns it. A sigil at its
-  // own cap waits, and tries again as soon as it drops below.
-  update(dt, raising, owned, out = []) {
+  // own cap waits, and tries again as soon as it drops below. M6: a
+  // sigil that has raised `quota` zombies tonight is done until next night.
+  update(dt, raising, owned, out = [], quota = Infinity) {
     out.length = 0;
     if (!raising) return out;
     for (const s of this.list) {
       s.timer -= dt;
       if (s.timer > 0) continue;
-      if (owned(s) >= this.cfg.perSigilCap) {
+      if (s.nightRaised >= quota || owned(s) >= this.cfg.perSigilCap) {
         s.timer = 0;
         continue;
       }

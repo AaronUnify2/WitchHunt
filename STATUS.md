@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is built and waiting for Aaron's play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is built and waiting for Aaron's play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -20,7 +20,49 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
-### M6 step 1: Simulation tiers (Session 7, in progress)
+### M6 step 2: Night marches and revisits (Session 7, in progress)
+
+- **Marching groups** (`ZombieDirector.raise()`, `src/ai/marchRoutes.js`):
+  - Each raising is either a single wanderer or a whole marching group: 4 at level 1, 5, 6, 8, then 10 at level 5.
+  - A group climbs out together and sets off at once for the station.
+  - A mutant can lead a group, and a horde always marches.
+  - The odds are set so about two thirds of the night's zombies march (Aaron).
+- **The route:** the shortest way home along the pathways.
+  - A group walks at 0.9× its slowest member's speed, so it stays together.
+  - Out of sight (the abstract tier) it moves ×2.5 (Aaron: fine), so the far sigils' groups still arrive in the night.
+- **Arrival times** (pathway walking, 40 seeds, before the ×2.5):
+  - Level 1: the farthest sigil ground takes 170-365 s (median 290), the nearest 16-250 s (median 110).
+  - Level 5: the farthest takes 120-245 s, the nearest 10-175 s.
+  - With ×2.5, a typical far level 1 group reaches the station around 4am.
+- **At the station:** within 70 m of the family, marchers switch to the siege as before; chasing the player beats both.
+- **A cap per sigil per night:** 12, 14, 16, 18, then 20 zombies by level. The old cap of 6 living now counts only its wanderers.
+- **Revisits (Aaron's idea, night only)** (`src/ai/revisits.js`):
+  - Come back at night to an encounter you've already been inside, and 4-5 zombies of its variant mix have turned up there.
+  - They spawn as you come within 130 m, out of sight, and hang about the clearing (a new 'linger' mode).
+  - Once per clearing per night; you have to have been 150 m away since your last visit.
+- **Unsticking:**
+  - A zombie walking a route that barely moves for 0.8 s takes a short detour. It goes to the side away from what's in the way, further out each time if it's still stuck, then tries the other side.
+  - Found in the browser check: a verge car on a bend stopped a whole group dead at 128 m from home. Chasing zombies aren't affected.
+- **Debug:**
+  - **Marches: raise a marching group at every sigil now**.
+  - **Marches: teleport behind the nearest marcher**.
+  - The `sigils` overlay line shows tonight's raised, marching, groups sent and revisits.
+  - The `lod` line counts detours.
+- **Verified in headless Chromium (seed 1234):**
+  - Three sigils: groups of 6 and 7 rose and set off.
+  - A group of 6 sent from 300 m out walked at about 6 m/s out of sight and 2.4 m/s within 150 m. It got round the verge car, went to siege at 70 m, spotted the player at home and clawed the fence.
+  - A revisit put 4 zombies at Ground Zero. No console errors.
+- **Tests:** 304 pass (11 new):
+  - every clearing marches home by the shortest way;
+  - mid-path starts;
+  - the odds give two thirds marching;
+  - revisits are fresh the first time, once a night and never by day;
+  - a level 1 group from the farthest sigil ground arrives within the night on 3 seeds;
+  - a zombie walks round a car across its way.
+
+### M6 step 1: Simulation tiers (Session 7)
+
+- **Aaron's tablet test:** 480 zombies (the whole population) on the map, **90 fps**, frame 11.1 ms, zombie simulation **0.33 ms**, 74 draw calls.
 
 - **Three tiers by distance from the player** (`src/ai/simTiers.js`, `EnemyManager`):
   - **Active (within 60 m):** full simulation every frame, at most 25 (the nearest).

@@ -11,16 +11,35 @@
 //  - Dawn: most zombies sink back into the ground; a few stragglers stay.
 //  - Digging: hold interact beside a sigil to dig it up (damage
 //    interrupts); the level drops at once.
+//  - M6, night marches: each raising rolls whether it's a marching group
+//    (odds set so about two thirds of the night's zombies march). A
+//    group (4 at level 1 up to 10 at level 5; a mutant can lead one; a
+//    horde marches as it is) climbs out together and sets off along the
+//    pathways for the station at once. A sigil raises at most its night
+//    quota.
+//  - M6, revisits (Aaron): at night, coming back to an encounter you've
+//    visited before turns up a few zombies hanging about there.
 //
 // Events: 'sigil:planted' { sigil }, 'sigil:dug' { sigil },
-// 'sigil:raised' { sigil, type, count }, 'zombies:levelChanged' { level }.
+// 'sigil:raised' { sigil, type, count }, 'zombies:levelChanged' { level },
+// 'march:departed' { sigil, count }, 'revisit:spawned' { clearing, count }.
 
 import { Sigils } from './Sigils.js';
 import { chooseSigilSpot } from './sigilPlanter.js';
 import { levelForSigils, clampLevel, MAX_LEVEL } from './zombieLevels.js';
 import { Digging } from '../player/Digging.js';
+import { Revisits } from './revisits.js';
 import { SigilRenderer } from '../render/SigilRenderer.js';
 import { SigilGroundMarkers } from '../render/SigilGroundMarkers.js';
+
+// The chance a raising is a marching group of `size`, so that `share`
+// of the zombies raised march (the rest are single wanderers):
+// p * size / (p * size + (1 - p)) = share.
+export function marchChance(share, size) {
+  if (share >= 1) return 1;
+  if (share <= 0) return 0;
+  return share / (size * (1 - share) + share);
+}
 
 export class ZombieDirector {
   constructor(cfg, rng, bus) {
@@ -54,6 +73,14 @@ export class ZombieDirector {
     this.due = [];
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
     this.dawnSeconds = cfg.clock.phases.find((p) => p.name === 'dawn')?.seconds ?? 60;
+    this.marchRng = this.rng.fork('marches');
+    this.spawned = []; // reused: the zombies one raising spawned
+    this.marchesSent = 0; // groups sent tonight (overlay)
+    this.revisits = new Revisits(cfg.revisits, world.map.clearings);
+    this.revisits.init();
+    this.revisitRng = this.rng.fork('revisits');
+    this.revisitsTonight = 0;
+    this.night = null; // the night number while it's night
     this.drawDistance = Infinity;
     this.wireEvents();
   }
@@ -62,11 +89,18 @@ export class ZombieDirector {
     const { bus } = this;
     this.unsubscribers = [
       bus.on('phase:dusk', ({ day }) => this.plantForNight(day)),
-      bus.on('phase:night', () => {
+      bus.on('phase:night', ({ day }) => {
+        this.night = day ?? 0;
+        this.marchesSent = 0;
+        this.revisitsTonight = 0;
         this.sigils.startNight();
         this.enemies.cancelThinning();
       }),
-      bus.on('phase:dawn', () => this.enemies.thinOut(this.dawnSeconds)),
+      bus.on('phase:dawn', () => {
+        this.night = null;
+        this.enemies.thinOut(this.dawnSeconds);
+      }),
+      bus.on('phase:day', () => (this.night = null)),
       bus.on('player:hurt', () => this.digging.interrupt()),
       bus.on('player:respawned', () => this.digging.init()),
       bus.on('weapon:fired', ({ id }) => this.onNoise(this.cfg.weapons[id]?.noise ?? 0)),
@@ -93,8 +127,12 @@ export class ZombieDirector {
     }
     this.enemies.setLevel(level);
     if (playing) {
-      const raising = this.cfg.sigils.spawnPhases.includes(phase);
-      for (const s of this.sigils.update(dt, raising, (sg) => this.enemies.ownedCount(sg), this.due)) this.raise(s);
+      const sc = this.cfg.sigils;
+      const raising = sc.spawnPhases.includes(phase);
+      const quota = sc.nightQuota[level - 1] ?? Infinity;
+      for (const s of this.sigils.update(dt, raising, (sg) => this.enemies.ownedCount(sg), this.due, quota)) this.raise(s);
+      const p = this.player.position;
+      for (const c of this.revisits.update(p.x, p.z, phase === 'night' ? this.night ?? 0 : null)) this.spawnRevisit(c);
       this.updateDigging(dt, input);
     } else {
       this.hud.prompt = '';
@@ -105,20 +143,74 @@ export class ZombieDirector {
 
   // ---- raising -------------------------------------------------------------
 
+  // One raising: a wanderer (counted toward the sigil's own cap), or a
+  // marching group (a horde, or a group of the level's size) that sets
+  // off for the station at once.
   raise(sigil) {
-    const r = this.cfg.sigils.spawnRadius;
-    const { plan, spawned } = this.enemies.spawnRaising(sigil.x, sigil.z, {
-      ringMin: r[0],
-      ringMax: r[1],
-      mix: sigil.variants,
-      mode: 'wander',
-      rise: true,
-      owner: sigil,
-    });
+    const sc = this.cfg.sigils;
+    const level = this.enemies.level;
+    const quota = sc.nightQuota[level - 1] ?? Infinity;
+    const size = Math.max(1, Math.min(sc.marchGroupSize[level - 1] ?? 1, quota - sigil.nightRaised));
+    let plan = this.enemies.rollPlan();
+    const out = this.spawned;
+    out.length = 0;
+    const opts = { ringMin: sc.spawnRadius[0], ringMax: sc.spawnRadius[1], mix: sigil.variants, rise: true, out };
+    let spawned = 0;
+    if (!this.marchRng.chance(marchChance(sc.marchShare, size))) {
+      if (plan.type === 'horde') plan = { type: 'single', count: 1 }; // a horde always marches
+      spawned = this.enemies.spawnPlanned(plan, sigil.x, sigil.z, { ...opts, mode: 'wander', owner: sigil });
+    } else {
+      opts.mode = 'march';
+      if (plan.type === 'horde') {
+        spawned = this.enemies.spawnPlanned(plan, sigil.x, sigil.z, opts);
+      } else {
+        // A mutant can lead a group; the rest are singles round the same spot.
+        if (plan.type === 'mutant') spawned += this.enemies.spawnPlanned(plan, sigil.x, sigil.z, opts);
+        while (spawned < size) {
+          const n = this.enemies.spawnPlanned({ type: 'single', count: 1 }, sigil.x, sigil.z, opts);
+          if (n === 0) break;
+          spawned += n;
+        }
+      }
+      if (spawned > 0) {
+        this.enemies.formMarch(out, out[0].horde ?? { leader: null, radius: this.cfg.zombies.horde.radius });
+        this.marchesSent++;
+        this.bus.emit('march:departed', { sigil, count: spawned });
+      }
+    }
     if (spawned === 0) return;
     sigil.raised += spawned;
+    sigil.nightRaised += spawned;
     this.combat.sfx.play('rise', sigil);
     this.bus.emit('sigil:raised', { sigil, type: plan.type, count: spawned });
+  }
+
+  // ---- night marches -------------------------------------------------------
+
+  // Debug: raise a marching group at a sigil now (whatever the odds).
+  raiseMarch(sigil) {
+    const share = this.cfg.sigils.marchShare;
+    this.cfg.sigils.marchShare = 1;
+    this.raise(sigil);
+    this.cfg.sigils.marchShare = share;
+  }
+
+  // Revisited at night: a few zombies hanging about the clearing.
+  spawnRevisit(clearing) {
+    const rc = this.cfg.revisits;
+    const r = clearing.radius * rc.spread;
+    const count = this.revisitRng.int(rc.count[0], rc.count[1]);
+    const mix = this.world.variantMix(clearing);
+    const linger = { x: clearing.x, z: clearing.z, r };
+    let n = 0;
+    for (let i = 0; i < count; i++) {
+      n += this.enemies.spawnPlanned({ type: 'single', count: 1 }, clearing.x, clearing.z, { ringMin: 0, ringMax: r, mix, mode: 'linger', rise: false, linger });
+    }
+    if (n > 0) {
+      this.revisitsTonight++;
+      this.bus.emit('revisit:spawned', { clearing, count: n });
+    }
+    return n;
   }
 
   // ---- planting ------------------------------------------------------------
@@ -232,6 +324,25 @@ export class ZombieDirector {
       this.notify(s ? 'Sigil planted in front of you' : 'Five-sigil cap reached');
     });
     menu.addItem('Raise zombies now (every sigil)', () => this.sigils.raiseAllNow());
+    // M6: night marches.
+    menu.addItem('Marches: raise a marching group at every sigil now', () => {
+      const before = this.marchesSent;
+      for (const s of this.sigils.list) this.raiseMarch(s);
+      const n = this.marchesSent - before;
+      this.notify(n > 0 ? `${n} group${n === 1 ? '' : 's'} set off for the station` : 'No sigils planted');
+    });
+    menu.addItem('Marches: teleport behind the nearest marcher', () => {
+      const p = this.player.position;
+      let best = null;
+      for (const z of this.enemies.living) if (z.mode === 'march' && (!best || Math.hypot(z.x - p.x, z.z - p.z) < Math.hypot(best.x - p.x, best.z - p.z))) best = z;
+      if (!best) {
+        this.notify('Nobody is marching');
+        return;
+      }
+      const back = d.marchTeleportBehind;
+      this.player.teleport(best.x - Math.sin(best.facing) * back, best.z - Math.cos(best.facing) * back, best.facing + Math.PI);
+      this.notify(`Behind a marcher, ${Math.round(this.enemies.marches.remaining(best.x, best.z))}m from home`);
+    });
     menu.addItem(() => `Teleport: next sigil (${this.sigils.count} planted)`, () => {
       const list = this.sigils.list;
       if (list.length === 0) {
@@ -270,8 +381,17 @@ export class ZombieDirector {
     const override = this.levelOverride !== null ? ' (debug)' : '';
     const nextText = s.count > 0 && Number.isFinite(next) ? `  next raise ${Math.max(0, next).toFixed(0)}s` : '';
     return {
-      sigils: `${s.count}/${this.cfg.sigils.cap} sigils (${grounds} on grounds)  level L${this.effectiveLevel}${override}${nextText}${nearText}`,
+      sigils: `${s.count}/${this.cfg.sigils.cap} sigils (${grounds} on grounds)  level L${this.effectiveLevel}${override}${nextText}${nearText}  ${this.marchLine()}`,
     };
+  }
+
+  // Gathering, marching, groups sent and revisits tonight (overlay).
+  marchLine() {
+    let marching = 0;
+    for (const z of this.enemies.living) if (z.mode === 'march') marching++;
+    let raised = 0;
+    for (const s of this.sigils.list) raised += s.nightRaised;
+    return `tonight raised ${raised}  marching ${marching}  groups sent ${this.marchesSent}  revisits ${this.revisitsTonight}`;
   }
 
   dispose() {

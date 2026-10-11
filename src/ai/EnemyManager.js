@@ -13,6 +13,12 @@
 // more, so a busy night can fill the whole map. Zombies within the
 // station's reach stay at least nearby, so a siege is always simulated
 // (Step 3 of M6 resolves it by the margin table while you're away).
+// Night marches (M6): a marching zombie walks the pathways home
+// (ai/marchRoutes.js); out of sight (abstract) it moves `lod.abstractMarchScale`
+// times faster, so far sigils' groups still reach the station in a night.
+// Unsticking (M6): a walking zombie that makes almost no headway for a
+// moment (a parked car or a rock square in its way) takes a short detour
+// to one side, away from what's blocking it, then carries on.
 //
 // The zombie level (1-5) sets each spawn's speed range, health and the
 // horde and mutant chances, and live: every zombie's speed (from its own
@@ -31,12 +37,13 @@
 import { Zombie } from './Zombie.js';
 import { ZombieBrain } from './ZombieBrain.js';
 import { PathRoutes } from './pathRoutes.js';
+import { MarchRoutes } from './marchRoutes.js';
 import { playerSenses } from './detection.js';
 import { levelStats, clampLevel, speedRoll, speedFromRoll, pickVariant, planSpawn } from './zombieLevels.js';
 import { tierFor, capActive, nearbyStepDue } from './simTiers.js';
 import { resolveCircles } from '../world/collision.js';
 
-const MODES = ['chase', 'search', 'wander', 'siege'];
+const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger'];
 
 export class EnemyManager {
   // cfg: the whole config (zombies, mutant, detection). world: { map,
@@ -62,6 +69,7 @@ export class EnemyManager {
     this.frame = 0;
     this.nextSlot = 0;
     this.simMs = 0; // smoothed cost of update() (overlay)
+    this.detours = 0; // unstick detours taken (overlay)
     this.tiers = { active: 0, nearby: 0, abstract: 0 };
     this.showTiers = false; // debug: tint sprites and map dots by tier
     this.level = 1;
@@ -69,9 +77,11 @@ export class EnemyManager {
     this.station = null; // M5: the station's siege hook (see the top of this file)
     this.routeOut = { active: false, x: 0, z: 0, barrier: null };
     this.senses = {};
-    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, rise: 0, stragglers: 0 };
-    this.routes = new PathRoutes(this.world.map);
-    this.brain = new ZombieBrain(this.detCfg, this.cfg.wander, this.routes, this.ground, this.rng.fork('brain'));
+    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, march: 0, linger: 0, rise: 0, stragglers: 0 };
+    const map = this.world.map;
+    this.routes = new PathRoutes(map);
+    this.marches = new MarchRoutes(map, Math.max(0, map.clearings.findIndex((c) => c.kind === 'home')));
+    this.brain = new ZombieBrain(this.detCfg, this.cfg.wander, this.routes, this.ground, this.rng.fork('brain'), this.marches);
     this.onStrike = (zombie, barrier) => {
       if (barrier) this.bus.emit('enemy:strikeDefence', { zombie, barrier, damage: zombie.attackDamage * this.stats.defenceDamage });
       else this.bus.emit('enemy:strike', { zombie, damage: zombie.attackDamage * this.stats.damage });
@@ -114,8 +124,10 @@ export class EnemyManager {
   }
 
   // One zombie at (x, z). opts: { kind ('zombie' | 'mutant'), variant,
-  // mode ('chase' | 'wander'), rise, speedRange [min, max] (multiples of
-  // the sprint; else the level's), horde, owner (its sigil), facing }.
+  // mode ('chase' | 'wander' | 'march' | 'linger'), rise,
+  // speedRange [min, max] (multiples of the sprint; else the level's),
+  // horde, owner (its sigil), facing, linger { x, z, r } (the clearing
+  // to hang about) }.
   // Returns the zombie, or null if the population (or the mutant cap) is full.
   spawnZombie(x, z, opts = {}) {
     const kind = opts.kind ?? 'zombie';
@@ -155,6 +167,14 @@ export class EnemyManager {
     slot.lodDt = 0;
     slot.lodDistance = Infinity;
     slot.lodSlot = this.nextSlot++ % this.cfg.lod.nearbyEveryFrames;
+    slot.lingerX = opts.linger?.x ?? pos.x;
+    slot.lingerZ = opts.linger?.z ?? pos.z;
+    slot.lingerRadius = opts.linger?.r ?? 0;
+    slot.stuckTime = 0;
+    slot.detourTime = 0;
+    slot.detourSide = 0;
+    slot.detourTries = 0;
+    slot.clearTime = 0;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }
@@ -168,12 +188,13 @@ export class EnemyManager {
 
   // Spawn what planSpawn() rolled (a single, a mutant or a horde) round
   // (cx, cz). opts: { ringMin, ringMax, mix (variant mix), mode, rise,
-  // owner, faceX, faceZ }. Returns how many spawned.
+  // owner, faceX, faceZ, linger, out (an array the spawned zombies are
+  // pushed to) }. Returns how many spawned.
   spawnPlanned(plan, cx, cz, opts) {
     const { ringMin, ringMax, mix } = opts;
     const at = this.ringPoint(cx, cz, ringMin, ringMax);
     const face = (p) => (opts.faceX === undefined ? undefined : Math.atan2(opts.faceX - p.x, opts.faceZ - p.z));
-    const base = { mode: opts.mode, rise: opts.rise, owner: opts.owner };
+    const base = { mode: opts.mode, rise: opts.rise, owner: opts.owner, linger: opts.linger };
     let spawned = 0;
     if (plan.type === 'horde') {
       const h = this.cfg.horde;
@@ -183,20 +204,43 @@ export class EnemyManager {
         const z = this.spawnZombie(p.x, p.z, { ...base, variant: pickVariant(mix, this.rng), speedRange: [h.speedMin, h.speedMax], horde: pack, facing: face(p) });
         if (!z) break;
         pack.leader ??= z;
+        opts.out?.push(z);
         spawned++;
       }
     } else {
       const kind = plan.type === 'mutant' ? 'mutant' : 'zombie';
       const z = this.spawnZombie(at.x, at.z, { ...base, kind, variant: pickVariant(mix, this.rng), facing: face(at) });
-      if (z) spawned++;
+      if (z) {
+        opts.out?.push(z);
+        spawned++;
+      }
     }
     if (spawned > 0) this.bus.emit('enemy:spawned', { count: spawned, type: plan.type });
     return spawned;
   }
 
+  // What one raising at this level is: { type: 'single' | 'horde' | 'mutant', count }.
+  rollPlan() {
+    return planSpawn(this.stats, this.cfg.horde, this.rng, this.mutantCount < this.mutantCfg.poolSize);
+  }
+
+  // M6: zombies setting off together on a march (a pack): the group walks
+  // at its slowest member's pace (a little under, so stragglers catch up).
+  formMarch(members, pack) {
+    let slowest = Infinity;
+    for (const z of members) {
+      if (!z.alive) continue;
+      slowest = Math.min(slowest, z.speed);
+      z.horde = pack;
+      if (!pack.leader?.alive) pack.leader = z;
+    }
+    pack.marchSpeed = Number.isFinite(slowest) ? slowest * this.cfg.wander.marchPackPace : undefined;
+    return pack;
+  }
+
   // Roll and spawn one raising at this level round (cx, cz).
   spawnRaising(cx, cz, opts) {
-    const plan = planSpawn(this.stats, this.cfg.horde, this.rng, this.mutantCount < this.mutantCfg.poolSize);
+    const plan = this.rollPlan();
     return { plan, spawned: this.spawnPlanned(plan, cx, cz, opts) };
   }
 
@@ -331,18 +375,30 @@ export class EnemyManager {
 
   // One step of the full simulation over `dt` seconds (active every
   // frame; nearby every few frames with the time saved up).
-  step(z, dt, player, senses, collide) {
+  // boost: a speed multiplier (the abstract tier's forced march).
+  step(z, dt, player, senses, collide, boost = 1) {
     const c = this.cfg;
     if (z.alive && z.state !== 'rise') {
       this.brain.update(z, dt, senses, this.station);
       this.updateFade(z, dt, player);
       this.routeAtStation(z, player);
     }
-    z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
+    z.moveScale = (1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z)) * boost;
     if (z.slowTimer > 0) {
       z.slowTimer -= dt;
       z.moveScale *= z.slow;
     }
+    // A detour (see unstick()) stands in for the goal while it lasts.
+    const detour = z.detourTime > 0 && z.mode !== 'chase' && !z.via;
+    const goalX = z.goalX;
+    const goalZ = z.goalZ;
+    if (detour) {
+      z.goalX = z.detourX;
+      z.goalZ = z.detourZ;
+      z.detourTime -= dt;
+    }
+    const fromX = z.x;
+    const fromZ = z.z;
     z.update(dt, player, this.onStrike);
     if (z.chargeStarted) {
       z.chargeStarted = false;
@@ -352,16 +408,85 @@ export class EnemyManager {
       resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
       this.ground.clamp(z);
     }
+    if (detour) {
+      z.goalX = goalX;
+      z.goalZ = goalZ;
+    } else if (collide) {
+      this.unstick(z, fromX, fromZ, dt);
+    }
     if (z.active) z.y = this.ground.heightAt(z.x, z.z);
+  }
+
+  // Walking toward a goal but barely moving: after a moment, detour a few
+  // metres to the side away from the nearest thing in the way. Stuck again
+  // straight after? The same side, further out (up to maxTries, then the
+  // other side).
+  unstick(z, fromX, fromZ, dt) {
+    const u = this.cfg.unstick;
+    if (z.state !== 'walk' || z.mode === 'chase' || z.via || !z.hasGoal) {
+      z.stuckTime = 0;
+      return;
+    }
+    const gx = z.goalX - z.x;
+    const gz = z.goalZ - z.z;
+    const toGoal = Math.hypot(gx, gz);
+    const expected = z.speed * z.pace * z.moveScale * dt;
+    if (toGoal < expected * 2 || toGoal < 0.5) {
+      z.stuckTime = 0;
+      return;
+    }
+    const moved = Math.hypot(z.x - fromX, z.z - fromZ);
+    if (moved >= expected * u.minProgress) {
+      z.stuckTime = Math.max(0, z.stuckTime - dt);
+      z.clearTime = (z.clearTime ?? 0) + dt;
+      if (z.clearTime >= u.forgetSeconds) {
+        z.detourSide = 0; // a good while moving freely: start afresh next time
+        z.detourTries = 0;
+      }
+      return;
+    }
+    z.clearTime = 0;
+    z.stuckTime += dt;
+    if (z.stuckTime < u.seconds) return;
+    z.stuckTime = 0;
+    const dx = gx / toGoal;
+    const dz = gz / toGoal;
+    z.detourTries = (z.detourTries ?? 0) + 1;
+    let side = z.detourSide;
+    if (z.detourTries > u.maxTries) {
+      side = -side; // that way's no good: try the other
+      z.detourTries = 1;
+    }
+    if (side === 0) {
+      // Away from the nearest collider (left of the goal direction is (-dz, dx)).
+      let best = null;
+      let bestD = Infinity;
+      for (const c of this.colliders.query(z.x, z.z, u.lookRadius, this.nearby)) {
+        const d = Math.hypot(c.x - z.x, c.z - z.z);
+        if (d < bestD) {
+          bestD = d;
+          best = c;
+        }
+      }
+      const leftness = best ? (best.x - z.x) * -dz + (best.z - z.z) * dx : 0;
+      side = leftness > 0 ? -1 : 1;
+    }
+    z.detourSide = side;
+    const out = u.detourDistance * z.detourTries;
+    z.detourX = z.x - dz * side * out + dx * u.detourAhead;
+    z.detourZ = z.z + dx * side * out + dz * u.detourAhead;
+    z.detourTime = u.detourSeconds;
+    this.detours++;
   }
 
   // The abstract tier: the time saved up, walked in a few coarse steps
   // along the pathways with no collision, then clamped to the map.
+  // Marchers out of sight march faster (lod.abstractMarchScale).
   stepAbstract(z, seconds, player, senses) {
-    const sub = this.cfg.lod.abstractSubStep;
-    const n = Math.max(1, Math.ceil(seconds / sub - 1e-6));
+    const lod = this.cfg.lod;
+    const n = Math.max(1, Math.ceil(seconds / lod.abstractSubStep - 1e-6));
     const dt = seconds / n;
-    for (let i = 0; i < n && z.active; i++) this.step(z, dt, player, senses, false);
+    for (let i = 0; i < n && z.active; i++) this.step(z, dt, player, senses, false, z.mode === 'march' ? lod.abstractMarchScale : 1);
     if (!z.active) return;
     this.ground.clamp(z);
     z.y = this.ground.heightAt(z.x, z.z);
@@ -554,7 +679,7 @@ export class EnemyManager {
   lodLine() {
     const t = this.tiers;
     const p = this.cfg.population;
-    return `tiers: active ${t.active}/${this.cfg.lod.activeCap} nearby ${t.nearby} abstract ${t.abstract}  pool ${this.pool.length}/${p.max}  sim ${this.simMs.toFixed(2)}ms`;
+    return `tiers: active ${t.active}/${this.cfg.lod.activeCap} nearby ${t.nearby} abstract ${t.abstract}  pool ${this.pool.length}/${p.max}  sim ${this.simMs.toFixed(2)}ms  detours ${this.detours}`;
   }
 
   dispose() {

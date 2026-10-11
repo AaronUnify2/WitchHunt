@@ -661,6 +661,7 @@ export const config = {
       nearbyEveryFrames: 3, // a nearby zombie takes a step every this many frames
       abstractSeconds: 1, // an abstract zombie takes its coarse steps about this often
       abstractSubStep: 0.5, // seconds per coarse step (so it doesn't overshoot a bend)
+      abstractMarchScale: 2.5, // marchers out of sight move this much faster, so far sigils reach home in a night (Aaron: fine)
       stationKeepsSimulated: true, // zombies within the station's reach never go abstract (Step 3 changes this while you're away)
       renderCap: 160, // most zombie sprites drawn at once (active first, then nearby)
       drawMargin: 5, // metres past the draw distance that nearby sprites are still drawn
@@ -705,6 +706,7 @@ export const config = {
       pace: 0.55, // fraction of its speed while wandering (it speeds up when it notices you)
       waypointReach: 2.5, // metres: close enough to a pathway point to head for the next
       hordeFollow: 1.5, // metres behind the leader's spot that a pack member aims for
+      marchPackPace: 0.9, // M6: a marching group walks at this x its slowest member's speed, so it stays together
     },
     // Dawn: most zombies sink back into the ground; a few stay as stragglers.
     dawn: {
@@ -713,6 +715,18 @@ export const config = {
       retrySeconds: 3,
     },
     turnRate: 6, // how fast a zombie turns to face where it's going
+    // M6: a zombie walking toward a goal (not chasing) that barely moves for
+    // `seconds` (a parked car square in its way) detours round it.
+    unstick: {
+      minProgress: 0.3, // moving less than this fraction of its stride counts as stuck
+      seconds: 0.8,
+      lookRadius: 3, // metres to look for what's in the way
+      detourDistance: 4, // metres to the side
+      detourAhead: 1, // and this far on toward the goal
+      detourSeconds: 1.6, // how long it walks the detour before trying the goal again
+      maxTries: 3, // stuck again soon after: the same side, further out each time; then the other side
+      forgetSeconds: 4, // moving freely this long and it starts afresh
+    },
     undergrowthMultiplier: 0.75, // zombies push through brush better than you do, so cutting through while chased costs
     separation: 0.8, // zombies push apart inside this distance
     attackReach: 1.25, // metres between centres
@@ -820,7 +834,14 @@ export const config = {
   // up to its own cap. At most five at once; the zombie level is the count.
   sigils: {
     cap: 5,
-    perSigilCap: 6, // living zombies one sigil has raised before it waits
+    perSigilCap: 6, // living zombies one sigil has raised before it waits (M6: wanderers only; marchers have left)
+    // M6: night marches. A raising is either a single wanderer or a whole
+    // marching group that climbs out together and sets off for the station
+    // along the pathways (a horde always marches). The odds are set so
+    // about marchShare of the zombies raised march (Aaron: two thirds).
+    marchShare: 0.67,
+    marchGroupSize: [4, 5, 6, 8, 10], // by level (1-5)
+    nightQuota: [12, 14, 16, 18, 20], // most zombies one sigil raises a night, by level (1-5)
     spawnInterval: [18, 36], // seconds between raisings at night
     groundSpawnMultiplier: 0.6, // sigil grounds raise faster: interval x this
     firstSpawnDelay: [2, 12], // seconds after nightfall (or planting at night)
@@ -843,6 +864,17 @@ export const config = {
       lift: 0.04, // metres above the ground
       textureSize: 256,
     },
+  },
+
+  // M6, Aaron's idea: come back at night to an encounter you've already
+  // visited and a few zombies have turned up there (night only, Aaron),
+  // so the world doesn't empty out as you clear it (ai/revisits.js).
+  revisits: {
+    kinds: ['encounter'], // clearing kinds that get them
+    triggerDistance: 130, // spawned as you come within this of the clearing (out of sight)...
+    rearm: 20, // ...after being at least this much further away
+    count: [4, 5],
+    spread: 0.7, // spawned within this fraction of the clearing's radius
   },
 
   // Stand-in for the witch planting (Aaron: placeholder until M7). At each
@@ -1264,6 +1296,7 @@ export const config = {
     giveFirstAid: 3,
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands
     sigilTeleportOffset: 4, // metres from a sigil
+    marchTeleportBehind: 25, // M6: metres behind a marcher that its debug teleport lands
     plantAhead: 3, // "plant sigil here" puts it this far in front of you
     giveScrap: 50, // M5: station debug
     siegeWave: 10,
