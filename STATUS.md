@@ -33,7 +33,7 @@ Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 t
 | Aim assist | `src/combat/aimAssist.js` | Light: controller look slows (to 0.45×, 0.35× aimed) over a zombie's body or head, fading out over 3°. No magnetism. Never on the mouse. Toggle in the debug menu. |
 | Zombie | `src/ai/Zombie.js`, `EnemyManager.js` | One "citizen" type using level 1 rules. Pool of 25 (the active cap). Walks straight at you at 0.35–0.45× your sprint (debug: level 5 is 0.5–1.3×, skewed slow). Slides round trees and rocks, keeps apart from other zombies. Swipe: 0.5 s wind-up, 10 damage, only lands if you're still in reach. Hits flash it red, stagger and knock it back (a hit in the wind-up cancels the swipe). 60 health. Falls when killed; the body stays 20 s, then sinks away. Close zombies are fed into the torch glare check. |
 | Zombie sprite | `src/render/ZombieRenderer.js`, `zombieSprite.js` | Doom-style billboard: 8 facing angles × 11 frames (walk 4, swipe 2, flinch 1, fall 4) in one procedural atlas, crisp nearest-neighbour pixels up close. One instanced draw call plus one in the torch shadow pass. Lit by the torch, casts its shadow. Dark albedo (`albedoScale`) because sprites face the torch head-on. |
-| In-hand weapons | `src/player/ViewModel.js` | Placeholder box-and-cylinder models (one mesh each), footstep-paced sway (`config.viewModel.bob`: one dip per step, 1.8 steps/s walking, 2.3 sprinting), recoil kick, pump slide, reload dip, lower and raise on switch, shovel swing, muzzle flash card. Baked shading (the torch would blow them out). |
+| In-hand weapons | `src/player/ViewModel.js` | Placeholder box-and-cylinder models (one mesh each) tinted by the sky's light (dark at night, full colour by day), footstep-paced sway (`config.viewModel.bob`: one dip per step, 1.8 steps/s walking, 2.3 sprinting), recoil kick, pump slide, reload dip, lower and raise on switch, shovel swing, muzzle flash card. Baked shading (the torch would blow them out). |
 | Effects | `src/render/CombatFx.js` | Blood spurts (more on a headshot) and dust puffs where misses land: one pooled `Points` object. A pooled muzzle-flash point light (always in the scene, intensity only, no shadow). Camera kick and shake. |
 | Health, armour, healing | `src/player/Health.js`, `Armour.js`, `Inventory.js` | Health 0–100, no regen. Three armour bars soak damage ballistic → energy → nature → health. First aid kits (start with 2): **D-pad right** / H heals 30 at 10 per second; a second kit queues; nothing heals past 100. |
 | HUD (placeholder) | `src/ui/Hud.js`, `style.css` | Crosshair (dot only while aiming), hit marker (yellow on headshots, red and bigger on kills), "B: reload" / "Out of ammo" prompt, health in 10 segments (pulses red at 30 or below), a healing "+", three armour bars, weapon name, ammo, reload bar, first aid count, red screen edge when hurt, "You died" screen (A / Enter: try again). |
@@ -47,6 +47,7 @@ Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 t
 | Feedback | Change | Tune in |
 | --- | --- | --- |
 | The weapon bobs far too fast, and vibrates at a sprint | The sway was driven by the camera's head-bob cycle and folded with an absolute value, doubling it: about 8 bounces a second walking and 13 sprinting. It now has its own footstep pace: one smooth dip per step at 1.8 steps a second walking and 2.3 sprinting (a little deeper), side to side once every two steps, easing in and out as you start and stop. The camera's head bob is unchanged. | `config.viewModel.bob` |
+| By day the gun still looks black, as if in heavy shadow | The in-hand weapons had a fixed night-time brightness. Their colours now follow the sky's real light each frame (ambient plus sun or moon, as set by the clock), plus a warm fill while the torch is on and a flash when firing. They're full colour by day and dark and moonlit at night. The parts also got real colours: walnut stocks, steel barrels, bolt and shovel blade. | `config.viewModel.lighting` |
 
 ### M1 follow-up round 2 (Session 3, from Aaron's 20-minute tablet test)
 
@@ -114,7 +115,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- The weapon-sway fix on the tablet (made after the play-test; checked headless only).
+- The weapon-sway and daylight weapon-colour fixes on the tablet (made after the play-test; checked headless only).
 - Whether the placeholder sounds play on Android Chrome (Aaron didn't mention them either way).
 - Feel numbers (aim assist strength, recoil, zombie damage, headshot ×3) passed a first play-test; they get their real tuning in M14.
 - Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.

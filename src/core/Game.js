@@ -77,7 +77,7 @@ export class Game {
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
     this.flashlight.init(this.scene, this.colliders);
     this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);
-    this.combat.init(root, this.scene, this.player, this.colliders);
+    this.combat.init(root, this.scene, this.player, this.colliders, { sky: this.sky, flashlight: this.flashlight });
   }
 
   initUi(root) {

@@ -2,8 +2,10 @@
 // cylinders) attached to the camera, with walk sway, recoil kick, a
 // reload dip, a lower-and-raise on switching, the shovel's swing and a
 // muzzle flash. Unlit colours with baked shading: the torch sits right
-// beside the gun, so real lighting would blow it out. The art pass
-// replaces the shapes with models.
+// beside the gun, so real lighting would blow it out. Instead the colours
+// are tinted each frame by the sky's ambient and sun/moon light (dark at
+// night, full colour by day), a warm fill from the torch and the muzzle
+// flash. The art pass replaces the shapes with models.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -68,8 +70,13 @@ export class ViewModel {
     this.weaponsCfg = weaponsConfig;
   }
 
-  init(camera) {
-    const b = this.cfg.brightness;
+  // sky: the Sky (its ambient and directional lights); flashlight: the torch.
+  init(camera, sky, flashlight) {
+    const b = 1; // full colour baked in; the light tint scales it each frame
+    this.sky = sky;
+    this.flashlight = flashlight;
+    this.tint = new THREE.Color();
+    this.torchColor = new THREE.Color(this.cfg.lighting.torchColor);
     this.material = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false });
     this.root = new THREE.Group();
     camera.add(this.root);
@@ -111,12 +118,12 @@ export class ViewModel {
   buildRifle(b) {
     const group = new THREE.Group();
     this.mesh([
-      [shadedBox(0.045, 0.07, 0.24, 0x4a3020, b), 0, -0.02, 0.12], // stock
-      [shadedBox(0.05, 0.06, 0.2, 0x2a2c30, b), 0, 0, -0.09], // receiver
-      [shadedBox(0.04, 0.045, 0.3, 0x4a3020, b), 0, -0.015, -0.3], // fore-end
-      [shadedCylinder(0.011, 0.5, 0x1e2024, b), 0, 0.02, -0.4], // barrel
-      [shadedBox(0.008, 0.03, 0.01, 0x1e2024, b), 0, 0.045, -0.62], // front sight
-      [shadedBox(0.01, 0.012, 0.03, 0x1e2024, b), 0.035, 0.015, -0.07], // bolt handle
+      [shadedBox(0.045, 0.07, 0.24, 0x6a4428, b), 0, -0.02, 0.12], // stock (walnut)
+      [shadedBox(0.05, 0.06, 0.2, 0x44484e, b), 0, 0, -0.09], // receiver (blued steel)
+      [shadedBox(0.04, 0.045, 0.3, 0x6a4428, b), 0, -0.015, -0.3], // fore-end
+      [shadedCylinder(0.011, 0.5, 0x6e747c, b), 0, 0.02, -0.4], // barrel (steel)
+      [shadedBox(0.008, 0.03, 0.01, 0x2a2c30, b), 0, 0.045, -0.62], // front sight
+      [shadedBox(0.01, 0.012, 0.03, 0x8a9098, b), 0.035, 0.015, -0.07], // bolt handle
     ], group);
     return { group, muzzle: new THREE.Vector3(0, 0.02, -0.67) };
   }
@@ -124,12 +131,12 @@ export class ViewModel {
   buildShotgun(b) {
     const group = new THREE.Group();
     this.mesh([
-      [shadedBox(0.05, 0.075, 0.24, 0x3a2418, b), 0, -0.025, 0.12], // stock
-      [shadedBox(0.055, 0.065, 0.18, 0x2a2a2e, b), 0, 0, -0.08], // receiver
-      [shadedCylinder(0.016, 0.48, 0x1a1a1e, b), 0, 0.022, -0.38], // barrel
-      [shadedCylinder(0.013, 0.4, 0x1a1a1e, b), 0, -0.012, -0.34], // magazine tube
+      [shadedBox(0.05, 0.075, 0.24, 0x5a3a24, b), 0, -0.025, 0.12], // stock
+      [shadedBox(0.055, 0.065, 0.18, 0x3c3e44, b), 0, 0, -0.08], // receiver
+      [shadedCylinder(0.016, 0.48, 0x60666e, b), 0, 0.022, -0.38], // barrel
+      [shadedCylinder(0.013, 0.4, 0x4c5058, b), 0, -0.012, -0.34], // magazine tube
     ], group);
-    const pump = this.mesh([[shadedBox(0.05, 0.045, 0.13, 0x4a3020, b), 0, -0.014, 0]], group); // slides on each shot
+    const pump = this.mesh([[shadedBox(0.05, 0.045, 0.13, 0x6a4428, b), 0, -0.014, 0]], group); // slides on each shot
     pump.position.z = -0.3;
     return { group, muzzle: new THREE.Vector3(0, 0.022, -0.63), pump };
   }
@@ -137,16 +144,37 @@ export class ViewModel {
   buildShovel(b) {
     const group = new THREE.Group();
     this.mesh([
-      [shadedCylinder(0.016, 0.75, 0x5a4028, b), 0, 0, -0.2], // handle
-      [shadedBox(0.1, 0.02, 0.02, 0x3a2a1a, b), 0, 0, 0.17], // D-grip
-      [shadedBox(0.17, 0.012, 0.22, 0x50565a, b).rotateX(-0.1), 0, 0, -0.66], // blade
+      [shadedCylinder(0.016, 0.75, 0x7a5a38, b), 0, 0, -0.2], // handle (ash)
+      [shadedBox(0.1, 0.02, 0.02, 0x4a3420, b), 0, 0, 0.17], // D-grip
+      [shadedBox(0.17, 0.012, 0.22, 0x7a8288, b).rotateX(-0.1), 0, 0, -0.66], // blade (steel)
     ], group);
     return { group };
+  }
+
+  // Tint the colours by the light the gun would be in (see the header).
+  updateLighting(dt, weapons) {
+    const l = this.cfg.lighting;
+    const tint = this.tint.setRGB(0, 0, 0);
+    if (this.sky) {
+      const { ambient, light } = this.sky;
+      tint.r = ambient.color.r * ambient.intensity + light.color.r * light.intensity * l.sunFactor;
+      tint.g = ambient.color.g * ambient.intensity + light.color.g * light.intensity * l.sunFactor;
+      tint.b = ambient.color.b * ambient.intensity + light.color.b * light.intensity * l.sunFactor;
+      tint.multiplyScalar(l.scale);
+    }
+    if (this.flashlight?.on) {
+      tint.r += this.torchColor.r * l.torchFill;
+      tint.g += this.torchColor.g * l.torchFill;
+      tint.b += this.torchColor.b * l.torchFill;
+    }
+    if (weapons.weapon.kind !== 'melee' && weapons.shotTime < this.cfg.muzzleFlashSeconds * 2) tint.addScalar(l.flashBoost);
+    this.material.color.lerp(tint, Math.min(1, l.response * dt));
   }
 
   // weapons: the Weapons system; player: for walk sway.
   update(dt, weapons, player) {
     const c = this.cfg;
+    this.updateLighting(dt, weapons);
     const id = weapons.id;
     if (this.current !== id) {
       if (this.current) this.models[this.current].group.visible = false;

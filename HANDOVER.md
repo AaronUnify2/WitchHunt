@@ -36,7 +36,8 @@ Details in `STATUS.md` ("M2: Combat feel"):
 - **B** always reloads and never leaves fullscreen (the M0 worry is closed).
 - The torch is enough to see by in a fight.
 - The dead trees look "much, much better", and the rock glare is gone.
-- **One fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). This was checked headless only, so give it a quick look on the tablet.
+- **Fix made after the test:** by day the gun looked black. The view model's colours now follow the sky's light (`config.viewModel.lighting`), with real wood and steel colours.
+- **Fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). This was checked headless only, so give it a quick look on the tablet.
 
 ### Unfinished
 
@@ -103,6 +104,7 @@ Nothing in M2's scope. The sounds weren't commented on: worth a listen.
 - **Draw calls:** about 48–57 at Medium in a fight (budget ~100). The zombie pool is one instanced draw plus one in the shadow pass; each in-hand weapon is one mesh.
 - **Lights:** the torch is the only shadow caster. Lights now present: torch, torch spill, muzzle flash (always in the scene, intensity only), moon/sun and ambient. DESIGN.md allows about 4 point lights. Never toggle a light's `visible` mid-game (it recompiles shaders): change its intensity.
 - **Dark albedos:** light colours blow out under the torch (rocks, zombies). Zombies use `albedoScale`.
+- **The in-hand weapon isn't lit by scene lights**: it reads the Sky's `ambient` and `light` each frame (passed to `Combat.init` as `lights`). If the sky or lighting changes (blood night, interiors), the gun follows automatically.
 - **The camera is in the scene** (`scene.add(player.camera)`), because the in-hand weapon hangs off it.
 - **The start tap never fires a weapon:** `Weapons.holdFire()` waits for the trigger to be released. Call it again if a future pause menu resumes with a click.
 - **Combat events:** `enemy:hit`, `enemy:killed`, `enemy:strike`, `weapon:fired`, `weapon:hit`, `weapon:impact`, `player:hurt`, `player:died`.

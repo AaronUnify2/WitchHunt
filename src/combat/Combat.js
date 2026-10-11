@@ -25,7 +25,8 @@ export class Combat {
     this.bus = bus;
   }
 
-  init(root, scene, player, colliders) {
+  // lights: { sky, flashlight }, so the in-hand weapon can follow the light.
+  init(root, scene, player, colliders, lights) {
     const c = this.cfg;
     this.player = player;
     this.armour = new Armour(c.armour);
@@ -44,7 +45,7 @@ export class Combat {
     this.weapons.init(player, this.enemies, colliders);
     scene.add(player.camera); // the view model hangs off the camera
     this.viewModel = new ViewModel(c.viewModel, c.weapons);
-    this.viewModel.init(player.camera);
+    this.viewModel.init(player.camera, lights?.sky, lights?.flashlight);
 
     this.fx = new CombatFx(c.feedback, this.rng.fork('fx'));
     this.fx.init(scene);

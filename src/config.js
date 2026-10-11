@@ -401,7 +401,18 @@ export const config = {
   // Weapons in hand (placeholder shapes; real models in the art pass).
   // Offsets are metres in camera space: x right, y up, z forward is negative.
   viewModel: {
-    brightness: 0.3, // unlit colours are scaled by this (the torch sits beside the gun)
+    // The weapons aren't lit by the scene's lights (the torch sits right
+    // beside the gun and would blow it out). Instead their colours follow
+    // the sky: ambient + sun/moon (as the scene's lights are set each
+    // moment), plus a warm fill while the torch is on and a flash on firing.
+    lighting: {
+      scale: 0.6, // overall brightness of the sky's contribution
+      sunFactor: 0.5, // share of the sun/moon light that reaches the gun
+      torchFill: 0.15, // added while the torch is on
+      torchColor: 0xfff1d6,
+      flashBoost: 0.6, // added for a moment when firing
+      response: 8, // how quickly the gun follows a change in light
+    },
     hip: { x: 0.2, y: -0.21, z: -0.46 },
     aim: { x: 0, y: -0.105, z: -0.36 }, // centred under the crosshair
     shovelHip: { x: 0.2, y: -0.28, z: -0.5 },
