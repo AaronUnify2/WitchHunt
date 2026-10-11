@@ -80,13 +80,13 @@ describe('wall pieces', () => {
 });
 
 describe('HoldAction', () => {
-  it('completes after holding, pauses on release, restarts on a new target and needs a release before the next', () => {
+  it('completes after holding, drains on release, restarts on a new target and needs a release before the next', () => {
     const h = new HoldAction();
     h.init();
     expect(h.update(0.5, 'a', true, 1)).toBe(false);
-    expect(h.update(0.2, 'a', false, 1)).toBe(false);
-    expect(h.progress).toBeCloseTo(0.5);
-    expect(h.update(0.5, 'a', true, 1)).toBe(true);
+    expect(h.update(0.1, 'a', false, 1)).toBe(false);
+    expect(h.progress).toBeCloseTo(0.3); // let go: drains at twice the fill speed
+    expect(h.update(0.7, 'a', true, 1)).toBe(true);
     // Still holding: nothing chains on.
     expect(h.update(2, 'b', true, 1)).toBe(false);
     expect(h.update(0.1, 'b', false, 1)).toBe(false);

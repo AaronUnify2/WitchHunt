@@ -30,9 +30,13 @@ export class Ledger {
     this.repeatTimer = 0;
   }
 
-  open() {
+  // only: a page id to open on its own (the turret's menu), or nothing for the whole book.
+  open(only = null) {
     if (this.isOpen) return null;
     this.isOpen = true;
+    this.only = only;
+    this.tab = 0;
+    this.row = 0;
     this.message = '';
     this.el.classList.remove('hidden');
     this.render();
@@ -48,9 +52,15 @@ export class Ledger {
   }
 
   // playing: false while the debug menu or map is open.
+  // The pages to show: the whole book, or the one page opened on its own.
+  pages() {
+    const all = this.getPages();
+    return this.only ? all.filter((p) => p.id === this.only) : all;
+  }
+
   update(dt, input, playing) {
     if (!this.isOpen || !playing) return;
-    const pages = this.getPages();
+    const pages = this.pages();
     if (input.wasPressed('menuLeft')) this.setTab(this.tab - 1, pages);
     if (input.wasPressed('menuRight')) this.setTab(this.tab + 1, pages);
     if (input.wasPressed('menuUp')) this.moveRow(-1, pages);
@@ -110,7 +120,7 @@ export class Ledger {
 
   render() {
     this.refreshTimer = this.cfg.refreshSeconds;
-    const pages = this.getPages();
+    const pages = this.pages();
     this.tab = Math.min(this.tab, pages.length - 1);
     const page = pages[this.tab];
     this.row = Math.min(this.row, Math.max(0, page.rows.length - 1));
@@ -123,12 +133,12 @@ export class Ledger {
       .join('');
     this.el.innerHTML = `
       <div class="ledger-book">
-        <h2>STATION LEDGER</h2>
+        <h2>${this.only ? escapeHtml(page.title.toUpperCase()) : 'STATION LEDGER'}</h2>
         <div class="ledger-summary">${escapeHtml(this.getSummary())}</div>
         <div class="ledger-tabs">${tabs}</div>
         <ul>${rows}</ul>
         <div class="ledger-message">${escapeHtml(this.message)}</div>
-        <p class="ledger-help">LB / RB: tab &middot; D-pad / stick: move &middot; A: do it &middot; B: close &middot; the night goes on while you read</p>
+        <p class="ledger-help">${this.only ? '' : 'LB / RB: tab &middot; '}D-pad / stick: move &middot; A: do it &middot; B: close &middot; the night goes on while you read</p>
       </div>
     `;
     this.el.querySelector('li.selected')?.scrollIntoView({ block: 'nearest' });

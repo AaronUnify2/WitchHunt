@@ -232,6 +232,13 @@ export class EnemyManager {
     let tx;
     let tz;
     if (z.mode === 'chase') {
+      // Aaron (M5): whichever is nearer, you or the defence between it and
+      // the family. If a door or fence on the way in is closer, it claws that.
+      const inward = st.route(z.x, z.z, st.x, st.z, this.routeOut);
+      if (inward.active && inward.barrier && Math.hypot(inward.x - z.x, inward.z - z.z) < Math.hypot(player.x - z.x, player.z - z.z)) {
+        this.setVia(z, inward, st);
+        return;
+      }
       tx = player.x;
       tz = player.z;
     } else if (z.mode === 'siege') {
@@ -244,7 +251,10 @@ export class EnemyManager {
       if (z.via) z.clearVia();
       return;
     }
-    const out = st.route(z.x, z.z, tx, tz, this.routeOut);
+    this.setVia(z, st.route(z.x, z.z, tx, tz, this.routeOut), st);
+  }
+
+  setVia(z, out, st) {
     z.via = out.active;
     z.viaX = out.x;
     z.viaZ = out.z;

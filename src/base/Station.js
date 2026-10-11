@@ -80,7 +80,7 @@ export class Station {
     this.renderer.init(scene, this.layout, this.ground, this.state, this.floorY);
     this.ledger = new Ledger(this.cfg.ledger, this.bus);
     this.ledger.init(ctx.root, () => this.ledgerPages(), () => this.ledgerSummary());
-    this.hold = new HoldAction();
+    this.hold = new HoldAction(sc.hold.releaseDrain);
     this.hold.init();
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
 
@@ -156,7 +156,8 @@ export class Station {
       add(s.segments[i].barricade, seg.barricade.pieces, bb, bb + 1.8, true);
     });
     const gb = heightAround(this.layout.gate.pieces) - 0.5;
-    add(s.gate, this.layout.gate.pieces, gb, gb + 0.5 + L.fenceHeight, false);
+    // The gate's solid frame dims the torch up close (shots still pass through).
+    for (const col of add(s.gate, this.layout.gate.pieces, gb, gb + 0.5 + L.fenceHeight, false)) col.glare = true;
     const top = this.floorY + c.wallHeight;
     add(null, c.walls, low, top, true);
     add(s.doors.front, [c.frontDoor.line], low, top, true);
@@ -171,6 +172,27 @@ export class Station {
     for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) solid(tw.x + dx * legs, tw.z + dz * legs, 0.15, tw.height);
     const pad = this.layout.turretPad;
     solid(pad.x, pad.z, 0.55, 0.3);
+    // Glare-only shapes (bodies walk through, shots pass): the torch dims on
+    // them up close, as it does on rocks and signs (Aaron's M5 test: the
+    // turret and the tower's railing glared).
+    const padY = g.heightAt(pad.x, pad.z);
+    this.turretGlare = { x: pad.x, z: pad.z, r: 0.5, base: padY + 0.8, top: padY + 2, noBody: true, glareOnly: true, off: true };
+    grid.insert(this.turretGlare);
+    const towerTop = g.heightAt(tw.x, tw.z) + tw.height;
+    const h = tw.half;
+    const rail = [
+      [-h, -h, h, -h],
+      [h, -h, h, h],
+      [h, h, -h, h],
+      [-h, h, -h, -h],
+    ];
+    for (const [ax, az, bx, bz] of rail) {
+      const col = segmentCollider(tw.x + ax, tw.z + az, tw.x + bx, tw.z + bz, 0.1, towerTop - 0.1, towerTop + 1.1, false);
+      col.glare = true;
+      col.glareOnly = true;
+      col.noBody = true;
+      grid.insert(col);
+    }
     const box = this.layout.fenceBox;
     solid(box.x, box.z, 0.35, 1.3);
     for (const f of c.family) grid.insert({ x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7 });
@@ -330,6 +352,7 @@ export class Station {
       this.updateSpikes();
       this.updateFloodlit(phase);
       this.turret.update(dt);
+      this.turretGlare.off = !this.state.turret.installed;
       this.syncColliders();
       this.checkOverrun();
       this.clawTimer += dt;
@@ -408,13 +431,9 @@ export class Station {
     if (t.available && !t.installed) {
       offer(dist(pad), { key: 'install', prompt: `Hold ${X}: install the turret`, busy: 'Installing…', seconds: h.install, act: () => this.installTurret() });
     } else if (t.installed) {
-      const load = this.nextLoad();
-      const status = `Turret: ${Math.floor(t.rounds)} rounds, ${t.mode}${s.powered ? '' : ', no power'}`;
-      if (load) {
-        offer(dist(pad), { key: `load-${load.id}`, prompt: `Hold ${X}: load ${load.rounds} ${AMMO_NAMES[load.id]} (+${load.gain.toFixed(1)}). ${status}`, busy: 'Loading…', seconds: h.load, act: () => this.loadTurret(load.id, load.rounds) });
-      } else {
-        offer(dist(pad), { key: 'turret', prompt: `${status}. No spare ammo to load`, act: null });
-      }
+      // Aaron (M5): load it from a menu, choosing what goes in.
+      const status = `${Math.floor(t.rounds)} rounds, ${t.mode}${s.powered ? '' : ', no power'}`;
+      offer(dist(pad), { key: 'turret-menu', prompt: `Hold ${X}: turret (load ammo, fire mode). ${status}`, seconds: h.load, act: () => this.ledger.open('turret') });
     } else {
       offer(dist(pad), { key: 'pad', prompt: 'Turret pad: empty (the turret is at the Car Armory)', act: null });
     }
@@ -548,20 +567,7 @@ export class Station {
     if (!t.available || t.installed) return null;
     t.installed = true;
     this.combat.sfx.play('hammer');
-    return 'Turret installed. Load it with ammo here; set its fire mode in the ledger';
-  }
-
-  // What holding interact at the turret loads next: pistol rounds first,
-  // then shells, then rifle rounds (config loadOrder), a batch at a time.
-  nextLoad() {
-    const tc = this.sc.turret;
-    for (const id of tc.loadOrder) {
-      const have = this.ammoCount(id);
-      if (have <= 0) continue;
-      const rounds = Math.min(have, tc.loadBatch[id] ?? have);
-      return { id, rounds, gain: (rounds * ammoDamage(id, this.cfg.weapons, tc)) / tc.roundDamage };
-    }
-    return null;
+    return 'Turret installed. Hold X at it to load ammo and set its fire mode';
   }
 
   ammoCount(id) {
@@ -660,16 +666,22 @@ export class Station {
       turret.push({ label: 'Fire mode (A: change)', value: `${t.mode}: a shot every ${mode.seconds} s, security ${mode.security} at full ammo`, action: () => this.setTurretMode(TURRET_MODES[(TURRET_MODES.indexOf(t.mode) + 1) % TURRET_MODES.length]) });
       const minutes = secondsOfFire(t.rounds, mode) / 60;
       turret.push({ label: 'Turret rounds', value: `${Math.floor(t.rounds)} / ${cov.needed} for a night (${Math.round(cov.coverage * 100)}%)  ·  about ${minutes.toFixed(1)} min of fire`, action: null });
+      // Choose exactly what goes in (Aaron, M5): 1, a handful, or all of
+      // each kind, with what it's worth in turret rounds.
       const tc = sc.turret;
       for (const id of tc.loadOrder) {
         const have = this.ammoCount(id);
-        const batch = Math.min(have, tc.loadBatch[id] ?? have);
         const per = ammoDamage(id, this.cfg.weapons, tc) / tc.roundDamage;
-        turret.push({
-          label: `Load ${AMMO_NAMES[id]}`,
-          value: have > 0 ? `${batch} of your ${have}  ->  +${(batch * per).toFixed(1)} turret rounds (${per} each)` : `you have none (${per} turret rounds each)`,
-          action: have > 0 ? () => this.loadTurret(id, batch) : null,
-        });
+        const name = AMMO_NAMES[id];
+        if (have <= 0) {
+          turret.push({ label: `Load ${name}`, value: `you have none  ·  ${per} turret rounds each`, action: null });
+          continue;
+        }
+        const amounts = [...new Set(tc.menuAmounts.map((n) => (n > 0 ? Math.min(n, have) : have)))];
+        for (const n of amounts) {
+          const label = n === have ? `Load all ${n} ${name}` : `Load ${n} ${n === 1 ? name.replace(/s$/, '') : name}`;
+          turret.push({ label, value: `+${(n * per).toFixed(1)} turret rounds  ·  you have ${have}`, action: () => this.loadTurret(id, n) });
+        }
       }
     }
 

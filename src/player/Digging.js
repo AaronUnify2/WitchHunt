@@ -1,5 +1,6 @@
 // Digging up a sigil (pure logic; DESIGN.md "The shovel and digging"):
-// hold interact beside it for a few seconds. Letting go pauses the dig;
+// hold interact beside it for a few seconds. Letting go drains the bar
+// back down (Aaron, M5: `releaseDrain` times as fast as it fills);
 // stepping away (a different target, or none) starts over; taking damage
 // interrupts it and loses the progress.
 
@@ -24,7 +25,10 @@ export class Digging {
       this.progress = 0;
     }
     this.active = target !== null && holding;
-    if (!this.active) return null;
+    if (!this.active) {
+      this.progress = Math.max(0, this.progress - (dt / this.cfg.seconds) * (this.cfg.releaseDrain ?? 0));
+      return null;
+    }
     this.progress += dt / this.cfg.seconds;
     if (this.progress < 1) return null;
     const done = this.target;

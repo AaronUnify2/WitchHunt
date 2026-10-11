@@ -1,4 +1,4 @@
-// The player's weapons: switching (RB next, Y previous, keys 1-4), firing
+// The player's weapons: switching (RB next, LB previous, keys 1-4), firing
 // (RT), aiming down sights (LT: zoom, tighter spread, stronger aim
 // assist), reloading (B), the aim and fire slowdown, and aim assist.
 // Hits are resolved here with combat/hitscan.js and applied through the

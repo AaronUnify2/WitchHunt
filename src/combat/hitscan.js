@@ -92,7 +92,7 @@ const parts = { t: 0, part: 'body' };
 export function rayBlockers(origin, dir, blockers, maxDistance, ground = FLAT_GROUND) {
   let best = maxDistance;
   for (const b of blockers) {
-    if (b.off) continue;
+    if (b.off || b.glareOnly) continue; // glare-only shapes (M5) never stop a shot
     if (b.seg) {
       // Wall pieces (M5): walls and doors stop shots; the chain-link fence doesn't.
       if (b.blocksShots) best = Math.min(best, raySegment(origin, dir, b));

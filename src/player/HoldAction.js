@@ -1,11 +1,17 @@
 // Hold interact to do something (pure): repair, build, fit a battery,
 // climb, load the turret, open the ledger. Like digging (Digging.js):
-// letting go pauses, a different target (or none) starts over, taking
+// letting go drains the bar back down (`releaseDrain` times as fast as it
+// fills; Aaron, M5), a different target (or none) starts over, taking
 // damage loses the progress. After an action completes, interact must be
 // let go before the next one can start, so one long hold never chains
 // "repair" into "build a barricade".
 
 export class HoldAction {
+  // releaseDrain: how many times faster the bar empties than it fills.
+  constructor(releaseDrain = 2) {
+    this.releaseDrain = releaseDrain;
+  }
+
   init() {
     this.key = null; // what's being held for (any value; compared by identity)
     this.progress = 0; // 0..1
@@ -22,7 +28,10 @@ export class HoldAction {
       this.progress = 0;
     }
     this.active = key !== null && holding && !this.needsRelease;
-    if (!this.active) return false;
+    if (!this.active) {
+      if (seconds > 0) this.progress = Math.max(0, this.progress - (dt / seconds) * this.releaseDrain);
+      return false;
+    }
     this.progress += seconds > 0 ? dt / seconds : 1;
     if (this.progress < 1) return false;
     this.progress = 0;

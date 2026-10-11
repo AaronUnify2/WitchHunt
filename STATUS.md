@@ -42,6 +42,19 @@ Agreed with Aaron before building: 12 fence segments plus an automatic gate; the
 | Collision | `src/world/collision.js`, `combat/hitscan.js` | New **wall-piece colliders** (thick segments) in the same grid as trees and rocks: bodies slide along them; walls and doors stop shots and the torch's glare check; chain-link doesn't. Any collider can be switched `off` (broken fence, open door). |
 | Tests | `tests/station.test.js`, `stationParts.test.js`, `siege.test.js` | 268 tests (26 new): layout over 5 seeds (cliff to cliff, tiling, inside the clearing, zones, names), state (start, damage, repairs, building, charge, security, turret loading), routing (claw, walk to a gap, step through, barricade, round the cabin, doors, leaving), turret maths (DESIGN.md table, coverage, targeting), wall colliders (push, open doors, shots and torch, chain-link), the hold action, a zombie clawing, and EnemyManager reporting swipes at the right segment. |
 
+### M5 part 1 follow-up: Aaron's tablet play-test (first round)
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| The turret, gate, fence box and tower railing glare under the torch (like the rocks, drops and signs did) | Darker metals, chain-link, wood, hazard stripe, turret pad and spikes. New **glare-only shapes** the torch's glare check sees but bodies and bullets ignore (`noBody`, `glareOnly`): round the turret (once installed) and along the tower's railing; the gate's colliders count for glare too (`glare`), though shots still pass. | `config.station.look`, `src/world/collision.js` |
+| Load the turret from a menu, to choose what goes in | Holding X at the turret now opens the **turret menu** (the ledger's Turret page on its own): status, fire mode, and for each ammo type "Load 1", "Load 5" and "Load all", each with what it's worth in turret rounds. The old load-a-batch-per-hold is gone. | `config.station.turret.menuAmounts`, `loadOrder` |
+| Zombies in the compound go for the player, not the doors | A chasing zombie at the station goes for **whichever is nearer**: you, or the defence between it and the family (a fence segment, barricade or door). | `EnemyManager.routeAtStation()` |
+| Barricades and floodlights don't appear when bought | Bug: three.js measures an instanced mesh's bounds once, on the first frame; these start with every instance hidden, so they were culled forever (their colliders still worked). Instanced station meshes are no longer frustum-culled (the compound is hidden by distance anyway). Spike traps had the same bug. | `src/render/StationRenderer.js` |
+| Releasing X doesn't drain the bar | Letting go now drains the hold bar at twice the fill speed (station actions and digging sigils). | `config.station.hold.releaseDrain`, `config.digging.releaseDrain` |
+| Zombies broke the fence but couldn't get in; you couldn't get out there either | Most likely the invisible barricade (above): it was there, just not drawn. Checked: with the fence and barricade both down, you walk straight out through the gap. | |
+| Swap Y and LB | **RB / LB cycle weapons**; the flare (later) moves to Y. | `config.input.gamepadBindings` |
+| (Found while fixing) The floodlight's beam was a solid grey wall | On a black sky the screen's gamma curve lifts a few percent of white to a bright grey: the beam is now 1.2% (one side only), the pool 14%, no fog on either. | `config.station.floodlight` |
+
 ### M4: Sigils and zombies (Session 5)
 
 Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model is the art pass); **sigil grounds get only what matters for play** (the witch prefers them, they raise faster, a simple marker; the scarecrow, cemetery, circus scares and the crows-and-candles tells wait for an encounter session); a **stand-in for the witch plants the sigils** until M7; loot as below (pistol ammo kept in the inventory for the pistol; miner zombies wait for the mineshaft, M9); **the map screen pauses the game**.
@@ -184,7 +197,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build` and `npm test` (**268/268**, 26 new) all pass.
+- `npm run dev`, `npm run build` and `npm test` (**270/270**) all pass.
+- **M5 follow-ups in headless Chromium:** barricades, spike traps and floodlight poles show when bought; the floodlight's pool and beam read at night; the turret is dark under the torch; holding E at the turret opens its menu and loading 7 pistol rounds gave 7 turret rounds; with a segment and its barricade down the player walks out through the gap.
 - **M5 part 1 in headless Chromium (software GPU, about 10 fps, so no timings):**
   - Seed 1234: the fence runs cliff to cliff with the gate south; the east fence starts torn (2 segments down, one leaning); security 24.9.
   - Repair all, a barricade, spikes, floodlights, a reinforced door, a battery, the turret installed and loaded (40 rifle rounds = 100 turret rounds) all worked; security rose to 72.

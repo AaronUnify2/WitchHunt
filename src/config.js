@@ -859,6 +859,7 @@ export const config = {
   // Digging a sigil up with the shovel (DESIGN.md "The shovel and digging").
   digging: {
     seconds: 4,
+    releaseDrain: 2, // let go and the bar empties this many times faster than it fills (Aaron, M5)
     range: 2.2, // metres from the sigil's centre
     scrapeInterval: 0.55, // seconds between shovel sounds
   },
@@ -964,10 +965,12 @@ export const config = {
       floodlight: 25,
     },
     // Hold interact this long (seconds).
-    hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5 },
+    hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5, releaseDrain: 2 }, // releaseDrain: let go and the bar empties this many times faster than it fills (Aaron)
     interactRange: 2.2,
     spikes: { radius: 1.2, damage: 12, interval: 0.8, slow: 0.4, durability: 15 },
-    floodlight: { poleHeight: 5.5, poolRadius: 7, poolOutside: 7, color: 0xfff0c8, poolOpacity: 0.35, coneOpacity: 0.08, litEdge: 1.3 }, // litEdge: zombies are lit out to this many pool radii
+    // poolOpacity / coneOpacity are tiny: on a black sky the screen's gamma lifts a few % of white to a bright grey.
+    // litEdge: zombies are lit out to this many pool radii.
+    floodlight: { poleHeight: 5.5, poolRadius: 7, poolOutside: 7, color: 0xfff0c8, poolOpacity: 0.14, coneOpacity: 0.012, litEdge: 1.3 },
     // The automated turret (DESIGN.md "The automated turret"). One per run
     // from the Car Armory (M11); until then the debug menu gives it.
     turret: {
@@ -990,22 +993,25 @@ export const config = {
         fast: { seconds: 0.5, security: 20 },
       },
       ammoDamage: { pistol: 10 }, // per round, for ammo whose gun isn't in the weapons table yet
-      loadBatch: { pistol: 1000, shotgun: 4, rifle: 5 }, // rounds loaded per hold at the turret
-      loadOrder: ['pistol', 'shotgun', 'rifle'], // what the turret takes first
+      loadOrder: ['pistol', 'shotgun', 'rifle'], // the order ammo is listed in the turret's menu
+      menuAmounts: [1, 5, 0], // load choices per ammo type in the turret's menu (0 = all of it; Aaron, M5)
       targetEvery: 0.25, // seconds between picking targets
     },
     look: {
-      wood: 0x4a3626,
+      wood: 0x3a2a1e, // the tower's railing glared at 0x4a3626
       woodDark: 0x2e2118,
       roof: 0x24382a, // Forest Service green
       trim: 0x5e4a36,
       floor: 0x3a2c20,
-      metal: 0x3a3d40, // dark: the torch blows out light metal up close
-      metalDark: 0x222427,
-      chainLink: 0x6a7076,
+      metal: 0x262829, // dark: the torch blows out light metal up close (Aaron, M5: turret, gate, fence box glared)
+      metalDark: 0x17181a,
+      chainLink: 0x4e5357,
+      hazard: 0x4a3808, // the fence box's stripe
+      concrete: 0x302f2b, // the turret pad
+      ammoCan: 0x20271a,
       sandbag: 0x5a5040,
-      plank: 0x5a4430,
-      spike: 0x3e3c38,
+      plank: 0x463424,
+      spike: 0x22211e, // the spikes glared pale under the torch at 0x3e3c38
       family: [0x5a6a7a, 0x6a5a48, 0x7a5a6a], // Ellen, Wyatt, Junie (placeholders)
       windowGlow: 0xffb060,
       monitorGlow: 0x7adcb0,
@@ -1236,9 +1242,9 @@ export const config = {
       interact: ['X'],
       reload: ['B'],
       weaponNext: ['RB'],
-      weaponPrev: ['Y'],
+      weaponPrev: ['LB'], // Aaron, M5: RB / LB cycle (was Y)
       firstAid: ['DpadRight'], // quick-use a first aid kit (Aaron, Session 3)
-      flare: ['LB'],
+      flare: ['Y'], // swapped with LB (Aaron, M5)
       map: ['DpadUp'],
       flashlight: ['DpadLeft'],
       radio: ['DpadDown'],

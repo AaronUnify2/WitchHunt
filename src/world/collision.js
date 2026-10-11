@@ -13,10 +13,12 @@ export const FLAT_GROUND = {
 // collider. Mutates and returns `pos`. Colliders are circles { x, z, r },
 // or (M5) wall pieces: segments { seg: true, ax, az, bx, bz, t } with a
 // half-thickness t (their x, z, r are a bounding circle for the grid).
-// Any collider with `off` set (an open door, a broken fence) is skipped.
+// Any collider with `off` set (an open door, a broken fence) is skipped,
+// and so is one marked `noBody` (glare-only shapes: the torch sees them,
+// bodies walk through).
 export function resolveCircles(pos, radius, circles) {
   for (const c of circles) {
-    if (c.off) continue;
+    if (c.off || c.noBody) continue;
     if (c.seg) {
       resolveSegment(pos, radius, c);
       continue;
@@ -153,7 +155,7 @@ export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 
   for (const c of circles) {
     if (c.off) continue;
     if (c.seg) {
-      if (!c.blocksShots) continue; // chain-link: the beam goes through
+      if (!c.blocksShots && !c.glare) continue; // chain-link: the beam goes through (unless marked for glare: the gate's frame)
       const t = raySegment(origin, dir, c, segHit);
       if (t < out.distance) {
         out.distance = t;

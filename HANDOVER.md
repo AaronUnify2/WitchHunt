@@ -60,6 +60,16 @@ Details are in `STATUS.md` ("M5 part 1"):
 - **Draw calls 77-86 by day at home, 57-82 at night** (budget ~100).
 - No console errors.
 
+### Aaron's first play-test of part 1 (fixed, waiting on his next test)
+
+- The turret, gate, fence box and tower railing glared under the torch: darker, plus glare-only shapes the torch dims on.
+- **Turret menu:** hold X at the turret, then load 1, 5 or all of each ammo type.
+- Zombies at the station go for whichever is nearer: you, or the defence in their way.
+- **Barricades, spikes and floodlights didn't show** (an instancing bug; their colliders worked, which is probably why zombies and Aaron got stuck at a "broken" fence). Fixed.
+- Letting go of X drains the hold bar (digging too).
+- **LB is now previous weapon**; Y is the flare (later).
+- The floodlight beam looked like a grey wall; now a faint beam and a pool.
+
 ### Unfinished
 
 - **Vehicles and battery pulling** (M5 part 2, next session). Until then batteries come from the debug menu.
@@ -89,8 +99,8 @@ Details are in `STATUS.md` ("M5 part 1"):
    - Debug menu: **Station: give a battery** (a couple of times). Hold X at the fence box just inside the gate.
    - Good: a clunk and hum, the top wires glow blue, and the charge reads 100.
 5. **The turret:**
-   - Debug menu: **Station: give the turret**, and **Give ammo**. Hold X on the pad in front of the cabin to install it, then hold X again to load it.
-   - In the ledger's Turret tab, set the mode to **fast**.
+   - Debug menu: **Station: give the turret**, and **Give ammo**. Hold X on the pad in front of the cabin to install it.
+   - Hold X again for its menu: load what you like (1, 5 or all of each ammo type) and set the mode to **fast**.
 6. **A night at the station (the M5 gate):**
    - Debug menu: **Skip to night**, then **Station: siege wave** (10 zombies outside the fence), two or three times.
    - Watch from the yard, then climb the tower (hold X at the ladder) and watch from above.

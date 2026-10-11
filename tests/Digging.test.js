@@ -4,7 +4,7 @@ import { Digging } from '../src/player/Digging.js';
 const sigil = { id: 1 };
 
 function make() {
-  const d = new Digging({ seconds: 4 });
+  const d = new Digging({ seconds: 4, releaseDrain: 2 });
   d.init();
   return d;
 }
@@ -20,12 +20,14 @@ describe('Digging', () => {
     expect(d.progress).toBe(0);
   });
 
-  it('letting go pauses; stepping away starts over', () => {
+  it('letting go drains the bar; stepping away starts over', () => {
     const d = make();
     for (let i = 0; i < 10; i++) d.update(0.1, sigil, true);
-    d.update(1, sigil, false);
     expect(d.progress).toBeCloseTo(0.25);
+    d.update(0.5, sigil, false); // drains at twice the fill speed: 0.25 of the bar a second
+    expect(d.progress).toBeCloseTo(0);
     expect(d.active).toBe(false);
+    for (let i = 0; i < 10; i++) d.update(0.1, sigil, true);
     d.update(0.1, null, true);
     expect(d.progress).toBe(0);
   });

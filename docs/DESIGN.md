@@ -72,8 +72,8 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 | LT | Right click | Aim down sights |
 | X (hold) | E (hold) | Interact: dig, search, build, repair, fit battery, plant charge |
 | B | R | Reload |
-| RB / Y | 1–4 / scroll | Next / previous weapon (decided with Aaron in M2) |
-| LB | F | Fire flare |
+| RB / LB | 1–4 / scroll | Next / previous weapon (decided with Aaron in M2; LB instead of Y from M5) |
+| Y | F | Fire flare (Y from M5; was LB) |
 | D-pad up | M | Full map |
 | D-pad left | L | Toggle flashlight |
 | D-pad right | H | Use a first aid kit (decided with Aaron in M2) |
@@ -83,7 +83,7 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 
 - Light aim assist (slowdown near targets), adjustable stick sensitivity and dead zones (config).
 - **Headshots** do extra damage (config multiplier; Aaron in M2: ×2 at least, open to ×3–4; M2 uses ×3).
-- Detonating planted charges: a remote, selected like a weapon (Y/RB) and fired with RT.
+- Detonating planted charges: a remote, selected like a weapon (RB / LB) and fired with RT.
 
 ### Movement, flashlight and stealth
 
@@ -861,7 +861,7 @@ Console style (mockup: the "Witch Hunt HUD" design canvas). Nothing in boxed pan
 | Centre | Small crosshair; interaction prompts below it (controller glyph with a hold-progress ring) |
 | Bottom left | Health (10 segments), three slim colour-coded armour bars, stealth eye icon when hidden |
 | Bottom centre | Subtitles: speaker name above, line on a dark strip |
-| Bottom right | Weapon icon and name with an RB glyph, ammo count, chips for flares (LB), charges and first aid kits; a small D-pad showing map, flashlight, radio and first aid |
+| Bottom right | Weapon icon and name with an RB glyph, ammo count, chips for flares (Y), charges and first aid kits; a small D-pad showing map, flashlight, radio and first aid |
 
 - Prompts always show the controller glyph (A green, B red, X blue, Y yellow), or the key when keyboard is in use.
 - The pause screen shows the three-prize checklist, documents found and the full map.

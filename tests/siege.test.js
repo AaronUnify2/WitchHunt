@@ -99,3 +99,39 @@ describe('EnemyManager with the station', () => {
     expect(strikes[0].damage).toBeCloseTo(config.zombies.attackDamage * config.zombies.levels[1].defenceDamage);
   });
 });
+
+describe('EnemyManager: you or the door, whichever is nearer (Aaron, M5)', () => {
+  function setup() {
+    const SEED = 1234;
+    const bus = new EventBus();
+    const map = makeMap(SEED);
+    const ground = makeGround(SEED);
+    const home = map.clearings[map.homeIndex];
+    const layout = stationLayout(home, ground, config.station.layout);
+    const state = new StationState(config.station, layout);
+    state.init();
+    const em = new EnemyManager(config, new Rng(5), bus, { map, ground, variantMixAt: () => ({ citizen: 1 }) });
+    em.init(new SpatialGrid(config.world.colliderCellSize));
+    const fam = layout.cabin.commsCentre;
+    em.station = { x: fam.x, z: fam.z, baseRadius: 70, routeRadius: 80, reach: 0.55, route: (fx, fz, tx, tz, out) => routeTo(layout, state, config.station, fx, fz, tx, tz, out) };
+    return { em, layout, state };
+  }
+
+  it('a chasing zombie by the front door claws it when you are further away', () => {
+    const { em, layout, state } = setup();
+    const door = layout.cabin.frontDoor.outer;
+    const z = em.spawnZombie(door.x, door.z + 1.5, { mode: 'chase' });
+    const player = { x: door.x + 12, z: door.z + 8 };
+    em.routeAtStation(z, player);
+    expect(z.barrier).toBe(state.doors.front);
+  });
+
+  it('but comes for you when you are the nearer', () => {
+    const { em, layout } = setup();
+    const door = layout.cabin.frontDoor.outer;
+    const z = em.spawnZombie(door.x, door.z + 4, { mode: 'chase' });
+    const player = { x: door.x + 1.5, z: door.z + 5 };
+    em.routeAtStation(z, player);
+    expect(z.via).toBe(false); // same zone: straight at you
+  });
+});

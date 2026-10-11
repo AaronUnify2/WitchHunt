@@ -52,6 +52,12 @@ export class StationRenderer {
     this.buildTurret();
     this.buildGlow();
     this.buildFamily();
+    // Instanced meshes measure their bounds once, on the first frame: built
+    // later (barricades, spikes, floodlights) they'd stay culled forever.
+    // The whole compound is hidden by distance instead (update()).
+    this.group.traverse((o) => {
+      if (o.isInstancedMesh) o.frustumCulled = false;
+    });
     scene.add(this.group);
     this.lastLevels = new Map(); // what each instance was last drawn as
     this.refresh(true);
@@ -189,10 +195,10 @@ export class StationRenderer {
     const fby = this.ground.heightAt(fb.x, fb.z);
     parts.push(this.box(0.12, 1.1, 0.12, fb.x, fby, fb.z, k.metalDark));
     parts.push(this.box(0.55, 0.65, 0.3, fb.x, fby + 0.9, fb.z, k.metal, fb.angle));
-    parts.push(this.box(0.56, 0.08, 0.31, fb.x, fby + 1.3, fb.z, 0x8a6a10, fb.angle));
+    parts.push(this.box(0.56, 0.08, 0.31, fb.x, fby + 1.3, fb.z, k.hazard, fb.angle));
     // The turret pad: a low concrete slab.
     const pad = L.turretPad;
-    parts.push(this.box(1.6, 0.2, 1.6, pad.x, this.ground.heightAt(pad.x, pad.z) - 0.05, pad.z, 0x4a4a46));
+    parts.push(this.box(1.6, 0.2, 1.6, pad.x, this.ground.heightAt(pad.x, pad.z) - 0.05, pad.z, k.concrete));
     // Empty floodlight footings, so the slots read before they're built.
     for (const f of L.floods) parts.push(this.box(0.4, 0.15, 0.4, f.x, this.ground.heightAt(f.x, f.z) - 0.05, f.z, k.emptySlot));
     void yaw0;
@@ -439,12 +445,13 @@ export class StationRenderer {
     this.lampMaterial = this.keep(new THREE.MeshBasicMaterial({ color: f.color }));
     this.lamps = new THREE.InstancedMesh(this.keep(new THREE.BoxGeometry(0.42, 0.32, 0.04).translate(0, H - 0.25, 0.92)), this.lampMaterial, n);
     // Fake light: a soft cone and a pool on the ground (additive, no real
-    // light, so the light budget and shaders don't change).
+    // light, so the light budget and shaders don't change). No fog on them:
+    // additive fog adds the fog's colour and turns the beam into a grey wall.
     const coneLen = Math.hypot(f.poolOutside + this.cfg.layout.floodInside, H);
     const cone = new THREE.ConeGeometry(f.poolRadius * 0.75, coneLen, 20, 1, true).translate(0, -coneLen / 2, 0);
-    this.coneMaterial = this.keep(new THREE.MeshBasicMaterial({ color: f.color, transparent: true, opacity: f.coneOpacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true }));
+    this.coneMaterial = this.keep(new THREE.MeshBasicMaterial({ color: f.color, transparent: true, opacity: f.coneOpacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide, fog: false })); // one side: both doubled it
     this.cones = new THREE.InstancedMesh(this.keep(cone), this.coneMaterial, n);
-    this.poolMaterial = this.keep(new THREE.MeshBasicMaterial({ map: this.keep(radialTexture()), color: f.color, transparent: true, opacity: f.poolOpacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: true, polygonOffset: true, polygonOffsetFactor: -2 }));
+    this.poolMaterial = this.keep(new THREE.MeshBasicMaterial({ map: this.keep(radialTexture()), color: f.color, transparent: true, opacity: f.poolOpacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, polygonOffset: true, polygonOffsetFactor: -2 }));
     this.pools = new THREE.InstancedMesh(this.keep(new THREE.CircleGeometry(f.poolRadius, 28).rotateX(-Math.PI / 2)), this.poolMaterial, n);
     this.group.add(this.floodPoles, this.lamps, this.cones, this.pools);
   }
@@ -504,7 +511,7 @@ export class StationRenderer {
     this.turretBase.castShadow = true;
     const headParts = [
       this.box(0.55, 0.35, 0.75, 0, -0.18, -0.05, k.metal),
-      this.box(0.3, 0.25, 0.35, 0.38, -0.2, -0.05, 0x3c4630), // ammo can
+      this.box(0.3, 0.25, 0.35, 0.38, -0.2, -0.05, k.ammoCan), // ammo can
       this.box(0.2, 0.12, 0.2, 0, 0.17, -0.1, k.metalDark), // sight
     ];
     const barrel = new THREE.CylinderGeometry(0.05, 0.06, 1.05, 10).rotateX(Math.PI / 2).translate(0, 0, 0.75);
