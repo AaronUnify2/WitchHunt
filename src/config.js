@@ -214,7 +214,7 @@ export const config = {
       chunkWidth: 64, // metres of wall per mesh (for distance culling)
     },
     home: {
-      radius: 38, // the compound (fence, station, tower) is built here in M5
+      radius: 42, // the compound (fence, station, tower; M5): 38 -> 42 so there's cleared ground outside the fence too
       offsetFromCliff: 32, // centre this far south of the cliff line
       xSpread: 0.3, // fraction of the walkable width either side of the centre line it can sit
     },
@@ -639,8 +639,9 @@ export const config = {
     firstAidHeal: 30,
     // M4: loot that has no other home yet. Pistol ammo waits for the
     // pistol; scrap waits for building and repairs (M5).
-    startScrap: 0,
+    startScrap: 30, // M5: "a little bit of scrap" to patch the torn east fence (Aaron)
     startAmmo: { pistol: 0 },
+    startBatteries: 0, // carried batteries (no carry limit and no slowdown: Aaron, M5)
   },
 
   // Zombies (DESIGN.md "Zombies"). M4: levels, variants, hordes, mutants,
@@ -857,6 +858,166 @@ export const config = {
     seconds: 4,
     range: 2.2, // metres from the sigil's centre
     scrapeInterval: 0.55, // seconds between shovel sounds
+  },
+
+  // The ranger station (M5, DESIGN.md "The ranger station"). Every number
+  // is a placeholder for Aaron's play-test. Angles round the fence are
+  // measured from south (0) toward east (+), round the fence's centre.
+  station: {
+    layout: {
+      fenceCentreFromCliff: 16, // metres south of the cliff line (at home's x) to the fence's centre
+      fenceRadius: 28, // the fence is an arc of this radius from cliff to cliff
+      fenceEndInset: 1.5, // each end runs this far past the walkable line into the cliff's foot
+      gateWidth: 4.5, // metres, due south of the fence's centre
+      segmentsPerSide: 6, // 12 fence segments (Aaron: "12 sounds about right"), 6 each side of the gate
+      panelLength: 2.4, // metres between fence posts (and per collider piece)
+      fenceHeight: 2.4,
+      colliderThickness: 0.12, // half-thickness of fence, wall and door colliders
+      cabin: {
+        offsetZ: 2, // cabin centre this far south of the fence's centre
+        width: 12, // west to east
+        depth: 8, // north to south
+        wallHeight: 3,
+        roofRise: 1.6,
+        frontDoorWidth: 1.4, // south wall, centred
+        commsDepth: 3.5, // the comms room is the back (north) strip of the cabin
+        commsDoorX: 3.5, // the comms door, east of centre in the partition
+        commsDoorWidth: 1.2,
+        doorApproach: 0.9, // metres either side of a door where zombies stand to attack or step through
+        cornerMargin: 1.4, // zombies round the cabin's corners this far out
+      },
+      tower: { offsetX: 11, offsetZ: 0, height: 9, platformHalf: 1.7, legSpread: 1.6, revealRadius: 260 },
+      turretPad: { offsetX: -4, offsetZ: 10 },
+      fenceBox: { gateOffset: 3.2, inside: 2.2 }, // metres along the fence from the gate's edge, and inside it
+      desk: { offsetX: -2.5, fromNorthWall: 0.7 }, // the ledger, radio and monitors in the comms room
+      spikeOutside: 2.6, // spike trap slots: one per segment, this far outside its middle
+      floodSegments: [1, 4, 7, 10], // floodlight slots, on poles just inside these segments
+      floodInside: 1.2,
+      barricadeInside: 1.1, // a barricade is a second layer this far inside its segment
+    },
+    // Zombies within baseRadius of the fence's centre lay siege (ZombieBrain).
+    siege: {
+      baseRadius: 70,
+      breachSeek: 35, // metres round the fence a zombie will walk to reach a gap instead of clawing
+      arcStepDegrees: 14, // walking round the outside of the fence, one waypoint at a time
+      walkOutside: 1.4, // metres outside (or inside) the fence while walking round it
+      gapThrough: 2.6, // metres past the fence line to step through a gap
+      stand: 0.7, // metres from a barrier where a zombie stands to claw it
+      reach: 0.55, // within this of its standing spot, it starts clawing
+      strikeScale: 1, // a swipe on a defence = attackDamage x level defenceDamage x this
+      overrun: true, // a zombie in the comms room ends the run (the family)
+    },
+    fence: {
+      segmentHealth: 200,
+      gateHealth: 300,
+      barricadeHealth: 150,
+      // Start of a run (Aaron: "east fence torn up"): segment index (0 = far
+      // west, 11 = far east) -> health fraction.
+      startHealth: { 9: 0.45, 10: 0, 11: 0 },
+      gateOpenDistance: 3.5, // the gate opens itself for the player within this
+      gateSlideSeconds: 0.8,
+    },
+    doors: {
+      health: 300,
+      reinforcedHealth: 600,
+      openDistance: 1.8, // doors open themselves for the player
+      swingSeconds: 0.35,
+    },
+    // Electric fence and power (DESIGN.md "Electric fence and power").
+    power: {
+      startCharge: 0, // Aaron: no charge at the start
+      maxCharge: 300,
+      batteryCharge: 100, // one battery fitted at the fence box
+      fullSecurityCharge: 100, // charge that gives the fence its full security value
+      nightDrain: 40, // drained steadily over each night
+      floodlightNightDrain: 4, // per floodlight, per night
+      zapCost: 1.5, // each zombie zapped
+      zapDamage: 15,
+      zapStagger: 0.9, // seconds the zap stuns it (the slow)
+      zapCooldown: 1, // a zombie is zapped at most this often
+      turretShotCost: 0.05,
+    },
+    // Security rating (DESIGN.md table; each scales with remaining health).
+    security: {
+      fenceSegment: 2, // per segment, as a wall segment
+      gate: 2,
+      barricade: 2,
+      door: 2,
+      reinforcedDoor: 5,
+      spikeTrap: 3,
+      floodlight: 4,
+      fenceCharge: 20, // at fullSecurityCharge or more
+    },
+    // Scrap prices (Aaron: "just pick some prices").
+    costs: {
+      fenceRepair: 12, // a whole segment from nothing; part repairs cost their share
+      gateRepair: 16,
+      barricade: 15,
+      barricadeRepair: 10,
+      doorRepair: 15,
+      reinforceDoor: 30,
+      spikeTrap: 20,
+      spikeRepair: 10,
+      floodlight: 25,
+    },
+    // Hold interact this long (seconds).
+    hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5 },
+    interactRange: 2.2,
+    spikes: { radius: 1.2, damage: 12, interval: 0.8, slow: 0.4, durability: 15 },
+    floodlight: { poleHeight: 5.5, poolRadius: 7, poolOutside: 7, color: 0xfff0c8, poolOpacity: 0.22, coneOpacity: 0.07 },
+    // The automated turret (DESIGN.md "The automated turret"). One per run
+    // from the Car Armory (M11); until then the debug menu gives it.
+    turret: {
+      range: 42,
+      turnRate: 200, // degrees per second
+      aimTolerance: 4, // degrees: fires once it's this close to its target
+      roundDamage: 10, // a "turret round" (DESIGN.md)
+      // Aaron: it should carve through crowds even more than the rifle.
+      pierce: 7,
+      pierceKeep: 0.9,
+      spreadDegrees: 0.8,
+      stagger: 0.35,
+      knockback: 0.7,
+      muzzleHeight: 1.55,
+      noise: 50, // metres: zombies hear it and come
+      startMode: 'medium',
+      modes: {
+        slow: { seconds: 3, security: 5 },
+        medium: { seconds: 1.5, security: 10 },
+        fast: { seconds: 0.5, security: 20 },
+      },
+      ammoDamage: { pistol: 10 }, // per round, for ammo whose gun isn't in the weapons table yet
+      loadBatch: { pistol: 1000, shotgun: 4, rifle: 5 }, // rounds loaded per hold at the turret
+      loadOrder: ['pistol', 'shotgun', 'rifle'], // what the turret takes first
+      tracerSeconds: 0.09,
+      tracerWidth: 0.05,
+      tracerColor: 0xffd27a,
+      flashSeconds: 0.06,
+      targetEvery: 0.25, // seconds between picking targets
+    },
+    look: {
+      wood: 0x4a3626,
+      woodDark: 0x2e2118,
+      roof: 0x24382a, // Forest Service green
+      trim: 0x5e4a36,
+      floor: 0x3a2c20,
+      metal: 0x55595e,
+      metalDark: 0x2c2f33,
+      chainLink: 0x8a9096,
+      sandbag: 0x5a5040,
+      plank: 0x5a4430,
+      spike: 0x3e3c38,
+      family: [0x5a6a7a, 0x6a5a48, 0x7a5a6a], // Ellen, Wyatt, Junie (placeholders)
+      windowGlow: 0xffb060,
+      monitorGlow: 0x7adcb0,
+      wireCharged: 0x6ad0ff,
+      wireDead: 0x3a3c40,
+      emptySlot: 0x2a2a2a,
+      chainLinkTexture: 128, // pixels
+      cullMargin: 40, // metres beyond the draw distance the compound stays drawn
+    },
+    damagedTilt: 0.25, // radians a fence panel leans at half health
+    brokenTilt: 1.35, // a broken panel lies nearly flat
   },
 
   // One detection model for every enemy (DESIGN.md "Movement, flashlight

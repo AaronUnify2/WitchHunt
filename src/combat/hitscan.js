@@ -4,7 +4,7 @@
 // back: the mutant's); trees and rocks block shots with their
 // trunk or rock body, and the ground stops shots aimed into it.
 
-import { FLAT_GROUND } from '../world/collision.js';
+import { FLAT_GROUND, raySegment } from '../world/collision.js';
 
 const GROUND_STEP = 1; // metres per step when marching a shot over the terrain
 
@@ -92,6 +92,12 @@ const parts = { t: 0, part: 'body' };
 export function rayBlockers(origin, dir, blockers, maxDistance, ground = FLAT_GROUND) {
   let best = maxDistance;
   for (const b of blockers) {
+    if (b.off) continue;
+    if (b.seg) {
+      // Wall pieces (M5): walls and doors stop shots; the chain-link fence doesn't.
+      if (b.blocksShots) best = Math.min(best, raySegment(origin, dir, b));
+      continue;
+    }
     const t = rayCylinder(origin, dir, b.x, b.z, b.r, b.base ?? -Infinity, b.top ?? Infinity);
     if (t < best) best = t;
   }

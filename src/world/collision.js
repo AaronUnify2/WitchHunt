@@ -10,9 +10,17 @@ export const FLAT_GROUND = {
 };
 
 // Push a circle at `pos` with `radius` out of every overlapping static
-// circle. Mutates and returns `pos`.
+// collider. Mutates and returns `pos`. Colliders are circles { x, z, r },
+// or (M5) wall pieces: segments { seg: true, ax, az, bx, bz, t } with a
+// half-thickness t (their x, z, r are a bounding circle for the grid).
+// Any collider with `off` set (an open door, a broken fence) is skipped.
 export function resolveCircles(pos, radius, circles) {
   for (const c of circles) {
+    if (c.off) continue;
+    if (c.seg) {
+      resolveSegment(pos, radius, c);
+      continue;
+    }
     const dx = pos.x - c.x;
     const dz = pos.z - c.z;
     const minDist = radius + c.r;
@@ -29,6 +37,89 @@ export function resolveCircles(pos, radius, circles) {
   }
   return pos;
 }
+
+// Push a circle out of a thick segment (a wall piece).
+export function resolveSegment(pos, radius, c) {
+  const ex = c.bx - c.ax;
+  const ez = c.bz - c.az;
+  const len2 = ex * ex + ez * ez;
+  let t = len2 > 0 ? ((pos.x - c.ax) * ex + (pos.z - c.az) * ez) / len2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  const px = c.ax + ex * t;
+  const pz = c.az + ez * t;
+  const dx = pos.x - px;
+  const dz = pos.z - pz;
+  const minDist = radius + c.t;
+  const distSq = dx * dx + dz * dz;
+  if (distSq >= minDist * minDist) return pos;
+  const dist = Math.sqrt(distSq);
+  if (dist < 1e-9) {
+    // Dead on the line: push out along its normal.
+    const len = Math.sqrt(len2) || 1;
+    pos.x += (-ez / len) * minDist;
+    pos.z += (ex / len) * minDist;
+    return pos;
+  }
+  const push = (minDist - dist) / dist;
+  pos.x += dx * push;
+  pos.z += dz * push;
+  return pos;
+}
+
+// A wall-piece collider: a segment from (ax, az) to (bx, bz), half as thick
+// as `t`, from height base to top. blocksShots: shots and the torch stop
+// on it (walls and doors do; the chain-link fence doesn't).
+export function segmentCollider(ax, az, bx, bz, t, base, top, blocksShots) {
+  const len = Math.hypot(bx - ax, bz - az);
+  return { seg: true, ax, az, bx, bz, t, x: (ax + bx) / 2, z: (az + bz) / 2, r: len / 2 + t, base, top, blocksShots, off: false };
+}
+
+// Distance along a ray (origin + t * dir, dir a unit vector) to a thick
+// upright segment (a wall piece: a box from base to top), or Infinity.
+// If `hit` is given, hit.facing gets the cosine between the ray and the
+// face it meets (1 = head-on).
+export function raySegment(origin, dir, c, hit) {
+  const ex = c.bx - c.ax;
+  const ez = c.bz - c.az;
+  const len = Math.hypot(ex, ez);
+  if (len < 1e-9) return Infinity;
+  const ux = ex / len;
+  const uz = ez / len;
+  const ox = origin.x - c.ax;
+  const oz = origin.z - c.az;
+  // The ray in the piece's frame: u along it, v across it, y up. Slab test
+  // on each axis, no allocation.
+  slab.enter = -Infinity;
+  slab.exit = Infinity;
+  slab.facing = 1;
+  if (!clipSlab(ox * ux + oz * uz, dir.x * ux + dir.z * uz, 0, len)) return Infinity;
+  if (!clipSlab(-ox * uz + oz * ux, -dir.x * uz + dir.z * ux, -c.t, c.t)) return Infinity;
+  if (!clipSlab(origin.y, dir.y, c.base ?? -Infinity, c.top ?? Infinity)) return Infinity;
+  if (slab.enter > slab.exit || slab.exit < 0) return Infinity;
+  if (hit) hit.facing = slab.enter < 0 ? 1 : slab.facing;
+  return Math.max(0, slab.enter);
+}
+const slab = { enter: 0, exit: 0, facing: 1 };
+
+// One axis of a ray-box slab test (o: origin, d: direction on that axis).
+// False if the ray misses the slab entirely.
+function clipSlab(o, d, lo, hi) {
+  if (Math.abs(d) < 1e-12) return o >= lo && o <= hi;
+  let t0 = (lo - o) / d;
+  let t1 = (hi - o) / d;
+  if (t0 > t1) {
+    const swap = t0;
+    t0 = t1;
+    t1 = swap;
+  }
+  if (t0 > slab.enter) {
+    slab.enter = t0;
+    slab.facing = Math.abs(d);
+  }
+  if (t1 < slab.exit) slab.exit = t1;
+  return true;
+}
+const segHit = { facing: 0 };
 
 // Keep `pos` within `maxRadius` of the origin. Mutates and returns `pos`.
 export function clampToRadius(pos, maxRadius) {
@@ -60,6 +151,16 @@ export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 
 
   const flat = dir.x * dir.x + dir.z * dir.z;
   for (const c of circles) {
+    if (c.off) continue;
+    if (c.seg) {
+      if (!c.blocksShots) continue; // chain-link: the beam goes through
+      const t = raySegment(origin, dir, c, segHit);
+      if (t < out.distance) {
+        out.distance = t;
+        out.facing = segHit.facing;
+      }
+      continue;
+    }
     const radius = c.vr ?? c.r;
     const ox = origin.x - c.x;
     const oz = origin.z - c.z;
