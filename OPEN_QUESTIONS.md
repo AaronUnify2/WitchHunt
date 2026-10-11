@@ -17,6 +17,7 @@ Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, ma
 | 30 | Placeholder sounds. | **Aaron: yes, and note they'll be upgraded.** Every combat sound is synthesised on the fly (Web Audio); no files. **To be replaced in the audio pass (Session 20).** | `src/audio/Sfx.js` |
 | 31 | Aim assist on the mouse? | Controller only. The mouse is never slowed. Toggle it in the debug menu to compare. | `config.aimAssist` |
 | 32 | The in-hand weapons are unlit. | The torch sits right beside the gun, so real lighting blew it out. The placeholder shapes use baked shading, tinted each frame by the sky's ambient and sun/moon light plus a torch fill (after Aaron saw a black gun by day). The art pass should keep that approach (or a separate view-model light). | `src/player/ViewModel.js` |
+| 34 | Do bullets go through zombies? | **Decided with Aaron:** yes, to carve through mobs. Rifle up to 4 zombies (75% damage kept after each), shotgun pellets 2 (50%). Not decided: whether the turret (M5) and pistol penetrate too; each weapon has its own `pierce`. | `config.weapons.*.pierce` |
 | 33 | The overlay clock reads like minutes:seconds. | It's the in-game clock face (hours:minutes); one game minute at night is 0.6 real seconds, so it runs about 100× real time by design (#2). Aaron read "21:15" as a stopwatch. The final HUD (Session 19) shows "Night 1 · 21:15" in the top left, as DESIGN.md asks. | `config.clock.phases` |
 
 ## Session 2 (M1, Graphics Engineer)

@@ -28,7 +28,7 @@ Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 t
 | --- | --- | --- |
 | Combat hub | `src/combat/Combat.js` | Owns everything below and wires it through the event bus. Game calls `update()`; the player only moves while alive. |
 | Weapons | `src/player/Weapons.js`, `src/combat/WeaponState.js` | Shovel, service rifle and shotgun from one table in `config.weapons`. **RB** next, **Y** previous (keys 1–4, wheel). **RT** fires (guns once per pull; the shovel keeps swinging while held). **LT** aims down sights: zoom, tighter spread, stronger aim assist. **B** reloads (rifle: whole magazine; shotgun: shell by shell, and firing cuts the reload short); an empty gun reloads when you pull the trigger. Switching takes 0.35 s. The tap that starts the game never fires. |
-| Hit-scan and melee | `src/combat/hitscan.js` | Instant rays. A zombie is a body cylinder plus a narrower head cylinder (**headshots ×3**). Tree trunks and rock bodies block shots (canopies don't). Shotgun: 8 pellets in a cone, damage falls off from 8 m to 25 m, one hit per zombie per shot. Shovel: 2.2 m reach, 70° arc, connects 0.14 s into the swing, big stagger and knockback. |
+| Hit-scan and melee | `src/combat/hitscan.js` | Instant rays that penetrate lined-up zombies (rifle up to 4, shotgun pellets 2, losing damage each time). A zombie is a body cylinder plus a narrower head cylinder (**headshots ×3**). Tree trunks and rock bodies block shots (canopies don't). Shotgun: 8 pellets in a cone, damage falls off from 8 m to 25 m, one hit per zombie per shot. Shovel: 2.2 m reach, 70° arc, connects 0.14 s into the swing, big stagger and knockback. |
 | Aim slowdown | `src/player/Player.js` | Aiming or firing slows you to 0.6× and stops a sprint (`config.player.aimMultiplier`). |
 | Aim assist | `src/combat/aimAssist.js` | Light: controller look slows (to 0.45×, 0.35× aimed) over a zombie's body or head, fading out over 3°. No magnetism. Never on the mouse. Toggle in the debug menu. |
 | Zombie | `src/ai/Zombie.js`, `EnemyManager.js` | One "citizen" type using level 1 rules. Pool of 25 (the active cap). Walks straight at you at 0.35–0.45× your sprint (debug: level 5 is 0.5–1.3×, skewed slow). Slides round trees and rocks, keeps apart from other zombies. Swipe: 0.5 s wind-up, 10 damage, only lands if you're still in reach. Hits flash it red, stagger and knock it back (a hit in the wind-up cancels the swipe). 60 health. Falls when killed; the body stays 20 s, then sinks away. Close zombies are fed into the torch glare check. |
@@ -48,6 +48,8 @@ Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 t
 | --- | --- | --- |
 | The weapon bobs far too fast, and vibrates at a sprint | The sway was driven by the camera's head-bob cycle and folded with an absolute value, doubling it: about 8 bounces a second walking and 13 sprinting. It now has its own footstep pace: one smooth dip per step at 1.8 steps a second walking and 2.3 sprinting (a little deeper), side to side once every two steps, easing in and out as you start and stop. The camera's head bob is unchanged. | `config.viewModel.bob` |
 | By day the gun still looks black, as if in heavy shadow | The in-hand weapons had a fixed night-time brightness. Their colours now follow the sky's real light each frame (ambient plus sun or moon, as set by the clock), plus a warm fill while the torch is on and a flash when firing. They're full colour by day and dark and moonlit at night. The parts also got real colours: walnut stocks, steel barrels, bolt and shovel blade. | `config.viewModel.lighting` |
+| A red X stays over the crosshair | Bug: the HUD only touches the page when a value changes, and the hit marker bypassed that bookkeeping, so after the first marker cleared, later ones were never cleared. Fixed; the marker now always fades after its 0.18 s (0.29 s on a kill). | `src/ui/Hud.js` |
+| Bullets should carve through lined-up mobs | Penetration, per weapon: a rifle round passes through up to **4 zombies**, keeping 75% of its damage after each (25 / 19 / 14 / 11). Each shotgun pellet goes through **2**, keeping 50%, so a blast carries into the second rank. Trees and rocks still stop rounds. | `config.weapons.*.pierce`, `pierceKeep` |
 
 ### M1 follow-up round 2 (Session 3, from Aaron's 20-minute tablet test)
 
@@ -93,7 +95,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (116/116) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (118/118) all pass. Production build at `/WitchHunt/` runs with no console errors.
 - **M1 performance gate passed on the tablet (Aaron):** a steady 60 fps for 20+ minutes of night walking at Medium, the tablet warm but not hot. Locking and unlocking, controller off and on, and leaving fullscreen all recover.
 - **M2 on the tablet (Aaron):** fighting zombies at night is fun. **60 fps the whole time, even with 20+ zombies spawned at once.** B always reloads and never leaves fullscreen. The torch is enough to fight by. The dead trees look "much, much better" and the rock glare is gone.
 - **M2 in headless Chromium with a simulated Xbox controller:**
@@ -115,7 +117,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- The weapon-sway and daylight weapon-colour fixes on the tablet (made after the play-test; checked headless only).
+- The weapon-sway, daylight weapon-colour, hit-marker and penetration changes on the tablet (made after the play-test; checked headless only).
 - Whether the placeholder sounds play on Android Chrome (Aaron didn't mention them either way).
 - Feel numbers (aim assist strength, recoil, zombie damage, headshot ×3) passed a first play-test; they get their real tuning in M14.
 - Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.

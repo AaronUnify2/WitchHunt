@@ -71,6 +71,36 @@ export function rayEnemies(origin, dir, enemies, maxDistance) {
   return best;
 }
 
+// Every enemy a ray passes through before maxDistance, nearest first, for
+// bullets that penetrate. Fills `out` with { enemy, distance, part },
+// reusing its objects; returns the number of hits.
+export function rayEnemiesAll(origin, dir, enemies, maxDistance, out) {
+  let n = 0;
+  for (const e of enemies) {
+    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, 0, e.headBottom);
+    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, e.headBottom, e.height);
+    const head = tHead <= tBody;
+    const t = head ? tHead : tBody;
+    if (t >= maxDistance) continue;
+    if (n === out.length) out.push({ enemy: null, distance: 0, part: 'body' });
+    const hit = out[n++];
+    hit.enemy = e;
+    hit.distance = t;
+    hit.part = head ? 'head' : 'body';
+  }
+  // Insertion sort: a handful of hits at most.
+  for (let i = 1; i < n; i++) {
+    const h = out[i];
+    let j = i - 1;
+    while (j >= 0 && out[j].distance > h.distance) {
+      out[j + 1] = out[j];
+      j--;
+    }
+    out[j + 1] = h;
+  }
+  return n;
+}
+
 // Damage multiplier for range: 1 up to start, falling linearly to `min` at end.
 export function falloff(distance, start, end, min) {
   if (distance <= start) return 1;

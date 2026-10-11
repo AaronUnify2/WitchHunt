@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
-import { rayEnemies, rayBlockers, falloff, spreadDirection, meleeTarget } from '../combat/hitscan.js';
+import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget } from '../combat/hitscan.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const SLOT_ACTIONS = ['weaponSlot1', 'weaponSlot2', 'weaponSlot3', 'weaponSlot4'];
@@ -38,6 +38,7 @@ export class Weapons {
     this.dir = { x: 0, y: 0, z: 0 };
     this.blockers = [];
     this.pelletHits = new Map(); // zombie -> { damage, head, pellets, x, y, z }
+    this.rayHits = []; // reused by rayEnemiesAll
     this.assistTargets = [];
     this.assistCfgAiming = { ...this.assistCfg, slowFactor: this.assistCfg.aimingSlowFactor };
     this.reset();
@@ -174,26 +175,34 @@ export class Weapons {
     for (let i = 0; i < w.pellets; i++) {
       const dir = spreadDirection(this.forward, this.right, this.up, spread, this.rng, this.dir);
       const blocked = rayBlockers(eye, dir, this.blockers, w.range);
-      const hit = rayEnemies(eye, dir, living, blocked);
-      if (!hit) {
+      const count = rayEnemiesAll(eye, dir, living, blocked, this.rayHits);
+      if (count === 0) {
         if (blocked < check) {
           this.bus.emit('weapon:impact', { x: eye.x + dir.x * blocked, y: eye.y + dir.y * blocked, z: eye.z + dir.z * blocked });
         }
         continue;
       }
-      const head = hit.part === 'head';
-      const damage = w.damage * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * (head ? this.cfg.headshotMultiplier : 1);
-      let entry = this.pelletHits.get(hit.enemy);
-      if (!entry) {
-        entry = { damage: 0, head: false, pellets: 0, x: 0, y: 0, z: 0 };
-        this.pelletHits.set(hit.enemy, entry);
+      // Penetration: the round carries on through up to `pierce` zombies,
+      // keeping `pierceKeep` of its damage after each one.
+      const pierce = Math.min(count, w.pierce ?? 1);
+      let carried = 1;
+      for (let k = 0; k < pierce; k++) {
+        const hit = this.rayHits[k];
+        const head = hit.part === 'head';
+        const damage = w.damage * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * (head ? this.cfg.headshotMultiplier : 1);
+        let entry = this.pelletHits.get(hit.enemy);
+        if (!entry) {
+          entry = { damage: 0, head: false, pellets: 0, x: 0, y: 0, z: 0 };
+          this.pelletHits.set(hit.enemy, entry);
+        }
+        entry.damage += damage;
+        entry.head ||= head;
+        entry.pellets += 1;
+        entry.x = eye.x + dir.x * hit.distance;
+        entry.y = eye.y + dir.y * hit.distance;
+        entry.z = eye.z + dir.z * hit.distance;
+        carried *= w.pierceKeep ?? 1;
       }
-      entry.damage += damage;
-      entry.head ||= head;
-      entry.pellets += 1;
-      entry.x = eye.x + dir.x * hit.distance;
-      entry.y = eye.y + dir.y * hit.distance;
-      entry.z = eye.z + dir.z * hit.distance;
     }
 
     // One hit per zombie per shot, however many pellets landed.

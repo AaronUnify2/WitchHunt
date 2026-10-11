@@ -94,3 +94,27 @@ describe('meleeTarget', () => {
     expect(meleeTarget(eye, 0, -1, [side, centre], 2.2, arc)).toBe(centre);
   });
 });
+
+describe('rayEnemiesAll (penetration)', () => {
+  it('returns every zombie in the line, nearest first', async () => {
+    const { rayEnemiesAll } = await import('../src/combat/hitscan.js');
+    const out = [];
+    const far = zombie(-12);
+    const near = zombie(-4);
+    const mid = zombie(-8);
+    const n = rayEnemiesAll({ x: 0, y: 1.2, z: 0 }, ahead, [far, near, mid, zombie(-6, 3)], 100, out);
+    expect(n).toBe(3);
+    expect(out.slice(0, n).map((h) => h.enemy)).toEqual([near, mid, far]);
+    expect(out[0].part).toBe('body');
+  });
+
+  it('stops at a blocker distance and reuses its output array', async () => {
+    const { rayEnemiesAll } = await import('../src/combat/hitscan.js');
+    const out = [];
+    expect(rayEnemiesAll(eye, ahead, [zombie(-4), zombie(-8)], 6, out)).toBe(1);
+    const first = out[0];
+    rayEnemiesAll(eye, ahead, [zombie(-4)], 100, out);
+    expect(out[0]).toBe(first);
+    expect(out[0].part).toBe('head');
+  });
+});

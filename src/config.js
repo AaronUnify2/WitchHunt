@@ -355,6 +355,8 @@ export const config = {
       spreadDegrees: 1.2, // from the hip
       aimSpreadDegrees: 0, // aimed down sights
       range: 150,
+      pierce: 4, // passes through up to this many zombies (Aaron: carve through mobs)
+      pierceKeep: 0.75, // fraction of the damage kept after each zombie
       falloffStart: 150, // no falloff
       falloffEnd: 150,
       falloffMin: 1,
@@ -377,6 +379,8 @@ export const config = {
       spreadDegrees: 6,
       aimSpreadDegrees: 4,
       range: 45,
+      pierce: 2, // each pellet can go through the front zombie into the one behind
+      pierceKeep: 0.5,
       falloffStart: 8, // full damage up to here
       falloffEnd: 25, // falloffMin of the damage from here on
       falloffMin: 0.3,

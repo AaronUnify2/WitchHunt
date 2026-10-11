@@ -65,6 +65,7 @@ export class Hud {
 
   hitMarker(killed, headshot) {
     this.hitTimer = this.cfg.hitMarkerSeconds * (killed ? 1.6 : 1);
+    this.last.hit = 'on'; // so update() clears it when the timer runs out
     this.hitEl.className = `hud-hitmarker on${killed ? ' kill' : ''}${headshot ? ' head' : ''}`;
   }
 
