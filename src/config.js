@@ -266,6 +266,7 @@ export const config = {
     walkSpeed: 4.5, // metres per second at full stick
     sprintMultiplier: 1.6, // full sprint = walk x this (zombie speeds are multiples of it)
     crouchMultiplier: 0.5,
+    aimMultiplier: 0.6, // aiming or firing slows the player (DESIGN.md "Movement")
     acceleration: 30, // m/s^2 toward the stick's target speed
     deceleration: 40,
     sprintMinMove: 0.5, // stick deflection needed to start or keep sprinting
@@ -286,6 +287,32 @@ export const config = {
       regenDelay: 1, // seconds after sprinting before stamina refills
       minToStartSprint: 15,
     },
+  },
+
+  // Health, armour and healing (DESIGN.md "Health, armour and healing")
+  health: {
+    max: 100,
+    start: 100,
+    healPerSecond: 10, // one point at a time; a second kit queues behind the first
+  },
+  armour: {
+    types: {
+      ballistic: { max: 100 }, // grey-blue: vests, helmets, body armour
+      energy: { max: 100 }, // green-cyan: alien shields
+      nature: { max: 100 }, // mossy green: Bigfoot's gift
+    },
+    damageOrder: ['ballistic', 'energy', 'nature'], // then health
+  },
+
+  // Light aim assist: controller look slows when the crosshair is on or
+  // near a target. No magnetism or snapping. Mouse is never assisted.
+  aimAssist: {
+    enabled: true,
+    maxDistance: 40, // metres; targets further away get no help
+    marginDegrees: 1.5, // full slowdown this far outside the target's body
+    fadeDegrees: 3, // then fades back to normal over this many degrees
+    slowFactor: 0.45, // look speed multiplier at full slowdown
+    aimingSlowFactor: 0.35, // stronger while aiming down sights (LT)
   },
 
   // Flashlight: the game's one shadow-casting light
