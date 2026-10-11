@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 6 (Gameplay Programmer), milestone **M5: The station, part 1** (the compound, fence, gate, doors, siege, electric fence, turret, barricades, spike traps, floodlights, ledger, tower). Built and checked in headless Chromium; **Aaron play-tested it on the tablet over two rounds, and all his fixes are in** (he confirmed the retry fix); his full verdict on a night's defence is still to come (script in `HANDOVER.md`). **Part 2 (vehicles and battery pulling) is the next session.** M4 follow-ups confirmed by Aaron (the mutant's weak spot and charge work).
+Last updated: Session 6b (Gameplay Programmer), milestone **M5: The station, part 2** (abandoned vehicles: searching, lifting bonnets, pulling batteries, car alarms), plus the turret fixes from Aaron's M5 part 1 night-defence test. Built and checked in headless Chromium; **Aaron's tablet play-test of the vehicles is still to come** (script in `HANDOVER.md`). Aaron's verdict on part 1: "Night at the station is great gameplay", no fps drop and no warm tablet; prices and defences "pretty balanced so far"; the ledger is good. **With batteries now coming from the world, M5 is complete** once he's happy with the vehicles. Next: Session 7 (Lead Engineer), M6.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -20,17 +20,41 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### M5 part 2: Vehicles and batteries (Session 6b)
+
+Agreed with Aaron before building: **four types** (car, pickup truck, police car, army truck; one-off vehicles may come with later scenes), **about 45 a map**, **about 60% with a battery**, pulling a battery is **just a noise**, and an **alarm that pulling the battery kills**; vehicles **on the minimap and map screen** if it doesn't crowd them; the hold times as proposed; the debug battery stays.
+
+| Area | Files | Notes |
+| --- | --- | --- |
+| Content | `src/data/vehicles.json` | The four types: size, placeholder boxes (`parts`), unlit `lamps`, the hinged `lids` (bonnet, boot or tailgate or canvas flap, driver's door), where the battery sits, the words for each spot, and a loot table per spot (items from `loot.json`). **Placement** rules by place: `path` (verge cars), clearing type (`roadside` 3-5 and `checkpoint` 2-3 in a roadblock row), encounter (`campsite`: one sure car with a battery and no alarm, next to home; `gasStation` 2-3; `outpost` 2-3 army trucks in a row; `mineshaft` maybe a pickup; none at home, the hut or the crashed plane), else `default` (a 35% chance of one). |
+| Placement | `src/world/vehiclePlacement.js` | Pure and seeded. Clearings first, then a car every ~85 m along each pathway (85% chance), pulled 2.7 m onto the verge, facing either way, 20% nosed off the road into the trees. Each must stand on open ground (every corner and spot: no trees or rocks), on a gentle slope (≤0.22), clear of the cliff, the station (fence + 8 m), signposts and clearing centres, with 2.2 m of clear ground to any other vehicle (an oriented-box test). Roadblock rows try several lines and keep the one that fits the most. **35-59 a map (about 46 on average); 3 draw calls in all.** |
+| Vehicles | `src/world/Vehicles.js` | The system. Three hold-X spots per vehicle, each once per run: **the driver's door** (search the car / cab / police car: 2.5 s, loot), **the boot** (search the boot / truck bed / back: 2.5 s, loot), **the bonnet** (lift it: 1.5 s; then pull the battery: 3 s, ratchet clicks, a clunk, "+1 battery (N carried)", and a 22 m noise zombies hear). A bonnet with no battery says "No battery in this one". Loot the player can't take (full kits, full armour) is left on the ground by the spot. **Alarms:** a quarter of those with a battery; opening the door or boot sets it off: a toast, a two-tone wail, the lamps flashing, and a 65 m alert every 2 s until the battery is pulled ("The alarm dies") or after 60 s it runs the battery flat. Digging and the station's prompts come first. "Try again" restocks every vehicle. |
+| Look | `src/render/VehicleRenderer.js` | Every box of every vehicle is one instance of a single unit cube (one draw call, shadows on), plus one unlit mesh for headlights, tail lights and the police light bar (so an alarm's flash shows at night). Faded, dirty paints (scaled to 70%: light paint glared under the torch), tilted to the ground's slope, some leaning on a flat tyre. Doors, boots and bonnets swing open on their hinges; the battery shows under a lifted bonnet until it's pulled. |
+| Collision | `Vehicles.buildColliders()` | Each body is a row of thick wall pieces (≤1.2 m each, so the collision grid's reach stays small): bodies slide round them, shots and the torch's glare check stop on them. |
+| Maps | `src/ui/mapImage.js`, `Minimap.js`, `MapScreen.js`, `MapUi.setVehicles()` | A small steel-blue oblong, turned to the vehicle's heading, once you've been within 40 m (grey once there's nothing left in it). The map screen's legend adds "▮ Vehicle". |
+| Sounds | `src/audio/Sfx.js` | Placeholders: car door, boot lid, bonnet creak, ratchet, battery out, and the alarm's two wails. |
+| Debug | `Vehicles.addDebugItems()` | **Vehicles: teleport to the nearest unsearched** (stands you at its door; the toast says if it has a battery or an alarm), **show all on the map**, **restock them all**. Overlay: new `vehicles` line (how many, seen, emptied, batteries left, alarms ringing). |
+| Tests | `tests/vehicles.test.js` | 12 new: the data (types, lids, spots, loot items, placement weights), the frame maths, the box test, weighted picks and rule lookup; placement over 5 seeds: the same for a seed, 25-55 a map averaging 35-55, the campsite's sure battery, the battery share, alarms only with a battery, open ground and spots, slopes, no overlaps, clear of the station, signs and cliff, roadblocks and army trucks at checkpoints. |
+
+### M5 part 1 follow-up: Aaron's night-defence play-test
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| The idle turret points at the house; it should face the fence | The turret's "rest" yaw was π, which is north here (toward the cabin). It now rests facing the gate, and with nothing to shoot for 2 s it swings back there at 60°/s. | `config.station.turret.idleDelay`, `idleTurnRate` |
+| Can it shoot zombies at every fence panel, out to the edges? | **No, it couldn't**: everything was in range, but from its pad (4 m west, 10 m south of the fence's centre) the cabin hid the **east fence 3** completely (the one that starts torn down) and part of the east fence 2, on every seed. The pad moves to **3 m east, 17 m south** (south of the cabin, east of the gate path), where a search of pad spots found every panel in sight on 7 seeds, and the range goes 42 → 45 m (the far ends are about 42 m away). A new test checks every panel, inside and out, is in range and in sight past the cabin walls and tower legs. | `config.station.layout.turretPad`, `config.station.turret.range` |
+| "If zombies trickled in one at a time it would be boring" (using the siege-wave button) | Noted for M6/M7 (how the night's zombies reach the station). | `HANDOVER.md` |
+
 ### M5 part 1: The ranger station (Session 6)
 
 Agreed with Aaron before building: 12 fence segments plus an automatic gate; the turret from the debug menu until the Car Armory (M11); barricades, spike traps and floodlights as ways to spend spare scrap; runs start with the east fence torn up, a little scrap (30) and no charge; no carry limit or slowdown for batteries; placeholder prices; turret rounds that carve through crowds even more than the rifle's. Vehicles and battery pulling are part 2.
 
 | Area | Files | Notes |
 | --- | --- | --- |
-| Layout | `src/base/stationLayout.js`, `config.station.layout` | Pure, from home and the cliff line. **Fence:** an arc of radius 28 m round a point 16 m south of the cliff, from cliff to cliff (each end tucked into the cliff's foot, so nothing walks round it): 6 segments each side of a 4.5 m **gate** due south, named by direction ("south-west fence 1"). **Cabin** (12 x 8 m) in the middle: front door south, the **comms room** along the back with the desk (radio, CCTV monitors, the ledger) and the family. **Lookout tower** 11 m east, **turret pad** in front of the cabin, **fence box** just inside the gate. Slots: a barricade behind each segment, a spike trap outside each, floodlights on 4 segments. Zones: outside / yard / main room / comms room. Home clearing 38 -> 42 m (cleared ground outside the fence). |
+| Layout | `src/base/stationLayout.js`, `config.station.layout` | Pure, from home and the cliff line. **Fence:** an arc of radius 28 m round a point 16 m south of the cliff, from cliff to cliff (each end tucked into the cliff's foot, so nothing walks round it): 6 segments each side of a 4.5 m **gate** due south, named by direction ("south-west fence 1"). **Cabin** (12 x 8 m) in the middle: front door south, the **comms room** along the back with the desk (radio, CCTV monitors, the ledger) and the family. **Lookout tower** 11 m east, **turret pad** south of the cabin (moved in 6b: 3 m east, 17 m south of the fence's centre, so it sees every panel), **fence box** just inside the gate. Slots: a barricade behind each segment, a spike trap outside each, floodlights on 4 segments. Zones: outside / yard / main room / comms room. Home clearing 38 -> 42 m (cleared ground outside the fence). |
 | State and security | `src/base/StationState.js` | Every defence a zombie can claw is a "barrier" with health (fence 200, gate 300, barricade 150, door 300 / 600 reinforced). Repairs cost scrap in proportion to the damage (a whole segment 12); part repairs if you're short. Barricades, reinforced doors, spike traps (15 bites) and floodlights are bought with scrap. Charge 0-300 (a battery +100). **Security rating** per DESIGN.md: each segment and the gate 2 (as walls), doors 2 / 5 reinforced, charge up to 20, barricades 2, spikes 3, floodlights 4, turret 5/10/20 × ammo coverage (0 unpowered); each scaled by health. A fresh run is about 25. |
 | Siege | `src/base/siegeRouting.js`, `src/ai/Zombie.js`, `EnemyManager.routeAtStation()` | Zombies within 70 m that haven't noticed you **besiege the comms room** (M4's siege goal). Each frame near the station they get a route: round the outside of the fence to a gap within 35 m (a broken segment with no barricade, a broken or open gate), else **claw the segment in front of them** (then its barricade); round the cabin's corners to the front door; claw it; then the comms door. Chasing zombies use the same routes to reach you, and leave the same way. Swipes at defences use the zombie's damage × the level's `defenceDamage`. If one gets into the comms room the run ends ("The station fell"; M7 builds the real screen). Breaches toast ("The east fence 2 is down!") with a crash. |
 | Electric fence and power | `Station.zap()`, `config.station.power` | A swipe at a charged fence or gate **zaps** the zombie: blue sparks, a buzz, 15 damage and a 0.9 s stun, costing 1.5 charge (once a second per zombie). Charge drains 40 over each night, +4 per floodlight, +0.05 per turret shot. The top wires glow blue and flicker while charged, and flare when a battery goes in. |
-| Turret | `src/base/Turret.js`, `turretMath.js` | Given by the debug menu (Car Armory, M11). Install it on its pad, load it (holding X loads pistol rounds first, then 4 shells, then 5 rifle rounds; the ledger loads any), set its mode in the ledger. Ammo converts by damage (pistol 1, rifle 2.5, shell 4.8 turret rounds). Slow / medium / fast: a shot every 3 / 1.5 / 0.5 s. Needs charge. Picks zombies inside the fence first, then those clawing, then the nearest, within 42 m and in sight; turns at 200°/s; **each round pierces up to 7 zombies keeping 90%**, with a heavy tracer (pooled instanced rods), muzzle flash, a loud report that brings zombies within 50 m, and kick-back. |
+| Turret | `src/base/Turret.js`, `turretMath.js` | Given by the debug menu (Car Armory, M11). Install it on its pad, load it (holding X loads pistol rounds first, then 4 shells, then 5 rifle rounds; the ledger loads any), set its mode in the ledger. Ammo converts by damage (pistol 1, rifle 2.5, shell 4.8 turret rounds). Slow / medium / fast: a shot every 3 / 1.5 / 0.5 s. Needs charge. Picks zombies inside the fence first, then those clawing, then the nearest, within 45 m (42 until 6b) and in sight; turns at 200°/s; rests facing the gate; **each round pierces up to 7 zombies keeping 90%**, with a heavy tracer (pooled instanced rods), muzzle flash, a loud report that brings zombies within 50 m, and kick-back. |
 | Gate, doors, tower | `Station.updateDoors()`, `Player.setPlatform()` | The gate slides open and the doors swing open when you're near, and close behind you (zombies can slip through while open). Hold X at the tower's ladder to climb: you're on the 9 m platform (zombies can't reach you there), the map is revealed for 260 m. |
 | Interactions | `src/player/HoldAction.js`, `Station.pickInteraction()` | Hold X / E (like digging): repair the fence, gate, doors and barricades; build a barricade (from inside); fit a battery at the fence box; install and load the turret; climb; open the ledger. Spots beat the fence line behind them; after one action you let go before the next. Damage interrupts. |
 | Ledger | `src/ui/Ledger.js`, `Station.ledgerPages()` | Hold X at the comms room desk. A placeholder book with tabs **Fence, Doors, Turret, Power, Upgrades, Security** (LB / RB or D-pad left / right; rows with D-pad / stick; A does it; B closes). A summary line (scrap, security, charge, batteries). Doesn't pause the clock; your controls go to the book while it's open. |
@@ -199,7 +223,13 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build` and `npm test` (**270/270**) all pass.
+- `npm run dev`, `npm run build` and `npm test` (**283/283**) all pass.
+- **M5 part 2 in headless Chromium (software GPU, about 10 fps, so no timings):**
+  - Seed 1234: 47 vehicles (29 with a battery). The campsite pickup next to home: "Hold E: search the cab" searched it (+3 scrap, the door swung open); "lift the bonnet" raised it; "pull the battery" gave +1 battery (the HUD's kits line shows it) and left "No battery in this one".
+  - An alarm truck: opening its truck bed set the alarm off (the overlay showed ALARM x1, the lamps flashed at night); a zombie 34 m away switched to chasing and closed in; pulling the battery stopped it. "Try again" restocked everything and silenced the alarm.
+  - The map screen and minimap show seen vehicles as blue oblongs, distinct from the dashed pathways.
+  - **Draw calls at home by day: 71 with vehicles, 68 without** (one cube mesh, one lamp mesh, one shadow pass). No console errors.
+- **Turret fixes:** with no target it turns back to face the gate; the new test passes on 5 seeds (every panel in range and sight).
 - **M5 follow-ups in headless Chromium:** barricades, spike traps and floodlight poles show when bought; the floodlight's pool and beam read at night; the turret is dark under the torch; holding E at the turret opens its menu and loading 7 pistol rounds gave 7 turret rounds; with a segment and its barricade down the player walks out through the gap.
 - **M5 part 1 in headless Chromium (software GPU, about 10 fps, so no timings):**
   - Seed 1234: the fence runs cliff to cliff with the gate south; the east fence starts torn (2 segments down, one leaning); security 24.9.
@@ -248,7 +278,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- **M5 on the tablet** (Aaron's play-test): whether a night at the station is tense and readable, frame rate with the compound in view (draw calls are up to the mid-80s by day), the ledger on the controller (LB / RB tabs), whether the floodlights and wires read at night, the turret's spectacle, prices and health numbers.
+- **M5 part 2 on the tablet** (Aaron's play-test): how the vehicles look and read, the hold timings, loot amounts, how often batteries and alarms turn up, the alarm's loudness, the map markers, frame rate in a roadblock clearing.
+- **M5 part 1 on the tablet: mostly verified** (Aaron: a night at the station is great, no fps drop, no warm tablet, prices pretty balanced, ledger good, nothing stuck). Still open: whether a night at the station is tense and readable, frame rate with the compound in view (draw calls are up to the mid-80s by day), the ledger on the controller (LB / RB tabs), whether the floodlights and wires read at night, the turret's spectacle, prices and health numbers.
 - **M4 on the tablet** (Aaron's play-test): frame rate with many zombies and up to five sigils visible, whether the level changes are visible enough, whether the detection numbers feel fair, the mutant's look and toughness, and the sigil glow at night on the real screen.
 - The dawn thinning over a real 60 s dawn in the browser (the unit test covers it; the debug time speed-up only speeds the clock, not the zombies, so it can't be hurried).
 - The M3 follow-ups (smooth minimap, more bushes, sign glare) on the tablet.
@@ -260,7 +291,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Stubbed / placeholder (by design)
 
-- **Vehicles and battery pulling are not built yet** (M5 part 2, next session): batteries only come from the debug menu.
+- Vehicles are placeholder boxes; the bonnet, boot and door animation is a hinge swing (no arms or tools on screen). Vehicle state isn't saved yet (saving is M6/M12); each vehicle keeps its own "looted" flags for when it is. Encounter set dressing (the gas station's pumps, the outpost's sandbags) will move or replace cars when those encounters are built.
 - The turret comes from the debug menu until the Car Armory (M11). The danger rating, dusk forecast, alarm and simulated nights are M6 (dusk just toasts the station's security).
 - "The station fell" is a placeholder defeat screen (M7 builds the real one). The family are placeholder figures that never move or speak (M8).
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
@@ -285,6 +316,11 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry merging use three.js's own `three/addons` modules, which ship inside the `three` package. Sounds use the browser's Web Audio API.
 
 ## Known issues and risks
+
+- **M5 part 2: a ditched car can sit in the bushes** (bushes grow up to 0.35 open; vehicles need 0.3 at their corners): the car pokes through a bush. Trees and rocks never overlap one.
+- **M5 part 2: an alarm that runs flat kills the battery** (60 s). That's a choice to make the alarm urgent; OPEN_QUESTIONS #84.
+- **M5 part 2: vehicles near sigil grounds** can sit where a sigil gets planted. Digging always comes first, so the prompts don't clash.
+- **M5 part 2: the turret pad moved**, so it now stands in the yard about 3 m east of where a run starts (the player spawns beside it).
 
 - **M5: draw calls at home are up to the mid-80s by day** (the compound adds about 16 plus shadows). Levers: drop the static mesh's torch shadow, merge the floodlight meshes, cull the interior when outside.
 - **M5: zombies under the tower** gather below you and swipe at the air (you're out of reach). They don't claw the tower's legs.
@@ -311,15 +347,18 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
 12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M5 part 2 needs next
+## What M6 needs next
 
-Session 6b (Gameplay Programmer): **vehicles and battery pulling** (DESIGN.md "Vehicles and batteries").
+Session 7 (Lead Engineer): **simulation LOD and nights** (DESIGN.md M6): active / nearby / abstract tiers, simulated nights while away, the dusk forecast, the alarm, dawn autosave.
 
-- Batteries already work end to end: `combat.inventory.addBattery()` / `batteries`, and the fence box fits them (`Station.fitBattery()`). Part 2 adds where they come from.
-- Interactions: `src/player/HoldAction.js` is the hold-X helper; `Station.pickInteraction()` shows how spots and prompts are offered (a vehicle system can do the same and push its `{ prompt, progress }` into `combat.promptSources`).
-- Loot: `rollLoot()` and `data/loot.json` tables for searching cabins and boots; `combat.takePickup()` / `inventory.addScrap()` to hand things over.
-- Placement: `world.map.paths` (polylines), `clearings` (`clearingType` 'roadside' and 'checkpoint' should have more cars), and `ground.heightAt`. Wall-piece colliders (`segmentCollider()` in `collision.js`) suit a car body.
-- Save state is M6/M12, but each vehicle is "looted once per run": keep that flag on the vehicle.
+- The station's numbers for the night resolver: `StationState.security` (and its breakdown), `charge` and `nightDrainPerSecond()`, the turret's `turretSecurity()` and coverage (`turretMath.js`), `config.station.security`.
+- **Aaron (M5): "if zombies trickled in one at a time it would be boring"**: he's been using the siege-wave debug (10 at once). How the night's zombies reach the station (in groups) is worth designing with the tiers.
+- Vehicles to save (M6 autosave or M12): per vehicle `searched.door`, `searched.boot`, `bonnetUp`, `hasBattery`, `flat`, `alarmArmed`, `seen` (`src/world/Vehicles.js`); placement is rebuilt from the seed. The station's state is `StationState`.
+- Zombies at home use `enemies.station` (the route hook); vehicles are colliders in the shared grid, so tiers that move zombies abstractly should still respect them when they drop back to active.
+
+## What M5 part 2 needed (done)
+
+- Batteries end to end (`inventory.addBattery()`, `Station.fitBattery()`), the hold-X helper, loot tables, `combat.promptSources`: all used as planned.
 
 ## What M5 part 1 needed (done)
 

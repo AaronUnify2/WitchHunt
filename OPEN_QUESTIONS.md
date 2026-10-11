@@ -2,6 +2,22 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 6b (M5 part 2, Gameplay Programmer)
+
+Agreed with Aaron before building: **four vehicle types** (car, pickup truck, police car, army truck; special one-off vehicles may come with later scenes); **about 45 a map**; **about 60% with a battery**; pulling a battery is **just a noise**; **pulling the battery kills the alarm**; vehicles on the maps **if it doesn't crowd them**; the hold times as proposed; the debug battery stays. His M5 part 1 night-defence verdict: great gameplay, no fps drop, prices pretty balanced so far.
+
+| # | Question | What M5 part 2 does now | Where to change it |
+| --- | --- | --- | --- |
+| 80 | Where exactly do vehicles go? | Verge cars every ~85 m along the pathways (85% chance each, 20% nosed into the trees); roadblock rows at roadside clearings (3-5) and checkpoints (2-3, mostly army); 2-3 at the gas station; 2-3 army trucks in a row at the outpost; one sure car at the campsite; elsewhere a 35% chance of one. 35-59 a map. | `data/vehicles.json` `placement`, `config.vehicles.placement` |
+| 81 | What's in them? | Per type and spot (`loot` in `vehicles.json`): cars mostly scrap with a little of everything; pickups lots of scrap (4-9 in the bed) and shells; police cars pistol rounds, shells, vests, kits; army trucks rifle rounds, helmets, scrap. A search can turn up nothing ("Nothing useful"). Loot you can't carry is left on the ground. | `data/vehicles.json` |
+| 82 | The campsite's car. | The campsite (every run, next to home) always has one car with a battery and no alarm: an easy first battery for the fence. | `placement.campsite` |
+| 83 | Car alarms (not in DESIGN.md; Aaron: "pulling the battery would kill the alarm"). | 25% of vehicles with a battery have one. Opening the door or the boot sets it off: a two-tone wail, flashing lamps, and every zombie within 65 m comes, every 2 s, until the battery is pulled. Lifting the bonnet doesn't set it off, so you can pull a battery first to be safe (if you know). | `config.vehicles.alarmChance`, `alarm` |
+| 84 | What if you don't stop an alarm? | After 60 s it runs the battery flat: the battery's gone ("The battery's flat: the alarm drained it"). Keeps the alarm urgent. | `config.vehicles.alarm.seconds` |
+| 85 | How loud is pulling a battery? | A 22 m alert (the rifle is 70 m, the shotgun 55 m). | `config.vehicles.batteryNoise` |
+| 86 | When does a vehicle show on the maps? | Once you've been within 40 m (not just revealed by the fog), as a small steel-blue oblong turned to its heading; grey once it's emptied (searched, bonnet up, no battery). | `config.vehicles.seenDistance`, `map` |
+| 87 | Do vehicles block shots? | Yes: they're solid cover for you and the zombies alike, and the torch's glare dims on them up close. | `Vehicles.buildColliders()` |
+| 88 | The turret's pad (Aaron: could it reach every panel?). | Moved to 3 m east, 17 m south of the fence's centre so the cabin no longer hides the east end; range 45 m. It rests facing the gate. | `config.station.layout.turretPad`, `config.station.turret` |
+
 ## Session 6 (M5 part 1, Gameplay Programmer)
 
 Agreed with Aaron before building: **12 fence segments plus an automatic gate**; the turret comes from the **debug menu** until the Car Armory (M11); **barricades, spike traps and floodlights** go in now, as a way to spend spare scrap; runs start with the **east fence torn up, a little scrap and no charge**; **no carry limit and no slowdown** for batteries; prices are placeholders for the play-test; the **turret's rounds go through crowds even more than the rifle's** ("make a bit of a spectacle"); vehicles and battery pulling can be split into a second session.

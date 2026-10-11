@@ -152,6 +152,7 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 - Searching the cabin and boot gives scrap and ammo.
 - **Getting a battery is physical:** hold interact on the bonnet to lift it (animation and sound), then hold again to pull the battery. Never a menu loot.
 - Each vehicle can be looted once per run.
+- (Aaron, M5: four types to start, car, pickup truck, police car and army truck, with special one-off vehicles possible for later scenes; about 45 a map, about 60% with a battery. Pulling a battery is noisy, and some have an alarm that pulling the battery kills.)
 
 ## Map
 

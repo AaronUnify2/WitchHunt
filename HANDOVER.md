@@ -1,179 +1,134 @@
 # Handover
 
-## Just finished: Session 6, Gameplay Programmer, M5 part 1 (The station)
+## Just finished: Session 6b, Gameplay Programmer, M5 part 2 (vehicles and batteries)
 
-**Status: built, play-tested by Aaron on the tablet over two rounds, his fixes made; he confirmed the last fix (the retry bug) and called the handover.** His full night-defence verdict and the numbers are still to come (play-test script below). M5 is split in two, as agreed with Aaron:
+**Status: built and checked in headless Chromium; Aaron's tablet play-test of the vehicles is still to come** (script below). With batteries now coming from the world, **M5 is complete** once he's happy with them.
 
-- **Part 1 (this session):** the compound and its defences.
-- **Part 2 (next session):** vehicles and battery pulling.
+### Aaron's M5 part 1 verdict (first thing this session)
 
-The M5 "done when" is: **a night defending the station is tense and readable.** It can be judged now with debug batteries.
+- **"Night at the station is great gameplay."** No fps drop, the tablet didn't get warm. He's been using the siege-wave debug (10 zombies at once): "if zombies trickled in one at a time it would be boring". That's for M6/M7 (see below).
+- Prices and defences "pretty balanced so far"; he'll calibrate in a proper playthrough.
+- The turret is great. The ledger is good. Nothing stuck.
+- **Fixed:** the idle turret pointed at the cabin. It now rests facing the gate, and swings back there 2 s after its last target.
+- **Fixed:** he asked whether the turret could reach every panel. **It couldn't.** Everything was in range, but the cabin hid the east fence 3 (the panel that starts torn down) and part of the east fence 2, on every seed. The pad moved to 3 m east and 17 m south of the fence's centre, and the range went 42 → 45 m. A test now checks every panel.
 
-Aaron's calls before building (rule 10):
+### Aaron's calls for the vehicles (rule 10)
 
-- **The M4 follow-ups work.** He shot the mutant's weak spot and saw it charge.
-- **The turret comes from the debug menu** until the Car Armory (M11). "Let's keep it simple."
-- **The fence:** 12 segments ("about right") plus a gate that opens itself.
-- **Spending scrap:** barricades, spike traps and floodlights are in.
-- **Start of a run:** the east fence torn up, a little scrap in the inventory, no charge.
-- **Batteries:** carry as many as you find, with no slowdown.
-- **Prices:** placeholders, to be settled in the play-test.
-- **The turret's rounds** go through crowds even more than the rifle's: "make a bit of a spectacle of this".
-- **Splitting the session** is fine: about 400k tokens, then evaluate.
+- **Four types:** car, pickup truck, police car, army truck. Special one-off vehicles may come with later scenes.
+- **About 45 a map**, about **60% with a battery**.
+- Pulling a battery is **just a noise**, and **pulling the battery kills the alarm**.
+- Vehicles on the maps **if it looks good without crowding them**.
+- The hold times as proposed. The debug battery stays.
 
 ### What was built
 
-Details are in `STATUS.md` ("M5 part 1"):
+Details are in `STATUS.md` ("M5 part 2"):
 
-- **The compound** (placeholder boxes):
-  - A chain-link fence from cliff to cliff: 12 segments plus a gate due south. The top wires glow blue while charged.
-  - The cabin: front door, the fortified comms room (desk, radio, CCTV monitors, the ledger, the family as placeholder figures), glowing windows at night.
-  - The fire lookout tower, the turret pad and the fence box.
-- **The siege:**
-  - Zombies near the station make for the comms room.
-  - They walk round the outside of the fence to a nearby gap, or claw the segment in front of them.
-  - Then they go round the cabin, break the front door, then the comms door.
-  - A zombie in the comms room ends the run: "The station fell".
-  - Breaches toast with a crash ("The east fence 2 is down!").
-- **The electric fence:** a charged fence zaps zombies that claw it (sparks, damage, a stun) at a cost in charge. The charge drains each night.
-- **Defences:**
-  - Repair the fence, gate, doors and barricades with scrap (part repairs if you're short).
-  - Barricades behind segments, reinforced doors, spike traps outside segments, and floodlights. Floodlights are fake light pools, and zombies in them are lit up.
-- **The turret:**
-  - Install, load (any ammo, converted by damage) and set the mode (slow, medium or fast).
-  - It shoots zombies inside the fence first, then those clawing, then the nearest.
-  - Each round pierces up to 7 zombies, with a tracer, a flash and a loud report.
-- **The gate and doors** open themselves for you and close behind you.
-- **The tower:** climb it to reveal the map round the station. Zombies can't reach you up there.
-- **Hold X to interact:** repair, build, fit a battery, install or load the turret, climb, open the ledger.
-- **The ledger:** a placeholder book with tabs for Fence, Doors, Turret, Power, Upgrades and Security. The clock runs while it's open.
-- **HUD strip** under the minimap near home:
-  - Security and charge.
-  - A pip per fence segment and door, flashing while it's being clawed.
-  - The turret's status.
-- **Tests:** 268 pass (26 new).
-
-### Checked in headless Chromium (no tablet timings)
-
-- Building, repairing, batteries, the turret firing and killing, a siege breaking the fence, a full overrun (through the torn east gap, round the cabin, both doors) and "try again" resetting the station all worked.
-- With real keys: hold E repairs and fits batteries, the ledger works, the doors and gate open, the fence blocks you, the tower climbs.
-- **Draw calls 77-86 by day at home, 57-82 at night** (budget ~100).
-- No console errors.
-
-### Aaron's play-tests of part 1 (all fixed)
-
-- The turret, gate, fence box and tower railing glared under the torch: darker, plus glare-only shapes the torch dims on.
-- **Turret menu:** hold X at the turret, then load 1, 5 or all of each ammo type.
-- Zombies at the station go for whichever is nearer: you, or the defence in their way.
-- **Barricades, spikes and floodlights didn't show** (an instancing bug; their colliders worked, which is probably why zombies and Aaron got stuck at a "broken" fence). Fixed.
-- Letting go of X drains the hold bar (digging too).
-- **LB is now previous weapon**; Y is the flare (later).
-- The floodlight beam looked like a grey wall; now a faint beam and a pool.
-- **Second round:** after dying or an overrun, zombies got stuck on the fence and he couldn't get into the cabin. "Try again" rebuilt the barriers but the fence and door colliders were keyed to the old ones; now keyed by id. **Aaron confirmed it's fixed.**
-- Scrolling up a menu (ledger, debug menu) kept the highlight pinned at the bottom: the list's scroll is now kept across redraws.
-
-Gotcha from this: `StationState.init()` replaces every barrier object on "try again". Anything that holds on to a barrier must look it up by id (`state.barriers()`), as `syncColliders()` now does.
+- **Vehicles** (`src/data/vehicles.json`, `src/world/vehiclePlacement.js`, `src/world/Vehicles.js`, `src/render/VehicleRenderer.js`):
+  - Placeholder boxes in faded paint, tilted to the slope, sometimes on a flat tyre.
+  - Seeded placement:
+    - verge cars along the pathways, some nosed into the trees;
+    - roadblock rows at roadside clearings and checkpoints;
+    - army trucks at the outpost, cars at the gas station;
+    - one sure car with a battery and no alarm at the campsite next to home.
+  - 35-59 a map, about 46 on average.
+- **Three hold-X spots, each usable once per run:**
+  - The driver's door and the boot: search for loot, from a table per type.
+  - The bonnet: lift it, then pull the battery. Pulling makes a 22 m noise.
+- **Alarms:** a quarter of the vehicles with a battery have one.
+  - Opening the door or the boot sets it off: it wails, flashes the lamps and calls zombies from 65 m.
+  - It stops when the battery is pulled. After 60 s it runs the battery flat.
+- **Solid:** zombies and the player slide round vehicles, and shots stop on them.
+- **On the minimap and map screen** once you've been within 40 m: a small steel-blue oblong, grey once there's nothing left in it.
+- **"Try again"** restocks every vehicle.
+- **Debug:** teleport to the nearest unsearched vehicle, show all on the map, restock. A new `vehicles` overlay line.
+- **3 draw calls** for the whole fleet: one instanced cube mesh, one lamp mesh, one shadow pass. At home: 71 by day, against 68 without vehicles.
+- **Tests:** 283 pass (13 new: 12 for vehicles, 1 for the turret's view of the fence).
 
 ### Unfinished
 
-- **Vehicles and battery pulling** (M5 part 2, next session). Until then batteries come from the debug menu.
+Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle keeps its own flags ready for it.
 
-## Play-test script for Aaron (M5 part 1)
+## Play-test script for Aaron (M5 part 2)
 
 **Setup:**
 
-- Open the live build on the tablet with the controller. The overlay has a new `station` line.
-- You start in the yard between the cabin and the gate, by day. The debug menu is **View + D-pad down**. The station items start with "Station:".
+- Open the live build on the tablet with the controller. The overlay has a new `vehicles` line.
+- The debug menu is **View + D-pad down**. The vehicle items start with "Vehicles:".
 
-1. **Look round the compound (by day):**
-   - Walk round the cabin, the tower and the fence, and out through the gate (it slides open as you come up to it).
-   - Good: it reads as a ranger station against the cliff.
-   - The east end of the fence is torn down: two panels flat, one leaning.
-   - Bottom right shows "Scrap 30".
-2. **Repair the east fence:**
-   - Stand at a flat panel. The prompt reads "Hold X: repair the east fence 2 0/200 (12 scrap)". Hold X.
-   - Good: hammering, the panel stands up again, and the strip under the minimap turns that pip green.
-   - You can afford about two and a half segments.
-3. **The ledger:**
-   - Go in the front door (it opens), then the comms room door. Hold X at the desk.
-   - LB / RB change tabs, the D-pad moves, A buys, B closes.
-   - Look at each tab. Security shows the breakdown.
-   - Good: readable on the tablet. Note anything confusing.
-4. **Power:**
-   - Debug menu: **Station: give a battery** (a couple of times). Hold X at the fence box just inside the gate.
-   - Good: a clunk and hum, the top wires glow blue, and the charge reads 100.
-5. **The turret:**
-   - Debug menu: **Station: give the turret**, and **Give ammo**. Hold X on the pad in front of the cabin to install it.
-   - Hold X again for its menu: load what you like (1, 5 or all of each ammo type) and set the mode to **fast**.
-6. **A night at the station (the M5 gate):**
-   - Debug menu: **Skip to night**, then **Station: siege wave** (10 zombies outside the fence), two or three times.
-   - Watch from the yard, then climb the tower (hold X at the ladder) and watch from above.
+1. **The first battery:**
+   - From home, walk to the Abandoned campsite next door. A car or pickup is parked there.
+   - Hold X at the driver's door ("search the car" or "search the cab"). The door swings open and the loot shows bottom right.
+   - Hold X at the front: "lift the bonnet", then "pull the battery".
+   - **Good:** creak, ratchet clicks, a clunk, "+1 battery (1 carried)", and the battery shows in the kits line.
+   - Take it home and fit it at the fence box.
+2. **The look:**
+   - Walk a pathway or two. Use **Vehicles: teleport to the nearest unsearched** to hop between them.
    - Good:
-     - The zombies come to the fence and claw it. The charged fence sparks and throws them back.
-     - The turret swings round and carves through them with tracers.
-     - The strip's pips flash where they're clawing, and a toast names any segment that falls.
-   - Try it again with **Zombie level: fixed L5** and no turret ammo.
-   - **Is it tense? Can you tell what's happening and where?**
-7. **Spending scrap:**
-   - Debug menu: **Station: give 50 scrap** a few times.
-   - In the ledger, build barricades, spike traps, a floodlight or two, and reinforce the doors. At night:
-     - The floodlights light a pool outside the fence, and zombies in it show up.
-     - The spikes bite.
-     - Zombies have to break the barricade after the fence.
-8. **Losing the station:**
-   - Debug menu: **Station: drain the fence charge**, **Station: break a random fence segment** a few times, then **Station: siege wave** (God mode on).
-   - Let them in.
-   - Good: they go round the cabin, break the front door, then the comms door, and the run ends with "The station fell". A starts again with a fresh station.
-9. **Report:**
-   - fps at the worst moment (most zombies, turret firing), and whether the tablet got warm.
-   - Whether a night at the station is tense and readable.
-   - Prices and health: too cheap, too dear, too tough, too weak?
-   - The turret: spectacle enough?
-   - The ledger on the controller.
-   - Anything that looked wrong (zombies stuck on walls or corners, the fence, the doors).
+     - They read as abandoned cars against the forest, by day and at night with the torch.
+     - Not too bright under the torch.
+     - Roadblocks in roadside clearings, army trucks at checkpoints and the outpost.
+3. **An alarm:**
+   - The teleport toast says when a vehicle has an alarm. Open its door or boot.
+   - Good:
+     - A toast, a wail, and the lamps flash (best seen at night).
+     - Zombies nearby come for it.
+     - Lift the bonnet and pull the battery: "The alarm dies".
+   - Try leaving one ringing for a minute: it runs the battery flat.
+4. **The maps:**
+   - After visiting a few, open the map screen (D-pad up).
+   - Good: small blue oblongs where you've been near vehicles, and grey ones you've emptied. Readable, and not crowding the map.
+5. **Fights round cars:**
+   - At night (**Skip to night**, spawn some zombies), fight beside a roadblock.
+   - Good: zombies slide round the cars and don't get stuck, and the cars stop your shots.
+6. **The turret fixes:**
+   - Install it (**Station: give the turret**). It should rest facing the gate, not the cabin.
+   - Run a siege wave and watch the east end (by the cliff): it should shoot zombies clawing there.
+7. **Report:**
+   - fps in a roadblock clearing at night.
+   - Hold times, loot amounts, how often you find batteries and alarms, how loud the alarm is.
+   - Whether the map markers help.
+   - Anything stuck, floating or sunk into the ground.
 
-## Next: Session 6b, Gameplay Programmer, M5 part 2 (vehicles and batteries)
+## Next: Session 7, Lead Engineer, M6 (simulation LOD and nights)
 
-**Goal:** abandoned cars and trucks, searching them for scrap and ammo, and pulling batteries (DESIGN.md "Vehicles and batteries"). **Done when** the night is tense and readable *and* batteries come from the world, not the debug menu.
-
-Rule 10: vehicles are content (the look, how many, where, the battery-pulling animation), so workshop the build plan with Aaron first. Fold in any fixes from his M5 part 1 play-test first.
+**Goal (DESIGN.md M6):** active, nearby and abstract tiers; simulated nights while you're away; the dusk forecast; the alarm; dawn autosave. **Done when** the full map stays alive at the frame target on the tablet, and leaving home at night resolves fairly. **M6 is a performance gate** (check on the tablet).
 
 ### Look at first
 
-- **`STATUS.md` "What M5 part 2 needs next"**.
-- `src/base/Station.js`:
-  - `pickInteraction()` shows how hold-X prompts are offered (spots before lines).
-  - `fitBattery()` takes batteries from `combat.inventory`.
-- `src/player/HoldAction.js`: the generic hold-X helper (let go between actions; damage interrupts).
-- `src/combat/loot.js` and `src/data/loot.json`: loot tables for searching cabins and boots.
-- `src/world/collision.js` `segmentCollider()`: thick-segment colliders, good for car bodies (blocks shots if you want).
-- `combat.promptSources`: push a `{ prompt, progress }` object to show prompts on the HUD.
+- **`STATUS.md` "What M6 needs next"**.
+- **Aaron's note:** "if zombies trickled in one at a time it would be boring." He's played nights with the siege-wave debug (10 at once). Think about how the night's zombies reach the station in groups, with the tiers and the night resolver.
+- **The station's numbers for the night resolver:**
+  - `StationState`: `security`, `charge`, `nightDrainPerSecond()`, and each barrier's health.
+  - `turretMath.js`: `turretSecurity()`, `ammoCoverage()`.
+  - `config.station.security`.
+- **To save:**
+  - Per vehicle: `searched`, `bonnetUp`, `hasBattery`, `flat`, `alarmArmed`, `seen` (`src/world/Vehicles.js`). Placement rebuilds from the seed.
+  - The station's barriers, charge, turret and buyables (`StationState`).
+  - The inventory's `batteries` and `scrap`.
 
 ### Gotchas and decisions
 
-- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system.
-- **The station's route hook** is `enemies.station`. Zombies within 70 m of the comms room besiege it. A vehicle near home is fine, but give it colliders so zombies slide round it.
-- **The fence ends are tucked into the cliff's foot.** `stationLayout()` finds them per seed.
-- **Draw calls at home are already in the mid-80s by day.** Instance the vehicles (one mesh per car type), and keep them out of the compound.
-- **Headless Chromium runs about 5× slower than real time after a teleport** (shader compiles). Hold-X tests need waits in game time (`station.time`), not real time.
-- **The map screen and the debug menu stop the action.** The ledger doesn't: the world carries on while your controls go to the book (`config.ledger.pausesClock` can stop the clock).
+- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system. Vehicles fork their placement and loot from `rng.fork('vehicles')`.
+- **Prompt order:** `combat.promptSources` shows the first with a prompt (digging, then the station, then vehicles). Vehicles also skip their own prompts while digging or the station has one, so two holds never run at once.
+- **Colliders** share one grid: trees, rocks, signs, the station's wall pieces, and vehicles. Pieces are kept small (fence ≤2.4 m, vehicle ≤1.2 m) because the grid widens every query by the largest radius.
+- **`StationState.init()` replaces every barrier on "try again".** Look barriers up by id.
+- **Headless Chromium runs about 5× slower than real time.** Wait in game time (`station.time`, `vehicles.time`), not real time. The map screen pauses game time.
+- **Vite HMR reloads the page** when a source file changes mid-test. Don't edit while a browser check runs.
 - **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
 
 ### Open questions for Aaron
 
-These are in `OPEN_QUESTIONS.md` #66-78. The ones to look at after the play-test:
+These are in `OPEN_QUESTIONS.md` #80-88 (vehicles) and #66-79 (the station). After the play-test, look at:
 
-- Defence health and how hard zombies hit (#67).
-- The charge numbers (#69).
-- Prices (#71).
-- What the buyable defences do (#72).
-- Turret targeting and spectacle (#73).
-- The gate letting zombies in while it's open (#75).
+- Loot amounts (#81).
+- The alarm, and whether running flat should kill the battery (#83, #84).
+- The map markers (#86).
 
-## Session kickoff prompt for Session 6b
+## Session kickoff prompt for Session 7
 
 ```
-You are the Gameplay Programmer on Witch Hunt, Session 6b.
+You are the Lead Engineer on Witch Hunt, Session 7.
 Read docs/DESIGN.md (especially "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
 Then confirm your role, this session's goal and any questions before starting.
 Follow the handover protocol, and end with the HANDOVER READY signal.
