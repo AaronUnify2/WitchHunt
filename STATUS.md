@@ -49,6 +49,7 @@ Agreed with Aaron before building: **four types** (car, pickup truck, police car
 | The side window should open with the door (one piece) | Each door carries its window: the glass swings with the panel. | `lids.door.extra` |
 | Search from the driver's or the passenger's side | A passenger door (the driver's, mirrored) with its own spot; either door searches the cab, once (one cabin, one loot roll). Placement needs only one door reachable, so verge cars with their passenger side in the trees still count. | `Vehicles.js` `SPOTS`, `spotsOf()` |
 | Every police car should have an alarm | Police cars now always have a battery and an alarm (a type's own chances beat the place's and config's). | `types.police.battery`, `alarm` |
+| (Third look) Door panels too tall; the windscreen too upright; the ute's bonnet too low against its tray | Door panels now stop at the bonnet and boot line, with the door window (and the cab's side glass) from there up. Windscreens laid back: about 36° from horizontal on cars and police cars, 38° on utes (were 53-62°). The ute's front body and bonnet rise to 1.15 m (tray rails 1.35), its cab to 2.05 m. The army truck's window line drops too. | `data/vehicles.json` |
 | Square wheels; can they be round? | Every `tyre` part is drawn as a round wheel (a 12-sided cylinder) with a grey hub, all instances of one mesh: one more draw call (plus its shadow). | `config.vehicles.looks.wheelSegments`, `hubSize` |
 
 ### M5 part 1 follow-up: Aaron's night-defence play-test
