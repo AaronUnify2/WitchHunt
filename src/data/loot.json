@@ -1,5 +1,5 @@
 {
-  "_note": "Zombie drops (DESIGN.md \"Zombies\" variant table). items: what each pickup is and where it goes: ammo (a carried weapon's reserve, else the inventory's ammo store), inventory (a counter in the inventory), armour + amount (added to that bar on the spot; a full bar leaves it lying), firstAid (a kit; a full bag leaves it lying). color: the placeholder pickup's colour. tables: one per variant (and 'mutant'); every entry is rolled on its own, so one body can drop several things. min/max: how many (rounds, scrap); armour and kits always drop one. More items and variants can be added here without code changes.",
+  "_note": "Zombie drops (DESIGN.md \"Zombies\" variant table). items: what each pickup is and where it goes: ammo (a carried weapon's reserve, else the inventory's ammo store), inventory (a counter in the inventory), armour + amount (added to that bar on the spot; a full bar leaves it lying), firstAid (a kit; a full bag leaves it lying). color: the placeholder pickup's colour. tables: one per variant (and 'mutant'); every entry is rolled on its own, so one body can drop several things. min/max: how many (rounds, scrap); armour and kits always drop one. More items and variants can be added here without code changes. Ammo rates were cut hard after Aaron's M4 play-test (a headshot kill often paid back six rounds, so looting the world would never matter): on average a kill now returns about 0.1 rifle rounds, so ammo runs down and encounters stay worth looting.",
   "items": {
     "rifleAmmo": { "name": "rifle rounds", "ammo": "rifle", "color": "#c8a040" },
     "shotgunAmmo": { "name": "shotgun shells", "ammo": "shotgun", "color": "#b03424" },
@@ -11,24 +11,24 @@
   },
   "tables": {
     "citizen": [
-      { "item": "shotgunAmmo", "chance": 0.35, "min": 2, "max": 4 },
-      { "item": "rifleAmmo", "chance": 0.12, "min": 2, "max": 3 },
-      { "item": "scrap", "chance": 0.2, "min": 1, "max": 2 },
+      { "item": "shotgunAmmo", "chance": 0.12, "min": 1, "max": 2 },
+      { "item": "rifleAmmo", "chance": 0.04, "min": 1, "max": 1 },
+      { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 },
       { "item": "firstAid", "chance": 0.04 }
     ],
     "police": [
       { "item": "vest", "chance": 0.35 },
-      { "item": "pistolAmmo", "chance": 0.6, "min": 6, "max": 12 },
-      { "item": "shotgunAmmo", "chance": 0.15, "min": 2, "max": 3 }
+      { "item": "pistolAmmo", "chance": 0.3, "min": 2, "max": 5 },
+      { "item": "shotgunAmmo", "chance": 0.06, "min": 1, "max": 2 }
     ],
     "army": [
       { "item": "helmet", "chance": 0.35 },
-      { "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 },
+      { "item": "rifleAmmo", "chance": 0.2, "min": 1, "max": 2 },
       { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 }
     ],
     "mutant": [
-      { "item": "rifleAmmo", "chance": 1, "min": 5, "max": 10 },
-      { "item": "shotgunAmmo", "chance": 1, "min": 4, "max": 8 },
+      { "item": "rifleAmmo", "chance": 1, "min": 2, "max": 4 },
+      { "item": "shotgunAmmo", "chance": 0.6, "min": 2, "max": 3 },
       { "item": "scrap", "chance": 1, "min": 3, "max": 6 },
       { "item": "firstAid", "chance": 0.5 },
       { "item": "vest", "chance": 0.3 }

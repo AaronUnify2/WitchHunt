@@ -29,9 +29,9 @@ describe('loot tables', () => {
 
   it('police drop vests and pistol ammo; the army helmets and rifle ammo', () => {
     expect(rate(loot.tables.police, 'vest')).toBeGreaterThan(0.25);
-    expect(rate(loot.tables.police, 'pistolAmmo')).toBeGreaterThan(0.5);
+    expect(rate(loot.tables.police, 'pistolAmmo')).toBeGreaterThan(0.2);
     expect(rate(loot.tables.army, 'helmet')).toBeGreaterThan(0.25);
-    expect(rate(loot.tables.army, 'rifleAmmo')).toBeGreaterThan(0.5);
+    expect(rate(loot.tables.army, 'rifleAmmo')).toBeGreaterThan(0.15);
     // The army is the main rifle ammo source.
     expect(rate(loot.tables.army, 'rifleAmmo')).toBeGreaterThan(rate(loot.tables.citizen, 'rifleAmmo') * 3);
   });
@@ -39,6 +39,16 @@ describe('loot tables', () => {
   it('vests are +40 ballistic and helmets +20', () => {
     expect(loot.items.vest).toMatchObject({ armour: 'ballistic', amount: 40 });
     expect(loot.items.helmet).toMatchObject({ armour: 'ballistic', amount: 20 });
+  });
+
+  it('ammo is scarce: a kill pays back well under one rifle round on average (Aaron, M4 test)', () => {
+    const rng = new Rng(4);
+    const n = 3000;
+    for (const v of ['citizen', 'police', 'army']) {
+      let rifle = 0;
+      for (let i = 0; i < n; i++) for (const d of rollLoot(loot.tables[v], rng)) if (d.item === 'rifleAmmo') rifle += d.amount;
+      expect(rifle / n).toBeLessThan(0.5);
+    }
   });
 
   it('mutants drop more', () => {
@@ -57,8 +67,8 @@ describe('loot tables', () => {
     for (let i = 0; i < 500; i++) {
       for (const d of rollLoot(loot.tables.army, rng)) {
         if (d.item === 'rifleAmmo') {
-          expect(d.amount).toBeGreaterThanOrEqual(3);
-          expect(d.amount).toBeLessThanOrEqual(6);
+          expect(d.amount).toBeGreaterThanOrEqual(1);
+          expect(d.amount).toBeLessThanOrEqual(2);
         }
       }
     }
