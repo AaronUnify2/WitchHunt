@@ -38,7 +38,9 @@ Details in `STATUS.md` ("M2: Combat feel"):
 - The dead trees look "much, much better", and the rock glare is gone.
 - **Fixes made after the test:** the stuck red hit marker (a HUD bookkeeping bug), and bullet **penetration** (Aaron: "carve through the mobs"): a rifle round goes through up to 4 zombies, shotgun pellets 2 (`config.weapons.*.pierce`).
 - **Fix made after the test:** by day the gun looked black. The view model's colours now follow the sky's light (`config.viewModel.lighting`), with real wood and steel colours.
-- **Fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). This was checked headless only, so give it a quick look on the tablet.
+- **Fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). Confirmed on the tablet.
+
+**Aaron's second tablet test:** the weapon sway, the gun by day, the hit marker and penetration all confirmed working ("being able to shoot through the crowd was really enjoyable").
 
 ### Unfinished
 

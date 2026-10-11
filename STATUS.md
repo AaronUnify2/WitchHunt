@@ -98,6 +98,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - `npm run dev`, `npm run build`, `npm run preview` and `npm test` (118/118) all pass. Production build at `/WitchHunt/` runs with no console errors.
 - **M1 performance gate passed on the tablet (Aaron):** a steady 60 fps for 20+ minutes of night walking at Medium, the tablet warm but not hot. Locking and unlocking, controller off and on, and leaving fullscreen all recover.
 - **M2 on the tablet (Aaron):** fighting zombies at night is fun. **60 fps the whole time, even with 20+ zombies spawned at once.** B always reloads and never leaves fullscreen. The torch is enough to fight by. The dead trees look "much, much better" and the rock glare is gone.
+- **M2 follow-ups on the tablet (Aaron, second test):** the footstep-paced weapon sway, the gun's colours by day, the hit marker clearing, and penetration all work ("being able to shoot through the crowd was really enjoyable").
 - **M2 in headless Chromium with a simulated Xbox controller:**
   - RT fires the rifle and shotgun and hits zombies (body and head); LT zooms; B reloads; RB / Y cycle weapons both ways; the shovel connects and kills; D-pad right uses a kit; zombies walk in, swipe and hurt the player; death shows the screen and A restarts.
   - Screenshots: all 8 facing angles and the fall frames read correctly; zombies are dark and lit by the torch; crisp pixels up close; the red hurt edge, hit markers and HUD.
@@ -117,7 +118,6 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- The weapon-sway, daylight weapon-colour, hit-marker and penetration changes on the tablet (made after the play-test; checked headless only).
 - Whether the placeholder sounds play on Android Chrome (Aaron didn't mention them either way).
 - Feel numbers (aim assist strength, recoil, zombie damage, headshot ×3) passed a first play-test; they get their real tuning in M14.
 - Headless runs use a software GPU (~10 fps), so its timings say nothing about the tablet.
