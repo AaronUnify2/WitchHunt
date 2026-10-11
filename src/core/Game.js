@@ -74,7 +74,7 @@ export class Game {
     this.forest = new Forest(cfg.forest, this.rng.fork('forest'));
     this.forest.init(this.scene, this.colliders);
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
-    this.flashlight.init(this.scene);
+    this.flashlight.init(this.scene, this.colliders);
   }
 
   initUi(root) {
@@ -101,7 +101,11 @@ export class Game {
       const p = this.player;
       return `${p.stance}  ${p.speed.toFixed(1)} m/s  stamina ${Math.round(p.stamina.value)}  at ${p.position.x.toFixed(1)}, ${p.position.z.toFixed(1)}`;
     });
-    this.overlay.addStat('world', () => `${this.forest.treeCount} trees  flashlight ${this.flashlight.on ? 'on' : 'off'}`);
+    this.overlay.addStat('world', () => {
+      const f = this.flashlight;
+      const torch = f.on ? `on ${Math.round(f.glareFactor * 100)}% (surface ${f.surfaceDistance.toFixed(1)}m)` : 'off';
+      return `${this.forest.treeCount} trees  flashlight ${torch}`;
+    });
   }
 
   addDebugMenuItems() {

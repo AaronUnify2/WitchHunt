@@ -30,3 +30,53 @@ export function clampToRadius(pos, maxRadius) {
   }
   return pos;
 }
+
+// The nearest surface along a ray (origin + t * dir, dir a unit 3D
+// vector): the ground (y = 0) or a circle treated as an upright cylinder
+// of radius `c.vr ?? c.r` (from the ground up to `c.top`, or unbounded if
+// there's no top). Fills `out` with { distance, facing }, where facing is
+// the cosine between the ray and the surface (1 = head-on, near 0 =
+// glancing). If nothing is closer than maxDistance, distance is
+// maxDistance and facing is 0. Returns `out`.
+export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 0, facing: 0 }) {
+  out.distance = maxDistance;
+  out.facing = 0;
+  if (dir.y < 0) {
+    const t = origin.y / -dir.y;
+    if (t < out.distance) {
+      out.distance = t;
+      out.facing = -dir.y;
+    }
+  }
+
+  const flat = dir.x * dir.x + dir.z * dir.z;
+  for (const c of circles) {
+    const radius = c.vr ?? c.r;
+    const ox = origin.x - c.x;
+    const oz = origin.z - c.z;
+    const inside = ox * ox + oz * oz - radius * radius;
+    let t;
+    let facing;
+    if (inside <= 0) {
+      t = 0; // already within its radius
+      facing = 1;
+    } else {
+      if (flat === 0) continue; // looking straight up or down
+      const b = ox * dir.x + oz * dir.z;
+      const disc = b * b - flat * inside;
+      if (b >= 0 || disc < 0) continue; // facing away, or a miss
+      t = (-b - Math.sqrt(disc)) / flat;
+      // Outward normal at the hit point, on the ground plane.
+      const nx = (ox + t * dir.x) / radius;
+      const nz = (oz + t * dir.z) / radius;
+      facing = -(nx * dir.x + nz * dir.z);
+    }
+    const y = origin.y + t * dir.y;
+    if (y < 0 || (c.top !== undefined && y > c.top)) continue;
+    if (t < out.distance) {
+      out.distance = t;
+      out.facing = facing;
+    }
+  }
+  return out;
+}

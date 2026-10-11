@@ -197,7 +197,12 @@ export const config = {
       sizeMin: 0.35,
       sizeMax: 1.1,
       squash: 0.6, // rocks are flattened vertically by this factor
-      color: 0x5c5c58,
+      detail: 3, // smoothness: subdivision level of the base sphere
+      lumpiness: 0.32, // how far the surface bulges in and out, as a fraction of size
+      lumps: 6, // number of overlapping bulge waves shaping each rock
+      lumpFrequency: 4, // waviness of each bulge
+      stretch: 0.3, // each rock is stretched up to this much along its width and depth
+      color: 0x45443d, // dark, mossy grey: lighter rocks glare under the torch
       spreadMin: 5, // placed between these distances from the centre
       spreadMax: 14,
       colliderScale: 0.8, // collider radius as a fraction of rock size
@@ -223,8 +228,23 @@ export const config = {
     textureHeight: 512,
     trunkColor: 0x4a3828,
     needleDark: 0x1d3322,
-    needleLight: 0x47694a,
+    // Each branch tier's lit side picks one of these, so trees aren't one flat green.
+    needleVariants: [0x47694a, 0x3d5e3a, 0x557550, 0x4c6c3c, 0x3a5c44],
     deadColor: 0x4a4038,
+    // Dappling: small speckles painted over the needles for depth and leaf variety.
+    dappleCount: 6000, // speckles per conifer sprite
+    dappleSizeMin: 1, // pixels
+    dappleSizeMax: 2,
+    dappleShadowColor: 0x040704,
+    dappleShadowShare: 0.5, // fraction of speckles that are shadow (more on the right, the shadow side)
+    dappleShadowAlpha: 0.5,
+    dappleLeafColors: [0x2c4a2c, 0x5a7a48, 0x3a5a30, 0x6a8650, 0x22402a],
+    dappleLeafAlpha: 0.4,
+    // Bark: dark and light vertical streaks on trunks and dead trees.
+    barkStreaks: 60,
+    barkDark: 0x22180f,
+    barkLight: 0x6a5240,
+    barkStreakAlpha: 0.55,
     tiersMin: 7, // conifer branch tiers
     tiersMax: 11,
     spikesPerTier: 9, // jagged needles along each tier's edge
@@ -234,6 +254,7 @@ export const config = {
     windStrength: 0.03, // sway at the treetop, as a fraction of sprite width
     windSpeed: 0.9,
     windSpatialScale: 0.15, // how much neighbouring trees sway out of step
+    glareRadiusRatio: 0.3, // how near the canopy counts as "close" for torch glare, as a fraction of sprite width
   },
 
   // Player: first-person movement (feel signed off in the M0 play-test at 4.5 m/s)
@@ -289,6 +310,21 @@ export const config = {
     cookieHoleStrength: 0.3,
     cookieBlotches: 24, // soft uneven patches in the beam
     cookieBlotchStrength: 0.06,
+    // Close-range glare: the torch dims when the beam is very near a
+    // surface, so a tree or rock in your face doesn't flood the view.
+    // The torch dims when it hits a surface harder than it would hit one
+    // head-on at fullDistance (strength = facing / distance ^ decay), so
+    // close trees and rocks don't flood the view. The ground ahead, hit at
+    // a glancing angle, keeps the full beam.
+    glare: {
+      fullDistance: 8, // metres; a head-on surface this far away sets the brightness cap
+      minDistance: 0.3, // metres; closer than this counts as this close
+      minFactor: 0.05, // floor on the dimming, right up against something
+      response: 10, // how quickly the dimming follows (higher = snappier)
+      queryMargin: 4, // metres added to the search radius to catch wide canopies
+      ringRays: 6, // extra rays round the beam (besides its centre) to find close surfaces
+      ringSpread: 0.7, // how far out in the cone the ring rays go (fraction of the cone angle)
+    },
   },
 
   // UI

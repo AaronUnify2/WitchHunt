@@ -1,8 +1,9 @@
 // The M1 test clearing's ground: a large textured plane, a dirt patch in
-// the clearing and a few rocks (which cast flashlight shadows and block
-// the player). M3 replaces this with the generated map's terrain.
+// the clearing and a few smooth, lumpy rocks (which cast flashlight
+// shadows and block the player). M3 replaces this with the generated map's terrain.
 
 import * as THREE from 'three';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeGroundTexture, makeClearingTexture } from '../render/proceduralTextures.js';
 
 export class Terrain {
@@ -50,8 +51,8 @@ export class Terrain {
     const r = this.cfg.rocks;
     const rng = this.rng.fork('rocks');
     const mesh = new THREE.InstancedMesh(
-      new THREE.DodecahedronGeometry(1, 0),
-      new THREE.MeshLambertMaterial({ color: r.color, flatShading: true }),
+      this.buildRockGeometry(rng),
+      new THREE.MeshLambertMaterial({ color: r.color }),
       r.count,
     );
     const matrix = new THREE.Matrix4();
@@ -65,14 +66,48 @@ export class Terrain {
       const size = rng.range(r.sizeMin, r.sizeMax);
       position.set(Math.cos(angle) * dist, size * r.squash * 0.5, Math.sin(angle) * dist);
       rotation.setFromEuler(euler.set(rng.range(0, Math.PI), rng.range(0, Math.PI), 0));
-      scale.set(size, size * r.squash, size);
+      scale.set(size * rng.range(1, 1 + r.stretch), size * r.squash, size * rng.range(1, 1 + r.stretch));
       mesh.setMatrixAt(i, matrix.compose(position, rotation, scale));
-      colliders.insert({ x: position.x, z: position.z, r: size * r.colliderScale });
+      colliders.insert({
+        x: position.x,
+        z: position.z,
+        r: size * r.colliderScale,
+        vr: size, // visual radius, for the torch's close-range glare check
+        top: position.y + size * r.squash, // height of the rock's top
+      });
     }
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.computeBoundingSphere();
     return mesh;
+  }
+
+  // A smooth sphere pushed in and out by a few overlapping waves, so the
+  // rock is lumpy but has no hard facets. Vertices are merged first so
+  // neighbouring faces share normals and shade smoothly.
+  buildRockGeometry(rng) {
+    const r = this.cfg.rocks;
+    const base = new THREE.IcosahedronGeometry(1, r.detail);
+    base.deleteAttribute('normal');
+    base.deleteAttribute('uv');
+    const geometry = mergeVertices(base);
+    base.dispose();
+
+    const waves = Array.from({ length: r.lumps }, () => ({
+      dir: new THREE.Vector3(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1)).normalize(),
+      phase: rng.range(0, Math.PI * 2),
+    }));
+    const pos = geometry.attributes.position;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).normalize();
+      let bulge = 0;
+      for (const w of waves) bulge += Math.sin(v.dot(w.dir) * r.lumpFrequency + w.phase);
+      v.multiplyScalar(1 + (r.lumpiness * bulge) / r.lumps);
+      pos.setXYZ(i, v.x, v.y, v.z);
+    }
+    geometry.computeVertexNormals();
+    return geometry;
   }
 
   dispose() {

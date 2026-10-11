@@ -45,9 +45,12 @@ export function makeTreeAtlas(cfg, rng) {
 
 function drawConifer(ctx, w, h, cfg, rng) {
   const cx = w / 2;
-  // Trunk, visible below the lowest branches.
+  // Trunk, visible below the lowest branches, with bark streaks.
+  const trunkX = cx - w * 0.03;
+  const trunkWidth = w * 0.06;
   ctx.fillStyle = css(cfg.trunkColor);
-  ctx.fillRect(cx - w * 0.03, h * 0.5, w * 0.06, h * 0.5);
+  ctx.fillRect(trunkX, h * 0.5, trunkWidth, h * 0.5);
+  drawBark(ctx, trunkX, h * 0.5, trunkWidth, h * 0.5, cfg, rng);
 
   const tiers = rng.int(cfg.tiersMin, cfg.tiersMax);
   const canopyTop = h * 0.02;
@@ -57,12 +60,51 @@ function drawConifer(ctx, w, h, cfg, rng) {
     const bottom = canopyBottom - i * step;
     const top = bottom - step * 1.9; // tiers overlap
     const halfWidth = (w * 0.47) * Math.pow(1 - i / tiers, 0.85) + w * 0.04;
-    drawTier(ctx, cx, Math.max(top, 0), bottom, halfWidth, cfg, rng);
+    drawTier(ctx, cx, Math.max(top, 0), bottom, halfWidth, rng.pick(cfg.needleVariants), cfg, rng);
   }
+  drawDapple(ctx, w, h, cfg, rng);
+}
+
+// Paint only over what's already drawn (the tree), never the transparent
+// background, so the sprite's outline is unchanged.
+function paintOnTree(ctx, paint) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  paint();
+  ctx.restore();
+}
+
+// Dark speckles (shadow between needle clumps, denser on the right, away
+// from the moon) and speckles of varied greens (different leaves).
+function drawDapple(ctx, w, h, cfg, rng) {
+  paintOnTree(ctx, () => {
+    for (let i = 0; i < cfg.dappleCount; i++) {
+      const x = rng.range(0, w);
+      const y = rng.range(0, h);
+      const size = rng.int(cfg.dappleSizeMin, cfg.dappleSizeMax);
+      const shadowChance = cfg.dappleShadowShare * (0.5 + x / w); // 0.5x on the left, 1.5x on the right
+      ctx.fillStyle = rng.chance(shadowChance)
+        ? css(cfg.dappleShadowColor, cfg.dappleShadowAlpha)
+        : css(rng.pick(cfg.dappleLeafColors), cfg.dappleLeafAlpha);
+      ctx.fillRect(Math.floor(x), Math.floor(y), size, size);
+    }
+  });
+}
+
+// Vertical dark and light streaks inside a rectangle.
+function drawBark(ctx, x, y, width, height, cfg, rng) {
+  paintOnTree(ctx, () => {
+    for (let i = 0; i < cfg.barkStreaks; i++) {
+      ctx.fillStyle = css(rng.chance(0.6) ? cfg.barkDark : cfg.barkLight, cfg.barkStreakAlpha);
+      const sx = x + rng.range(0, width);
+      const sy = y + rng.range(0, height);
+      ctx.fillRect(Math.floor(sx), Math.floor(sy), rng.int(1, 2), rng.range(height * 0.03, height * 0.15));
+    }
+  });
 }
 
 // A jagged triangle of branches, lit from the upper left (moonlight).
-function drawTier(ctx, cx, top, bottom, halfWidth, cfg, rng) {
+function drawTier(ctx, cx, top, bottom, halfWidth, lightColor, cfg, rng) {
   const spikes = cfg.spikesPerTier;
   const droop = (bottom - top) * 0.12;
   const right = [];
@@ -81,7 +123,7 @@ function drawTier(ctx, cx, top, bottom, halfWidth, cfg, rng) {
   }
   ctx.closePath();
   const gradient = ctx.createLinearGradient(cx - halfWidth, top, cx + halfWidth, bottom);
-  gradient.addColorStop(0, css(cfg.needleLight));
+  gradient.addColorStop(0, css(lightColor));
   gradient.addColorStop(0.45, css(cfg.needleDark));
   gradient.addColorStop(1, css(cfg.needleDark));
   ctx.fillStyle = gradient;
@@ -120,6 +162,7 @@ function drawDeadTree(ctx, w, h, cfg, rng) {
     ctx.lineTo(cx + side * length * rng.range(0.7, 0.95), endY - rng.range(h * 0.02, h * 0.06));
     ctx.stroke();
   }
+  drawBark(ctx, 0, 0, w, h, cfg, rng);
 }
 
 // ---- ground -----------------------------------------------------------

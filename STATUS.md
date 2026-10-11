@@ -44,6 +44,16 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the forest 
 
 Vite + three.js + Vitest; GitHub Pages deploy on every push to `main` (tests must pass first); `config.js` with every tuning number; Game loop and phases; Clock; EventBus; seeded Rng; Input for the Xbox controller and keyboard/mouse with dead zones, hot-plug and active-device tracking; tap-to-start with fullscreen, landscape lock, "tap to resume" and screen wake lock; debug overlay and menu. M0's test scene and free camera were removed in M1.
 
+### M1 follow-up: Aaron's tablet play-test feedback
+
+Aaron's verdict on M1: "really great work". He asked for three changes, now made:
+
+| Feedback | Change | Tune in |
+| --- | --- | --- |
+| Trees look like flat green and brown cutouts | Each tree sprite now has fine dark dappling (denser on the shadow side) for depth, speckles in five leaf greens, a different green per branch tier, and bark streaks on trunks and dead trees. | `config.forest.dapple*`, `needleVariants`, `bark*` |
+| Rocks look too blocky (dodecahedrons) | Rocks are smooth, lumpy stones: a subdivided sphere bent by overlapping waves, smooth shading, each one stretched differently. Darker, mossier grey. | `config.terrain.rocks` |
+| The torch glares back too brightly from close trees and rocks | The torch checks 7 rays across its beam each frame. If it's hitting a nearby surface head-on (harder than a head-on surface 8 m away), it dims smoothly to match. The ground ahead, hit at a glancing angle, keeps the full beam. The overlay's `world` line shows the torch's current strength and the distance to the surface causing it. | `config.flashlight.glare` |
+
 ## What works (verified)
 
 - `npm run dev`, `npm run build`, `npm run preview` and `npm test` (61/61) all pass. Production build at `/WitchHunt/` runs with no console errors.

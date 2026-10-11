@@ -84,7 +84,10 @@ export class Forest {
     this.baseGeometry = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0); // base at y = 0
 
     this.chunks = this.buildChunks();
-    for (const tree of this.trees) colliders.insert({ x: tree.x, z: tree.z, r: c.trunkRadius });
+    for (const tree of this.trees) {
+      // r blocks the player; vr (the canopy) is what the torch's glare check sees.
+      colliders.insert({ x: tree.x, z: tree.z, r: c.trunkRadius, vr: tree.width * c.glareRadiusRatio });
+    }
     this.drawDistance = Infinity;
   }
 

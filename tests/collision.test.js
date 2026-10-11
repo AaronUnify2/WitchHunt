@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCircles, clampToRadius } from '../src/world/collision.js';
+import { resolveCircles, clampToRadius, nearestHit } from '../src/world/collision.js';
 import { SpatialGrid } from '../src/world/SpatialGrid.js';
 
 describe('resolveCircles', () => {
@@ -47,5 +47,50 @@ describe('SpatialGrid', () => {
     expect(grid.query(0, 0, 1, out)).toBe(out);
     expect(out).toHaveLength(1);
     expect(out[0].stale).toBeUndefined();
+  });
+});
+
+describe('nearestHit', () => {
+  const eye = { x: 0, y: 1.5, z: 0 };
+  const level = { x: 0, y: 0, z: -1 }; // looking straight ahead (-z)
+
+  it('returns maxDistance and no facing when nothing is in the way', () => {
+    expect(nearestHit(eye, level, [], 5)).toEqual({ distance: 5, facing: 0 });
+  });
+
+  it('hits the ground when looking down, at a glancing angle', () => {
+    const down = { x: 0, y: -Math.SQRT1_2, z: -Math.SQRT1_2 };
+    const hit = nearestHit(eye, down, [], 10);
+    expect(hit.distance).toBeCloseTo(1.5 * Math.SQRT2);
+    expect(hit.facing).toBeCloseTo(Math.SQRT1_2);
+  });
+
+  it('hits a tree canopy (visual radius) head-on', () => {
+    const hit = nearestHit(eye, level, [{ x: 0, z: -3, r: 0.3, vr: 1 }], 10);
+    expect(hit.distance).toBeCloseTo(2);
+    expect(hit.facing).toBeCloseTo(1);
+  });
+
+  it('a grazing hit on the edge of a circle faces away from the beam', () => {
+    const hit = nearestHit(eye, level, [{ x: 0.95, z: -3, r: 0.3, vr: 1 }], 10);
+    expect(hit.distance).toBeLessThan(10);
+    expect(hit.facing).toBeLessThan(0.5);
+  });
+
+  it('ignores circles behind or beside the ray', () => {
+    const behind = { x: 0, z: 3, r: 0.3, vr: 1 };
+    const beside = { x: 5, z: -3, r: 0.3, vr: 1 };
+    expect(nearestHit(eye, level, [behind, beside], 10).distance).toBe(10);
+  });
+
+  it('passes over a low rock but hits a tall one', () => {
+    const low = { x: 0, z: -2, r: 0.4, vr: 0.5, top: 0.6 };
+    const tall = { x: 0, z: -2, r: 0.4, vr: 0.5, top: 2 };
+    expect(nearestHit(eye, level, [low], 10).distance).toBe(10);
+    expect(nearestHit(eye, level, [tall], 10).distance).toBeCloseTo(1.5);
+  });
+
+  it('is zero distance, head-on, when already inside a canopy', () => {
+    expect(nearestHit(eye, level, [{ x: 0.2, z: 0, r: 0.3, vr: 1 }], 10)).toEqual({ distance: 0, facing: 1 });
   });
 });

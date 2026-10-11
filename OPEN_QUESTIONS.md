@@ -6,7 +6,7 @@ Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, ma
 
 | # | Question | What M1 does now | Where to change it |
 | --- | --- | --- | --- |
-| 14 | How bright should the flashlight be, and how dark the night? | Torch 300 cd with decay 1.6 over 45 m. Night ambient 1.1, moonlight 0.9. Tuned from screenshots on a software renderer; needs a look on the tablet. | `config.flashlight`, `config.sky.keys` |
+| 14 | How bright should the flashlight be, and how dark the night? | Aaron's M1 play-test: the torch is great, but it glared back from close trees and rocks; now fixed with close-range dimming (`config.flashlight.glare`). Torch 300 cd with decay 1.6 over 45 m. Night ambient 1.1, moonlight 0.9. Tuned from screenshots on a software renderer; needs a look on the tablet. | `config.flashlight`, `config.sky.keys` |
 | 15 | Should sprint be hold or toggle? | Controller: click L3 once and you sprint until you stop moving or run out of stamina (common console behaviour). Keyboard: hold Shift. | `src/player/Player.js` `updateStance()` |
 | 16 | Should jump work while crouched? | Pressing jump while crouched stands you up instead of jumping. Sprinting also stands you up. | `src/player/Player.js` |
 | 17 | Head bob: wanted, and how much? | A subtle 3.5 cm bob that scales with speed. Set `amplitude: 0` to turn it off. | `config.player.headBob` |

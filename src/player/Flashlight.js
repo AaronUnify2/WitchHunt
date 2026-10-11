@@ -1,10 +1,13 @@
 // The flashlight: a spotlight held low and to the right, projecting a
 // procedural torch pattern, and the game's one real-time shadow. The beam
-// lags the view slightly so it feels hand-held. Toggled with the
-// 'flashlight' action. Emits 'flashlight:toggled' { on }.
+// lags the view slightly so it feels hand-held, and dims when it's right
+// up against a tree, rock or the ground so close surfaces don't flood the
+// view with glare. Toggled with the 'flashlight' action.
+// Emits 'flashlight:toggled' { on }.
 
 import * as THREE from 'three';
 import { makeFlashlightCookie } from '../render/proceduralTextures.js';
+import { nearestHit } from '../world/collision.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 
@@ -15,8 +18,13 @@ export class Flashlight {
     this.bus = bus;
   }
 
-  init(scene) {
+  init(scene, colliders) {
     const c = this.cfg;
+    this.colliders = colliders;
+    this.nearby = [];
+    this.glareFactor = 1;
+    this.surfaceDistance = c.glare.fullDistance;
+    this.hit = { distance: 0, facing: 0 };
     this.cookie = makeFlashlightCookie(c, this.rng);
     this.light = new THREE.SpotLight(c.color, c.intensity, c.distance, c.angle * DEG_TO_RAD, c.penumbra, c.decay);
     this.light.map = this.cookie;
@@ -29,6 +37,9 @@ export class Flashlight {
     this.offset = new THREE.Vector3(c.offset.x, c.offset.y, c.offset.z);
     this.aim = new THREE.Vector3(0, 0, -1);
     this.forward = new THREE.Vector3();
+    this.right = new THREE.Vector3();
+    this.up = new THREE.Vector3();
+    this.ray = new THREE.Vector3();
     this.snapAim = true; // point straight ahead on the first frame
     this.setOn(c.startOn);
   }
@@ -46,6 +57,44 @@ export class Flashlight {
       this.aim.lerp(this.forward, 1 - Math.exp(-this.cfg.followRate * dt)).normalize();
     }
     this.light.target.position.copy(this.light.position).addScaledVector(this.aim, this.cfg.aimDistance);
+    this.updateGlare(dt);
+  }
+
+  // How hard the beam hits a surface goes as facing / distance ^ decay
+  // (facing = 1 head-on, near 0 at a glancing angle). If the strongest hit
+  // is brighter than a head-on surface at glare.fullDistance, dim the torch
+  // so it's no brighter than that: close trees and rocks stop flooding the
+  // view, while the ground ahead (a glancing hit) keeps the full beam. The
+  // beam is a cone, so a ring of rays is checked as well as the centre.
+  updateGlare(dt) {
+    const g = this.cfg.glare;
+    const decay = this.cfg.decay;
+    const origin = this.light.position;
+    const nearby = this.colliders.query(origin.x, origin.z, g.fullDistance + g.queryMargin, this.nearby);
+
+    this.right.crossVectors(this.aim, THREE.Object3D.DEFAULT_UP).normalize();
+    this.up.crossVectors(this.right, this.aim);
+    const spread = Math.tan(this.cfg.angle * DEG_TO_RAD * g.ringSpread);
+    let strongest = 0;
+    this.surfaceDistance = g.fullDistance;
+    for (let i = 0; i <= g.ringRays; i++) {
+      this.ray.copy(this.aim);
+      if (i > 0) {
+        const a = (i / g.ringRays) * Math.PI * 2;
+        this.ray.addScaledVector(this.right, Math.cos(a) * spread).addScaledVector(this.up, Math.sin(a) * spread).normalize();
+      }
+      nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit);
+      const strength = this.hit.facing / Math.pow(Math.max(this.hit.distance, g.minDistance), decay);
+      if (strength > strongest) {
+        strongest = strength;
+        this.surfaceDistance = this.hit.distance;
+      }
+    }
+
+    const limit = 1 / Math.pow(g.fullDistance, decay);
+    const target = strongest > limit ? Math.max(g.minFactor, limit / strongest) : 1;
+    this.glareFactor += (target - this.glareFactor) * (1 - Math.exp(-g.response * dt));
+    this.light.intensity = this.cfg.intensity * this.glareFactor;
   }
 
   setOn(on) {
