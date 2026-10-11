@@ -126,9 +126,9 @@ Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle
 - **Vite HMR reloads the page** when a source file changes mid-test. Don't edit while a browser check runs.
 - **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
 
-### Offered to Aaron, not built
+### Declined by Aaron
 
-- A real roadblock: a few cars across a pathway near roadside clearings, with a gap to squeeze through (choke points). The current "roadblocks" are angled rows inside roadside and checkpoint clearings.
+- **No vehicles across pathways** (real roadblocks): "we're just tempting fate with having the AI encounter roadblocks." Keep vehicles on verges and inside clearings, clear of the pathway's middle.
 
 ### Open questions for Aaron
 
