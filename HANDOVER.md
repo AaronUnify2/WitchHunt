@@ -1,142 +1,171 @@
 # Handover
 
-## Just finished: Session 4, Lead Engineer, M3 (The map)
+## Just finished: Session 5, AI Programmer, M4 (Sigils and zombies)
 
-**Status: done. Aaron's tablet play-test passed the M3 gate** (no frame drops walking the map).
+**Status: built, tested headless, and waiting on Aaron's tablet play-test** (script below). The M4 "done when" is: **raising the level by debug visibly changes the night.**
 
-Aaron's calls before building (rule 10 doesn't strictly apply to core systems, but these shape the game):
+Aaron's calls before building (rule 10):
 
-- **Map size: 1 km wide by 1.4 km north to south.** "We'll see how it goes"; revisit after play-testing.
-- **Off the pathways: slowed, never blocked.** Undergrowth makes cutting through "something the player can choose to do, but it comes at a cost", especially when escaping zombies. No impassable walls.
-- **Gentle rolling ground:** yes ("I would be thrilled").
-- **Minimap and map screen:** simple but usable now; the final look is Session 19.
-- **Runs start at home on the cliff edge, by day.** Debug: skip to night, teleport to any clearing.
-- **Builds go to Aaron's tablet by pushing to `main`.**
-
-DESIGN.md "Map" is updated to match.
+- **Mutant zombie: a placeholder 3D model is fine.** Built from boxes; the real model is the art pass.
+- **Sigil grounds: only what matters for play now.** The witch prefers them and they raise faster, plus a simple marker. The scarecrow, cemetery, circus scares and the crows-and-candles tells are for an encounter session.
+- **A stand-in plants the sigils until the witch exists (M7).**
+- **Loot: all fine.** Police vests and army helmets feed M2's armour, pistol ammo goes in the inventory for the pistol, and miner zombies wait for the mineshaft (M9).
+- **The map screen pauses the game** (OPEN_QUESTIONS #39, resolved). DESIGN.md "The map screen and fog of war" is updated.
 
 ### What was built
 
-Details in `STATUS.md` ("M3: The map"):
+Details in `STATUS.md` ("M4: Sigils and zombies"):
 
-- **Generation:** a seeded map of 22 clearings in north, middle and south bands.
-  - Home is against the cliff, with the campsite next to it. The hut is deep in the south, 5-11 pathways from home.
-  - The encounters and sigil grounds come from data files.
-  - Pathways are a spanning tree plus shortcut loops. They never cross, and north clearings are always a sensible walk from home.
-- **Ground:** rolling hills, levelled clearings, dirt pathways, rocks.
-- **The cliff:** a tall rock wall the width of the map, with trees on the plateau above it.
-- **Forest:** about 88,000 trees and 120,000 bushes across the map, in 48 m chunks.
-- **Undergrowth:** slows the player to 0.55× and zombies to 0.75× off the pathways.
-- **Distance culling:** for every map piece.
-- **Fog of war, minimap and map screen:** the minimap turns with you; D-pad up opens the map screen.
-- **Signposts:** one in every clearing, standing in for its encounter or sigil ground.
-- **Terrain-aware combat:** zombies, hit boxes, shots, blood and the torch's glare all follow the hills.
-- **Debug:** teleports, reveal map, whole-graph map view, new map / same map, skip to night. New overlay lines.
-- **Tests:** 168 pass (50 new).
+- **Sigils:**
+  - Each one raises zombies round itself at night, up to 6 of its own.
+  - At most five at once. **Zombie level = the number of sigils.**
+  - Sigils on sigil grounds raise faster.
+  - Look: a glowing glyph in turned earth with a soft halo, faint by day.
+- **Stand-in planter:** at each dusk from night 2 it plants one sigil, 60% on empty sigil grounds, the rest just off a pathway in the woods.
+- **Sigil grounds:** a ring of dark stakes marks each one.
+- **Digging:** hold X for 4 s by a sigil, with a prompt and a bar. Damage loses the progress. Once it's up, the level drops at once.
+- **Levels 1-5** (the DESIGN.md table):
+  - Each level sets the speed range, horde chance and mutant chance.
+  - Health, damage and notice range all grow with the level.
+  - Every zombie keeps its speed roll, so **a level change speeds up or slows down every living zombie at once.**
+- **Variants:** citizen, police and army, each with its own sprite and toughness. The mix comes from each clearing type.
+- **Hordes:** 7-15 slow zombies that wander as a pack and all come when one sees you.
+- **Mutants:** a placeholder 3D giant made of boxes. Tough and slow, with a heavy swipe. At most 4 at once.
+- **Detection** (one model): distance, line of sight over the hills, daylight, torch, crouch, brush, footsteps and gunfire.
+- **Targeting:**
+  - Each zombie chases you once it notices you, keeps after you a while, then searches where it last saw you, then wanders the pathways.
+  - A station "siege" goal is wired in, waiting for M5.
+- **Rising and dawn:** zombies climb out of the ground. At dawn 85% sink back in; the rest stay as daytime stragglers.
+- **Loot and pickups:**
+  - Drops from data tables (`data/loot.json`).
+  - Walk over a pickup to take it. A full armour bar or kit bag leaves it lying.
+  - A pickup feed shows bottom right.
+- **Debug and overlay:**
+  - Debug menu: zombie level (auto or fixed), plant sigils, raise zombies now, teleport to a sigil, sigils on the map, spawn a horde or a mutant.
+  - New overlay lines: `zombies` (variants, modes, how far you're seen and heard) and `sigils`.
+- **Tests:** 234 pass (66 new).
 
-### Aaron's M3 play-test on the tablet: passed
+### Checked in headless Chromium (no tablet timings)
 
-- **The frame rate never dropped**, walking the pathways and cutting through the forest.
-- The hills are smooth; fighting zombies on slopes works; restarting gives the same map.
-- **"This feels like a really good size map for the game"**; "everything looks really good".
-- The undergrowth slowdown "feels appropriate".
-- The map edges stay plain forest; empty clearings stay empty ("they almost add something to the game").
+- Planting, raising, levels, variants, hordes, the mutant (including its death and loot), the pickup rules, the dig, the map pause and dusk planting all worked.
+- **64 zombies cost about 0.1 ms of simulation per frame; 47 draw calls at night** (budget ~100).
+- No console errors.
 
-**Fixes made after the test** (STATUS.md "M3 follow-up"):
+### Unfinished or for later
 
-- **The minimap now redraws every frame.** At 20 a second, turning looked jagged and was queasy.
-- **About 60% more undergrowth**, so you can see you're in the brush.
-- **No more torch hot spot on the signposts.** The glare check now sees the whole board, the wood is darker, and the post no longer covers the lettering.
+- The dawn thinning over a real 60 s dawn hasn't been watched in the browser. The unit test covers it, and the time speed-up can't hurry it.
+- Zombies see through trees; only hills block sight (OPEN_QUESTIONS #55).
+- Encounter placement hints are still not honoured (#42, for the encounter sessions).
 
-### Unfinished
+## Play-test script for Aaron (M4)
 
-- Encounter placement hints (road edge, hillside, off-path) aren't honoured yet (OPEN_QUESTIONS #42).
-- Worth a glance on the tablet: the three fixes above.
+**Setup:**
 
-## Play-test script for Aaron (M3)
+- Open the live build on the tablet with the controller. The overlay is on; the new lines are `zombies` and `sigils`.
+- You start at home by day. Hold **View + D-pad down** for the debug menu.
+- Turn **God mode** on for steps 2-4 if you want to look rather than fight.
 
-**Setup:** open the live build on the tablet with the controller. The overlay is on (the `map` and `world` lines are new). You start at home by day, facing south. Hold **View + D-pad down** for the debug menu.
+1. **A sigil by day, then by night:**
+   - Debug menu: **Plant sigil (stand-in witch)**. A toast says where it went.
+   - Then **Teleport: next sigil**.
+   - Good: by day, a faint green glyph in a patch of dark earth.
+   - Then **Skip to night**.
+   - Good: the glyph glows plainly, with a soft halo you can spot from a distance. The halo fades as you walk up.
+   - If it was on a sigil ground, you'll see a ring of dark stakes round the clearing.
+2. **Zombies rising (level 1):**
+   - Stand about 15 m from the sigil. Debug menu: **Raise zombies now**, a few times.
+   - Good: zombies climb out of the ground round it and shamble off along the pathways.
+   - Their sprite and mix follow the clearing type: a roadside sigil raises mostly police, a checkpoint mostly army.
+3. **Being noticed (the detection model):**
+   - Crouch (R3) and turn the torch off (D-pad left). Creep toward a wandering zombie.
+   - Good: it shouldn't notice you until about 6 m (watch `seen from` on the `zombies` line).
+   - Stand up and turn the torch on.
+   - Good: it notices from about 30 m, speeds up and comes at you.
+   - Fire the rifle once.
+   - Good: zombies further off turn and come too.
+   - Run away and break line of sight.
+   - Good: after a few seconds they search where they last saw you, then give up and wander.
+4. **The level changes the night (the M4 gate):**
+   - Debug menu: **Zombie level** (cycle to **fixed L1**), then **Spawn 5 zombies near me**. Note how slow they are.
+   - Cycle to **fixed L5** and watch the same zombies: they speed up straight away, and a few now outrun your sprint.
+   - Then **Raise zombies now** a few more times at level 5.
+   - Good: hordes (a tight pack of 7-15) and now and then a **mutant** (a hunched box giant).
+   - Set the level back to **auto**.
+5. **The mutant:**
+   - Debug menu: **Spawn a mutant near me**. Fight it with God mode off.
+   - Good: it's slow, shrugs off most of the stun, and its swipe has a long wind-up you can dodge but hurts.
+   - Is it a fun mini-boss, or a bullet sponge? It takes about 15 rifle body shots at level 3, or 5 headshots.
+6. **Loot:**
+   - Kill some police and army zombies, then walk over the coloured boxes they drop.
+   - Good: "+ police vest (+40 ballistic)", "+5 rifle rounds" and so on bottom right, and the armour bar fills.
+   - With a full armour bar, a vest stays on the ground.
+7. **Digging:**
+   - Plant five sigils (overlay: `5/5 sigils`, level L5). Stand on one: the prompt "Hold X: dig up the sigil" appears.
+   - Hold X for 4 seconds.
+   - Good: a bar fills, then a chime and "zombie level 5 → 4". The zombies already about slow down.
+   - Try again and let a zombie hit you mid-dig.
+   - Good: the progress is lost.
+8. **A whole night:**
+   - **Remove all sigils**, then plant 2-3 with the stand-in.
+   - Skip to night and play it out normally, with **Sigils on the map** on if you want to find them.
+   - Watch fps the whole time (top left), especially with many zombies about.
+   - At dawn, wait the real minute.
+   - Good: most zombies sink back into the ground (never right in front of you), and a few stay as stragglers.
+9. **The map pauses:**
+   - Open the map (D-pad up) at night and wait a while, then close it.
+   - Good: the clock (overlay) hasn't moved.
+10. **Report:**
+    - fps at the worst moment, and whether the tablet got warm.
+    - Whether level 1 vs level 5 feels clearly different.
+    - Whether being seen feels fair (too easy or too hard to sneak).
+    - The mutant's look and toughness.
+    - Anything that looked wrong.
 
-1. **Look round home:**
-   - Turn round (north): the cliff wall, with trees on top.
-   - Read the "RANGER STATION" signpost.
-   - Good: the cliff reads as rock, not a flat wall.
-2. **Minimap:**
-   - Turn on the spot.
-   - Good: the minimap turns with you, the N on its rim always points north, and the patch round you is revealed.
-3. **The walk (the gate):**
-   - Press **D-pad up** for the map, then close it with **D-pad up** or **B**.
-   - Follow pathways south toward the hut. Choose pathways at junctions, and read the signposts as you pass clearings.
-   - Keep an eye on fps the whole way (it's top left).
-   - **Report:** fps on the pathways, at clearings, and at the worst moment. Also how long it took and whether you got lost.
-4. **Cut through the forest:**
-   - Leave a pathway and push through the trees.
-   - Good: you're clearly slowed (the overlay's `player` line shows "undergrowth"), and it's tempting to get back on the path.
-   - Is the slowdown too much, too little, or right?
-5. **The hills:**
-   - Good: gentle rises and dips, nothing steep or jittery, and your feet stay on the ground.
-6. **At night:**
-   - Debug menu: **Skip to night**.
-   - Walk a pathway with the torch, then **Spawn 5 zombies** and fight on a slope.
-   - Good: the zombies stand on the ground and your shots hit them uphill and downhill. Red dots appear on the minimap.
-7. **The map screen:**
-   - Debug menu: **Reveal whole map**, then open the map.
-   - Then switch to **Map screen: whole graph** to see every pathway.
-   - Good: names are readable, and the layout looks like a believable network of trails.
-8. **Same seed, same map:**
-   - Note the seed (overlay), then **Restart this map**.
-   - Good: the same map. **New map** gives a different one.
-9. **Size and feel:**
-   - Is 1 km × 1.4 km too big, too small or about right?
-   - Are the distances between clearings interesting or boring?
-10. **Report:** fps over the whole walk (and whether the tablet got warm), anything that looked wrong, and how the map feels.
+## Next: Session 6, Gameplay Programmer, M5 (The station)
 
-## Next: Session 5, AI Programmer, M4 (Sigils and zombies)
+**Goal:** the compound layout, fence and batteries, doors, comms room, ledger, security rating, turret, real-time base defence, vehicles and battery pulling. **Done when** a night defending the station is tense and readable.
 
-**Goal:** sigils, night spawning, five-sigil cap, levels 1-5, variants, speed variance, hordes, mutants, loot, digging, sigil grounds, the detection model and targeting. **Done when** raising the level by debug visibly changes the night.
+Rule 10: the station is content (layout, look, the turret), so workshop the build plan with Aaron first.
 
 ### Look at first
 
-- `src/world/World.js`: `world.map` and `world.ground`.
-  - `map.clearings` carry `kind` ('home', 'hut', 'encounter', 'sigilGround', 'wild'), `key`, `band`, `southness`, `clearingType`, `hopsFromHome`.
-  - `map.edges` and `map.paths` are the pathway graph.
-- `src/world/mapGraph.js`: `adjacency`, `hopCounts`, `graphDistance`, for "random walk along the pathway graph".
-- `src/world/GroundField.js`:
-  - `heightAt`, `undergrowthAt`, `openAt`, `clamp`.
-  - `rayDistance`, for line of sight over hills in the detection model.
-- `src/data/clearingTypes.json`: each type's zombie variant mix (`variants`).
-- `src/data/sigilGrounds.json`: the five sigil grounds; add more here.
+- **`STATUS.md` "What M5 needs next":**
+  - The zombie hooks: `enemies.station = { x, z, baseRadius }` switches nearby zombies to a `'siege'` goal.
+  - Each level's `defenceDamage` is for zombies hitting the defences.
+  - `enemies.living` and `enemies.damage()` are there for the turret.
+  - `enemies.alert()` handles noise.
+- `src/ai/ZombieBrain.js`: the siege goal. Zombies walk to the station; M5 decides what they do there.
 - `src/ai/EnemyManager.js`:
-  - It already sets each zombie's `y` (ground height) and `moveScale` (undergrowth) every frame.
-  - `spawnAround()` is the spawn entry point.
+  - `spawnZombie()` and `spawnPlanned()` (singles, hordes, mutants).
+  - `living`, `damage()`, `alert()`, `tally()`.
+- `src/combat/Combat.js`: loot, pickups and `inventory.scrap` (for the ledger).
+- `src/world/World.js`: `home` is the station's clearing, 32 m south of the cliff.
 
 ### Gotchas and decisions
 
-- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system. The map uses `rng.fork('world')`; anything that must match a seed should fork from the game's rng, never `Math.random()`.
-- **Draw calls:** 45-67 at night with the torch shadow, anywhere on the map (budget ~100).
-  - Forest chunks are one draw each (trees and bushes together).
-  - The ground is 128 m chunks; rocks are one instanced mesh per ground chunk.
-  - Signposts are one board each, drawn only when near.
-- **Anything with a height** (sigils, pickups, props) must stand at `ground.heightAt(x, z)`.
-- **Anything a shot or the torch should hit** goes in the collider grid with `r` (blocks movement and shots), optional `vr` (torch glare), `base` and `top` (absolute heights).
-- **Rays over the terrain:** `hitscan.rayBlockers` and `collision.nearestHit` take a `ground` argument. Pure tests use flat ground by default.
-- **Culling:** use `ChunkCuller` for anything placed across the map, so only nearby pieces draw.
-- **The map screen and the debug menu** both stop the action while open (the clock runs on).
-- **The fog of war** has `reveal(x, z, radius)` for the lookout tower (M5) and `toBytes()` / `fromBytes()` for saves (M6).
-- **Start time:** runs start by day at home (`config.clock.startPhase`), so use **Skip to night** to test spawning.
+- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system.
+- **Night pacing:** the stand-in planter adds one sigil a night from night 2, so a test night at home needs sigils. Use the debug menu: plant sigils, raise zombies now, or fix the level.
+- **Every zombie is fully simulated** until M6. The pool is 64; when it's full, sigils stop raising.
+- **Mutants are 3D** (`MutantRenderer`), the rest are sprites (`ZombieRenderer`). Both read the same pool. Mutants have `kind: 'mutant'` and a bigger hit shape.
+- **Draw calls:** 47-60 at night with zombies (budget ~100). Each visible sigil adds 2 draws, each sigil ground 1.
+- **Anything with a height** stands at `ground.heightAt(x, z)`.
+- **Anything a shot or the torch should hit** goes in the collider grid (`r`, optional `vr`, `base`, `top`).
+- **The map screen now pauses everything, clock included.** The debug menu still lets the clock run.
 - **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
 
 ### Open questions for Aaron
 
-These are in `OPEN_QUESTIONS.md` #35-50. The main ones:
+These are in `OPEN_QUESTIONS.md` #51-65 (the numbers M4 picked). The main ones to look at after the play-test:
 
-- Should the map screen pause the game, or stay live? (#39)
-- Encounter placement hints for the encounter sessions (#42).
+- The per-sigil cap and raising rate (#51).
+- The stand-in's pace of one sigil a night (#52).
+- The detection ranges (#54).
+- The mutant's toughness (#60).
 
-## Session kickoff prompt for Session 5
+## Session kickoff prompt for Session 6
 
 ```
-You are the AI Programmer on Witch Hunt, Session 5.
+You are the Gameplay Programmer on Witch Hunt, Session 6.
 Read docs/DESIGN.md (especially "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
 Then confirm your role, this session's goal and any questions before starting.
 Follow the handover protocol, and end with the HANDOVER READY signal.

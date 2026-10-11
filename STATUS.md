@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 4 (Lead Engineer), milestone **M3: The map**. **M3 gate passed on the tablet** (Aaron).
+Last updated: Session 5 (AI Programmer), milestone **M4: Sigils and zombies**. Built and checked in headless Chromium; **waiting on Aaron's tablet play-test** (script in `HANDOVER.md`). M3 gate passed on the tablet (Aaron).
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -19,6 +19,30 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M4: Sigils and zombies (Session 5)
+
+Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model is the art pass); **sigil grounds get only what matters for play** (the witch prefers them, they raise faster, a simple marker; the scarecrow, cemetery, circus scares and the crows-and-candles tells wait for an encounter session); a **stand-in for the witch plants the sigils** until M7; loot as below (pistol ammo kept in the inventory for the pistol; miner zombies wait for the mineshaft, M9); **the map screen pauses the game**.
+
+| Area | Files | Notes |
+| --- | --- | --- |
+| Sigils | `src/ai/Sigils.js`, `ZombieDirector.js` | Pure state: position, the five-sigil cap, a raising timer each. At night each sigil raises zombies round itself (3-9 m out) every 18-36 s, up to **6 living zombies of its own**, then waits until one dies. Sigils on sigil grounds raise about 1.7× as often (interval × 0.6). Raising starts 2-12 s after nightfall (or after planting at night). **Zombie level = active sigils (1-5)**, map-wide. Digging one up drops the level at once, and its zombies carry on as strays. |
+| Stand-in planter | `src/ai/sigilPlanter.js` | Placeholder for the witch (M7). At each dusk **from night 2** she plants **one** sigil (`planter.perNight`), up to five, so night 2 is level 1 and night 6 level 5 if none are dug up. **60% go to an empty sigil ground** (3 m off its centre), the rest 6-16 m off a pathway into the forest. Never within 160 m of home, 70 m of another sigil or 50 m of the player, nor in an encounter's clearing, home or the hut. Seeded: the same seed plants in the same places. |
+| Sigil look | `src/render/SigilRenderer.js` | A patch of turned earth that follows the slope, with a glowing seven-pointed glyph and runes (an emissive map, so no light needed), and a soft green halo above it that fades as you walk up. Faint by day, plain at night. Two draw calls per sigil, only within the draw distance. |
+| Sigil grounds | `src/render/SigilGroundMarkers.js` | Placeholder marker: a ring of 9 dark leaning stakes round each sigil ground (plus M3's signpost). One draw call per ground, only when near. Sigil grounds never attack the player (DESIGN.md rule): they're just faster, favoured planting spots. |
+| Levels | `src/ai/zombieLevels.js`, `config.zombies.levels` | The DESIGN.md table: speed range (multiples of the player's sprint, skewed slow), horde chance (0/10/10/20/30%), mutant chance (0/0/5/10/15%), plus health, damage and notice multipliers (×1 to ×1.5, notice ×1 to ×1.4) and `defenceDamage` for M5. **Every zombie keeps its speed roll**, so when the level changes every living zombie speeds up or slows down at once; damage and notice range follow the current level too. Only level 5 has zombies that outrun your sprint. |
+| Variants | `config.zombies.variants`, `data/clearingTypes.json`, `src/render/zombieSprite.js` | Citizen, police (×1.5 health; vest and cap on the sprite) and army (×1.6; olive fatigues and helmet). Each sigil uses its clearing type's mix (e.g. roadside 60% police, checkpoint 60% army); off-path sigils use the nearest clearing's. The sprite atlas has one 8-row block per variant (1056×3072); the shader picks the block, still one draw call. |
+| Hordes | `EnemyManager.spawnPlanned()` | One raising of 7-15 slow zombies (0.35-0.5× sprint) in a 4 m cluster. They wander as a pack behind a leader (a new one takes over if it falls), and when one notices you the whole pack comes. |
+| Mutants | `config.mutant`, `src/render/MutantRenderer.js` | A placeholder 3D giant made of boxes, 2.5 m tall: hunched, with a hump, a small sunken head and long arms (one swollen). 300 health × level (at level 3, 360: about 15 rifle body shots, 5 aimed headshots, or 8 point-blank shotgun blasts), a slow heavy swipe (0.9 s wind-up, 30 damage × level, 1.9 m reach), shrugs off 75% of stagger and 80% of knockback, its own deeper groan. At most 4 at once. Rigid but posed: sways as it walks, rears back and lunges, reels, topples sideways. One draw call plus the torch shadow. |
+| Detection | `src/ai/detection.js` | One model for every enemy: **sight** 13 m at night and 38 m by day for a standing player with the torch off; the torch ×2.3 at night (barely matters by day); crouched ×0.45; sprinting ×1.2; in the brush ×0.75; behind the zombie ×0.55; all × the level's notice. Sight needs a clear line over the hills (trees don't block it). **Hearing:** walking footsteps 6 m, sprinting 18 m, crouching silent. **Gunfire:** the rifle is heard 70 m away, the shotgun 55 m, the shovel 4 m; every zombie in range comes for you. Always noticed within 2.5 m. Crouched with the torch off at night, a zombie facing you notices you at about 6 m; with the torch on and standing, about 30 m. |
+| Targeting | `src/ai/ZombieBrain.js`, `pathRoutes.js` | Each zombie thinks every 0.5 s (staggered): noticed you → **chase**; else (M5) the station within its base radius → **siege** (wired, waiting for the station); else **wander**: a random walk along the pathway graph at 0.55× pace, clearing to clearing, not doubling back if there's a choice. Losing you, it keeps after you for 6 s, then **searches** where it last saw you for 10 s, then wanders. Once chasing, it keeps you in sight 1.7× further. |
+| Rising and dawn | `src/ai/Zombie.js` | Raised zombies climb out of the ground over 1.6 s (they can be shot, but not stunned, while rising). **At dawn 85% sink back into the ground** over the 60 s of dawn (no corpse, no loot), never within 25 m of you or while chasing you; **15% stay as stragglers** wandering the pathways by day. |
+| Loot | `src/data/loot.json`, `src/combat/loot.js`, `src/world/Pickups.js`, `src/render/PickupRenderer.js` | Every table entry rolls on its own. Citizens: shells 35%, rifle rounds 12%, scrap 20%, a first aid kit 4%. Police: **vest (+40 ballistic) 35%**, pistol rounds 60%, shells 15%. Army: **helmet (+20 ballistic) 35%**, **rifle rounds 60%** (the main source), scrap 10%. Mutants: rifle and shotgun ammo, scrap, a kit 50%, a vest 30%. Drops are small coloured boxes that bob and turn by the body. **Walk over one to take it**; a full armour bar or kit bag leaves it lying. A short "+4 shotgun shells" feed shows bottom right. Pool of 48, gone after 15 minutes. Pistol rounds and scrap are counted in the inventory (overlay `combat` line) for later. |
+| Digging | `src/player/Digging.js`, `ZombieDirector.updateDigging()` | Stand within 2.2 m of a sigil: "Hold X: dig up the sigil" (E on the keyboard). 4 seconds of holding, with a progress bar and shovel sounds. Letting go pauses; stepping away starts over; **taking damage loses the progress**. When it's up: a cleansing chime, the sigil vanishes and a toast shows the level dropping. |
+| Map screen pause | `src/core/Game.js` `update()` | **Aaron: the map screen pauses the game**, now including the clock. The debug menu still lets the clock run (#9). |
+| Sounds | `src/audio/Sfx.js` | Placeholders (audio pass, Session 20): shovel digging, the cleansing chime, earth breaking as zombies rise, pickup click, a deeper mutant groan. Groans now only play for zombies within earshot. |
+| Debug menu | `ZombieDirector.addDebugItems()`, `Combat.addDebugItems()` | **Zombie level: auto / fixed L1-L5** (cycles; auto counts the sigils); plant sigil (stand-in witch); plant sigil right here; raise zombies now (every sigil); teleport: next sigil; remove all sigils; **sigils on the map** (green diamonds on the minimap and map screen); spawn a horde near me; spawn a mutant near me; spawn 5 zombies near me (now with the local variant mix). The M2 "Zombie speed" toggle is replaced by the level. |
+| Overlay | `Combat.zombieOverlayLine()`, `ZombieDirector.overlayLines()` | New `zombies` line: level, alive and active, by variant (citizen/police/army/mutant), how many in hordes, by what they're doing (chase/search/wander/rising), stragglers, and **how far you can be seen and heard from right now**. New `sigils` line: count (and how many on grounds), level, the next raising, the nearest sigil. The `combat` line adds scrap, pistol rounds and pickups lying about. |
 
 ### M3: The map (Session 4)
 
@@ -126,7 +150,18 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## What works (verified)
 
-- `npm run dev`, `npm run build`, `npm run preview` and `npm test` (168/168) all pass. Production build at `/WitchHunt/` runs with no console errors.
+- `npm run dev`, `npm run build` and `npm test` (**234/234**, 66 new) all pass.
+- **M4 in headless Chromium (software GPU, so no timings for the tablet):**
+  - The stand-in planted five sigils on seed 1234 (four on sigil grounds, one in the woods by the gas station) and refused a sixth; level went to 5. Five sigils on six other seeds all follow the planting rules (tests).
+  - At night the sigils raised zombies that climbed out of the ground and wandered off; a police zombie came from the roadside mix. The glyph reads clearly at night, faintly by day; the halo fades as you walk up.
+  - A mutant and a horde spawned and came for the player; the mutant falls sideways when killed and drops its loot. Police (vest and cap) and army (helmet) sprites read correctly.
+  - Killing 12 police and army zombies dropped 14 pickups; walking over them took vests and helmets up to 100 ballistic, rifle rounds and pistol rounds, with the pickup feed; the rest stayed lying (full armour bar).
+  - Holding E on a sigil showed "Hold E: dig up the sigil", then "Digging up the sigil…" with the bar, dug it up and toasted.
+  - The map screen stopped the clock.
+  - At dusk on day 2 the stand-in planted one sigil.
+  - **64 zombies (the whole pool), all thinking and moving: about 0.1 ms of simulation per frame**, 47 draw calls at night (budget ~100).
+  - No console errors.
+- `npm run preview` and the production build at `/WitchHunt/` ran with no console errors in M3 (not re-checked in M4 beyond `npm run build`).
 - **M3 in headless Chromium (software GPU, so no timings):**
   - Every seed tried generates a valid map (200 seeds in the generator check; 40 in the tests), almost always on the first attempt. The world (map, ground, 88k trees, 120k bushes, rocks, cliff, signposts) builds in about 0.5 s; JS heap about 97 MB.
   - **Draw calls 45-67 at night with the torch shadow** (budget ~100), checked standing at all 22 clearings and the middle of all 26 pathways; at most 63k triangles.
@@ -155,6 +190,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
+- **M4 on the tablet** (Aaron's play-test): frame rate with many zombies and up to five sigils visible, whether the level changes are visible enough, whether the detection numbers feel fair, the mutant's look and toughness, and the sigil glow at night on the real screen.
+- The dawn thinning over a real 60 s dawn in the browser (the unit test covers it; the debug time speed-up only speeds the clock, not the zombies, so it can't be hurried).
 - The M3 follow-ups (smooth minimap, more bushes, sign glare) on the tablet.
 - How long the world takes to build on the tablet (about 0.55 s on a desktop CPU).
 
@@ -165,15 +202,17 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 ## Stubbed / placeholder (by design)
 
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
-- Encounters and sigil grounds are signposts only: each is built in its own milestone (M4 sigil grounds, M5 home, M7 hut, M9-M11 encounters).
+- Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
+- **The witch doesn't exist yet: a stand-in plants the sigils** at dusk from night 2, one a night (M7 replaces it with her planting, interruption and ambushes).
+- The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
-- Clearing types (bog, graveyard, roadside, checkpoint, standing stones) only tint the map and name the signpost; their look and zombie mix arrive with M4 and the style passes.
+- Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
 - The east, west and south map edges are an invisible line inside dense forest (Aaron: fine as it is).
 - The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 19); no pause menu.
-- Zombies only walk straight at the player. Detection, targeting, levels 2–4, variants, hordes, mutants and loot drops are M4. They don't spawn on their own: use the debug menu.
+- **Every zombie on the map is fully simulated** (one pool of 64) until M6's tiers; distant ones are cheap but the pool can fill on a busy night, and then sigils stop raising until some die or sink at dawn.
+- Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
-- Armour only comes from the debug menu (pickups arrive with the police and army variants in M4).
-- The inventory holds only first aid kits; the inventory screen is later.
+- Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
 - Not built from "Visual ambition": ground mist layers, height fog, fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
 - Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
@@ -183,6 +222,10 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry merging use three.js's own `three/addons` modules, which ship inside the `three` package. Sounds use the browser's Web Audio API.
 
 ## Known issues and risks
+
+- **M4: zombie numbers on a busy night.** Up to 64 zombies (five sigils × six each, plus hordes) all simulated and drawn; the headless check had 64 cost about 0.1 ms of simulation and 47 draw calls, but the tablet hasn't seen it. Levers: `zombies.poolSize`, `sigils.perSigilCap`, `sigils.spawnInterval`, `zombies.horde.countMax`. M6's tiers are the real fix.
+- **M4: the mutant is tanky** (360 health at level 3). If it feels like a sponge rather than a mini-boss, lower `mutant.health`.
+- **M4: zombies see through trees.** Sight only checks the hills, not trunks (88,000 of them). In the forest the brush multiplier (×0.75) stands in for cover. If being spotted through thick woods feels unfair, lower `detection.undergrowth`.
 
 0. **M3 memory and load:** about 210,000 tree and bush sprites and 88,000 colliders are plain JS objects (heap about 97 MB). Fine on the tablet's RAM, but if load time or memory becomes a problem, the levers are `forest.undergrowth.cellSize` (fewer bushes), `forest.cellSize`, or packing the layouts into typed arrays.
 
@@ -199,7 +242,18 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
 12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M4 needs next
+## What M5 needs next
+
+M5, **The station** (Session 6, Gameplay Programmer): compound layout, fence and batteries, doors, comms room, ledger, security rating, turret, real-time base defence, vehicles and battery pulling. Done when a night defending the station is tense and readable.
+
+- **Zombies already know about a station:** set `game.combat.enemies.station = { x, z, baseRadius }` and any zombie that hasn't noticed the player but is within `baseRadius` switches to mode `'siege'` and walks to (x, z) (`src/ai/ZombieBrain.js`). M5 adds what they do there (attack the fence, doors and turret) and should use the level's `defenceDamage` (`config.zombies.levels`).
+- Zombies wander the pathways, and home is a clearing on the graph, so some will wander into the compound by themselves.
+- The turret's targets: `enemies.living` (each has `x, y, z, hitRadius, height, headBottom, headRadius`, `kind` 'zombie' or 'mutant'); apply hits with `enemies.damage(zombie, amount, part, { stagger, knockback }, at, from)`, which drops loot.
+- Scrap from zombies is counted in `combat.inventory.scrap`, ready for the ledger.
+- Noise: `enemies.alert(x, z, radius)` brings zombies to a loud noise (the turret firing, an alarm). Gunfire uses each weapon's `noise` (`config.weapons.*.noise`).
+- The stand-in planter keeps sigils 160 m from home (`config.planter.homeMinDistance`).
+
+## What M4 needed (done)
 
 M4, **Sigils and zombies** (Session 5, AI Programmer): sigils, night spawning, five-sigil cap, levels 1-5, variants, speed variance, hordes, mutants, loot, digging, sigil grounds, detection model, targeting. Done when raising the level by debug visibly changes the night.
 

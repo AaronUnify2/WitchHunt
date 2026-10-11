@@ -191,3 +191,15 @@ export function drawPlayerArrow(ctx, x, y, angle, size) {
   ctx.stroke();
   ctx.restore();
 }
+
+// Debug: a sigil as a small diamond.
+export function drawSigilMarker(ctx, x, y, size, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y - size);
+  ctx.lineTo(x + size, y);
+  ctx.lineTo(x, y + size);
+  ctx.lineTo(x - size, y);
+  ctx.closePath();
+  ctx.fill();
+}

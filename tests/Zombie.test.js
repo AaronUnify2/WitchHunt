@@ -106,3 +106,57 @@ describe('Zombie', () => {
     expect(seen.size).toBe(4);
   });
 });
+
+describe('Zombie (M4)', () => {
+  const m4 = { ...cfg, riseSeconds: 1.6, burrowSeconds: 2.5, attackDamage: 10, radius: 0.35 };
+
+  it('climbs out of the ground before it moves, and can be shot but not stunned while rising', () => {
+    const z = new Zombie(m4);
+    z.spawn(0, 10, Math.PI, 3, { rise: true });
+    expect(z.state).toBe('rise');
+    expect(z.alive).toBe(true);
+    z.hit(5, 1, 0, { x: 0, z: 0 });
+    expect(z.state).toBe('rise');
+    z.update(0.8, { x: 0, z: 0 });
+    expect(z.sink).toBeCloseTo(0.5);
+    expect(z.z).toBe(10); // hasn't moved
+    z.update(1, { x: 0, z: 0 });
+    expect(z.state).toBe('walk');
+  });
+
+  it('a wandering zombie walks to its goal and never swipes', () => {
+    const z = new Zombie(m4);
+    z.spawn(0, 1, Math.PI, 3, { mode: 'wander' });
+    z.goalX = 0;
+    z.goalZ = 20;
+    z.hasGoal = true;
+    let hits = 0;
+    for (let i = 0; i < 200; i++) z.update(0.05, { x: 0, z: 0 }, () => hits++);
+    expect(hits).toBe(0);
+    expect(z.z).toBeCloseTo(20, 1);
+  });
+
+  it('burrows away at dawn: no corpse, back to the pool', () => {
+    const z = new Zombie(m4);
+    z.spawn(0, 10, 0, 3);
+    z.burrow();
+    expect(z.alive).toBe(false);
+    z.update(2.6, { x: 0, z: 0 });
+    expect(z.state).toBe('free');
+  });
+
+  it('takes a mutant body: bigger hit shape, its own swipe, shrugs off stagger', () => {
+    const z = new Zombie(m4);
+    const body = { radius: 0.6, hitRadius: 0.55, height: 2.5, headBottom: 2, headRadius: 0.26, attackReach: 1.9, attackWindup: 0.9, attackRecover: 1.3, attackDamage: 30, turnRate: 3, staggerScale: 0.25, knockbackScale: 0.2 };
+    z.spawn(0, 10, 0, 3, { kind: 'mutant', body, health: 300 });
+    expect(z.height).toBe(2.5);
+    expect(z.hitRadius).toBe(0.55);
+    expect(z.glareCircle.r).toBe(0.55);
+    z.hit(10, 0.8, 0, { x: 0, z: 0 });
+    expect(z.timer).toBeCloseTo(0.2);
+    // Back to a normal zombie when reused from the pool.
+    z.spawn(0, 10, 0, 3);
+    expect(z.height).toBe(cfg.height);
+    expect(z.attackReach).toBe(cfg.attackReach);
+  });
+});

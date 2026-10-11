@@ -26,6 +26,7 @@ export class MapUi {
       mapCanvas: drawMapImage(world.ground, world.map, world.typeColors),
       fogCanvas: makeFogCanvas(this.fog),
       nameOf: (c) => world.clearingName(c),
+      sigilMarker: this.cfg.sigilMarker,
     };
     this.minimap = new Minimap(this.cfg.minimap);
     this.minimap.init(root, shared);
@@ -43,15 +44,17 @@ export class MapUi {
   }
 
   // canToggle: false while the debug menu is open or the game isn't running.
-  update(dt, input, player, enemies, canToggle) {
+  // sigils: drawn on both maps when given (debug only; normally the player
+  // has to find them).
+  update(dt, input, player, enemies, canToggle, sigils = null) {
     if (canToggle && (input.wasPressed('map') || (this.screen.isOpen && input.wasPressed('menuBack')))) {
       this.screen.toggle();
       this.minimap.show(!this.screen.isOpen);
       this.bus.emit(this.screen.isOpen ? 'map:opened' : 'map:closed');
     }
     this.fog.update(player.position.x, player.position.z);
-    this.minimap.update(dt, player, enemies);
-    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`);
+    this.minimap.update(dt, player, enemies, sigils);
+    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils);
   }
 
   // ---- debug tools ----------------------------------------------------------

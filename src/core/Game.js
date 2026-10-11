@@ -20,6 +20,8 @@ import { SpatialGrid } from '../world/SpatialGrid.js';
 import { Player } from '../player/Player.js';
 import { Flashlight } from '../player/Flashlight.js';
 import { Combat } from '../combat/Combat.js';
+import { ZombieDirector } from '../ai/ZombieDirector.js';
+import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
 import { StartScreen } from '../ui/StartScreen.js';
@@ -47,7 +49,11 @@ export class Game {
 
     this.initWorld(root);
     this.initUi(root);
+    this.initDirector();
+    this.addOverlayStats();
+    this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
+    this.director.setDrawDistance(this.drawDistance);
     this.wireEvents();
 
     this.loop = this.loop.bind(this);
@@ -78,7 +84,14 @@ export class Game {
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
     this.flashlight.init(this.scene, this.colliders, ground);
     this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);
-    this.combat.init(root, this.scene, this.player, this.colliders, { sky: this.sky, flashlight: this.flashlight }, ground);
+    this.combat.init(root, this.scene, this.player, this.colliders, { sky: this.sky, flashlight: this.flashlight }, this.world);
+  }
+
+  // Sigils and the night's zombies (M4). After the UI, so it can toast.
+  initDirector() {
+    this.director = new ZombieDirector(this.cfg, this.rng.fork('director'), this.bus);
+    this.director.init(this.scene, this.world, this.combat, this.player, (text) => this.toast.show(text));
+    this.combat.digHud = this.director.hud;
   }
 
   initUi(root) {
@@ -89,10 +102,8 @@ export class Game {
     this.toast.init(root);
     this.overlay = new DebugOverlay(cfg.debug, this);
     this.overlay.init(root);
-    this.addOverlayStats();
     this.debugMenu = new DebugMenu(cfg.debug.menu, this.input, this.bus);
     this.debugMenu.init(root);
-    this.addDebugMenuItems();
     this.startScreen = new StartScreen(() => this.start());
     this.startScreen.init(root);
     this.startScreen.show('start');
@@ -123,6 +134,8 @@ export class Game {
       return `${k(w.forest.treeCount)} trees ${k(w.forest.bushCount)} bushes (${w.forest.visibleChunks} chunks drawn)  built ${Math.round(w.buildMs)}ms  torch ${torch}`;
     });
     this.overlay.addStat('combat', () => this.combat.overlayLine());
+    this.overlay.addStat('zombies', () => this.combat.zombieOverlayLine());
+    this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
   }
 
   addDebugMenuItems() {
@@ -131,6 +144,7 @@ export class Game {
     menu.addItem('Toggle debug overlay', () => this.overlay.toggle());
     this.addMapDebugItems(menu);
     this.combat.addDebugItems(menu);
+    this.director.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem('Skip to night', () => this.skipToPhase('night'));
     menu.addItem(
@@ -197,6 +211,7 @@ export class Game {
     this.drawDistance = q.drawDistance;
     this.sky.setDrawDistance(q.drawDistance);
     this.world.setDrawDistance(q.drawDistance);
+    this.director?.setDrawDistance(q.drawDistance);
     this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
     this.setFrameCap(q.frameCap);
@@ -283,15 +298,19 @@ export class Game {
     if (this.input.wasPressed('debugMenu')) this.debugMenu.toggle();
 
     const running = this.state === 'running';
-    // The debug menu and the map screen stop the action (the clock runs on).
+    // The debug menu and the map screen stop the action. The map screen
+    // pauses the clock too (Aaron, M4); the debug menu lets it run on.
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
-    if (running) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen) this.clock.update(dt);
+    const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     if (playing && this.combat.alive) this.player.update(dt, this.input);
-    this.combat.update(dt, this.input, playing);
+    this.combat.update(dt, this.input, playing, daylight);
+    this.director.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
     if (playing) {
       this.flashlight.update(dt, this.input, this.player.camera, this.combat.glareExtras(this.player.position));
     }
-    this.mapUi.update(dt, this.input, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive);
+    const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
+    this.mapUi.update(dt, this.input, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive, sigilsOnMap);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.world.update(dt, this.player.camera.position);
 
@@ -314,6 +333,7 @@ export class Game {
     this.overlay.dispose();
     this.toast.dispose();
     this.mapUi.dispose();
+    this.director.dispose();
     this.combat.dispose();
     this.flashlight.dispose();
     this.world.dispose();

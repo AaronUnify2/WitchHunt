@@ -2,6 +2,28 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 5 (M4, AI Programmer)
+
+Agreed with Aaron before building: the placeholder 3D mutant; sigil grounds get only what matters for play now; a stand-in plants the sigils until the witch (M7); the loot plan (pistol ammo kept for the pistol, miners wait for the mineshaft); the map screen pauses the game (#39).
+
+| # | Question | What M4 does now | Where to change it |
+| --- | --- | --- | --- |
+| 51 | How many zombies does a sigil raise, and how often? (DESIGN.md: "a spawn timer" and "a per-sigil cap".) | Every 18-36 s at night, up to 6 living zombies of its own, then it waits until one dies. A horde counts toward the 6 but can overshoot it. Sigils on sigil grounds raise every 11-22 s. Only at night (not dusk or dawn). | `config.sigils.spawnInterval`, `perSigilCap`, `groundSpawnMultiplier`, `spawnPhases` |
+| 52 | How fast does the stand-in witch plant? | One sigil per dusk from night 2, up to five, so the level climbs by one a night unless you dig them up. Night 1 stays safe. M7 replaces this with the real witch. | `config.planter.perNight`, `firstNight` |
+| 53 | Does a level change affect zombies already walking about? | Yes for speed (each zombie keeps its roll inside the level's range), damage and notice range: digging a sigil up slows the whole night down at once. Health is set when a zombie rises and stays. Hordes and mutants keep their own slow speeds at every level. | `src/ai/EnemyManager.js` `setLevel()` |
+| 54 | Detection numbers. | Sight at night 13 m (standing, torch off), by day 38 m; torch ×2.3 at night; crouched ×0.45; sprinting ×1.2; in the brush ×0.75; behind a zombie ×0.55; once chasing, ×1.7. Footsteps heard at 6 m walking, 18 m sprinting, never crouched. Always noticed within 2.5 m. Each level multiplies all of it (×1 to ×1.4). | `config.detection` |
+| 55 | Do trees block a zombie's view? | No: only the hills do (88,000 trunks are too many to ray-test cheaply). Standing in the brush counts as cover (×0.75). | `config.detection.undergrowth` |
+| 56 | How far does gunfire carry? | Rifle 70 m, shotgun 55 m, shovel 4 m. Every zombie in range comes for you for 8 s (×the level's notice). | `config.weapons.*.noise`, `config.detection.gunfireMemory` |
+| 57 | How are pickups collected? | Walk over them (no button), Doom-style. Armour is added on the spot; a full bar or a full kit bag (9) leaves the pickup lying for later. They vanish after 15 minutes. | `config.pickups` |
+| 58 | Digging details. | 4 s of holding X within 2.2 m. Letting go pauses the dig; stepping away starts it over; taking damage loses the progress (DESIGN.md: "interrupts"). You can still look, move and shoot while digging. | `config.digging`, `src/player/Digging.js` |
+| 59 | Dawn: how many zombies thin out? (DESIGN.md: "most ... a few stragglers".) | 85% sink back into the ground at random through the 60 s dawn, never within 25 m of you or while chasing you; 15% stay and wander the pathways by day. Stragglers can still notice you (sight is longer by day). | `config.zombies.dawn` |
+| 60 | Mutant numbers. | 300 health × level (360 at level 3: about 15 rifle body shots or 5 aimed headshots), 30 damage per swipe × level with a 0.9 s wind-up and 1.9 m reach, 0.36-0.48× sprint, 75% stagger and 80% knockback ignored. At most 4 at once. | `config.mutant` |
+| 61 | How much tougher are police and army? | Police ×1.5 health (the vest), army ×1.6. Same speed and damage as citizens. | `config.zombies.variants` |
+| 62 | Loot rates. | See `data/loot.json`: e.g. police drop a vest 35% of the time, army a helmet 35% and rifle rounds 60%. Citizens drop shotgun shells most often; DESIGN.md says "mostly ammo" without saying which. | `src/data/loot.json` |
+| 63 | How fast do zombies wander? | 0.55× their own speed along the pathways; they speed up to full when they notice you, so a shambling zombie suddenly coming at you reads as "it's seen me". | `config.zombies.wander.pace` |
+| 64 | Night 1 has no sigils. Is there a "level 0"? | No: with no sigils the level is 1 (stragglers and debug spawns use level 1 numbers), but nothing is raised. | `src/ai/zombieLevels.js` `levelForSigils()` |
+| 65 | Where off-path sigils go. | 6-16 m off a pathway into the forest, at least 70 m from another sigil and 160 m from home. Their zombies use the nearest clearing's variant mix. | `config.planter` |
+
 ## Session 4 (M3, Lead Engineer)
 
 | # | Question | What M3 does now | Where to change it |
@@ -10,7 +32,7 @@ Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, ma
 | 36 | Off-path forest: slow or blocked? | **Decided with Aaron:** never blocked; the slowdown "feels appropriate" (M3 test), with more bushes to show it ("I like to give the option"). Undergrowth everywhere off the pathways slows you to 0.55× (walk 2.5 m/s, sprint 4.0). Zombies push through at 0.75× (my pick), so cutting through while chased costs you. | `config.player.undergrowthMultiplier`, `config.zombies.undergrowthMultiplier` |
 | 37 | What's at the east, west and south edges? (The doc only describes the cliff.) | **Resolved (Aaron):** fine as plain forest. An invisible line 60 m inside dense forest; the forest carries on beyond it and the fog hides the rest. Could become a river, a ravine, a fence or more cliff. | `config.map.edgeMargin` |
 | 38 | Flat or rolling ground? | **Decided with Aaron:** gentle rolling hills ("I would be thrilled"): about ±5 m, levelled in clearings, smoothed along pathways. | `config.terrain.octaves` |
-| 39 | Does the map screen pause the game? | It stops movement, firing and zombies like the debug menu, but the clock keeps running. A live map (zombies keep coming) is the scarier option. | `src/core/Game.js` `update()` |
+| 39 | Does the map screen pause the game? | **Resolved (Aaron, M4): yes, it pauses the game.** Movement, firing, zombies and now the clock all stop while it's open. | `src/core/Game.js` `update()` |
 | 40 | Minimap orientation. | Turns with you (the way you face is up) with an N marker on the rim; the full map is north up. | `src/ui/Minimap.js` |
 | 41 | What do you see on the map? | Revealed terrain and pathways; a marker on every clearing whose centre you've seen; names on the full map (not for plain clearings); living zombies in revealed areas. Reveal radius 45 m. | `config.fogOfWar.revealRadius` |
 | 42 | Encounter placement hints. | Not yet honoured: gas station "on a road edge" (there are no roads), mineshaft "hillside edge", stairs "off-path", Bigfoot cave "rocky clearing or path edge", crashed plane "off a pathway". Each sits anywhere in its band for now. The encounter sessions (M9-M11) can add rules. | `src/world/MapGenerator.js` `candidate()` |

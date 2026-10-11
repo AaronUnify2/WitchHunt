@@ -2,6 +2,8 @@
 // Session 19): crosshair and hit marker in the centre; health (10
 // segments) and the three armour bars bottom left; weapon, ammo, reload
 // and first aid kits bottom right; a red edge when hurt; the death screen.
+// M4: the dig prompt and its progress bar under the crosshair, and a short
+// feed of what you just picked up.
 
 const ARMOUR_TYPES = ['ballistic', 'energy', 'nature'];
 
@@ -20,6 +22,8 @@ export class Hud {
       <div class="hud-crosshair"></div>
       <div class="hud-hitmarker"></div>
       <div class="hud-prompt"></div>
+      <div class="hud-dig"><span></span></div>
+      <div class="hud-pickups"></div>
       <div class="hud-vitals">
         <div class="hud-heal">+</div>
         <div class="hud-health">${segments}</div>
@@ -43,6 +47,10 @@ export class Hud {
     this.crosshairEl = q('.hud-crosshair');
     this.hitEl = q('.hud-hitmarker');
     this.promptEl = q('.hud-prompt');
+    this.digEl = q('.hud-dig');
+    this.digBarEl = q('.hud-dig span');
+    this.pickupsEl = q('.hud-pickups');
+    this.pickupLines = []; // { text, timer }
     this.healEl = q('.hud-heal');
     this.healthEl = q('.hud-health');
     this.segEls = [...this.el.querySelectorAll('.hud-seg')];
@@ -73,6 +81,30 @@ export class Hud {
     this.hurtTimer = this.cfg.hurtVignetteSeconds;
   }
 
+  // A line in the pickup feed, e.g. "+4 shotgun shells".
+  pickup(text) {
+    this.pickupLines.push({ text, timer: this.cfg.pickupSeconds });
+    while (this.pickupLines.length > this.cfg.pickupLines) this.pickupLines.shift();
+    this.renderPickups();
+  }
+
+  renderPickups() {
+    this.pickupsEl.innerHTML = '';
+    for (const line of this.pickupLines) {
+      const div = document.createElement('div');
+      div.textContent = line.text;
+      this.pickupsEl.appendChild(div);
+    }
+  }
+
+  updatePickups(dt) {
+    if (this.pickupLines.length === 0) return;
+    for (const line of this.pickupLines) line.timer -= dt;
+    const before = this.pickupLines.length;
+    this.pickupLines = this.pickupLines.filter((l) => l.timer > 0);
+    if (this.pickupLines.length !== before) this.renderPickups();
+  }
+
   showDeath(kills) {
     this.deathStatsEl.textContent = `Zombies killed: ${kills}`;
     this.deathEl.classList.remove('hidden');
@@ -88,8 +120,9 @@ export class Hud {
     apply(value);
   }
 
-  // s: { health, armour, weapons, inventory, device }
+  // s: { health, armour, weapons, inventory, device, dig: { prompt, progress } }
   update(dt, s) {
+    this.updatePickups(dt);
     this.hitTimer = Math.max(0, this.hitTimer - dt);
     if (this.hitTimer === 0) this.set('hit', 'off', () => (this.hitEl.className = 'hud-hitmarker'));
     this.hurtTimer = Math.max(0, this.hurtTimer - dt);
@@ -117,7 +150,11 @@ export class Hud {
 
     let prompt = '';
     if (st.usesAmmo && st.mag === 0 && !st.reloading) prompt = st.reserve > 0 ? `${pad ? 'B' : 'R'}: reload` : 'Out of ammo';
+    if (s.dig?.prompt) prompt = s.dig.prompt;
     this.set('prompt', prompt, (text) => (this.promptEl.textContent = text));
+    const dig = s.dig?.prompt ? s.dig.progress : 0;
+    this.set('digging', dig > 0, (on) => this.digEl.classList.toggle('on', on));
+    if (dig > 0) this.digBarEl.style.width = `${Math.round(dig * 100)}%`;
     this.set('aiming', w.aiming, (a) => this.crosshairEl.classList.toggle('aiming', a));
   }
 

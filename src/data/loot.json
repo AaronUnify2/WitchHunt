@@ -1,0 +1,37 @@
+{
+  "_note": "Zombie drops (DESIGN.md \"Zombies\" variant table). items: what each pickup is and where it goes: ammo (a carried weapon's reserve, else the inventory's ammo store), inventory (a counter in the inventory), armour + amount (added to that bar on the spot; a full bar leaves it lying), firstAid (a kit; a full bag leaves it lying). color: the placeholder pickup's colour. tables: one per variant (and 'mutant'); every entry is rolled on its own, so one body can drop several things. min/max: how many (rounds, scrap); armour and kits always drop one. More items and variants can be added here without code changes.",
+  "items": {
+    "rifleAmmo": { "name": "rifle rounds", "ammo": "rifle", "color": "#c8a040" },
+    "shotgunAmmo": { "name": "shotgun shells", "ammo": "shotgun", "color": "#b03424" },
+    "pistolAmmo": { "name": "pistol rounds", "ammo": "pistol", "color": "#9aa0a8" },
+    "scrap": { "name": "scrap", "inventory": "scrap", "color": "#6e6a5c" },
+    "firstAid": { "name": "first aid kit", "firstAid": true, "color": "#e6e2d6" },
+    "vest": { "name": "police vest", "armour": "ballistic", "amount": 40, "color": "#465a78" },
+    "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" }
+  },
+  "tables": {
+    "citizen": [
+      { "item": "shotgunAmmo", "chance": 0.35, "min": 2, "max": 4 },
+      { "item": "rifleAmmo", "chance": 0.12, "min": 2, "max": 3 },
+      { "item": "scrap", "chance": 0.2, "min": 1, "max": 2 },
+      { "item": "firstAid", "chance": 0.04 }
+    ],
+    "police": [
+      { "item": "vest", "chance": 0.35 },
+      { "item": "pistolAmmo", "chance": 0.6, "min": 6, "max": 12 },
+      { "item": "shotgunAmmo", "chance": 0.15, "min": 2, "max": 3 }
+    ],
+    "army": [
+      { "item": "helmet", "chance": 0.35 },
+      { "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 },
+      { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 }
+    ],
+    "mutant": [
+      { "item": "rifleAmmo", "chance": 1, "min": 5, "max": 10 },
+      { "item": "shotgunAmmo", "chance": 1, "min": 4, "max": 8 },
+      { "item": "scrap", "chance": 1, "min": 3, "max": 6 },
+      { "item": "firstAid", "chance": 0.5 },
+      { "item": "vest", "chance": 0.3 }
+    ]
+  }
+}

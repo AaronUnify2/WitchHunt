@@ -1,6 +1,8 @@
-// The player's carried items. M2: first aid kits only (ammo lives with
-// each weapon). Scrap, batteries, charges, flares and lore items arrive
-// with the systems that use them.
+// The player's carried items. First aid kits (M2); from M4, scrap and ammo
+// for weapons the player isn't carrying yet (pistol rounds from police
+// zombies wait for the pistol). Ammo for carried guns lives with each
+// weapon. Batteries, charges, flares and lore items arrive with the
+// systems that use them.
 
 export class Inventory {
   constructor(inventoryConfig) {
@@ -9,6 +11,8 @@ export class Inventory {
 
   init() {
     this.firstAid = this.cfg.startFirstAid;
+    this.scrap = this.cfg.startScrap ?? 0;
+    this.ammo = { ...(this.cfg.startAmmo ?? {}) };
   }
 
   update() {}
@@ -19,6 +23,21 @@ export class Inventory {
     const before = this.firstAid;
     this.firstAid = Math.min(this.cfg.maxFirstAid, this.firstAid + count);
     return this.firstAid - before;
+  }
+
+  get firstAidFull() {
+    return this.firstAid >= this.cfg.maxFirstAid;
+  }
+
+  addScrap(count) {
+    this.scrap += count;
+    return count;
+  }
+
+  // Ammo for a weapon not in the loadout (e.g. 'pistol').
+  addAmmo(weaponId, rounds) {
+    this.ammo[weaponId] = (this.ammo[weaponId] ?? 0) + rounds;
+    return rounds;
   }
 
   // Use one kit on `health`. Kits queue (Health caps the rate). False if

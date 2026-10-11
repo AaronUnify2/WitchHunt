@@ -20,6 +20,9 @@ export const MAP_DATA = {
   clearingTypes: clearingTypesData.types,
 };
 
+// Clearings without a type (home, the hut) raise ordinary citizens.
+const DEFAULT_VARIANTS = { citizen: 1 };
+
 export class World {
   constructor(cfg, rng, seed) {
     this.cfg = cfg;
@@ -34,6 +37,7 @@ export class World {
     this.ground = new GroundField(this.map, cfg.map, cfg.terrain);
     this.typeNames = Object.fromEntries(MAP_DATA.clearingTypes.map((t) => [t.id, t.name]));
     this.typeColors = Object.fromEntries(MAP_DATA.clearingTypes.map((t) => [t.id, t.mapColor]));
+    this.typeVariants = Object.fromEntries(MAP_DATA.clearingTypes.map((t) => [t.id, t.variants]));
 
     this.terrain = new Terrain(cfg.terrain, this.rng.fork('terrain'));
     this.terrain.init(scene, colliders, this.ground, this.map);
@@ -78,6 +82,16 @@ export class World {
       }
     }
     return { clearing: best, distance: bestD };
+  }
+
+  // The zombie variant mix of a clearing's type ({ citizen: 0.7, ... }).
+  variantMix(clearing) {
+    return this.typeVariants[clearing.clearingType] ?? DEFAULT_VARIANTS;
+  }
+
+  // The variant mix where (x, z) is: that of the nearest clearing's type.
+  variantMixAt(x, z) {
+    return this.variantMix(this.nearestClearing(x, z).clearing);
   }
 
   // Short display name, e.g. "Gas station" or "Bog clearing".

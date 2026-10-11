@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -12,7 +12,8 @@ export class Minimap {
   }
 
   // mapCanvas: the terrain image; fogCanvas: from makeFogCanvas().
-  init(root, { ground, map, fog, mapCanvas, fogCanvas }) {
+  init(root, { ground, map, fog, mapCanvas, fogCanvas, sigilMarker }) {
+    this.sigilMarker = sigilMarker;
     this.ground = ground;
     this.map = map;
     this.fog = fog;
@@ -36,14 +37,15 @@ export class Minimap {
   }
 
   // player: { position, yaw }. enemies: living zombies [{ x, z }].
-  update(dt, player, enemies) {
+  // sigils: [{ x, z }] or null (debug).
+  update(dt, player, enemies, sigils = null) {
     if (this.el.classList.contains('hidden')) return;
     // refreshPerSecond 0 = every frame (smooth turning; Aaron's M3 test).
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = this.cfg.refreshPerSecond > 0 ? 1 / this.cfg.refreshPerSecond : 0;
     this.resize();
-    this.draw(player, enemies);
+    this.draw(player, enemies, sigils);
   }
 
   resize() {
@@ -55,7 +57,7 @@ export class Minimap {
     }
   }
 
-  draw(player, enemies) {
+  draw(player, enemies, sigils) {
     const ctx = this.ctx;
     const size = this.canvas.width;
     const half = size / 2;
@@ -109,6 +111,13 @@ export class Minimap {
       if (!this.fog.isRevealed(e.x, e.z)) continue;
       const [sx, sy] = toScreen(e.x, e.z);
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
+    }
+    if (sigils && this.sigilMarker) {
+      const m = this.sigilMarker;
+      for (const s of sigils) {
+        const [sx, sy] = toScreen(s.x, s.z);
+        drawSigilMarker(ctx, sx, sy, m.minimapPixels * (size / 200), m.color);
+      }
     }
     ctx.restore();
 

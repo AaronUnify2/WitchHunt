@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -12,7 +12,8 @@ export class MapScreen {
   }
 
   // nameOf(clearing): its display name.
-  init(root, { ground, map, fog, mapCanvas, fogCanvas, nameOf }) {
+  init(root, { ground, map, fog, mapCanvas, fogCanvas, nameOf, sigilMarker }) {
+    this.sigilMarker = sigilMarker;
     this.ground = ground;
     this.map = map;
     this.fog = fog;
@@ -49,14 +50,16 @@ export class MapScreen {
     else this.open();
   }
 
-  update(dt, player, enemies, footer) {
+  // sigils: [{ x, z }] or null (debug: shown whatever the fog).
+  update(dt, player, enemies, footer, sigils = null) {
     if (!this.isOpen) return;
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = 1 / this.cfg.refreshPerSecond;
     this.resize();
-    this.draw(player, enemies);
-    this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing   ${footer}   D-pad up / M / B: close`;
+    this.draw(player, enemies, sigils);
+    const sigilKey = sigils ? '   ◆ (green) Sigil (debug)' : '';
+    this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
 
   resize() {
@@ -69,7 +72,7 @@ export class MapScreen {
     }
   }
 
-  draw(player, enemies) {
+  draw(player, enemies, sigils) {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
@@ -126,6 +129,13 @@ export class MapScreen {
       if (!this.showGraph && !this.fog.isRevealed(e.x, e.z)) continue;
       const [sx, sy] = toScreen(e.x, e.z);
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
+    }
+    if (sigils && this.sigilMarker) {
+      const size = this.sigilMarker.screenPixels * Math.max(1, Math.min(W, H) / 700);
+      for (const s of sigils) {
+        const [sx, sy] = toScreen(s.x, s.z);
+        drawSigilMarker(ctx, sx, sy, size, this.sigilMarker.color);
+      }
     }
 
     const [px, py] = toScreen(player.position.x, player.position.z);

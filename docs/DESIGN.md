@@ -186,7 +186,7 @@ Each clearing has a type that sets its look and its zombie variant mix (sigils p
 
 ### The map screen and fog of war
 
-- A round minimap on the HUD (it turns with the player, with a north marker) and a full-screen map (D-pad up), north up.
+- A round minimap on the HUD (it turns with the player, with a north marker) and a full-screen map (D-pad up), north up. Opening the full-screen map pauses the game, clock included (Aaron, M4).
 - The map starts hidden. Areas are revealed only by visiting them (reveal radius), or from the station's lookout tower.
 - Revealed areas show live enemy positions, including enemies in the abstract simulation tier. Unrevealed areas show nothing, even if the witch is there.
 - Seen things are marked: home, sigils, vehicles, encounters, traps, trail cameras, the hut.

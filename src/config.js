@@ -310,6 +310,8 @@ export const config = {
     refreshPerSecond: 10,
     enemyDotPixels: 3,
   },
+  // Debug only: sigils drawn on the minimap and map screen.
+  sigilMarker: { color: '#b4ff8c', minimapPixels: 5, screenPixels: 7 },
 
   // Ground: rolling hills, flattened in clearings and smoothed along pathways
   terrain: {
@@ -529,6 +531,7 @@ export const config = {
       knockback: 1.4, // metres a hit pushes the zombie back
       magSize: 0,
       recoilDegrees: 0,
+      noise: 4, // metres: zombies this close hear it (silent, near enough)
     },
     rifle: {
       name: 'Service rifle',
@@ -553,6 +556,7 @@ export const config = {
       recoilDegrees: 2.6,
       aimFovMultiplier: 0.6, // zoom when aiming
       shake: 0.15,
+      noise: 70, // metres: every zombie this close hears the shot and comes (DESIGN.md "noise")
     },
     shotgun: {
       name: 'Shotgun',
@@ -577,6 +581,7 @@ export const config = {
       recoilDegrees: 5.5,
       aimFovMultiplier: 0.85,
       shake: 0.4,
+      noise: 55,
     },
   },
 
@@ -632,13 +637,19 @@ export const config = {
     startFirstAid: 2,
     maxFirstAid: 9,
     firstAidHeal: 30,
+    // M4: loot that has no other home yet. Pistol ammo waits for the
+    // pistol; scrap waits for building and repairs (M5).
+    startScrap: 0,
+    startAmmo: { pistol: 0 },
   },
 
-  // Zombies (M2: one "citizen" sprite type walking straight at the player;
-  // detection and targeting arrive in M4).
+  // Zombies (DESIGN.md "Zombies"). M4: levels, variants, hordes, mutants,
+  // detection and targeting. Every zombie on the map is in one pool until
+  // M6's simulation tiers; the ~25 cap in DESIGN.md is for *active* ones
+  // near the player, which M6 enforces.
   zombies: {
-    poolSize: 25, // the active enemy cap (DESIGN.md budgets)
-    health: 60,
+    poolSize: 64,
+    health: 60, // a level 1 citizen; variants and levels multiply it
     radius: 0.35, // body collision radius, metres
     hitRadius: 0.3, // body hit cylinder
     height: 1.8,
@@ -646,12 +657,42 @@ export const config = {
     headRadius: 0.16,
     spriteHeightRatio: 1.08, // sprite height = height x this; width follows the frame's aspect
     // Speeds are multiples of the player's full sprint (DESIGN.md "Zombies"),
-    // rolled per zombie and skewed toward the slow end.
+    // rolled per zombie and skewed toward the slow end. Each zombie keeps its
+    // roll, so when the level changes (a sigil planted or dug up) every
+    // living zombie speeds up or slows down at once.
     sprintSpeed: 7.2, // player walk 4.5 x sprint 1.6
     speedSkew: 2, // 1 = even spread; higher = more slow zombies
+    // Zombie level = active sigils (1-5). health, damage and notice multiply
+    // the base numbers; defenceDamage is for the station's defences (M5).
     levels: {
-      1: { speedMin: 0.35, speedMax: 0.45 },
-      5: { speedMin: 0.5, speedMax: 1.3 },
+      1: { speedMin: 0.35, speedMax: 0.45, hordeChance: 0, mutantChance: 0, health: 1, damage: 1, notice: 1, defenceDamage: 1 },
+      2: { speedMin: 0.35, speedMax: 0.55, hordeChance: 0.1, mutantChance: 0, health: 1.1, damage: 1.1, notice: 1.1, defenceDamage: 1.2 },
+      3: { speedMin: 0.4, speedMax: 0.7, hordeChance: 0.1, mutantChance: 0.05, health: 1.2, damage: 1.2, notice: 1.2, defenceDamage: 1.4 },
+      4: { speedMin: 0.45, speedMax: 0.95, hordeChance: 0.2, mutantChance: 0.1, health: 1.35, damage: 1.35, notice: 1.3, defenceDamage: 1.7 },
+      5: { speedMin: 0.5, speedMax: 1.3, hordeChance: 0.3, mutantChance: 0.15, health: 1.5, damage: 1.5, notice: 1.4, defenceDamage: 2 },
+    },
+    // Variants (DESIGN.md table). The mix comes from the clearing type of
+    // the sigil's clearing (data/clearingTypes.json). Drops: data/loot.json.
+    variants: {
+      citizen: { health: 1 },
+      police: { health: 1.5 }, // uniform and bulletproof vest: tougher
+      army: { health: 1.6 }, // fatigues and helmet: tougher
+    },
+    // One spawn of 7-15 slow zombies in a tight cluster that wanders as a pack.
+    horde: { countMin: 7, countMax: 15, speedMin: 0.35, speedMax: 0.5, radius: 4 },
+    riseSeconds: 1.6, // climbing out of the ground beside a sigil
+    burrowSeconds: 2.5, // sinking back in at dawn
+    // Random walk along the pathway graph (DESIGN.md "Enemy targeting").
+    wander: {
+      pace: 0.55, // fraction of its speed while wandering (it speeds up when it notices you)
+      waypointReach: 2.5, // metres: close enough to a pathway point to head for the next
+      hordeFollow: 1.5, // metres behind the leader's spot that a pack member aims for
+    },
+    // Dawn: most zombies sink back into the ground; a few stay as stragglers.
+    dawn: {
+      stragglers: 0.15, // fraction that stays and wanders by day
+      minPlayerDistance: 25, // never sinks in front of you or while chasing you
+      retrySeconds: 3,
     },
     turnRate: 6, // how fast a zombie turns to face where it's going
     undergrowthMultiplier: 0.75, // zombies push through brush better than you do, so cutting through while chased costs
@@ -687,11 +728,147 @@ export const config = {
       blood: 0x2e0404,
       eyes: 0xc8c090, // the pale eyes are meant to catch the torch
       bloodSpots: 14,
+      // One block of 8 facing rows per variant, in this order (the shader
+      // picks the block). Each variant overrides the colours above and
+      // adds its kit: a police vest and cap, an army helmet.
+      variantOrder: ['citizen', 'police', 'army'],
+      variants: {
+        citizen: {},
+        police: { shirt: 0x161c2c, shirtAlt: 0x101420, trousers: 0x12141c, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
+        army: { shirt: 0x283020, shirtAlt: 0x1c2216, trousers: 0x20261a, hat: 'helmet', hatColor: 0x2a3222 },
+      },
     },
     alphaTest: 0.5,
     normalUpBias: 0.4,
     albedoScale: 0.45, // sprites face the torch head-on, so they need darker colours than the art suggests
     hitFlashColor: 0x8a1010,
+  },
+
+  // Mutant zombie (DESIGN.md "Mutants"): a placeholder 3D giant (boxes;
+  // the real model is the art pass). Level 3+, rolled per single spawn.
+  mutant: {
+    poolSize: 4, // at most this many at once (also its render pool)
+    health: 300, // about 5x a citizen, before the level's multiplier
+    radius: 0.6,
+    hitRadius: 0.55,
+    height: 2.5,
+    headBottom: 2.02,
+    headRadius: 0.26,
+    speedMin: 0.36, // fixed range (multiples of the player's sprint), whatever the level
+    speedMax: 0.48,
+    attackReach: 1.9,
+    attackWindup: 0.9, // slow, heavy swipe: time to back off
+    attackRecover: 1.3,
+    attackDamage: 30,
+    turnRate: 3,
+    staggerScale: 0.25, // shrugs off most of a hit's stun
+    knockbackScale: 0.2,
+    look: {
+      skin: 0x4a5040,
+      skinDark: 0x2e3428,
+      cloth: 0x1c1c22,
+      hitFlash: [2.2, 0.6, 0.6], // instance colour while flashing
+    },
+  },
+
+  // Sigils (DESIGN.md "Sigils"): each raises zombies round itself at night,
+  // up to its own cap. At most five at once; the zombie level is the count.
+  sigils: {
+    cap: 5,
+    perSigilCap: 6, // living zombies one sigil has raised before it waits
+    spawnInterval: [18, 36], // seconds between raisings at night
+    groundSpawnMultiplier: 0.6, // sigil grounds raise faster: interval x this
+    firstSpawnDelay: [2, 12], // seconds after nightfall (or planting at night)
+    spawnRadius: [3, 9], // metres from the sigil
+    spawnPhases: ['night'],
+    look: {
+      earthRadius: 1.9, // the patch of disturbed earth
+      glyphRadius: 1.35,
+      earthColor: 0x2a1e14,
+      glowColor: 0x8cff6a, // sickly green
+      emissiveNight: 1.1, // the glyph's glow by night...
+      emissiveDay: 0.18, // ...and by day (still faint; easier to spot at night)
+      pulseSpeed: 1.6,
+      pulseAmount: 0.3,
+      haloSize: 3.2, // soft glow above it, metres
+      haloNight: 0.45,
+      haloDay: 0.04,
+      haloFadeNear: 2, // metres: the halo is gone this close...
+      haloFadeFar: 9, // ...and full from here out
+      lift: 0.04, // metres above the ground
+      textureSize: 256,
+    },
+  },
+
+  // Stand-in for the witch planting (Aaron: placeholder until M7). At each
+  // dusk from night 2 she plants perNight sigils, up to the cap; most go to
+  // empty sigil grounds.
+  planter: {
+    firstNight: 2, // night 1 stays safe (DESIGN.md "Night 1")
+    perNight: 1,
+    groundChance: 0.6, // DESIGN.md "most plantings (e.g. 60%) go to empty sigil grounds"
+    groundOffset: 3, // metres from a sigil ground's centre (clear of the signpost)
+    pathOffset: [6, 16], // otherwise: this far off a pathway, into the forest
+    homeMinDistance: 160, // never near the station
+    minGap: 70, // metres between sigils
+    playerMinDistance: 50, // not planted in front of you
+    keepOut: 6, // metres outside encounter clearings, home and the hut
+    tries: 60,
+  },
+
+  // Sigil grounds' placeholder marker: a ring of dark stakes (the real
+  // set dressing is for an encounter session).
+  sigilGroundMarker: {
+    stakes: 9,
+    ringRadius: 7,
+    width: 0.12,
+    heightMin: 0.6,
+    heightMax: 1.3,
+    color: 0x2a221c,
+    tilt: 0.25, // radians, leaning at random
+  },
+
+  // Digging a sigil up with the shovel (DESIGN.md "The shovel and digging").
+  digging: {
+    seconds: 4,
+    range: 2.2, // metres from the sigil's centre
+    scrapeInterval: 0.55, // seconds between shovel sounds
+  },
+
+  // One detection model for every enemy (DESIGN.md "Movement, flashlight
+  // and stealth"): distance, line of sight, light, the torch, crouching and
+  // noise. The level's `notice` multiplies every range.
+  detection: {
+    thinkSeconds: 0.5, // each zombie looks and listens this often (staggered)
+    sight: { night: 13, day: 38 }, // metres: a standing player, torch off
+    torchNight: 2.3, // torch on: seen this many times further away at night...
+    torchDay: 1.05, // ...and by day
+    crouch: 0.45, // crouched: much harder to see
+    sprint: 1.2,
+    undergrowth: 0.75, // in the brush
+    rearSight: 0.55, // behind a zombie (outside its front half)
+    pursuit: 1.7, // once it's chasing you, it keeps you in sight this much further
+    touch: 2.5, // always noticed this close
+    hearing: { walk: 6, sprint: 18, crouch: 0, minSpeed: 0.5 }, // footsteps: no line of sight needed
+    eyeHeight: 1.6, // a zombie's eyes
+    losStep: 2, // metres per step when checking sight over the hills
+    memorySeconds: 6, // keeps chasing this long after losing you
+    searchSeconds: 10, // then searches where it last saw you
+    gunfireMemory: 8, // a shot it heard brings it to you for this long
+  },
+
+  // Pickups dropped by zombies (items and tables: data/loot.json). Walk
+  // over one to take it; a full armour bar or kit bag leaves it lying.
+  pickups: {
+    poolSize: 48, // oldest goes when full
+    radius: 1.3,
+    lifeSeconds: 900,
+    scatter: 0.7, // metres round the body
+    size: 0.26,
+    bob: 0.06,
+    spin: 1.8,
+    lift: 0.22,
+    emissive: 0x262626, // a faint glint so they show at night
   },
 
   // Hit and hurt feedback
@@ -726,6 +903,8 @@ export const config = {
     hitMarkerSeconds: 0.18,
     hurtVignetteSeconds: 0.5,
     lowHealth: 30, // the health bar pulses at or below this
+    pickupSeconds: 2.5, // each "+4 shotgun shells" line stays this long
+    pickupLines: 4,
   },
 
   // Placeholder sounds, synthesised with Web Audio. TO BE UPGRADED in the
@@ -796,6 +975,8 @@ export const config = {
     giveArmour: 40,
     giveFirstAid: 3,
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands
+    sigilTeleportOffset: 4, // metres from a sigil
+    plantAhead: 3, // "plant sigil here" puts it this far in front of you
     overlayVisibleOnStart: true, // on by default so tablet tests show fps
     overlayRefreshSeconds: 0.1, // how often the overlay text refreshes
     fpsSampleSeconds: 0.5, // averaging window for fps and frame times

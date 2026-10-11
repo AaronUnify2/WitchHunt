@@ -194,6 +194,34 @@ const RECIPES = {
   heal(s) {
     s.tone(s.out(undefined, undefined, 0.4), { seconds: 0.4, freq: 440, endFreq: 660, gain: 0.25, attack: 0.05 });
   },
+  // M4: digging, sigils, pickups, mutants.
+  dig(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 0.28, type: 'bandpass', freq: 700, endFreq: 300, q: 1.2, gain: 0.7, attack: 0.03 }); // the blade into earth
+    s.tone(o, { seconds: 0.12, freq: 120, endFreq: 70, gain: 0.3 });
+  },
+  cleanse(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.tone(o, { seconds: 1.6, freq: 330, endFreq: 660, gain: 0.25, attack: 0.15 });
+    s.tone(o, { seconds: 1.8, freq: 495, endFreq: 990, gain: 0.15, attack: 0.3 });
+    s.noiseBurst(o, { seconds: 1.2, type: 'highpass', freq: 3000, endFreq: 6000, gain: 0.15, attack: 0.2 });
+  },
+  rise(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 0.9, freq: 300, endFreq: 90, q: 0.9, gain: 0.8, attack: 0.15 }); // earth breaking
+    s.tone(o, { seconds: 1.2, wave: 'sawtooth', freq: 70, endFreq: 50, gain: 0.25, attack: 0.3, vibrato: 3 });
+  },
+  pickup(s) {
+    const o = s.out(undefined, undefined, 0.4);
+    s.tone(o, { seconds: 0.08, wave: 'square', freq: 880, gain: 0.2 });
+    s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 2000, q: 3, gain: 0.4 });
+  },
+  mutantGroan(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    const base = 45 + Math.random() * 15;
+    s.tone(o, { seconds: 1.8, wave: 'sawtooth', freq: base, endFreq: base * 0.7, gain: 0.45, attack: 0.3, vibrato: 2.5 });
+    s.noiseBurst(o, { seconds: 1.4, type: 'bandpass', freq: 250, q: 1.5, gain: 0.3, attack: 0.4 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

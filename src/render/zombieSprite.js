@@ -3,46 +3,51 @@
 // one row per facing angle (8 rows, 45 degrees apart: row 0 faces the
 // viewer, row 4 shows its back), one column per animation frame (see
 // ZOMBIE_FRAMES in ai/Zombie.js). Rows 1-3 face image-right; rows 5-7 are
-// their mirror images.
+// their mirror images. One block of 8 rows per variant (citizen, police,
+// army), stacked top to bottom in config.zombies.texture.variantOrder.
 
 import * as THREE from 'three';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 
-const ROWS = 8;
+export const ATLAS_ROWS = 8;
 
 function css(hex, alpha = 1) {
   return `rgba(${(hex >> 16) & 255},${(hex >> 8) & 255},${hex & 255},${alpha})`;
 }
 
 export function makeZombieAtlas(cfg, rng) {
-  const t = cfg.texture;
+  const base = cfg.texture;
+  const order = base.variantOrder;
   const canvas = document.createElement('canvas');
-  canvas.width = t.frameWidth * ZOMBIE_FRAMES.count;
-  canvas.height = t.frameHeight * ROWS;
+  canvas.width = base.frameWidth * ZOMBIE_FRAMES.count;
+  canvas.height = base.frameHeight * ATLAS_ROWS * order.length;
   const ctx = canvas.getContext('2d');
   // The same blood spatter on every frame, so it doesn't flicker.
-  const spots = Array.from({ length: t.bloodSpots }, () => ({
+  const spots = Array.from({ length: base.bloodSpots }, () => ({
     x: rng.range(-1, 1),
     y: rng.range(0, 1),
     r: rng.range(1, 3.5),
   }));
-  for (let row = 0; row < ROWS; row++) {
-    const mirror = row > 4;
-    const angle = ((mirror ? ROWS - row : row) * Math.PI) / 4; // 0 front .. pi back
-    for (let col = 0; col < ZOMBIE_FRAMES.count; col++) {
-      ctx.save();
-      ctx.translate(col * t.frameWidth, row * t.frameHeight);
-      ctx.beginPath();
-      ctx.rect(0, 0, t.frameWidth, t.frameHeight);
-      ctx.clip();
-      if (mirror) {
-        ctx.translate(t.frameWidth, 0);
-        ctx.scale(-1, 1);
+  order.forEach((variant, block) => {
+    const t = { ...base, ...(base.variants[variant] ?? {}) };
+    for (let row = 0; row < ATLAS_ROWS; row++) {
+      const mirror = row > 4;
+      const angle = ((mirror ? ATLAS_ROWS - row : row) * Math.PI) / 4; // 0 front .. pi back
+      for (let col = 0; col < ZOMBIE_FRAMES.count; col++) {
+        ctx.save();
+        ctx.translate(col * t.frameWidth, (block * ATLAS_ROWS + row) * t.frameHeight);
+        ctx.beginPath();
+        ctx.rect(0, 0, t.frameWidth, t.frameHeight);
+        ctx.clip();
+        if (mirror) {
+          ctx.translate(t.frameWidth, 0);
+          ctx.scale(-1, 1);
+        }
+        drawFrame(ctx, t, angle, col, spots);
+        ctx.restore();
       }
-      drawFrame(ctx, t, angle, col, spots);
-      ctx.restore();
     }
-  }
+  });
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   // Doom-style: crisp pixels up close, smooth mipmaps far away.
@@ -165,6 +170,22 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
       ctx.fill();
     }
     ctx.restore();
+    // Police: a bulletproof vest over the chest.
+    if (t.vest !== undefined) {
+      const vTop = top + 3;
+      const vBottom = hipY - 6;
+      const vHalf = torsoHalf * 0.82;
+      ctx.fillStyle = css(t.vest);
+      ctx.beginPath();
+      ctx.moveTo(cx - vHalf + lean, vTop);
+      ctx.lineTo(cx + vHalf + lean, vTop);
+      ctx.lineTo(cx + vHalf * 0.8 + lean * 0.3, vBottom);
+      ctx.lineTo(cx - vHalf * 0.8 + lean * 0.3, vBottom);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = css(t.vest, 0.6);
+      ctx.fillRect(cx - vHalf * 0.8 + lean * 0.5, (vTop + vBottom) / 2, vHalf * 1.6, 2); // a strap
+    }
   };
 
   const head = () => {
@@ -189,6 +210,21 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
       if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1), Math.round(hy - 2), 2, 2);
       ctx.fillStyle = css(t.blood);
       ctx.fillRect(Math.round(ex - 2), Math.round(hy + 3), 4, 2);
+    }
+    // Police cap or army helmet.
+    if (t.hat === 'cap') {
+      ctx.fillStyle = css(t.hatColor);
+      ctx.beginPath();
+      ctx.ellipse(hx - side, hy - 5, 7.5, 4, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(hx - 7.5 - side, hy - 6, 15, 2);
+      if (front > -0.2) ctx.fillRect(Math.round(hx + side * 6 - 4), hy - 5, 8 + Math.abs(side) * 3, 2); // the peak
+    } else if (t.hat === 'helmet') {
+      ctx.fillStyle = css(t.hatColor);
+      ctx.beginPath();
+      ctx.ellipse(hx - side, hy - 3, 9, 7.5, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(hx - 9.5 - side, hy - 4, 19, 2); // the rim
     }
   };
 
