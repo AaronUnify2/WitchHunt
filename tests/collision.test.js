@@ -94,3 +94,23 @@ describe('nearestHit', () => {
     expect(nearestHit(eye, level, [{ x: 0.2, z: 0, r: 0.3, vr: 1 }], 10)).toEqual({ distance: 0, facing: 1 });
   });
 });
+
+describe('nearestHit rock lids', () => {
+  it('hits the flat top of a short cylinder when aimed down onto it', async () => {
+    const { nearestHit } = await import('../src/world/collision.js');
+    const rock = { x: 1, z: 0, r: 0.5, top: 0.6 };
+    const origin = { x: 0, y: 1.5, z: 0 };
+    const dir = { x: 0.6, y: -0.8, z: 0 };
+    const hit = nearestHit(origin, dir, [rock], 10);
+    // Lid at y = 0.6: t = 0.9 / 0.8 = 1.125, x = 0.675 (inside the rock's radius)
+    expect(hit.distance).toBeCloseTo(1.125);
+    expect(hit.facing).toBeCloseTo(0.8);
+  });
+
+  it('passes over a lid it does not come down through', async () => {
+    const { nearestHit } = await import('../src/world/collision.js');
+    const rock = { x: 1, z: 0, r: 0.15, top: 0.6 };
+    const hit = nearestHit({ x: 0, y: 1.5, z: 0 }, { x: 0.8, y: -0.6, z: 0 }, [rock], 10);
+    expect(hit.distance).toBeCloseTo(2.5); // over the rock, onto the ground
+  });
+});

@@ -1,6 +1,7 @@
 // The flashlight: a spotlight held low and to the right, projecting a
 // procedural torch pattern, and the game's one real-time shadow. The beam
-// lags the view slightly so it feels hand-held, and dims when it's right
+// lags the view slightly so it feels hand-held, has a wide dim spill
+// round it so the edges of the view aren't black, and dims when it's right
 // up against a tree, rock or the ground so close surfaces don't flood the
 // view with glare. Toggled with the 'flashlight' action.
 // Emits 'flashlight:toggled' { on }.
@@ -33,6 +34,11 @@ export class Flashlight {
     this.light.shadow.bias = c.shadowBias;
     this.light.shadow.normalBias = c.shadowNormalBias;
     scene.add(this.light, this.light.target);
+    // Wide, dim spill round the beam; shares the beam's target. No shadow.
+    const sp = c.spill;
+    this.spill = new THREE.SpotLight(c.color, sp.intensity, sp.distance, sp.angle * DEG_TO_RAD, sp.penumbra, sp.decay);
+    this.spill.target = this.light.target;
+    scene.add(this.spill);
 
     this.offset = new THREE.Vector3(c.offset.x, c.offset.y, c.offset.z);
     this.aim = new THREE.Vector3(0, 0, -1);
@@ -57,6 +63,7 @@ export class Flashlight {
       this.aim.lerp(this.forward, 1 - Math.exp(-this.cfg.followRate * dt)).normalize();
     }
     this.light.target.position.copy(this.light.position).addScaledVector(this.aim, this.cfg.aimDistance);
+    this.spill.position.copy(this.light.position);
     this.updateGlare(dt);
   }
 
@@ -95,11 +102,13 @@ export class Flashlight {
     const target = strongest > limit ? Math.max(g.minFactor, limit / strongest) : 1;
     this.glareFactor += (target - this.glareFactor) * (1 - Math.exp(-g.response * dt));
     this.light.intensity = this.cfg.intensity * this.glareFactor;
+    this.spill.intensity = this.cfg.spill.intensity * this.glareFactor;
   }
 
   setOn(on) {
     this.on = on;
     this.light.visible = on;
+    this.spill.visible = on;
     if (on) this.snapAim = true;
     this.bus.emit('flashlight:toggled', { on });
   }
@@ -119,6 +128,7 @@ export class Flashlight {
     this.light.shadow.map?.dispose();
     this.light.removeFromParent();
     this.light.target.removeFromParent();
+    this.spill.removeFromParent();
     this.cookie.dispose();
   }
 }

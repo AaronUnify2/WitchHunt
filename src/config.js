@@ -245,6 +245,14 @@ export const config = {
     barkDark: 0x22180f,
     barkLight: 0x6a5240,
     barkStreakAlpha: 0.55,
+    // Dead tree trunk close-up detail (seen at face height).
+    deadBarkStreaks: 260, // fine grain on the trunk alone
+    deadShadeLight: 0.25, // lit left edge
+    deadShadeDark: 0.65, // shadowed right edge, so the trunk reads as round
+    deadCracks: 10,
+    deadCrackAlpha: 0.8,
+    deadKnots: 4,
+    deadKnotRimAlpha: 0.5,
     tiersMin: 7, // conifer branch tiers
     tiersMax: 11,
     spikesPerTier: 9, // jagged needles along each tier's edge
@@ -330,6 +338,15 @@ export const config = {
     shadowNear: 0.3,
     shadowBias: -0.0004,
     shadowNormalBias: 0.02,
+    // Spill: a second, wider and dimmer light round the beam (no shadow,
+    // no pattern) so the edges of the view aren't pitch black.
+    spill: {
+      intensity: 55, // candela
+      angle: 48, // degrees, half-angle
+      penumbra: 1,
+      distance: 22,
+      decay: 1.6,
+    },
     cookieSize: 256, // pixels, procedural torch pattern
     cookieRings: 2, // faint concentric rings in the beam
     cookieRingStrength: 0.08, // how dark the rings are (0..1)

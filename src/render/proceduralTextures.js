@@ -141,6 +141,7 @@ function drawDeadTree(ctx, w, h, cfg, rng) {
   ctx.lineTo(cx + w * 0.05, h);
   ctx.closePath();
   ctx.fill();
+  drawDeadTrunkDetail(ctx, cx - w * 0.05, top, w * 0.1, h - top, cfg, rng);
 
   ctx.strokeStyle = css(cfg.deadColor);
   ctx.lineCap = 'round';
@@ -163,6 +164,58 @@ function drawDeadTree(ctx, w, h, cfg, rng) {
     ctx.stroke();
   }
   drawBark(ctx, 0, 0, w, h, cfg, rng);
+}
+
+// Close-up detail for the dead tree's trunk, which is seen at face height:
+// rounded shading (lit left, dark right), dense bark grain, long cracks
+// and a few knots. Painted only over the trunk, so the outline is kept.
+function drawDeadTrunkDetail(ctx, x, y, width, height, cfg, rng) {
+  paintOnTree(ctx, () => {
+    const shade = ctx.createLinearGradient(x, 0, x + width, 0);
+    shade.addColorStop(0, css(cfg.barkLight, cfg.deadShadeLight));
+    shade.addColorStop(0.35, css(cfg.barkLight, 0));
+    shade.addColorStop(0.6, css(cfg.barkDark, 0));
+    shade.addColorStop(1, css(cfg.barkDark, cfg.deadShadeDark));
+    ctx.fillStyle = shade;
+    ctx.fillRect(x, y, width, height);
+
+    for (let i = 0; i < cfg.deadBarkStreaks; i++) {
+      ctx.fillStyle = css(rng.chance(0.6) ? cfg.barkDark : cfg.barkLight, cfg.barkStreakAlpha);
+      const sx = x + rng.range(0, width);
+      const sy = y + rng.range(0, height);
+      ctx.fillRect(Math.floor(sx), Math.floor(sy), 1, rng.range(height * 0.01, height * 0.06));
+    }
+
+    ctx.strokeStyle = css(cfg.barkDark, cfg.deadCrackAlpha);
+    ctx.lineWidth = 1;
+    for (let i = 0; i < cfg.deadCracks; i++) {
+      let cxk = x + rng.range(width * 0.15, width * 0.85);
+      let cyk = y + rng.range(height * 0.2, height * 0.9);
+      const length = rng.range(height * 0.08, height * 0.25);
+      ctx.beginPath();
+      ctx.moveTo(cxk, cyk);
+      for (let s = 0; s < 6; s++) {
+        cxk += rng.range(-1.5, 1.5);
+        cyk -= length / 6;
+        ctx.lineTo(cxk, cyk);
+      }
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < cfg.deadKnots; i++) {
+      const kx = x + rng.range(width * 0.25, width * 0.75);
+      const ky = y + rng.range(height * 0.3, height * 0.95);
+      const ry = rng.range(2, 4);
+      ctx.fillStyle = css(cfg.barkLight, cfg.deadKnotRimAlpha);
+      ctx.beginPath();
+      ctx.ellipse(kx, ky, ry * 0.8, ry * 1.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = css(cfg.barkDark, 0.9);
+      ctx.beginPath();
+      ctx.ellipse(kx, ky, ry * 0.45, ry * 0.9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
 }
 
 // ---- ground -----------------------------------------------------------

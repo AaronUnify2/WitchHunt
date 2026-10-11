@@ -33,8 +33,8 @@ export function clampToRadius(pos, maxRadius) {
 
 // The nearest surface along a ray (origin + t * dir, dir a unit 3D
 // vector): the ground (y = 0) or a circle treated as an upright cylinder
-// of radius `c.vr ?? c.r` (from the ground up to `c.top`, or unbounded if
-// there's no top). Fills `out` with { distance, facing }, where facing is
+// of radius `c.vr ?? c.r` (from the ground up to `c.top`, with a flat lid
+// there, or unbounded if there's no top). Fills `out` with { distance, facing }, where facing is
 // the cosine between the ray and the surface (1 = head-on, near 0 =
 // glancing). If nothing is closer than maxDistance, distance is
 // maxDistance and facing is 0. Returns `out`.
@@ -71,8 +71,19 @@ export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 
       const nz = (oz + t * dir.z) / radius;
       facing = -(nx * dir.x + nz * dir.z);
     }
-    const y = origin.y + t * dir.y;
-    if (y < 0 || (c.top !== undefined && y > c.top)) continue;
+    let y = origin.y + t * dir.y;
+    if (c.top !== undefined && y > c.top) {
+      // Passes over the side: it may still come down through the lid.
+      if (dir.y >= 0) continue;
+      const tl = (origin.y - c.top) / -dir.y;
+      const lx = ox + tl * dir.x;
+      const lz = oz + tl * dir.z;
+      if (tl < 0 || lx * lx + lz * lz > radius * radius) continue;
+      t = tl;
+      y = c.top;
+      facing = -dir.y;
+    }
+    if (y < 0) continue;
     if (t < out.distance) {
       out.distance = t;
       out.facing = facing;
