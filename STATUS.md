@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 6b (Gameplay Programmer), milestone **M5: The station, part 2** (abandoned vehicles: searching, lifting bonnets, pulling batteries, car alarms), plus the turret fixes from Aaron's M5 part 1 night-defence test. Built and checked in headless Chromium; **Aaron's tablet play-test of the vehicles is still to come** (script in `HANDOVER.md`). Aaron's verdict on part 1: "Night at the station is great gameplay", no fps drop and no warm tablet; prices and defences "pretty balanced so far"; the ledger is good. **With batteries now coming from the world, M5 is complete** once he's happy with the vehicles. Next: Session 7 (Lead Engineer), M6.
+Last updated: Session 6b (Gameplay Programmer), milestone **M5: The station, part 2** (abandoned vehicles: searching, lifting bonnets, pulling batteries, car alarms), plus the turret fixes from Aaron's M5 part 1 test. **Aaron play-tested it on the tablet over three rounds; all his fixes are in and he confirmed the rest: M5 is complete.** His verdicts: a night at the station is "great gameplay" (no fps drop, no warm tablet); prices and defences "pretty balanced so far"; the ledger is good; the cars "definitely reading as cars", and looting them and setting off alarms is "a lot of fun"; the turret covers the east end. Next: Session 7 (Lead Engineer), M6.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -49,6 +49,8 @@ Agreed with Aaron before building: **four types** (car, pickup truck, police car
 | The side window should open with the door (one piece) | Each door carries its window: the glass swings with the panel. | `lids.door.extra` |
 | Search from the driver's or the passenger's side | A passenger door (the driver's, mirrored) with its own spot; either door searches the cab, once (one cabin, one loot roll). Placement needs only one door reachable, so verge cars with their passenger side in the trees still count. | `Vehicles.js` `SPOTS`, `spotsOf()` |
 | Every police car should have an alarm | Police cars now always have a battery and an alarm (a type's own chances beat the place's and config's). | `types.police.battery`, `alarm` |
+| "Not sure what you mean by roadblock" | They're angled rows of 3-5 cars inside roadside and checkpoint clearings (and army trucks at the outpost), not cars across a pathway. Offered: real roadblocks across pathways with a gap (not built). | `placement.roadside`, `checkpoint` |
+| Turret coverage of the east end | **Confirmed** by Aaron: it shoots zombies everywhere round the fence, the east included. | |
 | (Third look) Door panels too tall; the windscreen too upright; the ute's bonnet too low against its tray | Door panels now stop at the bonnet and boot line, with the door window (and the cab's side glass) from there up. Windscreens laid back: about 36° from horizontal on cars and police cars, 38° on utes (were 53-62°). The ute's front body and bonnet rise to 1.15 m (tray rails 1.35), its cab to 2.05 m. The army truck's window line drops too. | `data/vehicles.json` |
 | Square wheels; can they be round? | Every `tyre` part is drawn as a round wheel (a 12-sided cylinder) with a grey hub, all instances of one mesh: one more draw call (plus its shadow). | `config.vehicles.looks.wheelSegments`, `hubSize` |
 
@@ -294,7 +296,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 ## Not verified
 
-- **M5 part 2 on the tablet** (Aaron's play-test): how the vehicles look and read, the hold timings, loot amounts, how often batteries and alarms turn up, the alarm's loudness, the map markers, frame rate in a roadblock clearing.
+- **M5 part 2 on the tablet: verified by Aaron** (looks, looting, alarms, map markers, fights among cars, the turret's east end). Not yet tuned: loot amounts, how often batteries and alarms turn up (M14 balance).
 - **M5 part 1 on the tablet: mostly verified** (Aaron: a night at the station is great, no fps drop, no warm tablet, prices pretty balanced, ledger good, nothing stuck). Still open: whether a night at the station is tense and readable, frame rate with the compound in view (draw calls are up to the mid-80s by day), the ledger on the controller (LB / RB tabs), whether the floodlights and wires read at night, the turret's spectacle, prices and health numbers.
 - **M4 on the tablet** (Aaron's play-test): frame rate with many zombies and up to five sigils visible, whether the level changes are visible enough, whether the detection numbers feel fair, the mutant's look and toughness, and the sigil glow at night on the real screen.
 - The dawn thinning over a real 60 s dawn in the browser (the unit test covers it; the debug time speed-up only speeds the clock, not the zombies, so it can't be hurried).

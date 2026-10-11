@@ -2,7 +2,7 @@
 
 ## Just finished: Session 6b, Gameplay Programmer, M5 part 2 (vehicles and batteries)
 
-**Status: built and checked in headless Chromium; Aaron's tablet play-test of the vehicles is still to come** (script below). With batteries now coming from the world, **M5 is complete** once he's happy with them.
+**Status: done. Aaron play-tested the vehicles on the tablet over three rounds (all his look fixes are in) and confirmed the rest: the campsite battery fitted at the fence box, looting and alarms are "a lot of fun", the map markers look good, fights among cars work, the turret rests facing the gate and covers the east end. M5 is complete.**
 
 ### Aaron's M5 part 1 verdict (first thing this session)
 
@@ -58,7 +58,7 @@ Details are in `STATUS.md` ("M5 part 2"):
 
 Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle keeps its own flags ready for it.
 
-## Play-test script for Aaron (M5 part 2)
+## Play-test script for Aaron (M5 part 2) (done: kept for the record)
 
 **Setup:**
 
@@ -125,6 +125,10 @@ Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle
 - **Headless Chromium runs about 5× slower than real time.** Wait in game time (`station.time`, `vehicles.time`), not real time. The map screen pauses game time.
 - **Vite HMR reloads the page** when a source file changes mid-test. Don't edit while a browser check runs.
 - **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
+
+### Offered to Aaron, not built
+
+- A real roadblock: a few cars across a pathway near roadside clearings, with a gap to squeeze through (choke points). The current "roadblocks" are angled rows inside roadside and checkpoint clearings.
 
 ### Open questions for Aaron
 
