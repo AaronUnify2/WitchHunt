@@ -5,6 +5,9 @@
 // from its variant (citizen, police, army) and the column from its
 // animation frame. Lit by the torch and casting its shadow, like the
 // trees. One draw call, plus one in the torch shadow pass.
+// M6: only the active and nearby tiers are drawn (abstract zombies have
+// no mesh), active first, and none past the draw distance (the fog hides
+// them anyway). Debug: a tint per tier.
 
 import * as THREE from 'three';
 import { makeZombieAtlas, ATLAS_ROWS as ROWS } from './zombieSprite.js';
@@ -16,6 +19,7 @@ const COMMON = /* glsl */ `
   attribute float aFlash;
   attribute float aLit;
   attribute float aVariant;
+  attribute float aTint;
   uniform float uCols;
   uniform float uVariants;
   uniform float uNormalUpBias;
@@ -60,7 +64,10 @@ export class ZombieRenderer {
     this.rng = rng;
   }
 
-  init(scene, poolSize) {
+  // capacity: the most sprites drawn at once (config.zombies.lod.renderCap).
+  init(scene, capacity) {
+    const poolSize = capacity;
+    this.capacity = capacity;
     const c = this.cfg;
     const t = c.texture;
     this.atlas = makeZombieAtlas(c, this.rng);
@@ -71,6 +78,8 @@ export class ZombieRenderer {
       uNormalUpBias: { value: c.normalUpBias },
       uFlashColor: { value: new THREE.Color(c.hitFlashColor) },
       uLitColor: { value: new THREE.Color(c.floodlit.color).multiplyScalar(c.floodlit.strength) },
+      uTintActive: { value: new THREE.Color(c.lod.tierColors.active) },
+      uTintNearby: { value: new THREE.Color(c.lod.tierColors.nearby) },
     };
     const albedo = new THREE.Color().setScalar(c.albedoScale);
     this.material = this.patch(new THREE.MeshLambertMaterial({ map: this.atlas, color: albedo, alphaTest: c.alphaTest }), true);
@@ -89,11 +98,14 @@ export class ZombieRenderer {
     this.frameAttr = new THREE.InstancedBufferAttribute(this.frames, 1).setUsage(THREE.DynamicDrawUsage);
     this.facingAttr = new THREE.InstancedBufferAttribute(this.facings, 1).setUsage(THREE.DynamicDrawUsage);
     this.flashAttr = new THREE.InstancedBufferAttribute(this.flashes, 1).setUsage(THREE.DynamicDrawUsage);
+    this.tints = new Float32Array(poolSize); // M6 debug: 0 none, 1 active, 2 nearby
+    this.tintAttr = new THREE.InstancedBufferAttribute(this.tints, 1).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('aFrame', this.frameAttr);
     geometry.setAttribute('aFacing', this.facingAttr);
     geometry.setAttribute('aFlash', this.flashAttr);
     geometry.setAttribute('aVariant', this.variantAttr);
     geometry.setAttribute('aLit', this.litAttr);
+    geometry.setAttribute('aTint', this.tintAttr);
 
     this.mesh = new THREE.InstancedMesh(geometry, this.material, poolSize);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -110,17 +122,20 @@ export class ZombieRenderer {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
       let vertex = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${COMMON}${colour ? 'varying float vFlash;\nvarying float vLit;' : ''}`)
+        .replace('#include <common>', `#include <common>\n${COMMON}${colour ? 'varying float vFlash;\nvarying float vLit;\nvarying float vTint;' : ''}`)
         .replace('#include <uv_vertex>', UV)
         .replace('#include <beginnormal_vertex>', NORMAL)
         .replace('#include <begin_vertex>', BEGIN_VERTEX);
       if (colour) {
-        vertex = vertex.replace('#include <fog_vertex>', '#include <fog_vertex>\nvFlash = aFlash;\nvLit = aLit;');
+        vertex = vertex.replace('#include <fog_vertex>', '#include <fog_vertex>\nvFlash = aFlash;\nvLit = aLit;\nvTint = aTint;');
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', '#include <common>\nvarying float vFlash;\nvarying float vLit;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;')
+          .replace(
+            '#include <common>',
+            '#include <common>\nvarying float vFlash;\nvarying float vLit;\nvarying float vTint;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;',
+          )
           .replace(
             '#include <emissivemap_fragment>',
-            '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uLitColor * vLit;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;',
+            '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uLitColor * vLit;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;\nif (vTint > 0.5) totalEmissiveRadiance += (vTint < 1.5 ? uTintActive : uTintNearby) * 0.5;',
           );
       }
       shader.vertexShader = vertex;
@@ -129,22 +144,12 @@ export class ZombieRenderer {
     return material;
   }
 
-  // zombies: the pool. Packs the active ones into the first instances.
-  update(zombies) {
-    const c = this.cfg;
-    let n = 0;
-    for (const z of zombies) {
-      if (!z.active || z.kind === 'mutant') continue;
-      const y = z.y - z.sink * this.spriteHeight;
-      this.matrix.makeScale(this.spriteWidth, this.spriteHeight, this.spriteWidth).setPosition(z.x, y, z.z);
-      this.mesh.setMatrixAt(n, this.matrix);
-      this.frames[n] = z.frame;
-      this.facings[n] = z.facing;
-      this.flashes[n] = z.flash > 0 ? z.flash / c.hitFlashSeconds : 0;
-      this.lits[n] = z.lit ?? 0;
-      this.variants[n] = this.variantIndex[z.variant] ?? 0;
-      n++;
-    }
+  // zombies: the pool. Packs the drawn ones into the first instances:
+  // the active tier first, then nearby ones within `cullDistance` of
+  // `camera` (x, z). showTiers: tint each by its tier (debug).
+  update(zombies, camera, cullDistance, showTiers = false) {
+    let n = this.pack(zombies, 'active', camera, Infinity, showTiers, 0);
+    n = this.pack(zombies, 'nearby', camera, cullDistance, showTiers, n);
     this.mesh.count = n;
     if (n > 0) {
       this.mesh.instanceMatrix.needsUpdate = true;
@@ -153,7 +158,30 @@ export class ZombieRenderer {
       this.flashAttr.needsUpdate = true;
       this.litAttr.needsUpdate = true;
       this.variantAttr.needsUpdate = true;
+      this.tintAttr.needsUpdate = true;
     }
+  }
+
+  // Zombies of `tier` (a fresh one with no tier yet counts as active)
+  // into instances from `n`. Returns the next free instance.
+  pack(zombies, tier, camera, cullDistance, showTiers, n) {
+    const c = this.cfg;
+    for (const z of zombies) {
+      if (n >= this.capacity) break;
+      if (!z.active || z.kind === 'mutant' || (z.tier ?? 'active') !== tier) continue;
+      if (cullDistance < Infinity && Math.hypot(z.x - camera.x, z.z - camera.z) > cullDistance) continue;
+      const y = z.y - z.sink * this.spriteHeight;
+      this.matrix.makeScale(this.spriteWidth, this.spriteHeight, this.spriteWidth).setPosition(z.x, y, z.z);
+      this.mesh.setMatrixAt(n, this.matrix);
+      this.frames[n] = z.frame;
+      this.facings[n] = z.facing;
+      this.flashes[n] = z.flash > 0 ? z.flash / c.hitFlashSeconds : 0;
+      this.lits[n] = z.lit ?? 0;
+      this.variants[n] = this.variantIndex[z.variant] ?? 0;
+      this.tints[n] = showTiers ? (tier === 'active' ? 1 : 2) : 0;
+      n++;
+    }
+    return n;
   }
 
   dispose() {

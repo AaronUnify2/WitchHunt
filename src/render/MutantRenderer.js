@@ -95,7 +95,7 @@ export class MutantRenderer {
     let n = 0;
     let spots = 0;
     for (const z of zombies) {
-      if (!z.active || z.kind !== 'mutant' || n >= this.cfg.poolSize) continue;
+      if (!z.active || z.kind !== 'mutant' || z.tier === 'abstract' || n >= this.cfg.poolSize) continue; // M6: abstract ones have no mesh
       let lean = 0; // radians forward
       let roll = 0; // radians sideways (falling over)
       let bob = 0;

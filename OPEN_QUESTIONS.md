@@ -2,6 +2,17 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 7 (M6, Lead Engineer)
+
+Agreed with Aaron before building: about **two thirds of each night's zombies march on the station** (so meeting them on the pathways is worth it: you're protecting the base); "away" means **beyond 150 m** from the station; the alarm at **50% of the security at dusk**; the forecast as **a dusk panel plus a ledger tab**; a **"Continue / New run"** screen when a save exists; **drop the 64-zombie ceiling**. He'll balance 15 zombies against the fence (and against his rifle) in play-tests.
+
+| # | Question | What M6 does now | Where to change it |
+| --- | --- | --- | --- |
+| 89 | Tier distances and budgets. | Active within 60 m (at most 25, the nearest), nearby to 150 m (every 3rd frame), abstract beyond (about once a second, on the pathways, no collision). 8 m of hysteresis. At most 160 sprites drawn. | `config.zombies.lod` |
+| 90 | How many zombies can the map hold? | **Aaron: drop the 64 cap.** The pool grows 32 at a time up to 480 (a safety net). The sigils' caps (6 each) still decide how many a night raises, until the marches (step 2). | `config.zombies.population` |
+| 91 | Can the far sigils' zombies reach home in one night? | Measured on 40 seeds (pathway distance to home): the farthest sigil ground is 840-1770 m (median 1390), the hut 1260-1810 m; the nearest ground is 140-1230 m (median 610). A level 1 zombie walks about 2.7 m/s (1.5 m/s at its wandering pace); a night is 360 s. **To decide in step 2.** | `config.zombies.levels`, `config.clock` |
+| 92 | **Aaron's idea:** revisiting a cleared encounter. | Not built. Aaron: an encounter is fresh the first time; going back later, a few zombies (4-5) have turned up there, "so the world doesn't become empty as you complete it". For step 2 or the encounter sessions. | n/a |
+
 ## Session 6b (M5 part 2, Gameplay Programmer)
 
 Agreed with Aaron before building: **four vehicle types** (car, pickup truck, police car, army truck; special one-off vehicles may come with later scenes); **about 45 a map**; **about 60% with a battery**; pulling a battery is **just a noise**; **pulling the battery kills the alarm**; vehicles on the maps **if it doesn't crowd them**; the hold times as proposed; the debug battery stays. His M5 part 1 night-defence verdict: great gameplay, no fps drop, prices pretty balanced so far.

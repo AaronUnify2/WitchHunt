@@ -52,13 +52,13 @@ export class MapScreen {
   }
 
   // sigils: [{ x, z }] or null (debug: shown whatever the fog).
-  update(dt, player, enemies, footer, sigils = null) {
+  update(dt, player, enemies, footer, sigils = null, tierColors = null) {
     if (!this.isOpen) return;
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = 1 / this.cfg.refreshPerSecond;
     this.resize();
-    this.draw(player, enemies, sigils);
+    this.draw(player, enemies, sigils, tierColors);
     const sigilKey = sigils ? '   ◆ (green) Sigil (debug)' : '';
     const vehicleKey = this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '';
     this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
@@ -74,7 +74,7 @@ export class MapScreen {
     }
   }
 
-  draw(player, enemies, sigils) {
+  draw(player, enemies, sigils, tierColors) {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
@@ -137,8 +137,9 @@ export class MapScreen {
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * Math.max(1, Math.min(W, H) / 700);
     for (const e of enemies) {
-      if (!this.showGraph && !this.fog.isRevealed(e.x, e.z)) continue;
+      if (!this.showGraph && !tierColors && !this.fog.isRevealed(e.x, e.z)) continue;
       const [sx, sy] = toScreen(e.x, e.z);
+      if (tierColors) ctx.fillStyle = tierColors[e.tier ?? 'active'];
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
     }
     if (sigils && this.sigilMarker) {

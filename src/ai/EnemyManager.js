@@ -1,9 +1,18 @@
-// Owns the zombie pool (no allocation while playing): spawning (singles,
-// hordes and mutants, by level and variant), each zombie's brain
-// (detection and targeting), moving them, keeping them out of trees and
-// rocks and apart from each other, gunfire alerts, thinning out at dawn,
-// and applying hits. Sigils decide when and where to spawn
-// (ZombieDirector); M6 adds the simulation tiers.
+// Owns the zombie pool: spawning (singles, hordes and mutants, by level
+// and variant), each zombie's brain (detection and targeting), moving
+// them, keeping them out of trees and rocks and apart from each other,
+// gunfire alerts, thinning out at dawn, and applying hits. Sigils decide
+// when and where to spawn (ZombieDirector).
+//
+// M6: simulation tiers (ai/simTiers.js). Each zombie is active (full
+// simulation every frame, at most `lod.activeCap`), nearby (the same
+// simulation every few frames, no pushing apart) or abstract (walks the
+// pathways in coarse steps about once a second, no collision, not drawn)
+// by its distance from the player. The pool grows in chunks as the night
+// needs it, up to `population.max`: there's no small fixed ceiling any
+// more, so a busy night can fill the whole map. Zombies within the
+// station's reach stay at least nearby, so a siege is always simulated
+// (Step 3 of M6 resolves it by the margin table while you're away).
 //
 // The zombie level (1-5) sets each spawn's speed range, health and the
 // horde and mutant chances, and live: every zombie's speed (from its own
@@ -24,6 +33,7 @@ import { ZombieBrain } from './ZombieBrain.js';
 import { PathRoutes } from './pathRoutes.js';
 import { playerSenses } from './detection.js';
 import { levelStats, clampLevel, speedRoll, speedFromRoll, pickVariant, planSpawn } from './zombieLevels.js';
+import { tierFor, capActive, nearbyStepDue } from './simTiers.js';
 import { resolveCircles } from '../world/collision.js';
 
 const MODES = ['chase', 'search', 'wander', 'siege'];
@@ -43,9 +53,17 @@ export class EnemyManager {
 
   init(colliders) {
     this.colliders = colliders;
-    this.pool = Array.from({ length: this.cfg.poolSize }, () => new Zombie(this.cfg));
-    this.living = []; // alive zombies, refreshed every update
+    this.pool = [];
+    this.grow(this.cfg.population.initial);
+    this.living = []; // alive zombies (every tier), refreshed every update
+    this.activeList = []; // alive zombies in the active tier
+    this.candidates = []; // zombies close enough to be active (before the cap)
     this.nearby = [];
+    this.frame = 0;
+    this.nextSlot = 0;
+    this.simMs = 0; // smoothed cost of update() (overlay)
+    this.tiers = { active: 0, nearby: 0, abstract: 0 };
+    this.showTiers = false; // debug: tint sprites and map dots by tier
     this.level = 1;
     this.stats = levelStats(this.cfg.levels, 1);
     this.station = null; // M5: the station's siege hook (see the top of this file)
@@ -58,6 +76,15 @@ export class EnemyManager {
       if (barrier) this.bus.emit('enemy:strikeDefence', { zombie, barrier, damage: zombie.attackDamage * this.stats.defenceDamage });
       else this.bus.emit('enemy:strike', { zombie, damage: zombie.attackDamage * this.stats.damage });
     };
+  }
+
+  // Add up to `count` fresh zombies to the pool (never past population.max).
+  // Returns how many were added.
+  grow(count) {
+    const room = Math.max(0, this.cfg.population.max - this.pool.length);
+    const n = Math.min(count, room);
+    for (let i = 0; i < n; i++) this.pool.push(new Zombie(this.cfg));
+    return n;
   }
 
   // ---- level ---------------------------------------------------------------
@@ -77,14 +104,23 @@ export class EnemyManager {
 
   // ---- spawning ------------------------------------------------------------
 
+  // A free zombie from the pool, growing it by a chunk if it's full.
+  // null once the whole population is out.
+  freeSlot() {
+    const slot = this.pool.find((p) => !p.active);
+    if (slot) return slot;
+    const before = this.pool.length;
+    return this.grow(this.cfg.population.chunk) > 0 ? this.pool[before] : null;
+  }
+
   // One zombie at (x, z). opts: { kind ('zombie' | 'mutant'), variant,
   // mode ('chase' | 'wander'), rise, speedRange [min, max] (multiples of
   // the sprint; else the level's), horde, owner (its sigil), facing }.
-  // Returns the zombie, or null if the pool (or the mutant cap) is full.
+  // Returns the zombie, or null if the population (or the mutant cap) is full.
   spawnZombie(x, z, opts = {}) {
     const kind = opts.kind ?? 'zombie';
     if (kind === 'mutant' && this.mutantCount >= this.mutantCfg.poolSize) return null;
-    const slot = this.pool.find((p) => !p.active);
+    const slot = this.freeSlot();
     if (!slot) return null;
     const c = this.cfg;
     const m = this.mutantCfg;
@@ -114,6 +150,11 @@ export class EnemyManager {
     slot.fadeTimer = -1;
     slot.slowTimer = 0; // M5: spike traps slow it for a moment
     slot.slow = 1;
+    // M6: its tier is worked out on the next update.
+    slot.tier = null;
+    slot.lodDt = 0;
+    slot.lodDistance = Infinity;
+    slot.lodSlot = this.nextSlot++ % this.cfg.lod.nearbyEveryFrames;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }
@@ -179,10 +220,32 @@ export class EnemyManager {
     return { ringMin: c.spawnDistanceMin, ringMax: c.spawnDistanceMax, mix: this.world.variantMixAt(center.x, center.z), mode: 'chase', faceX: center.x, faceZ: center.z };
   }
 
+  // Debug (M6): fill the map. About `count` zombies raised at this level
+  // (singles, hordes, mutants) at random points along the pathways at
+  // least `minDistance` metres from `center`, wandering. Returns how many.
+  populate(center, count, minDistance) {
+    const paths = this.world.map.paths;
+    let spawned = 0;
+    for (let tries = 0; spawned < count && tries < count * 10; tries++) {
+      const path = this.rng.pick(paths);
+      const p = path.points[this.rng.int(0, path.points.length - 1)];
+      if (Math.hypot(p.x - center.x, p.z - center.z) < minDistance) continue;
+      const opts = { ringMin: 0, ringMax: 2, mix: this.world.variantMixAt(p.x, p.z), mode: 'wander', rise: false };
+      const n = this.spawnRaising(p.x, p.z, opts).spawned;
+      if (n === 0) break; // the population is full
+      spawned += n;
+    }
+    return spawned;
+  }
+
   // Kill every zombie straight away and return them to the pool.
   clear() {
-    for (const z of this.pool) z.state = 'free';
+    for (const z of this.pool) {
+      z.state = 'free';
+      z.tier = null;
+    }
     this.living.length = 0;
+    this.activeList.length = 0;
   }
 
   // ---- each frame ------------------------------------------------------------
@@ -190,35 +253,118 @@ export class EnemyManager {
   // player: { x, z, eyeY, daylight, torchOn, crouched, sprinting, speed,
   // undergrowth } (see detection.js).
   update(dt, player) {
-    const c = this.cfg;
+    const started = performance.now();
+    const lod = this.cfg.lod;
+    this.frame++;
     const senses = playerSenses(player, this.detCfg, this.stats.notice, this.senses);
     this.brain.tick(dt);
+    this.assignTiers(player);
+
     this.living.length = 0;
+    this.activeList.length = 0;
     for (const z of this.pool) {
       if (!z.active) continue;
-      if (z.alive && z.state !== 'rise') {
-        this.brain.update(z, dt, senses, this.station);
-        this.updateFade(z, dt, player);
-        this.routeAtStation(z, player);
-      }
-      z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
-      if (z.slowTimer > 0) {
-        z.slowTimer -= dt;
-        z.moveScale *= z.slow;
-      }
-      z.update(dt, player, this.onStrike);
-      if (z.chargeStarted) {
-        z.chargeStarted = false;
-        this.bus.emit('enemy:charge', { zombie: z });
+      z.lodDt += dt;
+      if (z.tier === 'active') {
+        this.step(z, z.lodDt, player, senses, true);
+        z.lodDt = 0;
+      } else if (z.tier === 'nearby') {
+        if (nearbyStepDue(this.frame, z.lodSlot, lod.nearbyEveryFrames)) {
+          this.step(z, z.lodDt, player, senses, true);
+          z.lodDt = 0;
+        }
+      } else if (z.lodDt >= lod.abstractSeconds) {
+        this.stepAbstract(z, z.lodDt, player, senses);
+        z.lodDt = 0;
       }
       if (z.alive) {
-        resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
-        this.ground.clamp(z);
         this.living.push(z);
+        if (z.tier === 'active') this.activeList.push(z);
       }
     }
-    this.separate();
-    for (const z of this.pool) if (z.active) z.y = this.ground.heightAt(z.x, z.z);
+    this.separate(this.activeList);
+    for (const z of this.activeList) z.y = this.ground.heightAt(z.x, z.z);
+    const ms = performance.now() - started;
+    this.simMs += (ms - this.simMs) * lod.timingSmoothing;
+  }
+
+  // Sort every zombie into its tier (simTiers.js), keep the active ones
+  // under the cap, and settle a zombie coming out of the abstract tier
+  // (which walked with no collision) clear of the trees and rocks.
+  assignTiers(player) {
+    const lod = this.cfg.lod;
+    const t = this.tiers;
+    t.active = 0;
+    t.nearby = 0;
+    t.abstract = 0;
+    this.candidates.length = 0;
+    for (const z of this.pool) {
+      if (!z.active) continue;
+      const d = Math.hypot(z.x - player.x, z.z - player.z);
+      z.lodDistance = d;
+      let tier = tierFor(z.tier ?? undefined, d, lod);
+      if (tier === 'abstract' && this.keepSimulated(z)) tier = 'nearby';
+      if (z.tier === 'abstract' && tier !== 'abstract') this.settle(z);
+      z.tier = tier;
+      if (tier === 'active') this.candidates.push(z);
+    }
+    t.active = capActive(this.candidates, lod.activeCap);
+    for (const z of this.pool) {
+      if (!z.active) continue;
+      if (z.tier === 'nearby') t.nearby++;
+      else if (z.tier === 'abstract') t.abstract++;
+    }
+  }
+
+  // Zombies near the station stay simulated (the siege runs for real).
+  keepSimulated(z) {
+    const st = this.station;
+    if (!st || !this.cfg.lod.stationKeepsSimulated) return false;
+    return Math.hypot(z.x - st.x, z.z - st.z) <= st.routeRadius + this.cfg.lod.hysteresis;
+  }
+
+  settle(z) {
+    if (z.alive) resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
+    this.ground.clamp(z);
+    z.y = this.ground.heightAt(z.x, z.z);
+  }
+
+  // One step of the full simulation over `dt` seconds (active every
+  // frame; nearby every few frames with the time saved up).
+  step(z, dt, player, senses, collide) {
+    const c = this.cfg;
+    if (z.alive && z.state !== 'rise') {
+      this.brain.update(z, dt, senses, this.station);
+      this.updateFade(z, dt, player);
+      this.routeAtStation(z, player);
+    }
+    z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
+    if (z.slowTimer > 0) {
+      z.slowTimer -= dt;
+      z.moveScale *= z.slow;
+    }
+    z.update(dt, player, this.onStrike);
+    if (z.chargeStarted) {
+      z.chargeStarted = false;
+      this.bus.emit('enemy:charge', { zombie: z });
+    }
+    if (z.alive && collide) {
+      resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
+      this.ground.clamp(z);
+    }
+    if (z.active) z.y = this.ground.heightAt(z.x, z.z);
+  }
+
+  // The abstract tier: the time saved up, walked in a few coarse steps
+  // along the pathways with no collision, then clamped to the map.
+  stepAbstract(z, seconds, player, senses) {
+    const sub = this.cfg.lod.abstractSubStep;
+    const n = Math.max(1, Math.ceil(seconds / sub - 1e-6));
+    const dt = seconds / n;
+    for (let i = 0; i < n && z.active; i++) this.step(z, dt, player, senses, false);
+    if (!z.active) return;
+    this.ground.clamp(z);
+    z.y = this.ground.heightAt(z.x, z.z);
   }
 
   // M5: near the station, where to walk to get through its defences to
@@ -262,11 +408,11 @@ export class EnemyManager {
     z.viaReach = st.reach;
   }
 
-  // Push overlapping zombies apart (a pool of 64, so pairwise is cheap).
-  separate() {
+  // Push overlapping zombies apart. Only the active tier (at most
+  // lod.activeCap), so pairwise is cheap.
+  separate(list) {
     const c = this.cfg;
     const extra = c.separation - c.radius * 2; // gap kept between bodies
-    const list = this.living;
     for (let i = 0; i < list.length; i++) {
       const a = list[i];
       for (let j = i + 1; j < list.length; j++) {
@@ -349,7 +495,7 @@ export class EnemyManager {
   // Close living zombies as circles for the torch's glare check.
   glareCircles(origin, range, out) {
     out.length = 0;
-    for (const z of this.living) {
+    for (const z of this.activeList) {
       if (Math.hypot(z.x - origin.x, z.z - origin.z) > range) continue;
       z.glareCircle.x = z.x;
       z.glareCircle.z = z.z;
@@ -402,6 +548,13 @@ export class EnemyManager {
       else if (MODES.includes(z.mode)) t[z.mode]++;
     }
     return t;
+  }
+
+  // Tier counts and cost (overlay).
+  lodLine() {
+    const t = this.tiers;
+    const p = this.cfg.population;
+    return `tiers: active ${t.active}/${this.cfg.lod.activeCap} nearby ${t.nearby} abstract ${t.abstract}  pool ${this.pool.length}/${p.max}  sim ${this.simMs.toFixed(2)}ms`;
   }
 
   dispose() {

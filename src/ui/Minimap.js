@@ -39,14 +39,14 @@ export class Minimap {
 
   // player: { position, yaw }. enemies: living zombies [{ x, z }].
   // sigils: [{ x, z }] or null (debug).
-  update(dt, player, enemies, sigils = null) {
+  update(dt, player, enemies, sigils = null, tierColors = null) {
     if (this.el.classList.contains('hidden')) return;
     // refreshPerSecond 0 = every frame (smooth turning; Aaron's M3 test).
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = this.cfg.refreshPerSecond > 0 ? 1 / this.cfg.refreshPerSecond : 0;
     this.resize();
-    this.draw(player, enemies, sigils);
+    this.draw(player, enemies, sigils, tierColors);
   }
 
   resize() {
@@ -58,7 +58,7 @@ export class Minimap {
     }
   }
 
-  draw(player, enemies, sigils) {
+  draw(player, enemies, sigils, tierColors) {
     const ctx = this.ctx;
     const size = this.canvas.width;
     const half = size / 2;
@@ -119,8 +119,9 @@ export class Minimap {
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * (size / 200);
     for (const e of enemies) {
-      if (!this.fog.isRevealed(e.x, e.z)) continue;
+      if (!tierColors && !this.fog.isRevealed(e.x, e.z)) continue;
       const [sx, sy] = toScreen(e.x, e.z);
+      if (tierColors) ctx.fillStyle = tierColors[e.tier ?? 'active'];
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
     }
     if (sigils && this.sigilMarker) {

@@ -185,6 +185,7 @@ export class Game {
     });
     this.overlay.addStat('combat', () => this.combat.overlayLine());
     this.overlay.addStat('zombies', () => this.combat.zombieOverlayLine());
+    this.overlay.addStat('lod', () => this.combat.enemies.lodLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
     this.overlay.addStat('station', () => this.station.overlayLine());
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
@@ -266,6 +267,7 @@ export class Game {
     this.sky.setDrawDistance(q.drawDistance);
     this.world.setDrawDistance(q.drawDistance);
     this.director?.setDrawDistance(q.drawDistance);
+    this.combat.setDrawDistance(q.drawDistance);
     this.station?.renderer.setDrawDistance(q.drawDistance);
     this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
@@ -371,7 +373,9 @@ export class Game {
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
     const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
-    this.mapUi.update(dt, controls, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap);
+    const enemies = this.combat.enemies;
+    const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
+    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.world.update(dt, this.player.camera.position);
 

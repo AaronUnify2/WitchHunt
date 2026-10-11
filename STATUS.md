@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 6b (Gameplay Programmer), milestone **M5: The station, part 2** (abandoned vehicles: searching, lifting bonnets, pulling batteries, car alarms), plus the turret fixes from Aaron's M5 part 1 test. **Aaron play-tested it on the tablet over three rounds; all his fixes are in and he confirmed the rest: M5 is complete.** His verdicts: a night at the station is "great gameplay" (no fps drop, no warm tablet); prices and defences "pretty balanced so far"; the ledger is good; the cars "definitely reading as cars", and looting them and setting off alarms is "a lot of fun"; the turret covers the east end. Next: Session 7 (Lead Engineer), M6.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is built and waiting for Aaron's play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -19,6 +19,29 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M6 step 1: Simulation tiers (Session 7, in progress)
+
+- **Three tiers by distance from the player** (`src/ai/simTiers.js`, `EnemyManager`):
+  - **Active (within 60 m):** full simulation every frame, at most 25 (the nearest).
+  - **Nearby (60-150 m):** the same simulation every 3rd frame, with the time saved up; no pushing apart.
+  - **Abstract (beyond 150 m):** no mesh; it walks the pathways in two coarse steps about once a second, with no collision. It's settled clear of trees and rocks when it comes back.
+  - An 8 m margin stops zombies flickering between tiers.
+  - Zombies within the station's reach never go abstract, so a siege is always simulated. Step 3 changes this while you're away.
+- **No 64 cap (Aaron).** The pool starts at 64 and grows 32 at a time, up to 480 (a safety net, not a design number).
+- **Sprites:** the active tier first, then nearby ones within the draw distance (+5 m); at most 160 drawn. Mutants skip the abstract tier too.
+- **Debug:**
+  - **Zombies: populate the map (+100 on the pathways)**.
+  - **Zombies: tier colours** tints sprites and map dots: red active, orange nearby, purple abstract. The dots show through the fog while it's on.
+  - A new `lod` overlay line: tier counts, pool size, smoothed sim time.
+- **Cost:** 300 zombies take **0.07 ms of simulation a frame** at 60 fps (Node), against 0.67 ms with every zombie fully simulated.
+  - Headless Chromium with 310: 16 active, 16 nearby, 278 abstract, 77 draw calls, no console errors.
+- **Tests:** 293 pass (10 new):
+  - tier boundaries and the margin, the cap, the nearby frame spread;
+  - the pool growing past 64;
+  - an abstract zombie covering the same ground as a simulated one (within 25%);
+  - waking up as the player walks in;
+  - gunfire reaching nearby zombies.
 
 ### M5 part 2: Vehicles and batteries (Session 6b)
 
@@ -324,7 +347,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
 - The east, west and south map edges are an invisible line inside dense forest (Aaron: fine as it is).
 - The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 19); no pause menu.
-- **Every zombie on the map is fully simulated** (one pool of 64) until M6's tiers; distant ones are cheap but the pool can fill on a busy night, and then sigils stop raising until some die or sink at dawn.
+- **M6 is in progress:** tiers are in (step 1). Night marches to the station, danger, the forecast, simulated nights while away, the alarm and the dawn autosave are next.
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.

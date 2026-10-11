@@ -645,11 +645,28 @@ export const config = {
   },
 
   // Zombies (DESIGN.md "Zombies"). M4: levels, variants, hordes, mutants,
-  // detection and targeting. Every zombie on the map is in one pool until
-  // M6's simulation tiers; the ~25 cap in DESIGN.md is for *active* ones
-  // near the player, which M6 enforces.
+  // detection and targeting. M6: simulation tiers, and no small ceiling
+  // on how many zombies the map holds (Aaron: drop the 64 cap).
   zombies: {
-    poolSize: 64,
+    // The pool grows in chunks as the night needs it, up to max. max is a
+    // safety net, not a design number: the sigils' caps decide the night.
+    population: { initial: 64, chunk: 32, max: 480 },
+    // Simulation tiers (DESIGN.md "Performance and simulation LOD";
+    // ai/simTiers.js). Distances are from the player.
+    lod: {
+      activeRadius: 60, // full simulation every frame within this...
+      nearbyRadius: 150, // ...the same every few frames out to this; beyond, abstract
+      hysteresis: 8, // metres past a boundary before a zombie changes tier
+      activeCap: 25, // at most this many active (the nearest); the rest are nearby
+      nearbyEveryFrames: 3, // a nearby zombie takes a step every this many frames
+      abstractSeconds: 1, // an abstract zombie takes its coarse steps about this often
+      abstractSubStep: 0.5, // seconds per coarse step (so it doesn't overshoot a bend)
+      stationKeepsSimulated: true, // zombies within the station's reach never go abstract (Step 3 changes this while you're away)
+      renderCap: 160, // most zombie sprites drawn at once (active first, then nearby)
+      drawMargin: 5, // metres past the draw distance that nearby sprites are still drawn
+      timingSmoothing: 0.05, // the overlay's sim time is smoothed by this much per frame
+      tierColors: { active: '#ff3030', nearby: '#ffa020', abstract: '#b060ff' }, // debug tint (map dots and sprites)
+    },
     health: 60, // a level 1 citizen; variants and levels multiply it
     radius: 0.35, // body collision radius, metres
     hitRadius: 0.3, // body hit cylinder
@@ -1242,6 +1259,7 @@ export const config = {
   // Debug tools
   debug: {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
+    populateCount: 100, // M6: "Zombies: populate the map" adds about this many
     giveArmour: 40,
     giveFirstAid: 3,
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands

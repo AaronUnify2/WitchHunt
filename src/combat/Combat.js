@@ -41,6 +41,7 @@ export class Combat {
     const ground = world.ground;
     this.player = player;
     this.flashlight = lights?.flashlight ?? null;
+    this.drawDistance = Infinity; // M6: set by Game from the quality preset
     this.armour = new Armour(c.armour);
     this.armour.init();
     this.health = new Health(c.health, this.armour);
@@ -51,7 +52,7 @@ export class Combat {
     this.enemies = new EnemyManager(c, this.rng.fork('zombies'), this.bus, world);
     this.enemies.init(colliders);
     this.zombieRenderer = new ZombieRenderer(c.zombies, this.rng.fork('zombie-sprite'));
-    this.zombieRenderer.init(scene, c.zombies.poolSize);
+    this.zombieRenderer.init(scene, c.zombies.lod.renderCap);
     this.mutantRenderer = new MutantRenderer(c.mutant, c.zombies);
     this.mutantRenderer.init(scene);
 
@@ -256,7 +257,7 @@ export class Combat {
       this.enemies.update(dt, this.updateSenses(daylight));
       this.updateGroans(dt);
     }
-    this.zombieRenderer.update(this.enemies.pool);
+    this.zombieRenderer.update(this.enemies.pool, player.position, this.drawDistance + this.cfg.zombies.lod.drawMargin, this.enemies.showTiers);
     this.mutantRenderer.update(this.enemies.pool, dt);
     this.pickupRenderer.update(dt, this.pickups.pool);
     this.viewModel.update(dt, this.weapons, player);
@@ -296,6 +297,12 @@ export class Combat {
     }
   }
 
+  // M6: zombie sprites past the draw distance aren't drawn (Game passes
+  // the quality preset's).
+  setDrawDistance(metres) {
+    this.drawDistance = metres;
+  }
+
   // Close zombies and pickups, for the torch's glare check.
   glareExtras(origin) {
     this.enemies.glareCircles(origin, this.cfg.zombies.glareRange, this.glareCircles);
@@ -306,10 +313,15 @@ export class Combat {
 
   addDebugItems(menu) {
     const d = this.cfg.debug;
-    menu.addItem(() => `Spawn ${this.cfg.zombies.spawnCount} zombies near me (active ${this.enemies.activeCount}/${this.cfg.zombies.poolSize})`, () =>
+    menu.addItem(() => `Spawn ${this.cfg.zombies.spawnCount} zombies near me (${this.enemies.activeCount} on the map)`, () =>
       this.enemies.spawnAround(this.player.position),
     );
     menu.addItem('Kill all zombies', () => this.enemies.clear());
+    // M6: the simulation tiers.
+    menu.addItem(`Zombies: populate the map (+${d.populateCount} on the pathways)`, () =>
+      this.enemies.populate(this.player.position, d.populateCount, this.cfg.zombies.lod.activeRadius),
+    );
+    menu.addItem(() => `Zombies: tier colours ${this.enemies.showTiers ? 'on' : 'off'}`, () => (this.enemies.showTiers = !this.enemies.showTiers));
     menu.addItem(() => `God mode: ${this.godMode ? 'on' : 'off'}`, () => (this.godMode = !this.godMode));
     menu.addItem(() => `Aim assist: ${this.cfg.aimAssist.enabled ? 'on' : 'off'}`, () =>
       (this.cfg.aimAssist.enabled = !this.cfg.aimAssist.enabled),

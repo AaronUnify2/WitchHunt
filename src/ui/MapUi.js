@@ -54,15 +54,17 @@ export class MapUi {
   // canToggle: false while the debug menu is open or the game isn't running.
   // sigils: drawn on both maps when given (debug only; normally the player
   // has to find them).
-  update(dt, input, player, enemies, canToggle, sigils = null) {
+  // tierColors (M6 debug): colour zombie dots by simulation tier and show
+  // them all, fog or not; null for the normal red dots.
+  update(dt, input, player, enemies, canToggle, sigils = null, tierColors = null) {
     if (canToggle && (input.wasPressed('map') || (this.screen.isOpen && input.wasPressed('menuBack')))) {
       this.screen.toggle();
       this.minimap.show(!this.screen.isOpen);
       this.bus.emit(this.screen.isOpen ? 'map:opened' : 'map:closed');
     }
     this.fog.update(player.position.x, player.position.z);
-    this.minimap.update(dt, player, enemies, sigils);
-    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils);
+    this.minimap.update(dt, player, enemies, sigils, tierColors);
+    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils, tierColors);
   }
 
   // ---- debug tools ----------------------------------------------------------
