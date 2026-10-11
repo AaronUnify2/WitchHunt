@@ -1,131 +1,132 @@
 # Handover
 
-## Just finished: Session 3, Gameplay Programmer, M2 (Combat feel)
+## Just finished: Session 4, Lead Engineer, M3 (The map)
 
-Aaron approved the M2 build plan before anything was built (rule 10), and made these calls:
+**Status: built and pushed; the performance gate (walking end to end on the tablet) is waiting on Aaron's play-test.** Session 5 starts once it passes.
 
-- **RB = next weapon, Y = previous**; **D-pad right = first aid**.
-- **Headshots: yes** ("×2 at least, open to ×3–4"); M2 uses ×3.
-- **Placeholder sounds: yes**, flagged everywhere as **to be upgraded** in the audio pass.
+Aaron's calls before building (rule 10 doesn't strictly apply to core systems, but these shape the game):
 
-DESIGN.md "Controls" is updated to match.
+- **Map size: 1 km wide by 1.4 km north to south.** "We'll see how it goes"; revisit after play-testing.
+- **Off the pathways: slowed, never blocked.** Undergrowth makes cutting through "something the player can choose to do, but it comes at a cost", especially when escaping zombies. No impassable walls.
+- **Gentle rolling ground:** yes ("I would be thrilled").
+- **Minimap and map screen:** simple but usable now; the final look is Session 19.
+- **Runs start at home on the cliff edge, by day.** Debug: skip to night, teleport to any clearing.
+- **Builds go to Aaron's tablet by pushing to `main`.**
+
+DESIGN.md "Map" is updated to match.
 
 ### What was built
 
-Details in `STATUS.md` ("M2: Combat feel"):
+Details in `STATUS.md` ("M3: The map"):
 
-- **Weapons:** shovel, service rifle and shotgun. Fire, aim down sights, reload, switch, recoil and muzzle flash.
-- **Hits:** hit-scan with head and body hit boxes; trees and rocks block shots.
-- **Aim:** light aim assist (controller only), and the slowdown while aiming or firing.
-- **The zombie:** one Doom-style billboard type, 8 angles × 11 frames from one procedural atlas. It walks in, swipes, staggers, falls, then lies as a corpse.
-- **Health and healing:** health, three armour bars, first aid kits with the healing queue.
-- **Feedback:** blood and dust particles, a placeholder HUD, placeholder sounds, the death screen with "try again".
-- **Debug tools:** spawn zombies, zombie speed level 1/5, god mode, give items, aim assist toggle, and a combat line on the overlay.
-- **Tests:** 113 pass.
-
-### M1 follow-ups from Aaron's 20-minute test (gate passed: 60 fps throughout)
-
-1. Dead trees have real bark detail up close.
-2. A wide, dim spill light round the torch beam, so the edges of the view aren't black.
-3. The torch now dims on rock tops: the "magnifying glass" spot. Aaron's screenshot never arrived, so please re-check on the tablet.
-
-### Aaron's M2 play-test on the tablet: passed
-
-- **"Fighting the zombies at night was fun... real lot of fun."** M2's "done when" is met.
-- **60 fps the entire time, even with 20+ zombies spawned at once.**
-- **B** always reloads and never leaves fullscreen (the M0 worry is closed).
-- The torch is enough to see by in a fight.
-- The dead trees look "much, much better", and the rock glare is gone.
-- **Fixes made after the test:** the stuck red hit marker (a HUD bookkeeping bug), and bullet **penetration** (Aaron: "carve through the mobs"): a rifle round goes through up to 4 zombies, shotgun pellets 2 (`config.weapons.*.pierce`).
-- **Fix made after the test:** by day the gun looked black. The view model's colours now follow the sky's light (`config.viewModel.lighting`), with real wood and steel colours.
-- **Fix made after the test:** the weapon in hand bobbed far too fast and vibrated at a sprint. It was tied to the head-bob cycle and doubled. It now sways at its own footstep pace (`config.viewModel.bob`). Confirmed on the tablet.
-
-**Aaron's second tablet test:** the weapon sway, the gun by day, the hit marker and penetration all confirmed working ("being able to shoot through the crowd was really enjoyable").
+- **Generation:** a seeded map of 22 clearings in north, middle and south bands.
+  - Home is against the cliff, with the campsite next to it. The hut is deep in the south, 5-11 pathways from home.
+  - The encounters and sigil grounds come from data files.
+  - Pathways are a spanning tree plus shortcut loops. They never cross, and north clearings are always a sensible walk from home.
+- **Ground:** rolling hills, levelled clearings, dirt pathways, rocks.
+- **The cliff:** a tall rock wall the width of the map, with trees on the plateau above it.
+- **Forest:** about 88,000 trees and 120,000 bushes across the map, in 48 m chunks.
+- **Undergrowth:** slows the player to 0.55× and zombies to 0.75× off the pathways.
+- **Distance culling:** for every map piece.
+- **Fog of war, minimap and map screen:** the minimap turns with you; D-pad up opens the map screen.
+- **Signposts:** one in every clearing, standing in for its encounter or sigil ground.
+- **Terrain-aware combat:** zombies, hit boxes, shots, blood and the torch's glare all follow the hills.
+- **Debug:** teleports, reveal map, whole-graph map view, new map / same map, skip to night. New overlay lines.
+- **Tests:** 168 pass (50 new).
 
 ### Unfinished
 
-Nothing in M2's scope. The sounds weren't commented on: worth a listen.
+- **The performance gate:** walking end to end on the tablet at the frame target (Aaron's play-test below).
+- Encounter placement hints (road edge, hillside, off-path) aren't honoured yet (OPEN_QUESTIONS #42).
 
-## Play-test script for Aaron (M2, as used)
+## Play-test script for Aaron (M3)
 
-**Setup:** open the live build on the tablet with the controller. The overlay is on. Hold **View + D-pad down** for the debug menu.
+**Setup:** open the live build on the tablet with the controller. The overlay is on (the `map` and `world` lines are new). You start at home by day, facing south. Hold **View + D-pad down** for the debug menu.
 
-1. **First fight:**
-   - Open the debug menu, pick **Spawn 5 zombies**, close it with B.
-   - Listen for groans and find them with the torch.
-   - Good: they read as figures in the beam, turn as they walk, and you can tell front from back.
-2. **Rifle (you start with it, RT):**
-   - Shoot one in the body three times, then another in the head.
-   - Good: hit markers, blood, a red flash on the zombie, and a stagger. A headshot (yellow marker) kills with one shot.
-   - B reloads. Firing on an empty magazine reloads too.
-3. **Aim (hold LT):**
-   - The view zooms and you slow down.
-   - Sweep the crosshair across a zombie.
-   - Good: the stick feels a little "sticky" over it, not grabby.
-   - Compare with **Aim assist: off** in the debug menu.
-4. **Shotgun (RB):**
-   - Let them get close, then fire.
-   - Good: a big kick; one close blast drops or nearly drops a zombie; distant shots are weak.
-5. **Shovel (RB again, or Y to go back):**
-   - Hold RT next to a zombie.
-   - Good: a swing you can see, a thunk, the zombie knocked back. Three hits kill.
-6. **Getting hurt:**
-   - Let one swipe you.
-   - Good: a red edge, a shake, a health segment gone.
-   - Back off during its wind-up and the swipe should miss.
-   - **D-pad right** uses a first aid kit: a green "+", and health climbs over 3 s.
-7. **Death:**
-   - Let them kill you, then press A to try again.
-8. **Fast zombies:**
-   - Pick **Zombie speed: level 5** and spawn 5 more.
-   - Good: one or two outrun you, so you have to stop, turn and shoot.
-9. **M1 checks:**
-   - Walk up to a dead tree (bark detail?).
-   - Look at the edges of the view with the torch on (better?).
-   - Aim the torch straight down onto a rock from close (no burning spot?).
-10. **Report:**
-    - fps during a fight.
-    - Whether B ever leaves fullscreen.
-    - What's not fun: too easy, too hard, too floaty, too sticky, too loud.
+1. **Look round home:**
+   - Turn round (north): the cliff wall, with trees on top.
+   - Read the "RANGER STATION" signpost.
+   - Good: the cliff reads as rock, not a flat wall.
+2. **Minimap:**
+   - Turn on the spot.
+   - Good: the minimap turns with you, the N on its rim always points north, and the patch round you is revealed.
+3. **The walk (the gate):**
+   - Press **D-pad up** for the map, then close it with **D-pad up** or **B**.
+   - Follow pathways south toward the hut. Choose pathways at junctions, and read the signposts as you pass clearings.
+   - Keep an eye on fps the whole way (it's top left).
+   - **Report:** fps on the pathways, at clearings, and at the worst moment. Also how long it took and whether you got lost.
+4. **Cut through the forest:**
+   - Leave a pathway and push through the trees.
+   - Good: you're clearly slowed (the overlay's `player` line shows "undergrowth"), and it's tempting to get back on the path.
+   - Is the slowdown too much, too little, or right?
+5. **The hills:**
+   - Good: gentle rises and dips, nothing steep or jittery, and your feet stay on the ground.
+6. **At night:**
+   - Debug menu: **Skip to night**.
+   - Walk a pathway with the torch, then **Spawn 5 zombies** and fight on a slope.
+   - Good: the zombies stand on the ground and your shots hit them uphill and downhill. Red dots appear on the minimap.
+7. **The map screen:**
+   - Debug menu: **Reveal whole map**, then open the map.
+   - Then switch to **Map screen: whole graph** to see every pathway.
+   - Good: names are readable, and the layout looks like a believable network of trails.
+8. **Same seed, same map:**
+   - Note the seed (overlay), then **Restart this map**.
+   - Good: the same map. **New map** gives a different one.
+9. **Size and feel:**
+   - Is 1 km × 1.4 km too big, too small or about right?
+   - Are the distances between clearings interesting or boring?
+10. **Report:** fps over the whole walk (and whether the tablet got warm), anything that looked wrong, and how the map feels.
 
-## Next: Session 4, Lead Engineer, M3 (The map)
+## Next: Session 5, AI Programmer, M4 (Sigils and zombies)
 
-**Goal:** seeded generation of 22 clearings in bands, the cliff, pathways, chunked forest, colliders, fog of war, minimap and map screen, and encounter placeholders from data. **Done when** a whole map generates the same from a seed, and walking end to end holds the frame target on the tablet (a performance gate).
+(After the M3 gate passes.)
+
+**Goal:** sigils, night spawning, five-sigil cap, levels 1-5, variants, speed variance, hordes, mutants, loot, digging, sigil grounds, the detection model and targeting. **Done when** raising the level by debug visibly changes the night.
 
 ### Look at first
 
-- `src/world/forestLayout.js`, `Forest.js`, `Terrain.js`: the M1 clearing that M3 replaces. Forest chunks already exist (`config.forest.chunkSize`).
-- `src/world/SpatialGrid.js`: static colliders.
-  - The player, zombies (`ai/EnemyManager.js`), shots (`combat/hitscan.js` `rayBlockers`) and torch glare all use it.
-  - New colliders should carry `r` (blocks movement and bullets), and optionally `vr` (what the torch glare sees) and `top` (a height, for rocks: shots pass over it).
-- `config.world.boundaryRadius`: both the player and zombies clamp to it. Replace it with the map's bounds.
-- `src/combat/Combat.js`: the combat hub. `EnemyManager.spawnAround()` is the spawn entry point. M4 (AI Programmer) owns spawning from sigils.
+- `src/world/World.js`: `world.map` and `world.ground`.
+  - `map.clearings` carry `kind` ('home', 'hut', 'encounter', 'sigilGround', 'wild'), `key`, `band`, `southness`, `clearingType`, `hopsFromHome`.
+  - `map.edges` and `map.paths` are the pathway graph.
+- `src/world/mapGraph.js`: `adjacency`, `hopCounts`, `graphDistance`, for "random walk along the pathway graph".
+- `src/world/GroundField.js`:
+  - `heightAt`, `undergrowthAt`, `openAt`, `clamp`.
+  - `rayDistance`, for line of sight over hills in the detection model.
+- `src/data/clearingTypes.json`: each type's zombie variant mix (`variants`).
+- `src/data/sigilGrounds.json`: the five sigil grounds; add more here.
+- `src/ai/EnemyManager.js`:
+  - It already sets each zombie's `y` (ground height) and `moveScale` (undergrowth) every frame.
+  - `spawnAround()` is the spawn entry point.
 
 ### Gotchas and decisions
 
-- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system.
-- **Draw calls:** about 48–57 at Medium in a fight (budget ~100). The zombie pool is one instanced draw plus one in the shadow pass; each in-hand weapon is one mesh.
-- **Lights:** the torch is the only shadow caster. Lights now present: torch, torch spill, muzzle flash (always in the scene, intensity only), moon/sun and ambient. DESIGN.md allows about 4 point lights. Never toggle a light's `visible` mid-game (it recompiles shaders): change its intensity.
-- **Dark albedos:** light colours blow out under the torch (rocks, zombies). Zombies use `albedoScale`.
-- **The in-hand weapon isn't lit by scene lights**: it reads the Sky's `ambient` and `light` each frame (passed to `Combat.init` as `lights`). If the sky or lighting changes (blood night, interiors), the gun follows automatically.
-- **The camera is in the scene** (`scene.add(player.camera)`), because the in-hand weapon hangs off it.
-- **The start tap never fires a weapon:** `Weapons.holdFire()` waits for the trigger to be released. Call it again if a future pause menu resumes with a click.
-- **Combat events:** `enemy:hit`, `enemy:killed`, `enemy:strike`, `weapon:fired`, `weapon:hit`, `weapon:impact`, `player:hurt`, `player:died`.
+- **Systems:** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')` per system. The map uses `rng.fork('world')`; anything that must match a seed should fork from the game's rng, never `Math.random()`.
+- **Draw calls:** 45-67 at night with the torch shadow, anywhere on the map (budget ~100).
+  - Forest chunks are one draw each (trees and bushes together).
+  - The ground is 128 m chunks; rocks are one instanced mesh per ground chunk.
+  - Signposts are one board each, drawn only when near.
+- **Anything with a height** (sigils, pickups, props) must stand at `ground.heightAt(x, z)`.
+- **Anything a shot or the torch should hit** goes in the collider grid with `r` (blocks movement and shots), optional `vr` (torch glare), `base` and `top` (absolute heights).
+- **Rays over the terrain:** `hitscan.rayBlockers` and `collision.nearestHit` take a `ground` argument. Pure tests use flat ground by default.
+- **Culling:** use `ChunkCuller` for anything placed across the map, so only nearby pieces draw.
+- **The map screen and the debug menu** both stop the action while open (the clock runs on).
+- **The fog of war** has `reveal(x, z, radius)` for the lookout tower (M5) and `toBytes()` / `fromBytes()` for saves (M6).
+- **Start time:** runs start by day at home (`config.clock.startPhase`), so use **Skip to night** to test spawning.
 - **Vite `base`** is `/WitchHunt/`: never hard-code `/assets/...` paths.
 
 ### Open questions for Aaron
 
-These are in `OPEN_QUESTIONS.md` #22–33. The main ones:
+These are in `OPEN_QUESTIONS.md` #35-50. The main ones:
 
-- Is ×3 the right headshot multiplier?
-- How hard should zombies hit (10 per swipe, 0.5 s wind-up)?
-- Starting ammo (rifle 5 + 10, shotgun 4 + 12).
-- How strong should aim assist be?
+- Is the undergrowth slowdown right (you 0.55×, zombies 0.75×)?
+- What's at the east, west and south edges? (An invisible line in dense forest for now.)
+- Should the map screen pause the game, or stay live?
+- Plain clearings (about 3 a run) hold nothing: should they?
 
-## Session kickoff prompt for Session 4
+## Session kickoff prompt for Session 5
 
 ```
-You are the Lead Engineer on Witch Hunt, Session 4.
+You are the AI Programmer on Witch Hunt, Session 5.
 Read docs/DESIGN.md (especially "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
 Then confirm your role, this session's goal and any questions before starting.
 Follow the handover protocol, and end with the HANDOVER READY signal.

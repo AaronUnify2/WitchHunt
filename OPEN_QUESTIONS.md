@@ -2,6 +2,27 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 4 (M3, Lead Engineer)
+
+| # | Question | What M3 does now | Where to change it |
+| --- | --- | --- | --- |
+| 35 | How big is the map? | **Decided with Aaron:** 1 km wide, 1.4 km north to south ("we'll see how it goes"). About 5 minutes' walk from home to the hut, 2 between neighbouring clearings. | `config.map.width`, `depth` |
+| 36 | Off-path forest: slow or blocked? | **Decided with Aaron:** never blocked ("I like to give the option"). Undergrowth everywhere off the pathways slows you to 0.55× (walk 2.5 m/s, sprint 4.0). Zombies push through at 0.75× (my pick), so cutting through while chased costs you. | `config.player.undergrowthMultiplier`, `config.zombies.undergrowthMultiplier` |
+| 37 | What's at the east, west and south edges? (The doc only describes the cliff.) | An invisible line 60 m inside dense forest; the forest carries on beyond it and the fog hides the rest. Could become a river, a ravine, a fence or more cliff. | `config.map.edgeMargin` |
+| 38 | Flat or rolling ground? | **Decided with Aaron:** gentle rolling hills ("I would be thrilled"): about ±5 m, levelled in clearings, smoothed along pathways. | `config.terrain.octaves` |
+| 39 | Does the map screen pause the game? | It stops movement, firing and zombies like the debug menu, but the clock keeps running. A live map (zombies keep coming) is the scarier option. | `src/core/Game.js` `update()` |
+| 40 | Minimap orientation. | Turns with you (the way you face is up) with an N marker on the rim; the full map is north up. | `src/ui/Minimap.js` |
+| 41 | What do you see on the map? | Revealed terrain and pathways; a marker on every clearing whose centre you've seen; names on the full map (not for plain clearings); living zombies in revealed areas. Reveal radius 45 m. | `config.fogOfWar.revealRadius` |
+| 42 | Encounter placement hints. | Not yet honoured: gas station "on a road edge" (there are no roads), mineshaft "hillside edge", stairs "off-path", Bigfoot cave "rocky clearing or path edge", crashed plane "off a pathway". Each sits anywhere in its band for now. The encounter sessions (M9-M11) can add rules. | `src/world/MapGenerator.js` `candidate()` |
+| 43 | The outpost "2-3 paths from home". | A soft rule: if it lands elsewhere, it swaps places with a north clearing that is 2-3 pathways from home. If none fits, it stays and the map records a warning (none in 200 seeds tried). | `data/encounters.json` `hopsFromHome` |
+| 44 | Plain clearings. | Home, the hut, the encounters (7-15 a run, about 12 typically) and sigil grounds (4-6) usually leave about 3 of the 22 clearings with nothing in them: they're plain clearings with just a type (bog, graveyard, etc.). Should they hold something (loot, a car, a trail camera)? | `data/encounters.json`, `config.map.clearingCount` |
+| 45 | The hut "many edges away". | At least 4 pathways from home (5-11 in practice). | `config.map.hut.minHops` |
+| 46 | Loops in the pathway graph. | Shortcuts are added (shortest first, 80% chance each) where walking round would be 1.8× longer; every north clearing is at most 2.5× its straight-line distance from home by pathway. | `config.map.edges` |
+| 47 | Where does a run start? | Day 1 at 07:00, at home, facing south (Aaron). Supersedes #18's night start. M9 sets the real opening. | `config.clock.startPhase`, `World.spawn` |
+| 48 | The Caller. | A radio event, not a place: rolled 0-2 per run and stored in `map.radioEvents` for M10. | `data/encounters.json` |
+| 49 | Cliff height and look. | 26 m ± 8 m; trees on the plateau above for a skyline. The player can't see over it. | `config.map.cliff` |
+| 50 | Clearing type look. | Types tint the map and name the signpost; their real look (bog fog, graveyard stones, cars) is for the encounter and style sessions. | `data/clearingTypes.json` |
+
 ## Session 3 (M2, Gameplay Programmer)
 
 | # | Question | What M2 does now | Where to change it |
@@ -28,7 +49,7 @@ Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, ma
 | 15 | Should sprint be hold or toggle? | Controller: click L3 once and you sprint until you stop moving or run out of stamina (common console behaviour). Keyboard: hold Shift. | `src/player/Player.js` `updateStance()` |
 | 16 | Should jump work while crouched? | Pressing jump while crouched stands you up instead of jumping. Sprinting also stands you up. | `src/player/Player.js` |
 | 17 | Head bob: wanted, and how much? | A subtle 3.5 cm bob that scales with speed. Set `amplitude: 0` to turn it off. | `config.player.headBob` |
-| 18 | Where should a run start on the clock? | M1 starts at the beginning of night so the torch test needs no skipping. M9 sets the real start (#3). | `config.clock.startPhase` |
+| 18 | Where should a run start on the clock? | **Changed in M3** (#47): runs start by day at home. M1 started at night so the torch test needed no skipping. M9 sets the real start (#3). | `config.clock.startPhase` |
 | 19 | Quality defaults for the tablet. | **Medium** by default: render scale 0.45–0.75 (dynamic), 80 m draw distance, torch shadow on at 512 px, post-processing and bloom on, no frame cap. **Low** turns off shadow and post and caps at 30 fps. Pick live from the debug menu. | `config.quality` |
 | 20 | Frame cap on a 90 Hz screen. | No cap by default (the game runs at the display's 90 Hz when it can; dynamic resolution only aims for 60). A 60 cap on a 90 Hz screen would drop every third frame and judder, so try it from the debug menu before making it the default. | `config.quality.presets.*.frameCap` |
 | 21 | The retro pixel filter, ground mist, height fog and particles (Quality settings and "Visual ambition" in DESIGN.md). | Not built in M1 (M1's scope is the renderer, sky, fog, torch, forest and movement). Belong in the style passes (M13 / session 10). | n/a |

@@ -7,14 +7,15 @@
 // { zombie }, 'enemy:strike' { zombie, damage }, 'enemy:spawned' { count }.
 
 import { Zombie, rollSpeed } from './Zombie.js';
-import { resolveCircles, clampToRadius } from '../world/collision.js';
+import { resolveCircles } from '../world/collision.js';
 
 export class EnemyManager {
-  constructor(zombieConfig, rng, bus, boundaryRadius) {
+  // ground: the GroundField (heights, undergrowth, the map's bounds).
+  constructor(zombieConfig, rng, bus, ground) {
     this.cfg = zombieConfig;
     this.rng = rng;
     this.bus = bus;
-    this.boundaryRadius = boundaryRadius;
+    this.ground = ground;
   }
 
   init(colliders) {
@@ -38,10 +39,11 @@ export class EnemyManager {
       const angle = this.rng.range(0, Math.PI * 2);
       const dist = this.rng.range(c.spawnDistanceMin, c.spawnDistanceMax);
       const pos = { x: center.x + Math.sin(angle) * dist, z: center.z + Math.cos(angle) * dist };
-      clampToRadius(pos, this.boundaryRadius);
+      this.ground.clamp(pos);
       resolveCircles(pos, c.radius, this.colliders.query(pos.x, pos.z, c.radius, this.nearby));
       const facing = Math.atan2(center.x - pos.x, center.z - pos.z);
       z.spawn(pos.x, pos.z, facing, rollSpeed(level, c.sprintSpeed, c.speedSkew, this.rng));
+      z.y = this.ground.heightAt(z.x, z.z);
       spawned++;
     }
     if (spawned > 0) this.bus.emit('enemy:spawned', { count: spawned });
@@ -63,13 +65,16 @@ export class EnemyManager {
     this.living.length = 0;
     for (const z of this.pool) {
       if (!z.active) continue;
+      z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
       z.update(dt, target, this.onStrike);
-      if (!z.alive) continue;
-      resolveCircles(z, c.radius, this.colliders.query(z.x, z.z, c.radius, this.nearby));
-      clampToRadius(z, this.boundaryRadius);
-      this.living.push(z);
+      if (z.alive) {
+        resolveCircles(z, c.radius, this.colliders.query(z.x, z.z, c.radius, this.nearby));
+        this.ground.clamp(z);
+        this.living.push(z);
+      }
     }
     this.separate();
+    for (const z of this.pool) if (z.active) z.y = this.ground.heightAt(z.x, z.z);
   }
 
   // Push overlapping zombies apart (a pool of 25, so pairwise is cheap).
@@ -111,6 +116,8 @@ export class EnemyManager {
       if (Math.hypot(z.x - origin.x, z.z - origin.z) > range) continue;
       z.glareCircle.x = z.x;
       z.glareCircle.z = z.z;
+      z.glareCircle.base = z.y;
+      z.glareCircle.top = z.y + z.height;
       out.push(z.glareCircle);
     }
     return out;

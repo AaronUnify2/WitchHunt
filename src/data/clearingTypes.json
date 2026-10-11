@@ -1,0 +1,10 @@
+{
+  "_note": "Clearing types (DESIGN.md \"Clearing types\"): each sets a clearing's look and the zombie variant mix of sigils planted there (variant mix used from M4). weight: how often it's picked for a clearing without a fixed type. mapColor: tint on the map screen.",
+  "types": [
+    { "id": "bog", "name": "Bog", "weight": 1, "feel": "Low fog, soft ground", "variants": { "citizen": 0.7, "police": 0.15, "army": 0.15 }, "mapColor": "#7d8a5e" },
+    { "id": "graveyard", "name": "Graveyard", "weight": 1, "feel": "Old stones, mounds", "variants": { "citizen": 0.7, "police": 0.15, "army": 0.15 }, "mapColor": "#9a9480" },
+    { "id": "roadside", "name": "Roadside", "weight": 1, "feel": "Abandoned cars, roadblock", "variants": { "citizen": 0.25, "police": 0.6, "army": 0.15 }, "mapColor": "#a08c6a" },
+    { "id": "checkpoint", "name": "Checkpoint", "weight": 1, "feel": "Sandbags, wrecked jeeps", "variants": { "citizen": 0.2, "police": 0.2, "army": 0.6 }, "mapColor": "#8a8a64" },
+    { "id": "standingStones", "name": "Standing stones", "weight": 1, "feel": "Open, ritual feel", "variants": { "citizen": 0.34, "police": 0.33, "army": 0.33 }, "mapColor": "#a49a84" }
+  ]
+}

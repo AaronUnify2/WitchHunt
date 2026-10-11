@@ -161,9 +161,10 @@ A dense forest stored as a graph: **clearings** are nodes, **pathways** are edge
 
 - **North to south.** The player always starts on the northern edge; the witch's hut is always deep in the south. The run is a push south.
 - **Northern cliff.** A tall cliff runs along the north edge. Nothing comes from the north and the player can't go north.
-- **22 clearings** (config): home, the witch's hut, one per encounter and one per sigil ground. The map is big on purpose. Clearings and encounters are **data-driven**, so more can be added later without code changes.
+- **22 clearings** (config): home, the witch's hut, one per encounter and one per sigil ground. The map is big on purpose: **1 km wide by 1.4 km north to south** (decided with Aaron in M3, to revisit after play-testing). Clearings and encounters are **data-driven**, so more can be added later without code changes.
 - **Danger gradient.** Each clearing has a band (north, middle, south) and a 0–1 "southness" value that scales enemy strength, trap danger and how strange the encounters get.
-- **Pathways** are walkable corridors through thick forest. Off-path forest is slow or blocked, so movement mostly follows the graph.
+- **Pathways** are walkable corridors through thick forest. Off-path forest is full of undergrowth that slows the player (and, less, zombies), so movement mostly follows the graph. Decided with Aaron in M3: it never blocks, so cutting through is a choice with a cost.
+- **Ground:** gentle rolling hills, levelled in clearings (decided with Aaron in M3).
 
 ### Generation
 
@@ -185,7 +186,7 @@ Each clearing has a type that sets its look and its zombie variant mix (sigils p
 
 ### The map screen and fog of war
 
-- A round minimap on the HUD and a full-screen map (D-pad up).
+- A round minimap on the HUD (it turns with the player, with a north marker) and a full-screen map (D-pad up), north up.
 - The map starts hidden. Areas are revealed only by visiting them (reveal radius), or from the station's lookout tower.
 - Revealed areas show live enemy positions, including enemies in the abstract simulation tier. Unrevealed areas show nothing, even if the witch is there.
 - Seen things are marked: home, sigils, vehicles, encounters, traps, trail cameras, the hut.

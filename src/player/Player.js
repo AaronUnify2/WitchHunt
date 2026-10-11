@@ -1,7 +1,9 @@
 // First-person player: look, walk, sprint (stamina), toggle crouch, jump,
 // collision against trunks and rocks, and a subtle head bob. Owns the
 // main camera. Movement speed carries over from the M0 test camera,
-// whose feel was signed off on the tablet.
+// whose feel was signed off on the tablet. Walks on the map's rolling
+// ground, is slowed by undergrowth off the pathways, and stays inside the
+// map (the cliff to the north, dense forest at the other edges).
 //
 // Combat hooks (set by Weapons each frame): moveMultiplier (aim and fire
 // slowdown), lookScale (aim assist, controller only), fovMultiplier
@@ -9,18 +11,20 @@
 
 import * as THREE from 'three';
 import { Stamina } from './Stamina.js';
-import { resolveCircles, clampToRadius } from '../world/collision.js';
+import { resolveCircles } from '../world/collision.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const TWO_PI = Math.PI * 2;
 
 export class Player {
-  constructor(playerConfig, renderConfig, feedbackConfig, colliders, boundaryRadius) {
+  // ground: the GroundField (heightAt, undergrowthAt, clamp).
+  constructor(playerConfig, renderConfig, feedbackConfig, colliders, ground) {
     this.cfg = playerConfig;
     this.renderCfg = renderConfig;
     this.fbCfg = feedbackConfig;
     this.colliders = colliders;
-    this.boundaryRadius = boundaryRadius;
+    this.ground = ground;
+    this.spawn = { x: 0, z: 0, yaw: playerConfig.startYaw * DEG_TO_RAD };
   }
 
   init() {
@@ -35,12 +39,17 @@ export class Player {
     this.reset();
   }
 
+  // Where reset() puts the player (home, on the real map). yaw in radians.
+  setSpawn(x, z, yaw = this.spawn.yaw) {
+    this.spawn = { x, z, yaw };
+  }
+
   // Back to the start: position, facing, stance, stamina, combat hooks.
   reset() {
     const c = this.cfg;
-    this.yaw = c.startYaw * DEG_TO_RAD;
+    this.teleport(this.spawn.x, this.spawn.z, this.spawn.yaw);
     this.pitch = 0;
-    this.position.set(c.startPosition.x, 0, c.startPosition.z);
+    this.undergrowth = 0;
     this.velocity.x = 0;
     this.velocity.z = 0;
     this.verticalSpeed = 0;
@@ -59,6 +68,19 @@ export class Player {
     this.shakeAmount = 0;
     this.shakeTime = 0;
     this.applyCamera();
+  }
+
+  // Jump straight to (x, z) on the ground, optionally facing yaw (radians).
+  teleport(x, z, yaw = this.yaw) {
+    this.position.set(x, 0, z);
+    this.ground.clamp(this.position);
+    this.position.y = this.ground.heightAt(this.position.x, this.position.z);
+    this.yaw = yaw;
+    this.velocity.x = 0;
+    this.velocity.z = 0;
+    this.verticalSpeed = 0;
+    this.onGround = true;
+    if (this.camera) this.applyCamera();
   }
 
   update(dt, input) {
@@ -133,6 +155,9 @@ export class Player {
     let speed = c.walkSpeed * this.moveMultiplier;
     if (this.sprinting) speed *= c.sprintMultiplier;
     else if (this.crouched) speed *= c.crouchMultiplier;
+    // Undergrowth off the pathways slows every pace.
+    this.undergrowth = this.ground.undergrowthAt(this.position.x, this.position.z);
+    speed *= 1 + (c.undergrowthMultiplier - 1) * this.undergrowth;
 
     // Stick direction relative to where the player faces, flat on the ground.
     const sin = Math.sin(this.yaw);
@@ -149,7 +174,7 @@ export class Player {
     p.x += this.velocity.x * dt;
     p.z += this.velocity.z * dt;
     resolveCircles(p, c.radius, this.colliders.query(p.x, p.z, c.radius, this.nearby));
-    clampToRadius(p, this.boundaryRadius);
+    this.ground.clamp(p);
   }
 
   updateVertical(dt, input) {
@@ -161,14 +186,17 @@ export class Player {
         this.onGround = false;
       }
     }
+    const floor = this.ground.heightAt(this.position.x, this.position.z);
     if (!this.onGround) {
       this.verticalSpeed -= c.gravity * dt;
       this.position.y += this.verticalSpeed * dt;
-      if (this.position.y <= 0) {
-        this.position.y = 0;
+      if (this.position.y <= floor) {
+        this.position.y = floor;
         this.verticalSpeed = 0;
         this.onGround = true;
       }
+    } else {
+      this.position.y = floor; // walk over the hills
     }
   }
 

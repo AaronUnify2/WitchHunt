@@ -12,7 +12,9 @@ export class CombatFx {
     this.rng = rng;
   }
 
-  init(scene) {
+  // ground: anything with heightAt(x, z); particles die when they reach it.
+  init(scene, ground) {
+    this.ground = ground ?? { heightAt: () => 0 };
     const b = this.cfg.blood;
     const n = b.poolSize;
     this.positions = new Float32Array(n * 3);
@@ -97,7 +99,7 @@ export class CombatFx {
       if (this.life[i] <= 0) continue;
       this.life[i] -= dt;
       const j = i * 3;
-      if (this.life[i] <= 0 || this.positions[j + 1] < 0) {
+      if (this.life[i] <= 0 || this.positions[j + 1] < this.ground.heightAt(this.positions[j], this.positions[j + 2])) {
         this.life[i] = 0;
         this.positions[j + 1] = -1000;
         continue;

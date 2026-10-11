@@ -1,0 +1,10 @@
+{
+  "_note": "Sigil grounds (DESIGN.md \"Sigil grounds\"): eerie clearings the witch favours for planting. The generator picks config.map.sigilGrounds.min-max of them, without repeats, banded by config.map.sigilGrounds.bandWeights (denser to the south). They never attack the player. More can be added here without code changes.",
+  "grounds": [
+    { "id": "scarecrowField", "name": "Scarecrow field" },
+    { "id": "familyCemetery", "name": "Family cemetery" },
+    { "id": "stickFigureGrove", "name": "Stick-figure grove" },
+    { "id": "hangingOak", "name": "Hanging oak" },
+    { "id": "abandonedCircus", "name": "Abandoned circus" }
+  ]
+}

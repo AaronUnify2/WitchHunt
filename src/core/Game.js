@@ -15,8 +15,7 @@ import { shortPadName } from './GamepadInput.js';
 import { Renderer } from '../render/Renderer.js';
 import { DynamicResolution } from '../render/DynamicResolution.js';
 import { Sky } from '../render/Sky.js';
-import { Forest } from '../render/Forest.js';
-import { Terrain } from '../world/Terrain.js';
+import { World } from '../world/World.js';
 import { SpatialGrid } from '../world/SpatialGrid.js';
 import { Player } from '../player/Player.js';
 import { Flashlight } from '../player/Flashlight.js';
@@ -25,6 +24,7 @@ import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
+import { MapUi } from '../ui/MapUi.js';
 
 const MS_PER_SECOND = 1000;
 
@@ -59,8 +59,13 @@ export class Game {
     const cfg = this.cfg;
     this.scene = new THREE.Scene();
     this.colliders = new SpatialGrid(cfg.world.colliderCellSize);
+    this.world = new World(cfg, this.rng.fork('world'), this.seed);
+    this.world.init(this.scene, this.colliders);
+    const ground = this.world.ground;
 
-    this.player = new Player(cfg.player, cfg.render, cfg.feedback, this.colliders, cfg.world.boundaryRadius);
+    this.player = new Player(cfg.player, cfg.render, cfg.feedback, this.colliders, ground);
+    const spawn = this.world.spawn;
+    this.player.setSpawn(spawn.x, spawn.z, spawn.yaw);
     this.player.init();
     this.renderer = new Renderer(cfg.render, cfg.postFX, this.bus);
     this.renderer.init(root, this.scene, this.player.camera);
@@ -70,18 +75,16 @@ export class Game {
 
     this.sky = new Sky(cfg.sky, cfg.fog, cfg.clock, this.rng.fork('sky'));
     this.sky.init(this.scene);
-    this.terrain = new Terrain(cfg.terrain, this.rng.fork('terrain'));
-    this.terrain.init(this.scene, this.colliders);
-    this.forest = new Forest(cfg.forest, this.rng.fork('forest'));
-    this.forest.init(this.scene, this.colliders);
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
-    this.flashlight.init(this.scene, this.colliders);
+    this.flashlight.init(this.scene, this.colliders, ground);
     this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);
-    this.combat.init(root, this.scene, this.player, this.colliders, { sky: this.sky, flashlight: this.flashlight });
+    this.combat.init(root, this.scene, this.player, this.colliders, { sky: this.sky, flashlight: this.flashlight }, ground);
   }
 
   initUi(root) {
     const cfg = this.cfg;
+    this.mapUi = new MapUi(cfg, this.world, this.bus);
+    this.mapUi.init(root);
     this.toast = new Toast(cfg.ui);
     this.toast.init(root);
     this.overlay = new DebugOverlay(cfg.debug, this);
@@ -102,12 +105,22 @@ export class Game {
     });
     this.overlay.addStat('player', () => {
       const p = this.player;
-      return `${p.stance}  ${p.speed.toFixed(1)} m/s  stamina ${Math.round(p.stamina.value)}  at ${p.position.x.toFixed(1)}, ${p.position.z.toFixed(1)}`;
+      const brush = p.undergrowth > 0.05 ? `  undergrowth ${Math.round(p.undergrowth * 100)}%` : '';
+      return `${p.stance}  ${p.speed.toFixed(1)} m/s  stamina ${Math.round(p.stamina.value)}  at ${p.position.x.toFixed(0)}, ${p.position.z.toFixed(0)}  height ${p.position.y.toFixed(1)}${brush}`;
+    });
+    this.overlay.addStat('map', () => {
+      const p = this.player.position;
+      const w = this.world;
+      const { clearing, distance } = w.nearestClearing(p.x, p.z);
+      const where = distance <= clearing.radius ? `in ${w.clearingName(clearing)}` : `${Math.round(distance)}m from ${w.clearingName(clearing)}`;
+      return `${where} (${clearing.band}, south ${clearing.southness.toFixed(2)})  ${w.map.clearings.length} clearings ${w.map.edges.length} paths  ${this.mapUi.overlayLine()}`;
     });
     this.overlay.addStat('world', () => {
       const f = this.flashlight;
+      const w = this.world;
       const torch = f.on ? `on ${Math.round(f.glareFactor * 100)}% (surface ${f.surfaceDistance.toFixed(1)}m)` : 'off';
-      return `${this.forest.treeCount} trees  flashlight ${torch}`;
+      const k = (n) => `${Math.round(n / 1000)}k`;
+      return `${k(w.forest.treeCount)} trees ${k(w.forest.bushCount)} bushes (${w.forest.visibleChunks} chunks drawn)  built ${Math.round(w.buildMs)}ms  torch ${torch}`;
     });
     this.overlay.addStat('combat', () => this.combat.overlayLine());
   }
@@ -116,8 +129,10 @@ export class Game {
     const menu = this.debugMenu;
     const cfg = this.cfg;
     menu.addItem('Toggle debug overlay', () => this.overlay.toggle());
+    this.addMapDebugItems(menu);
     this.combat.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
+    menu.addItem('Skip to night', () => this.skipToPhase('night'));
     menu.addItem(
       () => `Time speed: x${this.clock.timeScale}`,
       () => this.clock.setTimeScale(nextInList(cfg.clock.timeScaleSteps, this.clock.timeScale)),
@@ -137,6 +152,36 @@ export class Game {
     menu.addItem('Close menu', () => menu.close());
   }
 
+  // Teleports, the map screen's debug view, and new or repeated seeds.
+  addMapDebugItems(menu) {
+    const clearings = this.world.map.clearings;
+    this.teleportIndex = 0;
+    const label = () => {
+      const c = clearings[this.teleportIndex];
+      return `Teleport: next clearing (${this.teleportIndex + 1}/${clearings.length} ${this.world.clearingName(c)})`;
+    };
+    menu.addItem(label, () => {
+      this.teleportIndex = (this.teleportIndex + 1) % clearings.length;
+      this.teleportTo(clearings[this.teleportIndex]);
+    });
+    menu.addItem('Teleport: home', () => this.teleportTo(this.world.home));
+    menu.addItem("Teleport: witch's hut", () => this.teleportTo(this.world.hut));
+    this.mapUi.addDebugItems(menu);
+    menu.addItem(() => `New map (seed now ${this.seed})`, () => reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax)));
+    menu.addItem('Restart this map (same seed)', () => reloadWithSeed(this.seed));
+  }
+
+  // Land a few metres from a clearing's centre, facing it.
+  teleportTo(clearing) {
+    const off = this.cfg.debug.teleportOffset;
+    this.player.teleport(clearing.x, clearing.z + off, 0);
+    this.toast.show(`Teleported to ${this.world.clearingName(clearing)}`);
+  }
+
+  skipToPhase(name) {
+    for (let i = 0; i < this.cfg.clock.phases.length && this.clock.phase !== name; i++) this.clock.skipPhase();
+  }
+
   // Apply a quality preset to every system it touches.
   applyQuality(name) {
     const q = this.cfg.quality.presets[name];
@@ -151,7 +196,7 @@ export class Game {
     this.renderer.setPostFX(q.postFX, q.bloom);
     this.drawDistance = q.drawDistance;
     this.sky.setDrawDistance(q.drawDistance);
-    this.forest.setDrawDistance(q.drawDistance);
+    this.world.setDrawDistance(q.drawDistance);
     this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
     this.setFrameCap(q.frameCap);
@@ -201,6 +246,7 @@ export class Game {
     if (hasFinePointer()) this.input.requestPointerLock();
     this.display.enter();
     this.combat.start();
+    this.mapUi.start();
     const firstStart = this.state === 'boot';
     this.state = 'running';
     if (firstStart) this.bus.emit('game:started', { seed: this.seed });
@@ -236,15 +282,18 @@ export class Game {
     if (this.input.wasPressed('debugOverlay')) this.overlay.toggle();
     if (this.input.wasPressed('debugMenu')) this.debugMenu.toggle();
 
-    const playing = this.state === 'running' && !this.debugMenu.isOpen;
-    if (this.state === 'running') this.clock.update(dt);
+    const running = this.state === 'running';
+    // The debug menu and the map screen stop the action (the clock runs on).
+    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
+    if (running) this.clock.update(dt);
     if (playing && this.combat.alive) this.player.update(dt, this.input);
     this.combat.update(dt, this.input, playing);
     if (playing) {
       this.flashlight.update(dt, this.input, this.player.camera, this.combat.glareExtras(this.player.position));
     }
+    this.mapUi.update(dt, this.input, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
-    this.forest.update(dt, this.player.camera.position);
+    this.world.update(dt, this.player.camera.position);
 
     this.debugMenu.update(dt);
     this.toast.update(dt);
@@ -264,10 +313,10 @@ export class Game {
     this.debugMenu.dispose();
     this.overlay.dispose();
     this.toast.dispose();
+    this.mapUi.dispose();
     this.combat.dispose();
     this.flashlight.dispose();
-    this.forest.dispose();
-    this.terrain.dispose();
+    this.world.dispose();
     this.sky.dispose();
     this.dynamicResolution.dispose();
     this.player.dispose();
@@ -288,6 +337,13 @@ function resolveSeed(rngConfig) {
   if (raw === null || raw === '') return Math.floor(Math.random() * rngConfig.randomSeedMax);
   const asNumber = Number(raw);
   return Number.isFinite(asNumber) ? asNumber : String(raw);
+}
+
+// Reload the page on a given map seed (debug).
+function reloadWithSeed(seed) {
+  const url = new URL(window.location.href);
+  url.searchParams.set(defaultConfig.rng.seedUrlParam, seed);
+  window.location.href = url.toString();
 }
 
 // The item after `current` in `list`, wrapping round.

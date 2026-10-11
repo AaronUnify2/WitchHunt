@@ -27,7 +27,9 @@ export class Weapons {
     this.bus = bus;
   }
 
-  init(player, enemies, colliders) {
+  // ground: the GroundField (shots stop where they hit the terrain).
+  init(player, enemies, colliders, ground) {
+    this.ground = ground;
     this.player = player;
     this.enemies = enemies;
     this.colliders = colliders;
@@ -174,7 +176,7 @@ export class Weapons {
 
     for (let i = 0; i < w.pellets; i++) {
       const dir = spreadDirection(this.forward, this.right, this.up, spread, this.rng, this.dir);
-      const blocked = rayBlockers(eye, dir, this.blockers, w.range);
+      const blocked = rayBlockers(eye, dir, this.blockers, w.range, this.ground);
       const count = rayEnemiesAll(eye, dir, living, blocked, this.rayHits);
       if (count === 0) {
         if (blocked < check) {
@@ -243,12 +245,12 @@ export class Weapons {
       const body = targets[n++];
       body.x = z.x;
       body.z = z.z;
-      body.y = z.headBottom * 0.55;
+      body.y = z.y + z.headBottom * 0.55;
       body.r = z.hitRadius;
       const head = targets[n++];
       head.x = z.x;
       head.z = z.z;
-      head.y = (z.headBottom + z.height) / 2;
+      head.y = z.y + (z.headBottom + z.height) / 2;
       head.r = z.headRadius;
     }
     this.player.lookScale = aimSlowdown(this.eye, this.forward, targets, this.aiming ? this.assistCfgAiming : this.assistCfg, n);

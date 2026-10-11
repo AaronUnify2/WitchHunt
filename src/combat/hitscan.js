@@ -1,6 +1,11 @@
 // Hit-scan and melee maths (pure). Bullets are instant rays; enemies are
-// an upright body cylinder with a narrower head cylinder on top; trees
-// and rocks block shots with their trunk or rock body.
+// an upright body cylinder with a narrower head cylinder on top, standing
+// at their ground height `y`; trees and rocks block shots with their
+// trunk or rock body, and the ground stops shots aimed into it.
+
+import { FLAT_GROUND } from '../world/collision.js';
+
+const GROUND_STEP = 1; // metres per step when marching a shot over the terrain
 
 // Distance along a ray (origin + t * dir, dir a unit vector) to an
 // upright cylinder at (cx, cz) between heights y0 and y1, or Infinity.
@@ -38,28 +43,30 @@ export function rayCylinder(origin, dir, cx, cz, r, y0, y1) {
   return Math.max(tEnter, 0);
 }
 
-// Nearest blocking static collider (tree trunk, rock) along the ray, or
-// Infinity. Uses the solid radius `r`, not a tree's canopy.
-export function rayBlockers(origin, dir, blockers, maxDistance) {
+// Distance to the nearest blocking static collider (tree trunk, rock) or
+// the ground along the ray, or maxDistance. Uses the solid radius `r`,
+// not a tree's canopy; a collider runs from `base` (or unbounded below)
+// to `top` (or unbounded above). ground: anything with rayDistance().
+export function rayBlockers(origin, dir, blockers, maxDistance, ground = FLAT_GROUND) {
   let best = maxDistance;
   for (const b of blockers) {
-    const t = rayCylinder(origin, dir, b.x, b.z, b.r, 0, b.top ?? Infinity);
+    const t = rayCylinder(origin, dir, b.x, b.z, b.r, b.base ?? -Infinity, b.top ?? Infinity);
     if (t < best) best = t;
   }
-  // The ground stops shots aimed downward.
-  if (dir.y < 0) best = Math.min(best, origin.y / -dir.y);
-  return best;
+  return Math.min(best, ground.rayDistance(origin, dir, best, GROUND_STEP));
 }
 
-// Which enemy a ray hits first, and where. enemies: [{ x, z, hitRadius,
-// height, headBottom, headRadius }]. Returns { enemy, distance, part }
-// ('head' or 'body') or null if nothing is hit before maxDistance.
+// Which enemy a ray hits first, and where. enemies: [{ x, y, z, hitRadius,
+// height, headBottom, headRadius }] (y = the ground they stand on, 0 if
+// missing). Returns { enemy, distance, part } ('head' or 'body') or null
+// if nothing is hit before maxDistance.
 export function rayEnemies(origin, dir, enemies, maxDistance) {
   let best = null;
   let bestT = maxDistance;
   for (const e of enemies) {
-    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, 0, e.headBottom);
-    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, e.headBottom, e.height);
+    const y = e.y ?? 0;
+    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, y, y + e.headBottom);
+    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, y + e.headBottom, y + e.height);
     if (tHead < bestT && tHead <= tBody) {
       bestT = tHead;
       best = { enemy: e, distance: tHead, part: 'head' };
@@ -77,8 +84,9 @@ export function rayEnemies(origin, dir, enemies, maxDistance) {
 export function rayEnemiesAll(origin, dir, enemies, maxDistance, out) {
   let n = 0;
   for (const e of enemies) {
-    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, 0, e.headBottom);
-    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, e.headBottom, e.height);
+    const y = e.y ?? 0;
+    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, y, y + e.headBottom);
+    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, y + e.headBottom, y + e.height);
     const head = tHead <= tBody;
     const t = head ? tHead : tBody;
     if (t >= maxDistance) continue;

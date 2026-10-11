@@ -118,3 +118,27 @@ describe('rayEnemiesAll (penetration)', () => {
     expect(out[0].part).toBe('head');
   });
 });
+
+describe('hitscan on hills', () => {
+  it('hits a zombie standing on higher ground by its own height', () => {
+    const eye = { x: 0, y: 1.7, z: 0 };
+    const zombie = { x: 0, y: 2, z: -10, hitRadius: 0.3, height: 1.8, headBottom: 1.42, headRadius: 0.16 };
+    const level = { x: 0, y: 0, z: -1 };
+    expect(rayEnemies(eye, level, [zombie], 100)).toBeNull(); // passes under its feet
+    const up = { x: 0, y: 0.15, z: -1 }; // about 3.2 m up at the zombie: its body
+    const len = Math.hypot(up.y, up.z);
+    const hit = rayEnemies(eye, { x: 0, y: up.y / len, z: up.z / len }, [zombie], 100);
+    expect(hit?.enemy).toBe(zombie);
+  });
+
+  it('stops shots at the ground it is given', () => {
+    const wall = { rayDistance: (o, d, max) => Math.min(max, 7) };
+    expect(rayBlockers({ x: 0, y: 1.7, z: 0 }, { x: 0, y: 0, z: -1 }, [], 100, wall)).toBe(7);
+  });
+
+  it('lets a rock block only between its base and top', () => {
+    const rock = { x: 0, z: -4, r: 0.8, base: 3, top: 4 };
+    expect(rayBlockers({ x: 0, y: 1.7, z: 0 }, { x: 0, y: 0, z: -1 }, [rock], 100)).toBe(100);
+    expect(rayBlockers({ x: 0, y: 3.5, z: 0 }, { x: 0, y: 0, z: -1 }, [rock], 100)).toBeCloseTo(3.2);
+  });
+});

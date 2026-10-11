@@ -123,7 +123,7 @@ export class ZombieRenderer {
     let n = 0;
     for (const z of zombies) {
       if (!z.active) continue;
-      const y = -z.sink * this.spriteHeight;
+      const y = z.y - z.sink * this.spriteHeight;
       this.matrix.makeScale(this.spriteWidth, this.spriteHeight, this.spriteWidth).setPosition(z.x, y, z.z);
       this.mesh.setMatrixAt(n, this.matrix);
       this.frames[n] = z.frame;

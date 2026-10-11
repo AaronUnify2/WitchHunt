@@ -114,3 +114,24 @@ describe('nearestHit rock lids', () => {
     expect(hit.distance).toBeCloseTo(2.5); // over the rock, onto the ground
   });
 });
+
+describe('nearestHit on hills', () => {
+  // A ground that rises toward -z: height = -0.5 z.
+  const slope = {
+    rayDistance(origin, dir, max, step) {
+      for (let t = 0; t <= max; t += step / 4) if (origin.y + dir.y * t <= -0.5 * (origin.z + dir.z * t)) return t;
+      return max;
+    },
+  };
+
+  it('hits rising ground ahead even when looking level', () => {
+    const hit = nearestHit({ x: 0, y: 1.5, z: 0 }, { x: 0, y: 0, z: -1 }, [], 10, undefined, slope, 0.5);
+    expect(hit.distance).toBeCloseTo(3, 0);
+  });
+
+  it('skips a rock hit below its base', async () => {
+    const rock = { x: 0, z: -3, r: 0.5, base: 2, top: 3 };
+    const hit = nearestHit({ x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: -1 }, [rock], 10);
+    expect(hit.distance).toBe(10);
+  });
+});

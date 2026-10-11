@@ -1,25 +1,25 @@
 // Procedural placeholder textures drawn on canvases at load: tree sprites,
-// ground, the clearing's dirt patch, the moon and the flashlight cookie.
-// All seeded, so a seed always draws the same forest. Final art replaces
-// these in the art pass.
+// ground, the moon and the flashlight cookie (the map's bushes, cliff,
+// dirt and signposts are in mapTextures.js). All seeded, so a seed always
+// draws the same forest. Final art replaces these in the art pass.
 
 import * as THREE from 'three';
 
-function css(hex, alpha = 1) {
+export function css(hex, alpha = 1) {
   const r = (hex >> 16) & 255;
   const g = (hex >> 8) & 255;
   const b = hex & 255;
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function makeCanvas(width, height) {
+export function makeCanvas(width, height) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   return { canvas, ctx: canvas.getContext('2d') };
 }
 
-function toTexture(canvas, { repeat = false, srgb = true } = {}) {
+export function toTexture(canvas, { repeat = false, srgb = true } = {}) {
   const texture = new THREE.CanvasTexture(canvas);
   if (srgb) texture.colorSpace = THREE.SRGBColorSpace;
   if (repeat) texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -29,18 +29,11 @@ function toTexture(canvas, { repeat = false, srgb = true } = {}) {
 
 // ---- trees ---------------------------------------------------------------
 
-// One row of tree sprites: conifers, with the last variant a dead tree.
-export function makeTreeAtlas(cfg, rng) {
-  const { textureWidth: w, textureHeight: h, textureVariants: n } = cfg;
-  const { canvas, ctx } = makeCanvas(w * n, h);
-  for (let v = 0; v < n; v++) {
-    ctx.save();
-    ctx.translate(v * w, 0);
-    if (v === n - 1 && n > 1) drawDeadTree(ctx, w, h, cfg, rng);
-    else drawConifer(ctx, w, h, cfg, rng);
-    ctx.restore();
-  }
-  return toTexture(canvas);
+// Tree sprite `v` of `n` into a w x h area at the context's origin:
+// conifers, with the last variant a dead tree.
+export function drawTreeVariant(ctx, v, n, w, h, cfg, rng) {
+  if (v === n - 1 && n > 1) drawDeadTree(ctx, w, h, cfg, rng);
+  else drawConifer(ctx, w, h, cfg, rng);
 }
 
 function drawConifer(ctx, w, h, cfg, rng) {
@@ -254,29 +247,6 @@ function drawWrapped(size, x, y, r, draw) {
       if (px + r >= 0 && px - r <= size && py + r >= 0 && py - r <= size) draw(px, py);
     }
   }
-}
-
-// Round dirt patch for the clearing, fading out at the edge.
-export function makeClearingTexture(cfg, rng) {
-  const s = cfg.clearingTextureSize;
-  const { canvas, ctx } = makeCanvas(s, s);
-  ctx.fillStyle = css(cfg.dirtColor);
-  ctx.fillRect(0, 0, s, s);
-  for (let i = 0; i < cfg.clearingNoiseCount; i++) {
-    ctx.fillStyle = css(rng.pick([cfg.litterColor, cfg.mossColor, cfg.dirtColor]), cfg.blotchAlpha);
-    ctx.beginPath();
-    ctx.arc(rng.range(0, s), rng.range(0, s), rng.range(cfg.blotchSizeMin, cfg.blotchSizeMax), 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Keep only a soft-edged disc.
-  const half = s / 2;
-  const mask = ctx.createRadialGradient(half, half, half * (1 - cfg.clearingEdge), half, half, half);
-  mask.addColorStop(0, 'rgba(0,0,0,1)');
-  mask.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.globalCompositeOperation = 'destination-in';
-  ctx.fillStyle = mask;
-  ctx.fillRect(0, 0, s, s);
-  return toTexture(canvas);
 }
 
 // ---- sky -------------------------------------------------------------------

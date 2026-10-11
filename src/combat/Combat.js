@@ -26,7 +26,8 @@ export class Combat {
   }
 
   // lights: { sky, flashlight }, so the in-hand weapon can follow the light.
-  init(root, scene, player, colliders, lights) {
+  // ground: the GroundField (heights, undergrowth, the map's bounds).
+  init(root, scene, player, colliders, lights, ground) {
     const c = this.cfg;
     this.player = player;
     this.armour = new Armour(c.armour);
@@ -36,19 +37,19 @@ export class Combat {
     this.inventory = new Inventory(c.inventory);
     this.inventory.init();
 
-    this.enemies = new EnemyManager(c.zombies, this.rng.fork('zombies'), this.bus, c.world.boundaryRadius);
+    this.enemies = new EnemyManager(c.zombies, this.rng.fork('zombies'), this.bus, ground);
     this.enemies.init(colliders);
     this.zombieRenderer = new ZombieRenderer(c.zombies, this.rng.fork('zombie-sprite'));
     this.zombieRenderer.init(scene, c.zombies.poolSize);
 
     this.weapons = new Weapons(c.weapons, c.aiming, c.aimAssist, c.player, this.rng.fork('weapons'), this.bus);
-    this.weapons.init(player, this.enemies, colliders);
+    this.weapons.init(player, this.enemies, colliders, ground);
     scene.add(player.camera); // the view model hangs off the camera
     this.viewModel = new ViewModel(c.viewModel, c.weapons);
     this.viewModel.init(player.camera, lights?.sky, lights?.flashlight);
 
     this.fx = new CombatFx(c.feedback, this.rng.fork('fx'));
-    this.fx.init(scene);
+    this.fx.init(scene, ground);
     this.hud = new Hud(c.hud);
     this.hud.init(root);
     this.sfx = new Sfx(c.sfx);

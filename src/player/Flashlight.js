@@ -19,9 +19,11 @@ export class Flashlight {
     this.bus = bus;
   }
 
-  init(scene, colliders) {
+  // ground: the GroundField, so the glare check sees hills.
+  init(scene, colliders, ground) {
     const c = this.cfg;
     this.colliders = colliders;
+    this.ground = ground;
     this.nearby = [];
     this.glareFactor = 1;
     this.surfaceDistance = c.glare.fullDistance;
@@ -92,7 +94,7 @@ export class Flashlight {
         const a = (i / g.ringRays) * Math.PI * 2;
         this.ray.addScaledVector(this.right, Math.cos(a) * spread).addScaledVector(this.up, Math.sin(a) * spread).normalize();
       }
-      nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit);
+      nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit, this.ground, g.groundStep);
       const strength = this.hit.facing / Math.pow(Math.max(this.hit.distance, g.minDistance), decay);
       if (strength > strongest) {
         strongest = strength;

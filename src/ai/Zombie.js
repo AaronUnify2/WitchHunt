@@ -36,9 +36,11 @@ export class Zombie {
     this.headBottom = zombieConfig.headBottom;
     this.headRadius = zombieConfig.headRadius;
     this.x = 0;
+    this.y = 0; // ground height under it (set by EnemyManager)
     this.z = 0;
+    this.moveScale = 1; // set each frame by EnemyManager (undergrowth slows it)
     // Reused circle for the torch's glare check (no allocation per frame).
-    this.glareCircle = { x: 0, z: 0, r: zombieConfig.hitRadius, vr: zombieConfig.hitRadius, top: zombieConfig.height };
+    this.glareCircle = { x: 0, z: 0, r: zombieConfig.hitRadius, vr: zombieConfig.hitRadius, base: 0, top: zombieConfig.height };
   }
 
   spawn(x, z, facing, speed) {
@@ -83,7 +85,7 @@ export class Zombie {
           this.timer = 0;
           this.struck = false;
         } else {
-          const step = Math.min(this.speed * dt, dist - c.attackReach * 0.9);
+          const step = Math.min(this.speed * this.moveScale * dt, dist - c.attackReach * 0.9);
           this.x += Math.sin(this.facing) * step;
           this.z += Math.cos(this.facing) * step;
           this.walked += step;

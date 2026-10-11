@@ -113,6 +113,7 @@ export class DebugMenu {
       <ul>${rows}</ul>
       <p class="debug-menu-help">D-pad / stick: move &middot; A: select &middot; B: close</p>
     `;
+    this.el.querySelector('li.selected')?.scrollIntoView({ block: 'nearest' });
   }
 }
 

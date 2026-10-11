@@ -1,4 +1,13 @@
-// Pure 2D collision helpers on the ground plane (x, z).
+// Pure 2D collision helpers on the ground plane (x, z), plus ray tests
+// against upright cylinders and the ground.
+
+// Flat ground at y = 0: the default wherever a `ground` is optional. The
+// real map passes its GroundField, which has the same rayDistance().
+export const FLAT_GROUND = {
+  rayDistance(origin, dir, maxDistance) {
+    return dir.y < 0 ? Math.min(maxDistance, origin.y / -dir.y) : maxDistance;
+  },
+};
 
 // Push a circle at `pos` with `radius` out of every overlapping static
 // circle. Mutates and returns `pos`.
@@ -32,21 +41,21 @@ export function clampToRadius(pos, maxRadius) {
 }
 
 // The nearest surface along a ray (origin + t * dir, dir a unit 3D
-// vector): the ground (y = 0) or a circle treated as an upright cylinder
-// of radius `c.vr ?? c.r` (from the ground up to `c.top`, with a flat lid
-// there, or unbounded if there's no top). Fills `out` with { distance, facing }, where facing is
-// the cosine between the ray and the surface (1 = head-on, near 0 =
-// glancing). If nothing is closer than maxDistance, distance is
-// maxDistance and facing is 0. Returns `out`.
-export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 0, facing: 0 }) {
+// vector): the ground or a circle treated as an upright cylinder of
+// radius `c.vr ?? c.r` (from `c.base`, or unbounded below, up to `c.top`,
+// with a flat lid there, or unbounded if there's no top). Fills `out`
+// with { distance, facing }, where facing is the cosine between the ray
+// and the surface (1 = head-on, near 0 = glancing; the ground counts as
+// level). If nothing is closer than maxDistance, distance is maxDistance
+// and facing is 0. ground: anything with rayDistance(origin, dir, max,
+// step). Returns `out`.
+export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 0, facing: 0 }, ground = FLAT_GROUND, step = 0.5) {
   out.distance = maxDistance;
   out.facing = 0;
-  if (dir.y < 0) {
-    const t = origin.y / -dir.y;
-    if (t < out.distance) {
-      out.distance = t;
-      out.facing = -dir.y;
-    }
+  const tGround = ground.rayDistance(origin, dir, maxDistance, step);
+  if (tGround < out.distance) {
+    out.distance = tGround;
+    out.facing = Math.max(0, -dir.y);
   }
 
   const flat = dir.x * dir.x + dir.z * dir.z;
@@ -83,7 +92,7 @@ export function nearestHit(origin, dir, circles, maxDistance, out = { distance: 
       y = c.top;
       facing = -dir.y;
     }
-    if (y < 0) continue;
+    if (c.base !== undefined && y < c.base) continue;
     if (t < out.distance) {
       out.distance = t;
       out.facing = facing;

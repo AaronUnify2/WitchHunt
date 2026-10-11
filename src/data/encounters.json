@@ -1,0 +1,21 @@
+{
+  "_note": "Encounters and fixed places the map generator puts in clearings (DESIGN.md \"Encounters\"). appears: \"every\", \"common\", \"uncommon\" (chances in config.map.appearChance), or { \"min\", \"max\" } copies. placement: \"home\", \"nextToHome\", \"hut\", or omitted (anywhere in its band). clearing: false = not a place on the map (a radio event). hopsFromHome: [min, max] pathways from home, if the layout allows. radius: clearing radius in metres (else config.map.clearing). clearingType: id from clearingTypes.json (else random). M3 places these as signposted placeholders; each gets built for real in its own milestone.",
+  "encounters": [
+    { "id": "home", "name": "Ranger station", "band": "north", "appears": "every", "placement": "home", "kind": "home", "clearingType": null, "builtIn": "M5" },
+    { "id": "campsite", "name": "Abandoned campsite", "band": "north", "appears": "every", "placement": "nextToHome", "builtIn": "M9" },
+    { "id": "gasStation", "name": "Roadside gas station", "band": "north", "appears": "common", "clearingType": "roadside", "builtIn": "M9" },
+    { "id": "barn", "name": "Old barn (Milo the Clown)", "band": "north", "appears": "common", "builtIn": "M9" },
+    { "id": "stormShelter", "name": "Storm shelter", "band": "north", "appears": "common", "builtIn": "M9" },
+    { "id": "crashedPlane", "name": "Crashed plane", "band": "north", "appears": "uncommon", "builtIn": "M9" },
+    { "id": "mineshaft", "name": "Abandoned mineshaft", "band": "north", "appears": "uncommon", "builtIn": "M9" },
+    { "id": "outpost", "name": "Overrun military outpost", "band": "north", "appears": "common", "hopsFromHome": [2, 3], "clearingType": "checkpoint", "radius": 28, "builtIn": "M9" },
+    { "id": "stairs", "name": "Stairs in the woods", "band": "middle", "appears": { "min": 2, "max": 3 }, "builtIn": "M10" },
+    { "id": "timeCapsule", "name": "Time capsule (ruined church)", "band": "middle", "appears": "uncommon", "builtIn": "M10" },
+    { "id": "caller", "name": "The Caller", "band": "middle", "appears": { "min": 0, "max": 2 }, "clearing": false, "builtIn": "M10" },
+    { "id": "bigfootCave", "name": "Bigfoot cave", "band": "middle", "appears": "every", "builtIn": "M10" },
+    { "id": "carArmory", "name": "Car Armory", "band": "middle", "appears": "every", "radius": 26, "builtIn": "M11" },
+    { "id": "groundZero", "name": "Ground Zero", "band": "south", "appears": "every", "radius": 32, "builtIn": "M11" },
+    { "id": "crashedUfo", "name": "Crashed UFO", "band": "south", "appears": "every", "radius": 26, "builtIn": "M11" },
+    { "id": "hut", "name": "Witch's hut", "band": "south", "appears": "every", "placement": "hut", "kind": "hut", "clearingType": null, "builtIn": "M7" }
+  ]
+}

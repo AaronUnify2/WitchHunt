@@ -1,13 +1,18 @@
-// Instanced billboard forest. Every tree is a camera-facing sprite (it
-// turns around the vertical axis only), drawn from one texture atlas, with
-// wind sway in the vertex shader. Trees are grouped into chunks; chunks
-// beyond the draw distance aren't drawn. Trunks are registered as
-// colliders. The flashlight's shadow pass uses a matching depth material,
-// so sprites cast proper silhouette shadows.
+// Instanced billboard forest across the whole map. Every tree and bush is
+// a camera-facing sprite (it turns around the vertical axis only), drawn
+// from one texture atlas, with wind sway in the vertex shader. Trees and
+// undergrowth are grouped together into chunks (one draw call each);
+// chunks beyond the draw distance aren't drawn. Trunks are registered as
+// colliders (bushes only slow you, through the ground's undergrowth mask).
+// The flashlight's shadow pass uses a matching depth material, so sprites
+// cast proper silhouette shadows.
 
 import * as THREE from 'three';
-import { layoutForest } from '../world/forestLayout.js';
-import { makeTreeAtlas } from './proceduralTextures.js';
+import { layoutForest, layoutUndergrowth } from '../world/forestLayout.js';
+import { makeForestAtlas } from './mapTextures.js';
+import { ChunkCuller } from './ChunkCuller.js';
+
+const MAX_SPRITES = 16; // size of the atlas rectangle table in the shader
 
 // Shared GLSL: which way a sprite faces (toward the camera on the ground
 // plane). cameraPosition is the shadow camera during the shadow pass, so
@@ -18,7 +23,7 @@ const BILLBOARD_COMMON = /* glsl */ `
   uniform float uWindStrength;
   uniform float uWindSpeed;
   uniform float uWindSpatialScale;
-  uniform float uVariants;
+  uniform vec4 uRects[${MAX_SPRITES}];
   uniform float uNormalUpBias;
   vec3 bbInstancePosition() {
     return (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -46,11 +51,12 @@ const BILLBOARD_NORMAL = /* glsl */ `
   vec3 objectNormal = normalize(vec3(bbN.x, uNormalUpBias, bbN.y));
 `;
 
-// Pick this instance's sprite from the atlas row.
+// Pick this instance's sprite rectangle from the atlas.
 const BILLBOARD_UV = /* glsl */ `
   #include <uv_vertex>
   #ifdef USE_MAP
-    vMapUv.x = (vMapUv.x + aVariant) / uVariants;
+    vec4 bbRect = uRects[int(aVariant + 0.5)];
+    vMapUv = bbRect.xy + vMapUv * bbRect.zw;
   #endif
 `;
 
@@ -60,17 +66,21 @@ export class Forest {
     this.rng = rng;
   }
 
-  init(scene, colliders) {
+  // ground: the GroundField (where trees can grow, and their heights).
+  init(scene, colliders, ground) {
     const c = this.cfg;
     this.scene = scene;
-    this.trees = layoutForest(c, this.rng.fork('layout'));
-    this.atlas = makeTreeAtlas(c, this.rng.fork('atlas'));
+    this.trees = layoutForest(c, ground, this.rng.fork('layout'));
+    this.bushes = layoutUndergrowth(c.undergrowth, ground, this.rng.fork('undergrowth'), c.densityScale);
+    const atlas = makeForestAtlas(c, this.rng.fork('atlas'));
+    this.atlas = atlas.texture;
+    const rects = Array.from({ length: MAX_SPRITES }, (_, i) => new THREE.Vector4(...(atlas.rects[i] ?? [0, 0, 1, 1])));
     this.uniforms = {
       uTime: { value: 0 },
       uWindStrength: { value: c.windStrength },
       uWindSpeed: { value: c.windSpeed },
       uWindSpatialScale: { value: c.windSpatialScale },
-      uVariants: { value: c.textureVariants },
+      uRects: { value: rects },
       uNormalUpBias: { value: c.normalUpBias },
     };
     this.material = this.patch(
@@ -83,12 +93,12 @@ export class Forest {
     );
     this.baseGeometry = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0); // base at y = 0
 
+    this.culler = new ChunkCuller(c.chunkSize, c.cullRefreshDistance);
     this.chunks = this.buildChunks();
     for (const tree of this.trees) {
       // r blocks the player; vr (the canopy) is what the torch's glare check sees.
       colliders.insert({ x: tree.x, z: tree.z, r: c.trunkRadius, vr: tree.width * c.glareRadiusRatio });
     }
-    this.drawDistance = Infinity;
   }
 
   patch(material, cacheKey) {
@@ -104,29 +114,33 @@ export class Forest {
     return material;
   }
 
+  // One instanced mesh per chunk, trees and bushes together.
   buildChunks() {
     const size = this.cfg.chunkSize;
+    const firstBush = this.cfg.textureVariants;
     const groups = new Map();
-    for (const tree of this.trees) {
-      const key = `${Math.floor(tree.x / size)},${Math.floor(tree.z / size)}`;
+    const file = (item, sprite) => {
+      const key = `${Math.floor(item.x / size)},${Math.floor(item.z / size)}`;
       if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(tree);
-    }
+      groups.get(key).push({ item, sprite });
+    };
+    for (const t of this.trees) file(t, t.variant);
+    for (const b of this.bushes) file(b, firstBush + b.variant);
 
     const matrix = new THREE.Matrix4();
     const chunks = [];
-    for (const trees of groups.values()) {
+    for (const entries of groups.values()) {
       const geometry = this.baseGeometry.clone();
-      const variants = new Float32Array(trees.length);
-      const mesh = new THREE.InstancedMesh(geometry, this.material, trees.length);
+      const variants = new Float32Array(entries.length);
+      const mesh = new THREE.InstancedMesh(geometry, this.material, entries.length);
       let cx = 0;
       let cz = 0;
-      trees.forEach((t, i) => {
-        matrix.makeScale(t.width, t.height, t.width).setPosition(t.x, 0, t.z);
+      entries.forEach(({ item, sprite }, i) => {
+        matrix.makeScale(item.width, item.height, item.width).setPosition(item.x, item.y, item.z);
         mesh.setMatrixAt(i, matrix);
-        variants[i] = t.variant;
-        cx += t.x / trees.length;
-        cz += t.z / trees.length;
+        variants[i] = sprite;
+        cx += item.x / entries.length;
+        cz += item.z / entries.length;
       });
       geometry.setAttribute('aVariant', new THREE.InstancedBufferAttribute(variants, 1));
       mesh.customDepthMaterial = this.depthMaterial;
@@ -138,32 +152,38 @@ export class Forest {
       this.scene.add(mesh);
 
       let radius = 0;
-      for (const t of trees) radius = Math.max(radius, Math.hypot(t.x - cx, t.z - cz) + t.width);
-      chunks.push({ mesh, x: cx, z: cz, radius });
+      for (const { item } of entries) radius = Math.max(radius, Math.hypot(item.x - cx, item.z - cz) + item.width);
+      this.culler.add(mesh, cx, cz, radius);
+      chunks.push(mesh);
     }
     return chunks;
   }
 
   update(dt, cameraPosition) {
     this.uniforms.uTime.value += dt;
-    for (const chunk of this.chunks) {
-      const dist = Math.hypot(chunk.x - cameraPosition.x, chunk.z - cameraPosition.z) - chunk.radius;
-      chunk.mesh.visible = dist < this.drawDistance;
-    }
+    this.culler.update(cameraPosition.x, cameraPosition.z);
   }
 
   setDrawDistance(distance) {
-    this.drawDistance = distance;
+    this.culler.setDrawDistance(distance);
   }
 
   get treeCount() {
     return this.trees.length;
   }
 
+  get bushCount() {
+    return this.bushes.length;
+  }
+
+  get visibleChunks() {
+    return this.culler.visibleCount;
+  }
+
   dispose() {
-    for (const chunk of this.chunks) {
-      chunk.mesh.geometry.dispose();
-      chunk.mesh.removeFromParent();
+    for (const mesh of this.chunks) {
+      mesh.geometry.dispose();
+      mesh.removeFromParent();
     }
     this.baseGeometry.dispose();
     this.material.dispose();

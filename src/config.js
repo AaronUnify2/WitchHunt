@@ -25,9 +25,9 @@ export const config = {
     timeScale: 1,
     timeScaleSteps: [1, 10, 60], // debug menu cycles through these
     startDay: 1,
-    // M1 starts at night so the flashlight test needs no skipping.
+    // M3 starts by day so the end-to-end map walk is easy to judge (Aaron).
     // M9 sets the real start (the opening has Tom wake at dawn).
-    startPhase: 'night',
+    startPhase: 'day',
     phases: [
       { name: 'day', seconds: 480, startHour: 7 },
       { name: 'dusk', seconds: 60, startHour: 19 },
@@ -170,12 +170,160 @@ export const config = {
   // World and collision
   world: {
     colliderCellSize: 8, // metres per spatial-grid cell for collision lookups
-    boundaryRadius: 100, // metres from the clearing centre the player can walk
   },
 
-  // The M1 test clearing's ground
+  // The map (M3). North is -z, south is +z; x runs west (-) to east (+).
+  // Decided with Aaron in M3: 1 km wide, 1.4 km north to south ("we'll see
+  // how it goes"). The map is a graph: clearings are nodes, pathways edges.
+  map: {
+    width: 1000, // metres, west to east
+    depth: 1400, // metres, north to south (the plateau above the cliff included)
+    edgeMargin: 60, // the walkable area stops this far inside the east, west and south edges (dense forest beyond)
+    clearingCount: 22, // home, the hut, one per encounter and sigil ground, the rest plain clearings
+    maxAttempts: 40, // generation retries (each from a forked seed) until every rule holds
+    // Bands by southness (0 at the cliff, 1 at the southern edge)
+    bands: {
+      north: [0, 0.34],
+      middle: [0.34, 0.67],
+      south: [0.67, 1],
+    },
+    bandPadding: 0.02, // clearings keep this far (southness) inside their band's edges
+    // How often a non-guaranteed encounter appears (encounters.json "appears")
+    appearChance: { every: 1, common: 0.75, uncommon: 0.4 },
+    // The northern cliff: a tall rock wall the whole width of the map
+    cliff: {
+      plateauDepth: 40, // metres from the map's north edge to the cliff's mean line (trees on top)
+      amplitude: 14, // metres the cliff line wanders north and south
+      wavelength: 240, // metres between its bends
+      height: 26, // metres
+      heightVariation: 8, // +/- metres along its length
+      rampWidth: 6, // metres the ground behind the face climbs to the plateau (hidden by the wall)
+      segment: 3, // metres between columns of the wall mesh
+      rows: 12, // rows of the wall mesh, bottom to top
+      roughness: 2.5, // metres the face bulges out (never in)
+      bumpSize: 5, // metres across a bulge
+      ledges: 0.8, // metres of extra jut on horizontal ledges
+      topJag: 4, // metres the top edge rises and falls
+      talus: 1.5, // metres the foot of the wall slopes out
+      sink: 2, // metres the wall's foot sits below the ground
+      textureMeters: 8, // rock texture repeats every this many metres
+      colliderSpacing: 2.5, // metres between collision circles along the foot
+      colliderRadius: 1.6,
+      walkMargin: 4.5, // the player and zombies stay this far south of the cliff line (clear of its bulges)
+      clearingPadding: 4, // clearings keep this far south of the cliff line (beyond their radius)
+      chunkWidth: 64, // metres of wall per mesh (for distance culling)
+    },
+    home: {
+      radius: 38, // the compound (fence, station, tower) is built here in M5
+      offsetFromCliff: 32, // centre this far south of the cliff line
+      xSpread: 0.3, // fraction of the walkable width either side of the centre line it can sit
+    },
+    campsite: {
+      distanceMin: 95, // centre to centre from home
+      distanceMax: 150,
+      arcDegrees: 150, // placed within this arc, centred on south
+    },
+    hut: {
+      southnessMin: 0.9, // deep in the south
+      minHops: 4, // at least this many pathways from home
+    },
+    clearing: {
+      radiusMin: 16,
+      radiusMax: 24,
+      minGap: 70, // metres between clearing edges
+      placementTries: 300, // random positions tried per clearing
+      relaxedGapFactor: 0.7, // if a clearing won't fit, retry with the gap shrunk by this factor
+    },
+    edges: {
+      extraFraction: 0.45, // loops: extra pathways on top of the spanning tree, as a fraction of its edge count
+      extraMaxLength: 480, // metres; longer shortcuts aren't added
+      extraKeepChance: 0.8, // each candidate (shortest first) is taken with this chance, for variety
+      detourRatio: 1.8, // a shortcut is only added if the pathways between its ends are at least this many times longer
+      maxNorthDetour: 2.5, // rule: from home, every north clearing is at most this many times its straight-line distance away by pathway
+      minAngleDegrees: 30, // two pathways leaving a clearing are at least this far apart
+      clearance: 8, // metres a pathway keeps from clearings it doesn't join (beyond their radius)
+    },
+    paths: {
+      width: 4.5, // metres of bare dirt
+      clearance: 2.5, // metres each side beyond the dirt kept free of trees and undergrowth
+      edgeSoftness: 1.2, // metres over which the dirt fades into the forest floor
+      edgeNoise: 1.4, // metres the edge wanders (noise), so it isn't ruler-straight
+      edgeNoiseScale: 9, // metres per wobble of the edge
+      wiggle: 0.07, // sideways wander as a fraction of the pathway's length
+      wiggleMax: 30, // metres; cap on the wander
+      sampleSpacing: 4, // metres between points along a pathway
+    },
+    clearings: {
+      edgeSoftness: 3, // metres over which a clearing's dirt fades into the forest floor
+      edgeNoise: 4, // metres the clearing's outline wanders
+      edgeNoiseScale: 14,
+      treeClearance: 3, // metres beyond the radius kept free of trees
+      dirtFraction: 0.75, // the bare dirt patch covers this fraction of the radius; the rest is grassy
+    },
+    sigilGrounds: {
+      min: 4,
+      max: 6,
+      bandWeights: { north: 1, middle: 2, south: 3 }, // denser to the south (DESIGN.md)
+    },
+    maskCell: 2, // metres per cell of the ground mask (dirt, open ground)
+  },
+
+  // Placeholder signposts naming what each clearing will hold
+  landmarks: {
+    postHeight: 2.6, // metres
+    postWidth: 0.14,
+    postColor: 0x3a2a1c,
+    boardWidth: 2.4,
+    boardHeight: 1.2,
+    boardDepth: 0.08,
+    boardDrop: 0.1, // metres below the top of the post
+    boardColor: 0x8a6a44, // dark enough not to glare under the torch
+    boardGrain: 0x5a4028,
+    textColor: 0x1a120a,
+    textureWidth: 512, // pixels
+    textureHeight: 256,
+    offset: 3, // metres from the clearing's centre
+    cullCell: 128,
+    cullRefreshDistance: 8,
+  },
+
+  // Fog of war (DESIGN.md "The map screen and fog of war")
+  fogOfWar: {
+    cellSize: 8, // metres per reveal cell
+    revealRadius: 45, // metres revealed round the player
+    revealStep: 2, // metres the player moves before the reveal is checked again
+  },
+
+  // Round minimap, top right (placeholder look; the final HUD is Session 19)
+  minimap: {
+    sizeVmin: 24, // diameter as a share of the screen's short side
+    metresAcross: 260, // ground shown across the minimap
+    refreshPerSecond: 20,
+    pixelsPerMetre: 0.5, // resolution of the map image (one pixel per 2 m)
+    enemyDotPixels: 3,
+  },
+
+  // Full-screen map (D-pad up / M)
+  mapScreen: {
+    marginVmin: 5, // TV-safe margin
+    refreshPerSecond: 10,
+    enemyDotPixels: 3,
+  },
+
+  // Ground: rolling hills, flattened in clearings and smoothed along pathways
   terrain: {
-    size: 260, // metres, square ground plane
+    heightCell: 4, // metres between height samples (and ground mesh vertices)
+    // Rolling ground: layers of smooth noise. smoothOnPaths: pathways and
+    // clearings lose this layer's small bumps.
+    octaves: [
+      { wavelength: 180, amplitude: 4.5, smoothOnPaths: false },
+      { wavelength: 60, amplitude: 1.4, smoothOnPaths: false },
+      { wavelength: 20, amplitude: 0.35, smoothOnPaths: true },
+    ],
+    clearingFlatten: 0.85, // how level a clearing is (1 = perfectly level)
+    clearingFlattenBlend: 18, // metres beyond the radius over which the levelling fades out
+    chunkSize: 128, // metres per ground mesh (for distance culling)
+    cullRefreshDistance: 8, // metres the camera moves before nearby chunks are re-checked
     textureSize: 256, // pixels, procedural placeholder texture
     tileMeters: 6, // ground texture repeats every this many metres
     grassColor: 0x3a4a2c,
@@ -188,12 +336,11 @@ export const config = {
     blotchAlpha: 0.25,
     speckCount: 2500,
     speckSize: 2, // pixels
-    clearingRadius: 13, // dirt patch in the clearing centre
-    clearingEdge: 0.35, // fraction of the radius that fades out
-    clearingTextureSize: 256,
-    clearingNoiseCount: 400,
+    // Bare dirt on pathways and in clearings (a second tiled texture)
+    pathDirtColor: 0x5e4a36,
+    pathLitterColor: 0x6c5a40,
+    pathStoneColor: 0x4e4a42,
     rocks: {
-      count: 9,
       sizeMin: 0.35,
       sizeMax: 1.1,
       squash: 0.6, // rocks are flattened vertically by this factor
@@ -203,27 +350,60 @@ export const config = {
       lumpFrequency: 4, // waviness of each bulge
       stretch: 0.3, // each rock is stretched up to this much along its width and depth
       color: 0x45443d, // dark, mossy grey: lighter rocks glare under the torch
-      spreadMin: 5, // placed between these distances from the centre
-      spreadMax: 14,
       colliderScale: 0.8, // collider radius as a fraction of rock size
+      sink: 0.25, // fraction of a rock's height buried, so it sits in slopes
+      perClearingMin: 2, // rocks round the edge of each clearing
+      perClearingMax: 5,
+      forestCell: 26, // metres; at most one forest rock per cell of this size
+      forestChance: 0.55, // chance a forest cell has a rock
+      maxOpen: 0.2, // rocks stay off pathways (open ground above this)
+      pathClearance: 3, // metres round a clearing's rocks kept clear of where pathways come in
     },
+    // Cliff face texture (placeholder)
+    cliffTextureSize: 256,
+    cliffColor: 0x4a4740,
+    cliffDark: 0x24221e,
+    cliffLight: 0x6a6658,
+    cliffMoss: 0x3a4a30,
   },
 
   // Forest: instanced billboard trees (decided with Aaron in M1: every
   // tree is a camera-facing sprite; final art replaces the procedural
   // placeholder in the art pass)
   forest: {
-    clearingRadius: 16, // no trees inside this radius
-    forestRadius: 115, // no trees beyond this radius
-    cellSize: 3.4, // jittered-grid spacing: one tree per cell
+    cellSize: 3.4, // jittered-grid spacing: at most one tree per cell
+    maxOpen: 0.05, // trees only grow where the ground is less open than this (pathways and clearings are open)
+    // Density varies across the map (thick stands and thinner woods)
+    densityScale: 70, // metres per patch of thicker or thinner forest
+    densityMin: 0.55, // chance a cell grows a tree in the thinnest woods (1 in the thickest)
+    cliffGap: 5, // metres in front of the cliff face kept free of trees
     jitter: 0.75, // fraction of a cell a tree can wander from its cell centre
     heightMin: 9,
     heightMax: 17,
     widthRatioMin: 0.38, // sprite width as a fraction of its height
     widthRatioMax: 0.5,
     trunkRadius: 0.3, // collision radius
-    chunkSize: 32, // metres; chunks beyond the draw distance aren't drawn
+    chunkSize: 48, // metres; chunks beyond the draw distance aren't drawn
+    cullRefreshDistance: 4, // metres the camera moves before nearby chunks are re-checked
     textureVariants: 3, // conifer, conifer, dead tree
+    // Undergrowth (M3, Aaron): low bushes and ferns off the pathways that
+    // slow you down. Cutting through the forest is allowed, at a cost.
+    undergrowth: {
+      cellSize: 2.8, // jittered grid: at most one bush per cell
+      maxOpen: 0.35, // bushes grow where the ground is less open than this
+      densityMin: 0.45, // chance per cell in the sparsest patches (1 in the densest)
+      heightMin: 0.6, // metres
+      heightMax: 1.3,
+      widthRatio: 1.6, // sprite width as a multiple of its height
+      variants: 4, // bush sprites in the atlas
+      textureWidth: 256, // pixels per bush sprite
+      textureHeight: 128,
+      // Dark albedos: bushes face the torch head-on, like the zombies.
+      leafColors: [0x1e321c, 0x283e20, 0x182c1c, 0x304428, 0x22301c],
+      fernColor: 0x2a4220,
+      berryColor: 0x401624,
+      blobs: 180, // leaf clumps per bush sprite
+    },
     textureWidth: 256,
     textureHeight: 512,
     trunkColor: 0x4a3828,
@@ -281,8 +461,10 @@ export const config = {
     jumpSpeed: 4.8, // m/s upward
     gravity: 14, // m/s^2
     pitchLimit: 85, // degrees up/down
-    startPosition: { x: 0, z: 0 },
-    startYaw: 0, // degrees
+    startYaw: 180, // degrees; 180 faces south (the map's start is home, on the northern cliff)
+    // Off the pathways the undergrowth slows you (Aaron, M3: a real hassle
+    // when escaping zombies, so the pathways matter). Scales walk, sprint and crouch.
+    undergrowthMultiplier: 0.55,
     headBob: {
       amplitude: 0.035, // metres at walking speed
       frequency: 0.9, // bob cycles per metre travelled
@@ -471,6 +653,7 @@ export const config = {
       5: { speedMin: 0.5, speedMax: 1.3 },
     },
     turnRate: 6, // how fast a zombie turns to face where it's going
+    undergrowthMultiplier: 0.75, // zombies push through brush better than you do, so cutting through while chased costs
     separation: 0.8, // zombies push apart inside this distance
     attackReach: 1.25, // metres between centres
     attackWindup: 0.5, // seconds from starting the swipe to the hit (time to back off)
@@ -597,6 +780,7 @@ export const config = {
       queryMargin: 4, // metres added to the search radius to catch wide canopies
       ringRays: 6, // extra rays round the beam (besides its centre) to find close surfaces
       ringSpread: 0.7, // how far out in the cone the ring rays go (fraction of the cone angle)
+      groundStep: 0.5, // metres per step when finding where a ray meets the hills
     },
   },
 
@@ -610,6 +794,7 @@ export const config = {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
     giveArmour: 40,
     giveFirstAid: 3,
+    teleportOffset: 6, // metres from a clearing's centre that a teleport lands
     overlayVisibleOnStart: true, // on by default so tablet tests show fps
     overlayRefreshSeconds: 0.1, // how often the overlay text refreshes
     fpsSampleSeconds: 0.5, // averaging window for fps and frame times
