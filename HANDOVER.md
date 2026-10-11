@@ -49,7 +49,7 @@ Details are in `STATUS.md` ("M5 part 2"):
 
 - Taller cabs, doors below the windows, round wheels with hubs.
 - A sloped windscreen and rear window (a wedge mesh), so they read as cars.
-- Laid-back windscreens with painted pillars, door panels up to the bonnet line, a taller ute front. Aaron called the cars complete.
+- Laid-back windscreens framed by painted pillars, uprights and top and foot bars, door panels up to the bonnet line, a taller ute front. Aaron called the cars complete.
 - Doors and boots open only a crack once searched, with a dark hollow behind. Each door's window swings with it.
 - A passenger door: either front door searches the cab, once.
 - Every police car has a battery and an alarm, and a shot into a car with an alarm sets it off.

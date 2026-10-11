@@ -1,5 +1,5 @@
 {
-  "_note": "Abandoned vehicles (DESIGN.md \"Vehicles and batteries\"; M5 part 2, agreed with Aaron: four types, more one-off vehicles may come for later scenes). types: each type's look and loot. size: length (front to back), width and height in metres, used for colliders and the interaction spots. parts: placeholder shapes [w, h, l, x, y, z, colour, shape?] in the vehicle's own frame (x to its right, y up, z forward; (x, y, z) is the centre). shape: none for a box; 'wedgeF' a wedge sloping down toward the front (a windscreen), 'wedgeB' sloping down toward the back (a rear window); 'pillarF' / 'pillarB' a thin painted bar down that wedge's slope, given the same bounds but its own width and x (the windscreen and rear window pillars: Aaron); 'tyre' coloured parts are drawn as round wheels with a hub. colour: 'body' (the vehicle's paint, picked from paints), 'body2' (a second paint, e.g. a police car's lower half) or a key of colours. lamps: unlit boxes (headlights, tail lights, light bars) drawn bright when an alarm flashes. lids: the hinged parts, closed: box [w, h, l, x, y, z] (the hinge is on one of its edges), extra: more boxes [w, h, l, x, y, z, colour] that swing with it (a door's window: Aaron, door and window are one piece), hollow: a dark box shown once it's open (the inside of the boot or the car: Aaron), hinge: 'back', 'front', 'bottom', 'top' or 'frontSide', and angle (radians) fully open. The bonnet opens wide (you pull the battery through it); the boot and doors only open a crack once searched (Aaron). The driver's door is on the left; the passenger door is the same, mirrored, and either one searches the cab. batteryAt: where the battery sits [x, y, z] (seen once the bonnet is up). spots: the words for each hold-X spot. loot: per spot, a loot table like data/loot.json's (items from loot.json; every entry rolled on its own). battery / alarm on a type: the chance it has one, overriding placement and config (Aaron: every police car has an alarm). placement: which types turn up where (weights), by place: 'path' (pulled onto a pathway's verge), a clearing type id or an encounter id; count: how many in that clearing [min, max]; chance: how likely the clearing has any at all; battery / alarm: override the config chances (the campsite's car always has a battery and no alarm, an easy first source next to home); row: lined up like a roadblock.",
+  "_note": "Abandoned vehicles (DESIGN.md \"Vehicles and batteries\"; M5 part 2, agreed with Aaron: four types, more one-off vehicles may come for later scenes). types: each type's look and loot. size: length (front to back), width and height in metres, used for colliders and the interaction spots. parts: placeholder shapes [w, h, l, x, y, z, colour, shape?] in the vehicle's own frame (x to its right, y up, z forward; (x, y, z) is the centre). shape: none for a box; 'wedgeF' a wedge sloping down toward the front (a windscreen), 'wedgeB' sloping down toward the back (a rear window); 'pillarF' / 'pillarB' a thin painted bar down that wedge's slope, given the same bounds but its own width and x (the windscreen and rear window pillars: Aaron); the rest of the window frames (the bars along the top and foot of each windscreen and rear window, and the upright pillars where they meet the side windows; Aaron) are plain boxes; 'tyre' coloured parts are drawn as round wheels with a hub. colour: 'body' (the vehicle's paint, picked from paints), 'body2' (a second paint, e.g. a police car's lower half) or a key of colours. lamps: unlit boxes (headlights, tail lights, light bars) drawn bright when an alarm flashes. lids: the hinged parts, closed: box [w, h, l, x, y, z] (the hinge is on one of its edges), extra: more boxes [w, h, l, x, y, z, colour] that swing with it (a door's window: Aaron, door and window are one piece), hollow: a dark box shown once it's open (the inside of the boot or the car: Aaron), hinge: 'back', 'front', 'bottom', 'top' or 'frontSide', and angle (radians) fully open. The bonnet opens wide (you pull the battery through it); the boot and doors only open a crack once searched (Aaron). The driver's door is on the left; the passenger door is the same, mirrored, and either one searches the cab. batteryAt: where the battery sits [x, y, z] (seen once the bonnet is up). spots: the words for each hold-X spot. loot: per spot, a loot table like data/loot.json's (items from loot.json; every entry rolled on its own). battery / alarm on a type: the chance it has one, overriding placement and config (Aaron: every police car has an alarm). placement: which types turn up where (weights), by place: 'path' (pulled onto a pathway's verge), a clearing type id or an encounter id; count: how many in that clearing [min, max]; chance: how likely the clearing has any at all; battery / alarm: override the config chances (the campsite's car always has a battery and no alarm, an easy first source next to home); row: lined up like a roadblock.",
   "colours": {
     "glass": "#14181c",
     "tyre": "#121212",
@@ -41,7 +41,15 @@
         [0.09, 0.88, 1.2, -0.815, 1.31, 0.75, "body", "pillarF"],
         [0.09, 0.88, 1.2, 0.815, 1.31, 0.75, "body", "pillarF"],
         [0.09, 0.88, 0.6, -0.815, 1.31, -1.25, "body", "pillarB"],
-        [0.09, 0.88, 0.6, 0.815, 1.31, -1.25, "body", "pillarB"]
+        [0.09, 0.88, 0.6, 0.815, 1.31, -1.25, "body", "pillarB"],
+        [1.72, 0.07, 0.07, 0, 0.905, 1.315, "body", "frame"],
+        [1.72, 0.07, 0.07, 0, 1.725, 0.15, "body", "frame"],
+        [0.08, 0.88, 0.07, -0.85, 1.31, 0.15, "body", "frame"],
+        [0.08, 0.88, 0.07, 0.85, 1.31, 0.15, "body", "frame"],
+        [1.72, 0.07, 0.07, 0, 0.905, -1.515, "body", "frame"],
+        [1.72, 0.07, 0.07, 0, 1.725, -0.95, "body", "frame"],
+        [0.08, 0.88, 0.07, -0.85, 1.31, -0.95, "body", "frame"],
+        [0.08, 0.88, 0.07, 0.85, 1.31, -0.95, "body", "frame"]
       ],
       "lamps": [
         [0.36, 0.14, 0.04, -0.58, 0.72, 2.21, "head"],
@@ -99,7 +107,15 @@
         [0.3, 0.74, 0.74, 0.82, 0.37, -1.6, "tyre"],
         [1.94, 0.2, 0.16, 0, 0.5, 2.62, "trim"],
         [0.09, 0.9, 1.15, -0.875, 1.6, 1.175, "body", "pillarF"],
-        [0.09, 0.9, 1.15, 0.875, 1.6, 1.175, "body", "pillarF"]
+        [0.09, 0.9, 1.15, 0.875, 1.6, 1.175, "body", "pillarF"],
+        [1.84, 0.07, 0.07, 0, 1.185, 1.715, "body", "frame"],
+        [1.84, 0.07, 0.07, 0, 2.025, 0.6, "body", "frame"],
+        [0.08, 0.9, 0.07, -0.92, 1.6, 0.6, "body", "frame"],
+        [0.08, 0.9, 0.07, 0.92, 1.6, 0.6, "body", "frame"],
+        [1.94, 0.07, 0.07, 0, 1.925, -0.53, "body", "frame"],
+        [1.94, 0.07, 0.07, 0, 1.145, -0.53, "body", "frame"],
+        [0.08, 0.9, 0.07, -0.92, 1.6, -0.53, "body", "frame"],
+        [0.08, 0.9, 0.07, 0.92, 1.6, -0.53, "body", "frame"]
       ],
       "lamps": [
         [0.36, 0.16, 0.04, -0.62, 0.95, 2.61, "head"],
@@ -157,7 +173,15 @@
         [0.09, 0.9, 1.25, -0.835, 1.33, 0.775, "body", "pillarF"],
         [0.09, 0.9, 1.25, 0.835, 1.33, 0.775, "body", "pillarF"],
         [0.09, 0.9, 0.6, -0.835, 1.33, -1.3, "body", "pillarB"],
-        [0.09, 0.9, 0.6, 0.835, 1.33, -1.3, "body", "pillarB"]
+        [0.09, 0.9, 0.6, 0.835, 1.33, -1.3, "body", "pillarB"],
+        [1.76, 0.07, 0.07, 0, 0.915, 1.365, "body", "frame"],
+        [1.76, 0.07, 0.07, 0, 1.755, 0.15, "body", "frame"],
+        [0.08, 0.9, 0.07, -0.87, 1.33, 0.15, "body", "frame"],
+        [0.08, 0.9, 0.07, 0.87, 1.33, 0.15, "body", "frame"],
+        [1.76, 0.07, 0.07, 0, 0.915, -1.565, "body", "frame"],
+        [1.76, 0.07, 0.07, 0, 1.755, -1.0, "body", "frame"],
+        [0.08, 0.9, 0.07, -0.87, 1.33, -1.0, "body", "frame"],
+        [0.08, 0.9, 0.07, 0.87, 1.33, -1.0, "body", "frame"]
       ],
       "lamps": [
         [0.36, 0.14, 0.04, -0.6, 0.74, 2.31, "head"],
