@@ -34,6 +34,14 @@ export class MapUi {
     this.screen.init(root, shared);
   }
 
+  // Vehicles (M5 part 2) show on both maps once seen up close.
+  setVehicles(list, style) {
+    for (const view of [this.minimap, this.screen]) {
+      view.vehicles = list;
+      view.vehicleStyle = style;
+    }
+  }
+
   get isOpen() {
     return this.screen.isOpen;
   }

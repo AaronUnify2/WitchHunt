@@ -867,6 +867,56 @@ export const config = {
   // The ranger station (M5, DESIGN.md "The ranger station"). Every number
   // is a placeholder for Aaron's play-test. Angles round the fence are
   // measured from south (0) toward east (+), round the fence's centre.
+  // Abandoned vehicles (M5 part 2, DESIGN.md "Vehicles and batteries").
+  // Types, looks, loot and where each type turns up are content, in
+  // data/vehicles.json; the numbers are here.
+  vehicles: {
+    placement: {
+      pathSpacing: 85, // metres along a pathway between verge cars (about 45 on a map in all, 35-60 by seed; Aaron: yes)
+      pathJitter: 0.35, // each gap varies by up to this fraction
+      pathChance: 0.85, // each spot along a pathway gets a car with this chance
+      vergeOffset: 2.7, // metres from a pathway's centre line to a verge car's centre
+      ditchChance: 0.2, // some are nosed off the road at an angle
+      ditchAngle: 0.55, // radians
+      clearingGap: 6, // metres beyond a clearing's edge before verge cars start
+      clearingInner: 0.3, // clearing cars stand between these fractions of its radius
+      clearingOuter: 0.8,
+      rowSpacing: 6.5, // metres between cars in a roadblock row
+      minGap: 2.2, // metres of clear ground between any two vehicles
+      openNeeded: 0.3, // every corner and spot must be at least this open (trees grow below 0.05, rocks below 0.2)
+      maxSlope: 0.22, // rise over run along or across the vehicle
+      cliffMargin: 6, // metres from the cliff's walkable line
+      avoidRadius: 8, // metres beyond the station's fence kept clear
+      signClearance: 3, // metres from a clearing's signpost
+      centreClearance: 2.5, // metres (plus half its length) from a clearing's centre (pathways meet there)
+      tries: 12, // attempts to fit each clearing car
+      maxVehicles: 55,
+    },
+    batteryChance: 0.6, // Aaron: about 60%; the rest are dead or long gone
+    alarmChance: 0.25, // of those with a battery: opening a door or the boot sets the alarm off
+    hold: { search: 2.5, bonnet: 1.5, battery: 3 }, // seconds (Aaron: good)
+    interactRange: 1.6, // metres from a spot (driver's door, boot, bonnet)
+    spotOut: 0.75, // metres outside the body where each spot stands (closer, a lifted bonnet filled the screen)
+    batteryNoise: 22, // metres: pulling a battery is noisy (Aaron: just a noise)
+    alarm: {
+      seconds: 60, // it rings until the battery is pulled or it runs flat
+      noise: 65, // metres: zombies hear it and come
+      alertEvery: 2, // seconds between alerts
+      beepEvery: 0.55, // seconds between wails
+      flashEvery: 0.4, // seconds per lamp flash
+    },
+    lidSeconds: 0.45, // a door, boot or bonnet swings open in this long
+    colliderPiece: 1.2, // metres: each body is split into pieces this long along its length (keeps the collision grid's reach small)
+    seenDistance: 40, // metres: a vehicle goes on the map once you've been this close
+    map: { minimapPixels: 7, screenPixels: 9, color: '#8fb8dc', doneColor: '#6e7072' }, // steel blue: tan read as part of the dashed pathways
+    looks: {
+      paintBrightness: 0.7, // every paint is scaled by this: light paint blows out under the torch (as the station's metal did)
+      dirtiness: 0.25, // each paint varies by up to this much darker
+      flatTyreChance: 0.3, // a flat tyre leaves it leaning
+      flatTyreTilt: 0.05, // radians
+    },
+  },
+
   station: {
     layout: {
       fenceCentreFromCliff: 16, // metres south of the cliff line (at home's x) to the fence's centre

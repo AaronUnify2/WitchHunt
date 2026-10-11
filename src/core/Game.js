@@ -22,6 +22,7 @@ import { Flashlight } from '../player/Flashlight.js';
 import { Combat } from '../combat/Combat.js';
 import { ZombieDirector } from '../ai/ZombieDirector.js';
 import { Station } from '../base/Station.js';
+import { Vehicles } from '../world/Vehicles.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
@@ -52,6 +53,7 @@ export class Game {
     this.initUi(root);
     this.initDirector();
     this.initStation(root);
+    this.initVehicles();
     this.addOverlayStats();
     this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
@@ -124,6 +126,24 @@ export class Game {
     };
   }
 
+  // Abandoned vehicles (M5 part 2): searched for loot, batteries pulled.
+  // Their prompts come after digging and the station's.
+  initVehicles() {
+    const L = this.station.layout;
+    this.vehicles = new Vehicles(this.cfg, this.rng.fork('vehicles'), this.bus);
+    this.vehicles.init(this.scene, {
+      world: this.world,
+      combat: this.combat,
+      player: this.player,
+      colliders: this.colliders,
+      mapUi: this.mapUi,
+      notify: (text) => this.toast.show(text),
+      avoid: [{ x: L.centre.x, z: L.centre.z, r: L.radius + this.cfg.vehicles.placement.avoidRadius }],
+      busy: [this.director.hud, this.station.hud],
+    });
+    this.combat.promptSources.push(this.vehicles.hud);
+  }
+
   initUi(root) {
     const cfg = this.cfg;
     this.mapUi = new MapUi(cfg, this.world, this.bus);
@@ -167,6 +187,7 @@ export class Game {
     this.overlay.addStat('zombies', () => this.combat.zombieOverlayLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
     this.overlay.addStat('station', () => this.station.overlayLine());
+    this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
   }
 
   addDebugMenuItems() {
@@ -177,6 +198,7 @@ export class Game {
     this.combat.addDebugItems(menu);
     this.director.addDebugItems(menu);
     this.station.addDebugItems(menu);
+    this.vehicles.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem('Skip to night', () => this.skipToPhase('night'));
     menu.addItem(
@@ -344,6 +366,7 @@ export class Game {
     this.combat.update(dt, this.input, playing, daylight, locked);
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
     this.station.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.vehicles.update(dt, this.input, playing && !locked);
     if (playing) {
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
@@ -371,6 +394,7 @@ export class Game {
     this.overlay.dispose();
     this.toast.dispose();
     this.mapUi.dispose();
+    this.vehicles.dispose();
     this.station.dispose();
     this.director.dispose();
     this.combat.dispose();

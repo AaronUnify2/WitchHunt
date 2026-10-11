@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -32,6 +32,7 @@ export class MapScreen {
     root.appendChild(this.el);
     this.ctx = this.canvas.getContext('2d');
     this.timer = 0;
+    this.vehicles = null; // set by MapUi.setVehicles (M5 part 2)
   }
 
   open() {
@@ -59,7 +60,8 @@ export class MapScreen {
     this.resize();
     this.draw(player, enemies, sigils);
     const sigilKey = sigils ? '   ◆ (green) Sigil (debug)' : '';
-    this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${sigilKey}   ${footer}   D-pad up / M / B: close`;
+    const vehicleKey = this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '';
+    this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
 
   resize() {
@@ -123,6 +125,15 @@ export class MapScreen {
       ctx.fillText(label, sx, sy + marker * 1.5);
     }
 
+    if (this.vehicles) {
+      const vs = this.vehicleStyle;
+      const length = vs.screenPixels * Math.max(1, Math.min(W, H) / 700);
+      for (const v of this.vehicles) {
+        if (!vehicleShown(v)) continue;
+        const [sx, sy] = toScreen(v.x, v.z);
+        drawVehicleMarker(ctx, sx, sy, -v.yaw, length, vehicleColor(v, vs));
+      }
+    }
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * Math.max(1, Math.min(W, H) / 700);
     for (const e of enemies) {

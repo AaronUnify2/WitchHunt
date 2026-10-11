@@ -203,3 +203,27 @@ export function drawSigilMarker(ctx, x, y, size, color) {
   ctx.closePath();
   ctx.fill();
 }
+
+// A vehicle (M5 part 2) as a small oblong along its length. angle: canvas
+// rotation that turns the marker's long axis to the vehicle's heading.
+export function drawVehicleMarker(ctx, x, y, angle, size, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.fillRect(-size * 0.32 - 1, -size / 2 - 1, size * 0.64 + 2, size + 2);
+  ctx.fillStyle = color;
+  ctx.fillRect(-size * 0.32, -size / 2, size * 0.64, size);
+  ctx.restore();
+}
+
+// Is a vehicle shown on the maps: seen up close (or the debug "show all")?
+export function vehicleShown(v) {
+  return v.seen || v.seenByDebug;
+}
+
+// Its marker colour: dimmed once there's nothing left in it.
+export function vehicleColor(v, style) {
+  const done = v.searched.door && v.searched.boot && v.bonnetUp && !v.hasBattery;
+  return done ? style.doneColor : style.color;
+}

@@ -303,6 +303,41 @@ const RECIPES = {
   spike(s, pos) {
     s.noiseBurst(s.out(pos?.x, pos?.z, 0.7), { seconds: 0.12, type: 'bandpass', freq: 1200, q: 2, gain: 0.6 });
   },
+  // Vehicles (M5 part 2): a car door's clunk, a boot lid, the bonnet's
+  // creak, a ratchet on the battery's bolts, the battery coming out, and
+  // a two-tone car alarm (each call is one wail; Vehicles.js alternates them).
+  carDoor(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 700, q: 2, gain: 0.6 });
+    s.tone(o, { seconds: 0.18, freq: 110, endFreq: 70, gain: 0.5 });
+  },
+  carBoot(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 1400, endFreq: 900, q: 4, gain: 0.25, attack: 0.05 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.15, freq: 120, endFreq: 80, gain: 0.4 }), 300);
+  },
+  bonnet(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 340, endFreq: 520, gain: 0.08, attack: 0.1, vibrato: 14 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.12, freq: 160, endFreq: 110, gain: 0.35 }), 650);
+  },
+  ratchet(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.03, type: 'highpass', freq: 3500, gain: 0.45 }), i * 90 + (i % 4 === 3 ? 200 : 0));
+    }
+  },
+  batteryOut(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 0.2, type: 'bandpass', freq: 600, q: 1.5, gain: 0.5 });
+    s.tone(o, { seconds: 0.25, freq: 90, endFreq: 60, gain: 0.6 });
+  },
+  carAlarm(s, pos) {
+    s.tone(s.out(pos?.x, pos?.z, 1), { seconds: 0.5, wave: 'square', freq: 880, endFreq: 1180, gain: 0.22, attack: 0.02 });
+  },
+  carAlarmLow(s, pos) {
+    s.tone(s.out(pos?.x, pos?.z, 1), { seconds: 0.5, wave: 'square', freq: 1180, endFreq: 760, gain: 0.22, attack: 0.02 });
+  },
   overrun(s) {
     const o = s.out();
     s.tone(o, { seconds: 3, wave: 'sawtooth', freq: 160, endFreq: 40, gain: 0.35, attack: 0.1, vibrato: 8 });

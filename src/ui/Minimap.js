@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -30,6 +30,7 @@ export class Minimap {
     root.appendChild(this.el);
     this.ctx = this.canvas.getContext('2d');
     this.timer = 0;
+    this.vehicles = null; // set by MapUi.setVehicles (M5 part 2)
   }
 
   show(visible) {
@@ -104,6 +105,16 @@ export class Minimap {
       const [sx, sy] = toScreen(c.x, c.z);
       if (Math.hypot(sx - half, sy - half) > half + marker) continue;
       drawClearingMarker(ctx, c, sx, sy, marker);
+    }
+    if (this.vehicles) {
+      const vs = this.vehicleStyle;
+      const length = vs.minimapPixels * (size / 200);
+      for (const v of this.vehicles) {
+        if (!vehicleShown(v)) continue;
+        const [sx, sy] = toScreen(v.x, v.z);
+        if (Math.hypot(sx - half, sy - half) > half + length) continue;
+        drawVehicleMarker(ctx, sx, sy, player.yaw - v.yaw, length, vehicleColor(v, vs));
+      }
     }
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * (size / 200);
