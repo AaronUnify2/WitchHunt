@@ -96,8 +96,9 @@ export class Combat {
     this.unsubscribers = [
       bus.on('enemy:strike', ({ zombie, damage }) => this.onStrike(zombie, damage)),
       bus.on('enemy:hit', ({ x, y, z, part, killed }) => {
-        this.fx.blood(x, y, z, part === 'head');
-        this.sfx.play(part === 'head' ? 'headshot' : 'flesh', { x, z });
+        const critical = part === 'head' || part === 'weak';
+        this.fx.blood(x, y, z, critical);
+        this.sfx.play(critical ? 'headshot' : 'flesh', { x, z });
         if (killed) this.sfx.play('kill', { x, z });
       }),
       bus.on('enemy:killed', ({ zombie }) => {
@@ -105,7 +106,7 @@ export class Combat {
         this.dropLoot(zombie);
       }),
       bus.on('weapon:hit', ({ killed, part, melee }) => {
-        this.hud.hitMarker(killed, part === 'head');
+        this.hud.hitMarker(killed, part === 'head' || part === 'weak');
         if (melee) this.sfx.play('shovelHit');
       }),
       bus.on('weapon:fired', ({ id }) => {
@@ -241,7 +242,7 @@ export class Combat {
       this.updateGroans(dt);
     }
     this.zombieRenderer.update(this.enemies.pool);
-    this.mutantRenderer.update(this.enemies.pool);
+    this.mutantRenderer.update(this.enemies.pool, dt);
     this.pickupRenderer.update(dt, this.pickups.pool);
     this.viewModel.update(dt, this.weapons, player);
     this.fx.update(dt);

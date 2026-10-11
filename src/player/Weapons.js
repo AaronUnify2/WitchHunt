@@ -11,7 +11,10 @@
 import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
-import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget } from '../combat/hitscan.js';
+import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind } from '../combat/hitscan.js';
+
+// Which part counts when several pellets of one shot land: the best one.
+const PART_RANK = { body: 0, head: 1, weak: 2 };
 
 const DEG_TO_RAD = Math.PI / 180;
 const SLOT_ACTIONS = ['weaponSlot1', 'weaponSlot2', 'weaponSlot3', 'weaponSlot4'];
@@ -190,15 +193,15 @@ export class Weapons {
       let carried = 1;
       for (let k = 0; k < pierce; k++) {
         const hit = this.rayHits[k];
-        const head = hit.part === 'head';
-        const damage = w.damage * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * (head ? this.cfg.headshotMultiplier : 1);
+        const mult = partMultiplier(hit.enemy, hit.part, this.cfg.headshotMultiplier);
+        const damage = w.damage * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * mult;
         let entry = this.pelletHits.get(hit.enemy);
         if (!entry) {
-          entry = { damage: 0, head: false, pellets: 0, x: 0, y: 0, z: 0 };
+          entry = { damage: 0, part: 'body', pellets: 0, x: 0, y: 0, z: 0 };
           this.pelletHits.set(hit.enemy, entry);
         }
         entry.damage += damage;
-        entry.head ||= head;
+        if (PART_RANK[hit.part] > PART_RANK[entry.part]) entry.part = hit.part;
         entry.pellets += 1;
         entry.x = eye.x + dir.x * hit.distance;
         entry.y = eye.y + dir.y * hit.distance;
@@ -210,8 +213,8 @@ export class Weapons {
     // One hit per zombie per shot, however many pellets landed.
     for (const [zombie, e] of this.pelletHits) {
       const scaled = { stagger: w.stagger, knockback: w.knockback * e.pellets };
-      const killed = this.enemies.damage(zombie, e.damage, e.head ? 'head' : 'body', scaled, e, eye);
-      this.bus.emit('weapon:hit', { killed, part: e.head ? 'head' : 'body', melee: false });
+      const killed = this.enemies.damage(zombie, e.damage, e.part, scaled, e, eye);
+      this.bus.emit('weapon:hit', { killed, part: e.part, melee: false });
     }
   }
 
@@ -226,9 +229,11 @@ export class Weapons {
     const target = meleeTarget(this.eye, this.forward.x / flat, this.forward.z / flat, this.enemies.living, w.reach, w.arcDegrees * DEG_TO_RAD);
     if (!target) return;
     const at = { x: target.x, y: this.eye.y - 0.4, z: target.z };
-    const killed = this.enemies.damage(target, w.damage, 'body', w, at, this.eye);
+    // A swing from behind a mutant lands on its weak spot.
+    const part = meleeFromBehind(this.eye, target) ? 'weak' : 'body';
+    const killed = this.enemies.damage(target, w.damage * partMultiplier(target, part, 1), part, w, at, this.eye);
     this.player.shake(0.15);
-    this.bus.emit('weapon:hit', { killed, part: 'body', melee: true });
+    this.bus.emit('weapon:hit', { killed, part, melee: true });
   }
 
   // Controller look slows over a zombie's body or head (stronger aimed).

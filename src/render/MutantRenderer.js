@@ -4,7 +4,9 @@
 // them swollen. One instanced mesh for every mutant (at most four): one
 // draw call plus the torch shadow. Rigid, posed per frame: it sways as it
 // walks, rears back and lunges to swipe, reels when staggered, topples
-// sideways when killed, and sinks like a corpse.
+// sideways when killed, and sinks like a corpse. Its weak spot, a throbbing
+// red blob on its back (8x damage), is a second instanced mesh sharing
+// each mutant's pose: unlit, so it reads in the dark (and catches the bloom).
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -61,6 +63,20 @@ export class MutantRenderer {
     this.mesh.frustumCulled = false; // instances move every frame
     this.mesh.count = 0;
     scene.add(this.mesh);
+
+    // The weak spot, in the same model space (it rides each mutant's matrix).
+    const w = this.cfg.weakSpot;
+    const spotGeometry = new THREE.SphereGeometry(w.radius * 0.72, 12, 8);
+    spotGeometry.scale(1, 1, 0.55);
+    spotGeometry.translate(0, w.height, -w.back);
+    this.spotColour = new THREE.Color(w.color);
+    this.spotMaterial = new THREE.MeshBasicMaterial({ color: w.color });
+    this.spots = new THREE.InstancedMesh(spotGeometry, this.spotMaterial, this.cfg.poolSize);
+    this.spots.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.spots.frustumCulled = false;
+    this.spots.count = 0;
+    scene.add(this.spots);
+    this.time = 0;
     this.matrix = new THREE.Matrix4();
     this.pose = new THREE.Matrix4();
     this.quat = new THREE.Quaternion();
@@ -70,9 +86,14 @@ export class MutantRenderer {
   }
 
   // zombies: the whole pool; only active mutants are drawn.
-  update(zombies) {
+  update(zombies, dt = 0) {
     const zc = this.zombieCfg;
+    const w = this.cfg.weakSpot;
+    this.time += dt;
+    const throb = w.pulseMin + (1 - w.pulseMin) * (0.5 + 0.5 * Math.sin(this.time * w.pulseSpeed * Math.PI * 2));
+    this.spotMaterial.color.copy(this.spotColour).multiplyScalar(throb);
     let n = 0;
+    let spots = 0;
     for (const z of zombies) {
       if (!z.active || z.kind !== 'mutant' || n >= this.cfg.poolSize) continue;
       let lean = 0; // radians forward
@@ -105,20 +126,27 @@ export class MutantRenderer {
       const depth = z.state === 'corpse' || z.state === 'dying' ? 1.2 : z.height;
       this.pos.set(z.x, z.y + bob - z.sink * depth, z.z);
       this.mesh.setMatrixAt(n, this.matrix.compose(this.pos, this.quat, this.scale));
+      // The spot goes dark once it's dead.
+      if (z.state !== 'dying' && z.state !== 'corpse') this.spots.setMatrixAt(spots++, this.matrix);
       const f = z.flash > 0 ? z.flash / zc.hitFlashSeconds : 0;
       this.mesh.setColorAt(n, this.colour.copy(this.white).lerp(this.flashColour, f));
       n++;
     }
     this.mesh.count = n;
+    this.spots.count = spots;
     if (n > 0) {
       this.mesh.instanceMatrix.needsUpdate = true;
       this.mesh.instanceColor.needsUpdate = true;
     }
+    if (spots > 0) this.spots.instanceMatrix.needsUpdate = true;
   }
 
   dispose() {
     this.mesh.geometry.dispose();
     this.mesh.removeFromParent();
     this.material.dispose();
+    this.spots.geometry.dispose();
+    this.spots.removeFromParent();
+    this.spotMaterial.dispose();
   }
 }

@@ -60,6 +60,8 @@ export class Zombie {
     this.attackDamage = s.attackDamage ?? c.attackDamage;
     this.turnRate = s.turnRate ?? c.turnRate;
     this.staggerScale = s.staggerScale ?? 1;
+    this.headshotMultiplier = s.headshotMultiplier ?? null; // null: the weapons' default
+    this.weakSpot = s.weakSpot ?? null; // { back, height, radius, multiplier }: the mutant's
     this.knockbackScale = s.knockbackScale ?? 1;
     this.glareCircle.r = this.hitRadius;
     this.glareCircle.vr = this.hitRadius;

@@ -763,6 +763,20 @@ export const config = {
     turnRate: 3,
     staggerScale: 0.25, // shrugs off most of a hit's stun
     knockbackScale: 0.2,
+    // Aaron (M4 test, "a bit of a bullet sponge"): health stays, but aim pays.
+    headshotMultiplier: 4, // its own (other zombies use weapons.headshotMultiplier)
+    // A glowing red spot on its back. A sphere that stands out from the body,
+    // so only shots from behind reach it; a shovel swing from behind lands on it too.
+    weakSpot: {
+      multiplier: 8,
+      back: 0.44, // metres behind its centre
+      height: 1.85, // above its feet
+      radius: 0.24, // hit sphere (a little bigger than the drawn spot)
+      meleeBehindDegrees: 50, // a swing from within this much of straight behind
+      color: 0xff2412,
+      pulseSpeed: 1.4, // throbs, cycles per second
+      pulseMin: 0.55, // brightness at the bottom of a throb
+    },
     look: {
       skin: 0x4a5040,
       skinDark: 0x2e3428,

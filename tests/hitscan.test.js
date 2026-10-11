@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rayCylinder, rayBlockers, rayEnemies, falloff, spreadDirection, meleeTarget } from '../src/combat/hitscan.js';
+import { rayCylinder, rayBlockers, rayEnemies, falloff, spreadDirection, meleeTarget, rayEnemiesAll, partMultiplier, meleeFromBehind } from '../src/combat/hitscan.js';
 import { Rng } from '../src/core/Rng.js';
 
 const eye = { x: 0, y: 1.7, z: 0 };
@@ -140,5 +140,47 @@ describe('hitscan on hills', () => {
     const rock = { x: 0, z: -4, r: 0.8, base: 3, top: 4 };
     expect(rayBlockers({ x: 0, y: 1.7, z: 0 }, { x: 0, y: 0, z: -1 }, [rock], 100)).toBe(100);
     expect(rayBlockers({ x: 0, y: 3.5, z: 0 }, { x: 0, y: 0, z: -1 }, [rock], 100)).toBeCloseTo(3.2);
+  });
+});
+
+describe('weak spots (the mutant)', () => {
+  // A mutant at the origin facing +z, with its spot on its back (toward -z).
+  const mutant = {
+    x: 0, y: 0, z: 0, facing: 0, hitRadius: 0.55, height: 2.5, headBottom: 2.02, headRadius: 0.26,
+    headshotMultiplier: 4,
+    weakSpot: { multiplier: 8, back: 0.44, height: 1.85, radius: 0.24, meleeBehindDegrees: 50 },
+  };
+
+  it('a shot from behind at the spot hits it; from the front it hits the body', () => {
+    const fromBehind = rayEnemies({ x: 0, y: 1.85, z: -10 }, { x: 0, y: 0, z: 1 }, [mutant], 50);
+    expect(fromBehind.part).toBe('weak');
+    const fromFront = rayEnemies({ x: 0, y: 1.85, z: 10 }, { x: 0, y: 0, z: -1 }, [mutant], 50);
+    expect(fromFront.part).toBe('body');
+    // From behind but low: the body, not the spot.
+    expect(rayEnemies({ x: 0, y: 0.8, z: -10 }, { x: 0, y: 0, z: 1 }, [mutant], 50).part).toBe('body');
+  });
+
+  it('turns with the mutant', () => {
+    const turned = { ...mutant, facing: Math.PI }; // facing -z: its back is toward +z
+    expect(rayEnemies({ x: 0, y: 1.85, z: 10 }, { x: 0, y: 0, z: -1 }, [turned], 50).part).toBe('weak');
+    const hits = [];
+    rayEnemiesAll({ x: 0, y: 1.85, z: 10 }, { x: 0, y: 0, z: -1 }, [turned], 50, hits);
+    expect(hits[0].part).toBe('weak');
+  });
+
+  it('is worth 8x; the mutant\'s headshots 4x; other zombies keep the default', () => {
+    expect(partMultiplier(mutant, 'weak', 3)).toBe(8);
+    expect(partMultiplier(mutant, 'head', 3)).toBe(4);
+    expect(partMultiplier(mutant, 'body', 3)).toBe(1);
+    expect(partMultiplier({ headshotMultiplier: null }, 'head', 3)).toBe(3);
+    expect(partMultiplier({}, 'weak', 3)).toBe(1);
+  });
+
+  it('a shovel swing from behind lands on the spot', () => {
+    expect(meleeFromBehind({ x: 0, z: -1.5 }, mutant)).toBe(true);
+    expect(meleeFromBehind({ x: 0.8, z: -1.5 }, mutant)).toBe(true); // about 28 degrees off
+    expect(meleeFromBehind({ x: 1.5, z: 0 }, mutant)).toBe(false); // its side
+    expect(meleeFromBehind({ x: 0, z: 1.5 }, mutant)).toBe(false); // in front
+    expect(meleeFromBehind({ x: 0, z: -1.5 }, { ...mutant, weakSpot: null })).toBe(false);
   });
 });

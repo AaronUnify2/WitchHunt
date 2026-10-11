@@ -54,7 +54,7 @@ Details in `STATUS.md` ("M4: Sigils and zombies"):
 ### Aaron's play-test (first round)
 
 - Dawn thinning works as expected.
-- **The mutant feels like a bit of a bullet sponge: workshop it with Aaron** (health, weak spot, or how often it appears; OPEN_QUESTIONS #60).
+- **The mutant felt like a bit of a bullet sponge.** Aaron's fix: health stays; headshots on it do 4×, and a glowing red spot on its back does 8× (shots from behind, or the shovel from behind). Built; waiting on his next test.
 - Fixed: the drops glared under the torch. They're darker now, and in the torch's glare check.
 
 ### Unfinished or for later

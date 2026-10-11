@@ -1,6 +1,7 @@
 // Hit-scan and melee maths (pure). Bullets are instant rays; enemies are
 // an upright body cylinder with a narrower head cylinder on top, standing
-// at their ground height `y`; trees and rocks block shots with their
+// at their ground height `y`, and maybe a weak spot (a sphere on the
+// back: the mutant's); trees and rocks block shots with their
 // trunk or rock body, and the ground stops shots aimed into it.
 
 import { FLAT_GROUND } from '../world/collision.js';
@@ -43,6 +44,47 @@ export function rayCylinder(origin, dir, cx, cz, r, y0, y1) {
   return Math.max(tEnter, 0);
 }
 
+// Distance along a ray to a sphere at (cx, cy, cz), or Infinity.
+export function raySphere(origin, dir, cx, cy, cz, r) {
+  const ox = origin.x - cx;
+  const oy = origin.y - cy;
+  const oz = origin.z - cz;
+  const b = ox * dir.x + oy * dir.y + oz * dir.z;
+  const c = ox * ox + oy * oy + oz * oz - r * r;
+  if (c <= 0) return 0; // inside it
+  const disc = b * b - c;
+  if (b >= 0 || disc < 0) return Infinity;
+  return -b - Math.sqrt(disc);
+}
+
+// Distance along a ray to an enemy's weak spot (a sphere on its back:
+// e.weakSpot = { back, height, radius }, placed from its facing), or
+// Infinity if it has none or the ray misses it.
+export function rayWeakSpot(origin, dir, e) {
+  const w = e.weakSpot;
+  if (!w) return Infinity;
+  const y = (e.y ?? 0) + w.height;
+  return raySphere(origin, dir, e.x - Math.sin(e.facing) * w.back, y, e.z - Math.cos(e.facing) * w.back, w.radius);
+}
+
+// Which part a ray hits first: 'weak' (the weak spot, which stands out
+// from the body so it's only reachable from behind), 'head' or 'body'.
+// Writes { t, part } into `out` (t Infinity on a miss).
+function rayParts(origin, dir, e, out) {
+  const y = e.y ?? 0;
+  const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, y, y + e.headBottom);
+  const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, y + e.headBottom, y + e.height);
+  const tWeak = rayWeakSpot(origin, dir, e);
+  out.t = Math.min(tBody, tHead);
+  out.part = tHead <= tBody ? 'head' : 'body';
+  if (tWeak <= out.t) {
+    out.t = tWeak;
+    out.part = 'weak';
+  }
+  return out;
+}
+const parts = { t: 0, part: 'body' };
+
 // Distance to the nearest blocking static collider (tree trunk, rock) or
 // the ground along the ray, or maxDistance. Uses the solid radius `r`,
 // not a tree's canopy; a collider runs from `base` (or unbounded below)
@@ -57,22 +99,17 @@ export function rayBlockers(origin, dir, blockers, maxDistance, ground = FLAT_GR
 }
 
 // Which enemy a ray hits first, and where. enemies: [{ x, y, z, hitRadius,
-// height, headBottom, headRadius }] (y = the ground they stand on, 0 if
-// missing). Returns { enemy, distance, part } ('head' or 'body') or null
-// if nothing is hit before maxDistance.
+// height, headBottom, headRadius, weakSpot? }] (y = the ground they stand
+// on, 0 if missing). Returns { enemy, distance, part } ('head', 'body' or
+// 'weak') or null if nothing is hit before maxDistance.
 export function rayEnemies(origin, dir, enemies, maxDistance) {
   let best = null;
   let bestT = maxDistance;
   for (const e of enemies) {
-    const y = e.y ?? 0;
-    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, y, y + e.headBottom);
-    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, y + e.headBottom, y + e.height);
-    if (tHead < bestT && tHead <= tBody) {
-      bestT = tHead;
-      best = { enemy: e, distance: tHead, part: 'head' };
-    } else if (tBody < bestT) {
-      bestT = tBody;
-      best = { enemy: e, distance: tBody, part: 'body' };
+    rayParts(origin, dir, e, parts);
+    if (parts.t < bestT) {
+      bestT = parts.t;
+      best = { enemy: e, distance: parts.t, part: parts.part };
     }
   }
   return best;
@@ -84,17 +121,13 @@ export function rayEnemies(origin, dir, enemies, maxDistance) {
 export function rayEnemiesAll(origin, dir, enemies, maxDistance, out) {
   let n = 0;
   for (const e of enemies) {
-    const y = e.y ?? 0;
-    const tBody = rayCylinder(origin, dir, e.x, e.z, e.hitRadius, y, y + e.headBottom);
-    const tHead = rayCylinder(origin, dir, e.x, e.z, e.headRadius, y + e.headBottom, y + e.height);
-    const head = tHead <= tBody;
-    const t = head ? tHead : tBody;
-    if (t >= maxDistance) continue;
+    rayParts(origin, dir, e, parts);
+    if (parts.t >= maxDistance) continue;
     if (n === out.length) out.push({ enemy: null, distance: 0, part: 'body' });
     const hit = out[n++];
     hit.enemy = e;
-    hit.distance = t;
-    hit.part = head ? 'head' : 'body';
+    hit.distance = parts.t;
+    hit.part = parts.part;
   }
   // Insertion sort: a handful of hits at most.
   for (let i = 1; i < n; i++) {
@@ -107,6 +140,26 @@ export function rayEnemiesAll(origin, dir, enemies, maxDistance, out) {
     out[j + 1] = h;
   }
   return n;
+}
+
+// How much a hit on `part` is worth: the weak spot's own multiplier, the
+// enemy's headshot multiplier (else `headshot`, the weapons' default), or 1.
+export function partMultiplier(enemy, part, headshot) {
+  if (part === 'weak') return enemy.weakSpot?.multiplier ?? 1;
+  if (part === 'head') return enemy.headshotMultiplier ?? headshot;
+  return 1;
+}
+
+// Is a swing from `eye` coming from behind `e` (inside its weak spot's
+// meleeBehindDegrees of straight behind)? Then the shovel lands on the spot.
+export function meleeFromBehind(eye, e) {
+  const w = e.weakSpot;
+  if (!w) return false;
+  const dx = eye.x - e.x;
+  const dz = eye.z - e.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const ahead = (dx * Math.sin(e.facing) + dz * Math.cos(e.facing)) / d; // 1 = in front of it
+  return ahead <= -Math.cos((w.meleeBehindDegrees * Math.PI) / 180);
 }
 
 // Damage multiplier for range: 1 up to start, falling linearly to `min` at end.
