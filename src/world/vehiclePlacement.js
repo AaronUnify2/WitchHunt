@@ -40,13 +40,15 @@ export function footprint(v, length, width, pad = 0) {
   return [toWorld(v, -hw, -hl), toWorld(v, hw, -hl), toWorld(v, hw, hl), toWorld(v, -hw, hl)];
 }
 
-// Where the player stands for each hold-X spot: beside the driver's door,
-// behind the boot and in front of the bonnet.
+// Where the player stands for each hold-X spot: beside the driver's door
+// (left) and the passenger's (right), behind the boot and in front of
+// the bonnet.
 export function spotsOf(v, type, out) {
   const [length, width] = type.size;
   const doorZ = type.lids.door.box[5];
   return {
     door: toWorld(v, -width / 2 - out, doorZ),
+    door2: toWorld(v, width / 2 + out, doorZ),
     boot: toWorld(v, 0, -length / 2 - out),
     bonnet: toWorld(v, 0, length / 2 + out),
   };
@@ -109,8 +111,11 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     const corners = footprint(v, length, width, 0.3);
     for (const p of corners) if (ground.openAt(p.x, p.z) < pc.openNeeded) return false;
     if (ground.openAt(v.x, v.z) < pc.openNeeded) return false;
+    // The boot and bonnet must be reachable, and at least one front door
+    // (a verge car's passenger side often faces the trees).
     const spots = spotsOf(v, type, cfg.spotOut + 0.3);
-    for (const p of Object.values(spots)) if (ground.openAt(p.x, p.z) < pc.openNeeded) return false;
+    const open = (p) => ground.openAt(p.x, p.z) >= pc.openNeeded;
+    if (!open(spots.boot) || !open(spots.bonnet) || !(open(spots.door) || open(spots.door2))) return false;
     const front = toWorld(v, 0, length / 2);
     const back = toWorld(v, 0, -length / 2);
     const left = toWorld(v, -width / 2, 0);
@@ -126,9 +131,9 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     if (placed.length >= pc.maxVehicles || !fits(v, place)) return false;
     const type = data.types[v.type];
     const [length, width] = type.size;
-    const batteryChance = rule?.battery ?? cfg.batteryChance;
-    const battery = rng2.chance(batteryChance);
-    const alarm = battery && rng2.chance(rule?.alarm ?? cfg.alarmChance);
+    // A type's own chances (every police car has an alarm: Aaron) beat the place's, which beat config's.
+    const battery = rng2.chance(type.battery ?? rule?.battery ?? cfg.batteryChance);
+    const alarm = battery && rng2.chance(type.alarm ?? rule?.alarm ?? cfg.alarmChance);
     placed.push({ id: placed.length, type: v.type, x: v.x, z: v.z, yaw: v.yaw, battery, alarm, place });
     quads.push(footprint(v, length, width, pc.minGap / 2));
     return true;

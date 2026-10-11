@@ -1,15 +1,17 @@
 // Abandoned vehicles (M5 part 2, DESIGN.md "Vehicles and batteries"):
 // cars, pickup trucks, police cars and army trucks along the pathways and
 // in clearings (vehiclePlacement.js). Each is looted once per run, at
-// three hold-X spots:
-//  - the driver's door: search the cabin (loot);
+// its hold-X spots:
+//  - either front door (Aaron: from the driver's or the passenger's
+//    side): search the cabin (loot), once;
 //  - the boot (a pickup's bed, an army truck's back): search it (loot);
 //  - the bonnet: hold to lift it, then hold again to unbolt and pull the
 //    battery (Aaron: about 60% still have one). Pulling one is noisy.
-// Some with a battery have an alarm: opening the door or the boot, or
-// putting a bullet in it (Aaron's M5 test), sets it off. It wails, flashes its lamps and draws every zombie in earshot
-// until the battery is pulled (Aaron: "pulling the battery would kill
-// the alarm") or it runs flat.
+// Some with a battery have an alarm (every police car: Aaron): opening a
+// door or the boot, or putting a bullet in it, sets it off. It wails,
+// flashes its lamps and draws every zombie in earshot until the battery
+// is pulled (Aaron: "pulling the battery would kill the alarm") or it
+// runs flat. Searched doors and boots are left open a crack.
 // Vehicles block bodies and shots. Once you've been close, a vehicle
 // shows on the minimap and the map screen (dimmed once there's nothing
 // left in it). "Try again" restocks them all.
@@ -24,7 +26,9 @@ import { HoldAction } from '../player/HoldAction.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import vehicleData from '../data/vehicles.json';
 
-const SPOTS = ['door', 'boot', 'bonnet'];
+const SPOTS = ['door', 'door2', 'boot', 'bonnet']; // door2: the passenger door
+// What each spot searches: either door searches the cabin.
+const LOOT_OF = { door: 'door', door2: 'door', boot: 'boot' };
 
 export class Vehicles {
   constructor(cfg, rng, bus) {
@@ -72,14 +76,14 @@ export class Vehicles {
   restock() {
     for (const v of this.list) {
       v.searched = { door: false, boot: false };
-      v.opened = { door: false, boot: false }; // swung open (from the start of a search)
+      v.opened = { door: false, door2: false, boot: false }; // swung open (from the start of a search)
       v.bonnetUp = false;
       v.hasBattery = v.battery;
       v.flat = false; // the alarm ran the battery flat
       v.alarmArmed = v.alarm;
       v.ringing = false;
       v.ringTime = 0;
-      v.open = { door: 0, boot: 0, bonnet: 0 };
+      v.open = { door: 0, door2: 0, boot: 0, bonnet: 0 };
       v.seen = v.seen ?? false;
       v.lootRng = this.rng.fork(`loot-${v.id}`);
     }
@@ -140,7 +144,7 @@ export class Vehicles {
 
   // Doors, boots and bonnets swing to where they should be.
   animateLids(v, dt) {
-    const want = { door: v.opened.door, boot: v.opened.boot, bonnet: v.bonnetUp };
+    const want = { door: v.opened.door, door2: v.opened.door2, boot: v.opened.boot, bonnet: v.bonnetUp };
     let moved = false;
     for (const name of SPOTS) {
       const target = want[name] ? 1 : 0;
@@ -218,11 +222,12 @@ export class Vehicles {
   offerFor(v, spot, X) {
     const h = this.vc.hold;
     const words = v.def.spots;
-    if (spot === 'door' || spot === 'boot') {
-      if (v.searched[spot]) return null;
+    const loot = LOOT_OF[spot];
+    if (loot) {
+      if (v.searched[loot]) return null;
       return {
         key: `${v.id}-${spot}`,
-        prompt: `Hold ${X}: ${words[spot]}`,
+        prompt: `Hold ${X}: ${words[loot]}`,
         busy: 'Searching…',
         seconds: h.search,
         start: () => this.openUp(v, spot),
@@ -247,7 +252,7 @@ export class Vehicles {
 
   // Opening a door or the boot: a clunk, and an armed alarm goes off.
   openUp(v, spot) {
-    if (!v.opened[spot]) this.combat.sfx.play(spot === 'door' ? 'carDoor' : 'carBoot', v);
+    if (!v.opened[spot]) this.combat.sfx.play(spot === 'boot' ? 'carBoot' : 'carDoor', v);
     v.opened[spot] = true;
     this.tripAlarm(v);
   }
@@ -286,8 +291,9 @@ export class Vehicles {
   }
 
   search(v, spot) {
-    v.searched[spot] = true;
-    const found = rollLoot(v.def.loot[spot], v.lootRng);
+    const loot = LOOT_OF[spot];
+    v.searched[loot] = true;
+    const found = rollLoot(v.def.loot[loot], v.lootRng);
     const at = v.spots[spot];
     let any = false;
     for (const { item, amount } of found) {
@@ -299,7 +305,7 @@ export class Vehicles {
       this.combat.hud.pickup('Nothing useful');
       this.combat.sfx.play('denied');
     }
-    this.bus.emit('vehicle:searched', { vehicle: v, spot });
+    this.bus.emit('vehicle:searched', { vehicle: v, spot: loot });
   }
 
   liftBonnet(v) {

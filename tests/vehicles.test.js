@@ -103,6 +103,19 @@ describe('placeVehicles', () => {
     }
   });
 
+  it('gives every police car a battery and an alarm (Aaron)', () => {
+    let police = 0;
+    for (const seed of SEEDS) {
+      for (const v of place(seed).list) {
+        if (v.type !== 'police') continue;
+        police++;
+        expect(v.battery).toBe(true);
+        expect(v.alarm).toBe(true);
+      }
+    }
+    expect(police).toBeGreaterThan(0);
+  });
+
   it('gives roughly the agreed share of batteries, and alarms only with a battery', () => {
     let n = 0;
     let withBattery = 0;
@@ -114,7 +127,7 @@ describe('placeVehicles', () => {
       }
     }
     expect(withBattery / n).toBeGreaterThan(0.45);
-    expect(withBattery / n).toBeLessThan(0.78);
+    expect(withBattery / n).toBeLessThan(0.82);
   });
 
   it('keeps every vehicle on open ground, on gentle slopes, clear of each other, the station, signs and the cliff', () => {
@@ -132,7 +145,9 @@ describe('placeVehicles', () => {
           expect(p.z).toBeGreaterThan(ground.cliffZ(p.x) + ground.geo.cliff.walkMargin);
         }
         // Its spots can be stood on.
-        for (const p of Object.values(spotsOf(v, t, vc.spotOut))) expect(ground.openAt(p.x, p.z)).toBeGreaterThanOrEqual(pc.openNeeded);
+        const spots = spotsOf(v, t, vc.spotOut);
+        for (const p of [spots.boot, spots.bonnet]) expect(ground.openAt(p.x, p.z)).toBeGreaterThanOrEqual(pc.openNeeded);
+        expect(Math.max(ground.openAt(spots.door.x, spots.door.z), ground.openAt(spots.door2.x, spots.door2.z))).toBeGreaterThanOrEqual(pc.openNeeded);
         const front = toWorld(v, 0, length / 2);
         const back = toWorld(v, 0, -length / 2);
         expect(Math.abs(ground.heightAt(front.x, front.z) - ground.heightAt(back.x, back.z)) / length).toBeLessThanOrEqual(pc.maxSlope + 1e-9);

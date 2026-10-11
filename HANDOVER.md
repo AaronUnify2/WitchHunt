@@ -45,6 +45,15 @@ Details are in `STATUS.md` ("M5 part 2"):
 - **3 draw calls** for the whole fleet: one instanced cube mesh, one lamp mesh, one shadow pass. At home: 71 by day, against 68 without vehicles.
 - **Tests:** 283 pass (13 new: 12 for vehicles, 1 for the turret's view of the fence).
 
+### Aaron's look at the vehicles (follow-ups, all in)
+
+- Taller cabs, doors below the windows, round wheels with hubs.
+- A sloped windscreen and rear window (a wedge mesh), so they read as cars.
+- Doors and boots open only a crack once searched, with a dark hollow behind. Each door's window swings with it.
+- A passenger door: either front door searches the cab, once.
+- Every police car has a battery and an alarm, and a shot into a car with an alarm sets it off.
+- Debug: **Vehicles: teleport to the nearest alarm**.
+
 ### Unfinished
 
 Nothing in scope. Vehicle state isn't saved (saving is M6/M12), but each vehicle keeps its own flags ready for it.

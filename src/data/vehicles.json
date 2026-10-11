@@ -1,5 +1,5 @@
 {
-  "_note": "Abandoned vehicles (DESIGN.md \"Vehicles and batteries\"; M5 part 2, agreed with Aaron: four types, more one-off vehicles may come for later scenes). types: each type's look and loot. size: length (front to back), width and height in metres, used for colliders and the interaction spots. parts: placeholder boxes [w, h, l, x, y, z, colour] in the vehicle's own frame (x to its right, y up, z forward; (x, y, z) is the box's centre). colour: 'body' (the vehicle's paint, picked from paints), 'body2' (a second paint, e.g. a police car's lower half) or a key of colours; 'tyre' boxes are drawn as round wheels (a cylinder across the box's width) with a hub. lamps: unlit boxes (headlights, tail lights, light bars) drawn bright when an alarm flashes; colour 'head', 'tail' or a key of colours. lids: the hinged parts [w, h, l, x, y, z] closed, hinge: the edge they turn on ('back', 'front', 'bottom', 'frontSide') and angle (radians) fully open: bonnet (lift it to get at the battery), boot (searched for loot) and door (the driver's door, searched for loot). batteryAt: where the battery sits [x, y, z] (seen once the bonnet is up). spots: the words for each hold-X spot. loot: per spot, a loot table like data/loot.json's (items from loot.json; every entry rolled on its own). placement: which types turn up where (weights), by place: 'path' (pulled onto a pathway's verge), a clearing type id or an encounter id; count: how many in that clearing [min, max]; chance: how likely the clearing has any at all; battery / alarm: override the config chances (the campsite's car always has a battery and no alarm, an easy first source next to home); row: lined up like a roadblock.",
+  "_note": "Abandoned vehicles (DESIGN.md \"Vehicles and batteries\"; M5 part 2, agreed with Aaron: four types, more one-off vehicles may come for later scenes). types: each type's look and loot. size: length (front to back), width and height in metres, used for colliders and the interaction spots. parts: placeholder shapes [w, h, l, x, y, z, colour, shape?] in the vehicle's own frame (x to its right, y up, z forward; (x, y, z) is the centre). shape: none for a box; 'wedgeF' a wedge sloping down toward the front (a windscreen), 'wedgeB' sloping down toward the back (a rear window); 'tyre' coloured parts are drawn as round wheels with a hub. colour: 'body' (the vehicle's paint, picked from paints), 'body2' (a second paint, e.g. a police car's lower half) or a key of colours. lamps: unlit boxes (headlights, tail lights, light bars) drawn bright when an alarm flashes. lids: the hinged parts, closed: box [w, h, l, x, y, z] (the hinge is on one of its edges), extra: more boxes [w, h, l, x, y, z, colour] that swing with it (a door's window: Aaron, door and window are one piece), hollow: a dark box shown once it's open (the inside of the boot or the car: Aaron), hinge: 'back', 'front', 'bottom', 'top' or 'frontSide', and angle (radians) fully open. The bonnet opens wide (you pull the battery through it); the boot and doors only open a crack once searched (Aaron). The driver's door is on the left; the passenger door is the same, mirrored, and either one searches the cab. batteryAt: where the battery sits [x, y, z] (seen once the bonnet is up). spots: the words for each hold-X spot. loot: per spot, a loot table like data/loot.json's (items from loot.json; every entry rolled on its own). battery / alarm on a type: the chance it has one, overriding placement and config (Aaron: every police car has an alarm). placement: which types turn up where (weights), by place: 'path' (pulled onto a pathway's verge), a clearing type id or an encounter id; count: how many in that clearing [min, max]; chance: how likely the clearing has any at all; battery / alarm: override the config chances (the campsite's car always has a battery and no alarm, an easy first source next to home); row: lined up like a roadblock.",
   "colours": {
     "glass": "#14181c",
     "tyre": "#121212",
@@ -18,7 +18,8 @@
     "headOn": "#fff2b0",
     "tailOn": "#ff3020",
     "redOn": "#ff2a1a",
-    "blueOn": "#3050ff"
+    "blueOn": "#3050ff",
+    "hollow": "#070707"
   },
   "types": {
     "sedan": {
@@ -27,8 +28,10 @@
       "paints": ["#4a3a30", "#3b4654", "#5a2e2a", "#4a4a46", "#3e4a36", "#5a5040"],
       "parts": [
         [1.76, 0.55, 4.4, 0, 0.6, 0, "body"],
-        [1.72, 0.88, 2.2, 0, 1.31, -0.25, "body"],
-        [1.76, 0.4, 2.24, 0, 1.45, -0.25, "glass"],
+        [1.72, 0.88, 1.3, 0, 1.31, -0.3, "body"],
+        [1.76, 0.4, 1.34, 0, 1.45, -0.3, "glass"],
+        [1.68, 0.88, 0.65, 0, 1.31, 0.675, "glass", "wedgeF"],
+        [1.68, 0.88, 0.6, 0, 1.31, -1.25, "glass", "wedgeB"],
         [0.26, 0.62, 0.62, -0.78, 0.31, 1.35, "tyre"],
         [0.26, 0.62, 0.62, 0.78, 0.31, 1.35, "tyre"],
         [0.26, 0.62, 0.62, -0.78, 0.31, -1.35, "tyre"],
@@ -43,23 +46,32 @@
         [0.3, 0.14, 0.04, 0.62, 0.72, -2.21, "tail"]
       ],
       "lids": {
-        "bonnet": { "box": [1.66, 0.06, 1.25, 0, 0.9, 1.5], "hinge": "back", "angle": 1.1, "colour": "body" },
-        "boot": { "box": [1.66, 0.06, 0.95, 0, 0.9, -1.72], "hinge": "front", "angle": 1.2, "colour": "body" },
-        "door": { "box": [0.06, 0.82, 1.05, -0.91, 0.81, 0.2], "hinge": "frontSide", "angle": 1.05, "colour": "body" }
+        "bonnet": {"box": [1.66, 0.06, 1.15, 0, 0.9, 1.575], "hinge": "back", "angle": 1.1, "colour": "body"},
+        "boot": {"box": [1.66, 0.06, 0.65, 0, 0.9, -1.875], "hinge": "front", "angle": 0.35, "colour": "body", "hollow": [1.5, 0.02, 0.55, 0, 0.87, -1.875]},
+        "door": {
+          "box": [0.04, 0.82, 1.1, -0.905, 0.81, 0.1],
+          "hinge": "frontSide",
+          "angle": 0.4,
+          "colour": "body",
+          "extra": [
+            [0.04, 0.4, 0.8, -0.905, 1.45, -0.05, "glass"]
+          ],
+          "hollow": [0.01, 1.2, 1.05, -0.887, 1.0, 0.1]
+        }
       },
       "batteryAt": [0.45, 0.88, 1.75],
-      "spots": { "door": "search the car", "boot": "search the boot", "bonnet": "lift the bonnet" },
+      "spots": {"door": "search the car", "boot": "search the boot", "bonnet": "lift the bonnet"},
       "loot": {
         "door": [
-          { "item": "scrap", "chance": 0.7, "min": 1, "max": 3 },
-          { "item": "firstAid", "chance": 0.15 },
-          { "item": "shotgunAmmo", "chance": 0.12, "min": 1, "max": 3 },
-          { "item": "pistolAmmo", "chance": 0.1, "min": 2, "max": 6 }
+          {"item": "scrap", "chance": 0.7, "min": 1, "max": 3},
+          {"item": "firstAid", "chance": 0.15},
+          {"item": "shotgunAmmo", "chance": 0.12, "min": 1, "max": 3},
+          {"item": "pistolAmmo", "chance": 0.1, "min": 2, "max": 6}
         ],
         "boot": [
-          { "item": "scrap", "chance": 0.85, "min": 2, "max": 5 },
-          { "item": "firstAid", "chance": 0.2 },
-          { "item": "shotgunAmmo", "chance": 0.15, "min": 2, "max": 4 }
+          {"item": "scrap", "chance": 0.85, "min": 2, "max": 5},
+          {"item": "firstAid", "chance": 0.2},
+          {"item": "shotgunAmmo", "chance": 0.15, "min": 2, "max": 4}
         ]
       }
     },
@@ -69,8 +81,9 @@
       "paints": ["#5a3424", "#44443c", "#3a4a5a", "#5a5432", "#2e3a2a"],
       "parts": [
         [1.9, 0.5, 5.2, 0, 0.68, 0, "body"],
-        [1.86, 1.02, 1.7, 0, 1.44, 0.35, "body"],
-        [1.9, 0.4, 1.74, 0, 1.65, 0.35, "glass"],
+        [1.86, 1.02, 1.4, 0, 1.44, 0.2, "body"],
+        [1.9, 0.4, 1.44, 0, 1.65, 0.2, "glass"],
+        [1.8, 1.02, 0.55, 0, 1.44, 1.175, "glass", "wedgeF"],
         [0.08, 0.42, 2.0, -0.91, 1.14, -1.55, "body"],
         [0.08, 0.42, 2.0, 0.91, 1.14, -1.55, "body"],
         [1.74, 0.42, 0.08, 0, 1.14, -0.55, "body"],
@@ -88,21 +101,30 @@
         [0.12, 0.3, 0.04, 0.86, 0.95, -2.61, "tail"]
       ],
       "lids": {
-        "bonnet": { "box": [1.8, 0.06, 1.35, 0, 0.96, 1.88], "hinge": "back", "angle": 1.05, "colour": "body" },
-        "boot": { "box": [1.74, 0.42, 0.08, 0, 1.14, -2.56], "hinge": "bottom", "angle": 1.45, "colour": "body" },
-        "door": { "box": [0.06, 0.92, 1.1, -0.98, 0.96, 0.55], "hinge": "frontSide", "angle": 1.05, "colour": "body" }
+        "bonnet": {"box": [1.8, 0.06, 1.13, 0, 0.96, 2.015], "hinge": "back", "angle": 1.05, "colour": "body"},
+        "boot": {"box": [1.74, 0.42, 0.08, 0, 1.14, -2.56], "hinge": "bottom", "angle": 0.4, "colour": "body"},
+        "door": {
+          "box": [0.04, 0.92, 1.2, -0.975, 0.96, 0.25],
+          "hinge": "frontSide",
+          "angle": 0.4,
+          "colour": "body",
+          "extra": [
+            [0.04, 0.4, 1.05, -0.975, 1.65, 0.175, "glass"]
+          ],
+          "hollow": [0.01, 1.35, 1.15, -0.957, 1.17, 0.25]
+        }
       },
       "batteryAt": [0.5, 0.94, 2.1],
-      "spots": { "door": "search the cab", "boot": "search the truck bed", "bonnet": "lift the bonnet" },
+      "spots": {"door": "search the cab", "boot": "search the truck bed", "bonnet": "lift the bonnet"},
       "loot": {
         "door": [
-          { "item": "scrap", "chance": 0.6, "min": 1, "max": 3 },
-          { "item": "shotgunAmmo", "chance": 0.3, "min": 2, "max": 5 },
-          { "item": "rifleAmmo", "chance": 0.08, "min": 1, "max": 3 }
+          {"item": "scrap", "chance": 0.6, "min": 1, "max": 3},
+          {"item": "shotgunAmmo", "chance": 0.3, "min": 2, "max": 5},
+          {"item": "rifleAmmo", "chance": 0.08, "min": 1, "max": 3}
         ],
         "boot": [
-          { "item": "scrap", "chance": 1, "min": 4, "max": 9 },
-          { "item": "firstAid", "chance": 0.1 }
+          {"item": "scrap", "chance": 1, "min": 4, "max": 9},
+          {"item": "firstAid", "chance": 0.1}
         ]
       }
     },
@@ -114,44 +136,57 @@
       "parts": [
         [1.8, 0.3, 4.6, 0, 0.47, 0, "body2"],
         [1.8, 0.26, 4.6, 0, 0.75, 0, "body"],
-        [1.76, 0.9, 2.3, 0, 1.33, -0.2, "body"],
-        [1.8, 0.38, 2.34, 0, 1.49, -0.2, "glass"],
+        [1.76, 0.9, 1.35, 0, 1.33, -0.325, "body"],
+        [1.8, 0.38, 1.39, 0, 1.49, -0.325, "glass"],
+        [1.72, 0.9, 0.7, 0, 1.33, 0.7, "glass", "wedgeF"],
+        [1.72, 0.9, 0.6, 0, 1.33, -1.3, "glass", "wedgeB"],
         [0.26, 0.62, 0.62, -0.8, 0.31, 1.4, "tyre"],
         [0.26, 0.62, 0.62, 0.8, 0.31, 1.4, "tyre"],
         [0.26, 0.62, 0.62, -0.8, 0.31, -1.4, "tyre"],
         [0.26, 0.62, 0.62, 0.8, 0.31, -1.4, "tyre"],
         [1.84, 0.2, 0.18, 0, 0.42, 2.32, "trim"],
         [1.84, 0.16, 0.14, 0, 0.42, -2.3, "trim"],
-        [1.1, 0.08, 0.3, 0, 1.82, -0.1, "trim"]
+        [1.1, 0.08, 0.3, 0, 1.82, -0.3, "trim"]
       ],
       "lamps": [
         [0.36, 0.14, 0.04, -0.6, 0.74, 2.31, "head"],
         [0.36, 0.14, 0.04, 0.6, 0.74, 2.31, "head"],
         [0.3, 0.14, 0.04, -0.64, 0.74, -2.31, "tail"],
         [0.3, 0.14, 0.04, 0.64, 0.74, -2.31, "tail"],
-        [0.5, 0.12, 0.26, -0.28, 1.9, -0.1, "red"],
-        [0.5, 0.12, 0.26, 0.28, 1.9, -0.1, "blue"]
+        [0.5, 0.12, 0.26, -0.28, 1.9, -0.3, "red"],
+        [0.5, 0.12, 0.26, 0.28, 1.9, -0.3, "blue"]
       ],
       "lids": {
-        "bonnet": { "box": [1.7, 0.06, 1.3, 0, 0.91, 1.58], "hinge": "back", "angle": 1.1, "colour": "body" },
-        "boot": { "box": [1.7, 0.06, 0.95, 0, 0.91, -1.8], "hinge": "front", "angle": 1.2, "colour": "body" },
-        "door": { "box": [0.06, 0.83, 1.1, -0.93, 0.835, 0.25], "hinge": "frontSide", "angle": 1.05, "colour": "body" }
+        "bonnet": {"box": [1.7, 0.06, 1.22, 0, 0.91, 1.67], "hinge": "back", "angle": 1.1, "colour": "body"},
+        "boot": {"box": [1.7, 0.06, 0.68, 0, 0.91, -1.95], "hinge": "front", "angle": 0.35, "colour": "body", "hollow": [1.54, 0.02, 0.58, 0, 0.88, -1.95]},
+        "door": {
+          "box": [0.04, 0.83, 1.1, -0.925, 0.835, 0.1],
+          "hinge": "frontSide",
+          "angle": 0.4,
+          "colour": "body",
+          "extra": [
+            [0.04, 0.38, 0.8, -0.925, 1.49, -0.05, "glass"]
+          ],
+          "hollow": [0.01, 1.25, 1.05, -0.907, 1.05, 0.1]
+        }
       },
       "batteryAt": [0.45, 0.89, 1.85],
-      "spots": { "door": "search the police car", "boot": "search the boot", "bonnet": "lift the bonnet" },
+      "spots": {"door": "search the police car", "boot": "search the boot", "bonnet": "lift the bonnet"},
       "loot": {
         "door": [
-          { "item": "pistolAmmo", "chance": 0.6, "min": 4, "max": 10 },
-          { "item": "shotgunAmmo", "chance": 0.35, "min": 2, "max": 5 },
-          { "item": "scrap", "chance": 0.3, "min": 1, "max": 2 }
+          {"item": "pistolAmmo", "chance": 0.6, "min": 4, "max": 10},
+          {"item": "shotgunAmmo", "chance": 0.35, "min": 2, "max": 5},
+          {"item": "scrap", "chance": 0.3, "min": 1, "max": 2}
         ],
         "boot": [
-          { "item": "vest", "chance": 0.45 },
-          { "item": "shotgunAmmo", "chance": 0.4, "min": 3, "max": 6 },
-          { "item": "firstAid", "chance": 0.35 },
-          { "item": "scrap", "chance": 0.4, "min": 1, "max": 3 }
+          {"item": "vest", "chance": 0.45},
+          {"item": "shotgunAmmo", "chance": 0.4, "min": 3, "max": 6},
+          {"item": "firstAid", "chance": 0.35},
+          {"item": "scrap", "chance": 0.4, "min": 1, "max": 3}
         ]
-      }
+      },
+      "battery": 1,
+      "alarm": 1
     },
     "army": {
       "name": "army truck",
@@ -177,38 +212,82 @@
         [0.2, 0.14, 0.04, 0.9, 0.95, -3.21, "tail"]
       ],
       "lids": {
-        "bonnet": { "box": [2.0, 0.06, 1.15, 0, 1.13, 2.62], "hinge": "back", "angle": 1.0, "colour": "body" },
-        "boot": { "box": [2.1, 1.3, 0.06, 0, 1.8, -3.17], "hinge": "top", "angle": 1.3, "colour": "canvas" },
-        "door": { "box": [0.06, 0.77, 1.1, -1.11, 1.535, 1.75], "hinge": "frontSide", "angle": 1.05, "colour": "body" }
+        "bonnet": {"box": [2.0, 0.06, 1.15, 0, 1.13, 2.62], "hinge": "back", "angle": 1.0, "colour": "body"},
+        "boot": {"box": [2.1, 1.3, 0.06, 0, 1.8, -3.17], "hinge": "top", "angle": 0.35, "colour": "canvas", "hollow": [2.0, 1.2, 0.01, 0, 1.8, -3.13]},
+        "door": {
+          "box": [0.04, 0.77, 1.1, -1.105, 1.535, 1.75],
+          "hinge": "frontSide",
+          "angle": 0.4,
+          "colour": "body",
+          "extra": [
+            [0.04, 0.42, 1.0, -1.105, 2.17, 1.7, "glass"]
+          ],
+          "hollow": [0.01, 1.25, 1.05, -1.087, 1.75, 1.75]
+        }
       },
       "batteryAt": [0.55, 1.12, 2.8],
-      "spots": { "door": "search the cab", "boot": "search the back", "bonnet": "lift the bonnet" },
+      "spots": {"door": "search the cab", "boot": "search the back", "bonnet": "lift the bonnet"},
       "loot": {
         "door": [
-          { "item": "rifleAmmo", "chance": 0.5, "min": 2, "max": 5 },
-          { "item": "scrap", "chance": 0.4, "min": 1, "max": 3 },
-          { "item": "firstAid", "chance": 0.2 }
+          {"item": "rifleAmmo", "chance": 0.5, "min": 2, "max": 5},
+          {"item": "scrap", "chance": 0.4, "min": 1, "max": 3},
+          {"item": "firstAid", "chance": 0.2}
         ],
         "boot": [
-          { "item": "rifleAmmo", "chance": 0.55, "min": 3, "max": 8 },
-          { "item": "helmet", "chance": 0.4 },
-          { "item": "scrap", "chance": 0.8, "min": 3, "max": 7 },
-          { "item": "firstAid", "chance": 0.25 }
+          {"item": "rifleAmmo", "chance": 0.55, "min": 3, "max": 8},
+          {"item": "helmet", "chance": 0.4},
+          {"item": "scrap", "chance": 0.8, "min": 3, "max": 7},
+          {"item": "firstAid", "chance": 0.25}
         ]
       }
     }
   },
   "placement": {
-    "path": { "weights": { "sedan": 0.5, "pickup": 0.35, "police": 0.1, "army": 0.05 } },
-    "default": { "count": [1, 1], "chance": 0.35, "weights": { "sedan": 0.5, "pickup": 0.4, "police": 0.05, "army": 0.05 } },
-    "roadside": { "count": [3, 5], "chance": 1, "row": true, "weights": { "sedan": 0.4, "pickup": 0.2, "police": 0.35, "army": 0.05 } },
-    "checkpoint": { "count": [2, 3], "chance": 1, "row": true, "weights": { "army": 0.8, "police": 0.2 } },
-    "campsite": { "count": [1, 1], "chance": 1, "battery": 1, "alarm": 0, "weights": { "pickup": 0.6, "sedan": 0.4 } },
-    "gasStation": { "count": [2, 3], "chance": 1, "weights": { "sedan": 0.5, "pickup": 0.4, "police": 0.1 } },
-    "outpost": { "count": [2, 3], "chance": 1, "row": true, "weights": { "army": 1 } },
-    "home": { "count": [0, 0], "chance": 0 },
-    "hut": { "count": [0, 0], "chance": 0 },
-    "crashedPlane": { "count": [0, 0], "chance": 0 },
-    "mineshaft": { "count": [0, 1], "chance": 0.5, "weights": { "pickup": 1 } }
+    "path": {
+      "weights": {"sedan": 0.5, "pickup": 0.35, "police": 0.1, "army": 0.05}
+    },
+    "default": {
+      "count": [1, 1],
+      "chance": 0.35,
+      "weights": {"sedan": 0.5, "pickup": 0.4, "police": 0.05, "army": 0.05}
+    },
+    "roadside": {
+      "count": [3, 5],
+      "chance": 1,
+      "row": true,
+      "weights": {"sedan": 0.4, "pickup": 0.2, "police": 0.35, "army": 0.05}
+    },
+    "checkpoint": {
+      "count": [2, 3],
+      "chance": 1,
+      "row": true,
+      "weights": {"army": 0.8, "police": 0.2}
+    },
+    "campsite": {
+      "count": [1, 1],
+      "chance": 1,
+      "battery": 1,
+      "alarm": 0,
+      "weights": {"pickup": 0.6, "sedan": 0.4}
+    },
+    "gasStation": {
+      "count": [2, 3],
+      "chance": 1,
+      "weights": {"sedan": 0.5, "pickup": 0.4, "police": 0.1}
+    },
+    "outpost": {
+      "count": [2, 3],
+      "chance": 1,
+      "row": true,
+      "weights": {"army": 1}
+    },
+    "home": {"count": [0, 0], "chance": 0},
+    "hut": {"count": [0, 0], "chance": 0},
+    "crashedPlane": {"count": [0, 0], "chance": 0},
+    "mineshaft": {
+      "count": [0, 1],
+      "chance": 0.5,
+      "weights": {"pickup": 1}
+    }
   }
 }
