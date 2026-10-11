@@ -140,7 +140,7 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 ### Resources and inventory
 
 - **Scrap:** the catch-all for building, repairing and upgrading.
-- **Batteries:** power the electric fence and turret. Taken from vehicles and some encounters. Heavy: one carry slot each.
+- **Batteries:** power the electric fence and turret. Taken from vehicles and some encounters. (Aaron, M5: no carry limit and no slowdown for carrying them, for now.)
 - **Explosive charges:** carry at most two. Take carry slots.
 - **Flares:** carry at most 3 (config). Few sources: start, loot tables, the crashed plane, the outpost.
 - **Ammo** per weapon type, **first aid kits**, **lore items** (documents, logbooks, the camcorder, the time capsule).
@@ -203,6 +203,7 @@ The player's home and base, set against the northern cliff. The family live here
 - **Station cabin** in the centre, with the **fire lookout tower** beside it. Climbing the tower reveals the map within a large radius (config).
 - **Comms room:** a fortified room inside the station with the radio, the CCTV monitors and the ledger. The family shelter here every night.
 - **Three layers of defence:** fence → station front door → comms room door. Each has its own health and is repaired and upgraded with scrap.
+- **Decided with Aaron in M5:** the fence is **12 segments plus a gate** due south that opens itself for the player. Runs start with the **east fence torn up, a little scrap and no charge**. Spare scrap goes on **barricades** (a second wall behind a segment), **spike traps** (outside a segment) and **floodlights** (four fixed poles), all at fixed slots.
 
 ### The ledger
 
@@ -240,6 +241,7 @@ The sum of every defence's current value (each scales with its remaining health)
 One per run, from the Car Armory.
 
 - **Power:** wired into the fence's charge. Unpowered = offline, whatever ammo it holds.
+- **Aaron, M5:** its rounds carve through a crowd even more than the rifle's: make a spectacle of it. Until the Car Armory exists (M11) the debug menu gives it.
 - **Ammo:** loaded by hand (at the turret or the ledger). Any ammo converts to turret rounds **by damage**: turret rounds gained = rounds deposited × (that ammo's damage ÷ turret round damage).
 
 | Ammo | Damage per round | Turret rounds per round (turret round = 10) |

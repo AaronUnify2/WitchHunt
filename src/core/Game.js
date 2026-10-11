@@ -334,7 +334,8 @@ export class Game {
     // The debug menu and the map screen stop the action. The map screen
     // pauses the clock too (Aaron, M4); the debug menu lets it run on.
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
-    if (running && !this.mapUi.isOpen) this.clock.update(dt);
+    const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
+    if (running && !this.mapUi.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const locked = this.station.ledger.isOpen;

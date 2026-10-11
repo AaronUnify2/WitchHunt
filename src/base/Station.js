@@ -382,9 +382,12 @@ export class Station {
     if (this.player.platform) {
       return { key: 'tower-down', prompt: `Hold ${X}: climb down`, busy: 'Climbing down…', seconds: h.climb, act: () => this.climbDown() };
     }
+    // Spots (the desk, ladder, fence box, turret, doors) come first; the
+    // long fence line behind them only when no spot is in reach.
     let best = null;
-    const offer = (d, entry) => {
-      if (d <= range && (!best || d < best.d)) best = { d, ...entry };
+    const offer = (d, entry, tier = 0) => {
+      if (d > range) return;
+      if (!best || tier < best.tier || (tier === best.tier && d < best.d)) best = { d, tier, ...entry };
     };
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
 
@@ -433,7 +436,7 @@ export class Station {
       if (a < g.a0 - pad2 || a > g.a1 + pad2) continue;
       const cost = s.repairCost(b);
       if (cost > 0) {
-        offer(Math.abs(r - R), this.repairOffer(b, cost, X));
+        offer(Math.abs(r - R), this.repairOffer(b, cost, X), 1);
         continue;
       }
       if (i === null || r >= R) continue;
@@ -442,11 +445,11 @@ export class Station {
       if (!bar.built) {
         const price = sc.costs.barricade;
         if (inv.scrap >= price) {
-          offer(dBar, { key: `barricade${i}`, prompt: `Hold ${X}: build a barricade behind the ${g.name} (${price} scrap)`, busy: 'Building…', seconds: h.build, act: () => this.buildBarricade(i) });
+          offer(dBar, { key: `barricade${i}`, prompt: `Hold ${X}: build a barricade behind the ${g.name} (${price} scrap)`, busy: 'Building…', seconds: h.build, act: () => this.buildBarricade(i) }, 1);
         }
       } else {
         const bc = s.repairCost(bar);
-        if (bc > 0) offer(dBar, this.repairOffer(bar, bc, X));
+        if (bc > 0) offer(dBar, this.repairOffer(bar, bc, X), 1);
       }
     }
     return best;

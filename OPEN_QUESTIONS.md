@@ -2,6 +2,26 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 6 (M5 part 1, Gameplay Programmer)
+
+Agreed with Aaron before building: **12 fence segments plus an automatic gate**; the turret comes from the **debug menu** until the Car Armory (M11); **barricades, spike traps and floodlights** go in now, as a way to spend spare scrap; runs start with the **east fence torn up, a little scrap and no charge**; **no carry limit and no slowdown** for batteries; prices are placeholders for the play-test; the **turret's rounds go through crowds even more than the rifle's** ("make a bit of a spectacle"); vehicles and battery pulling can be split into a second session.
+
+| # | Question | What M5 does now | Where to change it |
+| --- | --- | --- | --- |
+| 66 | The compound's size and shape. | The fence is an arc of radius 28 m round a point 16 m south of the cliff, from the cliff on the west to the cliff on the east (about 235° of arc, 111 m of fence plus a 4.5 m gate due south). The cabin (12 x 8 m) stands in the middle, the tower 11 m east of the centre. **The home clearing grew from 38 to 42 m** so there's cleared ground outside the fence: every seed's map changes a little. | `config.station.layout`, `config.map.home.radius` |
+| 67 | Health of each defence, and how hard zombies hit them. | Fence segment 200, gate 300, barricade 150, door 300 (600 reinforced). A swipe does the zombie's damage (10, a mutant's 30) × the level's `defenceDamage` (1-2). A level 1 citizen takes about 25 s alone to break a segment. | `config.station.fence`, `doors`, `siege.strikeScale` |
+| 68 | How the electric fence "damages and slows". | Each swipe at a charged fence or gate zaps the zombie: 15 damage and a 0.9 s stun (the slow), at most once a second each, costing 1.5 charge. | `config.station.power` |
+| 69 | Charge numbers. | A battery adds 100 (max 300). It drains 40 a night (spread over the night), plus 4 per floodlight, 1.5 per zap and 0.05 per turret shot. The fence's security is 20 at 100 charge or more. | `config.station.power`, `security.fenceCharge` |
+| 70 | Security values the table doesn't give. | Each fence segment and the gate count as a wall segment (2 each, 26 for the lot); a plain door is 2, reinforced 5; electric charge up to 20. Turret, spikes (3) and floodlights (4) as in the table. A fresh run is about 25. | `config.station.security` |
+| 71 | Prices. | Whole fence segment repair 12 scrap (part repairs pay their share), gate 16, door 15, barricade 15, reinforce a door 30, spike trap 20 (rebuild 10), floodlight 25. Runs start with 30 scrap. | `config.station.costs`, `config.inventory.startScrap` |
+| 72 | What the buyable defences do. | **Barricade:** a second wall just inside a segment (150 health); zombies have to break both. **Spike trap:** outside a segment; 12 damage and a 0.8 s slow to each zombie on it, 15 bites before it wears out. **Floodlight:** on a pole on 4 fixed segments; at night, while there's charge, it lights a pool outside the fence (zombies in it are lit up) and adds 4 security. Fixed slots; no free placement. | `config.station.spikes`, `floodlight`, `layout.floodSegments` |
+| 73 | Turret targeting and "spectacle". | It shoots zombies inside the fence first, then any clawing at the defences, then the nearest, within 42 m and in sight. Each round goes through up to 7 zombies keeping 90% each time (the rifle: 4 and 75%), with a heavy tracer, flash and report that brings zombies within 50 m. Turns at 200°/s. | `config.station.turret` |
+| 74 | What the turret loads at the turret itself. | Holding X loads pistol rounds first (all of them), then 4 shells, then 5 rifle rounds per hold, so precious rifle ammo goes last. The ledger loads any type. | `config.station.turret.loadOrder`, `loadBatch` |
+| 75 | How the gate and doors open. | They open themselves when you're close (gate 3.5 m, doors 1.8 m) and close behind you. While open, zombies can get through, so don't hold the gate open with a horde outside. | `config.station.fence.gateOpenDistance`, `doors.openDistance` |
+| 76 | The lookout tower. | Hold X at the ladder to climb (1 s): you're on the 9 m platform, the map is revealed for 260 m round it, and zombies below can't reach you. Hold X again to climb down. | `config.station.layout.tower` |
+| 77 | What ends the run at home. | A zombie inside the comms room: "The station fell" (a placeholder; M7 builds the real defeat screen). The debug menu can turn this off. | `config.station.siege.overrun` |
+| 78 | Does the ledger pause the clock? | No (DESIGN.md). While it's open your controls go to the book; the world carries on. | `config.ledger.pausesClock` (stops the clock only; zombies still move) |
+
 ## Session 5 (M4, AI Programmer)
 
 Agreed with Aaron before building: the placeholder 3D mutant; sigil grounds get only what matters for play now; a stand-in plants the sigils until the witch (M7); the loot plan (pistol ammo kept for the pistol, miners wait for the mineshaft); the map screen pauses the game (#39).
