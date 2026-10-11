@@ -458,3 +458,129 @@ body {
   color: var(--dim);
   white-space: pre-wrap;
 }
+
+/* ---- The station's ledger (M5). Placeholder book; the pixel-font book is Session 19. ---- */
+.ledger {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.ledger-book {
+  width: min(92vw, 60rem);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.5rem;
+  background: #2a2016;
+  color: #e8dcc0;
+  border: 2px solid #5a4630;
+  box-shadow: 0 0 0 6px #1a130c, 0 10px 40px rgba(0, 0, 0, 0.7);
+  font-size: clamp(12px, 2vmin, 18px);
+}
+
+.ledger-book h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.2em;
+  letter-spacing: 0.25em;
+  color: #f0c870;
+}
+
+.ledger-summary {
+  font-size: 0.85em;
+  color: #c8b890;
+  margin-bottom: 0.6rem;
+}
+
+.ledger-tabs {
+  display: flex;
+  gap: 0.4rem;
+  border-bottom: 1px solid #5a4630;
+  margin-bottom: 0.4rem;
+}
+
+.ledger-tabs span {
+  padding: 0.25rem 0.8rem;
+  color: #a08c68;
+}
+
+.ledger-tabs span.on {
+  background: #5a4630;
+  color: #fff2d0;
+}
+
+.ledger ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.ledger li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.28rem 0.5rem;
+}
+
+.ledger li.info {
+  color: #a8987a;
+}
+
+.ledger li.selected {
+  background: #e8c070;
+  color: #1a130c;
+}
+
+.ledger-value {
+  text-align: right;
+}
+
+.ledger-message {
+  min-height: 1.4em;
+  margin-top: 0.5rem;
+  color: #f0c870;
+}
+
+.ledger-help {
+  margin: 0.3rem 0 0;
+  font-size: 0.75em;
+  color: #8a7858;
+}
+
+/* M5: the station strip under the minimap */
+.hud-station {
+  position: absolute;
+  top: calc(var(--safe) + 26vmin);
+  right: var(--safe);
+  text-align: right;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: #d8d0c0;
+}
+
+.hud-station .pips span {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.9em;
+  margin-left: 2px;
+  background: #6a9a58;
+  vertical-align: middle;
+}
+
+.hud-station .pips span.mid { background: #c89a3a; }
+.hud-station .pips span.low { background: #b84030; }
+.hud-station .pips span.down { background: #2a2a2a; outline: 1px solid #b84030; }
+.hud-station .pips span.gate { width: 1em; }
+.hud-station .pips span.hit { animation: hud-station-hit 0.35s steps(2) infinite; }
+.hud-station .charged { color: #8ad8ff; }
+
+@keyframes hud-station-hit {
+  50% { background: #ffffff; }
+}

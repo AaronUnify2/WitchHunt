@@ -4,6 +4,10 @@
 // brain points it (EnemyManager and ZombieBrain set `mode` and the goal):
 //  - 'chase': straight at the player, swiping when in reach;
 //  - 'search' / 'wander': toward (goalX, goalZ), never swiping.
+// M5: at the station a route can override where it walks (via, set by
+// EnemyManager from the station's siege routing): it heads for (viaX,
+// viaZ) instead, and if a defence is in the way (barrier) it claws that
+// when it gets there. A chasing zombie still swipes at a player in reach.
 // Hit: flinches and staggers. Killed: falls, lies as a corpse, sinks away
 // and returns to the pool. At dawn it can burrow back into the ground.
 //
@@ -96,6 +100,17 @@ export class Zombie {
     this.chargeLeft = 0; // metres of sprinting still to go in this burst
     this.chargeTimer = 0; // seconds to the next burst while chasing
     this.chargeStarted = false; // set on the frame a burst starts (EnemyManager reports it)
+    this.clearVia();
+    this.attackBarrier = null; // the defence it's clawing (M5), or null for the player
+  }
+
+  // M5: no station route this frame.
+  clearVia() {
+    this.via = false;
+    this.viaX = 0;
+    this.viaZ = 0;
+    this.barrier = null;
+    this.viaReach = 0.55;
   }
 
   // It has just become aware of the player: a mutant charges a few fast
@@ -143,13 +158,19 @@ export class Zombie {
       case 'walk':
         if (this.mode === 'chase') {
           this.updateCharge(dt);
-          this.walkToPlayer(dt, player);
+          if (this.via && Math.hypot(player.x - this.x, player.z - this.z) > this.attackReach) this.walkVia(dt);
+          else this.walkToPlayer(dt, player);
         } else {
           this.chargeLeft = 0; // bursts are only ever at the player
-          if (this.hasGoal) this.walkToGoal(dt);
+          if (this.via) this.walkVia(dt);
+          else if (this.hasGoal) this.walkToGoal(dt);
         }
         break;
       case 'attack': {
+        if (this.attackBarrier) {
+          this.clawBarrier(dt, onStrike);
+          break;
+        }
         const dx = player.x - this.x;
         const dz = player.z - this.z;
         this.turnToward(dx, dz, dt);
@@ -203,6 +224,41 @@ export class Zombie {
     const step = Math.min(speed * dt, dist - this.attackReach * 0.9);
     this.stepForward(step);
     if (this.charging) this.chargeLeft = Math.max(0, this.chargeLeft - Math.max(0, step));
+  }
+
+  // M5: along the station route; at a defence in the way, start clawing it.
+  walkVia(dt) {
+    const dx = this.viaX - this.x;
+    const dz = this.viaZ - this.z;
+    const dist = Math.hypot(dx, dz);
+    if (this.barrier && dist <= this.viaReach) {
+      this.state = 'attack';
+      this.timer = 0;
+      this.struck = false;
+      this.chargeLeft = 0;
+      this.attackBarrier = this.barrier;
+      return;
+    }
+    if (dist < 1e-3) return;
+    this.turnToward(dx, dz, dt);
+    const speed = this.charging ? this.charge.speed : this.speed * this.pace;
+    const step = Math.min(speed * this.moveScale * dt, dist);
+    this.stepForward(step);
+    if (this.charging) this.chargeLeft = Math.max(0, this.chargeLeft - step);
+  }
+
+  // One swipe at a defence: wind up, strike (onStrike(zombie, barrier)), recover.
+  clawBarrier(dt, onStrike) {
+    this.turnToward(this.viaX - this.x, this.viaZ - this.z, dt);
+    this.timer += dt;
+    if (!this.struck && this.timer >= this.attackWindup) {
+      this.struck = true;
+      onStrike?.(this, this.attackBarrier);
+    }
+    if (this.timer >= this.attackWindup + this.attackRecover) {
+      this.state = 'walk';
+      this.attackBarrier = null;
+    }
   }
 
   // Every `interval` seconds of chasing, another burst of sprinting steps.
@@ -263,6 +319,7 @@ export class Zombie {
     if (stun > 0 && this.state !== 'rise' && !(this.state === 'attack' && this.struck)) {
       const left = this.state === 'stagger' ? this.timer : 0;
       this.state = 'stagger';
+      this.attackBarrier = null;
       this.chargeLeft = 0;
       this.timer = Math.max(left, stun);
     }

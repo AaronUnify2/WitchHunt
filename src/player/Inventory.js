@@ -1,8 +1,9 @@
 // The player's carried items. First aid kits (M2); from M4, scrap and ammo
 // for weapons the player isn't carrying yet (pistol rounds from police
 // zombies wait for the pistol). Ammo for carried guns lives with each
-// weapon. Batteries, charges, flares and lore items arrive with the
-// systems that use them.
+// weapon. M5: batteries (for the fence box; no carry limit and no
+// slowdown, Aaron) and spending scrap at the station. Charges, flares and
+// lore items arrive with the systems that use them.
 
 export class Inventory {
   constructor(inventoryConfig) {
@@ -13,6 +14,7 @@ export class Inventory {
     this.firstAid = this.cfg.startFirstAid;
     this.scrap = this.cfg.startScrap ?? 0;
     this.ammo = { ...(this.cfg.startAmmo ?? {}) };
+    this.batteries = this.cfg.startBatteries ?? 0;
   }
 
   update() {}
@@ -32,6 +34,24 @@ export class Inventory {
   addScrap(count) {
     this.scrap += count;
     return count;
+  }
+
+  // Spend scrap; false (and nothing spent) if there isn't enough.
+  spendScrap(count) {
+    if (count > this.scrap) return false;
+    this.scrap -= count;
+    return true;
+  }
+
+  addBattery(count = 1) {
+    this.batteries += count;
+    return count;
+  }
+
+  useBattery() {
+    if (this.batteries <= 0) return false;
+    this.batteries -= 1;
+    return true;
   }
 
   // Ammo for a weapon not in the loadout (e.g. 'pistol').

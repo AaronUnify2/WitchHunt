@@ -14,6 +14,7 @@ const COMMON = /* glsl */ `
   attribute float aFrame;
   attribute float aFacing;
   attribute float aFlash;
+  attribute float aLit;
   attribute float aVariant;
   uniform float uCols;
   uniform float uVariants;
@@ -69,6 +70,7 @@ export class ZombieRenderer {
       uVariants: { value: t.variantOrder.length },
       uNormalUpBias: { value: c.normalUpBias },
       uFlashColor: { value: new THREE.Color(c.hitFlashColor) },
+      uLitColor: { value: new THREE.Color(c.floodlit.color).multiplyScalar(c.floodlit.strength) },
     };
     const albedo = new THREE.Color().setScalar(c.albedoScale);
     this.material = this.patch(new THREE.MeshLambertMaterial({ map: this.atlas, color: albedo, alphaTest: c.alphaTest }), true);
@@ -80,6 +82,8 @@ export class ZombieRenderer {
     this.frames = new Float32Array(poolSize);
     this.facings = new Float32Array(poolSize);
     this.flashes = new Float32Array(poolSize);
+    this.lits = new Float32Array(poolSize); // M5: standing in a station floodlight (0..1)
+    this.litAttr = new THREE.InstancedBufferAttribute(this.lits, 1).setUsage(THREE.DynamicDrawUsage);
     this.variants = new Float32Array(poolSize);
     this.variantAttr = new THREE.InstancedBufferAttribute(this.variants, 1).setUsage(THREE.DynamicDrawUsage);
     this.frameAttr = new THREE.InstancedBufferAttribute(this.frames, 1).setUsage(THREE.DynamicDrawUsage);
@@ -89,6 +93,7 @@ export class ZombieRenderer {
     geometry.setAttribute('aFacing', this.facingAttr);
     geometry.setAttribute('aFlash', this.flashAttr);
     geometry.setAttribute('aVariant', this.variantAttr);
+    geometry.setAttribute('aLit', this.litAttr);
 
     this.mesh = new THREE.InstancedMesh(geometry, this.material, poolSize);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -105,17 +110,17 @@ export class ZombieRenderer {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
       let vertex = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${COMMON}${colour ? 'varying float vFlash;' : ''}`)
+        .replace('#include <common>', `#include <common>\n${COMMON}${colour ? 'varying float vFlash;\nvarying float vLit;' : ''}`)
         .replace('#include <uv_vertex>', UV)
         .replace('#include <beginnormal_vertex>', NORMAL)
         .replace('#include <begin_vertex>', BEGIN_VERTEX);
       if (colour) {
-        vertex = vertex.replace('#include <fog_vertex>', '#include <fog_vertex>\nvFlash = aFlash;');
+        vertex = vertex.replace('#include <fog_vertex>', '#include <fog_vertex>\nvFlash = aFlash;\nvLit = aLit;');
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', '#include <common>\nvarying float vFlash;\nuniform vec3 uFlashColor;')
+          .replace('#include <common>', '#include <common>\nvarying float vFlash;\nvarying float vLit;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;')
           .replace(
             '#include <emissivemap_fragment>',
-            '#include <emissivemap_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;',
+            '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uLitColor * vLit;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;',
           );
       }
       shader.vertexShader = vertex;
@@ -136,6 +141,7 @@ export class ZombieRenderer {
       this.frames[n] = z.frame;
       this.facings[n] = z.facing;
       this.flashes[n] = z.flash > 0 ? z.flash / c.hitFlashSeconds : 0;
+      this.lits[n] = z.lit ?? 0;
       this.variants[n] = this.variantIndex[z.variant] ?? 0;
       n++;
     }
@@ -145,6 +151,7 @@ export class ZombieRenderer {
       this.frameAttr.needsUpdate = true;
       this.facingAttr.needsUpdate = true;
       this.flashAttr.needsUpdate = true;
+      this.litAttr.needsUpdate = true;
       this.variantAttr.needsUpdate = true;
     }
   }

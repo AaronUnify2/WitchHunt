@@ -24,6 +24,7 @@ export class Hud {
       <div class="hud-prompt"></div>
       <div class="hud-dig"><span></span></div>
       <div class="hud-pickups"></div>
+      <div class="hud-station hidden"></div>
       <div class="hud-vitals">
         <div class="hud-heal">+</div>
         <div class="hud-health">${segments}</div>
@@ -37,6 +38,7 @@ export class Hud {
       </div>
       <div class="hud-death hidden">
         <h2>YOU DIED</h2>
+        <p class="hud-death-reason"></p>
         <p class="hud-death-stats"></p>
         <p class="hud-death-prompt">A / Enter: try again</p>
       </div>
@@ -50,6 +52,7 @@ export class Hud {
     this.digEl = q('.hud-dig');
     this.digBarEl = q('.hud-dig span');
     this.pickupsEl = q('.hud-pickups');
+    this.stationEl = q('.hud-station');
     this.pickupLines = []; // { text, timer }
     this.healEl = q('.hud-heal');
     this.healthEl = q('.hud-health');
@@ -62,6 +65,8 @@ export class Hud {
     this.kitsEl = q('.hud-kits');
     this.deathEl = q('.hud-death');
     this.deathStatsEl = q('.hud-death-stats');
+    this.deathTitleEl = q('.hud-death h2');
+    this.deathReasonEl = q('.hud-death-reason');
     this.hitTimer = 0;
     this.hurtTimer = 0;
     this.last = {}; // only touch the DOM when a value changes
@@ -105,7 +110,18 @@ export class Hud {
     if (this.pickupLines.length !== before) this.renderPickups();
   }
 
-  showDeath(kills) {
+  // title / reason: e.g. the station falling (M5) instead of dying.
+  // M5: the station strip under the minimap (html, or null to hide it).
+  station(html) {
+    this.set('station', html, (h) => {
+      this.stationEl.classList.toggle('hidden', !h);
+      if (h) this.stationEl.innerHTML = h;
+    });
+  }
+
+  showDeath(kills, title = 'YOU DIED', reason = '') {
+    this.deathTitleEl.textContent = title;
+    this.deathReasonEl.textContent = reason;
     this.deathStatsEl.textContent = `Zombies killed: ${kills}`;
     this.deathEl.classList.remove('hidden');
   }
@@ -144,8 +160,10 @@ export class Hud {
     this.set('reloading', st.reloading, (r) => this.reloadEl.classList.toggle('on', r));
     if (st.reloading) this.reloadBarEl.style.width = `${Math.round(st.reloadProgress * 100)}%`;
     const pad = s.device === 'gamepad';
-    this.set('kits', `${s.inventory.firstAid}|${pad}`, () => {
-      this.kitsEl.textContent = `First aid ×${s.inventory.firstAid}  (${pad ? 'D-pad →' : 'H'})`;
+    const inv = s.inventory;
+    this.set('kits', `${inv.firstAid}|${pad}|${inv.scrap}|${inv.batteries}`, () => {
+      const battery = inv.batteries > 0 ? `   Battery ×${inv.batteries}` : '';
+      this.kitsEl.textContent = `First aid ×${inv.firstAid}  (${pad ? 'D-pad →' : 'H'})   Scrap ${inv.scrap}${battery}`;
     });
 
     let prompt = '';

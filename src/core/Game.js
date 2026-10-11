@@ -21,6 +21,7 @@ import { Player } from '../player/Player.js';
 import { Flashlight } from '../player/Flashlight.js';
 import { Combat } from '../combat/Combat.js';
 import { ZombieDirector } from '../ai/ZombieDirector.js';
+import { Station } from '../base/Station.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
@@ -50,6 +51,7 @@ export class Game {
     this.initWorld(root);
     this.initUi(root);
     this.initDirector();
+    this.initStation(root);
     this.addOverlayStats();
     this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
@@ -91,7 +93,35 @@ export class Game {
   initDirector() {
     this.director = new ZombieDirector(this.cfg, this.rng.fork('director'), this.bus);
     this.director.init(this.scene, this.world, this.combat, this.player, (text) => this.toast.show(text));
-    this.combat.digHud = this.director.hud;
+    this.combat.promptSources.push(this.director.hud);
+  }
+
+  // The ranger station (M5): fence, doors, turret, ledger, siege.
+  initStation(root) {
+    this.station = new Station(this.cfg, this.rng.fork('station'), this.bus);
+    this.station.init(this.scene, {
+      root,
+      world: this.world,
+      combat: this.combat,
+      player: this.player,
+      colliders: this.colliders,
+      mapUi: this.mapUi,
+      notify: (text) => this.toast.show(text),
+    });
+    this.combat.promptSources.push(this.station.hud);
+    // While the ledger is open the player's controls go to it; the world carries on.
+    const input = () => this.input;
+    const still = { x: 0, y: 0 };
+    this.lockedInput = {
+      isDown: () => false,
+      wasPressed: () => false,
+      wasReleased: () => false,
+      getMove: () => still,
+      getLook: () => still,
+      get activeDevice() {
+        return input().activeDevice;
+      },
+    };
   }
 
   initUi(root) {
@@ -136,6 +166,7 @@ export class Game {
     this.overlay.addStat('combat', () => this.combat.overlayLine());
     this.overlay.addStat('zombies', () => this.combat.zombieOverlayLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
+    this.overlay.addStat('station', () => this.station.overlayLine());
   }
 
   addDebugMenuItems() {
@@ -145,6 +176,7 @@ export class Game {
     this.addMapDebugItems(menu);
     this.combat.addDebugItems(menu);
     this.director.addDebugItems(menu);
+    this.station.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem('Skip to night', () => this.skipToPhase('night'));
     menu.addItem(
@@ -212,6 +244,7 @@ export class Game {
     this.sky.setDrawDistance(q.drawDistance);
     this.world.setDrawDistance(q.drawDistance);
     this.director?.setDrawDistance(q.drawDistance);
+    this.station?.renderer.setDrawDistance(q.drawDistance);
     this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
     this.setFrameCap(q.frameCap);
@@ -303,14 +336,18 @@ export class Game {
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
     if (running && !this.mapUi.isOpen) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
-    if (playing && this.combat.alive) this.player.update(dt, this.input);
-    this.combat.update(dt, this.input, playing, daylight);
-    this.director.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
+    // The ledger takes the controls while it's open (the world carries on).
+    const locked = this.station.ledger.isOpen;
+    const controls = locked ? this.lockedInput : this.input;
+    if (playing && this.combat.alive) this.player.update(dt, controls);
+    this.combat.update(dt, this.input, playing, daylight, locked);
+    this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.station.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
     if (playing) {
-      this.flashlight.update(dt, this.input, this.player.camera, this.combat.glareExtras(this.player.position));
+      this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
     const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
-    this.mapUi.update(dt, this.input, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive, sigilsOnMap);
+    this.mapUi.update(dt, controls, this.player, this.combat.enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.world.update(dt, this.player.camera.position);
 
@@ -333,6 +370,7 @@ export class Game {
     this.overlay.dispose();
     this.toast.dispose();
     this.mapUi.dispose();
+    this.station.dispose();
     this.director.dispose();
     this.combat.dispose();
     this.flashlight.dispose();

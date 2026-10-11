@@ -13,7 +13,7 @@ export function signText(clearing, typeName) {
   const type = typeName ? `${typeName} clearing` : null;
   switch (clearing.kind) {
     case 'home':
-      return { title: 'RANGER STATION', lines: [`Home: built in ${clearing.builtIn}`, 'Placeholder'] };
+      return { title: 'RANGER STATION', lines: ['U.S. Forest Service', 'Fire lookout'] }; // built in M5
     case 'hut':
       return { title: "WITCH'S HUT", lines: [`Built in ${clearing.builtIn}`, 'Placeholder'] };
     case 'sigilGround':

@@ -230,6 +230,84 @@ const RECIPES = {
     s.tone(o, { seconds: 1.8, wave: 'sawtooth', freq: base, endFreq: base * 0.7, gain: 0.45, attack: 0.3, vibrato: 2.5 });
     s.noiseBurst(o, { seconds: 1.4, type: 'bandpass', freq: 250, q: 1.5, gain: 0.3, attack: 0.4 });
   },
+  // M5: the station.
+  // The electric fence biting a zombie: a crackling buzz.
+  zap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.tone(o, { seconds: 0.35, wave: 'square', freq: 120, endFreq: 90, gain: 0.25, vibrato: 40 });
+    s.noiseBurst(o, { seconds: 0.3, type: 'highpass', freq: 3000, gain: 0.5 });
+  },
+  // A zombie clawing the chain-link: a metallic rattle.
+  fenceHit(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 2600, q: 6, gain: 0.5 });
+    s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 1400, q: 5, gain: 0.4 });
+  },
+  // A zombie battering a door or a barricade: a heavy wooden thud.
+  doorHit(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.22, freq: 110, endFreq: 55, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.15, freq: 600, gain: 0.5 });
+  },
+  // A defence gives way: a crash and a falling clang.
+  breach(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.7, freq: 1800, endFreq: 200, gain: 0.9 });
+    s.tone(o, { seconds: 0.9, wave: 'triangle', freq: 300, endFreq: 140, gain: 0.35 });
+  },
+  // The turret: heavier and harder than the rifle.
+  turret(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.3, freq: 3500, endFreq: 250, gain: 0.9 });
+    s.noiseBurst(o, { seconds: 0.04, type: 'highpass', freq: 3000, gain: 0.7 });
+    s.tone(o, { seconds: 0.2, wave: 'square', freq: 70, endFreq: 40, gain: 0.5 });
+  },
+  turretTurn(s, pos) {
+    s.tone(s.out(pos?.x, pos?.z, 0.3), { seconds: 0.25, wave: 'sawtooth', freq: 220, endFreq: 260, gain: 0.12, attack: 0.05 });
+  },
+  gate(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.tone(o, { seconds: 0.8, wave: 'sawtooth', freq: 70, endFreq: 85, gain: 0.15, attack: 0.1 });
+    s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 900, q: 3, gain: 0.2, attack: 0.1 });
+  },
+  door(s, pos) {
+    s.noiseBurst(s.out(pos?.x, pos?.z, 0.5), { seconds: 0.3, type: 'bandpass', freq: 500, endFreq: 350, q: 2, gain: 0.5, attack: 0.03 });
+  },
+  // Repairs and building: a few hammer blows.
+  hammer(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        if (!s.ready) return;
+        s.tone(o, { seconds: 0.08, freq: 900, endFreq: 500, gain: 0.3 });
+        s.noiseBurst(o, { seconds: 0.06, type: 'bandpass', freq: 2200, q: 3, gain: 0.5 });
+      }, i * 150);
+    }
+  },
+  // A battery clunks in and the fence hums up.
+  battery(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.tone(o, { seconds: 0.15, freq: 140, endFreq: 80, gain: 0.6 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 1.2, wave: 'sawtooth', freq: 60, endFreq: 120, gain: 0.15, attack: 0.2 }), 150);
+  },
+  page(s) {
+    s.noiseBurst(s.out(undefined, undefined, 0.4), { seconds: 0.18, type: 'bandpass', freq: 3000, endFreq: 1500, q: 1, gain: 0.35, attack: 0.03 });
+  },
+  denied(s) {
+    s.tone(s.out(undefined, undefined, 0.4), { seconds: 0.18, wave: 'square', freq: 180, gain: 0.2 });
+  },
+  climb(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.06, freq: 300, endFreq: 200, gain: 0.25 }), i * 120);
+  },
+  spike(s, pos) {
+    s.noiseBurst(s.out(pos?.x, pos?.z, 0.7), { seconds: 0.12, type: 'bandpass', freq: 1200, q: 2, gain: 0.6 });
+  },
+  overrun(s) {
+    const o = s.out();
+    s.tone(o, { seconds: 3, wave: 'sawtooth', freq: 160, endFreq: 40, gain: 0.35, attack: 0.1, vibrato: 8 });
+    s.noiseBurst(o, { seconds: 2.5, freq: 900, endFreq: 100, gain: 0.4, attack: 0.2 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

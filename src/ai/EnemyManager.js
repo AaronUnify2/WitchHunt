@@ -11,7 +11,13 @@
 //
 // Events: 'enemy:hit' { x, y, z, part, killed, zombie }, 'enemy:killed'
 // { zombie }, 'enemy:strike' { zombie, damage }, 'enemy:spawned' { count },
-// 'enemy:charge' { zombie } (a mutant bursts forward).
+// 'enemy:charge' { zombie } (a mutant bursts forward), 'enemy:strikeDefence'
+// { zombie, barrier, damage } (M5: a swipe at the station's defences).
+//
+// M5: `station` is the ranger station's siege hook (base/Station.js):
+// { x, z (where the family are), baseRadius, routeRadius, reach,
+// route(fromX, fromZ, toX, toZ, out) }. Zombies near it follow its route
+// through the fence and doors and claw whatever's in the way.
 
 import { Zombie } from './Zombie.js';
 import { ZombieBrain } from './ZombieBrain.js';
@@ -42,12 +48,16 @@ export class EnemyManager {
     this.nearby = [];
     this.level = 1;
     this.stats = levelStats(this.cfg.levels, 1);
-    this.station = null; // M5: { x, z, baseRadius }
+    this.station = null; // M5: the station's siege hook (see the top of this file)
+    this.routeOut = { active: false, x: 0, z: 0, barrier: null };
     this.senses = {};
     this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, rise: 0, stragglers: 0 };
     this.routes = new PathRoutes(this.world.map);
     this.brain = new ZombieBrain(this.detCfg, this.cfg.wander, this.routes, this.ground, this.rng.fork('brain'));
-    this.onStrike = (zombie) => this.bus.emit('enemy:strike', { zombie, damage: zombie.attackDamage * this.stats.damage });
+    this.onStrike = (zombie, barrier) => {
+      if (barrier) this.bus.emit('enemy:strikeDefence', { zombie, barrier, damage: zombie.attackDamage * this.stats.defenceDamage });
+      else this.bus.emit('enemy:strike', { zombie, damage: zombie.attackDamage * this.stats.damage });
+    };
   }
 
   // ---- level ---------------------------------------------------------------
@@ -102,6 +112,8 @@ export class EnemyManager {
     slot.owner = opts.owner ?? null;
     slot.straggler = false;
     slot.fadeTimer = -1;
+    slot.slowTimer = 0; // M5: spike traps slow it for a moment
+    slot.slow = 1;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }
@@ -187,8 +199,13 @@ export class EnemyManager {
       if (z.alive && z.state !== 'rise') {
         this.brain.update(z, dt, senses, this.station);
         this.updateFade(z, dt, player);
+        this.routeAtStation(z, player);
       }
       z.moveScale = 1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z);
+      if (z.slowTimer > 0) {
+        z.slowTimer -= dt;
+        z.moveScale *= z.slow;
+      }
       z.update(dt, player, this.onStrike);
       if (z.chargeStarted) {
         z.chargeStarted = false;
@@ -202,6 +219,37 @@ export class EnemyManager {
     }
     this.separate();
     for (const z of this.pool) if (z.active) z.y = this.ground.heightAt(z.x, z.z);
+  }
+
+  // M5: near the station, where to walk to get through its defences to
+  // what it's after (the player, the family, or where it last saw you).
+  routeAtStation(z, player) {
+    const st = this.station;
+    if (!st || Math.hypot(z.x - st.x, z.z - st.z) > st.routeRadius) {
+      if (z.via) z.clearVia();
+      return;
+    }
+    let tx;
+    let tz;
+    if (z.mode === 'chase') {
+      tx = player.x;
+      tz = player.z;
+    } else if (z.mode === 'siege') {
+      tx = st.x;
+      tz = st.z;
+    } else if (z.mode === 'search') {
+      tx = z.goalX;
+      tz = z.goalZ;
+    } else {
+      if (z.via) z.clearVia();
+      return;
+    }
+    const out = st.route(z.x, z.z, tx, tz, this.routeOut);
+    z.via = out.active;
+    z.viaX = out.x;
+    z.viaZ = out.z;
+    z.barrier = out.active ? out.barrier : null;
+    z.viaReach = st.reach;
   }
 
   // Push overlapping zombies apart (a pool of 64, so pairwise is cheap).

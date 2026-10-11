@@ -743,6 +743,9 @@ export const config = {
     normalUpBias: 0.4,
     albedoScale: 0.45, // sprites face the torch head-on, so they need darker colours than the art suggests
     hitFlashColor: 0x8a1010,
+    // M5: a zombie standing in a station floodlight's pool is lit up
+    // (the floodlights are fake lights, so the sprite brightens itself).
+    floodlit: { color: 0xfff0c8, strength: 2.2 },
   },
 
   // Mutant zombie (DESIGN.md "Mutants"): a placeholder 3D giant (boxes;
@@ -964,7 +967,7 @@ export const config = {
     hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5 },
     interactRange: 2.2,
     spikes: { radius: 1.2, damage: 12, interval: 0.8, slow: 0.4, durability: 15 },
-    floodlight: { poleHeight: 5.5, poolRadius: 7, poolOutside: 7, color: 0xfff0c8, poolOpacity: 0.22, coneOpacity: 0.07 },
+    floodlight: { poleHeight: 5.5, poolRadius: 7, poolOutside: 7, color: 0xfff0c8, poolOpacity: 0.35, coneOpacity: 0.08, litEdge: 1.3 }, // litEdge: zombies are lit out to this many pool radii
     // The automated turret (DESIGN.md "The automated turret"). One per run
     // from the Car Armory (M11); until then the debug menu gives it.
     turret: {
@@ -989,10 +992,6 @@ export const config = {
       ammoDamage: { pistol: 10 }, // per round, for ammo whose gun isn't in the weapons table yet
       loadBatch: { pistol: 1000, shotgun: 4, rifle: 5 }, // rounds loaded per hold at the turret
       loadOrder: ['pistol', 'shotgun', 'rifle'], // what the turret takes first
-      tracerSeconds: 0.09,
-      tracerWidth: 0.05,
-      tracerColor: 0xffd27a,
-      flashSeconds: 0.06,
       targetEvery: 0.25, // seconds between picking targets
     },
     look: {
@@ -1001,9 +1000,9 @@ export const config = {
       roof: 0x24382a, // Forest Service green
       trim: 0x5e4a36,
       floor: 0x3a2c20,
-      metal: 0x55595e,
-      metalDark: 0x2c2f33,
-      chainLink: 0x8a9096,
+      metal: 0x3a3d40, // dark: the torch blows out light metal up close
+      metalDark: 0x222427,
+      chainLink: 0x6a7076,
       sandbag: 0x5a5040,
       plank: 0x5a4430,
       spike: 0x3e3c38,
@@ -1016,6 +1015,7 @@ export const config = {
       chainLinkTexture: 128, // pixels
       cullMargin: 40, // metres beyond the draw distance the compound stays drawn
     },
+    hudRefresh: 0.25, // seconds between redraws of the HUD's station strip
     damagedTilt: 0.25, // radians a fence panel leans at half health
     brokenTilt: 1.35, // a broken panel lies nearly flat
   },
@@ -1074,7 +1074,7 @@ export const config = {
       seconds: 0.06,
     },
     blood: {
-      poolSize: 96, // particles
+      poolSize: 160, // particles (M5: 96 -> 160 for fence sparks and turret hits)
       perHit: 6,
       perHeadshot: 12,
       speed: 2.2,
@@ -1084,6 +1084,15 @@ export const config = {
       color: 0x6a0a0a,
       dustColor: 0x5a4c3a, // missed shots puff off trees and the ground
       dustPerImpact: 4,
+      sparkColor: 0x9ad8ff, // M5: the electric fence biting
+      sparksPerZap: 12,
+    },
+    // M5: the turret's tracer streaks (one instanced mesh)
+    tracers: {
+      poolSize: 16,
+      seconds: 0.09,
+      width: 0.06,
+      color: 0xffc860,
     },
   },
 
@@ -1159,6 +1168,16 @@ export const config = {
     toastSeconds: 3,
   },
 
+  // The station's ledger (M5): a full-screen book in the comms room.
+  // Placeholder look; the pixel-font book is the UI session's (Session 19).
+  ledger: {
+    pausesClock: false, // DESIGN.md: it doesn't pause the clock (zombies keep coming)
+    refreshSeconds: 0.5, // live values redraw this often
+    stickThreshold: 0.5,
+    repeatDelay: 0.4,
+    repeatInterval: 0.12,
+  },
+
   // Debug tools
   debug: {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
@@ -1167,6 +1186,8 @@ export const config = {
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands
     sigilTeleportOffset: 4, // metres from a sigil
     plantAhead: 3, // "plant sigil here" puts it this far in front of you
+    giveScrap: 50, // M5: station debug
+    siegeWave: 10,
     overlayVisibleOnStart: true, // on by default so tablet tests show fps
     overlayRefreshSeconds: 0.1, // how often the overlay text refreshes
     fpsSampleSeconds: 0.5, // averaging window for fps and frame times
@@ -1227,6 +1248,8 @@ export const config = {
       menuDown: ['DpadDown'],
       menuConfirm: ['A'],
       menuBack: ['B'],
+      menuLeft: ['DpadLeft', 'LB'], // M5: ledger tabs
+      menuRight: ['DpadRight', 'RB'],
     },
     // Action -> KeyboardEvent.code values.
     keyBindings: {
@@ -1254,6 +1277,8 @@ export const config = {
       menuDown: ['ArrowDown'],
       menuConfirm: ['Enter'],
       menuBack: ['Escape', 'Backspace'],
+      menuLeft: ['ArrowLeft', 'KeyQ'], // M5: ledger tabs
+      menuRight: ['ArrowRight'],
       debugOverlay: ['F3'],
       debugMenu: ['Backquote'],
     },

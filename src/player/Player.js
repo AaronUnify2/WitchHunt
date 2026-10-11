@@ -64,6 +64,7 @@ export class Player {
     this.moveMultiplier = 1;
     this.lookScale = 1;
     this.fovMultiplier = 1;
+    this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower
     this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
     this.shakeAmount = 0;
     this.shakeTime = 0;
@@ -72,6 +73,7 @@ export class Player {
 
   // Jump straight to (x, z) on the ground, optionally facing yaw (radians).
   teleport(x, z, yaw = this.yaw) {
+    this.platform = null;
     this.position.set(x, 0, z);
     this.ground.clamp(this.position);
     this.position.y = this.ground.heightAt(this.position.x, this.position.z);
@@ -173,8 +175,30 @@ export class Player {
     const p = this.position;
     p.x += this.velocity.x * dt;
     p.z += this.velocity.z * dt;
+    const pl = this.platform;
+    if (pl) {
+      // Up on the tower: the railing keeps you on the platform.
+      const lim = pl.half - c.radius;
+      p.x = Math.max(pl.x - lim, Math.min(pl.x + lim, p.x));
+      p.z = Math.max(pl.z - lim, Math.min(pl.z + lim, p.z));
+      return;
+    }
     resolveCircles(p, c.radius, this.colliders.query(p.x, p.z, c.radius, this.nearby));
     this.ground.clamp(p);
+  }
+
+  // M5: step onto a raised platform (the lookout tower), or back down to
+  // (x, z) on the ground with platform null.
+  setPlatform(platform, x, z) {
+    this.platform = platform;
+    this.position.x = x;
+    this.position.z = z;
+    this.position.y = platform ? platform.y : this.ground.heightAt(x, z);
+    this.verticalSpeed = 0;
+    this.onGround = true;
+    this.velocity.x = 0;
+    this.velocity.z = 0;
+    this.applyCamera();
   }
 
   updateVertical(dt, input) {
@@ -186,7 +210,7 @@ export class Player {
         this.onGround = false;
       }
     }
-    const floor = this.ground.heightAt(this.position.x, this.position.z);
+    const floor = this.platform ? this.platform.y : this.ground.heightAt(this.position.x, this.position.z);
     if (!this.onGround) {
       this.verticalSpeed -= c.gravity * dt;
       this.position.y += this.verticalSpeed * dt;

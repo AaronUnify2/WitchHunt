@@ -39,9 +39,16 @@ export function stationLayout(home, ground, cfg) {
   const n = cfg.segmentsPerSide;
   for (let i = 0; i < n; i++) segments.push(arcPiece(segments.length, west + ((-gateHalf - west) * i) / n, west + ((-gateHalf - west) * (i + 1)) / n));
   for (let i = 0; i < n; i++) segments.push(arcPiece(segments.length, gateHalf + ((east - gateHalf) * i) / n, gateHalf + ((east - gateHalf) * (i + 1)) / n));
+  // Names by direction; where two share one, they're numbered round the
+  // arc ("west fence 1", "west fence 2").
+  const names = segments.map((s) => compassName((s.a0 + s.a1) / 2));
+  const seen = {};
   for (const s of segments) {
+    const base = names[s.index];
+    const count = names.filter((n) => n === base).length;
+    seen[base] = (seen[base] ?? 0) + 1;
     s.kind = 'fence';
-    s.name = compassName((s.a0 + s.a1) / 2);
+    s.name = count > 1 ? `${base} fence ${seen[base]}` : `${base} fence`;
     s.mid = at((s.a0 + s.a1) / 2, R);
     s.pieces = arcChords(at, s.a0, s.a1, R, cfg.panelLength);
     s.barricade = {

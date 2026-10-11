@@ -83,7 +83,8 @@ export class Combat {
     this.groanTimers = new Map();
     this.glareCircles = [];
     this.senses = { x: 0, z: 0, eyeY: 0, daylight: 0, torchOn: false, crouched: false, sprinting: false, speed: 0, undergrowth: 0 };
-    this.digHud = null; // { prompt, progress }, set by ZombieDirector
+    this.promptSources = []; // { prompt, progress } objects (sigil digging, the station); the first with a prompt shows
+    this.noPrompt = { prompt: '', progress: 0 };
     this.godMode = false;
     this.kills = 0;
     this.alive = true;
@@ -139,6 +140,7 @@ export class Combat {
   onStrike(zombie, damage) {
     this.sfx.play('swipe', zombie);
     if (!this.alive || this.godMode) return;
+    if (this.player.platform) return; // up the lookout tower, out of reach (M5)
     const { taken } = this.health.takeDamage(damage);
     this.hud.hurt();
     this.player.shake(this.cfg.feedback.hurtShake * (zombie.kind === 'mutant' ? 2 : 1));
@@ -154,6 +156,16 @@ export class Combat {
     this.hud.showDeath(this.kills);
     this.sfx.play('death');
     this.bus.emit('player:died');
+  }
+
+  // M5: a zombie got into the comms room. The run ends like a death.
+  overrun() {
+    if (!this.alive) return;
+    this.alive = false;
+    this.player.moveMultiplier = 1;
+    this.player.fovMultiplier = 1;
+    this.hud.showDeath(this.kills, 'THE STATION FELL', 'The dead broke into the comms room.');
+    this.sfx.play('overrun');
   }
 
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.
@@ -229,15 +241,17 @@ export class Combat {
 
   // playing: false while the debug menu or map is open or the game isn't
   // running. daylight: 0 at night, 1 by day (for the zombies' eyes).
-  update(dt, input, playing, daylight = 0) {
+  // locked: the player's controls are busy elsewhere (the ledger is open;
+  // the world carries on).
+  update(dt, input, playing, daylight = 0, locked = false) {
     const player = this.player;
     if (playing) {
-      if (this.alive) {
+      if (this.alive && !locked) {
         this.weapons.update(dt, input, player.camera);
         if (input.wasPressed('firstAid') && this.inventory.useFirstAid(this.health)) this.sfx.play('heal');
         this.health.update(dt);
-        this.pickups.update(dt, player.position.x, player.position.z, this.take);
       }
+      if (this.alive) this.pickups.update(dt, player.position.x, player.position.z, this.take);
       if (!this.alive && input.wasPressed('menuConfirm')) this.respawn();
       this.enemies.update(dt, this.updateSenses(daylight));
       this.updateGroans(dt);
@@ -254,8 +268,13 @@ export class Combat {
       weapons: this.weapons,
       inventory: this.inventory,
       device: input.activeDevice,
-      dig: this.alive ? this.digHud : null,
+      dig: this.alive && !locked ? this.activePrompt() : null,
     });
+  }
+
+  activePrompt() {
+    for (const p of this.promptSources) if (p.prompt) return p;
+    return this.noPrompt;
   }
 
   // Each living zombie within earshot groans now and then (positional).

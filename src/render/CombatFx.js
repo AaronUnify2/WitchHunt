@@ -1,5 +1,7 @@
 // Combat effects in the world: blood spurts on hits, dust puffs where
-// missed shots land, and the muzzle flash light. Particles are one pooled
+// missed shots land, and the muzzle flash light. M5: sparks off the
+// electric fence and the turret's tracer streaks (one instanced mesh of
+// glowing rods, one draw call). Particles are one pooled
 // Points object (one draw call, no allocation while playing). The muzzle
 // light is always in the scene and only its intensity changes, so
 // toggling it never recompiles shaders; it never casts shadows.
@@ -46,6 +48,73 @@ export class CombatFx {
     scene.add(this.light);
     this.flashTimer = 0;
     this.active = 0;
+    this.sparkColor = new THREE.Color(b.sparkColor ?? 0x9ad8ff);
+    this.initTracers(scene);
+  }
+
+  initTracers(scene) {
+    const t = this.cfg.tracers ?? { poolSize: 12, seconds: 0.09, width: 0.05, color: 0xffd27a };
+    this.tracerCfg = t;
+    const geometry = new THREE.BoxGeometry(1, 1, 1).translate(0, 0, 0.5); // a rod from the origin along +z
+    const material = new THREE.MeshBasicMaterial({ color: t.color, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+    this.tracerMesh = new THREE.InstancedMesh(geometry, material, t.poolSize);
+    this.tracerMesh.frustumCulled = false;
+    this.tracerLife = new Float32Array(t.poolSize);
+    this.tracerFrom = Array.from({ length: t.poolSize }, () => new THREE.Vector3());
+    this.tracerTo = Array.from({ length: t.poolSize }, () => new THREE.Vector3());
+    this.tracerNext = 0;
+    this.tracerMatrix = new THREE.Matrix4();
+    this.tracerQuat = new THREE.Quaternion();
+    this.tracerScale = new THREE.Vector3();
+    this.tracerDir = new THREE.Vector3();
+    this.tracerZ = new THREE.Vector3(0, 0, 1);
+    this.tracerZero = new THREE.Matrix4().makeScale(0, 0, 0);
+    for (let i = 0; i < t.poolSize; i++) this.tracerMesh.setMatrixAt(i, this.tracerZero);
+    this.tracerActive = 0;
+    scene.add(this.tracerMesh);
+  }
+
+  // A glowing streak from `from` to `to` (Vector3-likes), fading fast.
+  tracer(from, to) {
+    const t = this.tracerCfg;
+    const i = this.tracerNext;
+    this.tracerNext = (i + 1) % t.poolSize;
+    this.tracerFrom[i].copy(from);
+    this.tracerTo[i].copy(to);
+    this.tracerLife[i] = t.seconds;
+    this.tracerActive = t.poolSize;
+  }
+
+  updateTracers(dt) {
+    if (this.tracerActive === 0) return;
+    const t = this.tracerCfg;
+    let alive = 0;
+    for (let i = 0; i < t.poolSize; i++) {
+      if (this.tracerLife[i] <= 0) continue;
+      this.tracerLife[i] -= dt;
+      if (this.tracerLife[i] <= 0) {
+        this.tracerMesh.setMatrixAt(i, this.tracerZero);
+        continue;
+      }
+      alive++;
+      const k = this.tracerLife[i] / t.seconds; // 1 -> 0: thins out and the tail catches up
+      const from = this.tracerFrom[i];
+      const dir = this.tracerDir.subVectors(this.tracerTo[i], from);
+      const len = dir.length();
+      dir.divideScalar(len || 1);
+      this.tracerQuat.setFromUnitVectors(this.tracerZ, dir);
+      this.tracerScale.set(t.width * k, t.width * k, len * k);
+      const start = dir.multiplyScalar(len * (1 - k)).add(from);
+      this.tracerMesh.setMatrixAt(i, this.tracerMatrix.compose(start, this.tracerQuat, this.tracerScale));
+    }
+    this.tracerMesh.instanceMatrix.needsUpdate = true;
+    this.tracerActive = alive;
+  }
+
+  // Blue-white sparks where the electric fence bites.
+  sparks(x, y, z) {
+    const b = this.cfg.blood;
+    this.emit(x, y, z, b.sparksPerZap ?? 10, this.sparkColor, b.speed * 1.3);
   }
 
   emit(x, y, z, count, color, speed) {
@@ -91,6 +160,7 @@ export class CombatFx {
     const m = this.cfg.muzzleFlash;
     this.flashTimer = Math.max(0, this.flashTimer - dt);
     this.light.intensity = this.flashTimer > 0 ? m.intensity * (this.flashTimer / m.seconds) : 0;
+    this.updateTracers(dt);
     if (this.active === 0) return;
 
     const b = this.cfg.blood;
@@ -124,6 +194,9 @@ export class CombatFx {
     for (let i = 0; i < this.cfg.blood.poolSize; i++) this.positions[i * 3 + 1] = -1000;
     this.posAttr.needsUpdate = true;
     this.active = 0;
+    this.tracerLife.fill(0);
+    for (let i = 0; i < this.tracerCfg.poolSize; i++) this.tracerMesh.setMatrixAt(i, this.tracerZero);
+    this.tracerMesh.instanceMatrix.needsUpdate = true;
   }
 
   dispose() {
@@ -131,5 +204,8 @@ export class CombatFx {
     this.points.material.dispose();
     this.points.removeFromParent();
     this.light.removeFromParent();
+    this.tracerMesh.geometry.dispose();
+    this.tracerMesh.material.dispose();
+    this.tracerMesh.removeFromParent();
   }
 }

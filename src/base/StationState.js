@@ -38,11 +38,11 @@ export class StationState {
         id: `fence${i}`,
         kind: 'fence',
         index: i,
-        name: `${s.name} fence`,
+        name: s.name,
         health: max * start,
         max,
         open: false,
-        barricade: { id: `barricade${i}`, kind: 'barricade', index: i, name: `${s.name} barricade`, built: false, health: 0, max: f.barricadeHealth, open: false },
+        barricade: { id: `barricade${i}`, kind: 'barricade', index: i, name: `barricade behind the ${s.name}`, built: false, health: 0, max: f.barricadeHealth, open: false },
         spike: { index: i, built: false, durability: 0 },
       };
     });
