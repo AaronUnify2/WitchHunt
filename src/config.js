@@ -995,18 +995,19 @@ export const config = {
     loseSeconds: 6, // out of sight this long: she gives up the fight or the chase
     // Aaron (Session 9): her fight has three modes.
     //  - Retreat: she backs off, weaving, until she's standoff metres away
-    //    (or maxSeconds have passed: a tree or the witchfire ring can stop her).
+    //    (or maxSeconds have passed: a tree can stop her). In the final
+    //    battle she keeps arenaMargin metres inside the witchfire ring.
     //  - Hex: she holds about standoff away, weaving, and throws a fast hex
-    //    now and then. Come within tooClose and she retreats again.
-    //  - Rush: a headshot (rifle or pistol, not the shotgun) sends her in
-    //    to swipe, again and again; she keeps on you, so the swipes all but
-    //    can't be dodged. Any shotgun hit drives her back at once (retreat),
-    //    or backOffDamage from anything else.
+    //    every few seconds. Come within tooClose and she retreats again.
+    //  - Rush: any hit but the shotgun's (rifle or pistol, body or head)
+    //    sends her in to swipe, again and again; she keeps on you, so the
+    //    swipes all but can't be dodged. Any shotgun hit drives her back at
+    //    once (retreat), or backOffDamage from anything else.
     // She summons the dead whenever it's ready, and drops traps as she retreats.
     attack: {
-      retreat: { speed: 8, standoff: 30, tooClose: 15, maxSeconds: 5, weave: 2.2, weavePeriod: 1.6 },
-      hold: { speed: 4, band: 4 }, // hex mode: m/s, and how far off standoff she lets you push before correcting
-      hex: { every: 26, castTime: 0.45, damage: 20, speed: 25, radius: 0.45, life: 4, minRange: 4, maxRange: 45, height: 1.5 }, // Aaron: 2.5x faster (was 10 m/s), a tenth as often (was 2.6 s)
+      retreat: { speed: 8, standoff: 20, tooClose: 10, maxSeconds: 5, weave: 2.2, weavePeriod: 1.6, arenaMargin: 4 }, // Aaron: 30 m was too far (and caught her in the trees round the arena)
+      hold: { speed: 4, band: 3 }, // hex mode: m/s, and how far off standoff she lets you push before correcting
+      hex: { every: 6, castTime: 0.45, damage: 20, speed: 25, radius: 0.45, life: 4, minRange: 4, maxRange: 45, height: 1.5 }, // Aaron: 2.5x faster (was 10 m/s), every 6 s (was 2.6)
       rush: { speed: 11, backOffDamage: 100, maxSeconds: 12 }, // you sprint at 7.2; 100 is 2 rifle headshots or 4 body shots
       swipe: { reach: 2.3, damage: 30, windup: 0.4, recover: 0.9, track: 1 }, // track: metres past her reach a swipe still lands (she follows you through it)
       summon: { count: [3, 4], cooldown: 60, ring: [3, 6], castTime: 1.2 },
@@ -1131,7 +1132,7 @@ export const config = {
     particleBox: 40, // metres: the box round the camera they fill
     // Her attacks: the usual ones (config.witch.attack) with these on top.
     attack: {
-      hex: { every: 18 }, // Aaron (Session 9): a tenth as often as before (1.8 s), like her usual ones
+      hex: { every: 4.5 }, // a little more often than on the pathways (6 s)
       swipe: { damage: 40, windup: 0.3, recover: 0.7 },
       rush: { speed: 12 },
       summon: { count: [3, 5], cooldown: 25 },

@@ -25,12 +25,12 @@
 //    you breaks the ritual: that sigil is lost.
 //  - Fight or flee: her health share plus a bonus near her hut. High: she
 //    attacks. Low: she flees. She reconsiders every second and on every hit.
-//  - Attacking (Aaron, Session 9): she backs off, weaving, to about 30 m,
+//  - Attacking (Aaron, Session 9): she backs off, weaving, to about 20 m,
 //    dropping traps, then holds there throwing a fast hex now and then
 //    (you can sidestep it or put a tree in front of it: ai/witchHexes.js).
-//    Come too close and she backs off again. A headshot (not the
-//    shotgun's) sends her rushing in to swipe again and again; a shotgun
-//    hit, or enough damage, drives her back out. She summons a few
+//    Come too close and she backs off again. Any hit but the shotgun's
+//    sends her rushing in to swipe again and again; a shotgun hit, or
+//    enough damage, drives her back out. She summons a few
 //    zombies whenever she can (once a minute at most).
 //  - Fleeing: home along the pathways, faster than your sprint, weaving.
 //    Once she's lost you she goes back to planting, or home if she's badly hurt.
@@ -117,6 +117,7 @@ export class Witch {
     this.hexTarget = { x: 0, z: 0, y0: 0, y1: 0, radius: 0.35 };
     // Step 5: her attacks in the final battle (the usual ones with config's overrides).
     this.final = false;
+    this.arena = null; // the final battle's witchfire ring { x, z, radius }: she keeps inside it
     this.finalAttack = mergeDeep(this.wc.attack, this.cfg.finalBattle?.attack ?? {});
     // Step 3: traps. The hut approach is laid with them (seeded by the map).
     const tc = this.wc.traps;
@@ -519,7 +520,7 @@ export class Witch {
   // ---- fighting ------------------------------------------------------------------
 
   // Aaron (Session 9): she backs off to standoff range, weaving, and
-  // throws a fast hex now and then from there. A headshot sends her in
+  // throws a fast hex every few seconds from there. A hit sends her in
   // to swipe until a shotgun blast (or enough damage) drives her back.
   // She summons the dead whenever she can.
   fight(dt) {
@@ -589,8 +590,20 @@ export class Witch {
     const ax = (this.x - tx) / d;
     const az = (this.z - tz) / d;
     const side = Math.sin((this.time * Math.PI * 2) / r.weavePeriod) * r.weave;
-    const gx = tx + ax * want - az * side;
-    const gz = tz + az * want + ax * side;
+    let gx = tx + ax * want - az * side;
+    let gz = tz + az * want + ax * side;
+    // The final battle: stay inside the witchfire ring, clear of the trees at its edge.
+    const ar = this.arena;
+    if (ar) {
+      const cx = gx - ar.x;
+      const cz = gz - ar.z;
+      const cd = Math.hypot(cx, cz);
+      const max = Math.max(0, ar.radius - r.arenaMargin);
+      if (cd > max) {
+        gx = ar.x + (cx / cd) * max;
+        gz = ar.z + (cz / cd) * max;
+      }
+    }
     if (Math.hypot(gx - this.x, gz - this.z) > 0.3) this.stepToward(gx, gz, speed, dt, true);
   }
 
@@ -792,7 +805,7 @@ export class Witch {
     const shotgun = weapon?.id === 'shotgun';
     if (this.state === 'roaming' || this.state === 'planting') {
       this.react();
-      if (this.state === 'attacking' && part === 'head' && !shotgun) this.setMode('rush');
+      if (this.state === 'attacking' && !shotgun) this.setMode('rush');
       return false;
     }
     if (this.state === 'attacking') this.hitInFight(amount, part, shotgun);
@@ -800,13 +813,13 @@ export class Witch {
     return false;
   }
 
-  // Aaron (Session 9): a headshot (not the shotgun's) sends her in to
-  // swipe; a shotgun hit, or enough damage, drives her back out.
+  // Aaron (Session 9): any hit but the shotgun's sends her in to swipe;
+  // a shotgun hit, or enough damage, drives her back out.
   hitInFight(amount, part, shotgun) {
     if (this.mode === 'rush') {
       this.rushDamage += amount;
       if (shotgun || this.rushDamage >= this.attack.rush.backOffDamage) this.setMode('retreat');
-    } else if (part === 'head' && !shotgun) {
+    } else if (!shotgun) {
       if (this.action === 'hex') this.action = null;
       this.setMode('rush');
     }

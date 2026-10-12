@@ -63,6 +63,7 @@ export class FinalBattle {
     // Blood night: night now if it isn't (she's in final mode first, so
     // the skipped dusk doesn't send her out planting), then the clock stops.
     this.witch.startFinal(this.hut.x, this.hut.z);
+    this.witch.arena = { x: this.centre.x, z: this.centre.z, radius: this.radius - this.fc.ringMargin };
     if (this.clock.phase !== 'night') this.skipToNight();
     this.clock.setPaused(true);
     this.flash(1);

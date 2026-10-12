@@ -34,13 +34,13 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 `src/ai/Witch.js` (`fight()`, `setMode()`, `hitInFight()`), `config.witch.attack`, `config.finalBattle.attack`; numbers in OPEN_QUESTIONS.md #113, #116, #129.
 - **Health doubled** to 1000.
-- **Retreat:** when she turns on you she backs off, weaving, to about 30 m (5 s at most), dropping traps.
-- **Hex:** she holds about 30 m off, weaving, and throws a hex every 26 s (a tenth as often) at 25 m/s (2.5x faster). Come within 15 m and she retreats again.
-- **Rush:** a headshot (not the shotgun's) sends her in at 11 m/s to swipe again and again. She follows you through each wind-up, so the swipes all but can't be dodged. Any shotgun hit drives her back at once; so do 100 damage from other weapons (you'll take a swipe or two).
+- **Retreat:** when she turns on you she backs off, weaving, to about 20 m (5 s at most), dropping traps. (Aaron tried 30 m: too far, and she snagged on trees at the arena's edge.)
+- **Hex:** she holds about 20 m off, weaving, and throws a hex every 6 s at 25 m/s (2.5x faster). Come within 10 m and she retreats again.
+- **Rush:** any hit but the shotgun's (rifle or pistol, body or head) sends her in at 11 m/s to swipe again and again. She follows you through each wind-up, so the swipes all but can't be dodged. Any shotgun hit drives her back at once; so do 100 damage from other weapons (you'll take a swipe or two).
 - **Variety:** she summons the dead whenever it's ready, and drops traps as she retreats.
-- **The final battle** uses the same pattern (hexes every 18 s, a 12 m/s rush, 40-damage swipes); the witchfire ring can cut her retreat short.
+- **The final battle** uses the same pattern (hexes every 4.5 s, a 12 m/s rush, 40-damage swipes). She keeps 4 m inside the witchfire ring, clear of the trees at its edge (`Witch.arena`).
 - **The totem** is now 0.6 m tall, low to the ground (Aaron).
-- Checked headless on a real map: retreat to 30 m in 5 s, hex mode, a rush onto you within 3 s of a headshot, back off on a shotgun hit, and the same inside the final battle's ring.
+- Checked headless on a real map: retreat to 20 m, a hex about every 6 s, a rush onto you within 2 s of a body shot, back off on a shotgun hit; in the final battle she holds 20 m off but never more than 16.8 m from the hut (a 22 m ring).
 
 ### Session 9 (the gate): the point of no return (Aaron, #130)
 

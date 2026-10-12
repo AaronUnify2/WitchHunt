@@ -307,7 +307,8 @@ describe('the witch out for a night', () => {
     const env = atRitual(11);
     standBefore(env, 12);
     env.witch.tier = 'active';
-    hit(env.witch, 10);
+    // A shotgun hit breaks the ritual without bringing her in.
+    env.witch.takeHit(10, 'body', { id: 'shotgun' }, { x: env.witch.x, y: env.witch.y + 1, z: env.witch.z }, env.player.position);
     expect(env.witch.action).toBe('summon');
     expect(env.witch.mode).toBe('retreat');
     for (let i = 0; i < 20; i++) env.witch.update(0.1, true, null);
@@ -367,7 +368,7 @@ describe('the witch out for a night', () => {
     expect(w.mode).toBe('rush');
   });
 
-  it("a shotgun hit drives her back at once; the rifle's body shots take a few", () => {
+  it("any hit but the shotgun's brings her in; a shotgun hit drives her back at once, the rifle takes a few", () => {
     const env = inHexMode(25);
     const w = env.witch;
     hit(w, 50, 'head');
@@ -378,7 +379,11 @@ describe('the witch out for a night', () => {
     w.setMode('hex');
     w.takeHit(12, 'head', { id: 'shotgun' }, { x: w.x, y: w.y + 1, z: w.z }, env.player.position);
     expect(w.mode).toBe('hex');
+    // A rifle body shot does (Aaron: body shots bring her in too).
+    hit(w, 25);
+    expect(w.mode).toBe('rush');
     // Rifle: in on a headshot, out after backOffDamage.
+    w.setMode('hex');
     hit(w, 50, 'head');
     expect(w.mode).toBe('rush');
     const body = 25;
