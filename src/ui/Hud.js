@@ -42,7 +42,7 @@ export class Hud {
         <h2>YOU DIED</h2>
         <p class="hud-death-reason"></p>
         <p class="hud-death-stats"></p>
-        <p class="hud-death-prompt">A / Enter: try again</p>
+        <p class="hud-death-prompt">A / Enter: start a new run</p>
       </div>
     `;
     root.appendChild(this.el);

@@ -125,7 +125,9 @@ export function buildRoster(cfg, data, rng) {
   }
 
   const g = cfg.sigilGrounds;
-  let groundCount = Math.min(rng.int(g.min, g.max), data.sigilGrounds.length);
+  // Each ground's band: perBand's counts (M6, Aaron), or weighted at random.
+  const groundBands = g.perBand ? BANDS.flatMap((b) => Array(g.perBand[b] ?? 0).fill(b)) : null;
+  let groundCount = Math.min(groundBands ? groundBands.length : rng.int(g.min, g.max), data.sigilGrounds.length);
   // Drop optional encounters (last rolled first) if the roster is too big.
   while (encounters.length + groundCount > cfg.clearingCount) {
     const i = findLastIndex(encounters, (en) => !en.required);
@@ -141,7 +143,7 @@ export function buildRoster(cfg, data, rng) {
       key: ground.id,
       kind: 'sigilGround',
       name: ground.name,
-      band: weightedPick(BANDS, rng, (b) => g.bandWeights[b]),
+      band: groundBands ? groundBands[k] : weightedPick(BANDS, rng, (b) => g.bandWeights[b]),
       placement: null,
       radius: null,
       clearingType: undefined,

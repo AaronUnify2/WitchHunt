@@ -17,7 +17,8 @@
 //    turret, climb the tower (reveals the map round it), open the ledger.
 //  - The ledger (ui/Ledger.js): one place to manage it all.
 //  - M6: while the player is away, NightWatch resolves each attack by the
-//    margin table and applyAttack() lands it on the real defences.
+//    margin table and plays it out on the real defences (attackStart(),
+//    attackTick(), attackBreak()); the turret doesn't really fire then.
 //
 // Events: 'station:breached' { barrier }, 'station:repaired' { barrier },
 // 'station:overrun', 'station:battery' { charge }.
@@ -58,6 +59,7 @@ export class Station {
     this.nightSeconds = this.cfg.clock.phases.find((p) => p.name === 'night')?.seconds ?? 360;
     this.time = 0;
     this.overrunEnabled = sc.siege.overrun;
+    this.abstract = false; // M6: set by NightWatch while the player is away
     this.overrunDone = false;
     this.clawing = 0; // swipes at the defences in the last second (overlay)
     this.clawCount = 0;
@@ -155,7 +157,8 @@ export class Station {
     const heightAround = (pieces) => Math.min(...pieces.map((p) => Math.min(g.heightAt(p.ax, p.az), g.heightAt(p.bx, p.bz))));
     this.layout.segments.forEach((seg, i) => {
       const base = heightAround(seg.pieces) - 0.5;
-      add(s.segments[i], seg.pieces, base, base + 0.5 + L.fenceHeight, false);
+      // Chain-link glares like the gate: the torch dims on it up close (Aaron, M6).
+      for (const col of add(s.segments[i], seg.pieces, base, base + 0.5 + L.fenceHeight, false)) col.glare = true;
       const bb = heightAround(seg.barricade.pieces) - 0.5;
       add(s.segments[i].barricade, seg.barricade.pieces, bb, bb + 1.8, true);
     });
@@ -357,7 +360,8 @@ export class Station {
       if (phase === 'night' && this.state.charge > 0) this.state.drain(this.state.nightDrainPerSecond(this.nightSeconds) * dt);
       this.updateSpikes();
       this.updateFloodlit(phase);
-      this.turret.update(dt);
+      // Away (M6), the turret's part is the forecast's ammo maths, not real shots.
+      if (!this.abstract) this.turret.update(dt);
       this.turretGlare.off = !this.state.turret.installed;
       this.syncColliders();
       this.checkOverrun();
@@ -739,64 +743,70 @@ export class Station {
     return line.sort((p, q) => Math.abs(p.a - a) - Math.abs(q.a - a)).map((p) => p.b);
   }
 
-  // Land a resolved attack (base/nightResolver.js) that reached the
-  // station at (x, z): damage the fence where it arrived (the barricade
-  // behind a segment first), use up turret rounds, charge and spike bites,
-  // and if it broke through, the doors go and the family are lost.
-  // Returns { damage (health taken off), broke: [names], rounds, charge, fell }.
-  applyAttack(x, z, result, zombies) {
+  // An attack while you're away (NightWatch) plays out in steps on the
+  // real defences, from where it arrived (fenceLineFrom()):
+  //  - attackStart(): the spike trap there bites;
+  //  - attackTick(): a slice of its damage spreads along the fence (a
+  //    barricade before its segment), and the turret's rounds and the
+  //    fence's zaps are used up;
+  //  - attackBreak(): if it breaks through, the fence, then the front
+  //    door, then the comms door; after the last, the family are lost.
+  // Breaks are announced as in a real siege ("The east fence 2 is down!").
+
+  attackStart(line, zombies) {
+    const first = line[0];
+    if (first.kind !== 'fence') return;
+    for (let i = 0; i < zombies && first.spike.built && first.spike.durability > 0; i++) this.state.wearSpike(first.index);
+  }
+
+  // f: the share of the attack this tick (dt / its length). Returns { damage, rounds }.
+  attackTick(line, result, f, damages = true) {
     const s = this.state;
-    const r = this.cfg.nights.resolver;
-    const out = { damage: 0, broke: [], rounds: 0, charge: 0, fell: false };
-    const chargeBefore = s.charge;
-    // The turret and the fence fight back first.
+    const out = { damage: 0, rounds: 0 };
     if (s.turretOnline) {
-      const used = Math.min(s.turret.rounds, result.turretRounds);
-      for (let i = 0; i < Math.floor(used); i++) s.turretFired();
-      s.turret.rounds = Math.max(0, s.turret.rounds - (used - Math.floor(used)));
+      const used = Math.min(s.turret.rounds, result.turretRounds * f);
+      s.turret.rounds -= used;
+      s.drain(used * this.sc.power.turretShotCost);
       out.rounds = used;
     }
-    if (s.powered) s.drain(result.zaps * this.sc.power.zapCost);
-    const line = this.fenceLineFrom(angleOf(this.layout, x, z));
-    const first = line[0];
-    if (first.kind === 'fence') {
-      const trap = first.spike;
-      for (let i = 0; i < zombies && trap.built && trap.durability > 0; i++) s.wearSpike(first.index);
-    }
-    const hit = (b, amount) => {
-      const before = b.health;
-      if (s.damage(b, amount)) out.broke.push(b.name);
-      out.damage += before - b.health;
-    };
-    if (result.falls) {
-      // Straight through: the fence where they came, the front door, the comms door.
-      if (first.kind === 'fence' && first.barricade.built) hit(first.barricade, Infinity);
-      hit(first, Infinity);
-      hit(s.doors.front, Infinity);
-      hit(s.doors.comms, Infinity);
-      out.fell = true;
-    } else {
-      // Spread along the fence from where they arrived, a barricade before its segment.
-      let left = result.damage;
-      for (const b of line) {
-        if (left <= 0) break;
-        for (const target of b.kind === 'fence' && b.barricade.built ? [b.barricade, b] : [b]) {
-          const take = Math.min(left, target.health * r.spreadBreak);
-          if (take <= 0) continue;
-          hit(target, take);
-          left -= take;
-          if (left <= 0) break;
-        }
+    if (s.powered) s.drain(result.zaps * f * this.sc.power.zapCost);
+    if (!damages) return out;
+    let left = result.damage * f;
+    const r = this.cfg.nights.resolver;
+    for (const b of line) {
+      if (left <= 1e-9) break;
+      for (const target of b.kind === 'fence' && b.barricade.built ? [b.barricade, b] : [b]) {
+        const take = Math.min(left, target.health * r.spreadBreak);
+        if (take <= 0) continue;
+        out.damage += take;
+        left -= take;
+        if (s.damage(target, take)) this.onBreak(target);
+        if (left <= 1e-9) break;
       }
     }
-    out.charge = chargeBefore - s.charge;
-    this.syncColliders();
-    if (out.fell && this.overrunEnabled && !this.overrunDone && this.combat.alive) {
+    return out;
+  }
+
+  // Breaking through, stage by stage (0: the fence where they came, 1: the
+  // front door, 2: the comms door and the family). Returns the names broken.
+  attackBreak(line, stage) {
+    const s = this.state;
+    const first = line[0];
+    const targets = stage === 0 ? (first.kind === 'fence' && first.barricade.built ? [first.barricade, first] : [first]) : stage === 1 ? [s.doors.front] : [s.doors.comms];
+    const broke = [];
+    for (const b of targets) {
+      if (b.health <= 0) continue;
+      if (s.damage(b, Infinity)) {
+        broke.push(b.name);
+        this.onBreak(b);
+      }
+    }
+    if (stage === 2 && this.overrunEnabled && !this.overrunDone && this.combat.alive) {
       this.overrunDone = true;
       this.bus.emit('station:overrun');
       this.combat.overrun('The dead broke into the comms room while you were away.');
     }
-    return out;
+    return broke;
   }
 
   // The HUD strip under the minimap, while you're near the station: its
@@ -881,7 +891,7 @@ export class Station {
     const t = s.turret;
     const turret = t.installed ? `turret ${this.turret.status} ${Math.floor(t.rounds)}r ${t.mode}` : t.available ? 'turret not installed' : 'no turret';
     let siege = 0;
-    for (const z of this.enemies.living) if (z.mode === 'siege' || z.via) siege++;
+    for (const z of this.enemies.living) if (z.mode === 'siege' || z.mode === 'held' || z.via) siege++;
     return `security ${sec.total.toFixed(1)}  charge ${Math.round(s.charge)}  fence ${whole} whole ${down} down  barricades ${bars}  gate ${Math.ceil(s.gate.health)}  doors ${Math.ceil(s.doors.front.health)}/${Math.ceil(s.doors.comms.health)}  ${turret}  sieging ${siege} clawing ${this.clawing}/s`;
   }
 

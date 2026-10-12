@@ -39,6 +39,18 @@ describe('generateMap: the roster', () => {
     }
   });
 
+  it('puts the sigil grounds two north, two in the middle, one south (Aaron, M6)', () => {
+    for (const map of maps) {
+      const count = { north: 0, middle: 0, south: 0 };
+      for (const c of map.clearings) if (c.kind === 'sigilGround') count[c.band]++;
+      expect(count).toEqual(m.sigilGrounds.perBand);
+    }
+  });
+
+  it('puts the Car Armory in the north (Aaron, M6)', () => {
+    for (const map of maps) expect(map.clearings.find((c) => c.key === 'carArmory').band).toBe('north');
+  });
+
   it(`has ${m.sigilGrounds.min}-${m.sigilGrounds.max} different sigil grounds`, () => {
     for (const map of maps) {
       const grounds = map.clearings.filter((c) => c.kind === 'sigilGround').map((c) => c.key);

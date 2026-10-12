@@ -253,7 +253,10 @@ export class Combat {
         this.health.update(dt);
       }
       if (this.alive) this.pickups.update(dt, player.position.x, player.position.z, this.take);
-      if (!this.alive && input.wasPressed('menuConfirm')) this.respawn();
+      // Permadeath (Aaron, M6): A on the death screen starts a new run
+      // (Game reloads on a fresh map). The debug menu's "try again" keeps
+      // the old in-place reset.
+      if (!this.alive && input.wasPressed('menuConfirm')) this.bus.emit('run:newRequested');
       this.enemies.update(dt, this.updateSenses(daylight));
       this.updateGroans(dt);
     }
@@ -317,6 +320,9 @@ export class Combat {
       this.enemies.spawnAround(this.player.position),
     );
     menu.addItem('Kill all zombies', () => this.enemies.clear());
+    menu.addItem('Try again here (after a death: same map, same night)', () => {
+      if (!this.alive) this.respawn();
+    });
     // M6: the simulation tiers.
     menu.addItem(`Zombies: populate the map (+${d.populateCount} on the pathways)`, () =>
       this.enemies.populate(this.player.position, d.populateCount, this.cfg.zombies.lod.activeRadius),

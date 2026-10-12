@@ -261,9 +261,11 @@ export const config = {
       dirtFraction: 0.75, // the bare dirt patch covers this fraction of the radius; the rest is grassy
     },
     sigilGrounds: {
-      min: 4,
-      max: 6,
-      bandWeights: { north: 1, middle: 2, south: 3 }, // denser to the south (DESIGN.md)
+      // Aaron (M6): two north, two in the middle, one south, so the witch's
+      // sigils (and their marches) are spread over the whole map.
+      perBand: { north: 2, middle: 2, south: 1 },
+      min: 5, // never fewer (the roster drops optional encounters first)
+      max: 5,
     },
     maskCell: 2, // metres per cell of the ground mask (dirt, open ground)
   },
@@ -896,6 +898,15 @@ export const config = {
       turretRoundsPerZombie: 4, // turret rounds an attack can use up, per zombie
       zapsPerZombie: 2, // zaps from the charged fence, per zombie
       mutantWeight: 4, // a mutant in an attack counts as this many zombies
+      // Aaron (M6): attacks take time, so you can react. A group gathers just
+      // outside the fence where it arrived and its damage lands over
+      // attackSeconds (a night is 360). Breaking through: the fence, the
+      // front door and the comms door fall at these points of the attack.
+      attackSeconds: 45,
+      breakStages: [0.3, 0.65, 1],
+      standOff: 5, // metres outside the fence the group gathers
+      gatherRadius: 4,
+      radioGap: 15, // seconds between "they're at the fence" radio calls
     },
   },
 
@@ -1050,9 +1061,11 @@ export const config = {
       segmentHealth: 200,
       gateHealth: 300,
       barricadeHealth: 150,
-      // Start of a run (Aaron: "east fence torn up"): segment index (0 = far
-      // west, 11 = far east) -> health fraction.
-      startHealth: { 9: 0.45, 10: 0, 11: 0 },
+      // Start of a run: segment index (0 = far west, 11 = far east; 5 and 6
+      // flank the gate) -> health fraction. Aaron (M6): the broken panel is
+      // the second east of the gate, so you face it from the yard and spot
+      // it; the one beyond it leans.
+      startHealth: { 7: 0, 8: 0.45 },
       gateOpenDistance: 3.5, // the gate opens itself for the player within this
       gateSlideSeconds: 0.8,
     },
@@ -1325,6 +1338,7 @@ export const config = {
   debug: {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
     populateCount: 100, // M6: "Zombies: populate the map" adds about this many
+    fastForwardSteps: [1, 4, 10], // M6: world steps per frame for the debug fast-forward
     giveArmour: 40,
     giveFirstAid: 3,
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands

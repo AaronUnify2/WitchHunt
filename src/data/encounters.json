@@ -13,7 +13,7 @@
     { "id": "timeCapsule", "name": "Time capsule (ruined church)", "band": "middle", "appears": "uncommon", "builtIn": "M10" },
     { "id": "caller", "name": "The Caller", "band": "middle", "appears": { "min": 0, "max": 2 }, "clearing": false, "builtIn": "M10" },
     { "id": "bigfootCave", "name": "Bigfoot cave", "band": "middle", "appears": "every", "builtIn": "M10" },
-    { "id": "carArmory", "name": "Car Armory", "band": "middle", "appears": "every", "radius": 26, "builtIn": "M11" },
+    { "id": "carArmory", "name": "Car Armory", "band": "north", "appears": "every", "radius": 26, "builtIn": "M11" },
     { "id": "groundZero", "name": "Ground Zero", "band": "south", "appears": "every", "radius": 32, "builtIn": "M11" },
     { "id": "crashedUfo", "name": "Crashed UFO", "band": "south", "appears": "every", "radius": 26, "builtIn": "M11" },
     { "id": "hut", "name": "Witch's hut", "band": "south", "appears": "every", "placement": "hut", "kind": "hut", "clearingType": null, "builtIn": "M7" }

@@ -7,7 +7,9 @@
 //     - 'wander': a random walk along the pathway graph;
 //     - 'march' (M6): walk the shortest way home along the pathways to
 //       lay siege to the station (ai/marchRoutes.js);
-//     - 'linger' (M6): hang about a clearing (revisited encounters).
+//     - 'linger' (M6): hang about a clearing (revisited encounters);
+//     - 'held' (M6): gathered outside the station's fence, attacking it
+//       while the player is away (NightWatch plays the attack out).
 // A chasing zombie that loses the player keeps after them for a few
 // seconds (memory), then 'search'es where it last saw them, then goes
 // back to its errand: a marcher marches on, the rest wander.
@@ -17,7 +19,7 @@
 import { notices } from './detection.js';
 
 // Modes a zombie keeps between thinks until something better comes along.
-const ERRANDS = new Set(['wander', 'march', 'linger']);
+const ERRANDS = new Set(['wander', 'march', 'linger', 'held']);
 
 export class ZombieBrain {
   // routes: PathRoutes (wandering). marches: MarchRoutes (M6). ground:
@@ -62,8 +64,8 @@ export class ZombieBrain {
 
   setMode(z, mode) {
     z.mode = mode;
-    z.pace = mode === 'wander' || mode === 'linger' ? this.wander.pace : 1;
-    if (mode === 'wander' || mode === 'linger') z.hasGoal = false; // pick a goal on the next step
+    z.pace = mode === 'wander' || mode === 'linger' || mode === 'held' ? this.wander.pace : 1;
+    if (mode === 'wander' || mode === 'linger' || mode === 'held') z.hasGoal = false; // pick a goal on the next step
     if (mode === 'march') {
       z.marcher = true;
       z.marchLink = null; // re-plan from wherever it is
@@ -98,6 +100,7 @@ export class ZombieBrain {
         this.stepMarch(z);
         break;
       case 'linger':
+      case 'held':
         this.stepLinger(z);
         break;
       case 'search':
@@ -109,6 +112,9 @@ export class ZombieBrain {
   }
 
   think(z, senses, station, dt) {
+    // Held at the fence (M6): NightWatch is playing its attack out while
+    // you're away; it pays you no mind until the attack is released.
+    if (z.mode === 'held') return;
     const pack = z.horde;
     const sees = notices(z, senses, this.cfg, z.mode === 'chase', this.ground);
     if (sees) {

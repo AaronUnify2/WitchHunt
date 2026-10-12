@@ -86,7 +86,7 @@ describe('danger', () => {
   });
 
   it("night 2's single sigil against a fresh station holds but takes damage", () => {
-    // A fresh run: about 25 security (the east fence torn, no charge).
+    // A fresh run: about 25 security (one panel down, no charge).
     const d = sigilDanger(900, 1, config, NIGHT).value;
     expect(d).toBeGreaterThan(5);
     expect(d).toBeLessThan(25);

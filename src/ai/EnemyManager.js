@@ -43,7 +43,7 @@ import { levelStats, clampLevel, speedRoll, speedFromRoll, pickVariant, planSpaw
 import { tierFor, capActive, nearbyStepDue } from './simTiers.js';
 import { resolveCircles } from '../world/collision.js';
 
-const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger'];
+const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger', 'held'];
 
 export class EnemyManager {
   // cfg: the whole config (zombies, mutant, detection). world: { map,
@@ -78,7 +78,7 @@ export class EnemyManager {
     this.stationSimulated = this.cfg.lod.stationKeepsSimulated; // M6: false while the player is away (NightWatch)
     this.routeOut = { active: false, x: 0, z: 0, barrier: null };
     this.senses = {};
-    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, march: 0, linger: 0, rise: 0, stragglers: 0 };
+    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, held: 0, march: 0, linger: 0, rise: 0, stragglers: 0 };
     const map = this.world.map;
     this.routes = new PathRoutes(map);
     this.marches = new MarchRoutes(map, Math.max(0, map.clearings.findIndex((c) => c.kind === 'home')));
@@ -570,7 +570,7 @@ export class EnemyManager {
     const r = radius * this.stats.notice;
     let n = 0;
     for (const zb of this.living) {
-      if (zb.state === 'rise' || Math.hypot(zb.x - x, zb.z - z) > r) continue;
+      if (zb.state === 'rise' || zb.mode === 'held' || Math.hypot(zb.x - x, zb.z - z) > r) continue;
       this.brain.chase(zb, x, z, this.detCfg.gunfireMemory);
       n++;
     }

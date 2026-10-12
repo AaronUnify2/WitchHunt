@@ -115,7 +115,8 @@ export class Weapons {
 
     const w = this.weapon;
     const ready = this.switchTimer <= 0;
-    this.aiming = ready && w.kind === 'hitscan' && input.isDown('aim');
+    // No shouldering the gun while reloading (Aaron, M6: the rounds came up to your face).
+    this.aiming = ready && w.kind === 'hitscan' && !this.state.reloading && input.isDown('aim');
     const zoomTarget = this.aiming ? 1 : 0;
     this.zoom += (zoomTarget - this.zoom) * Math.min(1, this.aimingCfg.zoomSpeed * dt);
     this.player.fovMultiplier = 1 + ((w.aimFovMultiplier ?? 1) - 1) * this.zoom;

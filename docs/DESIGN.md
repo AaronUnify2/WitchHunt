@@ -295,7 +295,7 @@ Buried sigils are the source of every zombie. The witch plants them; the player 
 
 ### Sigil grounds
 
-4–6 eerie clearings per run (config, denser to the south) that the witch favours for planting.
+Five eerie clearings per run (config): two in the north band, two in the middle, one in the south (Aaron, M6, so sigils and their marches come from all over the map). The witch favours them for planting.
 
 - **She prefers them:** most plantings (config, e.g. 60%) go to empty sigil grounds. A player who knows them can stake one out and ambush her.
 - **Tells:** in the days before she uses one, crows gather, earth is turned, candles appear. Junie often notices.
@@ -571,6 +571,15 @@ Three base upgrades exist exactly once per run, each from one encounter. A three
 - **Strange cargo:** crates with giant beetles scratching inside (a crate hit by gunfire or a blast breaks open and releases its beetle); aliens frozen in resin blocks, still plain grey; a clipboard field report that counts as a lore document.
 - It shows the beetles and aliens exist, and that the government knew, long before the player meets them.
 
+#### Car Armory and the government base (every run; north band, Aaron M6: the turret matters most for travelling away from home)
+
+- **Outside:** trashed military vehicles; an armoured truck with its back doors open on a glowing purple portal.
+- **Inside:** a secret government base, hand-built: corridors, labs, an armory section, far bigger than the truck. The source of the portal technology.
+- **Enemies:** Men in Black, stealth-aware.
+- **Loot:** large one-time stocks of every ammo type, first aid kits, scrap, body armour; **the game's one turret**; and **an explosives crate that restocks**.
+- **Revisits:** the only revisitable restock. A smaller Men in Black squad moves back in each time, so every run for charges costs something.
+- **Classified documents:** files and lab notes scattered through the base.
+
 ### Middle band
 
 #### Stairs in the woods (2–3 per run)
@@ -605,15 +614,6 @@ Three base upgrades exist exactly once per run, each from one encounter. A three
 - **Boss:** the Mothman in the deepest chamber.
 - **Reward:** once it dies, Bigfoot emerges, grateful, and gives Tom the **Bigfoot's Blessing** and his **nature armour** gift.
 - **The Blessing** is buried at the base of a tree inside the compound (hold interact): +20 security, permanent, never drains, can't be removed; weak zombies avoid or slow near the station; its own line on the forecast.
-
-#### Car Armory and the government base (every run)
-
-- **Outside:** trashed military vehicles; an armoured truck with its back doors open on a glowing purple portal.
-- **Inside:** a secret government base, hand-built: corridors, labs, an armory section, far bigger than the truck. The source of the portal technology.
-- **Enemies:** Men in Black, stealth-aware.
-- **Loot:** large one-time stocks of every ammo type, first aid kits, scrap, body armour; **the game's one turret**; and **an explosives crate that restocks**.
-- **Revisits:** the only revisitable restock. A smaller Men in Black squad moves back in each time, so every run for charges costs something.
-- **Classified documents:** files and lab notes scattered through the base.
 
 ### South band
 

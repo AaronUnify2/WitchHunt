@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is built and waiting for his play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is built; Aaron's first play-test of it brought fixes (attacks now take time, fast-forward, sigil grounds spread over the map, a new run on death, fence glare, the starting broken panel, no aiming while reloading), waiting for his second look. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -19,6 +19,26 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M6 step 3 follow-up: Aaron's first play-test of nights while away
+
+- **Attacks take time (Aaron: "the fence fell within a second").**
+  - A group that reaches the station while you're away gathers 5 m outside the fence where it arrived (a new 'held' mode; it ignores you).
+  - A radio call says where ("They're at the south fence 2!", at most every 15 s).
+  - Its damage lands over 45 s (about 1¼ hours of night). Breaks are toasted as in a real siege.
+  - Breaking through takes the fence at 30% of the attack, the front door at 65% and the comms door at the end, when the station falls.
+  - **Come home mid-attack (within 150 m) and the group is still there to fight.**
+  - While you're away the turret doesn't really fire (its part is the ammo maths), so nothing is counted twice.
+  - Checked (seed 4242, five sigils, undefended): the first attack at 10:35pm took a panel about an hour later. From 12:30am the fence went panel by panel, the front door at 2am and the comms room at about 2:45am.
+- **Why nights 2-4 showed no damage:** skipping to dawn skipped the attacks (the far groups arrive 2-4am), and the map screen pauses the game.
+  - **The debug time speed is now a fast-forward**: x1, x4 or x10 runs the whole world (zombies, marches, attacks, the clock) that many steps a frame.
+  - A fast simulation of four nights away (seed 777) had attacks from 2:40am on night 2 and 11pm on night 4.
+- **Sigil grounds: always five, two north, two middle, one south** (`config.map.sigilGrounds.perBand`); **the Car Armory moved to the north band** (Aaron). Every seed's map changes. DESIGN.md updated.
+- **Death starts a new run** (a fresh map; A on the death screen reloads, so the tablet needs a tap to start). The debug menu keeps "Try again here".
+- **Chain-link glare:** every fence panel now dims the torch up close, like the gate.
+- **The starting broken panel** is the second east of the gate (segment 7); the one beyond it (8) leans. You face it from the yard.
+- **No shouldering the gun while reloading** (the rounds came up to your face).
+- **Tests:** 315 pass (2 new for the map bands; the station tests follow the new starting panel).
 
 ### M6 step 3: Danger, the forecast, nights while away, the alarm (Session 7, in progress)
 

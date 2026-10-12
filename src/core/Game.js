@@ -62,6 +62,7 @@ export class Game {
     this.director.setDrawDistance(this.drawDistance);
     this.wireEvents();
 
+    this.fastForward = 1; // debug (M6)
     this.loop = this.loop.bind(this);
     this.lastTime = null;
     this.rafId = requestAnimationFrame(this.loop);
@@ -220,9 +221,11 @@ export class Game {
     this.vehicles.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem('Skip to night', () => this.skipToPhase('night'));
+    // M6: fast-forward runs the whole world faster (not just the clock), so
+    // a night's marches and attacks can be watched in a minute or two.
     menu.addItem(
-      () => `Time speed: x${this.clock.timeScale}`,
-      () => this.clock.setTimeScale(nextInList(cfg.clock.timeScaleSteps, this.clock.timeScale)),
+      () => `Fast-forward: x${this.fastForward} (zombies, marches and the clock)`,
+      () => (this.fastForward = nextInList(cfg.debug.fastForwardSteps, this.fastForward)),
     );
     menu.addItem(
       () => `Quality: ${this.qualityName}`,
@@ -312,6 +315,8 @@ export class Game {
       }),
       bus.on('display:fullscreenChanged', ({ fullscreen }) => this.onFullscreenChanged(fullscreen)),
       bus.on('render:contextLost', () => this.toast.show('Graphics context lost. Reload the page.')),
+      // Permadeath (M6): a new run on a fresh map (M12 brings the run summary).
+      bus.on('run:newRequested', () => reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax))),
     ];
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
@@ -376,18 +381,13 @@ export class Game {
     // The debug menu and the map screen stop the action. The map screen
     // pauses the clock too (Aaron, M4); the debug menu lets it run on.
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
-    const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !ledgerPause) this.clock.update(dt);
-    const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
-    // The ledger takes the controls while it's open (the world carries on).
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
-    if (playing && this.combat.alive) this.player.update(dt, controls);
-    this.combat.update(dt, this.input, playing, daylight, locked);
-    this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
-    this.station.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
-    this.vehicles.update(dt, this.input, playing && !locked);
-    this.nightWatch.update(dt, this.clock.phase, playing);
+    // Debug fast-forward (M6): the whole world (clock, zombies, marches,
+    // the station) steps this many times a frame; you move and act in the
+    // first step only. Drawn once.
+    const steps = playing ? this.fastForward : 1;
+    for (let i = 0; i < steps; i++) this.step(dt, running, playing, i === 0);
     if (playing) {
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
@@ -401,6 +401,24 @@ export class Game {
     this.debugMenu.update(dt);
     this.toast.update(dt);
     this.overlay.update(dt);
+  }
+
+  // One step of the world. first: the player's controls work (later
+  // fast-forward steps have them locked).
+  step(dt, running, playing, first) {
+    const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
+    if (running && !this.mapUi.isOpen && !ledgerPause) this.clock.update(dt);
+    const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
+    // The ledger takes the controls while it's open (the world carries on).
+    const locked = this.station.ledger.isOpen || !first;
+    const input = first ? this.input : this.lockedInput;
+    const controls = locked ? this.lockedInput : this.input;
+    if (first && playing && this.combat.alive) this.player.update(dt, controls);
+    this.combat.update(dt, input, playing, daylight, locked);
+    this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.vehicles.update(dt, input, playing && !locked);
+    this.nightWatch.update(dt, this.clock.phase, playing);
   }
 
   get phase() {

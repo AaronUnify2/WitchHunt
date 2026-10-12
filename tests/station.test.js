@@ -71,11 +71,12 @@ describe('stationLayout', () => {
 });
 
 describe('StationState', () => {
-  it('starts with the east fence torn up, no charge and no turret', () => {
+  it('starts with the second panel east of the gate down, no charge and no turret', () => {
     const { state } = setup();
-    expect(state.segments[10].health).toBe(0);
-    expect(state.segments[11].health).toBe(0);
-    expect(state.segments[9].health).toBeCloseTo(0.45 * config.station.fence.segmentHealth);
+    expect(state.segments[7].health).toBe(0);
+    expect(state.segments[8].health).toBeCloseTo(0.45 * config.station.fence.segmentHealth);
+    expect(state.segments[6].health).toBe(config.station.fence.segmentHealth);
+    expect(state.segments[11].health).toBe(config.station.fence.segmentHealth);
     expect(state.segments[0].health).toBe(config.station.fence.segmentHealth);
     expect(state.charge).toBe(0);
     expect(state.turret.installed).toBe(false);
@@ -136,9 +137,9 @@ describe('StationState', () => {
   it('rates security as the sum of every defence, scaled by health', () => {
     const { state } = setup();
     const v = config.station.security;
-    // Start: 9 whole segments, one at 45%, two broken, the gate and two doors; no charge.
+    // Start: 10 whole segments, one at 45%, one broken, the gate and two doors; no charge.
     const start = state.security(NIGHT);
-    expect(start.total).toBeCloseTo(v.fenceSegment * (9 + 0.45) + v.gate + v.door * 2);
+    expect(start.total).toBeCloseTo(v.fenceSegment * (10 + 0.45) + v.gate + v.door * 2);
     // A full battery's worth of charge adds the fence's electric value.
     state.charge = config.station.power.fullSecurityCharge;
     expect(state.security(NIGHT).total).toBeCloseTo(start.total + v.fenceCharge);
@@ -187,7 +188,11 @@ describe('siege routing', () => {
   it('walks round the outside to a nearby gap, then steps through it', () => {
     const { layout, state } = setup();
     const target = layout.cabin.commsCentre;
-    expect(fenceGaps(layout, state).length).toBe(2); // the torn east fence
+    // The far east end torn down (not the run's start, which breaks segment 7).
+    for (const seg of state.segments) seg.health = seg.max;
+    state.segments[10].health = 0;
+    state.segments[11].health = 0;
+    expect(fenceGaps(layout, state).length).toBe(2);
     const s9 = layout.segments[9];
     const p = layout.at((s9.a0 + s9.a1) / 2, layout.radius + 3);
     routeTo(layout, state, config.station, p.x, p.z, target.x, target.z, out);
@@ -204,6 +209,9 @@ describe('siege routing', () => {
 
   it('claws a barricade once the fence in front of it is down', () => {
     const { layout, state } = setup();
+    state.segments[7].health = state.segments[7].max; // mend the run's broken panel (a gap nearby)
+    state.segments[10].health = 0; // the fence in front of it down
+    state.segments[11].health = 0;
     state.buildBarricade(10, 100);
     state.buildBarricade(11, 100); // no other gap near
     const s10 = layout.segments[10];

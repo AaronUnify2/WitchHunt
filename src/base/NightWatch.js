@@ -7,11 +7,14 @@
 //    buttons, so B still reloads), and a Forecast tab in the ledger.
 //  - Away: beyond `awayRadius` of the station the fight isn't simulated.
 //    Each group that reaches it is resolved by the margin table
-//    (nightResolver.js) as things stand then, and lands on the real
-//    defences (Station.applyAttack()): damage carries over, turret rounds
-//    and charge are used up, and a bad enough night can fall. Back home,
-//    a summary of what happened. Near home, zombies at the station are
-//    simulated and fought for real, as before.
+//    (nightResolver.js) as things stand then, gathers outside the fence
+//    where it arrived (a radio call says where) and plays its attack out
+//    over attackSeconds on the real defences (Station.attackTick() and
+//    attackBreak()): damage carries over, turret rounds and charge are
+//    used up, and a bad enough attack breaks through the fence, the front
+//    door and the comms door in turn. Come home mid-attack and the group
+//    is still at the fence to fight (Aaron, M6). Back home, a summary.
+//    Near home, zombies at the station are simulated and fought for real.
 //  - The alarm: the first time in a night that security drops below half
 //    of what it was at dusk, a radio call and a banner pointing home.
 //
@@ -21,6 +24,7 @@
 import { nightDanger } from './danger.js';
 import { verdict, resolveAttack } from './nightResolver.js';
 import { secondsOfFire } from './turretMath.js';
+import { angleOf } from './stationLayout.js';
 
 export class NightWatch {
   constructor(cfg, rng, bus) {
@@ -58,9 +62,19 @@ export class NightWatch {
     this.alarmOn = false;
     this.alarmDone = false;
     this.alarmTimer = 0;
-    this.log = { attacks: 0, zombies: 0, damage: 0, broke: [], rounds: 0 };
+    this.newLog();
+    this.attacks = []; // attacks under way while you're away
     this.attacksTonight = 0;
+    this.time = 0;
+    this.lastRadio = -Infinity;
     this.el?.classList.add('hidden');
+  }
+
+  // What's happened while you were away (shown when you're back).
+  newLog() {
+    this.log = { attacks: 0, zombies: 0, damage: 0, broke: [], rounds: 0 };
+    this.brokenAtStart = new Set();
+    if (this.station) for (const b of this.station.state.barriers()) if (b.health <= 0) this.brokenAtStart.add(b.id);
   }
 
   wireEvents() {
@@ -191,7 +205,12 @@ export class NightWatch {
     const was = this.away;
     this.away = this.forceAway || (this.away ? d > nc.awayRadius : d > nc.awayRadius + nc.awayHysteresis);
     this.enemies.stationSimulated = !this.away;
-    if (was && !this.away) this.reportReturn();
+    this.station.abstract = this.away;
+    if (!was && this.away) this.newLog();
+    if (was && !this.away) {
+      this.releaseAttacks();
+      this.reportReturn();
+    }
 
     if (this.forecastDue) {
       this.forecastDue = false;
@@ -207,7 +226,11 @@ export class NightWatch {
     }
 
     if (playing && this.combat.alive) {
-      if (this.away) this.resolveArrivals();
+      this.time += dt;
+      if (this.away) {
+        this.resolveArrivals();
+        this.updateAttacks(dt);
+      }
       this.alarmTimer -= dt;
       if (this.alarmTimer <= 0) {
         this.alarmTimer = 0.5;
@@ -230,8 +253,11 @@ export class NightWatch {
     return Math.atan2(right, ahead);
   }
 
-  // While away: every group (a pack, or a stray) that has reached the
-  // station is resolved and lands on the defences.
+  // While away: every group (a pack, or a stray) that reaches the station
+  // is resolved by the margin table as things stand then, gathers just
+  // outside the fence where it arrived, and plays its attack out over
+  // attackSeconds (Aaron: time to react). Come home mid-attack and the
+  // group is still there to fight.
   resolveArrivals() {
     const groups = this.groups;
     groups.clear();
@@ -246,6 +272,7 @@ export class NightWatch {
     const r = this.nc.resolver;
     const danger = this.dangerNow();
     const defenceDamage = this.cfg.zombies.levels[this.level]?.defenceDamage ?? 1;
+    const L = this.station.layout;
     for (const list of groups.values()) {
       let weight = 0;
       let x = 0;
@@ -255,30 +282,89 @@ export class NightWatch {
         x += zb.x;
         z += zb.z;
       }
+      x /= list.length;
+      z /= list.length;
       const margin = this.securityNow() - danger.total;
       const result = resolveAttack({ margin, zombies: weight, threat: danger.threat, nightDanger: danger.total, defenceDamage, roll: this.rng.next() }, r);
-      const applied = this.station.applyAttack(x / list.length, z / list.length, result, list.length);
-      for (const zb of list) zb.state = 'free'; // fought off (or through): gone either way
+      const angle = angleOf(L, x, z);
+      const line = this.station.fenceLineFrom(angle);
+      const spot = L.at(Math.max(L.west, Math.min(L.east, angle)), L.radius + r.standOff);
+      for (const zb of list) {
+        this.enemies.brain.setMode(zb, 'held');
+        zb.lingerX = spot.x;
+        zb.lingerZ = spot.z;
+        zb.lingerRadius = r.gatherRadius;
+      }
+      this.station.attackStart(line, list.length);
+      this.attacks.push({ zombies: list, line, result, t: 0, stage: 0, rounds: 0, damage: 0 });
       const log = this.log;
       log.attacks++;
       log.zombies += list.length;
-      log.damage += applied.damage;
-      log.rounds += applied.rounds;
-      for (const name of applied.broke) if (!log.broke.includes(name)) log.broke.push(name);
       this.attacksTonight++;
-      this.bus.emit('night:attack', { zombies: list.length, result, applied });
-      if (applied.fell) return;
+      this.radio(`Radio: "They're at the ${line[0].name}!"`);
+      this.bus.emit('night:attack', { zombies: list.length, result });
     }
   }
 
-  // Back within range of home after attacks while you were away.
+  // Each attack under way: its share of damage and costs this frame, or
+  // breaking through stage by stage. When it's over the group is gone
+  // (fought off, or through). Coming home ends them all: the zombies
+  // still at the fence fight for real.
+  updateAttacks(dt) {
+    const r = this.nc.resolver;
+    const log = this.log;
+    for (let i = this.attacks.length - 1; i >= 0; i--) {
+      const a = this.attacks[i];
+      const f = Math.min(dt, r.attackSeconds - a.t) / r.attackSeconds;
+      a.t += dt;
+      const tick = this.station.attackTick(a.line, a.result, f, !a.result.falls);
+      log.rounds += tick.rounds;
+      log.damage += tick.damage;
+      if (a.result.falls) {
+        while (a.stage < r.breakStages.length && a.t >= r.breakStages[a.stage] * r.attackSeconds) {
+          for (const name of this.station.attackBreak(a.line, a.stage)) if (!log.broke.includes(name)) log.broke.push(name);
+          a.stage++;
+        }
+      }
+      this.noteBroken();
+      if (!this.combat.alive) return;
+      if (a.t < r.attackSeconds) continue;
+      for (const z of a.zombies) if (z.alive && z.mode === 'held') z.state = 'free';
+      this.attacks.splice(i, 1);
+    }
+  }
+
+  // Home mid-attack: the groups at the fence lay siege for real.
+  releaseAttacks() {
+    for (const a of this.attacks) for (const z of a.zombies) if (z.alive && z.mode === 'held') this.enemies.brain.setMode(z, 'siege');
+    this.attacks.length = 0;
+  }
+
+  // Remember what's broken for the summary (attackTick breaks things too).
+  noteBroken() {
+    const log = this.log;
+    for (const b of this.station.state.barriers()) {
+      if (b.health > 0 || b.kind === 'barricade') continue;
+      if (!this.brokenAtStart.has(b.id) && !log.broke.includes(b.name)) log.broke.push(b.name);
+    }
+  }
+
+  radio(text) {
+    if (this.time - this.lastRadio < this.nc.resolver.radioGap) return;
+    this.lastRadio = this.time;
+    this.combat.sfx.play('radioAlarm');
+    this.notify(text);
+  }
+
+  // Back within range of home after attacks while you were away (the
+  // ones still under way carry on for real).
   reportReturn() {
     const log = this.log;
     if (log.attacks === 0) return;
     const broke = log.broke.length ? `Broken: ${log.broke.join(', ')}.` : 'Nothing broke.';
     const turret = log.rounds >= 1 ? ` The turret fired ${Math.round(log.rounds)} rounds.` : '';
     this.notify(`While you were away: ${log.attacks} attack${log.attacks === 1 ? '' : 's'} by ${log.zombies} zombies. ${broke}${turret}`);
-    this.log = { attacks: 0, zombies: 0, damage: 0, broke: [], rounds: 0 };
+    this.newLog();
   }
 
   checkAlarm(phase) {
