@@ -22,6 +22,8 @@ import { Flashlight } from '../player/Flashlight.js';
 import { Combat } from '../combat/Combat.js';
 import { ZombieDirector } from '../ai/ZombieDirector.js';
 import { Witch } from '../ai/Witch.js';
+import { Hut } from '../world/Hut.js';
+import { Explosives } from '../combat/Explosives.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
@@ -77,10 +79,13 @@ export class Game {
     this.initWorld(root);
     this.initUi(root);
     this.initDirector();
+    this.hut = new Hut(this.cfg, this.bus); // M7 step 4
+    this.hut.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
     this.initNightWatch(root);
+    this.initExplosives();
     this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
     this.addOverlayStats();
     this.addDebugMenuItems();
@@ -137,7 +142,24 @@ export class Game {
       colliders: this.colliders,
       combat: this.combat,
       clock: this.clock,
+      hutBuilding: this.hut,
     });
+  }
+
+  // Explosives (M7 step 4): planting charges (at the hut and anywhere),
+  // the detonator. Their prompt comes after every other.
+  initExplosives() {
+    this.explosives = new Explosives(this.cfg, this.bus);
+    this.explosives.init(this.scene, {
+      combat: this.combat,
+      player: this.player,
+      hut: this.hut,
+      witch: this.witch,
+      ground: this.world.ground,
+      notify: (text) => this.toast.show(text),
+      busy: [this.director.hud, this.station.hud, this.vehicles.hud],
+    });
+    this.combat.promptSources.push(this.explosives.hud);
   }
 
   // The ranger station (M5): fence, doors, turret, ledger, siege.
@@ -266,6 +288,7 @@ export class Game {
     this.director.addDebugItems(menu);
     this.combat.addDebugItems(menu);
     this.witch.addDebugItems(menu, (text) => this.toast.show(text));
+    this.addHutDebugItems(menu);
     this.station.addDebugItems(menu);
     this.nightWatch.addDebugItems(menu);
     this.vehicles.addDebugItems(menu);
@@ -284,6 +307,34 @@ export class Game {
       () => `Dynamic resolution: ${this.dynamicResolution.enabled ? 'on' : 'off'}`,
       () => this.dynamicResolution.setEnabled(!this.dynamicResolution.enabled),
     );
+  }
+
+  // M7 step 4: the hut and explosives.
+  addHutDebugItems(menu) {
+    const hut = menu.category(DEBUG.hut);
+    const ex = () => this.explosives;
+    hut.addItem(
+      () => `Give 2 charges (carrying ${this.combat.inventory.charges}, planted ${ex().placed.length})`,
+      () => this.toast.show(ex().give(2) > 0 ? 'Charges given: switch to the detonator (RB / LB) to plant anywhere' : 'You can only have two out at once'),
+    );
+    hut.addItem('Teleport: to the hut door', () => {
+      const d = this.hut.door;
+      this.player.teleport(d.x + Math.sin(this.hut.facing) * 4, d.z + Math.cos(this.hut.facing) * 4, this.hut.facing);
+      this.toast.show(this.hut.destroyed ? 'The hut is a wreck' : "At the witch's hut");
+    });
+    hut.addItem('Plant both charges on the hut now', () => {
+      if (this.hut.destroyed) return this.toast.show('The hut is already destroyed');
+      ex().placed = ex().placed.filter((c) => !c.onHut);
+      this.combat.inventory.charges = 0;
+      for (const a of [0.6, -0.6]) {
+        const f = this.hut.facing + a;
+        const w = this.hut.wallPoint(this.hut.x + Math.sin(f) * 10, this.hut.z + Math.cos(f) * 10);
+        ex().placed.push({ x: w.x, z: w.z, y: this.world.ground.heightAt(w.x, w.z), onHut: true });
+      }
+      this.toast.show('Two charges on the hut: detonator in hand, RT');
+    });
+    hut.addItem('Set off every planted charge now', () => this.toast.show(`${ex().detonate()} charge(s) went off`));
+    hut.addItem(() => `Destroy the hut now (${this.hut.destroyed ? 'destroyed' : 'standing'})`, () => this.hut.destroy());
   }
 
   // Teleports, the map screen's debug view, and new or repeated seeds.
@@ -527,6 +578,7 @@ export class Game {
     this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.world.update(dt, this.player.camera.position);
+    this.hut.update(dt, this.player.camera.position, this.drawDistance);
 
     this.debugMenu.update(dt);
     this.toast.update(dt);
@@ -547,6 +599,7 @@ export class Game {
     this.combat.update(dt, input, playing, daylight, locked);
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
     this.witch.update(dt, playing, this.player.camera.position, first ? controls : this.lockedInput);
+    this.explosives.update(dt, first ? controls : this.lockedInput, playing && first && !locked);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);
@@ -569,7 +622,9 @@ export class Game {
     this.nightWatch.dispose();
     this.vehicles.dispose();
     this.station.dispose();
+    this.explosives.dispose();
     this.witch.dispose();
+    this.hut.dispose();
     this.director.dispose();
     this.combat.dispose();
     this.flashlight.dispose();

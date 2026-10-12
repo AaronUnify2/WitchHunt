@@ -156,6 +156,11 @@ export class Weapons {
     const s = this.state;
     const wants = w.kind === 'melee' ? input.isDown('attack') : input.wasPressed('attack');
     if (!wants) return;
+    // M7: the detonator only signals (combat/Explosives.js sets the charges off).
+    if (w.kind === 'remote') {
+      this.triggered = true;
+      return;
+    }
     if (s.usesAmmo && s.mag === 0) {
       if (s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
       else if (input.wasPressed('attack')) this.bus.emit('weapon:empty');
@@ -268,6 +273,37 @@ export class Weapons {
       head.r = z.headRadius;
     }
     this.player.lookScale = aimSlowdown(this.eye, this.forward, targets, this.aiming ? this.assistCfgAiming : this.assistCfg, n);
+  }
+
+  // M7: add or take away a weapon slot (the detonator, while charges are
+  // out or in hand). Taking away the one in hand switches back to the
+  // starting weapon.
+  setSlot(id, present) {
+    const has = this.order.includes(id);
+    if (present === has) return;
+    const current = this.id;
+    if (present) {
+      this.order.push(id);
+      const state = new WeaponState(this.cfg[id]);
+      state.init();
+      this.states[id] = state;
+      return;
+    }
+    this.order = this.order.filter((x) => x !== id);
+    if (current === id) {
+      this.index = Math.max(0, this.order.indexOf(this.cfg.startingWeapon));
+      this.switchTimer = this.cfg.switchSeconds;
+      this.bus.emit('weapon:switched', { id: this.id });
+    } else {
+      this.index = this.order.indexOf(current);
+    }
+  }
+
+  // Was the detonator's trigger pulled since the last call? (M7)
+  consumeTrigger() {
+    const t = this.triggered;
+    this.triggered = false;
+    return t;
   }
 
   // The zombies, plus any extra targets that can be hit now (M7).

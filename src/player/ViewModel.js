@@ -84,6 +84,7 @@ export class ViewModel {
       rifle: this.buildRifle(b),
       shotgun: this.buildShotgun(b),
       shovel: this.buildShovel(b),
+      detonator: this.buildDetonator(b),
     };
     for (const m of Object.values(this.models)) {
       m.group.visible = false;
@@ -147,6 +148,17 @@ export class ViewModel {
       [shadedCylinder(0.016, 0.75, 0x7a5a38, b), 0, 0, -0.2], // handle (ash)
       [shadedBox(0.1, 0.02, 0.02, 0x4a3420, b), 0, 0, 0.17], // D-grip
       [shadedBox(0.17, 0.012, 0.22, 0x7a8288, b).rotateX(-0.1), 0, 0, -0.66], // blade (steel)
+    ], group);
+    return { group };
+  }
+
+  // M7: the remote detonator: a grey box, a stubby aerial and a red button.
+  buildDetonator(b) {
+    const group = new THREE.Group();
+    this.mesh([
+      [shadedBox(0.07, 0.04, 0.13, 0x50545a, b), 0.02, -0.02, -0.12], // body
+      [shadedBox(0.012, 0.12, 0.012, 0x2a2c30, b), 0.045, 0.05, -0.17], // aerial
+      [shadedBox(0.03, 0.015, 0.03, 0xc02018, b), 0.02, 0.006, -0.1], // the button
     ], group);
     return { group };
   }

@@ -13,6 +13,7 @@ export const DEBUG = {
   time: 'Time & night',
   teleport: 'Teleport & map',
   witch: 'Witch',
+  hut: 'Hut & explosives',
   zombies: 'Sigils & zombies',
   player: 'Player',
   station: 'Station & vehicles',

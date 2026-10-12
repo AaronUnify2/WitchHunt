@@ -41,6 +41,11 @@
 // (more slowly while she does). An alarm charm going off tells her where
 // you are.
 //
+// Step 4: the hut (world/Hut.js). She leaves and comes home by its door.
+// A charge going on its wall may bring her out to stop you (config), and
+// she hears explosions. Destroying the hut brings her out (step 5 turns
+// that into the final battle).
+//
 // Events: 'witch:setOut' { night, planned }, 'witch:ritualStarted'
 // { spot }, 'witch:planted' { sigil }, 'witch:interrupted' { spot },
 // 'witch:home', 'witch:noticed', 'witch:attacking', 'witch:fleeing',
@@ -81,7 +86,7 @@ export class Witch {
     this.bus = bus;
   }
 
-  // ctx: { world, director, player, colliders, combat, clock }.
+  // ctx: { world, director, player, colliders, combat, clock, hutBuilding }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.ground = ctx.world.ground;
@@ -181,11 +186,23 @@ export class Witch {
         if (at) this.bus.emit('weapon:impact', { x: at.x, y: at.y, z: at.z });
       }),
       bus.on('player:respawned', () => this.traps.free(this.player)),
+      // Step 4: the hut and explosives.
+      bus.on('charge:planted', ({ onHut }) => {
+        if (onHut && this.state === 'resting' && this.fightRng.chance(this.cfg.explosives.witchComesOut)) this.emerge();
+      }),
+      bus.on('explosion', ({ x, z }) => this.heardAt(x, z, this.cfg.explosives.alert)),
+      bus.on('hut:destroyed', () => this.emerge()),
     ];
   }
 
   get hut() {
     return this.world.hut;
+  }
+
+  // Where she comes and goes: the hut's door (the clearing's centre if
+  // there's no hut building, as in tests).
+  get door() {
+    return this.hutBuilding?.door ?? this.world.hut;
   }
 
   get alive() {
@@ -246,6 +263,7 @@ export class Witch {
       if (spot) plan.push(spot);
     }
     if (plan.length === 0) return false;
+    if (this.state === 'resting') this.placeAt(this.door.x, this.door.z);
     this.plan = plan;
     this.bus.emit('witch:setOut', { night, planned: plan.length });
     this.goPlant();
@@ -265,7 +283,29 @@ export class Witch {
     this.spot = null;
     this.state = 'roaming';
     this.goal = 'home';
-    this.setRoute(this.hut.x, this.hut.z);
+    this.setRoute(this.door.x, this.door.z);
+  }
+
+  placeAt(x, z) {
+    this.x = x;
+    this.z = z;
+    this.y = this.ground.heightAt(x, z);
+  }
+
+  // Out of the hut's door to fight you (a charge on the hut, the hut destroyed).
+  emerge() {
+    if (this.state !== 'resting' || !this.alive) return false;
+    this.placeAt(this.door.x, this.door.z);
+    const p = this.player.position;
+    this.facing = Math.atan2(p.x - this.x, p.z - this.z);
+    this.tier = 'active';
+    this.lastSeen = 0;
+    this.lastX = p.x;
+    this.lastZ = p.z;
+    this.spot = null;
+    this.combat.sfx.play('witchShriek', { x: this.x, z: this.z, range: this.wc.songRange });
+    this.startAttack();
+    return true;
   }
 
   // Dawn: home, unless a ritual is under way (she finishes it first).
@@ -372,8 +412,13 @@ export class Witch {
   // An alarm charm rattled at (x, z): if she's out and near enough, she
   // knows you're there.
   heardCharm(x, z) {
+    this.heardAt(x, z, this.wc.traps.charm.witchHears);
+  }
+
+  // A loud noise at (x, z) she can hear within `range`: she comes.
+  heardAt(x, z, range) {
     if (this.state === 'resting' || this.state === 'dead') return;
-    if (Math.hypot(this.x - x, this.z - z) > this.wc.traps.charm.witchHears) return;
+    if (Math.hypot(this.x - x, this.z - z) > range) return;
     this.lastSeen = 0;
     this.lastX = x;
     this.lastZ = z;
@@ -417,7 +462,7 @@ export class Witch {
     this.action = null;
     this.lunging = false;
     this.rethink = this.wc.rethinkSeconds;
-    this.setRoute(this.hut.x, this.hut.z);
+    this.setRoute(this.door.x, this.door.z);
     if (was !== 'fleeing') {
       this.dropTimer = this.wc.traps.dropEvery * 0.5; // the first soon after she turns
       this.bus.emit('witch:fleeing');

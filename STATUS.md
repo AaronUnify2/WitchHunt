@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-3 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, and **she lays traps.** Next: step 4, the hut and explosives.
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-4 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, **she lays traps**, and **the hut can be blown up.** Next: step 5, the final battle and blood night.
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -26,6 +26,18 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
+### M7 step 4: The hut and explosives (Session 8)
+
+`src/world/Hut.js`, `src/render/HutRenderer.js`, `src/combat/Explosives.js`; numbers in OPEN_QUESTIONS.md #123-125.
+- **The hut:** a placeholder crooked shack in the middle of the hut clearing, its door toward the pathway in (the clearing's signpost is gone). Dark weathered planks leaning out of true, a steep sagging mossy roof, a leaning stone chimney, a black doorway under an antlered skull, window slits glowing a breathing green. One collider. She leaves and comes home by the door.
+- **Charges:** carry two at most (Hut & explosives: Give 2 charges). Hold X by the hut to put one on its wall ("1 of 2 placed"), or anywhere with the detonator in hand, as a trap or dropped while chased. Planted charges blink red. The HUD shows "Charges ×N (N planted)".
+- **The detonator:** a weapon slot (RB / LB) while charges are out or in hand, a grey box with an aerial and a red button. RT sets every planted charge off at once (manual only).
+- **A blast:** a white-hot core in a swelling orange fireball, 9 m. It kills or hurts zombies, hurts the witch, breaks traps, and hurts you if you're in it; shakes the camera; every zombie within 160 m hears it, and so does she.
+- **The hut falls only to two charges on it, together.** One alone: "The hut shudders, but holds." Destroyed, it's a smouldering wreck (wall stumps, scattered planks, flickering embers), and she bursts out to fight (step 5 makes this the final battle). Putting a charge on the hut has a 60% chance of bringing her out to stop you.
+- **Debug (Hut & explosives):** give 2 charges; teleport to the hut door; plant both charges on the hut now; set off every planted charge now; destroy the hut now.
+- **Verified in headless Chromium (seed 4242):** the hut by day and night; holding X at the door put a charge on the wall with the prompt and added the detonator slot; two on the hut destroyed it with a fireball, leaving the wreck, and she came out and threw a hex. No console errors.
+- **Tests:** 362 pass (8 new: tests/explosives.test.js): the carry limit, a blast (you and a zombie hurt, less toward the edge), the hut needing two charges together, the detonator slot coming and going (switching back from it), holding X to plant on the hut's wall, and the hut's placement on three maps (door outside the walls, toward the pathway in).
 
 ### M7 step 3: The witch's traps (Session 8)
 
@@ -574,7 +586,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch (M7 steps 1-3)** roams, plants, fights and lays traps, but has no hut building yet (step 4). Only her health is saved (traps and the rest are step 6). Killing her shows a placeholder victory screen.
+- **The witch (M7 steps 1-4)** roams, plants, fights and lays traps; the hut stands and can be blown up. Destroying it only brings her out so far (the final battle is step 5). Only her health is saved (traps, charges and the hut are step 6). Killing her shows a placeholder victory screen.
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.

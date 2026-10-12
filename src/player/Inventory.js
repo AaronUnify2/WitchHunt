@@ -15,6 +15,7 @@ export class Inventory {
     this.scrap = this.cfg.startScrap ?? 0;
     this.ammo = { ...(this.cfg.startAmmo ?? {}) };
     this.batteries = this.cfg.startBatteries ?? 0;
+    this.charges = 0; // M7: explosive charges in hand (combat/Explosives.js)
   }
 
   update() {}

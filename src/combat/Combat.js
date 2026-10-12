@@ -291,6 +291,7 @@ export class Combat {
       device: input.activeDevice,
       dig: this.alive && !locked ? this.activePrompt() : null,
       hidden: this.alive && this.enemies.senses.hidden,
+      chargesPlaced: this.chargesPlaced ?? 0, // M7: set by Explosives
     });
   }
 

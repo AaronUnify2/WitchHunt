@@ -536,6 +536,16 @@ export const config = {
       recoilDegrees: 0,
       noise: 4, // metres: zombies this close hear it (silent, near enough)
     },
+    // M7: the remote for planted charges (combat/Explosives.js). A slot only
+    // while charges are out or in hand; RT sets them all off.
+    detonator: {
+      name: 'Detonator',
+      kind: 'remote',
+      magSize: 0,
+      fireInterval: 0.5,
+      recoilDegrees: 0,
+      noise: 0,
+    },
     rifle: {
       name: 'Service rifle',
       kind: 'hitscan',
@@ -1049,6 +1059,35 @@ export const config = {
       ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants
       hex: { color: 0xb8ff5a, core: 0.16, halo: 0.42, haloOpacity: 0.35 }, // her thrown hexes: a glowing core in a faint halo
     },
+  },
+
+  // The witch's hut (M7 step 4): a placeholder crooked shack in the middle
+  // of the hut clearing (world/Hut.js, render/HutRenderer.js).
+  hut: {
+    width: 5, // metres
+    depth: 4,
+    height: 2.5, // walls
+    colliderRadius: 2.9, // one circle round the walls
+    wreckRadius: 2.2,
+    doorStep: 1.6, // metres out from the front wall where she comes and goes
+    look: { wood: 0x2a221a, plank: 0x1a1510, stone: 0x3a3832, roof: 0x22261a, bone: 0x8a8470, glow: 0x7aff48, charred: 0x141210, ember: 0xff7a28 },
+  },
+
+  // Explosives (M7 step 4; DESIGN.md "Explosives"). Debug-given until the
+  // mineshaft, outpost and Car Armory (M9-M11).
+  explosives: {
+    carryMax: 2, // in hand and planted together
+    plantSeconds: 1.5, // hold X
+    hutPlantRange: 2.5, // metres from the hut's walls to plant on it
+    radius: 9, // metres
+    damage: 220, // to zombies and the witch at the centre (a mutant has about 360)
+    playerDamage: 120, // to you at the centre (armour first)
+    edge: 0.25, // share of the damage at the edge of the blast
+    knockback: 3,
+    shake: 1.4,
+    alert: 160, // metres: every zombie this close hears it
+    witchComesOut: 0.6, // chance she comes out of the hut when a charge goes on it
+    look: { charge: 0x4a5040, led: 0xff2010, blinkPerSecond: 1.5, core: 0xfff0c0, fire: 0xff6a18, fireSeconds: 1.1 },
   },
 
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real

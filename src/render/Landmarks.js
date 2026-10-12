@@ -49,6 +49,12 @@ export class Landmarks {
 
     const matrix = new THREE.Matrix4();
     clearings.forEach((cl, i) => {
+      // M7: the hut clearing has the hut itself instead of a signpost.
+      if (cl.kind === 'hut') {
+        matrix.makeScale(0, 0, 0);
+        this.posts.setMatrixAt(i, matrix);
+        return;
+      }
       // A little off-centre so it doesn't stand where paths cross the middle.
       const x = cl.x + c.offset;
       const z = cl.z - c.offset;
