@@ -47,20 +47,22 @@ export class TrapRenderer {
     const snare = mergeGeometries([loop.toNonIndexed(), ...pegs]);
     this.snares = instanced(snare, lit(c.rope));
 
-    // Totem: three leaning sticks, a glowing rune, the zone ring.
+    // Totem: three leaning sticks, a glowing rune, the zone ring. Built
+    // 1.4 m tall, then scaled to look.totemHeight (Aaron: low to the ground).
+    const th = c.totemHeight / 1.4;
     const sticks = [0, 1, 2].map((i) => {
-      const g = new THREE.BoxGeometry(0.06, 1.4, 0.06);
-      g.translate(0, 0.7, 0);
+      const g = new THREE.BoxGeometry(0.06, 1.4 * th, 0.06);
+      g.translate(0, 0.7 * th, 0);
       g.rotateZ(0.16);
       g.rotateY((i / 3) * Math.PI * 2);
       return g.toNonIndexed();
     });
     const bind = new THREE.CylinderGeometry(0.1, 0.1, 0.12, 6).toNonIndexed();
-    bind.translate(0, 1.05, 0);
+    bind.translate(0, 1.05 * th, 0);
     this.totems = instanced(mergeGeometries([...sticks, bind]), lit(c.wood));
     const rune = new THREE.OctahedronGeometry(0.13, 0);
     rune.scale(1, 1.6, 0.4);
-    rune.translate(0, 1.3, 0);
+    rune.translate(0, 1.3 * th, 0);
     this.runes = instanced(rune, new THREE.MeshBasicMaterial({ color: c.glow, fog: false }));
     const ring = new THREE.RingGeometry(this.zone * 0.94, this.zone, 36);
     ring.rotateX(-Math.PI / 2);

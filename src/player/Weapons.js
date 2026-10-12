@@ -225,7 +225,7 @@ export class Weapons {
 
     // One hit per zombie per shot, however many pellets landed.
     for (const [zombie, e] of this.pelletHits) {
-      const scaled = { stagger: w.stagger, knockback: w.knockback * e.pellets };
+      const scaled = { id: this.id, stagger: w.stagger, knockback: w.knockback * e.pellets }; // id: the witch backs off from the shotgun
       const killed = this.applyHit(zombie, e.damage, e.part, scaled, e, eye);
       this.bus.emit('weapon:hit', { killed, part: e.part, melee: false });
     }

@@ -25,10 +25,13 @@
 //    you breaks the ritual: that sigil is lost.
 //  - Fight or flee: her health share plus a bonus near her hut. High: she
 //    attacks. Low: she flees. She reconsiders every second and on every hit.
-//  - Attacking: she circles you at range throwing hexes (slow bolts you
-//    can sidestep or put a tree in front of: ai/witchHexes.js), rushes in
-//    to swipe if you stand still or come close, and summons a few
-//    zombies (once a minute at most).
+//  - Attacking (Aaron, Session 9): she backs off, weaving, to about 30 m,
+//    dropping traps, then holds there throwing a fast hex now and then
+//    (you can sidestep it or put a tree in front of it: ai/witchHexes.js).
+//    Come too close and she backs off again. A headshot (not the
+//    shotgun's) sends her rushing in to swipe again and again; a shotgun
+//    hit, or enough damage, drives her back out. She summons a few
+//    zombies whenever she can (once a minute at most).
 //  - Fleeing: home along the pathways, faster than your sprint, weaving.
 //    Once she's lost you she goes back to planting, or home if she's badly hurt.
 //  - Wounds last: she heals a share each day in the hut. Wounded, she
@@ -173,10 +176,9 @@ export class Witch {
     this.actionLength = 0;
     this.struck = false; // the swipe has landed (or missed)
     this.hexTimer = 0;
-    this.lunging = false;
-    this.lungeTimer = 0;
-    this.stillTime = 0;
-    this.strafeDir = 1;
+    this.mode = 'retreat'; // while attacking: 'retreat' | 'hex' | 'rush' (Aaron, Session 9)
+    this.modeTimer = 0;
+    this.rushDamage = 0; // taken since she rushed in (enough drives her back)
   }
 
   wireEvents() {
@@ -470,17 +472,26 @@ export class Witch {
     else this.startFlee();
   }
 
+  // She turns on you: she backs off to hex you from afar first.
   startAttack() {
-    const was = this.state;
+    if (this.state === 'attacking') return;
     this.state = 'attacking';
     this.goal = null;
     this.action = null;
-    this.lunging = false;
     this.rethink = this.wc.rethinkSeconds;
-    this.hexTimer = this.attack.hex.castTime; // the first one comes quickly
-    this.strafeDir = this.fightRng.chance(0.5) ? 1 : -1;
-    if (was !== 'attacking') this.bus.emit('witch:attacking');
+    this.hexTimer = this.attack.hex.castTime; // the first one comes quickly once she's at range
+    this.setMode('retreat');
+    this.bus.emit('witch:attacking');
     if (this.summonCooldown <= 0) this.startAction('summon', this.attack.summon.castTime);
+  }
+
+  // Aaron (Session 9): retreat to range, hex from there, rush in to swipe.
+  setMode(mode) {
+    if (this.mode !== mode && this.action === 'swipe') this.action = null;
+    this.mode = mode;
+    this.modeTimer = 0;
+    this.rushDamage = 0;
+    if (mode === 'retreat') this.dropTimer = this.wc.traps.dropEvery * 0.5;
   }
 
   startFlee() {
@@ -488,7 +499,6 @@ export class Witch {
     this.state = 'fleeing';
     this.goal = 'home';
     this.action = null;
-    this.lunging = false;
     this.rethink = this.wc.rethinkSeconds;
     this.setRoute(this.door.x, this.door.z);
     if (was !== 'fleeing') {
@@ -508,12 +518,16 @@ export class Witch {
 
   // ---- fighting ------------------------------------------------------------------
 
+  // Aaron (Session 9): she backs off to standoff range, weaving, and
+  // throws a fast hex now and then from there. A headshot sends her in
+  // to swipe until a shotgun blast (or enough damage) drives her back.
+  // She summons the dead whenever she can.
   fight(dt) {
     const a = this.attack;
     const p = this.player.position;
     const tx = this.lastSeen === 0 ? p.x : this.lastX;
     const tz = this.lastSeen === 0 ? p.z : this.lastZ;
-    const dist = Math.hypot(tx - this.x, tz - this.z);
+    let dist = Math.hypot(tx - this.x, tz - this.z);
     if (this.final) this.spamTraps(dt);
     // Lost you once she's where she last knew you to be (a charm can call
     // her from far off: she comes, then looks).
@@ -521,38 +535,42 @@ export class Witch {
       this.disengage();
       return;
     }
-    if (dist > a.hex.maxRange) {
-      this.stepToward(tx, tz, this.wc.roamSpeed, dt, true);
-      this.facing = turnToward(this.facing, Math.atan2(tx - this.x, tz - this.z), this.wc.turnRate * dt);
-      return;
-    }
-    this.facing = turnToward(this.facing, Math.atan2(tx - this.x, tz - this.z), this.wc.turnRate * dt);
-    // Standing still invites her in.
-    this.stillTime = this.player.speed < a.lunge.stillSpeed ? this.stillTime + dt : 0;
     this.hexTimer -= dt;
     this.rethink -= dt;
+    this.modeTimer += dt;
     if (this.rethink <= 0 && !this.action) {
       this.rethink = this.wc.rethinkSeconds;
       this.decide();
       if (this.state !== 'attacking') return;
     }
+    this.facing = turnToward(this.facing, Math.atan2(tx - this.x, tz - this.z), this.wc.turnRate * dt);
+    if (this.mode === 'rush') {
+      this.rushStep(dt, tx, tz, dist);
+      return;
+    }
+    if (dist > a.hex.maxRange) {
+      this.stepToward(tx, tz, this.wc.roamSpeed, dt, true);
+      return;
+    }
     if (this.action) {
       this.doAction(dt, dist);
       return;
     }
-    if (dist <= a.swipe.reach) {
-      this.lunging = false;
-      this.startAction('swipe', a.swipe.windup);
+    const r = a.retreat;
+    if (this.mode === 'retreat') {
+      this.dropTraps(dt);
+      this.keepAway(tx, tz, dist, r.standoff + a.hold.band, r.speed, dt);
+      dist = Math.hypot(tx - this.x, tz - this.z);
+      if (dist >= r.standoff || this.modeTimer >= r.maxSeconds) this.setMode('hex');
       return;
     }
-    if (!this.lunging && ((this.stillTime >= a.lunge.whenStill && dist <= a.lunge.within) || dist <= a.lunge.closeIn)) {
-      this.lunging = true;
-      this.lungeTimer = a.lunge.maxSeconds;
+    // Hex mode: too close and she backs off again.
+    if (dist < r.tooClose) {
+      this.setMode('retreat');
+      return;
     }
-    if (this.lunging) {
-      this.lungeTimer -= dt;
-      if (this.lungeTimer <= 0) this.lunging = false;
-      this.stepToward(tx, tz, a.lunge.speed, dt);
+    if (this.summonCooldown <= 0) {
+      this.startAction('summon', a.summon.castTime);
       return;
     }
     const hx = a.hex;
@@ -561,11 +579,45 @@ export class Witch {
       this.startAction('hex', hx.castTime);
       return;
     }
-    // Circle round you at her favourite range.
-    const bearing = Math.atan2(this.x - tx, this.z - tz) + this.strafeDir * a.strafe * dt * 4;
-    const gx = tx + Math.sin(bearing) * a.range;
-    const gz = tz + Math.cos(bearing) * a.range;
-    if (this.stepToward(gx, gz, a.speed, dt) < a.speed * dt * 0.2 && Math.hypot(gx - this.x, gz - this.z) > 1) this.strafeDir = -this.strafeDir;
+    this.keepAway(tx, tz, dist, r.standoff, dist < r.standoff - a.hold.band ? r.speed : a.hold.speed, dt);
+  }
+
+  // Toward `want` metres from (tx, tz), weaving side to side (facing you).
+  keepAway(tx, tz, dist, want, speed, dt) {
+    const r = this.attack.retreat;
+    const d = dist || 1;
+    const ax = (this.x - tx) / d;
+    const az = (this.z - tz) / d;
+    const side = Math.sin((this.time * Math.PI * 2) / r.weavePeriod) * r.weave;
+    const gx = tx + ax * want - az * side;
+    const gz = tz + az * want + ax * side;
+    if (Math.hypot(gx - this.x, gz - this.z) > 0.3) this.stepToward(gx, gz, speed, dt, true);
+  }
+
+  // Traps dropped behind her as she backs off (as when fleeing).
+  dropTraps(dt) {
+    const tc = this.wc.traps;
+    this.dropTimer -= dt;
+    if (this.dropTimer > 0) return;
+    this.dropTimer = tc.dropEvery;
+    this.traps.add(pickTrapType(tc.dropMix, this.trapRng), this.x, this.z, this.ground, true);
+  }
+
+  // Rushing you: in at speed, then swipe after swipe. She keeps on you
+  // through each wind-up, so they all but can't be dodged.
+  rushStep(dt, tx, tz, dist) {
+    const a = this.attack;
+    if (this.modeTimer >= a.rush.maxSeconds) {
+      this.setMode('retreat');
+      return;
+    }
+    if (dist > a.swipe.reach * 0.6) this.stepToward(tx, tz, a.rush.speed, dt);
+    const now = Math.hypot(tx - this.x, tz - this.z);
+    if (this.action) {
+      this.doAction(dt, now);
+      return;
+    }
+    if (now <= a.swipe.reach) this.startAction('swipe', a.swipe.windup);
   }
 
   startAction(name, seconds) {
@@ -626,7 +678,7 @@ export class Witch {
       if (!this.struck && this.actionTimer <= 0) {
         this.struck = true;
         this.combat.sfx.play('witchSwipe', { x: this.x, z: this.z });
-        if (dist <= a.swipe.reach + 0.4 && !this.player.platform) this.combat.hurtPlayer(a.swipe.damage, 2);
+        if (dist <= a.swipe.reach + a.swipe.track && !this.player.platform) this.combat.hurtPlayer(a.swipe.damage, 2);
         this.actionTimer = a.swipe.recover;
         this.actionLength = a.swipe.recover;
       } else if (this.struck && this.actionTimer <= 0) {
@@ -737,9 +789,27 @@ export class Witch {
     this.lastSeen = 0;
     this.lastX = from?.x ?? this.player.position.x;
     this.lastZ = from?.z ?? this.player.position.z;
-    if (this.state === 'roaming' || this.state === 'planting') this.react();
-    else if (!this.action) this.decide();
+    const shotgun = weapon?.id === 'shotgun';
+    if (this.state === 'roaming' || this.state === 'planting') {
+      this.react();
+      if (this.state === 'attacking' && part === 'head' && !shotgun) this.setMode('rush');
+      return false;
+    }
+    if (this.state === 'attacking') this.hitInFight(amount, part, shotgun);
+    if (!this.action) this.decide();
     return false;
+  }
+
+  // Aaron (Session 9): a headshot (not the shotgun's) sends her in to
+  // swipe; a shotgun hit, or enough damage, drives her back out.
+  hitInFight(amount, part, shotgun) {
+    if (this.mode === 'rush') {
+      this.rushDamage += amount;
+      if (shotgun || this.rushDamage >= this.attack.rush.backOffDamage) this.setMode('retreat');
+    } else if (part === 'head' && !shotgun) {
+      if (this.action === 'hex') this.action = null;
+      this.setMode('rush');
+    }
   }
 
   die() {
@@ -1022,7 +1092,7 @@ export class Witch {
       case 'planting':
         return `planting ${where(this.spot)}, ${Math.ceil(this.plantTimer)}s left`;
       case 'attacking':
-        return `attacking you${this.action ? ` (${this.action})` : this.lunging ? ' (lunging)' : ''}`;
+        return `attacking you: ${this.mode}${this.action ? ` (${this.action})` : ''}`;
       case 'fleeing':
         return `fleeing home, ${togo()}m to go`;
       case 'dead':

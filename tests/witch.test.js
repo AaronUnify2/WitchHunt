@@ -277,7 +277,7 @@ describe('the witch out for a night', () => {
     expect(hit(env.witch, 25)).toBe(false);
     expect(events).toEqual(['interrupted', 'attacking']);
     expect(env.witch.state).toBe('attacking');
-    expect(env.witch.share).toBeCloseTo(0.95);
+    expect(env.witch.share).toBeCloseTo(1 - 25 / config.witch.health);
     for (let i = 0; i < 100; i++) env.witch.update(0.1, true, null);
     expect(env.planted.length).toBe(0);
   });
@@ -303,31 +303,90 @@ describe('the witch out for a night', () => {
     expect(env.witch.state).toBe('fleeing');
   });
 
-  it('she summons the dead when she first attacks, then hexes and swipes', () => {
+  it('she summons the dead when she first attacks, backs off to range, then hexes you', () => {
     const env = atRitual(11);
     standBefore(env, 12);
     env.witch.tier = 'active';
     hit(env.witch, 10);
     expect(env.witch.action).toBe('summon');
+    expect(env.witch.mode).toBe('retreat');
     for (let i = 0; i < 20; i++) env.witch.update(0.1, true, null);
     const s = config.witch.attack.summon;
     expect(env.spawned.length).toBeGreaterThanOrEqual(s.count[0]);
     expect(env.spawned.length).toBeLessThanOrEqual(s.count[1]);
-    // At range she throws hexes; they fly at you.
+    // She backs off to her standoff range, then throws a hex at you.
     let thrown = false;
-    for (let i = 0; i < 60 && !thrown; i++) {
+    for (let i = 0; i < 120 && !thrown; i++) {
       env.syncSenses();
       env.witch.update(0.1, true, null);
       thrown = env.witch.hexes.count > 0;
     }
     expect(thrown).toBe(true);
-    // Standing still right beside her: she swipes.
-    env.player.speed = 0;
-    for (let i = 0; i < 80 && !env.hurt.includes(config.witch.attack.swipe.damage); i++) {
-      standBefore(env, 1.5);
-      env.witch.update(0.1, true, null);
+    expect(env.witch.mode).toBe('hex');
+    expect(env.witch.distance).toBeGreaterThan(config.witch.attack.retreat.standoff - config.witch.attack.hold.band);
+    // Hexes fly at the new speed, and the next one waits a long while.
+    expect(env.witch.hexes.cfg.speed).toBe(config.witch.attack.hex.speed);
+    expect(env.witch.hexTimer).toBeGreaterThan(config.witch.attack.hex.every - 1);
+  });
+
+  // Attacking at range, in hex mode, with the player `d` metres off.
+  function inHexMode(d) {
+    const env = atRitual(11);
+    standBefore(env, 25);
+    env.witch.tier = 'active';
+    hit(env.witch, 10);
+    env.witch.summonCooldown = 999;
+    env.witch.action = null;
+    env.witch.setMode('hex');
+    standBefore(env, d);
+    return env;
+  }
+
+  it('come too close while she hexes and she backs off again', () => {
+    const env = inHexMode(config.witch.attack.retreat.tooClose - 3);
+    env.witch.update(0.1, true, null);
+    expect(env.witch.mode).toBe('retreat');
+  });
+
+  it('a headshot sends her in to swipe; she keeps on you, so the swipes land', () => {
+    const env = inHexMode(25);
+    hit(env.witch, 50, 'head');
+    expect(env.witch.mode).toBe('rush');
+    // You run straight away: she's faster, and the swipe lands anyway.
+    const w = env.witch;
+    for (let i = 0; i < 100 && !env.hurt.includes(config.witch.attack.swipe.damage); i++) {
+      const dx = env.player.position.x - w.x;
+      const dz = env.player.position.z - w.z;
+      const d = Math.hypot(dx, dz) || 1;
+      env.player.position.x += (dx / d) * 7.2 * 0.1;
+      env.player.position.z += (dz / d) * 7.2 * 0.1;
+      env.syncSenses();
+      w.update(0.1, true, null);
     }
     expect(env.hurt).toContain(config.witch.attack.swipe.damage);
+    expect(w.mode).toBe('rush');
+  });
+
+  it("a shotgun hit drives her back at once; the rifle's body shots take a few", () => {
+    const env = inHexMode(25);
+    const w = env.witch;
+    hit(w, 50, 'head');
+    expect(w.mode).toBe('rush');
+    w.takeHit(6, 'body', { id: 'shotgun' }, { x: w.x, y: w.y + 1, z: w.z }, env.player.position);
+    expect(w.mode).toBe('retreat');
+    // A shotgun headshot doesn't bring her in.
+    w.setMode('hex');
+    w.takeHit(12, 'head', { id: 'shotgun' }, { x: w.x, y: w.y + 1, z: w.z }, env.player.position);
+    expect(w.mode).toBe('hex');
+    // Rifle: in on a headshot, out after backOffDamage.
+    hit(w, 50, 'head');
+    expect(w.mode).toBe('rush');
+    const body = 25;
+    const shots = Math.ceil(config.witch.attack.rush.backOffDamage / body);
+    for (let i = 0; i < shots - 1; i++) hit(w, body);
+    expect(w.mode).toBe('rush');
+    hit(w, body);
+    expect(w.mode).toBe('retreat');
   });
 
   it('killing her ends it: she dies, stops being a target, and says so', () => {

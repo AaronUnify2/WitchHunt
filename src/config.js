@@ -978,7 +978,7 @@ export const config = {
 
     // Fighting her (step 2). Aaron: "make her good and strong": about 3-4
     // good ambushes to kill her, if she isn't given time to heal.
-    health: 500, // a rifle body shot is 25 (5%), a headshot 50
+    health: 1000, // Aaron (Session 9): doubled from 500. A rifle body shot is 25 (2.5%), a headshot 50
     headshotMultiplier: 2, // her own (zombies take x3)
     // Her hit shape: standing, and crouched in the ritual.
     hitShape: { radius: 0.3, height: 2.15, headBottom: 1.85, headRadius: 0.14 },
@@ -993,15 +993,22 @@ export const config = {
     hutRadius: 250,
     rethinkSeconds: 1, // how often she reconsiders mid-fight
     loseSeconds: 6, // out of sight this long: she gives up the fight or the chase
+    // Aaron (Session 9): her fight has three modes.
+    //  - Retreat: she backs off, weaving, until she's standoff metres away
+    //    (or maxSeconds have passed: a tree or the witchfire ring can stop her).
+    //  - Hex: she holds about standoff away, weaving, and throws a fast hex
+    //    now and then. Come within tooClose and she retreats again.
+    //  - Rush: a headshot (rifle or pistol, not the shotgun) sends her in
+    //    to swipe, again and again; she keeps on you, so the swipes all but
+    //    can't be dodged. Any shotgun hit drives her back at once (retreat),
+    //    or backOffDamage from anything else.
+    // She summons the dead whenever it's ready, and drops traps as she retreats.
     attack: {
-      speed: 5, // m/s while circling you
-      range: 11, // metres she likes to keep while throwing hexes
-      strafe: 0.6, // radians a second she circles you
-      hex: { every: 2.6, castTime: 0.45, damage: 20, speed: 10, radius: 0.45, life: 4, minRange: 4, maxRange: 35, height: 1.5 },
-      swipe: { reach: 2.3, damage: 30, windup: 0.4, recover: 0.9 },
-      // She rushes in to swipe if you stand still (DESIGN.md: "punish
-      // standing still") or come close.
-      lunge: { speed: 9.5, whenStill: 1.5, stillSpeed: 1, within: 9, closeIn: 4, maxSeconds: 2 },
+      retreat: { speed: 8, standoff: 30, tooClose: 15, maxSeconds: 5, weave: 2.2, weavePeriod: 1.6 },
+      hold: { speed: 4, band: 4 }, // hex mode: m/s, and how far off standoff she lets you push before correcting
+      hex: { every: 26, castTime: 0.45, damage: 20, speed: 25, radius: 0.45, life: 4, minRange: 4, maxRange: 45, height: 1.5 }, // Aaron: 2.5x faster (was 10 m/s), a tenth as often (was 2.6 s)
+      rush: { speed: 11, backOffDamage: 100, maxSeconds: 12 }, // you sprint at 7.2; 100 is 2 rifle headshots or 4 body shots
+      swipe: { reach: 2.3, damage: 30, windup: 0.4, recover: 0.9, track: 1 }, // track: metres past her reach a swipe still lands (she follows you through it)
       summon: { count: [3, 4], cooldown: 60, ring: [3, 6], castTime: 1.2 },
     },
     flee: { speed: 8, weave: 2.2, weavePeriod: 1.6 }, // m/s (you sprint at 7.2), weaving side to side
@@ -1025,8 +1032,8 @@ export const config = {
       snare: { radius: 0.75, damage: 5, presses: 6, decay: 0.15 }, // Aaron: mash A about 2 seconds to tear free
       totem: { zone: 3.5, damagePerSecond: 8, tick: 4 },
       charm: { trip: 1.6, alert: 80, witchHears: 250 }, // metres: zombies this close come; the witch hears it this far
-      shapes: { totem: { radius: 0.3, height: 1.35 }, charm: { radius: 0.25, height: 1.5 } }, // hit shapes
-      look: { rope: 0x3a2c1c, wood: 0x2e241a, bone: 0x9a9480, glow: 0xb8ff5a, ringOpacity: 0.22 },
+      shapes: { totem: { radius: 0.3, height: 0.6 }, charm: { radius: 0.25, height: 1.5 } }, // hit shapes
+      look: { rope: 0x3a2c1c, wood: 0x2e241a, bone: 0x9a9480, glow: 0xb8ff5a, ringOpacity: 0.22, totemHeight: 0.6 }, // Aaron (Session 9): the totem low to the ground (was 1.4 m)
     },
     flinchSeconds: 0.25,
     bossBarSeconds: 8, // her health bar shows this long after she's hit or while she fights
@@ -1124,9 +1131,9 @@ export const config = {
     particleBox: 40, // metres: the box round the camera they fill
     // Her attacks: the usual ones (config.witch.attack) with these on top.
     attack: {
-      hex: { every: 1.8 },
+      hex: { every: 18 }, // Aaron (Session 9): a tenth as often as before (1.8 s), like her usual ones
       swipe: { damage: 40, windup: 0.3, recover: 0.7 },
-      lunge: { whenStill: 1.0, speed: 10.5 },
+      rush: { speed: 12 },
       summon: { count: [3, 5], cooldown: 25 },
     },
     // Snares and totems spammed round you.

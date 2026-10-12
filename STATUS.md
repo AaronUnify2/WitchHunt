@@ -30,6 +30,18 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 9 (the gate): her fight reworked (Aaron)
+
+`src/ai/Witch.js` (`fight()`, `setMode()`, `hitInFight()`), `config.witch.attack`, `config.finalBattle.attack`; numbers in OPEN_QUESTIONS.md #113, #116, #129.
+- **Health doubled** to 1000.
+- **Retreat:** when she turns on you she backs off, weaving, to about 30 m (5 s at most), dropping traps.
+- **Hex:** she holds about 30 m off, weaving, and throws a hex every 26 s (a tenth as often) at 25 m/s (2.5x faster). Come within 15 m and she retreats again.
+- **Rush:** a headshot (not the shotgun's) sends her in at 11 m/s to swipe again and again. She follows you through each wind-up, so the swipes all but can't be dodged. Any shotgun hit drives her back at once; so do 100 damage from other weapons (you'll take a swipe or two).
+- **Variety:** she summons the dead whenever it's ready, and drops traps as she retreats.
+- **The final battle** uses the same pattern (hexes every 18 s, a 12 m/s rush, 40-damage swipes); the witchfire ring can cut her retreat short.
+- **The totem** is now 0.6 m tall, low to the ground (Aaron).
+- Checked headless on a real map: retreat to 30 m in 5 s, hex mode, a rush onto you within 3 s of a headshot, back off on a shotgun hit, and the same inside the final battle's ring.
+
 ### Session 9 (the gate): the point of no return (Aaron, #130)
 
 `src/ui/NoReturnNotice.js`, `src/data/ending.json` (`noReturn`), `config.ending.noReturnDelay` and `noReturnRadioSeconds`.
