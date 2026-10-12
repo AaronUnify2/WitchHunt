@@ -475,14 +475,22 @@ export const config = {
     densityMin: 0.55, // chance a cell grows a tree in the thinnest woods (1 in the thickest)
     cliffGap: 5, // metres in front of the cliff face kept free of trees
     jitter: 0.75, // fraction of a cell a tree can wander from its cell centre
-    heightMin: 9,
-    heightMax: 17,
-    widthRatioMin: 0.38, // sprite width as a fraction of its height
-    widthRatioMax: 0.5,
+    // Session 10: the kinds of tree (render/treeSprites.js), the Appalachian
+    // woods. weight: how common. height: metres. widthRatio: sprite width
+    // as a fraction of its height. trunk: base and top widths as a
+    // fraction of the sprite's width, up to `to` of its height (the
+    // sprite's trunk and the 3D trunk near you are drawn to these).
+    kinds: [
+      { look: 'hemlock', weight: 3, height: [10, 17], widthRatio: [0.46, 0.56], trunk: { base: 0.07, top: 0.05, to: 0.12 } },
+      { look: 'spruce', weight: 2.5, height: [11, 18], widthRatio: [0.36, 0.44], trunk: { base: 0.07, top: 0.05, to: 0.14 } },
+      { look: 'spruce', weight: 2, height: [9, 15], widthRatio: [0.38, 0.46], trunk: { base: 0.07, top: 0.05, to: 0.14 } },
+      { look: 'whitePine', weight: 1.6, height: [14, 20], widthRatio: [0.5, 0.62], trunk: { base: 0.07, top: 0.045, to: 0.38 } },
+      { look: 'oak', weight: 1, height: [10, 15], widthRatio: [0.7, 0.85], trunk: { base: 0.11, top: 0.075, to: 0.4 } },
+      { look: 'snag', weight: 0.7, height: [7, 13], widthRatio: [0.35, 0.45], trunk: { base: 0.1, top: 0.04, to: 0.8 } },
+    ],
     trunkRadius: 0.3, // collision radius
     chunkSize: 48, // metres; chunks beyond the draw distance aren't drawn
     cullRefreshDistance: 4, // metres the camera moves before nearby chunks are re-checked
-    textureVariants: 3, // conifer, conifer, dead tree
     // Undergrowth (M3, Aaron): low bushes and ferns off the pathways that
     // slow you down. Cutting through the forest is allowed, at a cost.
     undergrowth: {
@@ -501,15 +509,57 @@ export const config = {
       berryColor: 0x401624,
       blobs: 180, // leaf clumps per bush sprite
     },
-    textureWidth: 256,
-    textureHeight: 512,
+    textureWidth: 384, // pixels per tree sprite (Session 10: sharper up close)
+    textureHeight: 768,
     trunkColor: 0x4a3828,
-    needleDark: 0x1d3322,
-    // Each branch tier's lit side picks one of these, so trees aren't one flat green.
-    needleVariants: [0x47694a, 0x3d5e3a, 0x557550, 0x4c6c3c, 0x3a5c44],
+    // Each kind's colours. lit: the moon side picks one of these, so trees
+    // aren't one flat green. Kept dark: the torch lights them head-on.
+    hemlock: {
+      levels: 16, // layers of drooping sprays, top to bottom
+      spraysPerLevel: 3, // each side
+      fringePerSpray: 12, // hanging needles under each spray
+      lit: [0x3a5a44, 0x34523e, 0x426248],
+      mid: 0x24402e,
+      dark: 0x16281e,
+      dapple: [0x1e3826, 0x2e4c36, 0x3c5c44],
+    },
+    spruce: {
+      tiersMin: 8,
+      tiersMax: 12,
+      spikesPerTier: 9, // jagged needles along each tier's edge
+      fringePerSpike: 3,
+      halfWidth: 0.44, // the lowest tier's half-width, as a fraction of the sprite's width
+      lit: [0x47694a, 0x3d5e3a, 0x557550, 0x4c6c3c, 0x3a5c44],
+      dark: 0x1d3322,
+      dapple: [0x2c4a2c, 0x5a7a48, 0x3a5a30, 0x6a8650, 0x22402a],
+    },
+    whitePine: {
+      whorlsMin: 6,
+      whorlsMax: 8,
+      skipChance: 0.25, // a whorl missing on one side (the gaps a white pine has)
+      blobsPerClump: 60,
+      lit: [0x52705a, 0x5a7862, 0x4a6852],
+      mid: 0x2e4636,
+      dark: 0x1a2c22,
+      dapple: [0x3a5444, 0x5a7462, 0x2a4232],
+    },
+    oak: {
+      depth: 4, // how many times the limbs fork
+      bark: 0x3a3028,
+      barkLit: 0x5a4a3a,
+      leafChance: 0.45, // a dead leaf still hanging at a twig's end
+      leaves: [0x5a3a1e, 0x6a4422, 0x4a2a1a, 0x5e4a2a],
+    },
     deadColor: 0x4a4038,
+    // Session 10: each tree (and bush) is tinted a little differently,
+    // from where it stands, so the forest isn't one stamp.
+    tint: {
+      brightness: [0.82, 1.12],
+      warm: [1.06, 1.02, 0.88], // multiplied in at one end of the range
+      cool: [0.9, 1.0, 1.06], // and the other
+    },
     // Dappling: small speckles painted over the needles for depth and leaf variety.
-    dappleCount: 6000, // speckles per conifer sprite
+    dappleCount: 12000, // speckles per conifer sprite (Session 10: bigger sprites)
     dappleSizeMin: 1, // pixels
     dappleSizeMax: 2,
     dappleShadowColor: 0x040704,
@@ -530,10 +580,7 @@ export const config = {
     deadCrackAlpha: 0.8,
     deadKnots: 4,
     deadKnotRimAlpha: 0.5,
-    tiersMin: 7, // conifer branch tiers
-    tiersMax: 11,
-    spikesPerTier: 9, // jagged needles along each tier's edge
-    deadBranches: 9,
+    deadBranches: 7, // the snag's stubs
     alphaTest: 0.5,
     normalUpBias: 0.5, // tilts sprite normals up so moonlight from above reads
     windStrength: 0.03, // sway at the treetop, as a fraction of sprite width

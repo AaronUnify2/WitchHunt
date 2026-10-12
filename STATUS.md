@@ -32,6 +32,20 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 3a: the trees (Graphics Engineer, style pass 1)
+
+- **Six kinds of tree, drawn in code** (`render/treeSprites.js`, `config.forest.kinds`), from the Appalachian woods:
+  - **Eastern hemlock:** soft, drooping layered sprays with hanging needles and a nodding tip. The most common.
+  - **Spruce (two drawings):** narrow spires of jagged, needle-fringed tiers.
+  - **White pine:** a tall bare trunk, ragged windswept clumps leaning one way, and gaps you can see through.
+  - **Bare oak:** thick crooked limbs forking four times, with a few dead leaves hanging on.
+  - **Dead snag:** a broken, jagged top and snapped-off stubs.
+- **Each kind has its own** weight (how common), heights, width and trunk sizes. The trunk sizes are shared with the 3D trunks in step 3b.
+- **Sprites are 384×768** (were 256×512), so they're sharper up close. The atlas is 2688×768.
+- **Per-tree tint** (`Forest.js`, `config.forest.tint`): each tree and bush gets a brightness (82–112%) and a warm or cool cast from where it stands, so neighbours never match. Free: a hash in the vertex shader.
+- **Removed:** the old tree drawings in `proceduralTextures.js`, and `textureVariants`, `heightMin/Max` and `widthRatioMin/Max` (now per kind).
+- **Changes every seed's forest** (kinds and sizes are now drawn differently).
+
 ### Session 10 step 2: the ground (Graphics Engineer, style pass 1)
 
 Aaron: keep it light, since the ground mist hides much of the ground. Art stays generated in code.

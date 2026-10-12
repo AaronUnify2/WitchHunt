@@ -4,7 +4,8 @@
 // Seeded, so a seed always draws the same map. Final art replaces these
 // in the art pass.
 
-import { css, makeCanvas, toTexture, drawTreeVariant } from './proceduralTextures.js';
+import { css, makeCanvas, toTexture } from './proceduralTextures.js';
+import { drawTree } from './treeSprites.js';
 
 // ---- forest atlas --------------------------------------------------------
 
@@ -14,7 +15,8 @@ import { css, makeCanvas, toTexture, drawTreeVariant } from './proceduralTexture
 // (trees first, then bushes), in texture coordinates (v up).
 export function makeForestAtlas(cfg, rng) {
   const u = cfg.undergrowth;
-  const { textureWidth: w, textureHeight: h, textureVariants: n } = cfg;
+  const { textureWidth: w, textureHeight: h } = cfg;
+  const n = cfg.kinds.length;
   const rows = Math.floor(h / u.textureHeight);
   const columns = n + Math.ceil(u.variants / rows);
   const W = w * columns;
@@ -23,7 +25,7 @@ export function makeForestAtlas(cfg, rng) {
   for (let v = 0; v < n; v++) {
     ctx.save();
     ctx.translate(v * w, 0);
-    drawTreeVariant(ctx, v, n, w, h, cfg, rng);
+    drawTree(ctx, cfg.kinds[v], w, h, cfg, rng.fork(`tree-${v}`));
     ctx.restore();
     rects.push([(v * w) / W, 0, w / W, 1]);
   }

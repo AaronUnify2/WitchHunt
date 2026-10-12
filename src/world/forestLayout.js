@@ -32,7 +32,18 @@ function clearOfCliff(geo, x, z, gap) {
   return z > line + gap || z < line - geo.cliff.rampWidth;
 }
 
-// Trees: [{ x, y, z, height, width, variant }].
+// Which kind of tree (index into kinds) a draw r in 0..1 picks, by weight.
+export function pickTreeKind(kinds, r) {
+  const total = kinds.reduce((sum, k) => sum + k.weight, 0);
+  let left = r * total;
+  for (let i = 0; i < kinds.length; i++) {
+    left -= kinds[i].weight;
+    if (left < 0) return i;
+  }
+  return kinds.length - 1;
+}
+
+// Trees: [{ x, y, z, height, width, variant }]; variant indexes cfg.kinds.
 export function layoutForest(cfg, ground, rng) {
   const geo = ground.geo;
   const trees = [];
@@ -41,9 +52,10 @@ export function layoutForest(cfg, ground, rng) {
     if (r[0] >= keep) return;
     if (ground.openAt(x, z) > cfg.maxOpen) return;
     if (!clearOfCliff(geo, x, z, cfg.cliffGap)) return;
-    const height = cfg.heightMin + (cfg.heightMax - cfg.heightMin) * r[1];
-    const ratio = cfg.widthRatioMin + (cfg.widthRatioMax - cfg.widthRatioMin) * r[2];
-    const variant = Math.min(cfg.textureVariants - 1, Math.floor(r[3] * cfg.textureVariants));
+    const variant = pickTreeKind(cfg.kinds, r[3]);
+    const kind = cfg.kinds[variant];
+    const height = kind.height[0] + (kind.height[1] - kind.height[0]) * r[1];
+    const ratio = kind.widthRatio[0] + (kind.widthRatio[1] - kind.widthRatio[0]) * r[2];
     trees.push({ x, y: ground.heightAt(x, z), z, height, width: height * ratio, variant });
   });
   return trees;

@@ -25,6 +25,10 @@ const BILLBOARD_COMMON = /* glsl */ `
   uniform float uWindSpatialScale;
   uniform vec4 uRects[${MAX_SPRITES}];
   uniform float uNormalUpBias;
+  uniform vec2 uTintBrightness;
+  uniform vec3 uTintWarm;
+  uniform vec3 uTintCool;
+  varying vec3 vTreeTint;
   vec3 bbInstancePosition() {
     return (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   }
@@ -44,6 +48,19 @@ const BILLBOARD_BEGIN_VERTEX = /* glsl */ `
   vec3 bbInst = bbInstancePosition();
   float bbSway = sin(uTime * uWindSpeed + (bbInst.x + bbInst.z) * uWindSpatialScale);
   transformed.x += bbSway * uWindStrength * position.y * position.y;
+  // Session 10: a tint from where it stands, so no two neighbours match.
+  float bbTintA = fract(sin(dot(bbInst.xz, vec2(12.9898, 78.233))) * 43758.5453);
+  float bbTintB = fract(sin(dot(bbInst.xz, vec2(39.3468, 11.1352))) * 24634.6345);
+  vTreeTint = mix(uTintBrightness.x, uTintBrightness.y, bbTintA) * mix(uTintCool, uTintWarm, bbTintB);
+`;
+
+// The tint, in the colour pass only (the shadow pass has no colour).
+const BILLBOARD_FRAGMENT_COMMON = /* glsl */ `
+  varying vec3 vTreeTint;
+`;
+const BILLBOARD_FRAGMENT_TINT = /* glsl */ `
+  #include <map_fragment>
+  diffuseColor.rgb *= vTreeTint;
 `;
 
 const BILLBOARD_NORMAL = /* glsl */ `
@@ -82,10 +99,14 @@ export class Forest {
       uWindSpatialScale: { value: c.windSpatialScale },
       uRects: { value: rects },
       uNormalUpBias: { value: c.normalUpBias },
+      uTintBrightness: { value: new THREE.Vector2(c.tint.brightness[0], c.tint.brightness[1]) },
+      uTintWarm: { value: new THREE.Vector3(...c.tint.warm) },
+      uTintCool: { value: new THREE.Vector3(...c.tint.cool) },
     };
     this.material = this.patch(
       new THREE.MeshLambertMaterial({ map: this.atlas, alphaTest: c.alphaTest }),
       'forest-billboard',
+      true,
     );
     this.depthMaterial = this.patch(
       new THREE.MeshDepthMaterial({ map: this.atlas, alphaTest: c.alphaTest }),
@@ -101,7 +122,8 @@ export class Forest {
     }
   }
 
-  patch(material, cacheKey) {
+  // colour: the colour pass (gets the tint), not the shadow pass.
+  patch(material, cacheKey, colour = false) {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
       shader.vertexShader = shader.vertexShader
@@ -109,6 +131,11 @@ export class Forest {
         .replace('#include <uv_vertex>', BILLBOARD_UV)
         .replace('#include <beginnormal_vertex>', BILLBOARD_NORMAL)
         .replace('#include <begin_vertex>', BILLBOARD_BEGIN_VERTEX);
+      if (colour) {
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', `#include <common>\n${BILLBOARD_FRAGMENT_COMMON}`)
+          .replace('#include <map_fragment>', BILLBOARD_FRAGMENT_TINT);
+      }
     };
     material.customProgramCacheKey = () => cacheKey;
     return material;
@@ -117,7 +144,7 @@ export class Forest {
   // One instanced mesh per chunk, trees and bushes together.
   buildChunks() {
     const size = this.cfg.chunkSize;
-    const firstBush = this.cfg.textureVariants;
+    const firstBush = this.cfg.kinds.length;
     const groups = new Map();
     const file = (item, sprite) => {
       const key = `${Math.floor(item.x / size)},${Math.floor(item.z / size)}`;
