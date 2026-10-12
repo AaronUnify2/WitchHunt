@@ -965,6 +965,45 @@ export const config = {
     unstickDistance: 3, // metres to the side
     soundEvery: 3.5, // seconds between her ritual songs
     songRange: 70, // metres her singing carries
+
+    // Fighting her (step 2). Aaron: "make her good and strong": about 3-4
+    // good ambushes to kill her, if she isn't given time to heal.
+    health: 500, // a rifle body shot is 25 (5%), a headshot 50
+    headshotMultiplier: 2, // her own (zombies take x3)
+    // Her hit shape: standing, and crouched in the ritual.
+    hitShape: { radius: 0.3, height: 2.15, headBottom: 1.85, headRadius: 0.14 },
+    crouchedShape: { radius: 0.5, height: 1.05, headBottom: 0.75, headRadius: 0.16 },
+    // Noticing you: the shared detection model with her own eyes.
+    notice: 1.3, // x the zombies' sight and hearing distances
+    ritualNotice: 0.35, // in the ritual's trance she only notices you this close (x her sight)
+    ritualHearing: 30, // metres: a gunshot this close breaks the trance (any shot she hears out of it)
+    // Fight or flee (DESIGN.md): health share plus a bonus near her hut.
+    fleeBelow: 0.6, // below this score she flees, at or above it she attacks
+    hutBonus: 0.5, // added at the hut, fading to nothing hutRadius away
+    hutRadius: 250,
+    rethinkSeconds: 1, // how often she reconsiders mid-fight
+    loseSeconds: 6, // out of sight this long: she gives up the fight or the chase
+    attack: {
+      speed: 5, // m/s while circling you
+      range: 11, // metres she likes to keep while throwing hexes
+      strafe: 0.6, // radians a second she circles you
+      hex: { every: 2.6, castTime: 0.45, damage: 20, speed: 10, radius: 0.45, life: 4, minRange: 4, maxRange: 35, height: 1.5 },
+      swipe: { reach: 2.3, damage: 30, windup: 0.4, recover: 0.9 },
+      // She rushes in to swipe if you stand still (DESIGN.md: "punish
+      // standing still") or come close.
+      lunge: { speed: 9.5, whenStill: 1.5, stillSpeed: 1, within: 9, closeIn: 4, maxSeconds: 2 },
+      summon: { count: [3, 4], cooldown: 60, ring: [3, 6], castTime: 1.2 },
+    },
+    flee: { speed: 8, weave: 2.2, weavePeriod: 1.6 }, // m/s (you sprint at 7.2), weaving side to side
+    wounds: {
+      recoverPerDay: 0.35, // share of her health back each day in the hut (about 2.5 days to heal)
+      oneSigilBelow: 0.6, // wounded: at most one sigil a night
+      stayHomeBelow: 0.3, // badly wounded: she stays in to heal
+      homeAfterFleeBelow: 0.4, // after fleeing, she goes home rather than back to planting
+    },
+    flinchSeconds: 0.25,
+    bossBarSeconds: 8, // her health bar shows this long after she's hit or while she fights
+    deathSeconds: 2.5, // she collapses and sinks into the ground
     // Placeholder look (Aaron agreed; she gets more detail in the art pass).
     // Aaron (step 1 test): a thin shadow creature, not a solid object. She
     // is unlit near-black (the torch can't light her or glint off her);
@@ -991,6 +1030,7 @@ export const config = {
       snapsPerSecond: 1.6, // how often her head and arms jerk to a new angle
       snapTime: 0.12, // share of each snap spent moving (the rest she holds still)
       ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants
+      hex: { color: 0xb8ff5a, core: 0.16, halo: 0.42, haloOpacity: 0.35 }, // her thrown hexes: a glowing core in a faint halo
     },
   },
 

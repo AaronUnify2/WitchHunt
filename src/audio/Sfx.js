@@ -371,6 +371,41 @@ const RECIPES = {
     s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 110, endFreq: 104, gain: 0.12, attack: 0.3, vibrato: 3 });
     s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 155.6, endFreq: 147, gain: 0.1, attack: 0.3, vibrato: 3 });
   },
+  // M7: the witch notices you, or is hurt: a rasping, rising shriek.
+  witchShriek(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, pos?.range);
+    s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 520, endFreq: 1240, gain: 0.18, attack: 0.03, vibrato: 22 });
+    s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 2600, endFreq: 3800, q: 3, gain: 0.25, attack: 0.02 });
+  },
+  // M7: she throws a hex: a hissing whoosh.
+  witchHex(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 0.45, type: 'bandpass', freq: 900, endFreq: 2400, q: 2, gain: 0.4, attack: 0.05 });
+    s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 330, endFreq: 660, gain: 0.15, vibrato: 18 });
+  },
+  // M7: a hex hits you: a sour, crackling burst.
+  witchHexHit(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.4, freq: 3000, endFreq: 400, gain: 0.5 });
+    s.tone(o, { seconds: 0.6, wave: 'square', freq: 180, endFreq: 140, gain: 0.15, vibrato: 30 });
+  },
+  // M7: her claws: a fast tearing swish.
+  witchSwipe(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.18, type: 'highpass', freq: 1800, endFreq: 5000, gain: 0.6, attack: 0.005 });
+  },
+  // M7: she calls up the dead: a low, rising drone.
+  witchSummon(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, pos?.range);
+    s.tone(o, { seconds: 1.4, wave: 'sawtooth', freq: 55, endFreq: 110, gain: 0.3, attack: 0.3, vibrato: 5 });
+    s.tone(o, { seconds: 1.4, wave: 'sawtooth', freq: 82, endFreq: 165, gain: 0.2, attack: 0.3, vibrato: 5 });
+  },
+  // M7: she dies: a long falling scream into a rumble.
+  witchDeath(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, pos?.range);
+    s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 1100, endFreq: 90, gain: 0.25, attack: 0.02, vibrato: 16 });
+    s.noiseBurst(o, { seconds: 2.6, freq: 1200, endFreq: 80, gain: 0.4, attack: 0.1 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

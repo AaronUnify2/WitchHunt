@@ -378,6 +378,11 @@ export class Game {
       }),
       bus.on('player:died', () => this.saves.clear()),
       bus.on('station:overrun', () => this.saves.clear()),
+      // M7: killing the witch wins the run (the ending itself is step 6).
+      bus.on('witch:killed', () => {
+        this.saves.clear();
+        this.combat.victory('THE WITCH IS DEAD', 'You won the run. (The real ending comes in a later step.)');
+      }),
     ];
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
@@ -429,6 +434,7 @@ export class Game {
       vehicles: saveVehicles(this.vehicles.list),
       sigils: saveSigils(this.director.sigils.list),
       revisits: saveRevisits(this.director.revisits),
+      witch: this.witch.saveState(), // M7: her wounds (optional: older saves have none)
     };
   }
 
@@ -453,6 +459,7 @@ export class Game {
       if (sigil) sigil.raised = s.raised;
     }
     loadRevisits(this.director.revisits, d.revisits ?? []);
+    this.witch.loadState(d.witch);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 

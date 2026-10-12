@@ -29,6 +29,7 @@ const NECK = { y: 0.72, z: 0.06 }; // from the waist
 const SHOULDER = { x: 0.21, y: 0.62, z: 0.02 }; // from the waist (x before thinning)
 const UPPER_ARM = 0.55; // shoulder to elbow
 const FOREARM = 0.5; // elbow to wrist
+const HEX_POOL = 8; // most hexes drawn at once
 
 export class WitchRenderer {
   constructor(lookConfig, rng) {
@@ -115,6 +116,24 @@ export class WitchRenderer {
     this.innerRing = new THREE.Mesh(inner, this.ringMaterial);
     this.ritual.add(new THREE.Mesh(outer, this.ringMaterial), this.innerRing);
     scene.add(this.ritual);
+
+    // Step 2: her hexes in flight: a bright core inside a faint halo
+    // (unlit, additive, so the bloom makes them glow).
+    const hx = c.hex;
+    const core = new THREE.SphereGeometry(hx.core, 10, 8);
+    const halo = new THREE.SphereGeometry(hx.halo, 12, 8);
+    this.geometries.push(core, halo);
+    this.hexCoreMaterial = new THREE.MeshBasicMaterial({ color: hx.color, fog: false });
+    this.hexHaloMaterial = new THREE.MeshBasicMaterial({ color: hx.color, transparent: true, opacity: hx.haloOpacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+    this.hexCores = new THREE.InstancedMesh(core, this.hexCoreMaterial, HEX_POOL);
+    this.hexHalos = new THREE.InstancedMesh(halo, this.hexHaloMaterial, HEX_POOL);
+    for (const m of [this.hexCores, this.hexHalos]) {
+      m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      m.frustumCulled = false;
+      m.count = 0;
+      scene.add(m);
+    }
+    this.hexMatrix = new THREE.Matrix4();
     this.time = 0;
     this.motion = 0; // 0 still .. 1 gliding at full speed (eased)
   }
@@ -243,25 +262,145 @@ export class WitchRenderer {
     this.time += dt;
     const dist = cameraPosition ? Math.hypot(w.x - cameraPosition.x, w.z - cameraPosition.z) : 0;
     const planting = w.state === 'planting';
-    this.root.visible = w.state !== 'resting' && w.tier !== 'abstract' && dist <= drawDistance;
+    const dead = w.state === 'dead';
+    const out = w.state !== 'resting' && (!dead || w.deathTimer < w.wc.deathSeconds);
+    this.root.visible = out && w.tier !== 'abstract' && dist <= drawDistance;
     this.ritual.visible = planting && dist <= drawDistance;
     if (this.ritual.visible) this.poseRitual(w);
+    if (w.hexes) this.drawHexes(w.hexes.pool);
     if (!this.root.visible) return;
     this.root.position.set(w.x, w.y, w.z);
     this.root.rotation.set(0, w.facing, 0);
-    if (planting) this.poseContorted();
-    else this.poseGliding(w, dt);
+    if (dead) this.poseDying(w);
+    else if (planting) this.poseContorted();
+    else if (w.state === 'attacking') this.poseAttacking(w);
+    else this.poseGliding(w, dt, w.state === 'fleeing');
+    // Hit: she jerks back.
+    const f = w.flinch > 0 ? w.flinch / w.wc.flinchSeconds : 0;
+    if (f > 0) {
+      this.waist.rotation.x -= 0.5 * f;
+      this.neck.rotation.z += 0.6 * f;
+    }
+  }
+
+  // Facing you: upright and still, claws out, head jerking. Then the
+  // hex (one arm drawn back and flung forward), the swipe (both arms
+  // raised high, then slashed down) or the summoning (arms flung up, head
+  // thrown back).
+  poseAttacking(w) {
+    const c = this.cfg;
+    const t = this.time;
+    const p = w.actionProgress;
+    const ease = (x) => x * x * (3 - 2 * x);
+    this.root.position.y += c.glide.hover + Math.sin(t * c.glide.floatSpeed) * c.glide.float;
+    this.skirt.scale.set(1, 1, 1);
+    this.skirt.rotation.set(Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
+    this.waist.position.set(0, WAIST, 0);
+    this.waist.rotation.set(0.18, 0, 0);
+    const snap = (k, lo, hi) => snapValue(t + k * 0.37, c.snapsPerSecond * 0.6, c.snapTime, k, lo, hi);
+    this.neck.rotation.set(-0.1 + snap(20, -0.15, 0.2), snap(21, -0.35, 0.35), snap(22, -0.5, 0.5));
+    // Claws out, ready.
+    this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
+      const side = i === 0 ? -1 : 1;
+      shoulder.rotation.set(-0.45 + Math.sin(t * 2 + i) * 0.06, 0, side * 0.55);
+      elbow.rotation.set(-0.9, 0, 0);
+      wrist.rotation.set(-0.5, 0, 0);
+    });
+    const [left, right] = this.arms;
+    switch (w.action) {
+      case 'hex': {
+        const e = ease(p);
+        right.shoulder.rotation.set(0.9 - e * 2.6, 0, 0.25);
+        right.elbow.rotation.set(-1.4 + e * 1.3, 0, 0);
+        right.wrist.rotation.set(-0.2 - e * 0.5, 0, 0);
+        this.waist.rotation.y = 0.35 - e * 0.6; // winding up, then flinging
+        break;
+      }
+      case 'swipe': {
+        const up = !w.struck;
+        const e = up ? ease(p) : Math.min(1, p * 5); // the strike is fast
+        for (const [arm, side] of [
+          [left, -1],
+          [right, 1],
+        ]) {
+          if (up) arm.shoulder.rotation.set(-0.45 - e * 2.3, 0, side * (0.55 - e * 0.1));
+          else arm.shoulder.rotation.set(-2.75 + e * 2.2, 0, side * 0.25);
+          arm.elbow.rotation.set(up ? -0.9 + e * 0.4 : -0.2, 0, 0);
+          arm.wrist.rotation.set(-0.6, 0, 0);
+        }
+        this.waist.rotation.x = up ? 0.18 - e * 0.3 : -0.12 + e * 0.8;
+        break;
+      }
+      case 'summon': {
+        const e = ease(Math.min(1, p * 2));
+        const tremble = Math.sin(t * 30) * 0.05;
+        for (const [arm, side] of [
+          [left, -1],
+          [right, 1],
+        ]) {
+          arm.shoulder.rotation.set(-0.45 - e * 2.45 + tremble * side, 0, side * (0.55 + e * 0.35));
+          arm.elbow.rotation.set(-0.9 + e * 0.7, 0, 0);
+          arm.wrist.rotation.set(0.3 + tremble, 0, 0);
+        }
+        this.waist.rotation.x = 0.18 - e * 0.45;
+        this.neck.rotation.x = -0.1 - e * 0.7;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  // Killed: she buckles, folds over and sinks into the ground.
+  poseDying(w) {
+    const k = Math.min(1, w.deathTimer / (w.wc.deathSeconds * 0.4));
+    const sink = Math.max(0, (w.deathTimer - w.wc.deathSeconds * 0.4) / (w.wc.deathSeconds * 0.6));
+    const squash = 1 - k * 0.6;
+    this.skirt.scale.set(1 + k * 0.5, squash, 1 + k * 0.5);
+    this.skirt.rotation.set(0, 0, 0);
+    this.waist.position.set(0, WAIST * squash * 0.9, 0);
+    this.waist.rotation.set(-0.4 + k * 1.9, 0, k * 0.3);
+    this.neck.rotation.set(0.6 * k, 0, 1.1 * k);
+    this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
+      const side = i === 0 ? -1 : 1;
+      shoulder.rotation.set(-2.6 * (1 - k) - 0.3, 0, side * (0.9 - k * 0.5));
+      elbow.rotation.set(1.2 * k, 0, 0);
+      wrist.rotation.set(1 * k, 0, 0);
+    });
+    this.root.position.y -= sink * 2.2;
+  }
+
+  // Her hexes in flight.
+  drawHexes(pool) {
+    let n = 0;
+    const m = this.hexMatrix;
+    for (const h of pool) {
+      if (!h.active) continue;
+      const pulse = 0.85 + Math.sin(this.time * 25 + n) * 0.15;
+      m.makeScale(pulse, pulse, pulse).setPosition(h.x, h.y, h.z);
+      this.hexCores.setMatrixAt(n, m);
+      this.hexHalos.setMatrixAt(n, m);
+      n++;
+      if (n >= HEX_POOL) break;
+    }
+    this.hexCores.count = n;
+    this.hexHalos.count = n;
+    if (n > 0) {
+      this.hexCores.instanceMatrix.needsUpdate = true;
+      this.hexHalos.instanceMatrix.needsUpdate = true;
+    }
   }
 
   // Gliding: no steps. Floating a little off the ground with a slow
   // sway, folded forward, head up and still, the cloak trailing behind
   // as she moves, arms held back and limp at the wrists.
-  poseGliding(w, dt) {
+  // fleeing: folded further forward, streaming behind her.
+  poseGliding(w, dt, fleeing = false) {
     const c = this.cfg;
     const g = c.glide;
     const t = this.time;
     // How fast she's moving (0..1), eased so stopping and starting is smooth.
-    const speed = dt > 0 ? Math.min(1, w.moved / dt / g.fullSpeed) : 0;
+    const speed = fleeing ? 1 : dt > 0 ? Math.min(1, w.moved / dt / g.fullSpeed) : 0;
     this.motion += (speed - this.motion) * Math.min(1, dt * 4);
     const m = this.motion;
     this.root.position.y += g.hover + Math.sin(t * g.floatSpeed) * g.float;
@@ -269,7 +408,7 @@ export class WitchRenderer {
     // The hem trails behind (tilting the skirt back) and ripples.
     this.skirt.rotation.set(-g.trail * m + Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
     this.waist.position.set(0, WAIST, 0);
-    this.waist.rotation.set(c.stoop + m * 0.12, 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
+    this.waist.rotation.set(c.stoop + m * 0.12 + (fleeing ? 0.25 : 0), 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
     this.neck.rotation.set(-c.stoop * 0.9 - m * 0.1, 0, 0);
     // Arms swept back, slightly out, barely moving; hands hanging limp.
     const drift = Math.sin(t * 1.7) * 0.05;
@@ -332,6 +471,10 @@ export class WitchRenderer {
     this.material.dispose();
     this.eyeMaterial.dispose();
     this.ringMaterial.dispose();
+    this.hexCores.removeFromParent();
+    this.hexHalos.removeFromParent();
+    this.hexCoreMaterial.dispose();
+    this.hexHaloMaterial.dispose();
   }
 }
 

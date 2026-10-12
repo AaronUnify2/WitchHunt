@@ -3,6 +3,9 @@
 // assist), reloading (B), the aim and fire slowdown, and aim assist.
 // Hits are resolved here with combat/hitscan.js and applied through the
 // EnemyManager. The shovel swings in an arc and connects a moment later.
+// M7: other targets (the witch) can join through `extraTargets`: objects
+// with the same hit shape as a zombie, a `targetable` flag and their own
+// takeHit(amount, part, weapon, at, from) (returns true if killed).
 //
 // Events: 'weapon:switched' { id }, 'weapon:fired' { id }, 'weapon:swing',
 // 'weapon:hit' { killed, part, melee }, 'weapon:impact' { x, y, z },
@@ -45,6 +48,8 @@ export class Weapons {
     this.pelletHits = new Map(); // zombie -> { damage, head, pellets, x, y, z }
     this.rayHits = []; // reused by rayEnemiesAll
     this.assistTargets = [];
+    this.extraTargets = []; // M7: the witch
+    this.targetList = []; // reused: zombies plus targetable extras
     this.assistCfgAiming = { ...this.assistCfg, slowFactor: this.assistCfg.aimingSlowFactor };
     this.reset();
   }
@@ -175,7 +180,7 @@ export class Weapons {
     const check = Math.min(w.range, MISS_CHECK_DISTANCE);
     const half = check / 2;
     this.colliders.query(eye.x + this.forward.x * half, eye.z + this.forward.z * half, half + spread * check, this.blockers);
-    const living = this.enemies.living;
+    const living = this.targets();
     this.pelletHits.clear();
 
     for (let i = 0; i < w.pellets; i++) {
@@ -214,7 +219,7 @@ export class Weapons {
     // One hit per zombie per shot, however many pellets landed.
     for (const [zombie, e] of this.pelletHits) {
       const scaled = { stagger: w.stagger, knockback: w.knockback * e.pellets };
-      const killed = this.enemies.damage(zombie, e.damage, e.part, scaled, e, eye);
+      const killed = this.applyHit(zombie, e.damage, e.part, scaled, e, eye);
       this.bus.emit('weapon:hit', { killed, part: e.part, melee: false });
     }
   }
@@ -227,12 +232,12 @@ export class Weapons {
     const w = this.weapon;
     if (w.kind !== 'melee') return;
     const flat = Math.hypot(this.forward.x, this.forward.z) || 1;
-    const target = meleeTarget(this.eye, this.forward.x / flat, this.forward.z / flat, this.enemies.living, w.reach, w.arcDegrees * DEG_TO_RAD);
+    const target = meleeTarget(this.eye, this.forward.x / flat, this.forward.z / flat, this.targets(), w.reach, w.arcDegrees * DEG_TO_RAD);
     if (!target) return;
     const at = { x: target.x, y: this.eye.y - 0.4, z: target.z };
     // A swing from behind a mutant lands on its weak spot.
     const part = meleeFromBehind(this.eye, target) ? 'weak' : 'body';
-    const killed = this.enemies.damage(target, w.damage * partMultiplier(target, part, 1), part, w, at, this.eye);
+    const killed = this.applyHit(target, w.damage * partMultiplier(target, part, 1), part, w, at, this.eye);
     this.player.shake(0.15);
     this.bus.emit('weapon:hit', { killed, part, melee: true });
   }
@@ -244,7 +249,7 @@ export class Weapons {
       return;
     }
     const targets = this.assistTargets;
-    const living = this.enemies.living;
+    const living = this.targets();
     while (targets.length < living.length * 2) targets.push({ x: 0, y: 0, z: 0, r: 0 });
     let n = 0;
     for (const z of living) {
@@ -260,6 +265,22 @@ export class Weapons {
       head.r = z.headRadius;
     }
     this.player.lookScale = aimSlowdown(this.eye, this.forward, targets, this.aiming ? this.assistCfgAiming : this.assistCfg, n);
+  }
+
+  // The zombies, plus any extra targets that can be hit now (M7).
+  targets() {
+    const living = this.enemies.living;
+    if (this.extraTargets.length === 0) return living;
+    const list = this.targetList;
+    list.length = 0;
+    for (const z of living) list.push(z);
+    for (const t of this.extraTargets) if (t.targetable) list.push(t);
+    return list;
+  }
+
+  applyHit(target, amount, part, weapon, at, from) {
+    if (target.takeHit) return target.takeHit(amount, part, weapon, at, from);
+    return this.enemies.damage(target, amount, part, weapon, at, from);
   }
 
   giveAmmo(rounds) {

@@ -27,6 +27,7 @@ export class Hud {
       <div class="hud-dig"><span></span></div>
       <div class="hud-pickups"></div>
       <div class="hud-station hidden"></div>
+      <div class="hud-boss hidden"><div class="hud-boss-name">THE WITCH</div><div class="hud-boss-bar"><span></span></div></div>
       <div class="hud-alarm hidden"><span class="hud-alarm-arrow">&#9650;</span><span class="hud-alarm-text"></span></div>
       <div class="hud-vitals">
         <div class="hud-hidden">&#9673; HIDDEN</div>
@@ -58,6 +59,8 @@ export class Hud {
     this.pickupsEl = q('.hud-pickups');
     this.stationEl = q('.hud-station');
     this.alarmEl = q('.hud-alarm');
+    this.bossEl = q('.hud-boss');
+    this.bossBarEl = q('.hud-boss-bar span');
     this.alarmArrowEl = q('.hud-alarm-arrow');
     this.alarmTextEl = q('.hud-alarm-text');
     this.pickupLines = []; // { text, timer }
@@ -135,6 +138,16 @@ export class Hud {
       if (t) this.alarmTextEl.textContent = t;
     });
     if (text) this.set('alarmAngle', Math.round(angle * 20) / 20, (a) => (this.alarmArrowEl.style.transform = `rotate(${a}rad)`));
+  }
+
+  // M7: the witch's health bar, top centre, while you're fighting her.
+  // fraction: 0..1, or null to hide it.
+  boss(fraction) {
+    const f = fraction === null ? null : Math.round(fraction * 200) / 200;
+    this.set('boss', f, (v) => {
+      this.bossEl.classList.toggle('hidden', v === null);
+      if (v !== null) this.bossBarEl.style.width = `${v * 100}%`;
+    });
   }
 
   showDeath(kills, title = 'YOU DIED', reason = '') {

@@ -141,11 +141,17 @@ export class Combat {
 
   onStrike(zombie, damage) {
     this.sfx.play('swipe', zombie);
-    if (!this.alive || this.godMode) return;
     if (this.player.platform) return; // up the lookout tower, out of reach (M5)
+    this.hurtPlayer(damage, zombie.kind === 'mutant' ? 2 : 1);
+  }
+
+  // Damage the player (armour first). shake: x the usual hurt shake.
+  // Also used by the witch's swipes and hexes (M7).
+  hurtPlayer(damage, shake = 1) {
+    if (!this.alive || this.godMode) return;
     const { taken } = this.health.takeDamage(damage);
     this.hud.hurt();
-    this.player.shake(this.cfg.feedback.hurtShake * (zombie.kind === 'mutant' ? 2 : 1));
+    this.player.shake(this.cfg.feedback.hurtShake * shake);
     this.sfx.play('hurt');
     this.bus.emit('player:hurt', { damage, taken });
     if (this.health.dead) this.die();
@@ -168,6 +174,16 @@ export class Combat {
     this.player.fovMultiplier = 1;
     this.hud.showDeath(this.kills, 'THE STATION FELL', reason);
     this.sfx.play('overrun');
+  }
+
+  // M7: the witch is dead and the run is won. A placeholder screen until
+  // the ending (step 6); A starts a new run, as after a death.
+  victory(title, reason) {
+    if (!this.alive) return;
+    this.alive = false;
+    this.player.moveMultiplier = 1;
+    this.player.fovMultiplier = 1;
+    this.hud.showDeath(this.kills, title, reason);
   }
 
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.

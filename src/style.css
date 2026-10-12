@@ -593,6 +593,34 @@ body {
 }
 
 /* M6: the station-under-attack banner (top centre, under the toasts) */
+/* M7: the witch's health bar (placeholder until the final HUD). */
+.hud-boss {
+  position: absolute;
+  top: calc(var(--safe) + 6.2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(42vw, 26rem);
+  text-align: center;
+  color: #d8ff9a;
+  font-size: 0.75em;
+  letter-spacing: 0.3em;
+}
+
+.hud-boss-bar {
+  height: 0.45rem;
+  margin-top: 0.25rem;
+  background: rgba(0, 0, 0, 0.6);
+  outline: 1px solid rgba(214, 255, 106, 0.5);
+}
+
+.hud-boss-bar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #8ad040;
+  transition: width 0.2s;
+}
+
 .hud-alarm {
   position: absolute;
   top: calc(var(--safe) + 3.4rem);

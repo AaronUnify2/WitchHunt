@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { GraphRoutes, routeLength, advanceAlong } from '../src/ai/witchRoutes.js';
-import { Witch, plantingsTonight } from '../src/ai/Witch.js';
+import { Witch, plantingsTonight, fightScore } from '../src/ai/Witch.js';
 import { sigilDanger } from '../src/base/danger.js';
 import { EventBus } from '../src/core/EventBus.js';
 import { Rng } from '../src/core/Rng.js';
@@ -129,13 +129,38 @@ describe('the witch out for a night', () => {
       describe: () => 'at a sigil ground',
     };
     const clock = { phase: 'dusk', phaseProgress: 0 };
-    const player = { position: { x: map.clearings[map.homeIndex].x, z: map.clearings[map.homeIndex].z } };
+    const player = {
+      position: { x: map.clearings[map.homeIndex].x, z: map.clearings[map.homeIndex].z },
+      camera: { position: { y: 1.7 } },
+      speed: 0,
+      platform: null,
+      yaw: 0,
+    };
     const sounds = [];
-    const combat = { sfx: { play: (name) => sounds.push(name) } };
-    const world = { map, ground, hut: map.clearings[map.hutIndex] };
+    const hurt = [];
+    const spawned = [];
+    const combat = {
+      sfx: { play: (name) => sounds.push(name) },
+      weapons: { extraTargets: [] },
+      hud: { boss: () => {} },
+      // The player in the open at night, torch on, standing.
+      senses: { x: 0, z: 0, eyeY: 1.7, daylight: 0, torchOn: true, crouched: false, sprinting: false, speed: 0, undergrowth: 0 },
+      alive: true,
+      enemies: { spawnPlanned: (plan, x, z) => (spawned.push({ x, z }), 1) },
+      hurtPlayer: (damage) => hurt.push(damage),
+    };
+    // Keep the senses on the player.
+    const syncSenses = () => {
+      combat.senses.x = player.position.x;
+      combat.senses.z = player.position.z;
+      combat.senses.eyeY = ground.heightAt(player.position.x, player.position.z) + 1.7;
+      player.camera.position.y = combat.senses.eyeY;
+    };
+    const world = { map, ground, hut: map.clearings[map.hutIndex], variantMixAt: () => null };
     const witch = new Witch(config, new Rng(seed), bus);
     witch.init(new THREE.Scene(), { world, director, player, colliders: new SpatialGrid(config.world.colliderCellSize), combat, clock });
-    return { witch, bus, planted, clock, player, sounds, map };
+    syncSenses();
+    return { witch, bus, planted, clock, player, sounds, map, combat, hurt, spawned, syncSenses };
   }
 
   it('rests unseen by day, and stays home on night 1', () => {
@@ -205,7 +230,8 @@ describe('the witch out for a night', () => {
   });
 
   it('near the player she is drawn and runs at her own pace; far away she is unseen and faster', () => {
-    const { witch, bus, player } = setup(11);
+    const { witch, bus, player, combat } = setup(11);
+    combat.alive = false; // so she doesn't notice them (that's a fight: below)
     bus.emit('phase:dusk', { day: 2 });
     player.position.x = witch.x;
     player.position.z = witch.z;
@@ -219,6 +245,146 @@ describe('the witch out for a night', () => {
     witch.update(0.5, true, camera);
     expect(witch.tier).toBe('abstract');
     expect(witch.renderer.root.visible).toBe(false);
+  });
+
+  // ---- step 2: fighting her -------------------------------------------------------
+
+  // Out to plant, then held kneeling at her spot (ritual under way).
+  function atRitual(seed) {
+    const env = setup(seed);
+    env.bus.emit('phase:dusk', { day: 2 });
+    for (let i = 0; i < 20000 && env.witch.state !== 'planting'; i++) env.witch.update(0.1, true, null);
+    return env;
+  }
+  // Stand the player `d` metres in front of her.
+  function standBefore(env, d) {
+    const w = env.witch;
+    env.player.position.x = w.x + Math.sin(w.facing) * d;
+    env.player.position.z = w.z + Math.cos(w.facing) * d;
+    env.syncSenses();
+  }
+  const hit = (w, amount, part = 'body') => w.takeHit(amount, part, {}, { x: w.x, y: w.y + 1, z: w.z }, { x: w.x + 10, z: w.z });
+
+  it('a hit mid-ritual breaks it: no sigil, and at full health she turns on you', () => {
+    const env = atRitual(11);
+    const events = [];
+    env.bus.on('witch:interrupted', () => events.push('interrupted'));
+    env.bus.on('witch:attacking', () => events.push('attacking'));
+    standBefore(env, 25);
+    env.witch.tier = 'active';
+    expect(env.witch.targetable).toBe(true);
+    expect(hit(env.witch, 25)).toBe(false);
+    expect(events).toEqual(['interrupted', 'attacking']);
+    expect(env.witch.state).toBe('attacking');
+    expect(env.witch.share).toBeCloseTo(0.95);
+    for (let i = 0; i < 100; i++) env.witch.update(0.1, true, null);
+    expect(env.planted.length).toBe(0);
+  });
+
+  it("in the ritual's trance she only notices you close up", () => {
+    const env = atRitual(3);
+    standBefore(env, 20); // in the open at night, torch on: a zombie would see you at this range
+    for (let i = 0; i < 10; i++) env.witch.update(0.1, true, null);
+    expect(env.witch.state).toBe('planting');
+    standBefore(env, 4);
+    for (let i = 0; i < 10; i++) env.witch.update(0.1, true, null);
+    expect(env.witch.state).toBe('attacking');
+  });
+
+  it('wounded, she flees instead; near her hut she still fights', () => {
+    expect(fightScore(0.4, 1000, config.witch)).toBeLessThan(config.witch.fleeBelow);
+    expect(fightScore(0.4, 0, config.witch)).toBeGreaterThanOrEqual(config.witch.fleeBelow);
+    const env = atRitual(11);
+    env.witch.health = env.witch.maxHealth * 0.5;
+    standBefore(env, 25);
+    env.witch.tier = 'active';
+    hit(env.witch, 25);
+    expect(env.witch.state).toBe('fleeing');
+  });
+
+  it('she summons the dead when she first attacks, then hexes and swipes', () => {
+    const env = atRitual(11);
+    standBefore(env, 12);
+    env.witch.tier = 'active';
+    hit(env.witch, 10);
+    expect(env.witch.action).toBe('summon');
+    for (let i = 0; i < 20; i++) env.witch.update(0.1, true, null);
+    const s = config.witch.attack.summon;
+    expect(env.spawned.length).toBeGreaterThanOrEqual(s.count[0]);
+    expect(env.spawned.length).toBeLessThanOrEqual(s.count[1]);
+    // At range she throws hexes; they fly at you.
+    let thrown = false;
+    for (let i = 0; i < 60 && !thrown; i++) {
+      env.syncSenses();
+      env.witch.update(0.1, true, null);
+      thrown = env.witch.hexes.count > 0;
+    }
+    expect(thrown).toBe(true);
+    // Standing still right beside her: she swipes.
+    env.player.speed = 0;
+    for (let i = 0; i < 80 && !env.hurt.includes(config.witch.attack.swipe.damage); i++) {
+      standBefore(env, 1.5);
+      env.witch.update(0.1, true, null);
+    }
+    expect(env.hurt).toContain(config.witch.attack.swipe.damage);
+  });
+
+  it('killing her ends it: she dies, stops being a target, and says so', () => {
+    const env = atRitual(3);
+    standBefore(env, 20);
+    env.witch.tier = 'active';
+    let killed = 0;
+    env.bus.on('witch:killed', () => killed++);
+    expect(hit(env.witch, config.witch.health * 2, 'head')).toBe(true);
+    expect(env.witch.state).toBe('dead');
+    expect(env.witch.targetable).toBe(false);
+    expect(killed).toBe(1);
+    expect(env.witch.pendingPlantings()).toEqual([]);
+  });
+
+  it('wounds last, heal a share each day, and cut her planting', () => {
+    const env = setup(11);
+    const wc = config.witch;
+    env.witch.health = wc.health * 0.2;
+    env.bus.emit('phase:day', { day: 3 });
+    expect(env.witch.share).toBeCloseTo(0.2 + wc.wounds.recoverPerDay);
+    const rng = new Rng(9);
+    expect(plantingsTonight(5, wc, rng, 0.2)).toBe(0);
+    for (let i = 0; i < 50; i++) expect(plantingsTonight(5, wc, rng, 0.5)).toBe(1);
+    // Saved and loaded.
+    const saved = env.witch.saveState();
+    env.witch.health = wc.health;
+    env.witch.loadState(saved);
+    expect(env.witch.share).toBeCloseTo(0.2 + wc.wounds.recoverPerDay, 2);
+    env.witch.loadState(undefined); // an older save
+    expect(env.witch.share).toBeCloseTo(0.2 + wc.wounds.recoverPerDay, 2);
+  });
+});
+
+describe('her hexes', () => {
+  it('fly straight at where you were, hurt you, and a tree in the way stops them', async () => {
+    const { Hexes } = await import('../src/ai/witchHexes.js');
+    const hc = config.witch.attack.hex;
+    const flat = { heightAt: () => 0 };
+    const target = { x: 0, z: 20, y0: 0, y1: 1.7 };
+    const hexes = new Hexes(hc);
+    hexes.throw(0, 1.5, 0, 0, 1.3, 20);
+    let damage = 0;
+    for (let i = 0; i < 100; i++) damage += hexes.update(0.05, target, null, flat);
+    expect(damage).toBe(hc.damage);
+    // Sidestepped: it misses.
+    hexes.throw(0, 1.5, 0, 0, 1.3, 20);
+    const moved = { ...target, x: 3 };
+    damage = 0;
+    for (let i = 0; i < 100; i++) damage += hexes.update(0.05, moved, null, flat);
+    expect(damage).toBe(0);
+    // A trunk between you.
+    const grid = new SpatialGrid(8);
+    grid.insert({ x: 0, z: 10, r: 0.5 });
+    hexes.throw(0, 1.5, 0, 0, 1.3, 20);
+    damage = 0;
+    for (let i = 0; i < 100; i++) damage += hexes.update(0.05, target, grid, flat);
+    expect(damage).toBe(0);
   });
 });
 

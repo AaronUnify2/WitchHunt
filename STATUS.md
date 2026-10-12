@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Step 1 of 6 is pushed for Aaron's play-test: **the witch exists, roams and plants.** Next: step 2, fighting her on the pathways.
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-2 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, and **you can fight her on the pathways.** Next: step 3, her traps.
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -26,6 +26,24 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
+### M7 step 2: Fighting the witch on the pathways (Session 8)
+
+As agreed with Aaron; numbers in OPEN_QUESTIONS.md #113-120.
+- **She can be hit:** the weapons take extra targets (`Weapons.extraTargets`, `targetable`, `takeHit()`). Her hit shape follows her pose (crouched in the ritual). 500 health; her headshots count x2.
+- **Noticing you:** the shared detection model with sharper eyes (x1.3; hiding still works). In the ritual's trance she only notices you close up (x0.35), or a shot within 30 m, or a hit. Noticing you breaks the ritual and the sigil is lost.
+- **Fight or flee:** health share + a bonus near her hut (DESIGN.md). Reconsidered every second and on every hit.
+- **Attacking:** she faces you upright, claws out, head jerking, and circles at about 11 m.
+  - **Hexes:** glowing bolts thrown at where you are (20 damage). Sidestep them or put a trunk between you (`ai/witchHexes.js`).
+  - **Swipe:** stand still, or come within 4 m, and she rushes in and swipes (30 damage, both arms raised then slashed down).
+  - **Summon:** when a fight starts she calls 3-4 zombies out of the ground around her, arms flung up (once a minute at most).
+- **Fleeing:** home along the pathways at 8 m/s, weaving, folded low. After losing you she goes back to planting if she's well enough, else home.
+- **Wounds:** they last and are saved (`saveState()`; old saves load fine). 35% heals each day. Wounded she plants at most one sigil; badly wounded she stays in.
+- **Killing her:** she buckles, folds and sinks into the ground. A placeholder "THE WITCH IS DEAD" screen ends the run (the save is deleted). The real ending is step 6.
+- **Feedback:** a placeholder health bar top centre during fights; new sounds (shriek, hex, hex hit, claws, summoning drone, death scream). Hits show the usual blood and hit marker.
+- **Debug (Witch):** Fight: bring her out to attack me now; make her flee now; set her health (100/50/25/10%); kill her.
+- **Verified in headless Chromium (seed 4242):** a real rifle shot through the weapon code took 25 off her. She turned to attack, 3 zombies rose, and she circled and threw hexes. Enough hits sent her fleeing at 40%; killing her showed the victory screen. No console errors.
+- **Tests:** 348 pass (7 new): the ritual broken by a hit, the trance's short sight, fleeing when wounded and fighting near the hut, summon then hex then swipe, death, wounds (healing, planting less, saving), and hexes (hit, sidestepped, blocked by a trunk).
 
 ### M7 step 1 follow-up: Aaron's first look at the witch (Session 8)
 
@@ -545,7 +563,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch (M7 step 1)** roams and plants but doesn't react to the player yet (step 2), lays no traps (step 3) and has no hut building (step 4); she isn't saved (step 6).
+- **The witch (M7 steps 1-2)** roams, plants and fights, but lays no traps yet (step 3) and has no hut building (step 4). Only her health is saved (the rest is step 6). Killing her shows a placeholder victory screen.
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
