@@ -4,7 +4,8 @@
 // and first aid kits bottom right; a red edge when hurt; the death screen.
 // M4: the dig prompt and its progress bar under the crosshair, and a short
 // feed of what you just picked up.
-// M6: the station-under-attack banner top centre, with an arrow home.
+// M6: the station-under-attack banner top centre, with an arrow home, and
+// a placeholder stealth eye ("HIDDEN") over the health bar.
 
 const ARMOUR_TYPES = ['ballistic', 'energy', 'nature'];
 
@@ -28,6 +29,7 @@ export class Hud {
       <div class="hud-station hidden"></div>
       <div class="hud-alarm hidden"><span class="hud-alarm-arrow">&#9650;</span><span class="hud-alarm-text"></span></div>
       <div class="hud-vitals">
+        <div class="hud-hidden">&#9673; HIDDEN</div>
         <div class="hud-heal">+</div>
         <div class="hud-health">${segments}</div>
         ${armour}
@@ -60,6 +62,7 @@ export class Hud {
     this.alarmTextEl = q('.hud-alarm-text');
     this.pickupLines = []; // { text, timer }
     this.healEl = q('.hud-heal');
+    this.hiddenEl = q('.hud-hidden');
     this.healthEl = q('.hud-health');
     this.segEls = [...this.el.querySelectorAll('.hud-seg')];
     this.armourEls = Object.fromEntries(ARMOUR_TYPES.map((t) => [t, q(`.hud-armour-${t} span`)]));
@@ -164,6 +167,8 @@ export class Hud {
     this.set('health', lit, (n) => this.segEls.forEach((el, i) => el.classList.toggle('on', i < n)));
     this.set('low', s.health.value <= this.cfg.lowHealth, (low) => this.healthEl.classList.toggle('low', low));
     this.set('healing', s.health.healing, (h) => this.healEl.classList.toggle('on', h));
+    // M6: the stealth eye (DESIGN.md "HUD": bottom left, when hidden).
+    this.set('hidden', Boolean(s.hidden), (h) => this.hiddenEl.classList.toggle('on', h));
     for (const t of ARMOUR_TYPES) {
       this.set(`armour-${t}`, Math.round(s.armour.fraction(t) * 100), (pct) => (this.armourEls[t].style.width = `${pct}%`));
     }

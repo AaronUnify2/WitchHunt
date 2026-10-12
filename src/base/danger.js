@@ -9,8 +9,10 @@
 //    through the first part of the night (raiseSpread of it) and walk the
 //    pathways at a typical marching pace, so a far sigil's last groups
 //    don't make it;
-//  - level: each arriving zombie is worth perZombie x the level's
-//    defenceDamage (how hard it hits the defences).
+//  - level: each arriving zombie is worth perZombie, x the level's
+//    defenceDamage ^ levelWeight (0 by default: the level already counts
+//    through the bigger quotas and faster marches, and the attacks while
+//    you're away hit harder by level themselves; Aaron, M6).
 // Danger is in the same units as security, so margin = security - danger
 // reads straight off DESIGN.md's margin table (nightResolver.js).
 
@@ -34,7 +36,7 @@ export function sigilDanger(distance, level, cfg, nightSeconds) {
   const marchers = quota * sc.marchShare;
   const travel = distance / marchSpeed(cfg, level);
   const arriving = Math.max(0, Math.min(1, (nightSeconds - travel) / (nightSeconds * d.raiseSpread)));
-  const threat = d.perZombie * (cfg.zombies.levels[level]?.defenceDamage ?? 1);
+  const threat = threatPerZombie(level, cfg);
   const [a, b] = sc.firstSpawnDelay;
   return { marchers, arriving, travel, firstArrival: (a + b) / 2 + travel, threat, value: marchers * arriving * threat };
 }
@@ -50,6 +52,11 @@ export function nightDanger(sigils, distanceOf, describe, level, cfg, nightSecon
     parts.push({ label: describe(s), ...one });
     total += one.value;
   }
-  const threat = cfg.danger.perZombie * (cfg.zombies.levels[level]?.defenceDamage ?? 1);
-  return { total, threat, parts };
+  return { total, threat: threatPerZombie(level, cfg), parts };
+}
+
+// Danger per arriving zombie at `level`.
+export function threatPerZombie(level, cfg) {
+  const d = cfg.danger;
+  return d.perZombie * Math.pow(cfg.zombies.levels[level]?.defenceDamage ?? 1, d.levelWeight ?? 1);
 }

@@ -300,8 +300,16 @@ export class NightWatch {
       }
       x /= list.length;
       z /= list.length;
+      // A group's size: everyone in its pack, not just the first to arrive
+      // (the rest join this attack as they get here).
+      let size = list.length;
+      if (list[0].horde) {
+        size = 0;
+        for (const zb of this.enemies.living) if (zb.horde === list[0].horde) size++;
+      }
       const margin = this.securityNow() - danger.total;
-      const result = resolveAttack({ margin, zombies: weight, threat: danger.threat, nightDanger: danger.total, defenceDamage, roll: this.rng.next() }, r);
+      const groupWeight = weight * (size / list.length);
+      const result = resolveAttack({ margin, zombies: groupWeight, threat: danger.threat, nightDanger: danger.total, defenceDamage, roll: this.rng.next() }, r);
       const angle = angleOf(L, x, z);
       const line = this.station.fenceLineFrom(angle);
       const spot = L.at(Math.max(L.west, Math.min(L.east, angle)), L.radius + r.standOff);
@@ -312,12 +320,6 @@ export class NightWatch {
         zb.lingerRadius = r.gatherRadius;
       }
       this.station.attackStart(line, list.length);
-      // A group's size for the radio: everyone in its pack, not just the first to arrive.
-      let size = list.length;
-      if (list[0].horde) {
-        size = 0;
-        for (const zb of this.enemies.living) if (zb.horde === list[0].horde) size++;
-      }
       const attack = { zombies: list, line, result, weight, defenceDamage, killCredit: 0, pack: list[0].horde ?? null, size };
       this.attacks.push(attack);
       const log = this.log;

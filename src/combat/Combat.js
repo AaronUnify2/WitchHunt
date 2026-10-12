@@ -273,6 +273,7 @@ export class Combat {
       inventory: this.inventory,
       device: input.activeDevice,
       dig: this.alive && !locked ? this.activePrompt() : null,
+      hidden: this.alive && this.enemies.senses.hidden,
     });
   }
 

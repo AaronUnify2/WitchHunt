@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { daylightLevel, sightDistance, hearingDistance, playerSenses, notices, lineOfSight } from '../src/ai/detection.js';
+import { daylightLevel, sightDistance, hearingDistance, playerSenses, notices, lineOfSight, isHidden } from '../src/ai/detection.js';
 import { config } from '../src/config.js';
 
 const cfg = config.detection;
@@ -109,5 +109,21 @@ describe('notices', () => {
     const s = playerSenses(player(), cfg, 1);
     expect(notices(zombieAt(0, 11), s, cfg, false, ridge)).toBe(false);
     expect(lineOfSight(0, 1.6, 11, 0, 1.7, 0)).toBe(true); // flat ground
+  });
+});
+
+describe('hiding (M6, Aaron)', () => {
+  const cfg = config.detection;
+  const base = { daylight: 1, torchOn: false, crouched: true, sprinting: false, undergrowth: 1 };
+  it('crouched, torch off, in the brush: seen from no further than 6 m, day or night, any level', () => {
+    expect(isHidden(base, cfg)).toBe(true);
+    expect(sightDistance(base, cfg, 1.4)).toBeLessThanOrEqual(cfg.hidden.sight);
+    expect(sightDistance({ ...base, daylight: 0 }, cfg, 1)).toBeLessThanOrEqual(cfg.hidden.sight);
+  });
+  it('not hidden standing, with the torch on, or on the open path', () => {
+    for (const p of [{ ...base, crouched: false }, { ...base, torchOn: true }, { ...base, undergrowth: 0 }]) {
+      expect(isHidden(p, cfg)).toBe(false);
+      expect(sightDistance(p, cfg, 1)).toBeGreaterThan(cfg.hidden.sight);
+    }
   });
 });

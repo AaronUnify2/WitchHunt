@@ -35,7 +35,16 @@ export function sightDistance(p, cfg, notice = 1) {
   if (p.crouched) d *= cfg.crouch;
   else if (p.sprinting) d *= cfg.sprint;
   d *= 1 + (cfg.undergrowth - 1) * p.undergrowth;
-  return d * notice;
+  d *= notice;
+  // Hiding (M6): crouched, torch off, in the brush: no further than this.
+  if (isHidden(p, cfg)) d = Math.min(d, cfg.hidden.sight);
+  return d;
+}
+
+// Crouched with the torch off in the brush (M6, Aaron: sneaking).
+export function isHidden(p, cfg) {
+  const h = cfg.hidden;
+  return Boolean(h && p.crouched && !p.torchOn && p.undergrowth >= h.minUndergrowth);
 }
 
 // How far away (metres) the player's footsteps can be heard. p: { crouched,
@@ -54,6 +63,7 @@ export function playerSenses(player, cfg, notice, out = {}) {
   out.z = player.z;
   out.eyeY = player.eyeY;
   out.sight = sightDistance(player, cfg, notice);
+  out.hidden = isHidden(player, cfg);
   out.hearing = hearingDistance(player, cfg, notice);
   out.touch = cfg.touch;
   return out;

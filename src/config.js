@@ -871,7 +871,13 @@ export const config = {
   // M6: tonight's danger to the station (base/danger.js), in the same
   // units as security, so margin = security - danger.
   danger: {
-    perZombie: 2, // danger per marching zombie that reaches the station, x the level's defenceDamage
+    perZombie: 2, // danger per marching zombie that reaches the station
+    // How much the level's defenceDamage also weighs on danger (0: not at
+    // all). Aaron (M6): a fully built station (about 130-150) held a
+    // five-sigil night with a couple of panels down, but the forecast said
+    // -139; the level already counts through the bigger quotas, faster
+    // marches and the attacks' own damage. 0 puts that night at about +9.
+    levelWeight: 0,
     typicalSpeedRoll: 1 / 3, // a typical zombie's place in its level's speed range (rolls skew slow)
     raiseSpread: 0.5, // groups rise through about this much of the night (later ones from far sigils miss dawn)
   },
@@ -904,8 +910,8 @@ export const config = {
       // gap to the front door and then the comms room.
       awayDps: 0.45,
       spreadBreak: 1, // at most this x a barrier's health per tick before the rest spills along the fence
-      zapsPerZombieSecond: 0.3, // the charged fence zaps each attacker this often (charge used)
-      turretKillRounds: 4, // away, the turret fires at its mode's rate and kills an attacker every this many rounds
+      zapsPerZombieSecond: 0.1, // the charged fence zaps each attacker this often (charge used; 0.3 drained a 145 charge, and so the turret, in one horde)
+      turretKillRounds: 10, // away, the turret fires at its mode's rate and kills an attacker every this many rounds (Aaron: a built station with the turret on fast survives five sigils with a couple of panels down)
       mutantWeight: 4, // a mutant in an attack counts as this many zombies
       standOff: 5, // metres outside the fence the group gathers
       gatherRadius: 4,
@@ -1191,6 +1197,10 @@ export const config = {
     crouch: 0.45, // crouched: much harder to see
     sprint: 1.2,
     undergrowth: 0.75, // in the brush
+    // Aaron (M6): hiding. Crouched, torch off and in the brush (even just
+    // off the path), you can't be seen from further than this, day or
+    // night, at any level (a zombie already after you still has pursuit).
+    hidden: { sight: 6, minUndergrowth: 0.3 },
     rearSight: 0.55, // behind a zombie (outside its front half)
     pursuit: 1.7, // once it's chasing you, it keeps you in sight this much further
     touch: 2.5, // always noticed this close

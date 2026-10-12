@@ -20,6 +20,20 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### M6: the performance gate, sneaking, and the forecast recalibrated
+
+- **Performance gate (Aaron, tablet, Medium):** about 20 minutes of nights with five sigils. The tablet stayed "barely warm" and the overlay showed 80 fps, frame 12.4 ms (simulation 0.9 ms, render 2.6 ms), 69 draw calls. Earlier: 90 fps with the full 480 zombies (zombie simulation 0.33 ms).
+- **Hiding (Aaron):** crouched, torch off and in the brush (undergrowth 0.3 or more, so just off the path counts): seen from no further than **6 m**, day or night, at any level. A zombie already chasing you still gets its pursuit ×1.7. A placeholder "◉ HIDDEN" over the health bar (DESIGN.md's stealth eye). `detection.isHidden()`, `config.detection.hidden`.
+- **The forecast matches what happens (Aaron: a fully built station at 150 held a five-sigil night that read 268 danger):**
+  - The level no longer multiplies danger again (`config.danger.levelWeight` 0). It already counts through the quotas, the march speed and the attacks' own damage. Five sigils is now about 134.
+  - **A bug fixed:** an attack was rolled for its first arrivals, not its whole group, which watered down the night's chance of falling. It now rolls for the whole pack.
+  - Away, the fence's zaps cost a third of what they did (0.1 per zombie per second), so a battery doesn't die in one horde and take the turret with it. The turret takes 10 rounds per kill (was 4).
+- **Checked on seed 4242, away all night with five sigils:**
+  - a bare station (30 vs 134, likely overrun) fell at about 1:55am;
+  - a built one (88: barricades, 145 charge, the turret on fast with 3,296 rounds) survived. The turret killed 23; two panels, two barricades and the gate went (Aaron's result).
+  - Aaron's own station (129) would now read about -5, "may fall".
+- **Tests:** 323 pass (2 new for hiding).
+
 ### M6 step 4: Dawn autosave (Session 7, in progress)
 
 - **Aaron's tablet test:** the autosave "worked 100% properly": he checked everything he could think of. Real playthroughs (doing things in the right order) will be the fuller check.

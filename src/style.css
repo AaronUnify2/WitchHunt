@@ -700,3 +700,16 @@ body {
   border-color: #d8b870;
   color: #ffe8b0;
 }
+
+/* M6: the stealth eye (placeholder): over the health bar while hidden */
+.hud-hidden {
+  display: none;
+  margin-bottom: 0.3rem;
+  font-size: 0.8em;
+  letter-spacing: 0.15em;
+  color: #9ad0a0;
+}
+
+.hud-hidden.on {
+  display: block;
+}
