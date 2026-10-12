@@ -46,7 +46,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
   - **Eastern hemlock:** soft, drooping layered sprays with hanging needles and a nodding tip. The most common.
   - **Spruce (two drawings):** narrow spires of jagged, needle-fringed tiers.
   - **White pine:** a tall bare trunk, ragged windswept clumps leaning one way, and gaps you can see through.
-  - **Bare oak:** thick crooked limbs forking four times, with a few dead leaves hanging on.
+  - **Bare oak:** crooked limbs forking four times, with a few dead leaves hanging on. **After Aaron's look:** it was wide and sprawling, so you could see the billboard turning as you walked past. It's now narrow (40–50% of its height, was 70–85%), with its limbs reaching up close to the trunk (`forest.oak.spread`, `forkSpread`, `upPull`).
   - **Dead snag:** a broken, jagged top and snapped-off stubs.
 - **Each kind has its own** weight (how common), heights, width and trunk sizes. The trunk sizes are shared with the 3D trunks in step 3b.
 - **Sprites are 384×768** (were 256×512), so they're sharper up close. The atlas is 2688×768.

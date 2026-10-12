@@ -490,7 +490,9 @@ export const config = {
       { look: 'spruce', weight: 2.5, height: [11, 18], widthRatio: [0.36, 0.44], trunk: { base: 0.07, top: 0.05, to: 0.14, solid: 0.8 } },
       { look: 'spruce', weight: 2, height: [9, 15], widthRatio: [0.38, 0.46], trunk: { base: 0.07, top: 0.05, to: 0.14, solid: 0.8 } },
       { look: 'whitePine', weight: 1.6, height: [14, 20], widthRatio: [0.5, 0.62], trunk: { base: 0.07, top: 0.045, to: 0.38, solid: 1 } },
-      { look: 'oak', weight: 1, height: [10, 15], widthRatio: [0.7, 0.85], trunk: { base: 0.11, top: 0.075, to: 0.4, solid: 1 } },
+      // The oak is narrow, its limbs reaching up close to the trunk (Aaron:
+      // a wide, sprawling billboard showed it turning as you walked past).
+      { look: 'oak', weight: 1, height: [10, 15], widthRatio: [0.4, 0.5], trunk: { base: 0.17, top: 0.085, to: 0.4, solid: 1 } },
       { look: 'snag', weight: 0.7, height: [7, 13], widthRatio: [0.35, 0.45], trunk: { base: 0.1, top: 0.04, to: 0.8, solid: 1 } },
     ],
     trunkRadius: 0.3, // collision radius
@@ -563,6 +565,10 @@ export const config = {
     },
     oak: {
       depth: 4, // how many times the limbs fork
+      limbWidth: 0.05, // the main limbs' thickness, as a fraction of the sprite's width
+      spread: 0.8, // radians the main limbs fan across (kept tight, so the sprite stays narrow)
+      forkSpread: 0.4, // radians each fork can turn from its limb
+      upPull: 0.15, // radians each fork is pulled back toward straight up
       bark: 0x3a3028,
       barkLit: 0x5a4a3a,
       leafChance: 0.45, // a dead leaf still hanging at a twig's end

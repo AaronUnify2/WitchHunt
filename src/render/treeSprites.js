@@ -327,16 +327,16 @@ function drawOak(ctx, kind, w, h, cfg, rng) {
     }
     const children = rng.int(2, 3);
     for (let k = 0; k < children; k++) {
-      const spreadAngle = angle + rng.range(-0.75, 0.75) + (k - (children - 1) / 2) * 0.35;
+      const spreadAngle = angle + rng.range(-c.forkSpread, c.forkSpread) + (k - (children - 1) / 2) * 0.25;
       // Limbs reach up and out; the low ones sag a little (it's an old oak).
-      const bias = spreadAngle > -Math.PI / 2 ? -0.08 : 0.08;
+      const bias = spreadAngle > -Math.PI / 2 ? -c.upPull : c.upPull;
       limb(ex, ey, spreadAngle + bias, length * rng.range(0.62, 0.8), width * 0.62, depth - 1);
     }
   };
-  const main = rng.int(3, 4);
+  const main = rng.int(2, 3);
   for (let k = 0; k < main; k++) {
-    const angle = -Math.PI / 2 + (k / (main - 1) - 0.5) * 1.6 + rng.range(-0.2, 0.2);
-    limb(cx + rng.range(-w * 0.02, w * 0.02), forkY + h * 0.02, angle, h * rng.range(0.11, 0.15), kind.trunk.top * w * 0.85, c.depth);
+    const angle = -Math.PI / 2 + (k / (main - 1) - 0.5) * c.spread + rng.range(-0.15, 0.15);
+    limb(cx + rng.range(-w * 0.02, w * 0.02), forkY + h * 0.02, angle, h * rng.range(0.12, 0.16), c.limbWidth * w, c.depth);
   }
   // Twigs at the ends, and a few dead leaves hanging on.
   ctx.lineWidth = 1;
