@@ -1,105 +1,123 @@
 # Handover
 
-## Just finished: Session 7, Lead Engineer, M6 (simulation LOD and nights)
+## Just finished: Session 8, AI Programmer, M7 (the witch: the vertical slice)
 
-**Status: done.** Aaron play-tested each step on the tablet and confirmed it. **The M6 performance gate passed:** about 20 minutes of five-sigil nights at Medium, never below 60 fps, the tablet "barely warm". With the map full at 480 zombies it held 90 fps (zombie simulation 0.33 ms).
+**Status: built.** All six steps are pushed to `main`. A run can now go from Day 1 to killing the witch, or dying. Aaron play-tested step 1 and reshaped her look and pace; steps 2-6 are waiting for his play-test. The rest of this file is that script and the gate.
 
 ### What was built
 
-Details and numbers are in `STATUS.md` (the M6 sections) and `OPEN_QUESTIONS.md` #89-104.
+Details are in `STATUS.md` (the M7 sections) and the numbers in `OPEN_QUESTIONS.md` #105-134.
 
-1. **Simulation tiers** (`src/ai/simTiers.js`, `EnemyManager`):
-   - **Active:** within 60 m, at most 25, full simulation.
-   - **Nearby:** 60-150 m, every 3rd frame.
-   - **Abstract:** beyond 150 m, pathway steps about once a second, no mesh.
-   - **No 64-zombie cap** (Aaron): the pool grows to 480.
-   - Zombies on a route that get stuck (a car across their way) detour round it.
-2. **Night marches** (`ZombieDirector.raise()`, `src/ai/marchRoutes.js`):
-   - Each raising is a single wanderer or a whole group: 4-10 by level, rising together. A horde always marches. About ⅔ of zombies march (Aaron).
-   - Groups take the shortest pathway route home at their slowest member's pace, ×2.5 out of sight (Aaron: fine).
-   - Each sigil has a night quota.
-   - Aaron saw waves at about 9pm and 11:30pm.
-3. **Revisits** (`src/ai/revisits.js`, Aaron's idea): back at a visited encounter at night, 4-5 zombies hang about there. Night only.
-4. **Danger, forecast, nights away, alarm** (`src/base/danger.js`, `nightResolver.js`, `NightWatch.js`):
-   - **Danger:** marchers × the share arriving before dawn × 2.
-   - **The dusk forecast:** a panel plus a ledger tab, with arrival times and warnings.
-   - **Away** (beyond 150 m): each arriving group is resolved by DESIGN.md's margin table. It gathers at the fence (a 'held' mode) and claws at a steady rate until dawn: along the fence, or through to the doors if it breaks through.
-     - The turret's rounds become kills; a graded radio call says how bad it is.
-     - Come home mid-attack and the group is still there to fight.
-     - A summary when you're back.
-   - **The alarm:** below half the dusk security, a radio call plus a banner with an arrow home.
-   - **Aaron's verdict** after running home from the hut on a five-sigil night: "balanced really well".
-5. **Dawn autosave** (`src/core/saveData.js`, `SaveStore.js`):
-   - One localStorage slot with the seed, clock, player, fog, station, vehicles, sigils and revisits.
-   - A Continue / New run start screen.
-   - Deleted on death, the station falling or a new run. Aaron: "worked 100% properly".
-6. **From Aaron's play-tests:**
-   - **Map and run:** sigil grounds always 2 north / 2 middle / 1 south, and the Car Armory in the north (DESIGN.md updated). Death starts a new run.
-   - **The station:** fence 500 / gate 750 / barricade 375 health; chain-link panels dim the torch like the gate; the starting broken panel is the second east of the gate.
-   - **The player:** no aiming while reloading; stamina doubled; hiding (crouched, torch off, in the brush) caps sight at 6 m with a HIDDEN marker.
-   - **The forecast** recalibrated to match what happens.
-   - **Debug:** a real fast-forward (x4, x10) for the whole world.
-7. **Tests:** 323 pass (51 new this session).
+1. **She roams and plants** (`src/ai/Witch.js`, `src/ai/witchRoutes.js`):
+   - **By day** she hides in her hut. At dusk she comes out of its door.
+   - **Planting:** night 1 is safe; from night 2 she plants 1 sigil, from night 3 sometimes 2.
+   - **Travel:** she glides the pathways and keeps off the station. She follows the simulation tiers: real within 150 m, 3x faster unseen.
+   - **The ritual:** 45 s, crouched and contorting, with a green ring and singing that carries 70 m.
+   - **The forecast** counts the sigils she's out to plant.
+2. **Her look** (`src/render/WitchRenderer.js`), after Aaron's two passes:
+   - an unlit near-black shadow creature, thin, with slanted glowing slit eyes and a crown of sticks;
+   - she glides, never walks;
+   - jointed down to the elbows and wrists, so in the ritual she folds flat and jerks between wrong angles.
+3. **Fighting her** (Weapons `extraTargets`):
+   - **Toughness:** 500 health, x2 headshots.
+   - **Noticing you:** the shared detection model (hiding works). In the ritual's trance she only notices you close up, or on a shot or a hit, and that breaks the ritual.
+   - **Fight or flee:** her health plus a bonus near her hut.
+   - **Attacks:** hexes you can sidestep or block with a tree, rushing in to swipe if you stand still, summoning 3-4 zombies.
+   - **Fleeing:** she weaves home faster than your sprint.
+   - **Wounds** last, heal 35% a day and cut her planting.
+4. **Traps** (`src/ai/witchTraps.js`):
+   - **Snare:** mash A for about 2 s to tear free.
+   - **Hex totem:** a burning ring; shoot it to destroy it.
+   - **Alarm charm:** calls the zombies and her.
+   - **Where:** 16 laid on the hut approach, thicker near it; she also drops them as she flees.
+5. **The hut and explosives** (`src/world/Hut.js`, `src/combat/Explosives.js`):
+   - **The hut:** a placeholder crooked shack.
+   - **Charges:** carry 2 (debug-given). Hold X to plant one on the hut or anywhere.
+   - **Detonator:** a weapon slot; RT sets every charge off. A 9 m blast.
+   - **The hut** falls only to two charges set off together.
+6. **The final battle** (`src/encounters/FinalBattle.js`):
+   - **The trigger:** destroying the hut. A placeholder cutscene, then she rises out of the wreck.
+   - **Blood night:** it jumps to night if it's day, then the clock freezes. Red sky, embers, ash. The station is still attacked.
+   - **The arena:** a ring of witchfire seals the clearing.
+   - **Her fight:** to the death, harder, spamming traps.
+7. **The end of a run** (`src/ui/RunEndScreen.js`, `src/data/ending.json`):
+   - **Victory:** she bursts apart, the dead collapse, then placeholder cards (trail cams, Ground Zero, dawn with the family).
+   - **Defeat:** a fade to black with radio static and the family calling Tom.
+   - **Both** end on a run summary.
+   - **The save** now holds her traps, the charges and the stats.
+8. **The debug menu is in categories** (Aaron's request); M7 added "Witch" and "Hut & explosives".
+9. **Tests:** 368 pass (45 new this session).
 
 ### Unfinished
 
-Nothing in scope. **Aaron is still checking two things pushed last:** hiding (6 m) and the recalibrated forecast. Fix anything he reports.
+Nothing in M7's scope. Aaron hasn't play-tested steps 2-6 yet (the script is below).
 
-## Next: Session 8, AI Programmer, M7 (the witch: playable loop)
+## Next: Session 9, QA & Balance, the gate (play-test the slice)
 
-**Goal (DESIGN.md M7):**
-- witch states, planting at sigil grounds, interruption, fight or flee, wounds, traps;
-- the hut, explosives (debug-given), the final battle, blood night;
-- ending and defeat screens.
-
-**Done when (vertical slice):** a complete run from day 1 to killing her (or dying) with placeholder content. **Then the gate:** Aaron plays two or three full runs (Session 9, QA).
-
-**Rule 10 applies:** the witch is content. Workshop her build plan with Aaron before building:
-- her look as a placeholder 3D figure;
-- how she moves and fights;
-- how she plants;
-- her traps, the hut and the final battle.
+**Goal (DESIGN.md "Gate: play-test the slice"):** Aaron plays two or three full runs. Is the core loop fun before any content goes in? Fix the loop first if it isn't.
+- Prepare and support his runs, and fix the bugs he finds.
+- Tune the numbers with him (all in config: `witch`, `finalBattle`, `explosives`, `ending`, plus M6's nights).
+- Explosives only come from the debug menu (Hut & explosives) until M9-M11, so a full run takes them from there.
 
 ### Look at first
 
-- **`STATUS.md` "What M7 needs next"**: the hooks for her. The stand-in planter to replace, `director.plant()`, the tiers and march routes, danger and the forecast, the blood night and NightWatch, the defeat screen, the save, detection.
-- **DESIGN.md "The witch"**: states, wounds, traps, two ways to fight her, the hut, explosives, the final battle, the ending.
-- `src/ai/ZombieDirector.js`: planting, raising, the night's events.
-- `src/base/NightWatch.js`: away attacks and the alarm. The final battle is at the hut, far beyond 150 m, so the station counts as "away" during it.
+- `STATUS.md`: the M7 sections, and "What the gate needs next".
+- `OPEN_QUESTIONS.md` #105-134: every M7 number, as tuning.
+- `src/ai/Witch.js`: her states (resting, roaming, planting, attacking, fleeing, rising, dead) and where each number is used.
 
 ### Gotchas and decisions
 
-- **Systems** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')`.
-- **Debug tools go in a category** (Session 8): `menu.category(DEBUG.witch).addItem(label, onSelect)`; the categories are listed in `DEBUG` in `src/debug/DebugMenu.js`.
-- **Game steps the world in `Game.step()`** (fast-forward runs it several times a frame; only the first step gets the player's input). Put new per-frame systems there, not in `update()`.
-- **Away vs home:** `NightWatch.away` (beyond 150 m, 8 m hysteresis; or the debug "count me as away") sets `enemies.stationSimulated` and `station.abstract` (the real turret doesn't fire while away).
-- **'held' zombies** belong to NightWatch's attacks. They ignore the player until released (coming home) or dawn.
-- **Saves:** add new run state to `saveData.js` (pure, with a round-trip test). `validSave()` checks `SAVE_VERSION`; bump it if old saves can't be read.
-- **Debug fast-forward x10 and "Night: count me as away"** make whole nights testable in a minute or two. In tests, drive `game.update(1/30)` in a loop with the render loop cancelled. Headless Chromium runs at about 10 fps otherwise.
-- **The map changed this session** (sigil grounds, the Car Armory): every seed's map differs from before.
-- **Vite `base` is `/WitchHunt/`. The live build deploys from `main`.** Aaron has asked for each step to be pushed to `main` for play-testing.
+- **Debug categories:** add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+- **Weapon targets:**
+  - `Weapons.extraTargets` takes anything with a zombie's hit shape, `targetable` and `takeHit()`, or a `{ group }` of them; `noAssist` skips aim assist.
+  - The detonator slot comes and goes with `setSlot()`.
+- **`Player.rooted`** (the snare) is separate from `moveMultiplier`, because Weapons rewrites that every frame.
+- **The final battle freezes the clock** (`clock.setPaused`); NightWatch and the marches keep going on `dt`. A frozen clock means no dawn autosave mid-battle (#130 is open).
+- **The witch is a shadow on purpose** (unlit `MeshBasicMaterial`, Aaron): she's hard to see against dark woods and stands out against lit ground, the ritual ring and the blood sky.
+- **Headless runs:** in headless Chromium, drive `game.update(1/30)` with the render loop cancelled. CSS transitions run on real time there, so check DOM fades in the browser.
+- **Vite `base` is `/WitchHunt/`. The live build deploys from `main`;** Aaron wants each step pushed there.
 
 ### Open questions for Aaron
 
-- **#102:** zombies aren't saved at dawn. Fine?
-- **#93 and #104:** the night's numbers (group sizes, quotas, danger) are for M14 tuning.
-- **#101, the Divorced Dad modifier:** no family, no compound. It's in DESIGN.md for M12.
+- **#130:** quitting mid final battle and continuing goes back to the last dawn, before the hut was destroyed. Should detonating the hut save, or delete the save (a true point of no return)?
+- **#131-132:** the closing and defeat lines are placeholders. Rewrite them now, or leave them for the Narrative Designer (M8 / M14)?
+- **Tuning:** her toughness (#113), her attacks (#116), the final battle (#129), trap density (#122).
 
-## Play-test script for Aaron (M6) (done: kept for the record)
+## Play-test script for Aaron (M7: steps 2-6)
 
-1. **Tiers:** use "Zombies: populate the map" and "tier colours" to fill the map. The fps holds and nothing pops in or sticks.
-2. **Marches:** plant 2-3 sigils, skip to night and stay home. Groups arrive at the fence in waves.
-3. **Revisits:** visit an encounter by day, leave, and come back at night. 4-5 zombies are hanging about there.
-4. **Away:** read the dusk forecast, then go beyond 150 m (use fast-forward x10 to watch a night). The radio says whether the fence will hold; come home mid-attack and fight. The alarm banner points home.
-5. **Save:** reach dawn ("Game saved"), close the tab and reopen it, then Continue. Dying deletes the save.
-6. **Hiding:** crouch with the torch off just off the path. "HIDDEN" shows and zombies don't see you beyond 6 m.
-7. **Gate:** 20 minutes of busy nights at Medium. Never below 60 fps; the tablet barely warm. **Passed.**
+The debug menu's **Witch** and **Hut & explosives** categories hold every shortcut. "Witch > Show her on the map" helps you find her.
 
-## Session kickoff prompt for Session 8
+1. **Ambush a ritual (step 2):** wait at a sigil ground at night, or use "Teleport near her". Shoot her mid-ritual.
+   - The ritual breaks and she shrieks and turns on you.
+   - **Good:** she circles you throwing glowing hexes you can sidestep or block with a tree, rushes in if you stand still, and calls up 3-4 zombies.
+2. **Make her flee:** keep shooting (or "Fight: set her health" to 50%).
+   - Below about 60% she runs home, weaving, faster than your sprint, dropping traps behind her.
+   - Fight her near her hut and she stays and fights even when hurt.
+3. **Traps (step 3):** "Traps: lay a snare, a totem and a charm ahead of me".
+   - Walk into the snare and mash A to tear free (about 2 s).
+   - Stand in the totem's ring (it burns), then shoot the totem.
+   - Walk into the charm and nearby zombies come.
+   - Then walk the hut's approach: it should be thick with them near the hut.
+4. **The hut (step 4):**
+   - "Give 2 charges", then "Teleport: to the hut door". Hold X by the wall to plant both ("1 of 2", "2 of 2"); she may come out to stop you.
+   - Back off, switch to the detonator (RB / LB) and pull RT.
+   - Try one charge first: "The hut shudders, but holds."
+   - Try a charge on a path as a trap for zombies.
+5. **The final battle (step 5):** blowing up the hut starts it. Try it by day too: it should jump to night.
+   - Letterbox, a red flash, the sky bleeds red, and she claws up out of the wreck.
+   - A ring of green witchfire you can't leave. She never flees, hits harder, summons more and lays snares and totems round you.
+   - **Good:** tense and hard, but fair at full health with ammo.
+6. **The endings (step 6):**
+   - **Kill her:** she bursts apart, the dead fall, then the trail-cam, Ground Zero and dawn cards and the family's lines, then the summary.
+   - **Die in a later run:** a fade to black, static and the family calling Tom, then the summary. A starts a new run.
+7. **A full run (the gate):** play from Day 1 without the witch shortcuts (explosives still come from the debug menu).
+   - **Watch:** how long it takes, how often you meet her, whether she's too tough or too easy, and whether the dusk choice (defend or hunt) feels real.
+
+## Session kickoff prompt for Session 9
 
 ```
-You are the AI Programmer on Witch Hunt, Session 8.
+You are QA & Balance on Witch Hunt, Session 9: the gate (play-test the vertical slice).
 Read docs/DESIGN.md (especially "The witch", "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
-Then confirm your role, this session's goal and any questions before starting. The witch is content: workshop her build plan with Aaron first (rule 10).
+Then confirm your role, this session's goal and any questions before starting. Support Aaron's two or three full runs, fix what he finds, and tune the numbers with him (they're all in config).
 Follow the handover protocol, and end with the HANDOVER READY signal.
 ```

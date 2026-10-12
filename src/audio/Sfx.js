@@ -434,6 +434,11 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.2, freq: 1800, endFreq: 300, gain: 0.6 });
     s.tone(o, { seconds: 0.6, wave: 'triangle', freq: 600, endFreq: 150, gain: 0.15 });
   },
+  // M7 step 6: the defeat screen's radio static.
+  radioStatic(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 1.4, type: 'bandpass', freq: 1700, endFreq: 1300, q: 0.8, gain: 0.28, attack: 0.2 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

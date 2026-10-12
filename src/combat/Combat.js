@@ -157,11 +157,12 @@ export class Combat {
     if (this.health.dead) this.die();
   }
 
+  // The run ends: M7's run-end screen (ui/RunEndScreen.js) takes over
+  // from here ('player:died', 'player:overrun', and Game's victory).
   die() {
     this.alive = false;
     this.player.moveMultiplier = 1;
     this.player.fovMultiplier = 1;
-    this.hud.showDeath(this.kills);
     this.sfx.play('death');
     this.bus.emit('player:died');
   }
@@ -172,18 +173,16 @@ export class Combat {
     this.alive = false;
     this.player.moveMultiplier = 1;
     this.player.fovMultiplier = 1;
-    this.hud.showDeath(this.kills, 'THE STATION FELL', reason);
     this.sfx.play('overrun');
+    this.bus.emit('player:overrun', { reason });
   }
 
-  // M7: the witch is dead and the run is won. A placeholder screen until
-  // the ending (step 6); A starts a new run, as after a death.
-  victory(title, reason) {
+  // M7: the witch is dead and the run is won (the ending plays next).
+  victory() {
     if (!this.alive) return;
     this.alive = false;
     this.player.moveMultiplier = 1;
     this.player.fovMultiplier = 1;
-    this.hud.showDeath(this.kills, title, reason);
   }
 
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.
@@ -270,10 +269,8 @@ export class Combat {
         this.health.update(dt);
       }
       if (this.alive) this.pickups.update(dt, player.position.x, player.position.z, this.take);
-      // Permadeath (Aaron, M6): A on the death screen starts a new run
-      // (Game reloads on a fresh map). The debug menu's "try again" keeps
-      // the old in-place reset.
-      if (!this.alive && input.wasPressed('menuConfirm')) this.bus.emit('run:newRequested');
+      // Permadeath (Aaron, M6): the run-end screen (M7) starts a new run.
+      // The debug menu's "try again" keeps the old in-place reset.
       this.enemies.update(dt, this.updateSenses(daylight));
       this.updateGroans(dt);
     }

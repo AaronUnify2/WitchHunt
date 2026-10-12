@@ -136,3 +136,25 @@ describe('the hut', () => {
     });
   }
 });
+
+describe('saving charges (step 6)', () => {
+  it('charges carried and planted come back; junk and older saves are safe', () => {
+    const a = setup();
+    a.ex.give(2);
+    a.player.position.x = 46;
+    a.ex.plant(true);
+    const saved = JSON.parse(JSON.stringify(a.ex.saveState()));
+    const b = setup();
+    b.ex.loadState(saved);
+    expect(b.combat.inventory.charges).toBe(1);
+    expect(b.ex.placed.length).toBe(1);
+    expect(b.ex.placed[0].onHut).toBe(true);
+    // Never more than the carry limit, whatever the save says.
+    const c = setup();
+    c.ex.loadState({ carried: 9, placed: [[1, 2, 0], [3, 4, 1], [5, 6, 0], ['x', 1, 0]] });
+    expect(c.ex.placed.length + c.combat.inventory.charges).toBeLessThanOrEqual(config.explosives.carryMax);
+    const d = setup();
+    d.ex.loadState(undefined);
+    expect(d.combat.inventory.charges).toBe(0);
+  });
+});

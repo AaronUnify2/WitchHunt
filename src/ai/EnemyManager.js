@@ -618,6 +618,16 @@ export class EnemyManager {
     return killed;
   }
 
+  // M7, the witch is dead: every zombie collapses where it stands (no
+  // loot, no kills counted).
+  collapseAll() {
+    let n = 0;
+    for (const z of [...this.living]) {
+      if (z.hit(z.health + 1, 0, 0, z)) n++;
+    }
+    return n;
+  }
+
   // Close living zombies as circles for the torch's glare check.
   glareCircles(origin, range, out) {
     out.length = 0;

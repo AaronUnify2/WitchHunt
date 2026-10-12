@@ -25,6 +25,8 @@ import { Witch } from '../ai/Witch.js';
 import { Hut } from '../world/Hut.js';
 import { Explosives } from '../combat/Explosives.js';
 import { FinalBattle } from '../encounters/FinalBattle.js';
+import { RunEndScreen } from '../ui/RunEndScreen.js';
+import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
@@ -88,6 +90,11 @@ export class Game {
     this.initNightWatch(root);
     this.initExplosives();
     this.initFinalBattle(root);
+    // M7 step 6: the run's stats and its end (victory or defeat).
+    this.stats = createStats();
+    this.victoryTimer = -1;
+    this.runEnd = new RunEndScreen(cfg.ending, this.bus, this.combat.sfx);
+    this.runEnd.init(root);
     this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
     this.addOverlayStats();
     this.addDebugMenuItems();
@@ -451,13 +458,27 @@ export class Game {
       bus.on('phase:dawn', () => {
         if (this.cfg.save.autosaveAtDawn && this.state === 'running' && this.combat.alive && this.autosave()) this.toast.show(`Dawn: night ${this.clock.day} survived. Game saved`);
       }),
-      bus.on('player:died', () => this.saves.clear()),
+      bus.on('player:died', () => {
+        this.saves.clear();
+        this.endRun('defeat', 'YOU DIED', this.deathReason());
+      }),
       bus.on('station:overrun', () => this.saves.clear()),
-      // M7: killing the witch wins the run (the ending itself is step 6).
+      bus.on('player:overrun', ({ reason }) => this.endRun('defeat', 'THE STATION FELL', reason)),
+      bus.on('player:respawned', () => this.runEnd.hide()), // debug "try again"
+      // M7: killing the witch wins the run. She bursts apart, the dead
+      // collapse where they stand, and after a moment the ending plays.
       bus.on('witch:killed', () => {
         this.saves.clear();
-        this.combat.victory('THE WITCH IS DEAD', 'You won the run. (The real ending comes in a later step.)');
+        this.combat.enemies.collapseAll();
+        this.victoryTimer = this.cfg.ending.victoryDelay;
       }),
+      // The run's stats (the summary).
+      bus.on('enemy:killed', () => this.stats.kills++),
+      bus.on('sigil:dug', () => this.stats.sigilsDug++),
+      bus.on('witch:planted', () => this.stats.sigilsPlanted++),
+      bus.on('witch:interrupted', () => this.stats.ritualsBroken++),
+      bus.on('witch:hurt', ({ damage }) => (this.stats.witchDamage += damage)),
+      bus.on('witch:attacking', () => this.stats.witchEncounters++),
     ];
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
@@ -473,6 +494,22 @@ export class Game {
       this.lastTime = null;
     };
     document.addEventListener('visibilitychange', this.onVisibility);
+  }
+
+  // Nights survived: one for every dawn reached (day N is followed by night N).
+  get nightsSurvived() {
+    return this.clock.day - 1 + (this.clock.phase === 'dawn' ? 1 : 0);
+  }
+
+  // M7 step 6: the run's over. kind: 'victory' | 'defeat'.
+  endRun(kind, title, reason) {
+    if (this.runEnd.isOpen) return;
+    this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived);
+  }
+
+  deathReason() {
+    if (this.finalBattle.active) return 'She killed you on the blood night.';
+    return `You died on ${this.clock.phase === 'night' || this.clock.phase === 'dusk' ? 'night' : 'day'} ${this.clock.day}.`;
   }
 
   // The start screen's choice (M6): continue the saved run (put it back,
@@ -509,7 +546,9 @@ export class Game {
       vehicles: saveVehicles(this.vehicles.list),
       sigils: saveSigils(this.director.sigils.list),
       revisits: saveRevisits(this.director.revisits),
-      witch: this.witch.saveState(), // M7: her wounds (optional: older saves have none)
+      witch: this.witch.saveState(), // M7: her wounds and traps (optional: older saves have none)
+      explosives: this.explosives.saveState(), // M7: charges carried and planted
+      stats: { ...this.stats }, // M7: for the run summary
     };
   }
 
@@ -535,6 +574,8 @@ export class Game {
     }
     loadRevisits(this.director.revisits, d.revisits ?? []);
     this.witch.loadState(d.witch);
+    this.explosives.loadState(d.explosives);
+    this.stats = loadStats(d.stats);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -604,6 +645,16 @@ export class Game {
     this.world.update(dt, this.player.camera.position);
     this.hut.update(dt, this.player.camera.position, this.drawDistance);
 
+    // M7 step 6: the run's clock, and the ending after she dies.
+    if (playing && this.combat.alive) this.stats.seconds += dt;
+    if (this.victoryTimer >= 0 && playing) {
+      this.victoryTimer -= dt;
+      if (this.victoryTimer < 0) {
+        this.combat.victory();
+        this.endRun('victory', 'THE WITCH IS DEAD', `You killed her on ${this.finalBattle.state === 'idle' ? 'the pathways' : 'the blood night'}, night ${this.clock.day}.`);
+      }
+    }
+    this.runEnd.update(dt, this.input);
     this.debugMenu.update(dt);
     this.toast.update(dt);
     this.overlay.update(dt);
@@ -647,6 +698,7 @@ export class Game {
     this.nightWatch.dispose();
     this.vehicles.dispose();
     this.station.dispose();
+    this.runEnd.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();
     this.witch.dispose();

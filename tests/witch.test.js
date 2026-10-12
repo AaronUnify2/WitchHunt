@@ -392,6 +392,16 @@ describe('the witch out for a night', () => {
     expect(env.witch.share).toBeCloseTo(0.2 + wc.wounds.recoverPerDay, 2);
     env.witch.loadState(undefined); // an older save
     expect(env.witch.share).toBeCloseTo(0.2 + wc.wounds.recoverPerDay, 2);
+    // Her traps are saved too: the hut's (one sprung) and any she dropped.
+    const before = env.witch.traps.activeCount;
+    env.witch.traps.list[0].active = false;
+    env.witch.traps.add('totem', 5, 5, null, true);
+    const again = JSON.parse(JSON.stringify(env.witch.saveState()));
+    expect(again.traps.length).toBe(before);
+    const fresh = setup(11);
+    fresh.witch.loadState(again);
+    expect(fresh.witch.traps.activeCount).toBe(before);
+    expect(fresh.witch.traps.list.some((t) => t.type === 'totem' && t.dropped && t.x === 5)).toBe(true);
   });
 });
 

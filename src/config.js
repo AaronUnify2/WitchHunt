@@ -1030,7 +1030,7 @@ export const config = {
     },
     flinchSeconds: 0.25,
     bossBarSeconds: 8, // her health bar shows this long after she's hit or while she fights
-    deathSeconds: 2.5, // she collapses and sinks into the ground
+    deathSeconds: 2.5, // she's drawn this long after the killing blow (writhing, then bursting apart: look.burstAt)
     // Placeholder look (Aaron agreed; she gets more detail in the art pass).
     // Aaron (step 1 test): a thin shadow creature, not a solid object. She
     // is unlit near-black (the torch can't light her or glint off her);
@@ -1058,6 +1058,12 @@ export const config = {
       snapTime: 0.12, // share of each snap spent moving (the rest she holds still)
       ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants
       hex: { color: 0xb8ff5a, core: 0.16, halo: 0.42, haloOpacity: 0.35 }, // her thrown hexes: a glowing core in a faint halo
+      // Her death (step 6): writhing in her own witchfire, then bursting apart.
+      burstAt: 0.9, // seconds after the killing blow
+      burstSeconds: 2.4,
+      burstEmber: 0xff8a30,
+      burstStick: 0x2a1f15,
+      burstBone: 0xb8b098,
     },
   },
 
@@ -1129,6 +1135,15 @@ export const config = {
     trapsEach: 2,
     trapRing: [4, 9], // metres from you
     snareShare: 0.55,
+  },
+
+  // The end of a run (M7 step 6; ui/RunEndScreen.js; lines in data/ending.json).
+  ending: {
+    victoryDelay: 4, // seconds after she dies before the ending cards (she bursts, the red drains, the dead fall)
+    cardSeconds: 4.5,
+    lineSeconds: 3.2,
+    defeatFadeSeconds: 2.5,
+    staticEvery: 1.6, // seconds between bursts of radio static on the defeat screen
   },
 
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real

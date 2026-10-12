@@ -724,12 +724,13 @@ export class Witch {
   // Called by the player's weapons. Returns true if it killed her.
   takeHit(amount, part, weapon, at, from) {
     if (!this.targetable) return false;
+    const dealt = Math.min(amount, this.health); // overkill doesn't count (the run summary)
     this.health = Math.max(0, this.health - amount);
     this.flinch = this.wc.flinchSeconds;
     this.bossTimer = this.wc.bossBarSeconds;
     const killed = this.health <= 0;
     this.bus.emit('enemy:hit', { x: at.x, y: at.y, z: at.z, part, killed, zombie: this });
-    this.bus.emit('witch:hurt', { health: this.health, damage: amount });
+    this.bus.emit('witch:hurt', { health: this.health, damage: dealt });
     if (killed) {
       this.die();
       return true;
@@ -902,12 +903,24 @@ export class Witch {
 
   // ---- saving (her wounds last; the rest of her state is step 6) ------------------
 
+  // Her wounds and every trap still out (step 6): [type, x, z, dropped].
   saveState() {
-    return { health: Math.round(this.health) };
+    const traps = this.traps.list.filter((t) => t.active).map((t) => [t.type, Math.round(t.x * 10) / 10, Math.round(t.z * 10) / 10, t.dropped ? 1 : 0]);
+    return { health: Math.round(this.health), traps };
   }
 
+  // d: saveState()'s, or undefined (an older save). A save without traps
+  // keeps the hut's freshly laid ones.
   loadState(d) {
-    if (d && Number.isFinite(d.health)) this.health = Math.max(1, Math.min(this.maxHealth, d.health));
+    if (!d) return;
+    if (Number.isFinite(d.health)) this.health = Math.max(1, Math.min(this.maxHealth, d.health));
+    if (Array.isArray(d.traps)) {
+      this.traps.clear(this.player);
+      for (const t of d.traps) {
+        if (!Array.isArray(t) || !['snare', 'totem', 'charm'].includes(t[0]) || !Number.isFinite(t[1]) || !Number.isFinite(t[2])) continue;
+        this.traps.add(t[0], t[1], t[2], this.ground, t[3] === 1);
+      }
+    }
   }
 
   // ---- debug tools ------------------------------------------------------------------

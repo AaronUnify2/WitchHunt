@@ -30,6 +30,7 @@ const SHOULDER = { x: 0.21, y: 0.62, z: 0.02 }; // from the waist (x before thin
 const UPPER_ARM = 0.55; // shoulder to elbow
 const FOREARM = 0.5; // elbow to wrist
 const HEX_POOL = 8; // most hexes drawn at once
+const SHARDS = 72; // pieces she bursts into
 
 export class WitchRenderer {
   constructor(lookConfig, rng) {
@@ -134,6 +135,23 @@ export class WitchRenderer {
       scene.add(m);
     }
     this.hexMatrix = new THREE.Matrix4();
+
+    // Step 6: her death. She bursts apart in embers, sticks and bone.
+    const shard = new THREE.BoxGeometry(1, 1, 1);
+    this.geometries.push(shard);
+    this.shardMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    this.shards = new THREE.InstancedMesh(shard, this.shardMaterial, SHARDS);
+    this.shards.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.shards.frustumCulled = false;
+    this.shards.count = 0;
+    scene.add(this.shards);
+    this.shardState = Array.from({ length: SHARDS }, () => ({ x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, spin: 0, size: [0.05, 0.05, 0.05] }));
+    this.burstAge = -1;
+    this.shardColour = new THREE.Color();
+    this.shardEuler = new THREE.Euler();
+    this.shardQuat = new THREE.Quaternion();
+    this.shardPos = new THREE.Vector3();
+    this.shardScale = new THREE.Vector3();
     this.time = 0;
     this.motion = 0; // 0 still .. 1 gliding at full speed (eased)
   }
@@ -268,9 +286,11 @@ export class WitchRenderer {
     this.ritual.visible = planting && dist <= drawDistance;
     if (this.ritual.visible) this.poseRitual(w);
     if (w.hexes) this.drawHexes(w.hexes.pool);
+    this.updateBurst(w, dt);
     if (!this.root.visible) return;
     this.root.position.set(w.x, w.y, w.z);
     this.root.rotation.set(0, w.facing, 0);
+    this.root.scale.setScalar(this.cfg.height / MODEL_HEIGHT);
     if (dead) this.poseDying(w);
     else if (w.state === 'rising') this.poseRising(w);
     else if (planting) this.poseContorted();
@@ -372,23 +392,89 @@ export class WitchRenderer {
     this.root.position.y -= (1 - k) * this.cfg.height * 1.1;
   }
 
-  // Killed: she buckles, folds over and sinks into the ground.
+  // Killed (step 6; DESIGN.md "The ending"): she's consumed by her own
+  // witchfire, writhing, arms flung up, head thrown back, flickering; then
+  // she bursts apart (updateBurst) and is gone.
   poseDying(w) {
-    const k = Math.min(1, w.deathTimer / (w.wc.deathSeconds * 0.4));
-    const sink = Math.max(0, (w.deathTimer - w.wc.deathSeconds * 0.4) / (w.wc.deathSeconds * 0.6));
-    const squash = 1 - k * 0.6;
-    this.skirt.scale.set(1 + k * 0.5, squash, 1 + k * 0.5);
-    this.skirt.rotation.set(0, 0, 0);
-    this.waist.position.set(0, WAIST * squash * 0.9, 0);
-    this.waist.rotation.set(-0.4 + k * 1.9, 0, k * 0.3);
-    this.neck.rotation.set(0.6 * k, 0, 1.1 * k);
+    const burstAt = w.wc.look.burstAt;
+    if (w.deathTimer >= burstAt) {
+      this.root.visible = false;
+      return;
+    }
+    const t = this.time;
+    const k = w.deathTimer / burstAt;
+    const jitter = (a) => Math.sin(t * 40 + a) * 0.06 * (1 + k * 2);
+    this.skirt.scale.set(1 + k * 0.3, 1 - k * 0.25, 1 + k * 0.3);
+    this.skirt.rotation.set(jitter(1), 0, jitter(2));
+    this.waist.position.set(0, WAIST, 0);
+    this.waist.rotation.set(-0.5 - k * 0.3 + jitter(3), jitter(4), jitter(5));
+    this.neck.rotation.set(-0.9 + jitter(6), jitter(7) * 4, jitter(8) * 6);
     this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
       const side = i === 0 ? -1 : 1;
-      shoulder.rotation.set(-2.6 * (1 - k) - 0.3, 0, side * (0.9 - k * 0.5));
-      elbow.rotation.set(1.2 * k, 0, 0);
-      wrist.rotation.set(1 * k, 0, 0);
+      shoulder.rotation.set(-2.8 + jitter(9 + i) * 3, 0, side * (0.9 + jitter(11 + i) * 2));
+      elbow.rotation.set(jitter(13 + i) * 6, 0, 0);
+      wrist.rotation.set(jitter(15 + i) * 6, 0, 0);
     });
-    this.root.position.y -= sink * 2.2;
+    this.root.scale.setScalar((this.cfg.height / MODEL_HEIGHT) * (1 + Math.sin(t * 55) * 0.03 * k));
+  }
+
+  // The burst: embers (glowing), sticks and bones fly out and fall.
+  updateBurst(w, dt) {
+    const look = this.cfg;
+    if (w.state !== 'dead') {
+      this.burstAge = -1;
+      this.shards.count = 0;
+      return;
+    }
+    if (this.burstAge < 0 && w.deathTimer >= look.burstAt) {
+      this.burstAge = 0;
+      const rng = (i, k) => {
+        const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+        return v - Math.floor(v);
+      };
+      const colours = [look.burstEmber, look.burstStick, look.burstBone];
+      this.shardState.forEach((p, i) => {
+        const kind = i % 3; // ember, stick, bone
+        const a = rng(i, 1) * Math.PI * 2;
+        const out = 2 + rng(i, 2) * 5;
+        p.x = w.x;
+        p.y = w.y + 0.6 + rng(i, 3) * 1.6;
+        p.z = w.z;
+        p.vx = Math.sin(a) * out;
+        p.vz = Math.cos(a) * out;
+        p.vy = 2 + rng(i, 4) * 6;
+        p.spin = (rng(i, 5) - 0.5) * 20;
+        p.size = kind === 1 ? [0.04, 0.4, 0.04] : kind === 2 ? [0.06, 0.18, 0.06] : [0.09, 0.09, 0.09];
+        this.shards.setColorAt(i, this.shardColour.setHex(colours[kind]));
+      });
+      this.shards.instanceColor.needsUpdate = true;
+    }
+    if (this.burstAge < 0) return;
+    this.burstAge += dt;
+    if (this.burstAge > look.burstSeconds) {
+      this.shards.count = 0;
+      return;
+    }
+    const fade = 1 - this.burstAge / look.burstSeconds;
+    this.shardState.forEach((p, i) => {
+      p.vy -= 9.8 * dt;
+      p.x += p.vx * dt;
+      p.y = Math.max(w.y, p.y + p.vy * dt);
+      p.z += p.vz * dt;
+      if (p.y <= w.y) {
+        p.vx *= 0.8;
+        p.vz *= 0.8;
+      }
+      this.shardEuler.set(this.burstAge * p.spin, this.burstAge * p.spin * 0.7, 0);
+      this.shardQuat.setFromEuler(this.shardEuler);
+      const sc = i % 3 === 0 ? fade : 1; // embers die out
+      this.shardScale.set(p.size[0] * sc, p.size[1] * sc, p.size[2] * sc);
+      this.shardPos.set(p.x, p.y, p.z);
+      this.hexMatrix.compose(this.shardPos, this.shardQuat, this.shardScale);
+      this.shards.setMatrixAt(i, this.hexMatrix);
+    });
+    this.shards.count = SHARDS;
+    this.shards.instanceMatrix.needsUpdate = true;
   }
 
   // Her hexes in flight.
@@ -492,6 +578,8 @@ export class WitchRenderer {
     this.material.dispose();
     this.eyeMaterial.dispose();
     this.ringMaterial.dispose();
+    this.shards.removeFromParent();
+    this.shardMaterial.dispose();
     this.hexCores.removeFromParent();
     this.hexHalos.removeFromParent();
     this.hexCoreMaterial.dispose();

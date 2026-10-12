@@ -20,6 +20,8 @@
 import * as THREE from 'three';
 import { HoldAction } from '../player/HoldAction.js';
 
+const round1 = (v) => Math.round(v * 10) / 10;
+
 export class Explosives {
   constructor(cfg, bus) {
     this.cfg = cfg;
@@ -146,6 +148,21 @@ export class Explosives {
     this.combat.sfx.play('explosion', { x, z, range: e.alert });
     this.spawnFx(x, y, z);
     this.bus.emit('explosion', { x, z, radius: e.radius });
+  }
+
+  // ---- saving (M7 step 6) -----------------------------------------------------------
+
+  saveState() {
+    return { carried: this.inventory.charges, placed: this.placed.map((c) => [round1(c.x), round1(c.z), c.onHut ? 1 : 0]) };
+  }
+
+  // d: saveState()'s, or undefined (an older save: none).
+  loadState(d) {
+    if (!d) return;
+    const placed = Array.isArray(d.placed) ? d.placed.filter((c) => Array.isArray(c) && Number.isFinite(c[0]) && Number.isFinite(c[1])) : [];
+    this.placed = placed.slice(0, this.ec.carryMax).map(([x, z, onHut]) => ({ x, z, y: this.ground.heightAt(x, z), onHut: onHut === 1 }));
+    const carried = Number.isFinite(d.carried) ? d.carried : 0;
+    this.inventory.charges = Math.max(0, Math.min(this.ec.carryMax - this.placed.length, carried));
   }
 
   // ---- the visuals: planted charges (a blinking red light) and blasts -------------

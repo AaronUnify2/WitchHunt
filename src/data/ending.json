@@ -1,0 +1,17 @@
+{
+  "_note": "Placeholder lines for the M7 vertical slice (DESIGN.md 'The ending'). The Narrative Designer rewrites them with Aaron (M8 / M14); the cutscene system (M8) replaces the cards.",
+  "victory": [
+    { "style": "cctv", "caption": "TRAIL CAM 03  02:14", "text": "On trail cam after trail cam, the dead stop mid-stride, and fall." },
+    { "style": "cctv", "caption": "GROUND ZERO  02:15", "text": "The portal, humming all this time, flickers, and goes dark." },
+    { "style": "dawn", "caption": "DAWN", "text": "The comms room door opens. Ellen, Wyatt and Junie come out into the first light to meet you." },
+    { "style": "line", "speaker": "Junie", "text": "Is it over? Dad, is it really over?" },
+    { "style": "line", "speaker": "Ellen", "text": "Whatever was coming through... it's quiet now. It's quiet." },
+    { "style": "line", "speaker": "Wyatt", "text": "We held it. All of us." }
+  ],
+  "defeat": [
+    { "speaker": "Radio", "text": "[static]" },
+    { "speaker": "Ellen", "text": "Tom? Tom, can you hear me?" },
+    { "speaker": "Junie", "text": "Dad? Dad, please answer." },
+    { "speaker": "Wyatt", "text": "Dad, come in. Come in!" }
+  ]
+}

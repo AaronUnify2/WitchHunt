@@ -593,6 +593,76 @@ body {
 }
 
 /* M6: the station-under-attack banner (top centre, under the toasts) */
+/* M7 step 6: the end of a run (placeholders until M8's cutscenes and Session 19's look). */
+.run-end {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  font-family: ui-monospace, monospace;
+  color: #e8e0cc;
+}
+
+.run-end.hidden { display: none; }
+
+.run-end-black {
+  position: absolute;
+  inset: 0;
+  background: #000; /* its opacity is set each frame (the defeat's fade) */
+}
+
+.run-end-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(80vw, 46rem);
+  text-align: center;
+  animation: run-end-in 0.8s ease-out;
+}
+
+.run-end-card.hidden { display: none; }
+.run-end-caption { font-size: 0.8em; letter-spacing: 0.25em; opacity: 0.75; margin-bottom: 1rem; }
+.run-end-text { font-size: 1.35em; line-height: 1.5; }
+.run-end-speaker { margin-top: 0.8rem; font-size: 0.8em; letter-spacing: 0.3em; color: #d8b870; }
+
+/* A trail camera's feed: green-grey, scan lines, a timestamp. */
+.run-end-card.cctv {
+  padding: 3rem 2rem;
+  background: repeating-linear-gradient(0deg, rgba(160, 200, 160, 0.08) 0 2px, transparent 2px 4px), #0c120c;
+  color: #b8d8b0;
+  outline: 1px solid rgba(160, 200, 160, 0.3);
+}
+
+.run-end-card.cctv .run-end-caption { text-align: left; color: #e04030; }
+.run-end-card.dawn { padding: 3rem 2rem; background: linear-gradient(180deg, #2a2440, #c88a60); color: #fff4e0; }
+
+.run-end-summary {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 22rem;
+  padding: 1.5rem 2rem;
+  background: rgba(10, 8, 6, 0.92);
+  outline: 1px solid #5a4a30;
+  text-align: center;
+}
+
+.run-end-summary.hidden { display: none; }
+.run-end-summary h2 { margin: 0 0 0.4rem; letter-spacing: 0.25em; color: #d8b870; }
+.run-end.defeat .run-end-summary h2 { color: #c84838; }
+.run-end-summary table { margin: 1rem auto; border-collapse: collapse; }
+.run-end-summary td { padding: 0.2rem 0.8rem; text-align: left; }
+.run-end-summary td + td { text-align: right; color: #fff; }
+.run-end-prompt, .run-end-skip { font-size: 0.8em; opacity: 0.7; }
+.run-end-skip { position: absolute; right: 1.5rem; bottom: 1rem; margin: 0; }
+.run-end-skip.hidden { display: none; }
+
+@keyframes run-end-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* M7 step 5: the final battle's letterbox bars and red flash. */
 .final-battle {
   position: absolute;

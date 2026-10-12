@@ -1,6 +1,14 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-5 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, **she lays traps**, **the hut can be blown up**, and **the final battle on the blood night.** Next: step 6, the ending and defeat screens and the save.
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch, the vertical slice: all six steps built and pushed.**
+1. The witch roams and plants.
+2. You can fight her on the pathways.
+3. She lays traps.
+4. The hut stands and can be blown up.
+5. The final battle on the blood night.
+6. The ending, defeat and the run summary.
+
+A run can go from Day 1 to killing her (or dying). Aaron has play-tested and tuned step 1 (her look and pace); steps 2-6 await his play-test. Next: **Session 9, QA & Balance: the gate (Aaron plays two or three full runs).**
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -26,6 +34,22 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
+### M7 step 6: The ending, defeat and the save (Session 8)
+
+`src/ui/RunEndScreen.js`, `src/core/runStats.js`, `src/data/ending.json`; numbers in OPEN_QUESTIONS.md #131-134.
+- **Her death:** she writhes in her own witchfire, then bursts apart in embers, sticks and bone. Every zombie on the map collapses where it stands (no loot). The red drains away.
+- **Victory**, 4 s later: placeholder cards (DESIGN.md's order): two trail-cam cards (green-grey, scan lines, a red timestamp), the dawn card, three closing lines. Then the run summary. A / Enter skips a card; on the summary it starts a new run.
+- **Defeat:** the screen fades to black with bursts of radio static; "[static]" and three lines calling Tom; then the summary ("YOU DIED" with where, or "THE STATION FELL" with why). No graphic scene. The old death screen is retired.
+- **The run summary:** nights survived, zombies killed, sigils dug up, sigils she planted, rituals you broke, times you fought her, damage dealt to her, time played.
+- **The save** now also holds her traps, your charges (carried and planted) and the run stats; old saves still load.
+- **Verified in headless Chromium:**
+  - A final-battle victory: burst, cards, summary.
+  - A death: fade, static, voices, summary.
+  - A save and continue, with charges, her 40% health, kills and traps restored.
+  - A four-day soak at x10 (seed 2024): night 1 quiet; nights 2-4 she planted one sigil each and was home by dawn, with the dawn autosaves.
+  - No console errors.
+- **Tests:** 368 pass (5 new: the run stats and summary, the ending data's order, saving charges; her traps' round trip added to the wounds test).
 
 ### M7 step 5: The final battle and blood night (Session 8)
 
@@ -595,11 +619,11 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 
 - Vehicles are placeholder boxes; the bonnet, boot and door animation is a hinge swing (no arms or tools on screen). Vehicle state isn't saved yet (saving is M6/M12); each vehicle keeps its own "looted" flags for when it is. Encounter set dressing (the gas station's pumps, the outpost's sandbags) will move or replace cars when those encounters are built.
 - The turret comes from the debug menu until the Car Armory (M11). The forecast panel and alarm banner are placeholders (the final HUD is Session 19's).
-- "The station fell" is a placeholder defeat screen (M7 builds the real one). The family are placeholder figures that never move or speak (M8).
+- The defeat and victory screens are M7 placeholders (ui/RunEndScreen.js): text cards until M8's cutscenes; the look is Session 19's. The family are placeholder figures that never move or speak (M8).
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch (M7 steps 1-4)** roams, plants, fights and lays traps; the hut stands and can be blown up. Destroying it starts the final battle (step 5). Only her health is saved (traps, charges and the hut are step 6). Killing her shows a placeholder victory screen.
+- **The witch (M7)** is a placeholder figure (Aaron wants to spend real time on her look in the art pass). The hut, traps, hexes, the blood night and the ending are placeholders too. The cutscene (letterbox and cards) waits for M8's cutscene system, the closing lines for the Narrative Designer. Explosives come from the debug menu until M9-M11.
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
@@ -650,32 +674,17 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
 12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M7 needs next
+## What the gate needs next (Session 9, QA & Balance)
 
-Session 8 (AI Programmer): **the witch, the playable loop** (DESIGN.md M7). It covers:
-- witch states, planting at sigil grounds, interruption, fight or flee, wounds and traps;
-- the hut, explosives (debug-given), the final battle and blood night;
-- the ending and defeat screens.
+Aaron plays two or three full runs of the slice (DESIGN.md "Gate: play-test the slice"): is the core loop fun before any content goes in?
+- **Watch for:** pacing (1.5-2.5 hours, cornering her around nights 6-8), her toughness (about 3-4 good ambushes), the night's danger against the station, whether the dusk choice (defend or hunt) is a real one, trap density on the hut approach, the final battle's difficulty.
+- **Explosives** come from the debug menu (Hut & explosives) until M9-M11; a full run has to give them that way.
+- **Open questions for Aaron:** OPEN_QUESTIONS.md #130 (quitting mid final battle), plus all of #105-134 as tuning.
+- **Tuning lives in config:** `witch` (planting, speed, health, attacks, wounds, traps), `finalBattle`, `explosives`, `ending`.
 
-**Vertical slice:** a complete run from day 1 to killing her (or dying).
+## What M7 needed (done)
 
-- **Replace the stand-in planter** (`ZombieDirector.plantForNight()`, `plantOne()`, `ai/sigilPlanter.js`).
-  - `chooseSigilSpot()` already follows her rules: mostly empty sigil grounds, else off a pathway, away from home and other sigils.
-  - `director.plant(spot)` is the one way to put a sigil down (renderer, events, variants).
-- **Simulation tiers:** she should follow them (DESIGN.md "The station and the witch follow the same tiers").
-  - `EnemyManager` runs zombies only; the witch will be her own system.
-  - `ai/simTiers.js` (`tierFor()`) and `ai/marchRoutes.js` (shortest pathway routes, `remaining()`) are reusable as they are.
-  - `PathRoutes` gives random walks.
-- **Danger and the forecast:** `base/danger.js` sums sigils. If she affects the night (summons, a blood night), add her there so the forecast stays honest.
-- **Blood night:**
-  - "The station is still attacked (simulated)": `NightWatch` resolves attacks while the player is away. The hut is far beyond 150 m, so a fight there counts as away.
-  - The clock freezes for the fight: NightWatch's attacks run on game time, so freezing the clock alone won't stop them. Decide whether they should.
-- **The defeat screen:**
-  - `Combat.overrun(reason)` and `die()` show the placeholder death screen.
-  - A on it emits `run:newRequested` (Game deletes the save and reloads on a fresh map).
-  - `station:overrun` and `player:died` delete the save.
-- **The save** (`core/saveData.js`): add her state, wounds, the hut and explosives. Bump `SAVE_VERSION` if old saves can't be read.
-- **Detection:** `ai/detection.js` (`notices()`, `isHidden()`) is the shared model; she should use it. Hidden = crouched, torch off, in the brush: 6 m.
+Session 8 replaced the stand-in planter, used the tiers, routes, danger and forecast, NightWatch, the save and detection as planned (see the M7 sections above).
 
 ## What M5 part 2 needed (done)
 
