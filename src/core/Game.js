@@ -30,6 +30,24 @@ import { DebugMenu } from '../debug/DebugMenu.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
 import { MapUi } from '../ui/MapUi.js';
+import { SaveStore } from './SaveStore.js';
+import {
+  SAVE_VERSION,
+  validSave,
+  packBits,
+  unpackBits,
+  saveClock,
+  loadClock,
+  savePlayer,
+  loadPlayer,
+  saveStation,
+  loadStation,
+  saveVehicles,
+  loadVehicles,
+  saveSigils,
+  saveRevisits,
+  loadRevisits,
+} from './saveData.js';
 
 const MS_PER_SECOND = 1000;
 
@@ -43,7 +61,12 @@ export class Game {
     const cfg = this.cfg;
     this.bus = new EventBus();
     this.bus.init();
-    this.seed = resolveSeed(cfg.rng);
+    // M6: a saved run is offered if the URL asks for no other map.
+    this.saves = new SaveStore(cfg.save);
+    const saved = this.saves.load();
+    const urlSeed = seedFromUrl(cfg.rng);
+    this.pendingSave = validSave(saved) && (urlSeed === null || String(urlSeed) === String(saved.seed)) ? saved : null;
+    this.seed = this.pendingSave ? this.pendingSave.seed : resolveSeed(cfg.rng);
     this.rng = new Rng(this.seed);
     this.clock = new Clock(cfg.clock, this.bus);
     this.clock.init();
@@ -56,6 +79,7 @@ export class Game {
     this.initStation(root);
     this.initVehicles();
     this.initNightWatch(root);
+    this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
     this.addOverlayStats();
     this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
@@ -171,9 +195,8 @@ export class Game {
     this.overlay.init(root);
     this.debugMenu = new DebugMenu(cfg.debug.menu, this.input, this.bus);
     this.debugMenu.init(root);
-    this.startScreen = new StartScreen(() => this.start());
+    this.startScreen = new StartScreen((choice) => this.onStartChoice(choice));
     this.startScreen.init(root);
-    this.startScreen.show('start');
   }
 
   addOverlayStats() {
@@ -257,8 +280,17 @@ export class Game {
     menu.addItem('Teleport: home', () => this.teleportTo(this.world.home));
     menu.addItem("Teleport: witch's hut", () => this.teleportTo(this.world.hut));
     this.mapUi.addDebugItems(menu);
-    menu.addItem(() => `New map (seed now ${this.seed})`, () => reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax)));
-    menu.addItem('Restart this map (same seed)', () => reloadWithSeed(this.seed));
+    menu.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
+    menu.addItem('Restart this map (same seed, deletes the save)', () => {
+      this.saves.clear();
+      reloadWithSeed(this.seed);
+    });
+    // M6: the save slot.
+    menu.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : 'Could not save (storage blocked?)'));
+    menu.addItem('Delete the save', () => {
+      this.saves.clear();
+      this.toast.show('Save deleted');
+    });
   }
 
   // Land a few metres from a clearing's centre, facing it.
@@ -316,7 +348,13 @@ export class Game {
       bus.on('display:fullscreenChanged', ({ fullscreen }) => this.onFullscreenChanged(fullscreen)),
       bus.on('render:contextLost', () => this.toast.show('Graphics context lost. Reload the page.')),
       // Permadeath (M6): a new run on a fresh map (M12 brings the run summary).
-      bus.on('run:newRequested', () => reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax))),
+      bus.on('run:newRequested', () => this.newRun()),
+      // M6: autosave at each dawn; the save goes when the run ends (permadeath).
+      bus.on('phase:dawn', () => {
+        if (this.cfg.save.autosaveAtDawn && this.state === 'running' && this.combat.alive && this.autosave()) this.toast.show(`Dawn: night ${this.clock.day} survived. Game saved`);
+      }),
+      bus.on('player:died', () => this.saves.clear()),
+      bus.on('station:overrun', () => this.saves.clear()),
     ];
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
@@ -332,6 +370,67 @@ export class Game {
       this.lastTime = null;
     };
     document.addEventListener('visibilitychange', this.onVisibility);
+  }
+
+  // The start screen's choice (M6): continue the saved run (put it back,
+  // then start), or begin a new one (a fresh map).
+  onStartChoice(choice) {
+    if (choice === 'new') {
+      this.newRun();
+      return;
+    }
+    if (choice === 'continue' && this.pendingSave) {
+      this.applySave(this.pendingSave);
+      this.pendingSave = null;
+    }
+    this.start();
+  }
+
+  // A new run: the save goes, and the page reloads on a fresh map.
+  newRun() {
+    this.saves.clear();
+    reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax));
+  }
+
+  // ---- saving (M6; core/saveData.js) -------------------------------------------
+
+  collectSave() {
+    return {
+      version: SAVE_VERSION,
+      seed: this.seed,
+      savedAt: Date.now(),
+      clock: saveClock(this.clock),
+      player: savePlayer(this.player, this.combat),
+      fog: packBits(this.mapUi.fog.toBytes()),
+      station: saveStation(this.station.state),
+      vehicles: saveVehicles(this.vehicles.list),
+      sigils: saveSigils(this.director.sigils.list),
+      revisits: saveRevisits(this.director.revisits),
+    };
+  }
+
+  autosave() {
+    return this.saves.save(this.collectSave());
+  }
+
+  // Put a saved run back (the world is already built from its seed).
+  applySave(d) {
+    loadClock(this.clock, d.clock);
+    loadPlayer(this.combat, d.player);
+    this.player.teleport(d.player.x, d.player.z, d.player.yaw);
+    const fog = this.mapUi.fog;
+    fog.fromBytes(unpackBits(d.fog, fog.cells.length));
+    loadStation(this.station.state, d.station);
+    this.station.syncColliders();
+    loadVehicles(this.vehicles.list, d.vehicles);
+    for (const v of this.vehicles.list) this.vehicles.renderer.refresh(v);
+    this.director.removeAll();
+    for (const s of d.sigils) {
+      const sigil = this.director.plant({ ...s });
+      if (sigil) sigil.raised = s.raised;
+    }
+    loadRevisits(this.director.revisits, d.revisits ?? []);
+    this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
   // Called from the start screen's tap: a user gesture, so fullscreen
@@ -452,6 +551,20 @@ export class Game {
     this.rng.dispose();
     this.bus.dispose();
   }
+}
+
+// The ?seed= in the URL, or null.
+function seedFromUrl(rngConfig) {
+  const raw = new URLSearchParams(window.location.search).get(rngConfig.seedUrlParam);
+  if (raw === null || raw === '') return null;
+  const asNumber = Number(raw);
+  return Number.isFinite(asNumber) ? asNumber : String(raw);
+}
+
+// "dawn after night 3" (or "day 3, dusk" for a debug save) for the Continue button.
+function saveLabel(d, clockCfg) {
+  const phase = clockCfg.phases[d.clock.phaseIndex]?.name ?? '';
+  return phase === 'dawn' ? `dawn after night ${d.clock.day}` : `day ${d.clock.day}, ${phase}`;
 }
 
 // URL ?seed= beats config.rng.defaultSeed; otherwise roll a fresh seed.

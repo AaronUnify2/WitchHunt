@@ -1338,6 +1338,13 @@ export const config = {
     repeatInterval: 0.12,
   },
 
+  // M6: the run's save slot (core/saveData.js, core/SaveStore.js):
+  // autosaved at each dawn, deleted when the run ends.
+  save: {
+    key: 'witchHunt.save',
+    autosaveAtDawn: true,
+  },
+
   // Debug tools
   debug: {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun

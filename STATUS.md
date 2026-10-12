@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is built; Aaron's first play-test of it brought fixes (attacks now take time, fast-forward, sigil grounds spread over the map, a new run on death, fence glare, the starting broken panel, no aiming while reloading), waiting for his second look. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 4 (dawn autosave, Continue / New run) is built and waiting for Aaron's play-test and the M6 performance gate on the tablet. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is done; Aaron's first play-test of it brought fixes (attacks now take time, fast-forward, sigil grounds spread over the map, a new run on death, fence glare, the starting broken panel, no aiming while reloading), waiting for his second look. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -19,6 +19,31 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M6 step 4: Dawn autosave (Session 7, in progress)
+
+- **One save slot in localStorage** (`src/core/saveData.js` pure, `src/core/SaveStore.js`; key `witchHunt.save`, about 11 KB).
+  - Saved at each dawn ("Dawn: night N survived. Game saved").
+  - Deleted when the run ends (death, the station falling, New run, New map, Restart this map).
+- **What it stores:**
+  - the seed and the clock;
+  - the player: position, facing, health, armour, first aid, scrap, batteries, pistol rounds, each gun's magazine and reserve, the weapon in hand, kills;
+  - the fog of war, packed as bits;
+  - every station defence: panels, barricades, spikes, gate, doors and reinforcement, charge, floodlights, the turret's state, rounds and mode;
+  - the vehicles' searched, bonnet, battery, flat, alarm and seen flags;
+  - the sigils, and which encounters have been visited (revisits).
+- **Not stored:**
+  - zombies (dawn sinks most; the few stragglers are lost);
+  - pickups lying on the ground;
+  - the random number streams (a continued run rolls differently from one played straight through).
+  - The witch, dialogue, documents and prizes come with their milestones.
+- **The start screen:** with a save (and no other `?seed=` in the URL), "A run is saved" with **Continue: dawn after night N** and **New run**. Enter continues, N starts a new run. A placeholder until the main menu (M9).
+- **Debug:** Save now; Delete the save.
+- **Verified in headless Chromium (seed 999):**
+  - Made changes (a sigil, a barricade, a battery fitted, scrap, ammo, health, position, revealed map, a looted car) and skipped to dawn: saved.
+  - Reloaded with no seed, and Continue brought every value back.
+  - Dying deleted the save; New run deleted it and loaded a fresh seed. No console errors.
+- **Tests:** 321 pass (6 new): the fog bits, clock, player, every station defence, vehicles, sigils, revisits, and the store with JSON junk and blocked storage.
 
 ### M6 step 3: Aaron's verdict
 

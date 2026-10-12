@@ -673,3 +673,30 @@ body {
   margin-top: 0.5rem;
   color: #f0b060;
 }
+
+/* M6: Continue / New run on the start screen (placeholder until the main menu) */
+.start-choices {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.start-choices.hidden {
+  display: none;
+}
+
+.start-choices button {
+  font: inherit;
+  font-size: 1.1em;
+  padding: 0.8rem 1.6rem;
+  background: rgba(40, 34, 24, 0.9);
+  color: #e8dcc0;
+  border: 1px solid #8a7450;
+  border-radius: 4px;
+}
+
+.start-choices .start-continue {
+  border-color: #d8b870;
+  color: #ffe8b0;
+}

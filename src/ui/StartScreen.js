@@ -1,6 +1,8 @@
 // "Tap to start" screen. The tap is the user gesture that fullscreen and
 // orientation lock need. Shown again as "Tap to resume" if the player
 // leaves fullscreen. Also shows whether a controller has been detected.
+// M6: with a saved run, "Continue" or "New run" (a placeholder until the
+// main menu, M9). onActivate(choice): 'start' | 'resume' | 'continue' | 'new'.
 
 const TEXT = {
   start: 'Tap to start',
@@ -22,10 +24,16 @@ export class StartScreen {
     this.el.innerHTML = `
       <h1 class="start-title">WITCH HUNT</h1>
       <p class="start-prompt"></p>
+      <div class="start-choices hidden">
+        <button class="start-continue"></button>
+        <button class="start-new">New run</button>
+      </div>
       <p class="start-controller"></p>
       <p class="start-hint"></p>
     `;
     this.promptEl = this.el.querySelector('.start-prompt');
+    this.choicesEl = this.el.querySelector('.start-choices');
+    this.continueEl = this.el.querySelector('.start-continue');
     this.controllerEl = this.el.querySelector('.start-controller');
     this.el.querySelector('.start-hint').textContent = TEXT.hint;
     this.setControllerStatus(null);
@@ -33,10 +41,13 @@ export class StartScreen {
 
     this.onPointerUp = (e) => {
       e.preventDefault();
-      this.activate();
+      if (this.mode !== 'continue') this.activate(this.mode);
+      else if (e.target.closest('.start-new')) this.activate('new');
+      else if (e.target.closest('.start-continue')) this.activate('continue');
     };
     this.onKeyDown = (e) => {
-      if (START_KEYS.has(e.code)) this.activate();
+      if (START_KEYS.has(e.code)) this.activate(this.mode === 'continue' ? 'continue' : this.mode);
+      else if (this.mode === 'continue' && e.code === 'KeyN') this.activate('new');
     };
     this.el.addEventListener('pointerup', this.onPointerUp);
     window.addEventListener('keydown', this.onKeyDown);
@@ -51,14 +62,19 @@ export class StartScreen {
     this.el.remove();
   }
 
-  activate() {
+  activate(choice) {
     if (!this.visible) return;
     this.hide();
-    this.onActivate();
+    this.onActivate(choice);
   }
 
-  show(mode) {
-    this.promptEl.textContent = TEXT[mode] ?? TEXT.start;
+  // mode: 'start', 'resume', or 'continue' (label: what the save is, e.g. "Day 3, dawn").
+  show(mode, label = '') {
+    this.mode = mode;
+    const choosing = mode === 'continue';
+    this.promptEl.textContent = choosing ? 'A run is saved' : TEXT[mode] ?? TEXT.start;
+    this.choicesEl.classList.toggle('hidden', !choosing);
+    if (choosing) this.continueEl.textContent = `Continue: ${label}`;
     this.el.classList.remove('hidden');
     this.visible = true;
   }

@@ -20,6 +20,7 @@ Agreed with Aaron before building: about **two thirds of each night's zombies ma
 | 99 | **Aaron:** sigil grounds spread over the map; the Car Armory in the north. | Always 5 grounds: 2 north, 2 middle, 1 south. The Car Armory's band is north (the turret matters for travelling). Aliens stay south and Bigfoot in the middle, as they were. | `config.map.sigilGrounds.perBand`, `data/encounters.json` |
 | 100 | **Aaron:** death should start a new game. | A on the death screen reloads on a fresh map (M12 adds the run summary and save deletion). | `Game` (`run:newRequested`) |
 | 101 | **Aaron's idea:** a Divorced Dad modifier. | Logged in DESIGN.md "Modifiers and achievements": no family and no compound, pure exploration. Unlocked by a new achievement, Custody Lost (lose the station several times across runs; the count and the name are placeholders). Not built; for M12. | DESIGN.md |
+| 102 | What the dawn save leaves out. | Zombies (dawn sinks most; stragglers are lost), pickups on the ground, and the random streams (a continued run rolls differently). DESIGN.md lists "enemies" in the save: worth it only if stragglers matter. Save and quit from a pause menu waits for the pause menu (M12). | `core/saveData.js` |
 | 94 | Zombies stuck on cars and rocks. | A zombie on its way somewhere (not chasing) that barely moves for 0.8 s detours 4 m to one side (further each retry, then the other side). Chasing zombies still only slide. | `config.zombies.unstick` |
 
 ## Session 6b (M5 part 2, Gameplay Programmer)
