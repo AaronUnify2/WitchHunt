@@ -27,6 +27,7 @@ export class MapUi {
       fogCanvas: makeFogCanvas(this.fog),
       nameOf: (c) => world.clearingName(c),
       sigilMarker: this.cfg.sigilMarker,
+      witchMarker: this.cfg.witchMarker,
     };
     this.minimap = new Minimap(this.cfg.minimap);
     this.minimap.init(root, shared);
@@ -56,15 +57,16 @@ export class MapUi {
   // has to find them).
   // tierColors (M6 debug): colour zombie dots by simulation tier and show
   // them all, fog or not; null for the normal red dots.
-  update(dt, input, player, enemies, canToggle, sigils = null, tierColors = null) {
+  // witch (M7 debug): { x, z, state } drawn on both maps, or null.
+  update(dt, input, player, enemies, canToggle, sigils = null, tierColors = null, witch = null) {
     if (canToggle && (input.wasPressed('map') || (this.screen.isOpen && input.wasPressed('menuBack')))) {
       this.screen.toggle();
       this.minimap.show(!this.screen.isOpen);
       this.bus.emit(this.screen.isOpen ? 'map:opened' : 'map:closed');
     }
     this.fog.update(player.position.x, player.position.z);
-    this.minimap.update(dt, player, enemies, sigils, tierColors);
-    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils, tierColors);
+    this.minimap.update(dt, player, enemies, sigils, tierColors, witch);
+    this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils, tierColors, witch);
   }
 
   // ---- debug tools ----------------------------------------------------------

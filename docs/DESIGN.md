@@ -410,6 +410,9 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 | Fleeing | Hurt, or far from the hut | Runs, cuts between trees, drops traps behind her |
 | Attacking | Healthy, or cornered near the hut | Ranged hexes, close strikes, summons a few zombies |
 
+- **By day** she stays hidden inside the hut and comes out in the early evening (Aaron, M7). You can stake out the hut and take shots at her as she leaves.
+- **Planting pace:** night 1 is safe, then 1–2 sigils a night (Aaron, M7).
+- **Toughness:** about 3–4 good ambushes on the pathways to kill her outright, if she isn't given time to heal (Aaron, M7: "make her good and strong"; tune after play-tests).
 - **Fight-or-flee score** = health % plus a bonus for being near her hut. High → attack; low → flee. She's far more dangerous near home.
 - **Movement:** a Left 4 Dead–style agile runner (vaults logs, weaves, doubles back). Faster than the player on paths; slower while dropping traps. Simulated as a point on the graph when far away.
 - **Planting interruption:** enough damage while planting (config) cancels the sigil; she then flees or attacks.
@@ -422,7 +425,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 ### Traps
 
 - Dropped while fleeing and placed around the hut approach. Denser closer to the hut, so they act as breadcrumbs.
-- Snare (roots the player), hex totem (damage zone), alarm charm (calls nearby zombies).
+- Snare (roots the player: mash A for about 2 seconds to break free, Aaron M7), hex totem (damage zone), alarm charm (calls nearby zombies).
 
 ### Two ways to fight her
 
@@ -446,8 +449,8 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 ### Final battle
 
 - First-person cutscene: the hut explodes and the witch bursts out.
-- **Blood night:** the game jumps to a special night: red sky, embers and ash, witchfire. **The clock freezes** for the whole fight.
-- **The station is still attacked** (simulated), so a weak base can still be overrun mid-fight. Secure it first.
+- **Blood night:** the game jumps to a special night: red sky, embers and ash, witchfire. **The clock freezes** for the whole fight. Detonating by day jumps straight to night (Aaron, M7).
+- **The station is still attacked** (simulated), so a weak base can still be overrun mid-fight. Secure it first. The attacks run on in real time while the clock is frozen (Aaron, M7).
 - **No escape:** the hut clearing is sealed (ring of thorns or witchfire). Her fight-or-flee logic is off; she attacks until one of them dies.
 - **Attacks:** fast heavy swipes that punish standing still; summoning zombies; spamming snares and hex totems across the ground.
 - Her current wounds carry in, so pathway fights beforehand make it easier.

@@ -21,6 +21,7 @@ import { Player } from '../player/Player.js';
 import { Flashlight } from '../player/Flashlight.js';
 import { Combat } from '../combat/Combat.js';
 import { ZombieDirector } from '../ai/ZombieDirector.js';
+import { Witch } from '../ai/Witch.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
@@ -76,6 +77,7 @@ export class Game {
     this.initWorld(root);
     this.initUi(root);
     this.initDirector();
+    this.initWitch();
     this.initStation(root);
     this.initVehicles();
     this.initNightWatch(root);
@@ -123,6 +125,19 @@ export class Game {
     this.director = new ZombieDirector(this.cfg, this.rng.fork('director'), this.bus);
     this.director.init(this.scene, this.world, this.combat, this.player, (text) => this.toast.show(text));
     this.combat.promptSources.push(this.director.hud);
+  }
+
+  // The witch (M7): rests in her hut by day, roams and plants by night.
+  initWitch() {
+    this.witch = new Witch(this.cfg, this.rng.fork('witch'), this.bus);
+    this.witch.init(this.scene, {
+      world: this.world,
+      director: this.director,
+      player: this.player,
+      colliders: this.colliders,
+      combat: this.combat,
+      clock: this.clock,
+    });
   }
 
   // The ranger station (M5): fence, doors, turret, ledger, siege.
@@ -178,6 +193,7 @@ export class Game {
     this.nightWatch.init(root, {
       station: this.station,
       director: this.director,
+      witch: this.witch,
       combat: this.combat,
       player: this.player,
       clock: this.clock,
@@ -227,6 +243,7 @@ export class Game {
     this.overlay.addStat('zombies', () => this.combat.zombieOverlayLine());
     this.overlay.addStat('lod', () => this.combat.enemies.lodLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
+    this.overlay.addStat('witch', () => this.witch.overlayLine());
     this.overlay.addStat('station', () => this.station.overlayLine());
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
@@ -239,6 +256,7 @@ export class Game {
     this.addMapDebugItems(menu);
     this.combat.addDebugItems(menu);
     this.director.addDebugItems(menu);
+    this.witch.addDebugItems(menu, (text) => this.toast.show(text));
     this.station.addDebugItems(menu);
     this.nightWatch.addDebugItems(menu);
     this.vehicles.addDebugItems(menu);
@@ -320,6 +338,7 @@ export class Game {
     this.sky.setDrawDistance(q.drawDistance);
     this.world.setDrawDistance(q.drawDistance);
     this.director?.setDrawDistance(q.drawDistance);
+    this.witch?.setDrawDistance(q.drawDistance);
     this.combat.setDrawDistance(q.drawDistance);
     this.station?.renderer.setDrawDistance(q.drawDistance);
     this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
@@ -493,7 +512,8 @@ export class Game {
     const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
     const enemies = this.combat.enemies;
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
-    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors);
+    const witchOnMap = this.witch.showOnMap ? this.witch : null;
+    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
     this.world.update(dt, this.player.camera.position);
 
@@ -515,6 +535,7 @@ export class Game {
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
     this.combat.update(dt, input, playing, daylight, locked);
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.witch.update(dt, playing, this.player.camera.position);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);
@@ -537,6 +558,7 @@ export class Game {
     this.nightWatch.dispose();
     this.vehicles.dispose();
     this.station.dispose();
+    this.witch.dispose();
     this.director.dispose();
     this.combat.dispose();
     this.flashlight.dispose();

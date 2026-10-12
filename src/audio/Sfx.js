@@ -45,8 +45,9 @@ export class Sfx {
     return this.ctx !== null && this.ctx.state === 'running';
   }
 
-  // Output node for a sound at world position (x, z), or the centre if no position.
-  out(x, z, gain = 1) {
+  // Output node for a sound at world position (x, z), or the centre if no
+  // position. range: metres it carries (default hearingDistance).
+  out(x, z, gain = 1, range = this.cfg.hearingDistance) {
     const ctx = this.ctx;
     const g = ctx.createGain();
     g.gain.value = gain;
@@ -57,7 +58,7 @@ export class Sfx {
     const dx = x - this.listener.x;
     const dz = z - this.listener.z;
     const dist = Math.hypot(dx, dz);
-    const fade = Math.max(0, 1 - dist / this.cfg.hearingDistance);
+    const fade = Math.max(0, 1 - dist / range);
     g.gain.value = gain * fade * fade;
     const pan = ctx.createStereoPanner();
     // Listener's right = (cos yaw, -sin yaw) on the ground plane.
@@ -348,6 +349,27 @@ const RECIPES = {
     const o = s.out();
     s.tone(o, { seconds: 3, wave: 'sawtooth', freq: 160, endFreq: 40, gain: 0.35, attack: 0.1, vibrato: 8 });
     s.noiseBurst(o, { seconds: 2.5, freq: 900, endFreq: 100, gain: 0.4, attack: 0.2 });
+  },
+  // M7: the witch singing over a sigil as she plants it: a wavering,
+  // breathy minor line that carries a long way through the trees.
+  witchSong(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, pos?.range);
+    const notes = [220, 261.6, 246.9, 207.7, 220];
+    const base = Math.random() < 0.5 ? 1 : 0.75; // cosmetic: not gameplay
+    notes.forEach((f, i) => {
+      setTimeout(() => {
+        if (!s.ready) return;
+        s.tone(o, { seconds: 0.75, wave: 'triangle', freq: f * base, endFreq: f * base * 0.98, gain: 0.22, attack: 0.18, vibrato: 7 });
+        s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: f * base * 4, q: 6, gain: 0.05, attack: 0.15 });
+      }, i * 560);
+    });
+  },
+  // M7: a sigil goes into the ground: a deep thud and a sour chord.
+  witchPlanted(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, pos?.range);
+    s.tone(o, { seconds: 0.5, freq: 80, endFreq: 32, gain: 0.8 });
+    s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 110, endFreq: 104, gain: 0.12, attack: 0.3, vibrato: 3 });
+    s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 155.6, endFreq: 147, gain: 0.1, attack: 0.3, vibrato: 3 });
   },
   death(s) {
     const o = s.out();

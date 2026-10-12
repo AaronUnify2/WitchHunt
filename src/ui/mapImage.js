@@ -204,6 +204,21 @@ export function drawSigilMarker(ctx, x, y, size, color) {
   ctx.fill();
 }
 
+// The witch (M7 debug): a bold cross.
+export function drawWitchMarker(ctx, x, y, size, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(2, size * 0.45);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - size, y - size);
+  ctx.lineTo(x + size, y + size);
+  ctx.moveTo(x + size, y - size);
+  ctx.lineTo(x - size, y + size);
+  ctx.stroke();
+  ctx.restore();
+}
+
 // A vehicle (M5 part 2) as a small oblong along its length. angle: canvas
 // rotation that turns the marker's long axis to the vehicle's heading.
 export function drawVehicleMarker(ctx, x, y, angle, size, color) {

@@ -2,6 +2,27 @@
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
+## Session 8 (M7, AI Programmer)
+
+Agreed with Aaron before building (rule 10):
+- **Her look:** a placeholder 3D figure: tall, thin, stooped, ragged dark cloak, a crown of sticks, long arms, glowing eyes. He'd like to spend more time on her look later: she's one of the few characters worth extra drawing.
+- **Toughness:** about 3-4 good ambushes to kill her on the pathways, if she isn't given time to heal. "Make her good and strong"; tune after play-tests.
+- **Planting:** night 1 safe, then 1-2 sigils a night, aiming to corner her around nights 6-8.
+- **The hut by day:** she stays hidden inside and comes out in the early evening. You can stake it out and take shots at her as she leaves.
+- **Blood night:** detonating by day jumps straight to night. The clock freezes, but the station's attacks run on in real time, so a weak base can still fall.
+- **Snares:** mash A for about 2 seconds to break free.
+- From Session 7: hiding at 6 m and the recalibrated forecast work (Aaron); not saving zombies at dawn is fine (#102 resolved).
+
+| # | Question | What M7 does now | Where to change it |
+| --- | --- | --- | --- |
+| 105 | When does she set out, and how many does she plant? | At dusk (from the hut). Night 2: one sigil. From night 3: a second 40% of the time, if she's done with the first before 80% of the night. The stand-in planter is gone. | `config.witch.firstNight`, `secondFromNight`, `secondChance`, `lateCutoff` |
+| 106 | Where does she plant? | M4's rules: 60% on an empty sigil ground, else off a pathway. She picks the night's spots as she leaves, ignoring where the player is (so a player staking out a ground can be waiting for her). | `config.planter`, `ZombieDirector.chooseSpot()` |
+| 107 | How fast does she travel? | 5.5 m/s near the player (the player sprints at 7.2), 3x that out of sight (beyond 150 m), so she can reach the far north and back in a night. She keeps off the ranger station's clearing unless there's no other way. | `config.witch.roamSpeed`, `abstractScale` |
+| 108 | The ritual. | 2 minutes kneeling at the spot (DESIGN.md: 2-3), a glowing green ring on the ground (seen through the fog) and singing that carries 70 m. The sigil appears when she's done. A ritual under way at dawn is finished; otherwise dawn sends her home. | `config.witch.plantSeconds`, `songRange`, `look.ritual` |
+| 109 | Does the forecast know about her? | Yes: the sigils she's out to plant tonight count from when she's expected to finish them (travelling out of sight), listed as "The witch is out to plant a sigil" without saying where. They count at tonight's level, not the level they'll raise it to. | `NightWatch.plannedSigils()`, `danger.js` (`delay`) |
+| 110 | Is she saved? | Not yet (step 1): a continued run finds her resting in the hut at dawn. Her wounds, the hut and charges are saved in step 6. | `core/saveData.js` |
+| 111 | Leaving the hut. | Until the hut is built (step 4), she appears at the hut clearing's centre (by the signpost) at dusk and vanishes there on her return. | `ai/Witch.js` |
+
 ## Session 7 (M6, Lead Engineer)
 
 Agreed with Aaron before building: about **two thirds of each night's zombies march on the station** (so meeting them on the pathways is worth it: you're protecting the base); "away" means **beyond 150 m** from the station; the alarm at **50% of the security at dusk**; the forecast as **a dusk panel plus a ledger tab**; a **"Continue / New run"** screen when a save exists; **drop the 64-zombie ceiling**. He'll balance 15 zombies against the fence (and against his rifle) in play-tests.
@@ -20,7 +41,7 @@ Agreed with Aaron before building: about **two thirds of each night's zombies ma
 | 99 | **Aaron:** sigil grounds spread over the map; the Car Armory in the north. | Always 5 grounds: 2 north, 2 middle, 1 south. The Car Armory's band is north (the turret matters for travelling). Aliens stay south and Bigfoot in the middle, as they were. | `config.map.sigilGrounds.perBand`, `data/encounters.json` |
 | 100 | **Aaron:** death should start a new game. | A on the death screen reloads on a fresh map (M12 adds the run summary and save deletion). | `Game` (`run:newRequested`) |
 | 101 | **Aaron's idea:** a Divorced Dad modifier. | Logged in DESIGN.md "Modifiers and achievements": no family and no compound, pure exploration. Unlocked by a new achievement, Custody Lost (lose the station several times across runs; the count and the name are placeholders). Not built; for M12. | DESIGN.md |
-| 102 | What the dawn save leaves out. | Zombies (dawn sinks most; stragglers are lost), pickups on the ground, and the random streams (a continued run rolls differently). DESIGN.md lists "enemies" in the save: worth it only if stragglers matter. Save and quit from a pause menu waits for the pause menu (M12). | `core/saveData.js` |
+| 102 | What the dawn save leaves out. | **Resolved (Aaron, Session 8): fine not to save zombies.** Zombies (dawn sinks most; stragglers are lost), pickups on the ground, and the random streams (a continued run rolls differently). DESIGN.md lists "enemies" in the save: worth it only if stragglers matter. Save and quit from a pause menu waits for the pause menu (M12). | `core/saveData.js` |
 | 103 | **Aaron:** hiding off the path. | Crouched, torch off, in the brush: seen from at most 6 m (day or night, any level); pursuit still ×1.7. A placeholder HIDDEN marker. | `config.detection.hidden` |
 | 104 | **Aaron:** the forecast read 268 danger for a five-sigil night a 150 station survived. | Danger no longer multiplies by the level's defenceDamage (now about 134). Attacks roll for their whole group. Away zaps 0.1 per zombie per second; the turret kills one per 10 rounds. A built station with a turret on fast now survives five sigils with a couple of panels down; a bare one falls. **To tune in M14.** | `config.danger`, `config.nights.resolver` |
 | 94 | Zombies stuck on cars and rocks. | A zombie on its way somewhere (not chasing) that barely moves for 0.8 s detours 4 m to one side (further each retry, then the other side). Chasing zombies still only slide. | `config.zombies.unstick` |

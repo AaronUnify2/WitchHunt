@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -12,8 +12,9 @@ export class MapScreen {
   }
 
   // nameOf(clearing): its display name.
-  init(root, { ground, map, fog, mapCanvas, fogCanvas, nameOf, sigilMarker }) {
+  init(root, { ground, map, fog, mapCanvas, fogCanvas, nameOf, sigilMarker, witchMarker }) {
     this.sigilMarker = sigilMarker;
+    this.witchMarker = witchMarker;
     this.ground = ground;
     this.map = map;
     this.fog = fog;
@@ -52,14 +53,14 @@ export class MapScreen {
   }
 
   // sigils: [{ x, z }] or null (debug: shown whatever the fog).
-  update(dt, player, enemies, footer, sigils = null, tierColors = null) {
+  update(dt, player, enemies, footer, sigils = null, tierColors = null, witch = null) {
     if (!this.isOpen) return;
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = 1 / this.cfg.refreshPerSecond;
     this.resize();
-    this.draw(player, enemies, sigils, tierColors);
-    const sigilKey = sigils ? '   ◆ (green) Sigil (debug)' : '';
+    this.draw(player, enemies, sigils, tierColors, witch);
+    const sigilKey = (sigils ? '   ◆ (green) Sigil (debug)' : '') + (witch ? '   ✕ (violet) The witch (debug)' : '');
     const vehicleKey = this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '';
     this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
@@ -74,7 +75,7 @@ export class MapScreen {
     }
   }
 
-  draw(player, enemies, sigils, tierColors) {
+  draw(player, enemies, sigils, tierColors, witch) {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
@@ -148,6 +149,10 @@ export class MapScreen {
         const [sx, sy] = toScreen(s.x, s.z);
         drawSigilMarker(ctx, sx, sy, size, this.sigilMarker.color);
       }
+    }
+    if (witch && this.witchMarker) {
+      const [sx, sy] = toScreen(witch.x, witch.z);
+      drawWitchMarker(ctx, sx, sy, this.witchMarker.screenPixels * Math.max(1, Math.min(W, H) / 700), this.witchMarker.color);
     }
 
     const [px, py] = toScreen(player.position.x, player.position.z);

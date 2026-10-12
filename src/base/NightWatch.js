@@ -35,7 +35,7 @@ export class NightWatch {
     this.bus = bus;
   }
 
-  // ctx: { station, director, combat, player, clock, notify(text) }.
+  // ctx: { station, director, witch, combat, player, clock, notify(text) }.
   init(root, ctx) {
     Object.assign(this, ctx);
     this.enemies = ctx.combat.enemies;
@@ -107,10 +107,27 @@ export class NightWatch {
     return this.director.effectiveLevel;
   }
 
+  // M7: the sigils the witch is still to plant tonight count too, from
+  // when she's expected to plant them (not where: that's for the player
+  // to find out).
   dangerNow() {
     const d = this.director;
     const marches = this.enemies.marches;
-    return nightDanger(d.sigils.list, (s) => marches.remaining(s.x, s.z), (s) => capitalise(d.describe(s) || 'a sigil'), this.level, this.cfg, this.nightSeconds);
+    const sigils = [...d.sigils.list, ...this.plannedSigils()];
+    const describe = (s) => (s.planned ? 'The witch is out to plant a sigil' : capitalise(d.describe(s) || 'a sigil'));
+    return nightDanger(sigils, (s) => marches.remaining(s.x, s.z), describe, this.level, this.cfg, this.nightSeconds);
+  }
+
+  // The witch's sigils still to come tonight: [{ x, z, delay, planned }],
+  // delay in seconds into the night.
+  plannedSigils() {
+    if (!this.witch) return [];
+    const c = this.clock;
+    const phase = c.phase;
+    if (phase !== 'dusk' && phase !== 'night') return [];
+    // Seconds from now to the start of the night (negative once it's begun).
+    const toNight = phase === 'dusk' ? c.currentPhase.seconds - c.phaseElapsed : -c.phaseElapsed;
+    return this.witch.pendingPlantings().map((p) => ({ x: p.x, z: p.z, delay: p.inSeconds - toNight, planned: true }));
   }
 
   // The clock reading `seconds` into the night, to the nearest 10 minutes ("9:40pm").

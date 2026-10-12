@@ -26,29 +26,31 @@ export function marchSpeed(cfg, level) {
   return typical * z.sprintSpeed * z.wander.marchPackPace * z.lod.abstractMarchScale;
 }
 
-// One sigil `distance` metres from home by pathway. Returns { marchers,
-// arriving (0-1), travel (s), firstArrival (s into the night), threat
-// (per zombie), value }.
-export function sigilDanger(distance, level, cfg, nightSeconds) {
+// One sigil `distance` metres from home by pathway. delay (M7): seconds
+// into the night before it exists (one the witch hasn't planted yet).
+// Returns { marchers, arriving (0-1), travel (s), firstArrival (s into
+// the night), threat (per zombie), value }.
+export function sigilDanger(distance, level, cfg, nightSeconds, delay = 0) {
   const sc = cfg.sigils;
   const d = cfg.danger;
   const quota = sc.nightQuota[level - 1] ?? 0;
   const marchers = quota * sc.marchShare;
   const travel = distance / marchSpeed(cfg, level);
-  const arriving = Math.max(0, Math.min(1, (nightSeconds - travel) / (nightSeconds * d.raiseSpread)));
+  const wait = Math.max(0, delay);
+  const arriving = Math.max(0, Math.min(1, (nightSeconds - wait - travel) / (nightSeconds * d.raiseSpread)));
   const threat = threatPerZombie(level, cfg);
   const [a, b] = sc.firstSpawnDelay;
-  return { marchers, arriving, travel, firstArrival: (a + b) / 2 + travel, threat, value: marchers * arriving * threat };
+  return { marchers, arriving, travel, firstArrival: wait + (a + b) / 2 + travel, threat, value: marchers * arriving * threat };
 }
 
-// Every sigil. sigils: [{ x, z, ... }]. distanceOf(sigil): metres home by
+// Every sigil. sigils: [{ x, z, delay?, ... }] (delay: see sigilDanger). distanceOf(sigil): metres home by
 // pathway. describe(sigil): a label. Returns { total, threat, parts:
 // [{ label, value, marchers, arriving, firstArrival }] }.
 export function nightDanger(sigils, distanceOf, describe, level, cfg, nightSeconds) {
   const parts = [];
   let total = 0;
   for (const s of sigils) {
-    const one = sigilDanger(distanceOf(s), level, cfg, nightSeconds);
+    const one = sigilDanger(distanceOf(s), level, cfg, nightSeconds, s.delay ?? 0);
     parts.push({ label: describe(s), ...one });
     total += one.value;
   }

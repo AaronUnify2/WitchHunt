@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -12,8 +12,9 @@ export class Minimap {
   }
 
   // mapCanvas: the terrain image; fogCanvas: from makeFogCanvas().
-  init(root, { ground, map, fog, mapCanvas, fogCanvas, sigilMarker }) {
+  init(root, { ground, map, fog, mapCanvas, fogCanvas, sigilMarker, witchMarker }) {
     this.sigilMarker = sigilMarker;
+    this.witchMarker = witchMarker;
     this.ground = ground;
     this.map = map;
     this.fog = fog;
@@ -39,14 +40,14 @@ export class Minimap {
 
   // player: { position, yaw }. enemies: living zombies [{ x, z }].
   // sigils: [{ x, z }] or null (debug).
-  update(dt, player, enemies, sigils = null, tierColors = null) {
+  update(dt, player, enemies, sigils = null, tierColors = null, witch = null) {
     if (this.el.classList.contains('hidden')) return;
     // refreshPerSecond 0 = every frame (smooth turning; Aaron's M3 test).
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = this.cfg.refreshPerSecond > 0 ? 1 / this.cfg.refreshPerSecond : 0;
     this.resize();
-    this.draw(player, enemies, sigils, tierColors);
+    this.draw(player, enemies, sigils, tierColors, witch);
   }
 
   resize() {
@@ -58,7 +59,7 @@ export class Minimap {
     }
   }
 
-  draw(player, enemies, sigils, tierColors) {
+  draw(player, enemies, sigils, tierColors, witch) {
     const ctx = this.ctx;
     const size = this.canvas.width;
     const half = size / 2;
@@ -130,6 +131,10 @@ export class Minimap {
         const [sx, sy] = toScreen(s.x, s.z);
         drawSigilMarker(ctx, sx, sy, m.minimapPixels * (size / 200), m.color);
       }
+    }
+    if (witch && this.witchMarker) {
+      const [sx, sy] = toScreen(witch.x, witch.z);
+      drawWitchMarker(ctx, sx, sy, this.witchMarker.minimapPixels * (size / 200), this.witchMarker.color);
     }
     ctx.restore();
 

@@ -1,5 +1,5 @@
-// Where a sigil gets planted (pure). A stand-in for the witch until M7
-// (Aaron agreed): most plantings go to an empty sigil ground; the rest go
+// Where a sigil gets planted (pure). The witch's rules (M4's stand-in
+// planter, used by the real witch since M7): most plantings go to an empty sigil ground; the rest go
 // a little way off a pathway into the forest. Never near the station,
 // never close to another sigil or to the player, never in an encounter's
 // clearing, home or the hut.

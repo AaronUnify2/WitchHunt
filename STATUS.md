@@ -1,14 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights, complete.** Aaron play-tested every step on the tablet:
-- simulation tiers with no 64-zombie cap (480 zombies at 90 fps);
-- night marches arriving in waves, and revisited encounters;
-- the danger rating, the dusk forecast, nights resolved while away and the alarm ("balanced really well");
-- the dawn autosave with Continue / New run ("worked 100% properly").
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Step 1 of 6 is pushed for Aaron's play-test: **the witch exists, roams and plants.** Next: step 2, fighting her on the pathways.
 
-**The M6 performance gate passed:** about 20 minutes of five-sigil nights at Medium, never below 60 fps, the tablet barely warm.
-
-Late additions from his tests: hiding off the path, a forecast that matches what happens, a stronger fence, a new run on death, the map's sigil grounds spread 2 north / 2 middle / 1 south, the Car Armory in the north, and doubled stamina. Next: Session 8 (AI Programmer), M7: the witch (the vertical slice).
+M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -27,6 +21,20 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### M7 step 1: The witch roams and plants (Session 8)
+
+Agreed with Aaron first (rule 10; OPEN_QUESTIONS.md, Session 8). The stand-in planter is gone: she plants every sigil now.
+- **By day** she rests unseen in her hut. **At dusk** she comes out (from the hut clearing's centre until the hut is built in step 4). Night 1 she stays in; from night 2 she plants one sigil a night, from night 3 sometimes two.
+- **Where:** M4's rules (60% on empty sigil grounds, else off a pathway), chosen as she sets out. The player's position doesn't put her off, so you can stake out a ground and wait for her.
+- **Travel** (`src/ai/witchRoutes.js`): along the pathways by the shortest way, keeping off the ranger station's clearing. She follows the zombies' tiers: within 150 m of you she runs for real (5.5 m/s, with collision and sidestepping); beyond, she's an unseen point on the graph going 3x faster.
+- **The ritual:** 2 minutes kneeling at the spot, arms raised and rocking, inside a pulsing green ring on the ground (it shows through the fog), singing a wavering tune that carries 70 m. The sigil appears when she's done, with a deep thud. Then her next spot, or home. Dawn sends her home (she finishes a ritual already under way).
+- **Her look** (`src/render/WitchRenderer.js`): a placeholder 2.3 m figure. A ragged cloak with a torn hem and a shawl, a hooded gaunt face, a crown of splayed sticks, long arms with long fingers that swing as she runs, and small glowing eyes. 4 draw calls plus the torch shadow, only while she's out and within 150 m; the ring adds 2. Up close the torch bleaches her face (like the zombies); the art pass gives her real detail (Aaron wants to spend time on her).
+- **The forecast** counts the sigils she's out to plant tonight, from when she's expected to finish them, as "The witch is out to plant a sigil" (not where).
+- **Not yet:** she ignores the player (fighting, fleeing, interrupting her: step 2), traps (step 3), the hut (step 4), saving her (step 6).
+- **Debug:** Witch: (her state); send her out to plant now; finish her ritual now; send her home; teleport near her; Witch on the map (a violet cross). "Plant sigil now by her rules" plants one at once. The overlay has a witch line.
+- **Verified in headless Chromium (seed 4242):** night 2, she left the hut, ran past the player, travelled 1.3 km, planted at the Family cemetery and set off home. The forecast showed her sigil ("about 8 zombies, the first around 1:30am"). No console errors.
+- **Tests:** 340 pass (17 new): routes between every pair of clearings on three maps, avoiding the station, a night out start to finish, the ritual's timing, dawn calling her home, two sigils in a night, the tiers, and the forecast's delay.
 
 ### M6: the performance gate, sneaking, and the forecast recalibrated (Session 7, done)
 
@@ -501,7 +509,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
   - nights away resolving fairly, the radio calls, the forecast, the autosave;
   - the 20-minute gate.
 
-  Not yet tried on the tablet: hiding at 6 m and the recalibrated forecast (pushed last; Aaron is checking them).
+  Hiding at 6 m and the recalibrated forecast: confirmed by Aaron (Session 8).
 - The M3 follow-ups (smooth minimap, more bushes, sign glare) on the tablet.
 - How long the world takes to build on the tablet (about 0.55 s on a desktop CPU).
 
@@ -517,7 +525,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch doesn't exist yet: a stand-in plants the sigils** at dusk from night 2, one a night (M7 replaces it with her planting, interruption and ambushes).
+- **The witch (M7 step 1)** roams and plants but doesn't react to the player yet (step 2), lays no traps (step 3) and has no hut building (step 4); she isn't saved (step 6).
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.

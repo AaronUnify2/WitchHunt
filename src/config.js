@@ -314,6 +314,7 @@ export const config = {
   },
   // Debug only: sigils drawn on the minimap and map screen.
   sigilMarker: { color: '#b4ff8c', minimapPixels: 5, screenPixels: 7 },
+  witchMarker: { color: '#d070ff', minimapPixels: 5, screenPixels: 8 }, // M7 debug
 
   // Ground: rolling hills, flattened in clearings and smoothed along pathways
   terrain: {
@@ -930,12 +931,9 @@ export const config = {
     spread: 0.7, // spawned within this fraction of the clearing's radius
   },
 
-  // Stand-in for the witch planting (Aaron: placeholder until M7). At each
-  // dusk from night 2 she plants perNight sigils, up to the cap; most go to
-  // empty sigil grounds.
+  // Where the witch plants a sigil (M4's rules, used by her since M7):
+  // most go to empty sigil grounds, the rest a little way off a pathway.
   planter: {
-    firstNight: 2, // night 1 stays safe (DESIGN.md "Night 1")
-    perNight: 1,
     groundChance: 0.6, // DESIGN.md "most plantings (e.g. 60%) go to empty sigil grounds"
     groundOffset: 3, // metres from a sigil ground's centre (clear of the signpost)
     pathOffset: [6, 16], // otherwise: this far off a pathway, into the forest
@@ -944,6 +942,43 @@ export const config = {
     playerMinDistance: 50, // not planted in front of you
     keepOut: 6, // metres outside encounter clearings, home and the hut
     tries: 60,
+  },
+
+  // The witch (M7, DESIGN.md "The witch"). Every number is a first pass
+  // for Aaron's play-tests.
+  witch: {
+    // Planting (Aaron, M7): she hides in her hut by day and sets out at
+    // dusk. Night 1 is safe; from night 2 she plants one sigil a night,
+    // and from night 3 sometimes a second if the night allows.
+    firstNight: 2,
+    secondFromNight: 3,
+    secondChance: 0.4,
+    plantSeconds: 120, // DESIGN.md: "plants a sigil over 2-3 minutes"
+    lateCutoff: 0.8, // she doesn't start out for another sigil past this share of the night
+    // Movement: a loping run on the pathways (the player sprints at 7.2 m/s).
+    roamSpeed: 5.5, // metres per second while travelling, near the player
+    abstractScale: 3, // out of sight (beyond the zombies' nearby radius) she travels this much faster
+    turnRate: 8, // radians per second
+    radius: 0.3, // body collision
+    reach: 1.2, // metres from a waypoint before she heads for the next
+    unstickSeconds: 0.6, // barely moving this long: she sidesteps
+    unstickDistance: 3, // metres to the side
+    soundEvery: 3.5, // seconds between her ritual songs
+    songRange: 70, // metres her singing carries
+    // Placeholder look (Aaron agreed; she gets more detail in the art pass).
+    look: {
+      height: 2.3, // metres
+      cloak: 0x17130f,
+      cloakHem: 0x1d1813,
+      skin: 0x2c2c24, // dark, like the zombies' albedos: the torch washes anything paler to white up close
+      sticks: 0x2a1f15,
+      eyes: 0xd6ff6a, // unlit, so the torch (and the bloom) picks them out
+      stoop: 0.28, // radians she leans forward when she walks
+      runBob: 0.08, // metres
+      stride: 1.6, // metres per arm swing
+      kneelDrop: 0.55, // metres she sinks to her knees while planting
+      ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants
+    },
   },
 
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real
@@ -1366,6 +1401,7 @@ export const config = {
     sigilTeleportOffset: 4, // metres from a sigil
     marchTeleportBehind: 25, // M6: metres behind a marcher that its debug teleport lands
     plantAhead: 3, // "plant sigil here" puts it this far in front of you
+    witchTeleportBack: 18, // M7: metres from the witch that "teleport to her" lands
     giveScrap: 50, // M5: station debug
     siegeWave: 10,
     overlayVisibleOnStart: true, // on by default so tablet tests show fps

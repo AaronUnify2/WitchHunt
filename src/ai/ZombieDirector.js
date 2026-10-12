@@ -1,7 +1,7 @@
 // The night's zombies (M4): owns the sigils and everything round them.
-//  - Planting: a stand-in for the witch (until M7) plants at dusk from
-//    night 2, perNight at a time up to the five-sigil cap, mostly on
-//    empty sigil grounds (ai/sigilPlanter.js).
+//  - Planting: the witch (M7, ai/Witch.js) walks to a spot chosen by
+//    chooseSpot() (ai/sigilPlanter.js: mostly empty sigil grounds) and
+//    calls plant() when her ritual ends. The five-sigil cap holds.
 //  - Raising: at night each sigil raises zombies round itself (a single,
 //    a horde or a mutant, by level) up to its own cap; sigil grounds
 //    raise faster. Zombies climb out of the ground and wander the
@@ -88,7 +88,6 @@ export class ZombieDirector {
   wireEvents() {
     const { bus } = this;
     this.unsubscribers = [
-      bus.on('phase:dusk', ({ day }) => this.plantForNight(day)),
       bus.on('phase:night', ({ day }) => {
         this.night = day ?? 0;
         this.marchesSent = 0;
@@ -215,21 +214,22 @@ export class ZombieDirector {
 
   // ---- planting ------------------------------------------------------------
 
-  plantForNight(day) {
-    const p = this.cfg.planter;
-    if (day < p.firstNight) return;
-    for (let i = 0; i < p.perNight; i++) this.plantOne();
+  // A spot for the witch's next sigil, by her rules (M7). planned: spots
+  // she's already set out for tonight (kept apart like sigils). Not
+  // checked against the player: she walks there, so a player staking out a
+  // sigil ground can be waiting for her. Returns a spot or null.
+  chooseSpot(planned = []) {
+    const w = this.world;
+    const taken = planned.length ? [...this.sigils.list, ...planned] : this.sigils.list;
+    const plannedGrounds = new Set(planned.map((s) => s.groundId));
+    return chooseSigilSpot(w.map, w.ground, taken, null, this.cfg.planter, this.plantRng, (id) => this.sigils.groundFree(id) && !plannedGrounds.has(id));
   }
 
-  // The stand-in witch plants one sigil by her rules. Returns it, or null.
+  // Debug: one sigil by her rules, at once (no witch walking there).
   plantOne() {
     if (this.sigils.full) return null;
-    const w = this.world;
-    const spot = chooseSigilSpot(w.map, w.ground, this.sigils.list, this.player.position, this.cfg.planter, this.plantRng, (id) =>
-      this.sigils.groundFree(id),
-    );
-    if (!spot) return null;
-    return this.plant(spot);
+    const spot = this.chooseSpot();
+    return spot ? this.plant(spot) : null;
   }
 
   // Debug: plant one right here, ignoring the rules (but not the cap).
@@ -312,7 +312,7 @@ export class ZombieDirector {
         this.levelOverride = next > MAX_LEVEL ? null : clampLevel(next);
       },
     );
-    menu.addItem(() => `Plant sigil (stand-in witch, ${this.sigils.count}/${this.cfg.sigils.cap})`, () => {
+    menu.addItem(() => `Plant sigil now by her rules (${this.sigils.count}/${this.cfg.sigils.cap})`, () => {
       const s = this.plantOne();
       this.notify(s ? `Sigil planted ${this.describe(s)}` : this.sigils.full ? 'Five-sigil cap reached' : 'Nowhere left to plant');
     });
