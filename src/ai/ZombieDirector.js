@@ -31,6 +31,7 @@ import { Digging } from '../player/Digging.js';
 import { Revisits } from './revisits.js';
 import { SigilRenderer } from '../render/SigilRenderer.js';
 import { SigilGroundMarkers } from '../render/SigilGroundMarkers.js';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 // The chance a raising is a marching group of `size`, so that `share`
 // of the zombies raised march (the rest are single wanderers):
@@ -305,33 +306,35 @@ export class ZombieDirector {
 
   addDebugItems(menu) {
     const d = this.cfg.debug;
-    menu.addItem(
+    const zombies = menu.category(DEBUG.zombies);
+    const teleport = menu.category(DEBUG.teleport);
+    zombies.addItem(
       () => `Zombie level: ${this.levelOverride === null ? `auto (L${this.effectiveLevel} from ${this.sigils.count} sigils)` : `fixed L${this.levelOverride}`}`,
       () => {
         const next = this.levelOverride === null ? 1 : this.levelOverride + 1;
         this.levelOverride = next > MAX_LEVEL ? null : clampLevel(next);
       },
     );
-    menu.addItem(() => `Plant sigil now by her rules (${this.sigils.count}/${this.cfg.sigils.cap})`, () => {
+    zombies.addItem(() => `Plant sigil now by her rules (${this.sigils.count}/${this.cfg.sigils.cap})`, () => {
       const s = this.plantOne();
       this.notify(s ? `Sigil planted ${this.describe(s)}` : this.sigils.full ? 'Five-sigil cap reached' : 'Nowhere left to plant');
     });
-    menu.addItem('Plant sigil right here', () => {
+    zombies.addItem('Plant sigil right here', () => {
       const p = this.player.position;
       const yaw = this.player.yaw;
       // In front of you (the camera looks down -z at yaw 0).
       const s = this.plantAt(p.x - Math.sin(yaw) * d.plantAhead, p.z - Math.cos(yaw) * d.plantAhead);
       this.notify(s ? 'Sigil planted in front of you' : 'Five-sigil cap reached');
     });
-    menu.addItem('Raise zombies now (every sigil)', () => this.sigils.raiseAllNow());
+    zombies.addItem('Raise zombies now (every sigil)', () => this.sigils.raiseAllNow());
     // M6: night marches.
-    menu.addItem('Marches: raise a marching group at every sigil now', () => {
+    zombies.addItem('Marches: raise a marching group at every sigil now', () => {
       const before = this.marchesSent;
       for (const s of this.sigils.list) this.raiseMarch(s);
       const n = this.marchesSent - before;
       this.notify(n > 0 ? `${n} group${n === 1 ? '' : 's'} set off for the station` : 'No sigils planted');
     });
-    menu.addItem('Marches: teleport behind the nearest marcher', () => {
+    teleport.addItem('Teleport: behind the nearest marcher', () => {
       const p = this.player.position;
       let best = null;
       for (const z of this.enemies.living) if (z.mode === 'march' && (!best || Math.hypot(z.x - p.x, z.z - p.z) < Math.hypot(best.x - p.x, best.z - p.z))) best = z;
@@ -343,7 +346,7 @@ export class ZombieDirector {
       this.player.teleport(best.x - Math.sin(best.facing) * back, best.z - Math.cos(best.facing) * back, best.facing + Math.PI);
       this.notify(`Behind a marcher, ${Math.round(this.enemies.marches.remaining(best.x, best.z))}m from home`);
     });
-    menu.addItem(() => `Teleport: next sigil (${this.sigils.count} planted)`, () => {
+    teleport.addItem(() => `Teleport: next sigil (${this.sigils.count} planted)`, () => {
       const list = this.sigils.list;
       if (list.length === 0) {
         this.notify('No sigils planted');
@@ -354,10 +357,10 @@ export class ZombieDirector {
       this.player.teleport(s.x, s.z + d.sigilTeleportOffset, 0);
       this.notify(`Teleported to sigil ${this.teleportIndex + 1}/${list.length} ${this.describe(s)}`);
     });
-    menu.addItem('Remove all sigils', () => this.removeAll());
-    menu.addItem(() => `Sigils on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
-    menu.addItem('Spawn a horde near me', () => this.enemies.spawnTypeNear(this.player.position, 'horde'));
-    menu.addItem(() => `Spawn a mutant near me (${this.enemies.mutantCount}/${this.cfg.mutant.poolSize})`, () => {
+    zombies.addItem('Remove all sigils', () => this.removeAll());
+    zombies.addItem(() => `Sigils on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
+    zombies.addItem('Spawn a horde near me', () => this.enemies.spawnTypeNear(this.player.position, 'horde'));
+    zombies.addItem(() => `Spawn a mutant near me (${this.enemies.mutantCount}/${this.cfg.mutant.poolSize})`, () => {
       if (this.enemies.spawnTypeNear(this.player.position, 'mutant') === 0) this.notify('Mutant cap reached');
     });
   }

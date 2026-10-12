@@ -27,7 +27,7 @@ import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
-import { DebugMenu } from '../debug/DebugMenu.js';
+import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
 import { MapUi } from '../ui/MapUi.js';
@@ -249,38 +249,41 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
   }
 
+  // Each system adds its tools to its category (DEBUG in DebugMenu.js).
   addDebugMenuItems() {
     const menu = this.debugMenu;
     const cfg = this.cfg;
-    menu.addItem('Toggle debug overlay', () => this.overlay.toggle());
+    const time = menu.category(DEBUG.time);
+    time.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
+    time.addItem('Skip to night', () => this.skipToPhase('night'));
+    // M6: fast-forward runs the whole world faster (not just the clock), so
+    // a night's marches and attacks can be watched in a minute or two.
+    time.addItem(
+      () => `Fast-forward: x${this.fastForward} (zombies, marches and the clock)`,
+      () => (this.fastForward = nextInList(cfg.debug.fastForwardSteps, this.fastForward)),
+    );
     this.addMapDebugItems(menu);
-    this.combat.addDebugItems(menu);
     this.director.addDebugItems(menu);
+    this.combat.addDebugItems(menu);
     this.witch.addDebugItems(menu, (text) => this.toast.show(text));
     this.station.addDebugItems(menu);
     this.nightWatch.addDebugItems(menu);
     this.vehicles.addDebugItems(menu);
-    menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
-    menu.addItem('Skip to night', () => this.skipToPhase('night'));
-    // M6: fast-forward runs the whole world faster (not just the clock), so
-    // a night's marches and attacks can be watched in a minute or two.
-    menu.addItem(
-      () => `Fast-forward: x${this.fastForward} (zombies, marches and the clock)`,
-      () => (this.fastForward = nextInList(cfg.debug.fastForwardSteps, this.fastForward)),
-    );
-    menu.addItem(
+    this.mapUi.addDebugItems(menu);
+    const display = menu.category(DEBUG.display);
+    display.addItem('Toggle debug overlay', () => this.overlay.toggle());
+    display.addItem(
       () => `Quality: ${this.qualityName}`,
       () => this.applyQuality(nextInList(Object.keys(cfg.quality.presets), this.qualityName)),
     );
-    menu.addItem(
+    display.addItem(
       () => `Frame cap: ${this.frameCap || 'off'}`,
       () => this.setFrameCap(nextInList(cfg.quality.frameCapSteps, this.frameCap)),
     );
-    menu.addItem(
+    display.addItem(
       () => `Dynamic resolution: ${this.dynamicResolution.enabled ? 'on' : 'off'}`,
       () => this.dynamicResolution.setEnabled(!this.dynamicResolution.enabled),
     );
-    menu.addItem('Close menu', () => menu.close());
   }
 
   // Teleports, the map screen's debug view, and new or repeated seeds.
@@ -291,21 +294,22 @@ export class Game {
       const c = clearings[this.teleportIndex];
       return `Teleport: next clearing (${this.teleportIndex + 1}/${clearings.length} ${this.world.clearingName(c)})`;
     };
-    menu.addItem(label, () => {
+    const teleport = menu.category(DEBUG.teleport);
+    const run = menu.category(DEBUG.run);
+    teleport.addItem(label, () => {
       this.teleportIndex = (this.teleportIndex + 1) % clearings.length;
       this.teleportTo(clearings[this.teleportIndex]);
     });
-    menu.addItem('Teleport: home', () => this.teleportTo(this.world.home));
-    menu.addItem("Teleport: witch's hut", () => this.teleportTo(this.world.hut));
-    this.mapUi.addDebugItems(menu);
-    menu.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
-    menu.addItem('Restart this map (same seed, deletes the save)', () => {
+    teleport.addItem('Teleport: home', () => this.teleportTo(this.world.home));
+    teleport.addItem("Teleport: witch's hut", () => this.teleportTo(this.world.hut));
+    run.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
+    run.addItem('Restart this map (same seed, deletes the save)', () => {
       this.saves.clear();
       reloadWithSeed(this.seed);
     });
     // M6: the save slot.
-    menu.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : 'Could not save (storage blocked?)'));
-    menu.addItem('Delete the save', () => {
+    run.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : 'Could not save (storage blocked?)'));
+    run.addItem('Delete the save', () => {
       this.saves.clear();
       this.toast.show('Save deleted');
     });

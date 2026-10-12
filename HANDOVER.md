@@ -70,6 +70,7 @@ Nothing in scope. **Aaron is still checking two things pushed last:** hiding (6 
 ### Gotchas and decisions
 
 - **Systems** follow `init()` / `update(dt)` / `dispose()`, talk through `EventBus`, and use `rng.fork('label')`.
+- **Debug tools go in a category** (Session 8): `menu.category(DEBUG.witch).addItem(label, onSelect)`; the categories are listed in `DEBUG` in `src/debug/DebugMenu.js`.
 - **Game steps the world in `Game.step()`** (fast-forward runs it several times a frame; only the first step gets the player's input). Put new per-frame systems there, not in `update()`.
 - **Away vs home:** `NightWatch.away` (beyond 150 m, 8 m hysteresis; or the debug "count me as away") sets `enemies.stationSimulated` and `station.abstract` (the real turret doesn't fire while away).
 - **'held' zombies** belong to NightWatch's attacks. They ignore the player until released (coming home) or dawn.

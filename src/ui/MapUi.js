@@ -7,6 +7,7 @@ import { FogOfWar } from '../world/FogOfWar.js';
 import { drawMapImage, makeFogCanvas } from './mapImage.js';
 import { Minimap } from './Minimap.js';
 import { MapScreen } from './MapScreen.js';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 export class MapUi {
   constructor(cfg, world, bus) {
@@ -72,8 +73,9 @@ export class MapUi {
   // ---- debug tools ----------------------------------------------------------
 
   addDebugItems(menu) {
-    menu.addItem('Reveal whole map', () => this.fog.revealAll());
-    menu.addItem(
+    const map = menu.category(DEBUG.teleport);
+    map.addItem('Map: reveal it all', () => this.fog.revealAll());
+    map.addItem(
       () => `Map screen: ${this.screen.showGraph ? 'whole graph (debug)' : 'fog of war'}`,
       () => (this.screen.showGraph = !this.screen.showGraph),
     );

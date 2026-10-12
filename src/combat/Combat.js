@@ -25,6 +25,7 @@ import { rollLoot, lootTableFor, pickupLabel } from './loot.js';
 import { Hud } from '../ui/Hud.js';
 import { Sfx } from '../audio/Sfx.js';
 import lootData from '../data/loot.json';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 export class Combat {
   constructor(cfg, rng, bus) {
@@ -317,26 +318,28 @@ export class Combat {
 
   addDebugItems(menu) {
     const d = this.cfg.debug;
-    menu.addItem(() => `Spawn ${this.cfg.zombies.spawnCount} zombies near me (${this.enemies.activeCount} on the map)`, () =>
+    const zombies = menu.category(DEBUG.zombies);
+    const player = menu.category(DEBUG.player);
+    zombies.addItem(() => `Spawn ${this.cfg.zombies.spawnCount} zombies near me (${this.enemies.activeCount} on the map)`, () =>
       this.enemies.spawnAround(this.player.position),
     );
-    menu.addItem('Kill all zombies', () => this.enemies.clear());
-    menu.addItem('Try again here (after a death: same map, same night)', () => {
+    zombies.addItem('Kill all zombies', () => this.enemies.clear());
+    menu.category(DEBUG.run).addItem('Try again here (after a death: same map, same night)', () => {
       if (!this.alive) this.respawn();
     });
     // M6: the simulation tiers.
-    menu.addItem(`Zombies: populate the map (+${d.populateCount} on the pathways)`, () =>
+    zombies.addItem(`Populate the map (+${d.populateCount} on the pathways)`, () =>
       this.enemies.populate(this.player.position, d.populateCount, this.cfg.zombies.lod.activeRadius),
     );
-    menu.addItem(() => `Zombies: tier colours ${this.enemies.showTiers ? 'on' : 'off'}`, () => (this.enemies.showTiers = !this.enemies.showTiers));
-    menu.addItem(() => `God mode: ${this.godMode ? 'on' : 'off'}`, () => (this.godMode = !this.godMode));
-    menu.addItem(() => `Aim assist: ${this.cfg.aimAssist.enabled ? 'on' : 'off'}`, () =>
+    zombies.addItem(() => `Tier colours ${this.enemies.showTiers ? 'on' : 'off'}`, () => (this.enemies.showTiers = !this.enemies.showTiers));
+    player.addItem(() => `God mode: ${this.godMode ? 'on' : 'off'}`, () => (this.godMode = !this.godMode));
+    player.addItem(() => `Aim assist: ${this.cfg.aimAssist.enabled ? 'on' : 'off'}`, () =>
       (this.cfg.aimAssist.enabled = !this.cfg.aimAssist.enabled),
     );
-    menu.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
-    menu.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
-    menu.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => this.inventory.addFirstAid(d.giveFirstAid));
-    menu.addItem('Hurt me (-25)', () => {
+    player.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
+    player.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
+    player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => this.inventory.addFirstAid(d.giveFirstAid));
+    player.addItem('Hurt me (-25)', () => {
       this.health.takeDamage(25);
       this.hud.hurt();
       this.bus.emit('player:hurt', { damage: 25, taken: 25 });

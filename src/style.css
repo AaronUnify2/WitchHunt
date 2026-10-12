@@ -154,6 +154,13 @@ body {
   color: var(--bg);
 }
 
+/* How many tools a category holds (top level). */
+.debug-menu-count {
+  float: right;
+  margin-left: 1.5rem;
+  opacity: 0.6;
+}
+
 .debug-menu-note,
 .debug-menu-help {
   margin: 0;

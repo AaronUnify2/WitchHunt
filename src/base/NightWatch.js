@@ -26,6 +26,7 @@ import { nightDanger } from './danger.js';
 import { verdict, resolveAttack } from './nightResolver.js';
 import { secondsOfFire } from './turretMath.js';
 import { angleOf } from './stationLayout.js';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 export class NightWatch {
   constructor(cfg, rng, bus) {
@@ -460,9 +461,10 @@ export class NightWatch {
   // ---- debug and overlay -------------------------------------------------------------------
 
   addDebugItems(menu) {
-    menu.addItem('Night: show the forecast now', () => this.showForecast());
-    menu.addItem(() => `Night: count me as away from home: ${this.forceAway ? 'always (debug)' : 'by distance'}`, () => (this.forceAway = !this.forceAway));
-    menu.addItem('Night: sound the alarm now', () => {
+    const time = menu.category(DEBUG.time);
+    time.addItem('Show the forecast now', () => this.showForecast());
+    time.addItem(() => `Count me as away from home: ${this.forceAway ? 'always (debug)' : 'by distance'}`, () => (this.forceAway = !this.forceAway));
+    time.addItem('Sound the alarm now', () => {
       this.alarmDone = false;
       this.duskSecurity = Infinity;
       this.checkAlarm('night');

@@ -33,6 +33,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { segmentCollider } from '../world/collision.js';
 import { StationRenderer } from '../render/StationRenderer.js';
 import { Ledger } from '../ui/Ledger.js';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells' };
 
@@ -843,31 +844,32 @@ export class Station {
     const s = this.state;
     const d = this.cfg.debug;
     const inv = () => this.combat.inventory;
-    menu.addItem(`Station: give ${d.giveScrap} scrap`, () => inv().addScrap(d.giveScrap));
-    menu.addItem(() => `Station: give a battery (carrying ${this.combat.inventory.batteries})`, () => inv().addBattery(1));
-    menu.addItem(() => `Station: give the turret (${s.turret.available ? 'have it' : 'none'})`, () => {
+    const station = menu.category(DEBUG.station);
+    station.addItem(`Give ${d.giveScrap} scrap`, () => inv().addScrap(d.giveScrap));
+    station.addItem(() => `Give a battery (carrying ${this.combat.inventory.batteries})`, () => inv().addBattery(1));
+    station.addItem(() => `Give the turret (${s.turret.available ? 'have it' : 'none'})`, () => {
       s.turret.available = true;
       this.notify('Turret given: install it on its pad by the front door');
     });
-    menu.addItem('Station: fill the fence charge', () => {
+    station.addItem('Fill the fence charge', () => {
       s.charge = this.sc.power.maxCharge;
       this.renderer.pulseWire();
     });
-    menu.addItem('Station: drain the fence charge', () => (s.charge = 0));
-    menu.addItem('Station: repair everything', () => {
+    station.addItem('Drain the fence charge', () => (s.charge = 0));
+    station.addItem('Repair everything', () => {
       for (const b of s.barriers()) if (b.kind !== 'barricade' || b.built) b.health = b.max;
       this.syncColliders();
     });
-    menu.addItem('Station: break a random fence segment', () => {
+    station.addItem('Break a random fence segment', () => {
       const intact = s.segments.filter((seg) => seg.health > 0);
       if (intact.length === 0) return;
       const seg = intact[this.rng.int(0, intact.length - 1)];
       s.damage(seg, 1e9);
       this.onBreak(seg);
     });
-    menu.addItem(() => `Station: siege wave (${d.siegeWave} zombies outside the fence)`, () => this.siegeWave(d.siegeWave));
-    menu.addItem(() => `Station: overrun ends the run: ${this.overrunEnabled ? 'on' : 'off'}`, () => (this.overrunEnabled = !this.overrunEnabled));
-    menu.addItem('Teleport: into the compound', () => {
+    station.addItem(() => `Siege wave (${d.siegeWave} zombies outside the fence)`, () => this.siegeWave(d.siegeWave));
+    station.addItem(() => `Overrun ends the run: ${this.overrunEnabled ? 'on' : 'off'}`, () => (this.overrunEnabled = !this.overrunEnabled));
+    menu.category(DEBUG.teleport).addItem('Teleport: into the compound', () => {
       const pad = this.layout.turretPad;
       this.player.teleport(pad.x + 2, pad.z + 3, Math.PI);
     });

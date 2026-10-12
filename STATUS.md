@@ -22,6 +22,11 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Debug menu in categories (Session 8, Aaron's request)
+
+- The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
+- Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
 ### M7 step 1: The witch roams and plants (Session 8)
 
 Agreed with Aaron first (rule 10; OPEN_QUESTIONS.md, Session 8). The stand-in planter is gone: she plants every sigil now.
@@ -32,7 +37,7 @@ Agreed with Aaron first (rule 10; OPEN_QUESTIONS.md, Session 8). The stand-in pl
 - **Her look** (`src/render/WitchRenderer.js`): a placeholder 2.3 m figure. A ragged cloak with a torn hem and a shawl, a hooded gaunt face, a crown of splayed sticks, long arms with long fingers that swing as she runs, and small glowing eyes. 4 draw calls plus the torch shadow, only while she's out and within 150 m; the ring adds 2. Up close the torch bleaches her face (like the zombies); the art pass gives her real detail (Aaron wants to spend time on her).
 - **The forecast** counts the sigils she's out to plant tonight, from when she's expected to finish them, as "The witch is out to plant a sigil" (not where).
 - **Not yet:** she ignores the player (fighting, fleeing, interrupting her: step 2), traps (step 3), the hut (step 4), saving her (step 6).
-- **Debug:** Witch: (her state); send her out to plant now; finish her ritual now; send her home; teleport near her; Witch on the map (a violet cross). "Plant sigil now by her rules" plants one at once. The overlay has a witch line.
+- **Debug (Witch category):** her state; send her out to plant now; finish her ritual now; send her home; teleport near her; show her on the map (a violet cross). "Plant sigil now by her rules" (Sigils & zombies) plants one at once. The overlay has a witch line.
 - **Verified in headless Chromium (seed 4242):** night 2, she left the hut, ran past the player, travelled 1.3 km, planted at the Family cemetery and set off home. The forecast showed her sigil ("about 8 zombies, the first around 1:30am"). No console errors.
 - **Tests:** 340 pass (17 new): routes between every pair of clearings on three maps, avoiding the station, a night out start to finish, the ritual's timing, dawn calling her home, two sigils in a night, the tiers, and the forecast's delay.
 

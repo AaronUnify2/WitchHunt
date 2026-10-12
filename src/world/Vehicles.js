@@ -25,6 +25,7 @@ import { rollLoot } from '../combat/loot.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import vehicleData from '../data/vehicles.json';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 const SPOTS = ['door', 'door2', 'boot', 'bonnet']; // door2: the passenger door
 // What each spot searches: either door searches the cabin.
@@ -336,16 +337,18 @@ export class Vehicles {
   // ---- debug and overlay ---------------------------------------------------------
 
   addDebugItems(menu) {
-    menu.addItem('Vehicles: teleport to the nearest unsearched', () => this.teleportToNearest());
-    menu.addItem('Vehicles: teleport to the nearest alarm', () => this.teleportToNearest((v) => v.alarmArmed && v.hasBattery));
-    menu.addItem(
+    const teleport = menu.category(DEBUG.teleport);
+    const station = menu.category(DEBUG.station);
+    teleport.addItem('Teleport: nearest unsearched vehicle', () => this.teleportToNearest());
+    teleport.addItem('Teleport: nearest vehicle alarm', () => this.teleportToNearest((v) => v.alarmArmed && v.hasBattery));
+    station.addItem(
       () => `Vehicles: show all on the map (${this.showAll ? 'on' : 'off'})`,
       () => {
         this.showAll = !this.showAll;
         for (const v of this.list) v.seenByDebug = this.showAll;
       },
     );
-    menu.addItem('Vehicles: restock them all', () => this.reset());
+    station.addItem('Vehicles: restock them all', () => this.reset());
   }
 
   // which(v): the vehicles to choose from (default: any not yet emptied).

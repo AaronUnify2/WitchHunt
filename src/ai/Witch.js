@@ -23,6 +23,7 @@ import { GraphRoutes, routeLength, advanceAlong } from './witchRoutes.js';
 import { tierFor } from './simTiers.js';
 import { resolveCircles } from '../world/collision.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
+import { DEBUG } from '../debug/DebugMenu.js';
 
 // How many sigils she sets out to plant on night `night` (pure).
 export function plantingsTonight(night, wc, rng) {
@@ -291,8 +292,9 @@ export class Witch {
   // ---- debug tools ------------------------------------------------------------------
 
   addDebugItems(menu, notify) {
-    menu.addItem(() => `Witch: ${this.stateText()}`, () => notify(this.stateText()));
-    menu.addItem('Witch: send her out to plant now', () => {
+    const witch = menu.category(DEBUG.witch);
+    witch.addItem(() => `Now: ${this.stateText()}`, () => notify(this.stateText()));
+    witch.addItem('Send her out to plant now', () => {
       const plan = this.plan.slice();
       this.plan = [];
       const spot = this.director.chooseSpot(this.spot ? [this.spot, ...plan] : plan);
@@ -304,15 +306,15 @@ export class Witch {
       this.goPlant();
       notify(`The witch is out, heading ${this.director.describe(spot)}`);
     });
-    menu.addItem('Witch: finish her ritual now', () => {
+    witch.addItem('Finish her ritual now', () => {
       if (this.state !== 'planting') notify('She is not planting');
       else this.plantTimer = 0;
     });
-    menu.addItem('Witch: send her home', () => {
+    witch.addItem('Send her home', () => {
       if (this.state === 'resting') notify('She is already home');
       else this.goHome();
     });
-    menu.addItem('Witch: teleport near her', () => {
+    const teleportNear = () => {
       const back = this.cfg.debug.witchTeleportBack;
       const a = this.state === 'resting' ? 0 : this.facing;
       // In front of her, looking back at her (the camera looks down -z at yaw 0).
@@ -320,8 +322,10 @@ export class Witch {
       const z = this.z + Math.cos(a) * back;
       this.player.teleport(x, z, Math.atan2(x - this.x, z - this.z));
       notify(this.state === 'resting' ? 'At the hut: she is hiding inside' : `Near the witch: ${this.stateText()}`);
-    });
-    menu.addItem(() => `Witch on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
+    };
+    witch.addItem('Teleport near her', teleportNear);
+    witch.addItem(() => `Show her on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
+    menu.category(DEBUG.teleport).addItem('Teleport: near the witch', teleportNear);
   }
 
   stateText() {
