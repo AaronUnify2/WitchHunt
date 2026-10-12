@@ -32,6 +32,8 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ### Session 9 (the gate): her fight reworked (Aaron)
 
+**Verified by Aaron on the tablet:** 20 m is the right balance, the hexes can still be sidestepped, and she doesn't snag in the final battle. The witch is settled for now.
+
 `src/ai/Witch.js` (`fight()`, `setMode()`, `hitInFight()`), `config.witch.attack`, `config.finalBattle.attack`; numbers in OPEN_QUESTIONS.md #113, #116, #129.
 - **Health doubled** to 1000.
 - **Retreat:** when she turns on you she backs off, weaving, to about 20 m (5 s at most), dropping traps. (Aaron tried 30 m: too far, and she snagged on trees at the arena's edge.)

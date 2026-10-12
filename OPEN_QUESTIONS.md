@@ -10,7 +10,7 @@ From Aaron at the start of the gate:
 - **Ambushing a ritual feels balanced:** shooting her, or walking up very close, breaks it and she attacks.
 - **Making her flee, the final battle and killing her on the pathway** all play well (before the new fight pattern below).
 - **Traps:** the snare is really good; the totem should be lower (done, #121); the charm is fine but easy to avoid.
-- **Her fight, reworked (Aaron):** double health, and a retreat / hex / rush pattern (#113, #116, #129). After his first play: 30 m was too far (and in the final battle she snagged on the trees at the ring), so 20 m; a hex every 6 s; body shots bring her in too.
+- **Her fight, reworked (Aaron):** double health, and a retreat / hex / rush pattern (#113, #116, #129). After his first play: 30 m was too far (and in the final battle she snagged on the trees at the ring), so 20 m; a hex every 6 s; body shots bring her in too. **Aaron confirmed (second play): 20 m is the right balance, the hexes can still be sidestepped, no snagging in the final battle. The witch is done for now.**
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
