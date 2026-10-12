@@ -1092,7 +1092,6 @@ export const config = {
     knockback: 3,
     shake: 1.4,
     alert: 160, // metres: every zombie this close hears it
-    witchComesOut: 0.6, // chance she comes out of the hut when a charge goes on it
     look: { charge: 0x4a5040, led: 0xff2010, blinkPerSecond: 1.5, core: 0xfff0c0, fire: 0xff6a18, fireSeconds: 1.1 },
   },
 

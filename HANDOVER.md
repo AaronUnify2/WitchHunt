@@ -99,7 +99,7 @@ The debug menu's **Witch** and **Hut & explosives** categories hold every shortc
    - Walk into the charm and nearby zombies come.
    - Then walk the hut's approach: it should be thick with them near the hut.
 4. **The hut (step 4):**
-   - "Give 2 charges", then "Teleport: to the hut door". Hold X by the wall to plant both ("1 of 2", "2 of 2"); she may come out to stop you.
+   - "Give 2 charges", then "Teleport: to the hut door". Hold X by the wall to plant both ("1 of 2", "2 of 2"); she stays inside until they go off (Aaron).
    - Back off, switch to the detonator (RB / LB) and pull RT.
    - Try one charge first: "The hut shudders, but holds."
    - Try a charge on a path as a trap for zombies.

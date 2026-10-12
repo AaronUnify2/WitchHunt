@@ -42,9 +42,9 @@
 // you are.
 //
 // Step 4: the hut (world/Hut.js). She leaves and comes home by its door.
-// A charge going on its wall may bring her out to stop you (config), and
-// she hears explosions. Destroying the hut brings her out (step 5 turns
-// that into the final battle).
+// Charges on its wall don't bring her out (Aaron): only destroying the hut
+// does, and that starts the final battle (step 5). Out and about, she
+// hears explosions.
 //
 // Step 5: the final battle (encounters/FinalBattle.js calls startFinal()).
 // She rises out of the wreck of her hut and fights to the death: no
@@ -195,10 +195,8 @@ export class Witch {
         if (at) this.bus.emit('weapon:impact', { x: at.x, y: at.y, z: at.z });
       }),
       bus.on('player:respawned', () => this.traps.free(this.player)),
-      // Step 4: the hut and explosives.
-      bus.on('charge:planted', ({ onHut }) => {
-        if (onHut && this.state === 'resting' && this.fightRng.chance(this.cfg.explosives.witchComesOut)) this.emerge();
-      }),
+      // Step 4: the hut and explosives. Charges on her hut don't bring her
+      // out (Aaron): she stays inside until both go off (the final battle).
       bus.on('explosion', ({ x, z }) => this.heardAt(x, z, this.cfg.explosives.alert)),
     ];
   }
