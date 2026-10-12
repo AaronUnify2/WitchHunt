@@ -212,12 +212,33 @@ describe('the witch out for a night', () => {
     const camera = { x: witch.x, z: witch.z };
     witch.update(0.5, true, camera);
     expect(witch.tier).not.toBe('abstract');
-    expect(witch.renderer.group.visible).toBe(true);
+    expect(witch.renderer.root.visible).toBe(true);
     const near = witch.moved;
     expect(near).toBeLessThanOrEqual(config.witch.roamSpeed * 0.5 + 1e-6);
     player.position.x += 5000;
     witch.update(0.5, true, camera);
     expect(witch.tier).toBe('abstract');
-    expect(witch.renderer.group.visible).toBe(false);
+    expect(witch.renderer.root.visible).toBe(false);
+  });
+});
+
+describe('her contortions', () => {
+  it('snapValue jumps to a new angle quickly, then holds still', async () => {
+    const { snapValue } = await import('../src/render/WitchRenderer.js');
+    const rate = 2;
+    const snapTime = 0.1;
+    // Mid-hold: no movement.
+    const a = snapValue(0.3, rate, snapTime, 1, -1, 1);
+    const b = snapValue(0.45, rate, snapTime, 1, -1, 1);
+    expect(a).toBeCloseTo(b, 10);
+    // Always within range, and it does change between intervals.
+    const seen = new Set();
+    for (let t = 0; t < 10; t += 0.05) {
+      const v = snapValue(t, rate, snapTime, 3, -1, 1);
+      expect(v).toBeGreaterThanOrEqual(-1);
+      expect(v).toBeLessThanOrEqual(1);
+      seen.add(v.toFixed(3));
+    }
+    expect(seen.size).toBeGreaterThan(5);
   });
 });

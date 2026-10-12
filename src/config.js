@@ -953,10 +953,10 @@ export const config = {
     firstNight: 2,
     secondFromNight: 3,
     secondChance: 0.4,
-    plantSeconds: 120, // DESIGN.md: "plants a sigil over 2-3 minutes"
+    plantSeconds: 45, // Aaron (M7 step 1): 2 minutes was too long; DESIGN.md said 2-3
     lateCutoff: 0.8, // she doesn't start out for another sigil past this share of the night
     // Movement: a loping run on the pathways (the player sprints at 7.2 m/s).
-    roamSpeed: 5.5, // metres per second while travelling, near the player
+    roamSpeed: 6.05, // metres per second while travelling, near the player (Aaron: 10% faster than 5.5, he could keep pace)
     abstractScale: 3, // out of sight (beyond the zombies' nearby radius) she travels this much faster
     turnRate: 8, // radians per second
     radius: 0.3, // body collision
@@ -966,17 +966,24 @@ export const config = {
     soundEvery: 3.5, // seconds between her ritual songs
     songRange: 70, // metres her singing carries
     // Placeholder look (Aaron agreed; she gets more detail in the art pass).
+    // Aaron (step 1 test): a thin shadow creature, not a solid object. She
+    // is unlit near-black (the torch can't light her or glint off her);
+    // only her silhouette and her eyes read.
     look: {
       height: 2.3, // metres
-      cloak: 0x17130f,
-      cloakHem: 0x1d1813,
-      skin: 0x2c2c24, // dark, like the zombies' albedos: the torch washes anything paler to white up close
-      sticks: 0x2a1f15,
-      eyes: 0xd6ff6a, // unlit, so the torch (and the bloom) picks them out
-      stoop: 0.28, // radians she leans forward when she walks
+      shadow: 0x030304, // her whole body, unlit
+      eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
+      thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
+      stoop: 0.32, // radians she folds forward at the waist when she runs
       runBob: 0.08, // metres
       stride: 1.6, // metres per arm swing
-      kneelDrop: 0.55, // metres she sinks to her knees while planting
+      // The ritual (Aaron: fold right down and contort, so she reads as
+      // something horrible): crouched low, folded flat over the spot,
+      // head and arms snapping between wrong angles.
+      crouch: 0.42, // her cloak's height while crouched, as a share of standing
+      fold: 1.25, // radians forward at the waist
+      snapsPerSecond: 1.6, // how often her head and arms jerk to a new angle
+      snapTime: 0.12, // share of each snap spent moving (the rest she holds still)
       ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants
     },
   },

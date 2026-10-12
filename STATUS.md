@@ -27,6 +27,15 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
 
+### M7 step 1 follow-up: Aaron's first look at the witch (Session 8)
+
+- **Aaron:** watching her run off at dusk was "awesome", she never snagged, and her silhouette is "amazing". Up close she was too blocky, and the ritual too long.
+- **Faster:** 6.05 m/s near the player (was 5.5; he could keep pace).
+- **Ritual: 45 seconds** (was 2 minutes).
+- **A shadow creature:** her whole body is unlit near-black (`MeshBasicMaterial`), so the torch can't light her or glint off her. Only her silhouette and glowing eyes read. She's 28% thinner, with thinner arms.
+- **Jointed and contorting** (`render/WitchRenderer.js`): skirt, torso (waist joint), head (neck joint) and two arms. Running, she's folded forward with her head up and arms trailing. In the ritual she sinks into a low crouch, her cloak pooling, folded flat over the spot. Her head cranes up and twists too far, and her arms splay out like a spider's legs. Each joint jerks to a new angle and holds still in between (`snapValue()`). 6 draw calls plus the shadow (was 4).
+- **Tests:** 341 pass.
+
 ### M7 step 1: The witch roams and plants (Session 8)
 
 Agreed with Aaron first (rule 10; OPEN_QUESTIONS.md, Session 8). The stand-in planter is gone: she plants every sigil now.

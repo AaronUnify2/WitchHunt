@@ -406,7 +406,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 | --- | --- | --- |
 | Resting | Day | In or near her hut |
 | Roaming | Night | Travels the pathway graph toward a planting spot (mostly sigil grounds) |
-| Planting | At the spot | Plants a sigil over 2–3 minutes (config), with a visible ritual effect and singing |
+| Planting | At the spot | Plants a sigil over about 45 seconds (config; Aaron, M7), crouched and contorting, with a visible ritual effect and singing |
 | Fleeing | Hurt, or far from the hut | Runs, cuts between trees, drops traps behind her |
 | Attacking | Healthy, or cornered near the hut | Ranged hexes, close strikes, summons a few zombies |
 
