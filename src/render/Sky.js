@@ -83,6 +83,7 @@ export class Sky {
     this.fog = new THREE.Fog(0x000000, 1, 2);
     scene.fog = this.fog;
     this.time = 0;
+    this.blood = 0; // M7: the blood night (setBlood)
   }
 
   buildDome() {
@@ -162,13 +163,27 @@ export class Sky {
     return this.moon;
   }
 
+  // M7: the blood night. amount 0..1 blends the sky, fog and light toward
+  // colours { skyTop, horizon, ambient, light } (hex), and hides the stars.
+  setBlood(amount, colours = null) {
+    this.blood = Math.max(0, Math.min(1, amount));
+    if (colours && !this.bloodColours) {
+      this.bloodColours = {};
+      for (const f of COLOR_FIELDS) this.bloodColours[f] = new THREE.Color(colours[f]);
+    }
+  }
+
   // hour: clock-face hour. Call after the camera has moved this frame.
   update(dt, hour, camera) {
     this.time += dt;
     const { a, b, t } = findKeyframes(this.keys, hour, this.clockCfg.hoursPerDay);
     const s = this.scratch;
     for (const f of COLOR_FIELDS) s[f].lerpColors(a[f], b[f], t);
-    const stars = lerp(a.stars, b.stars, t);
+    let stars = lerp(a.stars, b.stars, t);
+    if (this.blood > 0 && this.bloodColours) {
+      for (const f of COLOR_FIELDS) s[f].lerp(this.bloodColours[f], this.blood);
+      stars *= 1 - this.blood;
+    }
 
     this.domeUniforms.uTop.value.copy(s.skyTop);
     this.domeUniforms.uHorizon.value.copy(s.horizon);

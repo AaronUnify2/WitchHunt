@@ -84,6 +84,12 @@ export class NightWatch {
     this.unsubscribers = [
       // A frame later, so the witch's stand-in has planted tonight's sigil.
       bus.on('phase:dusk', () => (this.forecastDue = true)),
+      // M7: the final battle jumps straight to night: no forecast for it.
+      bus.on('final:started', () => {
+        this.forecastDue = false;
+        this.forecastTimer = 0;
+        this.el.classList.add('hidden');
+      }),
       bus.on('phase:night', () => {
         this.duskSecurity ??= this.securityNow();
         this.alarmDone = false;

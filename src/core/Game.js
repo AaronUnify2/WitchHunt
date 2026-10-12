@@ -24,6 +24,7 @@ import { ZombieDirector } from '../ai/ZombieDirector.js';
 import { Witch } from '../ai/Witch.js';
 import { Hut } from '../world/Hut.js';
 import { Explosives } from '../combat/Explosives.js';
+import { FinalBattle } from '../encounters/FinalBattle.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
@@ -86,6 +87,7 @@ export class Game {
     this.initVehicles();
     this.initNightWatch(root);
     this.initExplosives();
+    this.initFinalBattle(root);
     this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
     this.addOverlayStats();
     this.addDebugMenuItems();
@@ -160,6 +162,22 @@ export class Game {
       busy: [this.director.hud, this.station.hud, this.vehicles.hud],
     });
     this.combat.promptSources.push(this.explosives.hud);
+  }
+
+  // The final battle (M7 step 5): the hut's destruction starts it.
+  initFinalBattle(root) {
+    this.finalBattle = new FinalBattle(this.cfg, this.bus);
+    this.finalBattle.init(this.scene, {
+      root,
+      witch: this.witch,
+      hut: this.hut,
+      player: this.player,
+      clock: this.clock,
+      sky: this.sky,
+      world: this.world,
+      combat: this.combat,
+      skipToNight: () => this.skipToPhase('night'),
+    });
   }
 
   // The ranger station (M5): fence, doors, turret, ledger, siege.
@@ -266,6 +284,7 @@ export class Game {
     this.overlay.addStat('lod', () => this.combat.enemies.lodLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
     this.overlay.addStat('witch', () => this.witch.overlayLine());
+    this.overlay.addStat('final', () => this.finalBattle.overlayLine());
     this.overlay.addStat('station', () => this.station.overlayLine());
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
@@ -334,7 +353,12 @@ export class Game {
       this.toast.show('Two charges on the hut: detonator in hand, RT');
     });
     hut.addItem('Set off every planted charge now', () => this.toast.show(`${ex().detonate()} charge(s) went off`));
-    hut.addItem(() => `Destroy the hut now (${this.hut.destroyed ? 'destroyed' : 'standing'})`, () => this.hut.destroy());
+    hut.addItem(() => `Destroy the hut now: starts the final battle (${this.hut.destroyed ? 'destroyed' : 'standing'})`, () => this.hut.destroy());
+    hut.addItem('Final battle: teleport to the hut and start it', () => {
+      const h = this.hut;
+      this.player.teleport(h.x + Math.sin(h.facing) * 14, h.z + Math.cos(h.facing) * 14, h.facing);
+      this.hut.destroy();
+    });
   }
 
   // Teleports, the map screen's debug view, and new or repeated seeds.
@@ -592,14 +616,15 @@ export class Game {
     if (running && !this.mapUi.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
-    const locked = this.station.ledger.isOpen || !first;
-    const input = first ? this.input : this.lockedInput;
+    const locked = this.station.ledger.isOpen || !first || this.finalBattle.cinematic;
+    const input = first && !this.finalBattle.cinematic ? this.input : this.lockedInput;
     const controls = locked ? this.lockedInput : this.input;
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
     this.combat.update(dt, input, playing, daylight, locked);
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
     this.witch.update(dt, playing, this.player.camera.position, first ? controls : this.lockedInput);
     this.explosives.update(dt, first ? controls : this.lockedInput, playing && first && !locked);
+    if (playing) this.finalBattle.update(dt, this.player.camera.position);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);
@@ -622,6 +647,7 @@ export class Game {
     this.nightWatch.dispose();
     this.vehicles.dispose();
     this.station.dispose();
+    this.finalBattle.dispose();
     this.explosives.dispose();
     this.witch.dispose();
     this.hut.dispose();

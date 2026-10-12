@@ -593,6 +593,33 @@ body {
 }
 
 /* M6: the station-under-attack banner (top centre, under the toasts) */
+/* M7 step 5: the final battle's letterbox bars and red flash. */
+.final-battle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.final-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #000;
+  transition: height 0.6s;
+}
+
+.final-bar.top { top: 0; }
+.final-bar.bottom { bottom: 0; }
+.final-battle.letterbox .final-bar { height: 12vh; }
+
+.final-flash {
+  position: absolute;
+  inset: 0;
+  background: #c01808;
+  mix-blend-mode: screen;
+}
+
 /* M7: the witch's health bar (placeholder until the final HUD). */
 .hud-boss {
   position: absolute;

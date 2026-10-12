@@ -1090,6 +1090,47 @@ export const config = {
     look: { charge: 0x4a5040, led: 0xff2010, blinkPerSecond: 1.5, core: 0xfff0c0, fire: 0xff6a18, fireSeconds: 1.1 },
   },
 
+  // The final battle (M7 step 5; DESIGN.md "Final battle"): the blood night.
+  finalBattle: {
+    introSeconds: 3.2, // the placeholder cutscene (controls locked)
+    introTurnRate: 2.5, // radians a second the camera turns to the wreck
+    riseSeconds: 2.6, // her climbing out of the wreck
+    bloodRampSeconds: 3, // the sky bleeding red
+    drainSeconds: 4, // ...and draining away after she dies
+    sky: { skyTop: 0x1a0204, horizon: 0x5a0906, ambient: 0x4a1410, light: 0xff4020 },
+    // The witchfire ring sealing the hut clearing.
+    ringScale: 1.15, // x the clearing's radius
+    ringMin: 22, // metres at least
+    ringMargin: 1.2, // how close to the flames you can get
+    flames: 64,
+    fireColor: 0x4ab018, // witchfire: her sickly green (additive, so dim: up close it blooms)
+    fireOpacity: 0.45,
+    fireHeight: 2.8,
+    fireWidth: 0.6,
+    // Embers rising, ash falling, round the camera.
+    embers: 260,
+    ash: 160,
+    emberColor: 0xff7a28,
+    ashColor: 0x8a8070,
+    emberSize: 0.12,
+    ashSize: 0.09,
+    emberRise: 1.4,
+    ashFall: 0.6,
+    particleBox: 40, // metres: the box round the camera they fill
+    // Her attacks: the usual ones (config.witch.attack) with these on top.
+    attack: {
+      hex: { every: 1.8 },
+      swipe: { damage: 40, windup: 0.3, recover: 0.7 },
+      lunge: { whenStill: 1.0, speed: 10.5 },
+      summon: { count: [3, 5], cooldown: 25 },
+    },
+    // Snares and totems spammed round you.
+    trapEvery: 6, // seconds
+    trapsEach: 2,
+    trapRing: [4, 9], // metres from you
+    snareShare: 0.55,
+  },
+
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real
   // set dressing is for an encounter session).
   sigilGroundMarker: {

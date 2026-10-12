@@ -343,6 +343,39 @@ describe('the witch out for a night', () => {
     expect(env.witch.pendingPlantings()).toEqual([]);
   });
 
+  it('the final battle: she rises, then fights to the death (no fleeing, no losing you, no planting)', () => {
+    const env = setup(11);
+    const w = env.witch;
+    w.health = w.maxHealth * 0.5; // her wounds carry in
+    const hut = env.map.clearings[env.map.hutIndex];
+    env.player.position.x = hut.x + 15;
+    env.player.position.z = hut.z;
+    env.syncSenses();
+    w.startFinal(hut.x, hut.z);
+    expect(w.state).toBe('rising');
+    expect(w.targetable).toBe(false);
+    for (let t = 0; t < config.finalBattle.riseSeconds + 0.2; t += 0.1) w.update(0.1, true, null);
+    expect(w.state).toBe('attacking');
+    expect(w.share).toBeCloseTo(0.5);
+    // Badly hurt and far from the hut's bonus: still attacking.
+    w.health = w.maxHealth * 0.05;
+    w.takeHit(1, 'body', {}, { x: w.x, y: w.y + 1, z: w.z }, env.player.position);
+    expect(w.state).toBe('attacking');
+    // Hidden from her (you can't hide in the final battle) for a long while: still attacking.
+    env.combat.senses.crouched = true;
+    env.combat.senses.torchOn = false;
+    const trapsBefore = w.traps.activeCount;
+    for (let t = 0; t < 20; t += 0.1) w.update(0.1, true, null);
+    expect(w.state).toBe('attacking');
+    // She lays snares and totems round you, and harder attacks.
+    expect(w.traps.activeCount).toBeGreaterThan(trapsBefore);
+    expect(w.attack.swipe.damage).toBe(config.finalBattle.attack.swipe.damage);
+    expect(w.attack.hex.damage).toBe(config.witch.attack.hex.damage); // kept from the usual ones
+    // Dusk can't send her planting.
+    expect(w.setOut(5, 2)).toBe(false);
+    expect(w.state).toBe('attacking');
+  });
+
   it('wounds last, heal a share each day, and cut her planting', () => {
     const env = setup(11);
     const wc = config.witch;

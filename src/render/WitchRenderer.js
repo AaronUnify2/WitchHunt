@@ -272,6 +272,7 @@ export class WitchRenderer {
     this.root.position.set(w.x, w.y, w.z);
     this.root.rotation.set(0, w.facing, 0);
     if (dead) this.poseDying(w);
+    else if (w.state === 'rising') this.poseRising(w);
     else if (planting) this.poseContorted();
     else if (w.state === 'attacking') this.poseAttacking(w);
     else this.poseGliding(w, dt, w.state === 'fleeing');
@@ -349,6 +350,26 @@ export class WitchRenderer {
       default:
         break;
     }
+  }
+
+  // The final battle: she claws up out of the wreck of her hut, arms
+  // flung up, head thrown back, jerking.
+  poseRising(w) {
+    const t = this.time;
+    const k = w.riseProgress;
+    this.skirt.scale.set(1, 1, 1);
+    this.skirt.rotation.set(0, 0, 0);
+    this.waist.position.set(0, WAIST, 0);
+    this.waist.rotation.set(-0.35 + Math.sin(t * 7) * 0.05, 0, Math.sin(t * 3) * 0.1);
+    const snap = (key, lo, hi) => snapValue(t + key * 0.37, this.cfg.snapsPerSecond * 1.5, this.cfg.snapTime, key, lo, hi);
+    this.neck.rotation.set(-0.8 + snap(30, -0.2, 0.3), snap(31, -0.5, 0.5), snap(32, -0.8, 0.8));
+    this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
+      const side = i === 0 ? -1 : 1;
+      shoulder.rotation.set(-2.9 + Math.sin(t * 30 + i) * 0.06, 0, side * 0.75);
+      elbow.rotation.set(snap(33 + i, -0.6, 0.6), 0, 0);
+      wrist.rotation.set(snap(35 + i, -0.8, 0.8), 0, 0);
+    });
+    this.root.position.y -= (1 - k) * this.cfg.height * 1.1;
   }
 
   // Killed: she buckles, folds over and sinks into the ground.

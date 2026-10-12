@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-4 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, **she lays traps**, and **the hut can be blown up.** Next: step 5, the final battle and blood night.
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-5 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, **she lays traps**, **the hut can be blown up**, and **the final battle on the blood night.** Next: step 6, the ending and defeat screens and the save.
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -26,6 +26,19 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
+### M7 step 5: The final battle and blood night (Session 8)
+
+`src/encounters/FinalBattle.js`; numbers in OPEN_QUESTIONS.md #126-130.
+- **The point of no return:** destroying the hut starts it.
+  - **A placeholder cutscene** (3.2 s, controls locked): letterbox bars and a red flash. The camera turns to the wreck as she claws up out of it, arms flung up, head jerking. The real cutscene comes in M8.
+- **Blood night:** if it's day the clock jumps to night (Aaron), then freezes until it's over. The sky, fog and light bleed red, embers rise and ash falls round you (`Sky.setBlood()`). The station is still attacked while you're away.
+- **No escape:** a ring of green witchfire round the hut clearing holds you and her inside.
+- **She fights to the death** (`Witch.startFinal()`): no fleeing, she always knows where you are, faster hexes, heavier faster swipes, more summoning, and snares and totems spammed round you every 6 s. Her wounds carry in.
+- **Won:** she collapses and sinks; the red drains away and the witchfire dies down; the placeholder victory screen. Lost: you die or the station falls, as before.
+- **Debug (Hut & explosives):** Final battle: teleport to the hut and start it. The overlay has a "final" line.
+- **Verified in headless Chromium (seed 4242):** started by day, it jumped to night, froze the clock and turned the sky red. She rose out of the wreck, fought, laid traps, and stayed attacking at 5% health. Stepping out of the ring was held at its edge. Killing her showed the victory screen and drained the red. No console errors.
+- **Tests:** 363 pass (1 new: her final mode: rising, not targetable while she rises, wounds carried in, never fleeing or losing you, laying traps, the harder attacks, and dusk can't send her planting).
 
 ### M7 step 4: The hut and explosives (Session 8)
 
@@ -586,7 +599,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch (M7 steps 1-4)** roams, plants, fights and lays traps; the hut stands and can be blown up. Destroying it only brings her out so far (the final battle is step 5). Only her health is saved (traps, charges and the hut are step 6). Killing her shows a placeholder victory screen.
+- **The witch (M7 steps 1-4)** roams, plants, fights and lays traps; the hut stands and can be blown up. Destroying it starts the final battle (step 5). Only her health is saved (traps, charges and the hut are step 6). Killing her shows a placeholder victory screen.
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.

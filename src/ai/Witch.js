@@ -46,6 +46,12 @@
 // she hears explosions. Destroying the hut brings her out (step 5 turns
 // that into the final battle).
 //
+// Step 5: the final battle (encounters/FinalBattle.js calls startFinal()).
+// She rises out of the wreck of her hut and fights to the death: no
+// fleeing, she always knows where you are, heavier and faster swipes,
+// more summoning, quicker hexes, and snares and totems spammed round you.
+// Her wounds carry in.
+//
 // Events: 'witch:setOut' { night, planned }, 'witch:ritualStarted'
 // { spot }, 'witch:planted' { sigil }, 'witch:interrupted' { spot },
 // 'witch:home', 'witch:noticed', 'witch:attacking', 'witch:fleeing',
@@ -106,6 +112,9 @@ export class Witch {
     this.health = this.maxHealth;
     this.headshotMultiplier = this.wc.headshotMultiplier;
     this.hexTarget = { x: 0, z: 0, y0: 0, y1: 0, radius: 0.35 };
+    // Step 5: her attacks in the final battle (the usual ones with config's overrides).
+    this.final = false;
+    this.finalAttack = mergeDeep(this.wc.attack, this.cfg.finalBattle?.attack ?? {});
     // Step 3: traps. The hut approach is laid with them (seeded by the map).
     const tc = this.wc.traps;
     this.traps = new Traps(tc, this.bus);
@@ -191,7 +200,6 @@ export class Witch {
         if (onHut && this.state === 'resting' && this.fightRng.chance(this.cfg.explosives.witchComesOut)) this.emerge();
       }),
       bus.on('explosion', ({ x, z }) => this.heardAt(x, z, this.cfg.explosives.alert)),
-      bus.on('hut:destroyed', () => this.emerge()),
     ];
   }
 
@@ -203,6 +211,11 @@ export class Witch {
   // there's no hut building, as in tests).
   get door() {
     return this.hutBuilding?.door ?? this.world.hut;
+  }
+
+  // Her attack numbers now (harder in the final battle).
+  get attack() {
+    return this.final ? this.finalAttack : this.wc.attack;
   }
 
   get alive() {
@@ -247,13 +260,14 @@ export class Witch {
 
   // Can the player's weapons hit her now? Out and near (drawn).
   get targetable() {
-    return this.state !== 'resting' && this.state !== 'dead' && this.tier !== 'abstract';
+    return this.state !== 'resting' && this.state !== 'dead' && this.state !== 'rising' && this.tier !== 'abstract';
   }
 
   // ---- the night's plan -------------------------------------------------------
 
   // Dusk: choose tonight's spots and set out for the first.
   setOut(night, count = plantingsTonight(night, this.wc, this.planRng, this.share)) {
+    if (this.final) return false;
     this.night = night;
     this.plantedTonight = 0;
     if (count <= 0 || !this.alive) return false;
@@ -310,6 +324,7 @@ export class Witch {
 
   // Dawn: home, unless a ritual is under way (she finishes it first).
   callHome() {
+    if (this.final) return;
     this.plan.length = 0;
     if (this.state === 'roaming' && this.goal === 'plant') this.goHome();
   }
@@ -346,7 +361,7 @@ export class Witch {
       this.flinch = Math.max(0, this.flinch - dt);
       this.bossTimer = Math.max(0, this.bossTimer - dt);
       this.summonCooldown = Math.max(0, this.summonCooldown - dt);
-      if (this.state !== 'resting' && this.state !== 'dead') this.look(dt);
+      if (this.state !== 'resting' && this.state !== 'dead' && this.state !== 'rising') this.look(dt);
       switch (this.state) {
         case 'roaming':
           if (this.move(dt)) this.arrive();
@@ -356,6 +371,10 @@ export class Witch {
           break;
         case 'attacking':
           this.fight(dt);
+          break;
+        case 'rising':
+          this.riseTimer -= dt;
+          if (this.riseTimer <= 0) this.startAttack();
           break;
         case 'fleeing':
           this.fleeStep(dt);
@@ -379,6 +398,13 @@ export class Witch {
 
   // Watch for the player; react when she first notices them.
   look(dt) {
+    // The final battle: she always knows where you are.
+    if (this.final) {
+      this.lastSeen = 0;
+      this.lastX = this.player.position.x;
+      this.lastZ = this.player.position.z;
+      return;
+    }
     this.lastSeen += dt;
     if (this.tier === 'abstract' || !this.combat.alive) return;
     const trance = this.state === 'planting';
@@ -437,6 +463,10 @@ export class Witch {
   }
 
   decide() {
+    if (this.final) {
+      if (this.state !== 'attacking') this.startAttack();
+      return;
+    }
     const toHut = Math.hypot(this.x - this.hut.x, this.z - this.hut.z);
     if (fightScore(this.share, toHut, this.wc) >= this.wc.fleeBelow) this.startAttack();
     else this.startFlee();
@@ -449,10 +479,10 @@ export class Witch {
     this.action = null;
     this.lunging = false;
     this.rethink = this.wc.rethinkSeconds;
-    this.hexTimer = this.wc.attack.hex.castTime; // the first one comes quickly
+    this.hexTimer = this.attack.hex.castTime; // the first one comes quickly
     this.strafeDir = this.fightRng.chance(0.5) ? 1 : -1;
     if (was !== 'attacking') this.bus.emit('witch:attacking');
-    if (this.summonCooldown <= 0) this.startAction('summon', this.wc.attack.summon.castTime);
+    if (this.summonCooldown <= 0) this.startAction('summon', this.attack.summon.castTime);
   }
 
   startFlee() {
@@ -472,6 +502,7 @@ export class Witch {
   // The fight's over (she lost you, or you're dead): back to planting if
   // the night allows and she's well enough, else home.
   disengage() {
+    if (this.final) return; // no escape for either of you
     this.endFight();
     if (this.share >= this.wc.wounds.homeAfterFleeBelow && this.outTonight && this.plan.length > 0) this.goPlant();
     else this.goHome();
@@ -480,11 +511,12 @@ export class Witch {
   // ---- fighting ------------------------------------------------------------------
 
   fight(dt) {
-    const a = this.wc.attack;
+    const a = this.attack;
     const p = this.player.position;
     const tx = this.lastSeen === 0 ? p.x : this.lastX;
     const tz = this.lastSeen === 0 ? p.z : this.lastZ;
     const dist = Math.hypot(tx - this.x, tz - this.z);
+    if (this.final) this.spamTraps(dt);
     // Lost you once she's where she last knew you to be (a charm can call
     // her from far off: she comes, then looks).
     if (!this.combat.alive || (this.lastSeen > this.wc.loseSeconds && dist <= a.hex.maxRange)) {
@@ -546,9 +578,51 @@ export class Witch {
     if (name === 'summon') this.combat.sfx.play('witchSummon', { x: this.x, z: this.z, range: this.wc.songRange });
   }
 
+  // Step 5: out of the wreck of her hut, to fight to the death.
+  startFinal(x, z) {
+    if (!this.alive) return;
+    this.final = true;
+    this.endFight();
+    this.plan.length = 0;
+    this.spot = null;
+    this.goal = null;
+    this.placeAt(x, z);
+    const p = this.player.position;
+    this.facing = Math.atan2(p.x - x, p.z - z);
+    this.state = 'rising';
+    this.tier = 'active';
+    this.riseTimer = this.cfg.finalBattle.riseSeconds;
+    this.riseLength = this.riseTimer;
+    this.summonCooldown = 0;
+    this.trapTimer = this.cfg.finalBattle.trapEvery;
+    this.bossTimer = this.wc.bossBarSeconds;
+    this.combat.sfx.play('witchDeath', { x, z, range: this.wc.songRange * 2 }); // her scream as the hut goes
+  }
+
+  // 0 to 1 out of the ground (the final battle's start).
+  get riseProgress() {
+    return this.state === 'rising' ? 1 - Math.max(0, this.riseTimer) / this.riseLength : 1;
+  }
+
+  // The final battle: snares and totems laid round you as she fights.
+  spamTraps(dt) {
+    const fb = this.cfg.finalBattle;
+    this.trapTimer -= dt;
+    if (this.trapTimer > 0) return;
+    this.trapTimer = fb.trapEvery;
+    const p = this.player.position;
+    for (let i = 0; i < fb.trapsEach; i++) {
+      const a = this.fightRng.range(0, Math.PI * 2);
+      const d = this.fightRng.range(fb.trapRing[0], fb.trapRing[1]);
+      const type = this.fightRng.chance(fb.snareShare) ? 'snare' : 'totem';
+      this.traps.add(type, p.x + Math.sin(a) * d, p.z + Math.cos(a) * d, this.ground, true);
+    }
+    this.combat.sfx.play('witchHex', { x: this.x, z: this.z });
+  }
+
   // Wind-ups, then the hex flies, the claws land or the dead rise.
   doAction(dt, dist) {
-    const a = this.wc.attack;
+    const a = this.attack;
     this.actionTimer -= dt;
     if (this.action === 'swipe') {
       if (!this.struck && this.actionTimer <= 0) {
@@ -582,7 +656,7 @@ export class Witch {
 
   // A few of the dead claw their way up round her and come for you.
   summon() {
-    const s = this.wc.attack.summon;
+    const s = this.attack.summon;
     const count = this.fightRng.int(s.count[0], s.count[1]);
     const mix = this.world.variantMixAt(this.x, this.z);
     let n = 0;
@@ -942,6 +1016,8 @@ export class Witch {
         return `fleeing home, ${togo()}m to go`;
       case 'dead':
         return 'dead';
+      case 'rising':
+        return 'rising from the wreck of her hut';
       default:
         return this.goal === 'home' ? `going home, ${togo()}m to go` : `heading ${where(this.spot)}, ${togo()}m to go`;
     }
@@ -975,4 +1051,13 @@ function turnToward(from, to, max) {
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   return from + Math.max(-max, Math.min(max, d));
+}
+
+// A copy of `base` with `over`'s values laid on top (nested objects merged).
+function mergeDeep(base, over) {
+  const out = { ...base };
+  for (const [k, v] of Object.entries(over)) {
+    out[k] = v && typeof v === 'object' && !Array.isArray(v) && base[k] && typeof base[k] === 'object' ? mergeDeep(base[k], v) : v;
+  }
+  return out;
 }
