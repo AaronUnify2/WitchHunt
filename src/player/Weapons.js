@@ -5,7 +5,9 @@
 // EnemyManager. The shovel swings in an arc and connects a moment later.
 // M7: other targets (the witch) can join through `extraTargets`: objects
 // with the same hit shape as a zombie, a `targetable` flag and their own
-// takeHit(amount, part, weapon, at, from) (returns true if killed).
+// takeHit(amount, part, weapon, at, from) (returns true if killed). An
+// entry with a `group` array (the witch's traps) adds each of those.
+// Targets with `noAssist` don't slow the aim.
 //
 // Events: 'weapon:switched' { id }, 'weapon:fired' { id }, 'weapon:swing',
 // 'weapon:hit' { killed, part, melee }, 'weapon:impact' { x, y, z },
@@ -253,6 +255,7 @@ export class Weapons {
     while (targets.length < living.length * 2) targets.push({ x: 0, y: 0, z: 0, r: 0 });
     let n = 0;
     for (const z of living) {
+      if (z.noAssist) continue;
       const body = targets[n++];
       body.x = z.x;
       body.z = z.z;
@@ -274,7 +277,11 @@ export class Weapons {
     const list = this.targetList;
     list.length = 0;
     for (const z of living) list.push(z);
-    for (const t of this.extraTargets) if (t.targetable) list.push(t);
+    for (const t of this.extraTargets) {
+      if (t.group) {
+        for (const g of t.group) if (g.targetable) list.push(g);
+      } else if (t.targetable) list.push(t);
+    }
     return list;
   }
 

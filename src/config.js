@@ -1001,6 +1001,23 @@ export const config = {
       stayHomeBelow: 0.3, // badly wounded: she stays in to heal
       homeAfterFleeBelow: 0.4, // after fleeing, she goes home rather than back to planting
     },
+    // Traps (step 3; DESIGN.md "Traps").
+    traps: {
+      // Around the hut approach, laid at the start of the run.
+      hut: { count: 16, radius: 320, falloff: 2.2, sampleEvery: 8, minGap: 14, sideJitter: 1.4, mix: { snare: 0.45, totem: 0.25, charm: 0.3 } },
+      // Dropped behind her as she flees.
+      dropEvery: 3.5, // seconds
+      dropMix: { snare: 0.5, totem: 0.2, charm: 0.3 },
+      dropSlow: 0.6, // her speed while dropping one...
+      dropSlowSeconds: 0.5, // ...for this long
+      maxDropped: 20, // the oldest dropped trap goes past this
+      targetRange: 60, // metres: totems and charms nearer than this can be shot
+      snare: { radius: 0.75, damage: 5, presses: 6, decay: 0.15 }, // Aaron: mash A about 2 seconds to tear free
+      totem: { zone: 3.5, damagePerSecond: 8, tick: 4 },
+      charm: { trip: 1.6, alert: 80, witchHears: 250 }, // metres: zombies this close come; the witch hears it this far
+      shapes: { totem: { radius: 0.3, height: 1.35 }, charm: { radius: 0.25, height: 1.5 } }, // hit shapes
+      look: { rope: 0x3a2c1c, wood: 0x2e241a, bone: 0x9a9480, glow: 0xb8ff5a, ringOpacity: 0.22 },
+    },
     flinchSeconds: 0.25,
     bossBarSeconds: 8, // her health bar shows this long after she's hit or while she fights
     deathSeconds: 2.5, // she collapses and sinks into the ground

@@ -546,7 +546,7 @@ export class Game {
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
     this.combat.update(dt, input, playing, daylight, locked);
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
-    this.witch.update(dt, playing, this.player.camera.position);
+    this.witch.update(dt, playing, this.player.camera.position, first ? controls : this.lockedInput);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);

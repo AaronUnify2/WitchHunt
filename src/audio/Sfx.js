@@ -406,6 +406,34 @@ const RECIPES = {
     s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 1100, endFreq: 90, gain: 0.25, attack: 0.02, vibrato: 16 });
     s.noiseBurst(o, { seconds: 2.6, freq: 1200, endFreq: 80, gain: 0.4, attack: 0.1 });
   },
+  // M7 step 3, traps. A snare snaps shut: a crack and a creak of rope.
+  snare(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 2000, gain: 0.8 });
+    s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 140, endFreq: 95, gain: 0.18, attack: 0.05, vibrato: 12 });
+  },
+  // Tearing free of it.
+  snareBreak(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1400, endFreq: 600, q: 1.5, gain: 0.6 });
+  },
+  // An alarm charm's bones clattering.
+  charmRattle(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 60);
+    for (let i = 0; i < 9; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.05, wave: 'square', freq: 700 + Math.random() * 900, gain: 0.18 }), i * 70 + Math.random() * 40);
+  },
+  // Inside a totem's ring: a sour sizzle.
+  totemBurn(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.noiseBurst(o, { seconds: 0.3, type: 'highpass', freq: 3000, gain: 0.35 });
+    s.tone(o, { seconds: 0.3, wave: 'square', freq: 220, endFreq: 200, gain: 0.08, vibrato: 30 });
+  },
+  // A totem or charm shot apart.
+  trapBreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.2, freq: 1800, endFreq: 300, gain: 0.6 });
+    s.tone(o, { seconds: 0.6, wave: 'triangle', freq: 600, endFreq: 150, gain: 0.15 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

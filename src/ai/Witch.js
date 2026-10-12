@@ -36,6 +36,11 @@
 //  - Killed: she collapses and sinks into the ground; the run is won
 //    ('witch:killed'; the real ending is step 6).
 //
+// Step 3: traps (ai/witchTraps.js): the hut approach is laid with them
+// at the start of the run, and she drops them behind her as she flees
+// (more slowly while she does). An alarm charm going off tells her where
+// you are.
+//
 // Events: 'witch:setOut' { night, planned }, 'witch:ritualStarted'
 // { spot }, 'witch:planted' { sigil }, 'witch:interrupted' { spot },
 // 'witch:home', 'witch:noticed', 'witch:attacking', 'witch:fleeing',
@@ -45,6 +50,8 @@ import { GraphRoutes, routeLength, advanceAlong } from './witchRoutes.js';
 import { tierFor } from './simTiers.js';
 import { playerSenses, notices } from './detection.js';
 import { Hexes } from './witchHexes.js';
+import { Traps, placeHutTraps, pickTrapType } from './witchTraps.js';
+import { TrapRenderer } from '../render/TrapRenderer.js';
 import { resolveCircles } from '../world/collision.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
 import { DEBUG } from '../debug/DebugMenu.js';
@@ -94,10 +101,18 @@ export class Witch {
     this.health = this.maxHealth;
     this.headshotMultiplier = this.wc.headshotMultiplier;
     this.hexTarget = { x: 0, z: 0, y0: 0, y1: 0, radius: 0.35 };
+    // Step 3: traps. The hut approach is laid with them (seeded by the map).
+    const tc = this.wc.traps;
+    this.traps = new Traps(tc, this.bus);
+    for (const t of placeHutTraps(this.map, tc.hut, this.rng.fork('hut-traps'))) this.traps.add(t.type, t.x, t.z, this.ground);
+    this.trapRng = this.rng.fork('witch-traps');
+    this.trapRenderer = new TrapRenderer(tc.look, tc.totem.zone);
+    this.trapRenderer.init(scene);
+    this.combat.promptSources.unshift(this.traps.hud); // "Snared!" comes first
     this.reset();
     this.wireEvents();
-    // The player's weapons can hit her (Weapons.extraTargets).
-    this.combat.weapons.extraTargets.push(this);
+    // The player's weapons can hit her and her totems and charms (Weapons.extraTargets).
+    this.combat.weapons.extraTargets.push(this, this.traps);
   }
 
   // In the hut, resting (her health is kept: wounds last).
@@ -128,6 +143,8 @@ export class Witch {
     this.flinch = 0;
     this.bossTimer = 0;
     this.deathTimer = 0;
+    this.dropTimer = 0;
+    this.dropSlow = 0;
     this.hexes?.clear();
   }
 
@@ -156,6 +173,14 @@ export class Witch {
       // Wounds heal a share each day.
       bus.on('phase:day', () => this.heal(this.wc.wounds.recoverPerDay)),
       bus.on('weapon:fired', ({ id }) => this.heard(this.cfg.weapons[id]?.noise ?? 0)),
+      bus.on('trap:sprung', ({ trap }) => this.combat.sfx.play(trap.type === 'snare' ? 'snare' : 'charmRattle', trap)),
+      bus.on('trap:freed', () => this.combat.sfx.play('snareBreak')),
+      bus.on('trap:burned', () => this.combat.sfx.play('totemBurn')),
+      bus.on('trap:destroyed', ({ trap, at }) => {
+        this.combat.sfx.play('trapBreak', trap);
+        if (at) this.bus.emit('weapon:impact', { x: at.x, y: at.y, z: at.z });
+      }),
+      bus.on('player:respawned', () => this.traps.free(this.player)),
     ];
   }
 
@@ -268,8 +293,9 @@ export class Witch {
 
   // ---- each step -----------------------------------------------------------------
 
-  // playing: false while a menu or the map is open.
-  update(dt, playing, cameraPosition) {
+  // playing: false while a menu or the map is open. input: the player's
+  // controls (mashing free of a snare).
+  update(dt, playing, cameraPosition, input = null) {
     const p = this.player.position;
     const dist = Math.hypot(this.x - p.x, this.z - p.z);
     this.distance = dist;
@@ -301,10 +327,12 @@ export class Witch {
           break;
       }
       this.updateHexes(dt);
+      if (input) this.traps.update(dt, this.player, input, this.combat, (x, z) => this.heardCharm(x, z));
     }
     if (this.state === 'attacking') this.bossTimer = this.wc.bossBarSeconds;
     this.combat.hud.boss(this.bossTimer > 0 && this.alive ? this.share : null);
     this.renderer.update(this, dt, cameraPosition, this.drawDistance);
+    this.trapRenderer.update(this.traps.list, this.traps.snare, dt, cameraPosition, this.drawDistance);
   }
 
   // ---- noticing the player -----------------------------------------------------
@@ -338,6 +366,17 @@ export class Witch {
     this.lastSeen = 0;
     this.lastX = p.x;
     this.lastZ = p.z;
+    if (this.state === 'roaming' || this.state === 'planting') this.react();
+  }
+
+  // An alarm charm rattled at (x, z): if she's out and near enough, she
+  // knows you're there.
+  heardCharm(x, z) {
+    if (this.state === 'resting' || this.state === 'dead') return;
+    if (Math.hypot(this.x - x, this.z - z) > this.wc.traps.charm.witchHears) return;
+    this.lastSeen = 0;
+    this.lastX = x;
+    this.lastZ = z;
     if (this.state === 'roaming' || this.state === 'planting') this.react();
   }
 
@@ -379,7 +418,10 @@ export class Witch {
     this.lunging = false;
     this.rethink = this.wc.rethinkSeconds;
     this.setRoute(this.hut.x, this.hut.z);
-    if (was !== 'fleeing') this.bus.emit('witch:fleeing');
+    if (was !== 'fleeing') {
+      this.dropTimer = this.wc.traps.dropEvery * 0.5; // the first soon after she turns
+      this.bus.emit('witch:fleeing');
+    }
   }
 
   // The fight's over (she lost you, or you're dead): back to planting if
@@ -395,13 +437,20 @@ export class Witch {
   fight(dt) {
     const a = this.wc.attack;
     const p = this.player.position;
-    if (!this.combat.alive || this.lastSeen > this.wc.loseSeconds) {
-      this.disengage();
-      return;
-    }
     const tx = this.lastSeen === 0 ? p.x : this.lastX;
     const tz = this.lastSeen === 0 ? p.z : this.lastZ;
     const dist = Math.hypot(tx - this.x, tz - this.z);
+    // Lost you once she's where she last knew you to be (a charm can call
+    // her from far off: she comes, then looks).
+    if (!this.combat.alive || (this.lastSeen > this.wc.loseSeconds && dist <= a.hex.maxRange)) {
+      this.disengage();
+      return;
+    }
+    if (dist > a.hex.maxRange) {
+      this.stepToward(tx, tz, this.wc.roamSpeed, dt, true);
+      this.facing = turnToward(this.facing, Math.atan2(tx - this.x, tz - this.z), this.wc.turnRate * dt);
+      return;
+    }
     this.facing = turnToward(this.facing, Math.atan2(tx - this.x, tz - this.z), this.wc.turnRate * dt);
     // Standing still invites her in.
     this.stillTime = this.player.speed < a.lunge.stillSpeed ? this.stillTime + dt : 0;
@@ -534,7 +583,17 @@ export class Witch {
         if (this.state !== 'fleeing') return;
       }
     }
-    if (this.move(dt, f.speed, f.weave)) {
+    // Traps dropped behind her as she goes (more slowly while she does).
+    const tc = this.wc.traps;
+    this.dropTimer -= dt;
+    this.dropSlow = Math.max(0, this.dropSlow - dt);
+    if (this.dropTimer <= 0) {
+      this.dropTimer = tc.dropEvery;
+      this.dropSlow = tc.dropSlowSeconds;
+      this.traps.add(pickTrapType(tc.dropMix, this.trapRng), this.x, this.z, this.ground, true);
+    }
+    const speed = f.speed * (this.dropSlow > 0 ? tc.dropSlow : 1);
+    if (this.move(dt, speed, f.weave)) {
       this.state = 'resting';
       this.endFight();
       this.bus.emit('witch:home');
@@ -808,6 +867,18 @@ export class Witch {
       this.health = 0;
       this.die();
     });
+    // Step 3: traps.
+    witch.addItem('Traps: lay a snare, a totem and a charm ahead of me', () => {
+      const p = this.player.position;
+      const a = this.player.yaw;
+      // 6, 12 and 18 m ahead (the camera looks down -z at yaw 0).
+      ['snare', 'totem', 'charm'].forEach((type, i) => {
+        const d = 6 + i * 6;
+        this.traps.add(type, p.x - Math.sin(a) * d, p.z - Math.cos(a) * d, this.ground, true);
+      });
+      notify('Snare 6 m, totem 12 m, charm 18 m ahead');
+    });
+    witch.addItem(() => `Traps: free me / clear them all (${this.traps.activeCount} out)`, () => this.traps.clear(this.player));
     witch.addItem(() => `Show her on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
     menu.category(DEBUG.teleport).addItem('Teleport: near the witch', teleportNear);
   }
@@ -834,7 +905,7 @@ export class Witch {
   overlayLine() {
     const more = this.plan.length ? `  ${this.plan.length} more planned` : '';
     const seen = Number.isFinite(this.lastSeen) && this.lastSeen < 60 ? `  saw you ${this.lastSeen.toFixed(0)}s ago` : '';
-    return `witch: ${this.stateText()}  health ${Math.round(this.share * 100)}%  (${this.tier}, ${Math.round(this.distance ?? 0)}m from you)${seen}  planted tonight ${this.plantedTonight}${more}  hexes ${this.hexes.count}`;
+    return `traps ${this.traps.activeCount}${this.traps.snare ? ' (SNARED)' : ''}  witch: ${this.stateText()}  health ${Math.round(this.share * 100)}%  (${this.tier}, ${Math.round(this.distance ?? 0)}m from you)${seen}  planted tonight ${this.plantedTonight}${more}  hexes ${this.hexes.count}`;
   }
 
   setDrawDistance(distance) {
@@ -844,9 +915,12 @@ export class Witch {
   dispose() {
     for (const off of this.unsubscribers ?? []) off();
     const extras = this.combat.weapons.extraTargets;
-    const i = extras.indexOf(this);
-    if (i >= 0) extras.splice(i, 1);
+    for (const t of [this, this.traps]) {
+      const i = extras.indexOf(t);
+      if (i >= 0) extras.splice(i, 1);
+    }
     this.renderer.dispose();
+    this.trapRenderer.dispose();
   }
 }
 

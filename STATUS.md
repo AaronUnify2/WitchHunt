@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-2 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, and **you can fight her on the pathways.** Next: step 3, her traps.
+Last updated: Session 8 (AI Programmer), milestone **M7: the witch (the vertical slice), in progress.** Steps 1-3 of 6 are pushed for Aaron's play-test: **the witch roams and plants**, **you can fight her on the pathways**, and **she lays traps.** Next: step 4, the hut and explosives.
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -26,6 +26,17 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
 - Every teleport is together under "Teleport & map". Systems add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
+
+### M7 step 3: The witch's traps (Session 8)
+
+`src/ai/witchTraps.js`, `src/render/TrapRenderer.js`; numbers in OPEN_QUESTIONS.md #121-122.
+- **Snare:** a pegged loop of root and rope on the path, hard to see without the torch. Step in it and you're held fast (`Player.rooted`); you can still look and shoot. "Snared! Mash A to tear free", with a progress bar. About 2 seconds of mashing, as Aaron asked.
+- **Hex totem:** leaning sticks with a turning, glowing rune and a faint pulsing ring. Inside the ring you take 8 damage a second. Shoot or strike it to destroy it.
+- **Alarm charm:** a stake hung with swaying pale bones. Walk into it and it clatters: zombies within 80 m come, and the witch, if she's out within 250 m, comes looking. Shoot it first and it's harmless.
+- **Placement:** the hut approach is laid with 16 at the start of every run, thicker toward the hut, as breadcrumbs. She drops one every 3.5 s while fleeing (she slows as she does).
+- **Debug (Witch):** Traps: lay a snare, a totem and a charm ahead of me; free me / clear them all. The overlay's witch line shows the trap count and SNARED.
+- **Verified in headless Chromium (seed 4242):** 16 traps on the hut approach; all three kinds drawn; the snare caught the player with its prompt; fleeing wounded, she dropped 3 in 12 s. No console errors.
+- **Tests:** 354 pass (6 new): the hut approach on three maps (count, spacing, on the path, thicker near the hut, the same every time), the snare (held, a rest drains the effort, about 2 s of mashing frees you), the totem (burns inside its ring until shot), and the charm (calls zombies and the witch; shot first, it does nothing).
 
 ### M7 step 2: Fighting the witch on the pathways (Session 8)
 
@@ -563,7 +574,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
-- **The witch (M7 steps 1-2)** roams, plants and fights, but lays no traps yet (step 3) and has no hut building (step 4). Only her health is saved (the rest is step 6). Killing her shows a placeholder victory screen.
+- **The witch (M7 steps 1-3)** roams, plants, fights and lays traps, but has no hut building yet (step 4). Only her health is saved (traps and the rest are step 6). Killing her shows a placeholder victory screen.
 - The mutant is a placeholder of boxes; the miner variant waits for the mineshaft (M9); the siege goal waits for the station (M5).
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.

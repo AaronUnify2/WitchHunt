@@ -146,7 +146,8 @@ describe('the witch out for a night', () => {
       // The player in the open at night, torch on, standing.
       senses: { x: 0, z: 0, eyeY: 1.7, daylight: 0, torchOn: true, crouched: false, sprinting: false, speed: 0, undergrowth: 0 },
       alive: true,
-      enemies: { spawnPlanned: (plan, x, z) => (spawned.push({ x, z }), 1) },
+      enemies: { spawnPlanned: (plan, x, z) => (spawned.push({ x, z }), 1), alert: () => 0 },
+      promptSources: [],
       hurtPlayer: (damage) => hurt.push(damage),
     };
     // Keep the senses on the player.
@@ -406,5 +407,103 @@ describe('her contortions', () => {
       seen.add(v.toFixed(3));
     }
     expect(seen.size).toBeGreaterThan(5);
+  });
+});
+
+describe('her traps', async () => {
+  const { Traps, placeHutTraps } = await import('../src/ai/witchTraps.js');
+  const tc = config.witch.traps;
+  const flat = { heightAt: () => 0 };
+  const makeEnv = () => {
+    const bus = new EventBus();
+    bus.init();
+    const traps = new Traps(tc, bus);
+    const player = { position: { x: 0, z: 0 }, onGround: true, rooted: false, platform: null };
+    const hurt = [];
+    const alerts = [];
+    const combat = { alive: true, hurtPlayer: (d) => hurt.push(d), enemies: { alert: (x, z, r) => alerts.push(r) } };
+    let presses = 0;
+    const input = { wasPressed: (a) => a === 'jump' && presses-- > 0, activeDevice: 'gamepad' };
+    const press = (n) => (presses = n);
+    return { bus, traps, player, hurt, alerts, combat, input, press };
+  };
+
+  for (const seed of [3, 11, 1234]) {
+    it(`seed ${seed}: the hut approach is laid with traps, thicker near the hut`, () => {
+      const map = makeMap(seed);
+      const hut = map.clearings[map.hutIndex];
+      const list = placeHutTraps(map, tc.hut, new Rng(seed));
+      expect(list.length).toBeGreaterThan(tc.hut.count * 0.6);
+      expect(list.length).toBeLessThanOrEqual(tc.hut.count);
+      let near = 0;
+      for (const t of list) {
+        expect(Math.hypot(t.x - hut.x, t.z - hut.z)).toBeLessThanOrEqual(tc.hut.radius + 5);
+        if (Math.hypot(t.x - hut.x, t.z - hut.z) < tc.hut.radius / 2) near++;
+        for (const u of list) if (u !== t) expect(Math.hypot(t.x - u.x, t.z - u.z)).toBeGreaterThanOrEqual(tc.hut.minGap - 3);
+        // On (or right beside) a pathway.
+        expect(offPath(map, t.x, t.z)).toBeLessThan(tc.hut.sideJitter + 0.5);
+      }
+      expect(near).toBeGreaterThan(list.length / 2);
+      expect(placeHutTraps(map, tc.hut, new Rng(seed))).toEqual(list); // the same every time for a map
+    });
+  }
+
+  it('a snare holds you until you mash free (the effort drains if you stop)', () => {
+    const env = makeEnv();
+    env.traps.add('snare', 0.3, 0, flat);
+    env.traps.update(0.1, env.player, env.input, env.combat);
+    expect(env.player.rooted).toBe(true);
+    expect(env.hurt).toEqual([tc.snare.damage]);
+    expect(env.traps.hud.prompt).toContain('Mash A');
+    // A few presses, then a rest: still held.
+    for (let i = 0; i < 3; i++) {
+      env.press(1);
+      env.traps.update(0.25, env.player, env.input, env.combat);
+    }
+    for (let i = 0; i < 20; i++) env.traps.update(0.25, env.player, env.input, env.combat);
+    expect(env.player.rooted).toBe(true);
+    expect(env.traps.mash).toBe(0);
+    // Mashing for about two seconds.
+    let t = 0;
+    while (env.player.rooted && t < 5) {
+      env.press(1);
+      env.traps.update(0.25, env.player, env.input, env.combat);
+      t += 0.25;
+    }
+    expect(env.player.rooted).toBe(false);
+    expect(t).toBeGreaterThan(1.4);
+    expect(t).toBeLessThan(3);
+    // Used up.
+    env.traps.update(0.1, env.player, env.input, env.combat);
+    expect(env.player.rooted).toBe(false);
+  });
+
+  it("a totem burns you inside its ring until it's shot apart", () => {
+    const env = makeEnv();
+    const totem = env.traps.add('totem', 2, 0, flat);
+    for (let i = 0; i < 20; i++) env.traps.update(0.1, env.player, env.input, env.combat);
+    const burned = env.hurt.reduce((a, b) => a + b, 0);
+    expect(burned).toBeCloseTo(tc.totem.damagePerSecond * 2, -1);
+    expect(totem.targetable).toBe(true);
+    expect(totem.takeHit(25, 'body', {}, { x: 2, y: 1, z: 0 })).toBe(true);
+    env.hurt.length = 0;
+    for (let i = 0; i < 20; i++) env.traps.update(0.1, env.player, env.input, env.combat);
+    expect(env.hurt).toEqual([]);
+  });
+
+  it('a charm calls the zombies and the witch; shot first, it does nothing', () => {
+    const env = makeEnv();
+    const heard = [];
+    env.traps.add('charm', 1, 0, flat);
+    env.traps.update(0.1, env.player, env.input, env.combat, (x, z) => heard.push([x, z]));
+    expect(env.alerts).toEqual([tc.charm.alert]);
+    expect(heard).toEqual([[1, 0]]);
+    const env2 = makeEnv();
+    const charm = env2.traps.add('charm', 30, 0, flat);
+    env2.traps.update(0.1, env2.player, env2.input, env2.combat);
+    charm.takeHit(25, 'body', {}, null);
+    env2.player.position.x = 30;
+    env2.traps.update(0.1, env2.player, env2.input, env2.combat);
+    expect(env2.alerts).toEqual([]);
   });
 });

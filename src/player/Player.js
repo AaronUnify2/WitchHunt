@@ -65,6 +65,7 @@ export class Player {
     this.lookScale = 1;
     this.fovMultiplier = 1;
     this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower
+    this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
     this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
     this.shakeAmount = 0;
     this.shakeTime = 0;
@@ -150,11 +151,11 @@ export class Player {
     if (!moving || this.stamina.empty) this.sprintLatched = false;
 
     // No sprinting while aiming or just after firing (moveMultiplier < 1).
-    const wantSprint = (this.sprintLatched || input.isDown('sprint')) && moving && !this.crouched && this.moveMultiplier >= 1;
+    const wantSprint = (this.sprintLatched || input.isDown('sprint')) && moving && !this.crouched && this.moveMultiplier >= 1 && !this.rooted;
     this.sprinting = wantSprint && (this.sprinting ? !this.stamina.empty : this.stamina.canStart);
     this.stamina.update(dt, this.sprinting);
 
-    let speed = c.walkSpeed * this.moveMultiplier;
+    let speed = this.rooted ? 0 : c.walkSpeed * this.moveMultiplier;
     if (this.sprinting) speed *= c.sprintMultiplier;
     else if (this.crouched) speed *= c.crouchMultiplier;
     // Undergrowth off the pathways slows every pace.
@@ -203,7 +204,7 @@ export class Player {
 
   updateVertical(dt, input) {
     const c = this.cfg;
-    if (input.wasPressed('jump') && this.onGround) {
+    if (input.wasPressed('jump') && this.onGround && !this.rooted) {
       if (this.crouched) this.crouched = false; // jump from a crouch just stands up
       else {
         this.verticalSpeed = c.jumpSpeed;
