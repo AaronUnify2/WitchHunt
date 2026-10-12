@@ -75,6 +75,7 @@ export class EnemyManager {
     this.level = 1;
     this.stats = levelStats(this.cfg.levels, 1);
     this.station = null; // M5: the station's siege hook (see the top of this file)
+    this.stationSimulated = this.cfg.lod.stationKeepsSimulated; // M6: false while the player is away (NightWatch)
     this.routeOut = { active: false, x: 0, z: 0, barrier: null };
     this.senses = {};
     this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, march: 0, linger: 0, rise: 0, stragglers: 0 };
@@ -363,7 +364,7 @@ export class EnemyManager {
   // Zombies near the station stay simulated (the siege runs for real).
   keepSimulated(z) {
     const st = this.station;
-    if (!st || !this.cfg.lod.stationKeepsSimulated) return false;
+    if (!st || !this.stationSimulated) return false;
     return Math.hypot(z.x - st.x, z.z - st.z) <= st.routeRadius + this.cfg.lod.hysteresis;
   }
 

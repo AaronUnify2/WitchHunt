@@ -584,3 +584,92 @@ body {
 @keyframes hud-station-hit {
   50% { background: #ffffff; }
 }
+
+/* M6: the station-under-attack banner (top centre, under the toasts) */
+.hud-alarm {
+  position: absolute;
+  top: calc(var(--safe) + 3.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.9rem;
+  background: rgba(90, 10, 6, 0.72);
+  color: #ffd8c8;
+  letter-spacing: 0.12em;
+  font-weight: bold;
+  white-space: nowrap;
+  animation: hud-alarm-pulse 1s steps(2) infinite;
+}
+
+.hud-alarm-arrow {
+  display: inline-block;
+  margin-right: 0.6em;
+  color: #ffe070;
+}
+
+@keyframes hud-alarm-pulse {
+  50% { background: rgba(150, 18, 10, 0.85); }
+}
+
+/* M6: the dusk forecast (non-blocking; it fades by itself) */
+.forecast {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(46rem, 86vw);
+  padding: 0.9rem 1.2rem;
+  background: rgba(16, 14, 10, 0.86);
+  border: 1px solid #6a5a3a;
+  color: #e0d6c0;
+  font-size: 0.85em;
+  line-height: 1.45;
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+
+.forecast.hidden {
+  opacity: 0;
+}
+
+.forecast h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05em;
+  letter-spacing: 0.15em;
+  color: #e8c878;
+}
+
+.forecast .verdict {
+  font-size: 1.15em;
+  margin: 0.2rem 0 0.5rem;
+}
+
+.forecast .verdict.clean { color: #9ad08a; }
+.forecast .verdict.holds { color: #e8d070; }
+.forecast .verdict.mayFall { color: #f0a050; }
+.forecast .verdict.overrun { color: #ff6a50; }
+
+.forecast .cols {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.forecast .cols > div {
+  flex: 1;
+}
+
+.forecast h3 {
+  margin: 0.2rem 0;
+  font-size: 0.9em;
+  color: #b8a880;
+}
+
+.forecast ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.forecast .warn {
+  margin-top: 0.5rem;
+  color: #f0b060;
+}

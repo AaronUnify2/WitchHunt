@@ -160,12 +160,12 @@ export class Combat {
   }
 
   // M5: a zombie got into the comms room. The run ends like a death.
-  overrun() {
+  overrun(reason = 'The dead broke into the comms room.') {
     if (!this.alive) return;
     this.alive = false;
     this.player.moveMultiplier = 1;
     this.player.fovMultiplier = 1;
-    this.hud.showDeath(this.kills, 'THE STATION FELL', 'The dead broke into the comms room.');
+    this.hud.showDeath(this.kills, 'THE STATION FELL', reason);
     this.sfx.play('overrun');
   }
 

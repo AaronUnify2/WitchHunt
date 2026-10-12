@@ -16,6 +16,8 @@
 //    barricades, fit batteries at the fence box, install and load the
 //    turret, climb the tower (reveals the map round it), open the ledger.
 //  - The ledger (ui/Ledger.js): one place to manage it all.
+//  - M6: while the player is away, NightWatch resolves each attack by the
+//    margin table and applyAttack() lands it on the real defences.
 //
 // Events: 'station:breached' { barrier }, 'station:repaired' { barrier },
 // 'station:overrun', 'station:battery' { charge }.
@@ -103,7 +105,6 @@ export class Station {
       bus.on('enemy:strikeDefence', (e) => this.onStrike(e)),
       bus.on('player:hurt', () => this.hold.interrupt()),
       bus.on('player:respawned', () => this.reset()),
-      bus.on('phase:dusk', () => this.duskReport()),
     ];
   }
 
@@ -723,13 +724,79 @@ export class Station {
       { id: 'power', title: 'Power', rows: power },
       { id: 'upgrades', title: 'Upgrades', rows: upgrades },
       { id: 'security', title: 'Security', rows: security },
+      ...(this.extraPages?.() ?? []), // M6: NightWatch's forecast
     ];
   }
 
-  // At dusk: how the station stands (M6 adds tonight's danger forecast).
-  duskReport() {
-    const sec = this.state.security(this.nightSeconds);
-    this.notify(`Dusk. Station security ${sec.total.toFixed(0)}, fence charge ${Math.round(this.state.charge)}`);
+  // ---- attacks while you're away (M6) ------------------------------------------------
+
+  // The fence line (segments and the gate) nearest first from angle `a`
+  // round the fence: where an attack from that side lands.
+  fenceLineFrom(a) {
+    const s = this.state;
+    const line = this.layout.segments.map((seg, i) => ({ b: s.segments[i], a: (seg.a0 + seg.a1) / 2 }));
+    line.push({ b: s.gate, a: 0 });
+    return line.sort((p, q) => Math.abs(p.a - a) - Math.abs(q.a - a)).map((p) => p.b);
+  }
+
+  // Land a resolved attack (base/nightResolver.js) that reached the
+  // station at (x, z): damage the fence where it arrived (the barricade
+  // behind a segment first), use up turret rounds, charge and spike bites,
+  // and if it broke through, the doors go and the family are lost.
+  // Returns { damage (health taken off), broke: [names], rounds, charge, fell }.
+  applyAttack(x, z, result, zombies) {
+    const s = this.state;
+    const r = this.cfg.nights.resolver;
+    const out = { damage: 0, broke: [], rounds: 0, charge: 0, fell: false };
+    const chargeBefore = s.charge;
+    // The turret and the fence fight back first.
+    if (s.turretOnline) {
+      const used = Math.min(s.turret.rounds, result.turretRounds);
+      for (let i = 0; i < Math.floor(used); i++) s.turretFired();
+      s.turret.rounds = Math.max(0, s.turret.rounds - (used - Math.floor(used)));
+      out.rounds = used;
+    }
+    if (s.powered) s.drain(result.zaps * this.sc.power.zapCost);
+    const line = this.fenceLineFrom(angleOf(this.layout, x, z));
+    const first = line[0];
+    if (first.kind === 'fence') {
+      const trap = first.spike;
+      for (let i = 0; i < zombies && trap.built && trap.durability > 0; i++) s.wearSpike(first.index);
+    }
+    const hit = (b, amount) => {
+      const before = b.health;
+      if (s.damage(b, amount)) out.broke.push(b.name);
+      out.damage += before - b.health;
+    };
+    if (result.falls) {
+      // Straight through: the fence where they came, the front door, the comms door.
+      if (first.kind === 'fence' && first.barricade.built) hit(first.barricade, Infinity);
+      hit(first, Infinity);
+      hit(s.doors.front, Infinity);
+      hit(s.doors.comms, Infinity);
+      out.fell = true;
+    } else {
+      // Spread along the fence from where they arrived, a barricade before its segment.
+      let left = result.damage;
+      for (const b of line) {
+        if (left <= 0) break;
+        for (const target of b.kind === 'fence' && b.barricade.built ? [b.barricade, b] : [b]) {
+          const take = Math.min(left, target.health * r.spreadBreak);
+          if (take <= 0) continue;
+          hit(target, take);
+          left -= take;
+          if (left <= 0) break;
+        }
+      }
+    }
+    out.charge = chargeBefore - s.charge;
+    this.syncColliders();
+    if (out.fell && this.overrunEnabled && !this.overrunDone && this.combat.alive) {
+      this.overrunDone = true;
+      this.bus.emit('station:overrun');
+      this.combat.overrun('The dead broke into the comms room while you were away.');
+    }
+    return out;
   }
 
   // The HUD strip under the minimap, while you're near the station: its

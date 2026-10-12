@@ -4,6 +4,7 @@
 // and first aid kits bottom right; a red edge when hurt; the death screen.
 // M4: the dig prompt and its progress bar under the crosshair, and a short
 // feed of what you just picked up.
+// M6: the station-under-attack banner top centre, with an arrow home.
 
 const ARMOUR_TYPES = ['ballistic', 'energy', 'nature'];
 
@@ -25,6 +26,7 @@ export class Hud {
       <div class="hud-dig"><span></span></div>
       <div class="hud-pickups"></div>
       <div class="hud-station hidden"></div>
+      <div class="hud-alarm hidden"><span class="hud-alarm-arrow">&#9650;</span><span class="hud-alarm-text"></span></div>
       <div class="hud-vitals">
         <div class="hud-heal">+</div>
         <div class="hud-health">${segments}</div>
@@ -53,6 +55,9 @@ export class Hud {
     this.digBarEl = q('.hud-dig span');
     this.pickupsEl = q('.hud-pickups');
     this.stationEl = q('.hud-station');
+    this.alarmEl = q('.hud-alarm');
+    this.alarmArrowEl = q('.hud-alarm-arrow');
+    this.alarmTextEl = q('.hud-alarm-text');
     this.pickupLines = []; // { text, timer }
     this.healEl = q('.hud-heal');
     this.healthEl = q('.hud-health');
@@ -117,6 +122,16 @@ export class Hud {
       this.stationEl.classList.toggle('hidden', !h);
       if (h) this.stationEl.innerHTML = h;
     });
+  }
+
+  // M6: the alarm banner. text: null to hide. angle: radians, the way home
+  // relative to where you're facing (0 straight ahead, + to the right).
+  alarm(text, angle = 0) {
+    this.set('alarm', text, (t) => {
+      this.alarmEl.classList.toggle('hidden', !t);
+      if (t) this.alarmTextEl.textContent = t;
+    });
+    if (text) this.set('alarmAngle', Math.round(angle * 20) / 20, (a) => (this.alarmArrowEl.style.transform = `rotate(${a}rad)`));
   }
 
   showDeath(kills, title = 'YOU DIED', reason = '') {

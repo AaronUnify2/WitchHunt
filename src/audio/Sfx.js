@@ -338,6 +338,12 @@ const RECIPES = {
   carAlarmLow(s, pos) {
     s.tone(s.out(pos?.x, pos?.z, 1), { seconds: 0.5, wave: 'square', freq: 1180, endFreq: 760, gain: 0.22, attack: 0.02 });
   },
+  // M6: the radio crackles into the station's alarm (three urgent pips).
+  radioAlarm(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 1800, q: 1.2, gain: 0.25, attack: 0.02 });
+    for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.16, wave: 'square', freq: 990, gain: 0.18 }), 380 + i * 230);
+  },
   overrun(s) {
     const o = s.out();
     s.tone(o, { seconds: 3, wave: 'sawtooth', freq: 160, endFreq: 40, gain: 0.35, attack: 0.1, vibrato: 8 });

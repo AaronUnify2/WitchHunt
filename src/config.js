@@ -662,7 +662,7 @@ export const config = {
       abstractSeconds: 1, // an abstract zombie takes its coarse steps about this often
       abstractSubStep: 0.5, // seconds per coarse step (so it doesn't overshoot a bend)
       abstractMarchScale: 2.5, // marchers out of sight move this much faster, so far sigils reach home in a night (Aaron: fine)
-      stationKeepsSimulated: true, // zombies within the station's reach never go abstract (Step 3 changes this while you're away)
+      stationKeepsSimulated: true, // zombies within the station's reach never go abstract while you're near home (away, NightWatch resolves attacks instead)
       renderCap: 160, // most zombie sprites drawn at once (active first, then nearby)
       drawMargin: 5, // metres past the draw distance that nearby sprites are still drawn
       timingSmoothing: 0.05, // the overlay's sim time is smoothed by this much per frame
@@ -863,6 +863,39 @@ export const config = {
       haloFadeFar: 9, // ...and full from here out
       lift: 0.04, // metres above the ground
       textureSize: 256,
+    },
+  },
+
+  // M6: tonight's danger to the station (base/danger.js), in the same
+  // units as security, so margin = security - danger.
+  danger: {
+    perZombie: 2, // danger per marching zombie that reaches the station, x the level's defenceDamage
+    typicalSpeedRoll: 1 / 3, // a typical zombie's place in its level's speed range (rolls skew slow)
+    raiseSpread: 0.5, // groups rise through about this much of the night (later ones from far sigils miss dawn)
+  },
+
+  // M6: nights (base/NightWatch.js): the dusk forecast, nights resolved
+  // while you're away, and the alarm.
+  nights: {
+    awayRadius: 150, // metres from the station: beyond this you're away and attacks are resolved, not fought
+    awayHysteresis: 8,
+    forecastSeconds: 14, // the dusk forecast panel stays this long (the ledger's Forecast tab keeps it)
+    alarmFraction: 0.5, // DESIGN.md: the alarm when security falls below this x the security at dusk
+    // The margin table (base/nightResolver.js, DESIGN.md).
+    resolver: {
+      cleanMargin: 20, // +20 or more: clean night
+      mayFallMargin: -10, // -1 to -10: may fall; below: likely overrun
+      overrunSpan: 20, // the overrun band's chance climbs over this many points below -10
+      // Fraction of an attack's full damage that lands, by band ('holds'
+      // runs from the first number at margin 0 to the second at +19).
+      damage: { clean: 0.05, holds: [0.5, 0.15], mayFall: 0.8, overrun: 1 },
+      // Chance the whole night ends in the station falling, across each band.
+      fall: { mayFall: [0.1, 0.6], overrun: [0.6, 0.95] },
+      healthPerZombie: 120, // an attacking zombie's full damage on the defences, x the level's defenceDamage
+      spreadBreak: 1, // at most this x a barrier's health from one attack before the rest spills along the fence
+      turretRoundsPerZombie: 4, // turret rounds an attack can use up, per zombie
+      zapsPerZombie: 2, // zaps from the charged fence, per zombie
+      mutantWeight: 4, // a mutant in an attack counts as this many zombies
     },
   },
 

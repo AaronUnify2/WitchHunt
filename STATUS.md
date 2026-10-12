@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is built and waiting for Aaron's play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is built and waiting for his play-test. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -20,7 +20,43 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
-### M6 step 2: Night marches and revisits (Session 7, in progress)
+### M6 step 3: Danger, the forecast, nights while away, the alarm (Session 7, in progress)
+
+- **Danger** (`src/base/danger.js`), in the same units as security:
+  - **Spawn strength:** each sigil's marchers tonight (its night quota × ⅔).
+  - **Closeness:** × the share that reaches home before dawn. Groups rise over the first half of the night and march at a typical pace, ×2.5 out of sight.
+  - **Level:** × 2 per zombie × the level's `defenceDamage`.
+  - Night 2's single sigil comes to about 10-20 against a fresh station's 25, so "holds, takes damage".
+- **The dusk forecast** (`src/base/NightWatch.js`):
+  - A panel a frame after dusk (after the stand-in plants) that fades after 14 s. It takes no buttons, so B still reloads.
+  - It shows security against danger, the margin and the verdict if you're away, and both breakdowns.
+  - Per sigil: about how many zombies, and when the first should arrive ("the first around 10:30pm").
+  - Warnings: the turret runs dry, the fence charge runs out, the fence has no charge.
+  - Also a **Forecast** tab in the ledger, kept live.
+- **Away** (beyond 150 m of the station, 8 m of hysteresis):
+  - Zombies near the station may go abstract.
+  - Each group (a pack, or a stray) that reaches siege range is resolved by the margin table (`src/base/nightResolver.js`) as things stand then.
+  - It lands on the real defences (`Station.applyAttack()`): damage spreads along the fence from where it arrived, a barricade before its segment.
+  - Turret rounds (4 per zombie), zaps (2 per zombie) and spike bites are used up.
+  - An attack carries its share of the night's chance of falling. A fall breaks through to the comms room: "The station fell: the dead broke into the comms room while you were away".
+  - Back home, a summary toast. Near home, sieges are fought for real as before.
+- **The margin table:** +20 is clean (5% of the damage); 0 to +19 holds (50% down to 15%); -1 to -10 may fall (10-60% over the night, 80% damage); below -10 likely overrun (60-95%). A mutant counts as 4.
+- **The alarm:** the first time in a night security drops below half the dusk value, a radio call (a crackle and three pips) and a pulsing STATION UNDER ATTACK banner top centre, with an arrow home. Shown while you're outside siege range; it clears at dawn.
+- **Debug:**
+  - Night: show the forecast now.
+  - Night: count me as away from home (always).
+  - Night: sound the alarm now.
+  - A new `nights` overlay line: away or home, security, danger, margin and band, dusk security, alarm, attacks tonight.
+- **Verified in headless Chromium (seed 1234):**
+  - The night 2 forecast read security 25 vs danger 16, +9, holds, with the no-charge warning.
+  - Away at the hut, a siege wave was resolved.
+  - With 8 segments smashed (margin -12) an attack broke through and the station fell, with the "while you were away" reason.
+  - The alarm banner pointed home; the return summary listed what broke. No console errors.
+- **Tests:** 313 pass (9 new): the bands, the fall chances rising, attacks adding up to the night's chance (also checked over 4000 simulated nights), damage scaling, and danger by distance and level.
+
+### M6 step 2: Night marches and revisits (Session 7)
+
+- **Aaron's tablet test:** waves reached the fence at about 9pm and 11:30pm; good group sizes; nothing stuck; no fps drops. Undefended, they tear through the fence quickly: "a reasonable penalty for leaving the base undefended".
 
 - **Marching groups** (`ZombieDirector.raise()`, `src/ai/marchRoutes.js`):
   - Each raising is either a single wanderer or a whole marching group: 4 at level 1, 5, 6, 8, then 10 at level 5.
@@ -378,7 +414,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 ## Stubbed / placeholder (by design)
 
 - Vehicles are placeholder boxes; the bonnet, boot and door animation is a hinge swing (no arms or tools on screen). Vehicle state isn't saved yet (saving is M6/M12); each vehicle keeps its own "looted" flags for when it is. Encounter set dressing (the gas station's pumps, the outpost's sandbags) will move or replace cars when those encounters are built.
-- The turret comes from the debug menu until the Car Armory (M11). The danger rating, dusk forecast, alarm and simulated nights are M6 (dusk just toasts the station's security).
+- The turret comes from the debug menu until the Car Armory (M11). The forecast panel and alarm banner are placeholders (the final HUD is Session 19's).
 - "The station fell" is a placeholder defeat screen (M7 builds the real one). The family are placeholder figures that never move or speak (M8).
 - The ledger is a placeholder book (the pixel-font ledger is Session 19's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.

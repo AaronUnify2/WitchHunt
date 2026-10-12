@@ -23,6 +23,7 @@ import { Combat } from '../combat/Combat.js';
 import { ZombieDirector } from '../ai/ZombieDirector.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
+import { NightWatch } from '../base/NightWatch.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu } from '../debug/DebugMenu.js';
@@ -54,6 +55,7 @@ export class Game {
     this.initDirector();
     this.initStation(root);
     this.initVehicles();
+    this.initNightWatch(root);
     this.addOverlayStats();
     this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
@@ -144,6 +146,20 @@ export class Game {
     this.combat.promptSources.push(this.vehicles.hud);
   }
 
+  // Nights at the station (M6): the dusk forecast, attacks resolved
+  // while you're away, the alarm.
+  initNightWatch(root) {
+    this.nightWatch = new NightWatch(this.cfg, this.rng.fork('nights'), this.bus);
+    this.nightWatch.init(root, {
+      station: this.station,
+      director: this.director,
+      combat: this.combat,
+      player: this.player,
+      clock: this.clock,
+      notify: (text) => this.toast.show(text),
+    });
+  }
+
   initUi(root) {
     const cfg = this.cfg;
     this.mapUi = new MapUi(cfg, this.world, this.bus);
@@ -188,6 +204,7 @@ export class Game {
     this.overlay.addStat('lod', () => this.combat.enemies.lodLine());
     this.overlay.addStat('sigils', () => this.director.overlayLines().sigils);
     this.overlay.addStat('station', () => this.station.overlayLine());
+    this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
   }
 
@@ -199,6 +216,7 @@ export class Game {
     this.combat.addDebugItems(menu);
     this.director.addDebugItems(menu);
     this.station.addDebugItems(menu);
+    this.nightWatch.addDebugItems(menu);
     this.vehicles.addDebugItems(menu);
     menu.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     menu.addItem('Skip to night', () => this.skipToPhase('night'));
@@ -369,6 +387,7 @@ export class Game {
     this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
     this.station.update(dt, this.input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, this.input, playing && !locked);
+    this.nightWatch.update(dt, this.clock.phase, playing);
     if (playing) {
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
@@ -398,6 +417,7 @@ export class Game {
     this.overlay.dispose();
     this.toast.dispose();
     this.mapUi.dispose();
+    this.nightWatch.dispose();
     this.vehicles.dispose();
     this.station.dispose();
     this.director.dispose();
