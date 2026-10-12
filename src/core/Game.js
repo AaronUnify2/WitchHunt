@@ -444,6 +444,7 @@ export class Game {
     this.sky.setDrawDistance(q.drawDistance);
     this.setViewDistance(q.drawDistance);
     this.atmosphere.setQuality(q);
+    this.world.terrain.setTwoSizes(q.groundTwoSizes ?? true);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
     this.setFrameCap(q.frameCap);
   }

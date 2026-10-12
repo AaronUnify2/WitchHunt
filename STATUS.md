@@ -32,6 +32,25 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 2: the ground (Graphics Engineer, style pass 1)
+
+Aaron: keep it light, since the ground mist hides much of the ground. Art stays generated in code.
+
+- **Three textures drawn in code** (`render/groundTextures.js`, 512 px, every 6 m):
+  - **Leaf litter:** dull autumn leaves in browns, ochres and dark reds, pine needles and twigs.
+  - **Moss and grass:** dark moss fuzz and grass tufts, with a little dead straw.
+  - **Path dirt:** packed dirt with grit, small shaded pebbles and a few fallen leaves.
+  - Kept dark, so the torch doesn't make them glare.
+- **The ground shader** (`world/Terrain.js`) blends them across the map:
+  - Leaf litter under the trees, and moss in patches of about 25 m that grow toward open ground.
+  - Dirt on pathways and in clearings (the dirt mask, as before).
+  - Dark, wet mud patches covering about 16% of the ground.
+  - Each texture is read at two sizes (the second bigger and turned), mixed by noise, so the 6 m repeat doesn't show.
+  - The patches come from one shared noise texture (`render/noiseTexture.js`, also used by the mist sheets), and the dirt and open masks are packed into one texture (`GroundField.maskBytes()`). That's 7 texture reads in all, 4 on Low.
+- **Quality:** `groundTwoSizes` (Low off, Medium and High on). Textures get 4x anisotropic filtering (`terrain.floor.anisotropy`).
+- **Removed:** the old blotchy ground and dirt textures (`makeGroundTexture`, `makeDirtTexture`) and their config.
+- **Not done (offered to Aaron for later):** normal maps, and fallen logs and roots.
+
 ### Session 10 step 1: fog and mist (Graphics Engineer, style pass 1)
 
 Agreed with Aaron: always-on ground mist at night, and fog nights about one night in three (never night 1). Art stays generated in code.
@@ -685,7 +704,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
-- Not built from "Visual ambition" (Session 10 step 1 built the ground mist, height mist and fog nights): fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
+- Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): fake light shafts, fireflies and other particles, normal maps on the ground, fallen logs and roots, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
 - Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 

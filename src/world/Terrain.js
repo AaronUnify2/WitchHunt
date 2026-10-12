@@ -1,18 +1,22 @@
 // The map's ground: rolling terrain from the GroundField, built as one
-// mesh per chunk (only nearby chunks are drawn). The forest floor texture
-// tiles everywhere; a shader blends in bare dirt wherever the ground's
-// dirt mask says (pathways and clearings), read from one small texture
-// covering the whole map. Smooth, lumpy rocks are scattered round the
-// clearings and through the forest; they cast flashlight shadows and
+// mesh per chunk (only nearby chunks are drawn). Session 10: the ground
+// shader blends three textures drawn in code (render/groundTextures.js):
+// leaf litter under the trees, moss and grass in patches and toward open
+// ground, packed dirt wherever the dirt mask says (pathways and clearings),
+// with dark wet mud patches here and there. Each texture is read at two
+// sizes, mixed by noise, so its repeats don't show. The dirt and open
+// masks are one small texture covering the whole map; the patches come
+// from one shared noise texture. Smooth, lumpy rocks are scattered round
+// the clearings and through the forest; they cast flashlight shadows and
 // block the player and shots.
 
 import * as THREE from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { makeGroundTexture } from '../render/proceduralTextures.js';
-import { makeDirtTexture } from '../render/mapTextures.js';
+import { makeLitterTexture, makeMossTexture, makePathTexture } from '../render/groundTextures.js';
+import { makeNoiseTexture } from '../render/noiseTexture.js';
 import { ChunkCuller } from '../render/ChunkCuller.js';
 
-// World position for the dirt mask lookup.
+// World position for the mask and noise lookups.
 const GROUND_VERTEX_COMMON = /* glsl */ `
   varying vec2 vWorldXZ;
 `;
@@ -22,14 +26,38 @@ const GROUND_VERTEX_WORLD = /* glsl */ `
 `;
 const GROUND_FRAGMENT_COMMON = /* glsl */ `
   varying vec2 vWorldXZ;
+  uniform sampler2D uMossMap;
   uniform sampler2D uDirtMap;
-  uniform sampler2D uDirtMask;
+  uniform sampler2D uMasks; // r: dirt, g: open
+  uniform sampler2D uGroundNoise; // r: moss patches, g: mud, b: which texture size
   uniform vec4 uMaskRect; // xMin, zMin, 1 / width, 1 / depth
+  uniform vec4 uFloor; // 1 / tile metres, 1 / (tile * second scale), 1 / noise metres, moss on open ground
+  uniform vec4 uFloorMix; // moss threshold low, high, mud share, mud darken
+  vec3 groundTwoSizes(sampler2D t, vec2 a, vec2 b, float w) {
+    #ifdef GROUND_TWO_SIZES
+      return mix(texture2D(t, a).rgb, texture2D(t, b).rgb, w);
+    #else
+      return texture2D(t, a).rgb;
+    #endif
+  }
 `;
+// Replaces three.js's map read (the map is the leaf litter).
 const GROUND_FRAGMENT_MAP = /* glsl */ `
-  #include <map_fragment>
-  float dirtAmount = texture2D(uDirtMask, (vWorldXZ - uMaskRect.xy) * uMaskRect.zw).r;
-  diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uDirtMap, vMapUv).rgb, dirtAmount);
+  vec2 groundA = vWorldXZ * uFloor.x;
+  vec2 groundB = mat2(0.8, -0.6, 0.6, 0.8) * vWorldXZ * uFloor.y + 0.31;
+  vec3 groundNoise = texture2D(uGroundNoise, vWorldXZ * uFloor.z).rgb;
+  vec2 groundMasks = texture2D(uMasks, (vWorldXZ - uMaskRect.xy) * uMaskRect.zw).rg;
+  #ifdef GROUND_TWO_SIZES
+    float groundSizes = smoothstep(0.3, 0.7, groundNoise.b);
+  #else
+    float groundSizes = 0.0;
+  #endif
+  float mossAmount = smoothstep(uFloorMix.x, uFloorMix.y, groundNoise.r + groundMasks.g * uFloor.w);
+  vec3 groundColor = mix(groundTwoSizes(map, groundA, groundB, groundSizes), groundTwoSizes(uMossMap, groundA, groundB, groundSizes), mossAmount);
+  groundColor = mix(groundColor, groundTwoSizes(uDirtMap, groundA, groundB, groundSizes), groundMasks.r);
+  float mud = smoothstep(1.0 - uFloorMix.z, 1.0 - uFloorMix.z + 0.08, groundNoise.g);
+  groundColor *= 1.0 - mud * uFloorMix.w;
+  diffuseColor.rgb *= groundColor;
 `;
 
 export class Terrain {
@@ -53,16 +81,27 @@ export class Terrain {
 
   buildMaterial() {
     const c = this.cfg;
+    const f = c.floor;
     const g = this.ground;
     const geo = g.geo;
-    const floor = makeGroundTexture(c, this.rng.fork('ground'));
-    const dirt = makeDirtTexture(c, this.rng.fork('dirt'));
-    const mask = new THREE.DataTexture(g.dirtBytes(), g.maskNx, g.maskNz, THREE.RedFormat, THREE.UnsignedByteType);
-    mask.unpackAlignment = 1; // rows are an odd number of bytes wide
-    mask.magFilter = THREE.LinearFilter;
-    mask.minFilter = THREE.LinearFilter;
-    mask.needsUpdate = true;
-    this.textures.push(floor, dirt, mask);
+    const litter = makeLitterTexture(f, this.rng.fork('litter'));
+    const moss = makeMossTexture(f, this.rng.fork('moss'));
+    const dirt = makePathTexture(f, this.rng.fork('dirt'));
+    const noise = makeNoiseTexture(
+      f.noiseSize,
+      [
+        [{ cells: 6, weight: 0.7 }, { cells: 20, weight: 0.3 }], // moss patches (about 25 m)
+        [{ cells: 10, weight: 0.6 }, { cells: 32, weight: 0.4 }], // mud
+        [{ cells: 24, weight: 1 }], // which texture size shows (about 7 m)
+      ],
+      this.rng.fork('ground-noise'),
+    );
+    const masks = new THREE.DataTexture(g.maskBytes(), g.maskNx, g.maskNz, THREE.RGFormat, THREE.UnsignedByteType);
+    masks.unpackAlignment = 1; // rows are an odd number of bytes wide
+    masks.magFilter = THREE.LinearFilter;
+    masks.minFilter = THREE.LinearFilter;
+    masks.needsUpdate = true;
+    this.textures.push(litter, moss, dirt, noise, masks);
 
     // Mask texel centres sit on the mask grid points.
     const width = (g.maskNx - 1) * g.maskCell;
@@ -70,11 +109,16 @@ export class Terrain {
     const texelX = g.maskCell / 2;
     const texelZ = g.maskCell / 2;
     const uniforms = {
+      uMossMap: { value: moss },
       uDirtMap: { value: dirt },
-      uDirtMask: { value: mask },
+      uMasks: { value: masks },
+      uGroundNoise: { value: noise },
       uMaskRect: { value: new THREE.Vector4(geo.xMin - texelX, geo.zMin - texelZ, 1 / (width + g.maskCell), 1 / (depth + g.maskCell)) },
+      uFloor: { value: new THREE.Vector4(1 / c.tileMeters, 1 / (c.tileMeters * f.secondScale), 1 / f.noiseMeters, f.mossOnOpen) },
+      uFloorMix: { value: new THREE.Vector4(f.mossThreshold[0], f.mossThreshold[1], f.mud.share, f.mud.darken) },
     };
-    const material = new THREE.MeshLambertMaterial({ map: floor });
+    const material = new THREE.MeshLambertMaterial({ map: litter });
+    material.defines = { GROUND_TWO_SIZES: '' }; // setTwoSizes() (Quality)
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, uniforms);
       shader.vertexShader = shader.vertexShader
@@ -86,6 +130,15 @@ export class Terrain {
     };
     material.customProgramCacheKey = () => 'map-ground';
     return material;
+  }
+
+  // Quality: read each texture at two sizes (hides its repeats) or one.
+  setTwoSizes(on) {
+    const had = 'GROUND_TWO_SIZES' in this.material.defines;
+    if (had === on) return;
+    if (on) this.material.defines.GROUND_TWO_SIZES = '';
+    else delete this.material.defines.GROUND_TWO_SIZES;
+    this.material.needsUpdate = true;
   }
 
   // Ground meshes: vertices on the height grid, two triangles per square

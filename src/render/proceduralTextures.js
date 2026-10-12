@@ -1,6 +1,6 @@
 // Procedural placeholder textures drawn on canvases at load: tree sprites,
-// ground, the moon and the flashlight cookie (the map's bushes, cliff,
-// dirt and signposts are in mapTextures.js). All seeded, so a seed always
+// the moon and the flashlight cookie (the map's bushes, cliff and
+// signposts are in mapTextures.js; the ground's in groundTextures.js). All seeded, so a seed always
 // draws the same forest. Final art replaces these in the art pass.
 
 import * as THREE from 'three';
@@ -209,44 +209,6 @@ function drawDeadTrunkDetail(ctx, x, y, width, height, cfg, rng) {
       ctx.fill();
     }
   });
-}
-
-// ---- ground -----------------------------------------------------------
-
-// Seamless tiling forest floor: grass, moss, dirt and leaf litter.
-export function makeGroundTexture(cfg, rng) {
-  const s = cfg.textureSize;
-  const { canvas, ctx } = makeCanvas(s, s);
-  ctx.fillStyle = css(cfg.grassColor);
-  ctx.fillRect(0, 0, s, s);
-  const colors = [cfg.dirtColor, cfg.mossColor, cfg.litterColor, cfg.grassColor];
-  for (let i = 0; i < cfg.blotchCount; i++) {
-    const x = rng.range(0, s);
-    const y = rng.range(0, s);
-    const r = rng.range(cfg.blotchSizeMin, cfg.blotchSizeMax);
-    ctx.fillStyle = css(rng.pick(colors), cfg.blotchAlpha);
-    drawWrapped(s, x, y, r, (ox, oy) => {
-      ctx.beginPath();
-      ctx.arc(ox, oy, r, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-  for (let i = 0; i < cfg.speckCount; i++) {
-    ctx.fillStyle = css(rng.pick(colors), rng.range(0.3, 0.8));
-    ctx.fillRect(rng.range(0, s), rng.range(0, s), cfg.speckSize, cfg.speckSize);
-  }
-  return toTexture(canvas, { repeat: true });
-}
-
-// Draw at the wrapped copies too, so the texture tiles without seams.
-function drawWrapped(size, x, y, r, draw) {
-  for (const ox of [-size, 0, size]) {
-    for (const oy of [-size, 0, size]) {
-      const px = x + ox;
-      const py = y + oy;
-      if (px + r >= 0 && px - r <= size && py + r >= 0 && py - r <= size) draw(px, py);
-    }
-  }
 }
 
 // ---- sky -------------------------------------------------------------------

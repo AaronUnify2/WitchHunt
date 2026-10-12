@@ -122,10 +122,14 @@ export class GroundField {
     return 1 - this.openAt(x, z);
   }
 
-  // The dirt mask as bytes (0-255), row by row from the north-west corner.
-  dirtBytes() {
-    const bytes = new Uint8Array(this.dirt.length);
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.round(this.dirt[i] * 255);
+  // The dirt and open masks as byte pairs (0-255: dirt, open), row by row
+  // from the north-west corner, for the ground shader.
+  maskBytes() {
+    const bytes = new Uint8Array(this.dirt.length * 2);
+    for (let i = 0; i < this.dirt.length; i++) {
+      bytes[i * 2] = Math.round(this.dirt[i] * 255);
+      bytes[i * 2 + 1] = Math.round(this.open[i] * 255);
+    }
     return bytes;
   }
 

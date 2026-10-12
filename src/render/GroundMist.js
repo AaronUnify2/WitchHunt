@@ -14,6 +14,7 @@
 // inside the station's buildings (avoid rectangles).
 
 import * as THREE from 'three';
+import { makeNoiseTexture } from './noiseTexture.js';
 
 const VERTEX = /* glsl */ `
   attribute vec3 aCentre;
@@ -76,41 +77,6 @@ const FRAGMENT = /* glsl */ `
   }
 `;
 
-// A tiling value-noise texture, made in code (two octaves).
-function makeNoiseTexture(size, rng) {
-  const grid = (cells) => {
-    const g = new Float32Array(cells * cells);
-    for (let i = 0; i < g.length; i++) g[i] = rng.next();
-    return (x, y) => {
-      const fx = (x / size) * cells;
-      const fy = (y / size) * cells;
-      const x0 = Math.floor(fx);
-      const y0 = Math.floor(fy);
-      const tx = fx - x0;
-      const ty = fy - y0;
-      const sx = tx * tx * (3 - 2 * tx);
-      const sy = ty * ty * (3 - 2 * ty);
-      const at = (i, j) => g[((j + cells) % cells) * cells + ((i + cells) % cells)];
-      const top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * sx;
-      const bottom = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * sx;
-      return top + (bottom - top) * sy;
-    };
-  };
-  const coarse = grid(4);
-  const fine = grid(12);
-  const data = new Uint8Array(size * size);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) data[y * size + x] = Math.round((coarse(x, y) * 0.65 + fine(x, y) * 0.35) * 255);
-  }
-  const texture = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.UnsignedByteType);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.magFilter = THREE.LinearFilter;
-  texture.minFilter = THREE.LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
-}
-
 export class GroundMist {
   // cfg: config.fog.puffs. maxCount: the most any Quality preset asks for.
   constructor(cfg, maxCount, rng) {
@@ -129,7 +95,7 @@ export class GroundMist {
     const c = this.cfg;
     const n = this.maxCount;
     this.ground = ground;
-    this.noise = makeNoiseTexture(c.noiseSize, this.rng);
+    this.noise = makeNoiseTexture(c.noiseSize, [[{ cells: 4, weight: 0.65 }, { cells: 12, weight: 0.35 }]], this.rng);
 
     const quad = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0); // base at y = 0
     const geometry = new THREE.InstancedBufferGeometry();

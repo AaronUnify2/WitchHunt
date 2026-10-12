@@ -77,10 +77,14 @@ describe('GroundField masks', () => {
     expect(forest / samples).toBeGreaterThan(0.7);
   });
 
-  it('gives the dirt mask as bytes for the ground texture', () => {
-    const bytes = ground.dirtBytes();
-    expect(bytes).toHaveLength(ground.maskNx * ground.maskNz);
-    expect(Math.max(...bytes.slice(0, 50000))).toBeLessThanOrEqual(255);
+  it('gives the dirt and open masks as byte pairs for the ground shader', () => {
+    const bytes = ground.maskBytes();
+    expect(bytes).toHaveLength(ground.maskNx * ground.maskNz * 2);
+    // Each pair matches the masks at that grid point.
+    for (let k = 0; k < ground.dirt.length; k += 997) {
+      expect(bytes[k * 2]).toBe(Math.round(ground.dirt[k] * 255));
+      expect(bytes[k * 2 + 1]).toBe(Math.round(ground.open[k] * 255));
+    }
   });
 });
 

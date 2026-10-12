@@ -1,10 +1,10 @@
 // Procedural placeholder textures for the map (M3): the forest atlas (tree
-// sprites plus undergrowth), bare dirt for pathways and clearings, the
-// cliff's rock face and the signposts that stand in for encounters.
+// sprites plus undergrowth), the cliff's rock face and the signposts that
+// stand in for encounters.
 // Seeded, so a seed always draws the same map. Final art replaces these
 // in the art pass.
 
-import { css, makeCanvas, toTexture, drawTreeVariant, makeGroundTexture } from './proceduralTextures.js';
+import { css, makeCanvas, toTexture, drawTreeVariant } from './proceduralTextures.js';
 
 // ---- forest atlas --------------------------------------------------------
 
@@ -99,23 +99,6 @@ function drawFern(ctx, w, h, u, rng) {
       ctx.fill();
     }
   }
-}
-
-// ---- ground --------------------------------------------------------------
-
-// Bare dirt for pathways and clearings: the forest floor texture drawn in
-// the dirt palette, so it tiles the same way.
-export function makeDirtTexture(terrainCfg, rng) {
-  return makeGroundTexture(
-    {
-      ...terrainCfg,
-      grassColor: terrainCfg.pathDirtColor,
-      dirtColor: terrainCfg.pathDirtColor,
-      mossColor: terrainCfg.pathStoneColor,
-      litterColor: terrainCfg.pathLitterColor,
-    },
-    rng,
-  );
 }
 
 // ---- cliff ---------------------------------------------------------------

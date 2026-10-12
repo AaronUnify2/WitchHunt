@@ -87,6 +87,7 @@ export const config = {
         frameCap: 30, // 0 = no cap (display refresh rate)
         mist: 0, // Session 10: height-mist strength (0 = off, 1 = full)
         mistPuffs: 0, // drifting ground-mist billboards near you
+        groundTwoSizes: false, // read each ground texture at two sizes (hides repeats; 3 more texture reads)
       },
       medium: {
         renderScaleMin: 0.45,
@@ -98,7 +99,8 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 0.75,
-        mistPuffs: 54, // Aaron: triple the first count (18), now that they fade out from 25 m
+        mistPuffs: 54,
+        groundTwoSizes: true, // Aaron: triple the first count (18), now that they fade out from 25 m
       },
       high: {
         renderScaleMin: 0.5,
@@ -111,6 +113,7 @@ export const config = {
         frameCap: 0,
         mist: 1,
         mistPuffs: 96,
+        groundTwoSizes: true,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -387,22 +390,53 @@ export const config = {
     clearingFlattenBlend: 18, // metres beyond the radius over which the levelling fades out
     chunkSize: 128, // metres per ground mesh (for distance culling)
     cullRefreshDistance: 8, // metres the camera moves before nearby chunks are re-checked
-    textureSize: 256, // pixels, procedural placeholder texture
-    tileMeters: 6, // ground texture repeats every this many metres
-    grassColor: 0x3a4a2c,
-    dirtColor: 0x5a4834,
-    mossColor: 0x324a2c,
-    litterColor: 0x6a5434, // fallen leaves and needles
-    blotchCount: 900, // texture detail
-    blotchSizeMin: 3, // pixels
-    blotchSizeMax: 14,
-    blotchAlpha: 0.25,
-    speckCount: 2500,
-    speckSize: 2, // pixels
-    // Bare dirt on pathways and in clearings (a second tiled texture)
-    pathDirtColor: 0x5e4a36,
-    pathLitterColor: 0x6c5a40,
-    pathStoneColor: 0x4e4a42,
+    tileMeters: 6, // ground textures repeat every this many metres
+    // Session 10: the ground's look (render/groundTextures.js, the shader in
+    // world/Terrain.js). Leaf litter under the trees, moss and grass in
+    // patches and toward open ground, packed dirt on pathways and in
+    // clearings, dark wet mud here and there. Each texture is read at two
+    // sizes, mixed by noise, so its repeats don't show. Kept dark: the
+    // torch lights the ground head-on and light colours glare.
+    floor: {
+      textureSize: 512, // pixels per texture
+      anisotropy: 4, // sharper ground at a glancing angle (capped by the device)
+      secondScale: 2.37, // the second read's tile is this many times bigger (and turned)
+      noiseMeters: 160, // the shared noise texture covers this many metres before it repeats
+      noiseSize: 256, // pixels
+      mossOnOpen: 0.3, // open ground (edges of pathways and clearings) is this much mossier
+      mossThreshold: [0.42, 0.62], // noise range over which litter turns to moss
+      mud: { share: 0.16, darken: 0.45 }, // share of the ground that's mud, and how much darker
+      litter: {
+        base: 0x2c2218,
+        mottle: [0x1e1810, 0x3a2c1c, 0x342818],
+        leaves: [0x4e3a24, 0x5a4428, 0x46281e, 0x52442c, 0x3a2e20, 0x56341e],
+        needles: [0x4a3826, 0x3a2c1e, 0x5a4630],
+        twig: 0x1e160e,
+        leafCount: 1800,
+        leafSize: [6, 14], // pixels
+        needleCount: 900,
+        twigCount: 70,
+      },
+      moss: {
+        base: 0x26301c,
+        mottle: [0x1c2414, 0x34401e, 0x2c3a1a, 0x3a3a20],
+        blades: [0x3a4a24, 0x44522a, 0x2e3c1e],
+        straw: 0x5a5030,
+        strawShare: 0.15,
+        bladeCount: 2600,
+        leafCount: 160,
+      },
+      path: {
+        base: 0x46382a,
+        mottle: [0x3a2e22, 0x54442e, 0x3e3426],
+        grit: [0x2a2018, 0x5e4e3a, 0x4a4036],
+        pebbles: [0x4a463e, 0x5a544a, 0x3e3a34, 0x54483a],
+        pebbleCount: 260,
+        pebbleSize: [1.5, 4.5], // pixels
+        leafCount: 120,
+        needleCount: 200,
+      },
+    },
     rocks: {
       sizeMin: 0.35,
       sizeMax: 1.1,
