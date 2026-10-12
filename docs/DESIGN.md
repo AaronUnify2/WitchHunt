@@ -837,8 +837,11 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 | Cowboy Up | Every alien is a full gunslinger | Not a Scratch |
 | Empty Holsters | Ammo drops halved | Dead Eye |
 | Coven | Three witches at once | Ambush |
+| Divorced Dad | No family and no compound: pure exploration and witch hunting, with no base to defend | Custody Lost |
 
 **Coven rules:** the three witches share the five-sigil cap, live in the same hut, all come out when it's blown, and the run is won only when all three are dead.
+
+**Divorced Dad rules** (Aaron's idea, M6; not built yet, to be designed with the other modifiers in M12): the family and the compound are gone, so the station can't fall and the dusk forecast, alarm and night marches have nothing to defend. Open questions for later: where the run starts and where Tom sleeps; where batteries, scrap and the turret go (no fence to power or repair); whether marching groups head for the player instead, or just wander; and how it combines with Coven and Blood Moon.
 
 | Achievement | Condition | Unlocks |
 | --- | --- | --- |
@@ -849,6 +852,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 | Ambush | Kill the witch in a pathway fight | Coven |
 | The Light Was On | Defeat the Mothman without taking damage | — |
 | Ranger Danger | Clear the government base of every Man in Black without ever being seen | — |
+| Custody Lost | Lose the station (the family) several times across runs (count to be set; e.g. 3) | Divorced Dad |
 
 ## HUD
 
