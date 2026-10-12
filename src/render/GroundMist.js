@@ -46,7 +46,7 @@ const FRAGMENT = /* glsl */ `
   uniform vec3 uColor;
   uniform vec3 uLitColor;
   uniform float uOpacity;
-  uniform float uTime;
+  uniform float uTime; // already scaled by the billow speed
   uniform float uPeak;
   uniform float uNoiseScale;
   uniform vec2 uFadeNear;
@@ -208,7 +208,8 @@ export class GroundMist {
       p.z = cz - (p.z - cz) * scale;
     } else {
       const a = this.rng.range(0, Math.PI * 2);
-      const r = Math.sqrt(this.rng.range((c.nearRadius / this.radius) ** 2, 1)) * this.radius;
+      // Only where they can be seen: past the near fade.
+      const r = Math.sqrt(this.rng.range((this.fadeStart / this.radius) ** 2, 1)) * this.radius;
       p.x = cx + Math.cos(a) * r;
       p.z = cz + Math.sin(a) * r;
     }
@@ -235,13 +236,18 @@ export class GroundMist {
     this.mesh.visible = visible;
     if (!visible) return;
     const c = this.cfg;
-    this.time += dt;
-    this.radius = Math.max(c.nearRadius + 4, Math.min(c.radius, fogFar * 0.9));
+    this.time += dt * c.billow;
+    this.radius = Math.min(c.radius, fogFar * 0.9);
+    // The near fade, pulled in when the fog closes in (fog nights) so
+    // there's still a band of them to see.
+    const fadeEnd = Math.min(c.fadeNear[1], this.radius * 0.55);
+    this.fadeStart = fadeEnd * (c.fadeNear[0] / c.fadeNear[1]);
     const u = this.uniforms;
     u.uTime.value = this.time;
     u.uColor.value.copy(color);
     u.uOpacity.value = c.opacity * Math.min(amount, 1.5);
-    u.uFadeFar.value.set(this.radius * 0.6, this.radius);
+    u.uFadeNear.value.set(this.fadeStart, fadeEnd);
+    u.uFadeFar.value.set(this.radius * 0.8, this.radius);
     u.uLitColor.value.copy(torch.color).multiplyScalar(c.torchLit);
     // The camera's right, flat: every sheet faces the way you look.
     camera.updateMatrixWorld();

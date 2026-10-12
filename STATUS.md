@@ -41,9 +41,11 @@ Agreed with Aaron: always-on ground mist at night, and fog nights about one nigh
   - It builds with distance (the ground round you stays clear), drifts in patches, and is heavier in hollows below you.
   - Shared uniforms reach every material through a hook on `Material.prototype.onBeforeCompile` (it wraps any material's own hook). `installAtmosphereShader()` runs first thing in `Game.init`, before any material exists.
   - Colour and strength by hour are in `config.sky.keys` (`mist`, `mistAmount`): thick at night and at dawn, burnt off by mid-morning. The blood night turns it red.
-- **Drifting mist sheets** (`render/GroundMist.js`): soft sheets in the low mist near you (36 on Medium, 64 on High, none on Low). One draw call. They drift with the wind, billow through a noise texture made in code, fade as you walk into one, and brighten where the torch beam hits them.
+- **Drifting mist sheets** (`render/GroundMist.js`): soft sheets in the low mist near you (see below for counts; none on Low). One draw call. They drift with the wind, billow through a noise texture made in code, fade as you walk into one, and brighten where the torch beam hits them.
   - **After Aaron's first look:** they swung round "like a rectangle on a hinge" as he approached. They now stay parallel to the screen, so they turn only with your view, never as you walk past.
-  - They're soft blobs with torn edges in three shapes (wide low banks, rounder tufts, long thin streaks), not rectangles. There are twice as many, and they fade out from 7 m.
+  - They're soft blobs with torn edges in three shapes (wide low banks, rounder tufts, long thin streaks), not rectangles.
+  - **Aaron's second look:** they now fade away as you approach: gone inside 20 m, full beyond 30 m. They live out to 70 m (inside the fog), so the mist is always out ahead and never a flat sheet up close. On a fog night the band pulls in with the fog.
+  - Three times the first count: 54 on Medium, 96 on High. Drift halved, for both the sheets (0.2 m/s) and the shader mist's patches; the churn inside each sheet is halved too.
   - They may drift inside the fence, but not into the cabin.
 - **Fog nights** (`world/fogNights.js`, pure and tested; `render/Atmosphere.js`):
   - Picked from the seed and night number, so nothing is saved: about one night in three, never night 1.

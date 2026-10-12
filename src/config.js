@@ -98,7 +98,7 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 0.75,
-        mistPuffs: 36, // doubled after Aaron's first look (was a touch sparse)
+        mistPuffs: 54, // Aaron: triple the first count (18), now that they fade out from 25 m
       },
       high: {
         renderScaleMin: 0.5,
@@ -110,7 +110,7 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 1,
-        mistPuffs: 64,
+        mistPuffs: 96,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -182,15 +182,14 @@ export const config = {
       reach: 0.035, // per metre: how fast it builds with distance (half at about 20 m)
       noiseScale: 0.07, // per metre: size of the thick and thin patches
       noiseAmount: 0.55, // how much the patches thin it (0 = even)
-      drift: { x: 0.35, z: 0.15 }, // m/s the patches drift
+      drift: { x: 0.17, z: 0.07 }, // m/s the patches drift (Aaron: halved)
       maxOpacity: 0.85,
     },
     // Drifting mist sheets near you (count from the Quality preset). Each
     // stays parallel to the screen (no swinging round as you pass) and is
     // a soft, torn blob of one of these shapes. ragged: how torn its edge is.
     puffs: {
-      radius: 32, // metres: they live within this of you (and inside the fog)
-      nearRadius: 4, // metres: none start closer than this
+      radius: 70, // metres: they live within this of you (and inside the fog)
       shapes: [
         { weight: 3, width: [7, 12], height: [1.2, 1.8], ragged: 0.7 }, // a wide, low bank
         { weight: 2, width: [3, 5], height: [1.6, 2.6], ragged: 0.9 }, // a rounder tuft
@@ -199,8 +198,12 @@ export const config = {
       sink: 0.5, // metres below the ground their base sits (hides the cut)
       peak: 0.35, // 0..1 up the billboard where it's thickest
       opacity: 0.32,
-      drift: 0.45, // m/s, along fog.mist.drift's direction
-      fadeNear: [2.5, 7], // metres: fade out as you walk into one
+      drift: 0.2, // m/s, along fog.mist.drift's direction (Aaron: halved, it moved too fast)
+      billow: 0.5, // how fast the noise inside each one churns (1 = the first speed)
+      // Aaron: they fade away as you approach, gone by about 25 m, so you
+      // see mist out ahead, never a flat sheet up close. Scaled down on a
+      // fog night (the fog ends sooner).
+      fadeNear: [20, 30], // metres: gone inside the first, full beyond the second
       fadeIn: 2.5, // seconds to appear after being moved
       noiseScale: 0.35, // texture repeats per metre-ish
       noiseSize: 64, // pixels, the generated noise texture
