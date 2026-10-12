@@ -22,6 +22,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ### M6 step 4: Dawn autosave (Session 7, in progress)
 
+- **Aaron's tablet test:** the autosave "worked 100% properly": he checked everything he could think of. Real playthroughs (doing things in the right order) will be the fuller check.
 - **One save slot in localStorage** (`src/core/saveData.js` pure, `src/core/SaveStore.js`; key `witchHunt.save`, about 11 KB).
   - Saved at each dawn ("Dawn: night N survived. Game saved").
   - Deleted when the run ends (death, the station falling, New run, New map, Restart this map).
