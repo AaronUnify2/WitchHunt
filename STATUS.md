@@ -35,6 +35,12 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 - **A shadow creature:** her whole body is unlit near-black (`MeshBasicMaterial`), so the torch can't light her or glint off her. Only her silhouette and glowing eyes read. She's 28% thinner, with thinner arms.
 - **Jointed and contorting** (`render/WitchRenderer.js`): skirt, torso (waist joint), head (neck joint) and two arms. Running, she's folded forward with her head up and arms trailing. In the ritual she sinks into a low crouch, her cloak pooling, folded flat over the spot. Her head cranes up and twists too far, and her arms splay out like a spider's legs. Each joint jerks to a new angle and holds still in between (`snapValue()`). 6 draw calls plus the shadow (was 4).
 - **Tests:** 341 pass.
+- **Second look (Aaron):**
+  - **Eyes:** narrow slanted slits; the square ones read as glasses and made her look grandmotherly.
+  - **She glides:** no steps, no bob, no arm swing (too human). She floats 12 cm off the ground with a slow rise and fall, her cloak tilting back to trail behind her as she moves (`config.witch.look.glide`), arms swept back and limp at the wrists.
+  - **No pinched waist:** the cloak is a tapered cylinder meeting the chest, not a cone narrowing to a point.
+  - **Elbows and wrists:** each arm is a sleeve, a forearm and a long-fingered hand on their own joints. In the ritual the elbows bend the forearms down to the ground, and now and then the wrong way; the wrists curl and snap back.
+  - 10 draw calls plus the shadow while she's near.
 
 ### M7 step 1: The witch roams and plants (Session 8)
 

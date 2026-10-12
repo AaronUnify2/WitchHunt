@@ -7,12 +7,15 @@
 //
 // Jointed so she can contort: the skirt (it squashes and pools when she
 // crouches), the torso (folds at the waist), the head (cranes and twists
-// on the neck) and two arms (swing from the shoulders). Running, she's
-// folded forward with her arms trailing. Planting, she drops into a low
-// crouch folded flat over the spot, and her head and arms snap between
-// wrong angles, holding still between jerks.
+// on the neck) and two arms, each with a shoulder, an elbow and a wrist.
+// Travelling, she glides (Aaron: walking with swinging arms looked too
+// human): no steps, floating a little off the ground with a slow sway,
+// folded forward, her cloak trailing and her arms held back, limp at the
+// wrists. Planting, she drops into a low crouch folded flat over the
+// spot, and her head and arms snap between wrong angles (elbows bending
+// the wrong way at times), holding still between jerks.
 //
-// Six draw calls (skirt, torso, head, eyes, two arms) plus the torch
+// Ten draw calls (skirt, torso, head, eyes, three per arm) plus the torch
 // shadow, only while she's out and near. The ritual ring (two glowing
 // rings on the ground) is two more.
 
@@ -24,6 +27,8 @@ const MODEL_HEIGHT = 2.3;
 const WAIST = 1.15; // the waist joint's height, standing
 const NECK = { y: 0.72, z: 0.06 }; // from the waist
 const SHOULDER = { x: 0.21, y: 0.62, z: 0.02 }; // from the waist (x before thinning)
+const UPPER_ARM = 0.55; // shoulder to elbow
+const FOREARM = 0.5; // elbow to wrist
 
 export class WitchRenderer {
   constructor(lookConfig, rng) {
@@ -59,25 +64,37 @@ export class WitchRenderer {
     this.neck.position.set(0, NECK.y, NECK.z);
     this.waist.add(this.neck);
     mesh(this.headGeometry(thin), this.neck);
-    const armGeometry = this.armGeometry(thin);
-    this.arms = [-1, 1].map((side) => {
-      const shoulder = new THREE.Group();
-      shoulder.rotation.order = 'YXZ';
-      shoulder.position.set(SHOULDER.x * thin * side, SHOULDER.y, SHOULDER.z);
-      this.waist.add(shoulder);
-      const arm = new THREE.Mesh(armGeometry, this.material);
-      arm.castShadow = true;
-      shoulder.add(arm);
-      return shoulder;
-    });
-    this.geometries.push(armGeometry);
-
-    const eye = (x) => {
-      const g = new THREE.BoxGeometry(0.05, 0.03, 0.02);
-      g.translate(x, 0.17, 0.175);
+    const { upper, fore, hand } = this.armGeometries(thin);
+    this.geometries.push(upper, fore, hand);
+    const joint = (parent, geometry, y) => {
+      const g = new THREE.Group();
+      g.rotation.order = 'YXZ';
+      g.position.y = y;
+      parent.add(g);
+      const m = new THREE.Mesh(geometry, this.material);
+      m.castShadow = true;
+      g.add(m);
       return g;
     };
-    const eyes = [eye(-0.04), eye(0.04)];
+    // Each arm: { shoulder, elbow, wrist } joints, each hanging down -y.
+    this.arms = [-1, 1].map((side) => {
+      const shoulder = joint(this.waist, upper, 0);
+      shoulder.position.set(SHOULDER.x * thin * side, SHOULDER.y, SHOULDER.z);
+      const elbow = joint(shoulder, fore, -UPPER_ARM);
+      const wrist = joint(elbow, hand, -FOREARM);
+      return { shoulder, elbow, wrist };
+    });
+
+    // Narrow slits slanting down to the middle (Aaron: square eyes read
+    // as glasses): thin diamonds, tilted.
+    const eye = (side) => {
+      const g = new THREE.OctahedronGeometry(0.5, 0);
+      g.scale(0.055, 0.011, 0.012);
+      g.rotateZ(side * 0.42);
+      g.translate(side * 0.042, 0.165, 0.176);
+      return g;
+    };
+    const eyes = [eye(-1), eye(1)];
     const eyeGeometry = mergeGeometries(eyes);
     for (const g of eyes) g.dispose();
     this.geometries.push(eyeGeometry);
@@ -99,6 +116,7 @@ export class WitchRenderer {
     this.ritual.add(new THREE.Mesh(outer, this.ringMaterial), this.innerRing);
     scene.add(this.ritual);
     this.time = 0;
+    this.motion = 0; // 0 still .. 1 gliding at full speed (eased)
   }
 
   // ---- the model ---------------------------------------------------------------
@@ -114,7 +132,9 @@ export class WitchRenderer {
   // The cloak from the ground to the waist: an open cone with a torn hem.
   skirtGeometry(thin) {
     const rng = this.rng;
-    const cloak = new THREE.ConeGeometry(0.44, 1.4, 9, 3, true);
+    // A tapered cloak whose top is as wide as her chest (Aaron: not a cone
+    // narrowing to a point at the waist).
+    const cloak = new THREE.CylinderGeometry(0.19, 0.44, 1.4, 9, 3, true);
     const pos = cloak.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       if (pos.getY(i) < -0.6) {
@@ -124,7 +144,7 @@ export class WitchRenderer {
       }
     }
     cloak.translate(0, 0.72, 0);
-    const under = new THREE.CylinderGeometry(0.12, 0.26, 1.1, 6);
+    const under = new THREE.CylinderGeometry(0.16, 0.26, 1.1, 6);
     under.translate(0, 0.55, 0);
     return this.merge([cloak.toNonIndexed(), under.toNonIndexed()], thin);
   }
@@ -132,8 +152,8 @@ export class WitchRenderer {
   // Chest and shawl, from the waist up (the waist joint is the origin).
   torsoGeometry(thin) {
     const rng = this.rng;
-    const chest = new THREE.BoxGeometry(0.34, 0.6, 0.2);
-    chest.translate(0, 0.36, 0);
+    const chest = new THREE.BoxGeometry(0.34, 0.66, 0.22);
+    chest.translate(0, 0.31, 0);
     const shawl = new THREE.ConeGeometry(0.33, 0.62, 8, 2, true);
     const sp = shawl.attributes.position;
     for (let i = 0; i < sp.count; i++) if (sp.getY(i) < -0.2) sp.setY(i, sp.getY(i) - rng.range(0, 0.18));
@@ -192,24 +212,27 @@ export class WitchRenderer {
     return merged;
   }
 
-  // One arm hanging from the shoulder (origin) down -y: a thin sleeve, a
-  // bony forearm and long fingers.
-  armGeometry(thin) {
+  // An arm in three pieces, each hanging from its joint (the origin) down
+  // -y: a thin sleeve to the elbow, a bony forearm to the wrist, and a
+  // narrow hand with long fanned fingers.
+  armGeometries(thin) {
+    const sleeve = new THREE.BoxGeometry(0.085, UPPER_ARM + 0.04, 0.085);
+    sleeve.translate(0, -UPPER_ARM / 2, 0);
+    const forearm = new THREE.BoxGeometry(0.045, FOREARM + 0.03, 0.045);
+    forearm.translate(0, -FOREARM / 2, 0);
     const parts = [];
-    const sleeve = new THREE.BoxGeometry(0.09, 0.6, 0.09);
-    sleeve.translate(0, -0.3, 0);
-    parts.push(sleeve);
-    const forearm = new THREE.BoxGeometry(0.045, 0.46, 0.045);
-    forearm.translate(0, -0.82, 0);
-    parts.push(forearm);
+    const palm = new THREE.BoxGeometry(0.06, 0.09, 0.025);
+    palm.translate(0, -0.045, 0);
+    parts.push(palm);
     for (let i = 0; i < 4; i++) {
-      const f = new THREE.BoxGeometry(0.014, 0.28, 0.014);
-      f.rotateX(0.18);
-      f.rotateZ((i - 1.5) * 0.12); // fanned
-      f.translate((i - 1.5) * 0.02, -1.18, 0.02);
+      const f = new THREE.BoxGeometry(0.013, 0.26, 0.013);
+      f.translate(0, -0.13, 0);
+      f.rotateX(0.25); // curled in
+      f.rotateZ((i - 1.5) * 0.14); // fanned
+      f.translate((i - 1.5) * 0.017, -0.085, 0.005);
       parts.push(f);
     }
-    return this.merge(parts, thin);
+    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm], thin), hand: this.merge(parts, thin) };
   }
 
   // ---- posing --------------------------------------------------------------------
@@ -227,23 +250,35 @@ export class WitchRenderer {
     this.root.position.set(w.x, w.y, w.z);
     this.root.rotation.set(0, w.facing, 0);
     if (planting) this.poseContorted();
-    else this.poseRunning(w);
+    else this.poseGliding(w, dt);
   }
 
-  // Folded forward, head up to see ahead, arms trailing and swinging.
-  poseRunning(w) {
+  // Gliding: no steps. Floating a little off the ground with a slow
+  // sway, folded forward, head up and still, the cloak trailing behind
+  // as she moves, arms held back and limp at the wrists.
+  poseGliding(w, dt) {
     const c = this.cfg;
-    const phase = (w.walked / c.stride) * Math.PI;
-    const bob = Math.abs(Math.sin(phase)) * c.runBob;
-    const swing = Math.sin(phase) * 0.7;
+    const g = c.glide;
+    const t = this.time;
+    // How fast she's moving (0..1), eased so stopping and starting is smooth.
+    const speed = dt > 0 ? Math.min(1, w.moved / dt / g.fullSpeed) : 0;
+    this.motion += (speed - this.motion) * Math.min(1, dt * 4);
+    const m = this.motion;
+    this.root.position.y += g.hover + Math.sin(t * g.floatSpeed) * g.float;
     this.skirt.scale.set(1, 1, 1);
-    this.skirt.rotation.z = Math.sin(phase) * 0.05;
-    this.waist.position.set(0, WAIST + bob, 0);
-    this.waist.rotation.set(c.stoop, 0, Math.sin(phase) * 0.06);
-    this.neck.rotation.set(-c.stoop * 0.8, 0, 0);
-    const [left, right] = this.arms;
-    left.rotation.set(0.35 + swing, 0, -0.1);
-    right.rotation.set(0.35 - swing, 0, 0.1);
+    // The hem trails behind (tilting the skirt back) and ripples.
+    this.skirt.rotation.set(-g.trail * m + Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
+    this.waist.position.set(0, WAIST, 0);
+    this.waist.rotation.set(c.stoop + m * 0.12, 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
+    this.neck.rotation.set(-c.stoop * 0.9 - m * 0.1, 0, 0);
+    // Arms swept back, slightly out, barely moving; hands hanging limp.
+    const drift = Math.sin(t * 1.7) * 0.05;
+    this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
+      const side = i === 0 ? -1 : 1;
+      shoulder.rotation.set(0.45 + m * 0.35 + drift * side, 0, side * (0.18 + m * 0.1));
+      elbow.rotation.set(-0.35 - m * 0.2, 0, 0);
+      wrist.rotation.set(0.7 + Math.sin(t * 2 + i) * 0.08, 0, 0);
+    });
   }
 
   // Crouched low and folded flat over the spot. The head cranes up and
@@ -264,13 +299,18 @@ export class WitchRenderer {
     this.waist.rotation.set(c.fold + breath + snap(1, -0.35, 0.15), snap(2, -0.25, 0.25), snap(3, -0.2, 0.2));
     // The head: craned up off the folded body, rolled and twisted too far.
     this.neck.rotation.set(-c.fold - 0.25 + snap(4, -0.3, 0.4, 1.3), snap(5, -1.0, 1.0, 0.9), snap(6, -1.2, 1.2, 1.1));
-    // Arms: in the waist's frame, -(fold + 1.35) about x points them
-    // forward, just off the ground. They splay out like a spider's legs
-    // and jerk between reaching up ahead, clawing low and spreading wide.
-    const [left, right] = this.arms;
+    // Arms: in the waist's frame, -(fold + 1.35) about x points the upper
+    // arm forward, just off the ground; splayed out like a spider's legs.
+    // The elbow bends the forearm down to the ground (and now and then
+    // the wrong way, up); the wrist curls the claw in or snaps back.
     const reach = -(c.fold + 1.35);
-    left.rotation.set(reach + snap(7, -0.6, 0.75, 0.8), snap(8, -0.5, 0.5), -0.75 + snap(9, -0.6, 0.45));
-    right.rotation.set(reach + snap(10, -0.6, 0.75, 0.7), snap(11, -0.5, 0.5), 0.75 + snap(12, -0.45, 0.6));
+    this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
+      const side = i === 0 ? -1 : 1;
+      const k = 7 + i * 6;
+      shoulder.rotation.set(reach + snap(k, -0.7, 0.6, 0.8 - i * 0.1), snap(k + 1, -0.5, 0.5), side * 0.8 + snap(k + 2, -0.5, 0.5));
+      elbow.rotation.set(snap(k + 3, -0.9, 1.7, 0.9 + i * 0.15), snap(k + 4, -0.4, 0.4), 0);
+      wrist.rotation.set(snap(k + 5, -0.9, 1.2, 1.2), 0, 0);
+    });
   }
 
   // The rings under her: they pulse, and the inner one turns and grows

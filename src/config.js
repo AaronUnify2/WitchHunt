@@ -974,9 +974,15 @@ export const config = {
       shadow: 0x030304, // her whole body, unlit
       eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
       thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
-      stoop: 0.32, // radians she folds forward at the waist when she runs
-      runBob: 0.08, // metres
-      stride: 1.6, // metres per arm swing
+      stoop: 0.32, // radians she folds forward at the waist as she travels
+      // Aaron (step 1 test): she glides, no steps or arm swing (too human).
+      glide: {
+        hover: 0.12, // metres her hem floats off the ground
+        float: 0.05, // metres of slow rise and fall
+        floatSpeed: 1.6, // radians per second
+        trail: 0.22, // radians her cloak tilts back behind her at full speed
+        fullSpeed: 6, // m/s that counts as full speed for the trailing
+      },
       // The ritual (Aaron: fold right down and contort, so she reads as
       // something horrible): crouched low, folded flat over the spot,
       // head and arms snapping between wrong angles.
