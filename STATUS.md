@@ -32,6 +32,14 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 3b: solid trunks up close (Graphics Engineer, style pass 1)
+
+- **Trees near you get a real 3D trunk** (`render/NearTrunks.js`). It's a tapered, flared, 8-sided cylinder drawn to the sprite's trunk sizes and a touch wider, so the flat sprite trunk stays hidden inside. You walk round a solid trunk instead of a card turning to face you; the canopy stays a sprite above it.
+- **Matches the sprite:** bark coloured per kind (oak and snag have their own), the same per-tree tint, torch shadows, and Lambert lighting from the moon and the torch.
+- **Where it stops:** under hemlocks and spruces it stops at the bottom of the branches (`trunk.solid` 0.8), so it never stands in front of the low, drooping skirt like a post. White pines, oaks and snags get their whole visible trunk.
+- **Cost:** one instanced draw call plus its torch shadow (up to 700 trunks). They're refilled from a 16 m grid of trees every 4 m you move.
+- **Quality:** `treeTrunks`, the distance in metres: Low 0 (off), Medium 30, High 40.
+
 ### Session 10 step 3a: the trees (Graphics Engineer, style pass 1)
 
 - **Six kinds of tree, drawn in code** (`render/treeSprites.js`, `config.forest.kinds`), from the Appalachian woods:
@@ -719,7 +727,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
 - Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): fake light shafts, fireflies and other particles, normal maps on the ground, fallen logs and roots, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
-- Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
+- Billboard trees: the canopy is still a sprite that turns to face you up close; the trunk near you is a solid 3D trunk (Session 10, `NearTrunks.js`).
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 
 ## Dependencies

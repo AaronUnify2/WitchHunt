@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { layoutForest, layoutUndergrowth } from '../world/forestLayout.js';
 import { makeForestAtlas } from './mapTextures.js';
 import { ChunkCuller } from './ChunkCuller.js';
+import { NearTrunks } from './NearTrunks.js';
 
 const MAX_SPRITES = 16; // size of the atlas rectangle table in the shader
 
@@ -116,6 +117,9 @@ export class Forest {
 
     this.culler = new ChunkCuller(c.chunkSize, c.cullRefreshDistance);
     this.chunks = this.buildChunks();
+    // Session 10: solid 3D trunks for the trees near you.
+    this.nearTrunks = new NearTrunks(c, this.trees, this.rng.fork('trunks'));
+    this.nearTrunks.init(this.scene, this.uniforms);
     for (const tree of this.trees) {
       // r blocks the player; vr (the canopy) is what the torch's glare check sees.
       colliders.insert({ x: tree.x, z: tree.z, r: c.trunkRadius, vr: tree.width * c.glareRadiusRatio });
@@ -189,6 +193,7 @@ export class Forest {
   update(dt, cameraPosition) {
     this.uniforms.uTime.value += dt;
     this.culler.update(cameraPosition.x, cameraPosition.z);
+    this.nearTrunks.update(cameraPosition);
   }
 
   setDrawDistance(distance) {
@@ -212,6 +217,7 @@ export class Forest {
       mesh.geometry.dispose();
       mesh.removeFromParent();
     }
+    this.nearTrunks.dispose();
     this.baseGeometry.dispose();
     this.material.dispose();
     this.depthMaterial.dispose();

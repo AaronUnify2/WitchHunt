@@ -88,6 +88,7 @@ export const config = {
         mist: 0, // Session 10: height-mist strength (0 = off, 1 = full)
         mistPuffs: 0, // drifting ground-mist billboards near you
         groundTwoSizes: false, // read each ground texture at two sizes (hides repeats; 3 more texture reads)
+        treeTrunks: 0, // metres: trees this near you get a solid 3D trunk (0 = off)
       },
       medium: {
         renderScaleMin: 0.45,
@@ -99,8 +100,9 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 0.75,
-        mistPuffs: 54,
-        groundTwoSizes: true, // Aaron: triple the first count (18), now that they fade out from 25 m
+        mistPuffs: 54, // Aaron: triple the first count (18), now that they fade out from 25 m
+        groundTwoSizes: true,
+        treeTrunks: 30,
       },
       high: {
         renderScaleMin: 0.5,
@@ -114,6 +116,7 @@ export const config = {
         mist: 1,
         mistPuffs: 96,
         groundTwoSizes: true,
+        treeTrunks: 40,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -479,16 +482,31 @@ export const config = {
     // woods. weight: how common. height: metres. widthRatio: sprite width
     // as a fraction of its height. trunk: base and top widths as a
     // fraction of the sprite's width, up to `to` of its height (the
-    // sprite's trunk and the 3D trunk near you are drawn to these).
+    // sprite's trunk and the 3D trunk near you are drawn to these). solid:
+    // how much of that the 3D trunk covers (under a low, drooping canopy it
+    // stops short, so it doesn't stand in front of the branches like a post).
     kinds: [
-      { look: 'hemlock', weight: 3, height: [10, 17], widthRatio: [0.46, 0.56], trunk: { base: 0.07, top: 0.05, to: 0.12 } },
-      { look: 'spruce', weight: 2.5, height: [11, 18], widthRatio: [0.36, 0.44], trunk: { base: 0.07, top: 0.05, to: 0.14 } },
-      { look: 'spruce', weight: 2, height: [9, 15], widthRatio: [0.38, 0.46], trunk: { base: 0.07, top: 0.05, to: 0.14 } },
-      { look: 'whitePine', weight: 1.6, height: [14, 20], widthRatio: [0.5, 0.62], trunk: { base: 0.07, top: 0.045, to: 0.38 } },
-      { look: 'oak', weight: 1, height: [10, 15], widthRatio: [0.7, 0.85], trunk: { base: 0.11, top: 0.075, to: 0.4 } },
-      { look: 'snag', weight: 0.7, height: [7, 13], widthRatio: [0.35, 0.45], trunk: { base: 0.1, top: 0.04, to: 0.8 } },
+      { look: 'hemlock', weight: 3, height: [10, 17], widthRatio: [0.46, 0.56], trunk: { base: 0.07, top: 0.05, to: 0.12, solid: 0.8 } },
+      { look: 'spruce', weight: 2.5, height: [11, 18], widthRatio: [0.36, 0.44], trunk: { base: 0.07, top: 0.05, to: 0.14, solid: 0.8 } },
+      { look: 'spruce', weight: 2, height: [9, 15], widthRatio: [0.38, 0.46], trunk: { base: 0.07, top: 0.05, to: 0.14, solid: 0.8 } },
+      { look: 'whitePine', weight: 1.6, height: [14, 20], widthRatio: [0.5, 0.62], trunk: { base: 0.07, top: 0.045, to: 0.38, solid: 1 } },
+      { look: 'oak', weight: 1, height: [10, 15], widthRatio: [0.7, 0.85], trunk: { base: 0.11, top: 0.075, to: 0.4, solid: 1 } },
+      { look: 'snag', weight: 0.7, height: [7, 13], widthRatio: [0.35, 0.45], trunk: { base: 0.1, top: 0.04, to: 0.8, solid: 1 } },
     ],
     trunkRadius: 0.3, // collision radius
+    // Session 10: solid 3D trunks for the trees near you (render/NearTrunks.js),
+    // so a tree up close isn't a flat card. How near: the Quality preset's treeTrunks.
+    nearTrunks: {
+      sides: 8,
+      maxCount: 700,
+      gridCell: 16, // metres: trees filed in a grid this size for the lookup
+      refreshDistance: 4, // metres you move before the near trunks are refilled
+      cover: 1.1, // a touch wider than the sprite's trunk, which stays hidden inside
+      flare: 0.3, // the foot widens this much
+      flareHeight: 0.6, // metres up the flare reaches
+      sink: 0.2, // metres sunk into the ground (slopes)
+      barkRepeat: [2, 3], // bark texture repeats round and up each trunk
+    },
     chunkSize: 48, // metres; chunks beyond the draw distance aren't drawn
     cullRefreshDistance: 4, // metres the camera moves before nearby chunks are re-checked
     // Undergrowth (M3, Aaron): low bushes and ferns off the pathways that
