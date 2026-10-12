@@ -17,8 +17,9 @@
 //    turret, climb the tower (reveals the map round it), open the ledger.
 //  - The ledger (ui/Ledger.js): one place to manage it all.
 //  - M6: while the player is away, NightWatch resolves each attack by the
-//    margin table and plays it out on the real defences (attackStart(),
-//    attackTick(), attackBreak()); the turret doesn't really fire then.
+//    margin table and plays it out on the real defences until dawn
+//    (attackStart(), attackCosts(), attackDamage()); the turret doesn't
+//    really fire then (its rounds turn into kills).
 //
 // Events: 'station:breached' { barrier }, 'station:repaired' { barrier },
 // 'station:overrun', 'station:battery' { charge }.
@@ -743,14 +744,15 @@ export class Station {
     return line.sort((p, q) => Math.abs(p.a - a) - Math.abs(q.a - a)).map((p) => p.b);
   }
 
-  // An attack while you're away (NightWatch) plays out in steps on the
-  // real defences, from where it arrived (fenceLineFrom()):
+  // An attack while you're away (NightWatch) plays out on the real
+  // defences from where it arrived (fenceLineFrom()), until dawn:
   //  - attackStart(): the spike trap there bites;
-  //  - attackTick(): a slice of its damage spreads along the fence (a
-  //    barricade before its segment), and the turret's rounds and the
-  //    fence's zaps are used up;
-  //  - attackBreak(): if it breaks through, the fence, then the front
-  //    door, then the comms door; after the last, the family are lost.
+  //  - attackCosts(): the turret fires at its mode's rate and the fence
+  //    zaps, using up rounds and charge (NightWatch turns rounds into kills);
+  //  - attackDamage(): claw damage. Spread along the fence (a barricade
+  //    before its segment), or, for an attack the margin says breaks
+  //    through, the fence where it arrived, then the front door, then the
+  //    comms door: the family are lost.
   // Breaks are announced as in a real siege ("The east fence 2 is down!").
 
   attackStart(line, zombies) {
@@ -759,54 +761,56 @@ export class Station {
     for (let i = 0; i < zombies && first.spike.built && first.spike.durability > 0; i++) this.state.wearSpike(first.index);
   }
 
-  // f: the share of the attack this tick (dt / its length). Returns { damage, rounds }.
-  attackTick(line, result, f, damages = true) {
+  // Returns the turret rounds fired over dt seconds.
+  attackCosts(dt, zombies) {
     const s = this.state;
-    const out = { damage: 0, rounds: 0 };
-    if (s.turretOnline) {
-      const used = Math.min(s.turret.rounds, result.turretRounds * f);
-      s.turret.rounds -= used;
-      s.drain(used * this.sc.power.turretShotCost);
-      out.rounds = used;
-    }
-    if (s.powered) s.drain(result.zaps * f * this.sc.power.zapCost);
-    if (!damages) return out;
-    let left = result.damage * f;
     const r = this.cfg.nights.resolver;
-    for (const b of line) {
-      if (left <= 1e-9) break;
-      for (const target of b.kind === 'fence' && b.barricade.built ? [b.barricade, b] : [b]) {
-        const take = Math.min(left, target.health * r.spreadBreak);
-        if (take <= 0) continue;
-        out.damage += take;
-        left -= take;
-        if (s.damage(target, take)) this.onBreak(target);
-        if (left <= 1e-9) break;
-      }
+    let rounds = 0;
+    if (s.turretOnline && zombies > 0) {
+      rounds = Math.min(s.turret.rounds, dt / s.turretMode.seconds);
+      s.turret.rounds -= rounds;
+      s.drain(rounds * this.sc.power.turretShotCost);
     }
-    return out;
+    if (s.powered) s.drain(zombies * r.zapsPerZombieSecond * dt * this.sc.power.zapCost);
+    return rounds;
   }
 
-  // Breaking through, stage by stage (0: the fence where they came, 1: the
-  // front door, 2: the comms door and the family). Returns the names broken.
-  attackBreak(line, stage) {
+  // The barriers a breaking-through attack goes for, in order.
+  breakThroughLine(line) {
     const s = this.state;
     const first = line[0];
-    const targets = stage === 0 ? (first.kind === 'fence' && first.barricade.built ? [first.barricade, first] : [first]) : stage === 1 ? [s.doors.front] : [s.doors.comms];
-    const broke = [];
-    for (const b of targets) {
-      if (b.health <= 0) continue;
-      if (s.damage(b, Infinity)) {
-        broke.push(b.name);
-        this.onBreak(b);
+    return [...(first.kind === 'fence' && first.barricade.built ? [first.barricade] : []), first, s.doors.front, s.doors.comms];
+  }
+
+  // `amount` of claw damage. through: the attack breaks through. Returns
+  // the health taken off.
+  attackDamage(line, amount, through) {
+    const s = this.state;
+    const r = this.cfg.nights.resolver;
+    let left = amount;
+    let done = 0;
+    const order = through ? this.breakThroughLine(line) : line.flatMap((b) => (b.kind === 'fence' && b.barricade.built ? [b.barricade, b] : [b]));
+    for (const target of order) {
+      if (left <= 1e-9) break;
+      if (target.health <= 0) continue;
+      const take = through ? Math.min(left, target.health) : Math.min(left, target.health * r.spreadBreak);
+      done += take;
+      left -= take;
+      if (s.damage(target, take)) {
+        this.onBreak(target);
+        if (target === s.doors.comms) this.fallAway();
       }
+      if (through) break; // one barrier at a time: they have to get through it first
     }
-    if (stage === 2 && this.overrunEnabled && !this.overrunDone && this.combat.alive) {
-      this.overrunDone = true;
-      this.bus.emit('station:overrun');
-      this.combat.overrun('The dead broke into the comms room while you were away.');
-    }
-    return broke;
+    return done;
+  }
+
+  // The comms room door is down while you're away: the family are lost.
+  fallAway() {
+    if (!this.overrunEnabled || this.overrunDone || !this.combat.alive) return;
+    this.overrunDone = true;
+    this.bus.emit('station:overrun');
+    this.combat.overrun('The dead broke into the comms room while you were away.');
   }
 
   // The HUD strip under the minimap, while you're near the station: its

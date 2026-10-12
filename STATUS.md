@@ -20,6 +20,23 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### M6 step 3 follow-up 2: attacks last the night, a stronger fence, graded radio calls
+
+Aaron's second test: the zombies vanished once the fence was down, and a horde took the fence far too fast. "15 zombies might not pull down a chain-link fence in a couple of hours. It might take them an evening."
+
+- **Stronger fence:** a segment 200 -> 500 health, the gate 300 -> 750, a barricade 150 -> 375 (doors unchanged). Real sieges at home slow down the same way. Repairs cost the same per whole segment.
+- **An attack while away lasts until dawn.** The group stays at the fence and claws at a steady rate: 0.45 per zombie per second × the band's damage × the level's defenceDamage.
+  - If the margin says it breaks through, it goes on through the gap to the front door, then the comms door (the station falls).
+  - At dawn the survivors wander off and most sink.
+  - Late arrivals from the same group join its attack.
+- **The turret while away** fires at its mode's rate and every 4 rounds kills an attacker (no loot). The fence's zaps use charge.
+- **Graded radio calls:** "One or two of them / A few of them / A horde at the south fence 2", then either "Looks like the fence will hold tonight" or "That fence isn't going to last the night. Get back here, Tom!" It's urgent if the group breaks through, or would claw through the fence where it is before dawn.
+- **Checked on seed 4242 (fence repaired, away all night):**
+  - one sigil (level 1, +14): a panel at about half by dawn, calm calls all night;
+  - two sigils (level 2, -11): a panel down at 5:40am;
+  - five sigils (level 5, -238): the horde at 11:30pm, a panel down by 12:30am, the station fell about 1:15am;
+  - the same with a loaded turret: 10 kills, and it fell a little later.
+
 ### M6 step 3 follow-up: Aaron's first play-test of nights while away
 
 - **Attacks take time (Aaron: "the fence fell within a second").**

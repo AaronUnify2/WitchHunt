@@ -85,9 +85,9 @@ describe('StationState', () => {
   it('breaks barriers, and repairs them for scrap in proportion', () => {
     const { state } = setup();
     const s = state.segments[0];
-    expect(state.damage(s, 50)).toBe(false);
+    expect(state.damage(s, s.max / 4)).toBe(false);
     expect(state.repairCost(s)).toBe(Math.ceil(0.25 * config.station.costs.fenceRepair));
-    expect(state.damage(s, 500)).toBe(true);
+    expect(state.damage(s, s.max)).toBe(true);
     expect(passable(s)).toBe(true);
     // Half the scrap repairs half of it.
     const half = config.station.costs.fenceRepair / 2;

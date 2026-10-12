@@ -893,20 +893,23 @@ export const config = {
       damage: { clean: 0.05, holds: [0.5, 0.15], mayFall: 0.8, overrun: 1 },
       // Chance the whole night ends in the station falling, across each band.
       fall: { mayFall: [0.1, 0.6], overrun: [0.6, 0.95] },
-      healthPerZombie: 120, // an attacking zombie's full damage on the defences, x the level's defenceDamage
-      spreadBreak: 1, // at most this x a barrier's health from one attack before the rest spills along the fence
-      turretRoundsPerZombie: 4, // turret rounds an attack can use up, per zombie
-      zapsPerZombie: 2, // zaps from the charged fence, per zombie
+      healthPerZombie: 120, // (the resolver's full damage per zombie; the away siege uses awayDps instead)
+      // Aaron (M6): an attack while you're away lasts the night. The group
+      // gathers just outside the fence where it arrived and claws at it
+      // until dawn: each zombie does awayDps x the band's damage x the
+      // level's defenceDamage per second. A horde of 13 at level 1 takes a
+      // 500 panel in about 4-5 night hours ("an evening", Aaron), about 1-2
+      // at level 5 with a hopeless margin; one or two barely scratch it.
+      // If the margin says it breaks through, the group goes on through the
+      // gap to the front door and then the comms room.
+      awayDps: 0.45,
+      spreadBreak: 1, // at most this x a barrier's health per tick before the rest spills along the fence
+      zapsPerZombieSecond: 0.3, // the charged fence zaps each attacker this often (charge used)
+      turretKillRounds: 4, // away, the turret fires at its mode's rate and kills an attacker every this many rounds
       mutantWeight: 4, // a mutant in an attack counts as this many zombies
-      // Aaron (M6): attacks take time, so you can react. A group gathers just
-      // outside the fence where it arrived and its damage lands over
-      // attackSeconds (a night is 360). Breaking through: the fence, the
-      // front door and the comms door fall at these points of the attack.
-      attackSeconds: 45,
-      breakStages: [0.3, 0.65, 1],
       standOff: 5, // metres outside the fence the group gathers
       gatherRadius: 4,
-      radioGap: 15, // seconds between "they're at the fence" radio calls
+      radioGap: 10, // seconds between radio calls of the same kind
     },
   },
 
@@ -1058,9 +1061,10 @@ export const config = {
       overrun: true, // a zombie in the comms room ends the run (the family)
     },
     fence: {
-      segmentHealth: 200,
-      gateHealth: 300,
-      barricadeHealth: 150,
+      // Aaron (M6): chain-link should take a horde an evening, not minutes.
+      segmentHealth: 500,
+      gateHealth: 750,
+      barricadeHealth: 375,
       // Start of a run: segment index (0 = far west, 11 = far east; 5 and 6
       // flank the gate) -> health fraction. Aaron (M6): the broken panel is
       // the second east of the gate, so you face it from the yard and spot
