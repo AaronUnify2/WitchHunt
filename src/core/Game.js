@@ -139,7 +139,7 @@ export class Game {
     this.sky.init(this.scene);
     // Session 10: ground mist and fog nights.
     this.atmosphere = new Atmosphere(cfg.fog, cfg.quality.presets, this.seed, this.rng.fork('atmosphere'));
-    this.atmosphere.init(this.scene, ground);
+    this.atmosphere.init(this.scene, ground, this.world.map);
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
     this.flashlight.init(this.scene, this.colliders, ground);
     this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);

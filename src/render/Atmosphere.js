@@ -1,7 +1,9 @@
 // The atmosphere (Session 10, style pass 1): the low ground mist in every
 // fogged material (atmosphereShader.js), the drifting mist billboards near
 // you (GroundMist.js), fog nights (world/fogNights.js), fireflies
-// (Fireflies.js) and dust in the torch beam (BeamDust.js). Sky owns the
+// (Fireflies.js), dust in the torch beam (BeamDust.js), shafts of
+// moonlight in the clearings (LightShafts.js) and the torch's visible
+// beam (TorchBeam.js). Sky owns the
 // colours and the fog itself; this feeds it the fog night's thickness and
 // feeds the shader the mist's values each frame.
 //
@@ -13,6 +15,8 @@ import { atmosphereUniforms } from './atmosphereShader.js';
 import { GroundMist } from './GroundMist.js';
 import { Fireflies } from './Fireflies.js';
 import { BeamDust } from './BeamDust.js';
+import { LightShafts } from './LightShafts.js';
+import { TorchBeam } from './TorchBeam.js';
 import { isFogNight, fogNightAmount } from '../world/fogNights.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
@@ -48,8 +52,9 @@ export class Atmosphere {
     };
   }
 
-  // ground: heightAt(x, z). avoid: rectangles { x0, x1, z0, z1 } where no mist sheets stand.
-  init(scene, ground, avoid = []) {
+  // ground: heightAt(x, z). map: from generateMap() (shafts go in its
+  // clearings). avoid: rectangles { x0, x1, z0, z1 } where no mist sheets stand.
+  init(scene, ground, map, avoid = []) {
     this.ground = ground;
     this.mist = new GroundMist(this.cfg.puffs, this.maxPuffs, this.rng);
     this.mist.init(scene, ground);
@@ -58,6 +63,10 @@ export class Atmosphere {
     this.fireflies.init(scene);
     this.dust = new BeamDust(this.cfg.beamDust, this.maxDust, this.rng.fork('dust'));
     this.dust.init(scene);
+    this.shafts = new LightShafts(this.cfg.shafts, map, this.rng.fork('shafts'));
+    this.shafts.init(scene, ground);
+    this.beam = new TorchBeam(this.cfg.torchBeam);
+    this.beam.init(scene);
     this.pixels = 500; // pixels per metre at 1 m (setViewport)
   }
 
@@ -73,6 +82,8 @@ export class Atmosphere {
     this.mist.setCount(preset.mistPuffs ?? 0);
     this.fireflies.setCount(preset.fireflies ?? 0);
     this.dust.setCount(preset.beamDust ?? 0);
+    this.shafts.setQuality(preset.lightShafts ?? 0);
+    this.beam.setQuality(preset.torchBeam ?? 0);
   }
 
   isFoggy(night) {
@@ -131,6 +142,12 @@ export class Atmosphere {
     this.fireflies.update(dt, camera, fireflies, groundY, this.pixels);
     const bd = this.cfg.beamDust;
     this.dust.update(dt, camera, t, bd.day + (1 - bd.day) * sky.night, this.pixels);
+    // Shafts and the beam show in the mist, more on a fog night, never on the blood night.
+    const sh = this.cfg.shafts;
+    const haze = Math.min(1, sky.mistAmount) * (1 - sky.blood);
+    this.shafts.update(dt, sky.lightDir, sky.light.color, haze * (1 - sh.fogNightCut * this.amount), sky.fog.far);
+    const tb = this.cfg.torchBeam;
+    this.beam.update(t, (tb.day + (1 - tb.day) * sky.night) * (tb.clear + (1 - tb.clear) * haze) * (1 + (tb.fogNightBoost - 1) * this.amount));
   }
 
   // The draw distance to use: the preset's, or less while the fog is in
@@ -172,11 +189,21 @@ export class Atmosphere {
       () => `Dust in the torch beam: ${this.dust.enabled ? 'on' : 'off'}`,
       () => (this.dust.enabled = !this.dust.enabled),
     );
+    display.addItem(
+      () => `Light shafts: ${this.shafts.enabled ? 'on' : 'off'}`,
+      () => (this.shafts.enabled = !this.shafts.enabled),
+    );
+    display.addItem(
+      () => `Torch beam in the air: ${this.beam.enabled ? 'on' : 'off'}`,
+      () => (this.beam.enabled = !this.beam.enabled),
+    );
   }
 
   dispose() {
     this.fireflies.dispose();
     this.dust.dispose();
+    this.shafts.dispose();
+    this.beam.dispose();
     this.mist.dispose();
   }
 }

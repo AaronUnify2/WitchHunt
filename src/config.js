@@ -91,6 +91,8 @@ export const config = {
         treeTrunks: 0, // metres: trees this near you get a solid 3D trunk (0 = off)
         fireflies: 0, // Session 10: fireflies round you at night
         beamDust: 0, // motes of dust that show in the torch beam
+        lightShafts: 0, // strength of the moonlight shafts in clearings (0 = off)
+        torchBeam: 0, // strength of the torch's visible beam in the air (0 = off)
       },
       medium: {
         renderScaleMin: 0.45,
@@ -107,6 +109,8 @@ export const config = {
         treeTrunks: 30,
         fireflies: 70,
         beamDust: 300,
+        lightShafts: 0.8,
+        torchBeam: 1,
       },
       high: {
         renderScaleMin: 0.5,
@@ -123,6 +127,8 @@ export const config = {
         treeTrunks: 40,
         fireflies: 120,
         beamDust: 500,
+        lightShafts: 1,
+        torchBeam: 1,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -256,6 +262,28 @@ export const config = {
       near: 0.5, // metres
       brightness: 0.9,
       day: 0.25, // how visible by day (1 at night)
+    },
+    // Shafts of moonlight (or low dawn sun) in the clearings (Session 10).
+    // Strength from the Quality preset; they show in the mist.
+    shafts: {
+      perClearing: [2, 4],
+      width: [2, 4.5], // metres
+      length: 26, // metres, up toward the light
+      spread: 1.6, // this much wider at the top
+      strength: 0.07, // additive brightness at full
+      fadeNear: [3, 9], // metres: fade out as you walk into one
+      minElevation: 0.2, // the light must be at least this high (sin of its angle) for shafts
+      fogNightCut: 0.5, // fog nights hide this much of them
+    },
+    // The torch's beam made visible in the air (Session 10).
+    torchBeam: {
+      length: 12, // metres
+      width: 0.85, // the cone's angle as a share of the torch's
+      strength: 0.03, // additive brightness at full
+      near: [1.5, 5], // metres from your eye: none inside the first, full beyond the second
+      day: 0.1, // how visible by day (1 at night)
+      clear: 0.35, // how visible with no mist (1 in full mist)
+      fogNightBoost: 1.6, // thicker on a fog night
     },
     // Fog nights (Aaron): about one night in three, never night 1.
     nights: {

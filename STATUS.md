@@ -32,6 +32,19 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 4b: moonlight shafts and the torch beam (Graphics Engineer, style pass 1)
+
+- **Shafts of light in the clearings** (`render/LightShafts.js`, `config.fog.shafts`):
+  - Two to four per clearing (about 70 on the map): soft, striped, additive billboards slanting down from the moon, or the sun once it's high enough. Each turns about its own slanted axis to face you.
+  - Brighter in the mist, cut back on fog nights, none on the blood night. They fade as you walk into one and before the fog's end.
+  - One instanced draw call for all of them. Strength by Quality: Low 0 (off), Medium 0.8, High 1.
+- **The torch beam in the air** (`render/TorchBeam.js`, `config.fog.torchBeam`): a faint additive cone following the torch, 12 m long.
+  - Brightest through its middle and fading to nothing at its outline, so its walls never show as edges. Nothing within 1.5 m of your eye.
+  - Stronger in the mist and on fog nights (×1.6), faint by day.
+  - One draw call. Quality: Low off, Medium and High on.
+- **Debug** (Display & performance): Light shafts on/off, Torch beam in the air on/off.
+- **Hard to judge headless** (a software renderer, one still frame): both are deliberately subtle. `shafts.strength` and `torchBeam.strength` are the levers if Aaron wants more.
+
 ### Session 10 step 4a: colour grade, fireflies and beam dust (Graphics Engineer, style pass 1)
 
 - **The colour grade follows the time of day** (`render/PostFX.js`, `config.postFX.grade.keys`, keyed by hour like the sky):
@@ -740,7 +753,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
-- Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): fake light shafts, fireflies and other particles, normal maps on the ground, fallen logs and roots, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
+- Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): normal maps on the ground, fallen logs and roots, breath on cold nights, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
 - Billboard trees: the canopy is still a sprite that turns to face you up close; the trunk near you is a solid 3D trunk (Session 10, `NearTrunks.js`).
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 
