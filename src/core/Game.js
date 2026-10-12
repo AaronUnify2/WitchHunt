@@ -212,8 +212,12 @@ export class Game {
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.station.hud);
+    // Mist may drift inside the fence, but not into the cabin (Aaron).
     const L = this.station.layout;
-    if (this.cfg.fog.puffs.avoidStation) this.atmosphere.mist.avoid = [{ x: L.centre.x, z: L.centre.z, r: L.radius }];
+    const cabin = this.cfg.station.layout.cabin;
+    const m = this.cfg.fog.puffs.avoidMargin;
+    const cz = L.centre.z + cabin.offsetZ;
+    this.atmosphere.mist.avoid = [{ x0: L.centre.x - cabin.width / 2 - m, x1: L.centre.x + cabin.width / 2 + m, z0: cz - cabin.depth / 2 - m, z1: cz + cabin.depth / 2 + m }];
     // While the ledger is open the player's controls go to it; the world carries on.
     const input = () => this.input;
     const still = { x: 0, y: 0 };

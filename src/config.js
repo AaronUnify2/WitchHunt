@@ -98,7 +98,7 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 0.75,
-        mistPuffs: 18,
+        mistPuffs: 36, // doubled after Aaron's first look (was a touch sparse)
       },
       high: {
         renderScaleMin: 0.5,
@@ -110,7 +110,7 @@ export const config = {
         bloom: true,
         frameCap: 0,
         mist: 1,
-        mistPuffs: 32,
+        mistPuffs: 64,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -185,22 +185,27 @@ export const config = {
       drift: { x: 0.35, z: 0.15 }, // m/s the patches drift
       maxOpacity: 0.85,
     },
-    // Drifting mist billboards near you (count from the Quality preset).
+    // Drifting mist sheets near you (count from the Quality preset). Each
+    // stays parallel to the screen (no swinging round as you pass) and is
+    // a soft, torn blob of one of these shapes. ragged: how torn its edge is.
     puffs: {
       radius: 32, // metres: they live within this of you (and inside the fog)
       nearRadius: 4, // metres: none start closer than this
-      width: [6, 11], // metres
-      height: [1.4, 2.4], // metres
+      shapes: [
+        { weight: 3, width: [7, 12], height: [1.2, 1.8], ragged: 0.7 }, // a wide, low bank
+        { weight: 2, width: [3, 5], height: [1.6, 2.6], ragged: 0.9 }, // a rounder tuft
+        { weight: 1, width: [10, 16], height: [0.8, 1.2], ragged: 0.5 }, // a long, thin streak
+      ],
       sink: 0.5, // metres below the ground their base sits (hides the cut)
       peak: 0.35, // 0..1 up the billboard where it's thickest
       opacity: 0.32,
       drift: 0.45, // m/s, along fog.mist.drift's direction
-      fadeNear: [1.5, 5], // metres: fade out as you walk into one
+      fadeNear: [2.5, 7], // metres: fade out as you walk into one
       fadeIn: 2.5, // seconds to appear after being moved
       noiseScale: 0.35, // texture repeats per metre-ish
       noiseSize: 64, // pixels, the generated noise texture
       torchLit: 0.9, // how much the torch's beam brightens one it hits
-      avoidStation: true, // none inside the compound's fence
+      avoidMargin: 1, // metres round the station's cabin where none stand (they may drift inside the fence)
     },
     // Fog nights (Aaron): about one night in three, never night 1.
     nights: {

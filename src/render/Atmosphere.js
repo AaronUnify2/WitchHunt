@@ -42,7 +42,7 @@ export class Atmosphere {
     };
   }
 
-  // ground: heightAt(x, z). avoid: [{ x, z, r }] where no mist billboards go.
+  // ground: heightAt(x, z). avoid: rectangles { x0, x1, z0, z1 } where no mist sheets stand.
   init(scene, ground, avoid = []) {
     this.ground = ground;
     this.mist = new GroundMist(this.cfg.puffs, this.maxPuffs, this.rng);
@@ -105,7 +105,7 @@ export class Atmosphere {
       t.strength = f.glareFactor;
     }
     const puffAmount = sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount);
-    this.mist.update(dt, p, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t);
+    this.mist.update(dt, camera, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t);
   }
 
   // The draw distance to use: the preset's, or less while the fog is in
