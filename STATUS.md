@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 8 (AI Programmer), milestone **M7: the witch, the vertical slice: all six steps built and pushed.**
+Last updated: Session 9 (QA & Balance), **the gate: the slice play-tested by Aaron and the witch retuned.** Fighting her (on the pathways and in the final battle), her traps, the hut and its point-of-no-return pop-up, killing her and the endings all work and play well on the tablet. Her fight was reworked (retreat to 20 m, hex, rush on a hit) and her health doubled. Full runs wait for the encounters: Day 1 has little to do but loot cars (#135), so ammo and loot pacing can only be judged after M9. Aaron kept the session order as it is. Next: **Session 10, Graphics Engineer: style pass 1.**
+
+Session 8 (AI Programmer) built M7, the witch, the vertical slice, in six steps:
 1. The witch roams and plants.
 2. You can fight her on the pathways.
 3. She lays traps.
@@ -8,7 +10,7 @@ Last updated: Session 8 (AI Programmer), milestone **M7: the witch, the vertical
 5. The final battle on the blood night.
 6. The ending, defeat and the run summary.
 
-A run can go from Day 1 to killing her (or dying). Aaron has play-tested and tuned step 1 (her look and pace); steps 2-6 await his play-test. Next: **Session 9, QA & Balance: the gate (Aaron plays two or three full runs).**
+A run can go from Day 1 to killing her (or dying).
 
 M6 (Session 7) is complete: simulation tiers, night marches, the forecast, nights while away, the alarm, the dawn autosave. The M6 performance gate passed. Aaron confirmed hiding at 6 m and the recalibrated forecast.
 
@@ -50,7 +52,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 - When the second charge goes on the hut, Junie calls on the radio: is Tom sure he's ready? Once the hut goes, the witch has nowhere to run.
 - 5 s later a pop-up pauses the game (world and clock): setting the charges off starts the final battle and deletes the save, so there's no reloading from dawn. A / Enter closes it. The debug "Plant both charges on the hut now" shows it too.
 - Destroying the hut deletes the save, and nothing saves again that run (`Game.pastNoReturn`).
-- Checked headless: the call, the pop-up after 5 s, the frozen clock, the save gone after the blast and autosave refused.
+- Checked headless: the call, the pop-up after 5 s, the frozen clock, the save gone after the blast and autosave refused. **Verified by Aaron on the tablet.**
 
 ### Debug menu in categories (Session 8, Aaron's request)
 
@@ -696,13 +698,11 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
 12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What the gate needs next (Session 9, QA & Balance)
+## The gate (Session 9, QA & Balance): where it stands
 
-Aaron plays two or three full runs of the slice (DESIGN.md "Gate: play-test the slice"): is the core loop fun before any content goes in?
-- **Watch for:** pacing (1.5-2.5 hours, cornering her around nights 6-8), her toughness (about 3-4 good ambushes), the night's danger against the station, whether the dusk choice (defend or hunt) is a real one, trap density on the hut approach, the final battle's difficulty.
-- **Explosives** come from the debug menu (Hut & explosives) until M9-M11; a full run has to give them that way.
-- **Open questions for Aaron:** #130 answered (Session 9: destroying the hut deletes the save). #135 (Day 1 needs the campsite?) and #136 (a witch-tagging item), plus all of #105-134 as tuning.
-- **Tuning lives in config:** `witch` (planting, speed, health, attacks, wounds, traps), `finalBattle`, `explosives`, `ending`.
+- **Passed on the witch's side:** Aaron fought her on the pathways (ambushing rituals, making her flee, killing her), played the final battle several times and tried the traps, the hut and the endings. All play well; her fight was reworked to his design (OPEN_QUESTIONS #113, #116, #129).
+- **Still to judge with full runs:** pacing (1.5-2.5 hours, cornering her around nights 6-8), ammo and loot, and whether the dusk choice (defend or hunt) is a real one. Day 1 has little to do until the campsite exists (#135), so these wait for M9's encounters; Aaron kept the session order. A short QA play-through after Session 13 would be a good point to look again.
+- **Open:** #136 (a witch-tagging item for an encounter), and #105-134 as tuning in M14.
 
 ## What M7 needed (done)
 

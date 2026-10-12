@@ -3,7 +3,7 @@
 ## Session 9 (the gate, QA & Balance)
 
 From Aaron at the start of the gate:
-- **#130 answered:** destroying the hut deletes the save (see #130 below).
+- **#130 answered:** destroying the hut deletes the save (see #130 below). The radio call and pop-up work on the tablet (Aaron).
 - **#131-132:** the ending and defeat lines stay placeholders for the Narrative Designer.
 - **Explosives** for full runs come from the debug menu (Hut & explosives).
 - **The final battle's frame rate on the tablet:** Aaron has played it a couple of times and saw no drop.
@@ -14,7 +14,7 @@ From Aaron at the start of the gate:
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 135 | Day 1 has nothing to do but loot cars, which gets old fast, so a full run is hard to judge. Aaron: the abandoned campsite (every run, next to home) would fill a chunk of Day 1 and make the cars a bonus. | Not built: it's M9 content (Session 12, Level & Encounter Designer), and rule 10 says workshop it first. Decision for Aaron: build it early, ahead of the gate, or play the gate's runs knowing Day 1 is thin. | DESIGN.md "Abandoned campsite" |
+| 135 | Day 1 has nothing to do but loot cars, which gets old fast, so a full run is hard to judge. Aaron: the abandoned campsite (every run, next to home) would fill a chunk of Day 1 and make the cars a bonus. | Not built: it's M9 content (Session 12, Level & Encounter Designer), and rule 10 says workshop it first. **Aaron (Session 9): keep the session order as it is.** The campsite comes in Session 12; full-run pacing (ammo, loot, the dusk choice) is judged once the north is built. | DESIGN.md "Abandoned campsite" |
 | 136 | Aaron's idea: an item from a random encounter that tags the witch, so she shows on the map for good. Perhaps a special one-shot rifle: hit her once and she's tagged permanently. | An idea for the encounter sessions (M9-M11), not built. The map already has a debug "Show her on the map" (`witch.showOnMap`) the item could switch on. | `ai/Witch.js` `showOnMap`, `ui/MapUi.js` |
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.

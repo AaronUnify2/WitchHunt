@@ -1,123 +1,90 @@
 # Handover
 
-## Just finished: Session 8, AI Programmer, M7 (the witch: the vertical slice)
+## Just finished: Session 9, QA & Balance (the gate: play-test the slice)
 
-**Status: built.** All six steps are pushed to `main`. A run can now go from Day 1 to killing the witch, or dying. Aaron play-tested step 1 and reshaped her look and pace; steps 2-6 are waiting for his play-test. The rest of this file is that script and the gate.
+**Status: done.** Aaron play-tested the M7 slice on the tablet. The witch's side of the loop plays well, and her fight was reworked to his design. Full runs, which judge pacing, ammo and loot, wait for the encounters (see "The gate" below). Everything is pushed to `main` (Aaron: fixes go straight to `main` so he can play-test them).
 
-### What was built
+### What was done
 
-Details are in `STATUS.md` (the M7 sections) and the numbers in `OPEN_QUESTIONS.md` #105-134.
+Details are in `STATUS.md` (the Session 9 sections) and `OPEN_QUESTIONS.md` (Session 9, #113, #116, #121, #129, #130, #135, #136).
 
-1. **She roams and plants** (`src/ai/Witch.js`, `src/ai/witchRoutes.js`):
-   - **By day** she hides in her hut. At dusk she comes out of its door.
-   - **Planting:** night 1 is safe; from night 2 she plants 1 sigil, from night 3 sometimes 2.
-   - **Travel:** she glides the pathways and keeps off the station. She follows the simulation tiers: real within 150 m, 3x faster unseen.
-   - **The ritual:** 45 s, crouched and contorting, with a green ring and singing that carries 70 m.
-   - **The forecast** counts the sigils she's out to plant.
-2. **Her look** (`src/render/WitchRenderer.js`), after Aaron's two passes:
-   - an unlit near-black shadow creature, thin, with slanted glowing slit eyes and a crown of sticks;
-   - she glides, never walks;
-   - jointed down to the elbows and wrists, so in the ritual she folds flat and jerks between wrong angles.
-3. **Fighting her** (Weapons `extraTargets`):
-   - **Toughness:** 500 health, x2 headshots.
-   - **Noticing you:** the shared detection model (hiding works). In the ritual's trance she only notices you close up, or on a shot or a hit, and that breaks the ritual.
-   - **Fight or flee:** her health plus a bonus near her hut.
-   - **Attacks:** hexes you can sidestep or block with a tree, rushing in to swipe if you stand still, summoning 3-4 zombies.
-   - **Fleeing:** she weaves home faster than your sprint.
-   - **Wounds** last, heal 35% a day and cut her planting.
-4. **Traps** (`src/ai/witchTraps.js`):
-   - **Snare:** mash A for about 2 s to tear free.
-   - **Hex totem:** a burning ring; shoot it to destroy it.
-   - **Alarm charm:** calls the zombies and her.
-   - **Where:** 16 laid on the hut approach, thicker near it; she also drops them as she flees.
-5. **The hut and explosives** (`src/world/Hut.js`, `src/combat/Explosives.js`):
-   - **The hut:** a placeholder crooked shack.
-   - **Charges:** carry 2 (debug-given). Hold X to plant one on the hut or anywhere.
-   - **Detonator:** a weapon slot; RT sets every charge off. A 9 m blast.
-   - **The hut** falls only to two charges set off together.
-6. **The final battle** (`src/encounters/FinalBattle.js`):
-   - **The trigger:** destroying the hut. A placeholder cutscene, then she rises out of the wreck.
-   - **Blood night:** it jumps to night if it's day, then the clock freezes. Red sky, embers, ash. The station is still attacked.
-   - **The arena:** a ring of witchfire seals the clearing.
-   - **Her fight:** to the death, harder, spamming traps.
-7. **The end of a run** (`src/ui/RunEndScreen.js`, `src/data/ending.json`):
-   - **Victory:** she bursts apart, the dead collapse, then placeholder cards (trail cams, Ground Zero, dawn with the family).
-   - **Defeat:** a fade to black with radio static and the family calling Tom.
-   - **Both** end on a run summary.
-   - **The save** now holds her traps, the charges and the stats.
-8. **The debug menu is in categories** (Aaron's request); M7 added "Witch" and "Hut & explosives".
-9. **Tests:** 368 pass (45 new this session).
+1. **The point of no return (#130, Aaron)** (`src/ui/NoReturnNotice.js`, `data/ending.json` `noReturn`):
+   - **The radio call:** when the second charge goes on the hut, Junie calls: is Tom sure he's ready?
+   - **The pop-up:** 5 s later it pauses the game. Setting the charges off starts the final battle and deletes the save, so there's no reloading from dawn.
+   - **The save:** destroying the hut deletes it, and nothing saves again that run (`Game.pastNoReturn`).
+   - Verified by Aaron.
+2. **Her fight, reworked (Aaron)** (`src/ai/Witch.js` `fight()`, `setMode()`, `hitInFight()`; `config.witch.attack`):
+   - **Health:** doubled to 1000.
+   - **Retreat:** she backs off, weaving, to 20 m, dropping traps.
+   - **Hex mode:** she holds there and throws a hex every 6 s at 25 m/s. Come within 10 m and she backs off again.
+   - **Rush:** any hit but the shotgun's sends her in to swipe again and again. She follows you through the wind-up.
+   - **Backing her off:** any shotgun hit, or 100 damage, drives her back out.
+   - **She summons** whenever that's ready.
+   - **The final battle** uses the same pattern, harsher (hexes every 4.5 s, 40-damage swipes). She keeps 4 m inside the witchfire ring (`Witch.arena`).
+   - Aaron tried 30 m first: too far, and she snagged on the trees at the arena's edge. **20 m is confirmed.**
+3. **The hex totem** is now 0.6 m tall, low to the ground (`traps.look.totemHeight`, hit shape).
+4. **Small things:**
+   - `Toast.show(text, seconds)`.
+   - Hitscan hits now carry the weapon's `id` (the witch backs off from the shotgun).
+5. **Tests:** 372 pass (4 new or rewritten for her fight, 1 for the hut arming).
+
+### What Aaron said about the slice
+
+- **Ambushing a ritual:** balanced. Shooting her, or walking right up, breaks it.
+- **Making her flee:** fun. The pace changes suddenly.
+- **Killing her on the pathway:** satisfying.
+- **The final battle:** plays really well, and the frame rate held on the tablet.
+- **Traps:** the snare is really good. The totem was too tall (fixed). The alarm charm is fine but easy to avoid.
+- **Ideas logged:** #136, a random encounter's item, perhaps a one-shot rifle, that tags the witch on the map for good. The map's debug "show her" view (`witch.showOnMap`) is the hook.
+
+### The gate
+
+- **The witch's side passed.**
+- **Full runs wait:** Day 1 is mostly looting cars until the abandoned campsite exists (#135), so ammo, loot and run pacing can't be judged yet. Aaron chose to **keep the session order as it is**.
+- **Look again after Session 13** (all of the north built), with a short QA play-through of two or three full runs.
 
 ### Unfinished
 
-Nothing in M7's scope. Aaron hasn't play-tested steps 2-6 yet (the script is below).
+Nothing in this session's scope.
 
-## Next: Session 9, QA & Balance, the gate (play-test the slice)
+## Next: Session 10, Graphics Engineer, style pass 1 (part of M13)
 
-**Goal (DESIGN.md "Gate: play-test the slice"):** Aaron plays two or three full runs. Is the core loop fun before any content goes in? Fix the loop first if it isn't.
-- Prepare and support his runs, and fix the bugs he finds.
-- Tune the numbers with him (all in config: `witch`, `finalBattle`, `explosives`, `ending`, plus M6's nights).
-- Explosives only come from the debug menu (Hut & explosives) until M9-M11, so a full run takes them from there.
+**Goal (DESIGN.md session order):** make the slice look good: ground, trees, mist and post-processing. DESIGN.md "Art style and rendering" ("Visual ambition", "Rendering pipeline", "Sky and lighting") is the brief.
+- The unbuilt items from "Visual ambition" are listed in STATUS.md "Stubbed / placeholder" and OPEN_QUESTIONS #21: ground mist layers, height fog, fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, a retro pixel filter.
+- **Performance comes first:** hold the frame target on the Samsung tablet (budgets in DESIGN.md). Every addition needs a Quality-preset lever.
+- **Workshop it with Aaron before building** (DESIGN.md rule 10 is about content, but a style pass is about his taste): propose what changes and what it costs, then build in steps he can play-test.
 
 ### Look at first
 
-- `STATUS.md`: the M7 sections, and "What the gate needs next".
-- `OPEN_QUESTIONS.md` #105-134: every M7 number, as tuning.
-- `src/ai/Witch.js`: her states (resting, roaming, planting, attacking, fleeing, rising, dead) and where each number is used.
+- **Rendering:** `src/render/Renderer.js`, `PostFX.js`, `Sky.js`, `skyPalette.js`, `Forest.js`, `proceduralTextures.js`, `DynamicResolution.js`.
+- **Ground:** `src/world/GroundField.js` and `Terrain.js`.
+- **Config:** `config.quality.presets` (draw distance, fog end, shadows, bloom), `fog`, `sky`, `forest`.
+- STATUS.md "Known issues and risks": draw calls, the torch's lights, sprite trees up close.
 
 ### Gotchas and decisions
 
-- **Debug categories:** add tools with `menu.category(DEBUG.x).addItem(...)` (`src/debug/DebugMenu.js`).
-- **Weapon targets:**
-  - `Weapons.extraTargets` takes anything with a zombie's hit shape, `targetable` and `takeHit()`, or a `{ group }` of them; `noAssist` skips aim assist.
-  - The detonator slot comes and goes with `setSlot()`.
-- **`Player.rooted`** (the snare) is separate from `moveMultiplier`, because Weapons rewrites that every frame.
-- **The final battle freezes the clock** (`clock.setPaused`); NightWatch and the marches keep going on `dt`. A frozen clock means no dawn autosave mid-battle (#130 is open).
-- **The witch is a shadow on purpose** (unlit `MeshBasicMaterial`, Aaron): she's hard to see against dark woods and stands out against lit ground, the ritual ring and the blood sky.
-- **Headless runs:** in headless Chromium, drive `game.update(1/30)` with the render loop cancelled. CSS transitions run on real time there, so check DOM fades in the browser.
+- **Keep the witch a shadow:** she's unlit `MeshBasicMaterial` on purpose (Aaron). Only her silhouette and eyes read; she shows against lit ground, the ritual ring and the blood sky.
+  - Aaron likes her as a silhouette at a distance. She now fights 20 m off, so mist and fog at that range set how she looks in a fight. Check her against any new mist.
+- **The blood night:** `FinalBattle` drives `sky.setBlood()` and its own embers, ash and witchfire ring. A new sky or fog system has to keep feeding it.
+- **Zombie sprites** are lit head-on by the torch, and their albedo is pulled down (`zombies.albedoScale`). Pickups need the same care (`pickups.albedoScale`).
+- **Headless runs:**
+  - In headless Chromium, drive `game.update(1/30)` with the render loop cancelled (`window.game` exists in dev).
+  - It renders on a software GPU at about 10 fps, so it says nothing about the tablet's frame rate. Only Aaron's tablet does.
 - **Vite `base` is `/WitchHunt/`. The live build deploys from `main`;** Aaron wants each step pushed there.
 
 ### Open questions for Aaron
 
-- **#130:** quitting mid final battle and continuing goes back to the last dawn, before the hut was destroyed. Should detonating the hut save, or delete the save (a true point of no return)?
-- **#131-132:** the closing and defeat lines are placeholders. Rewrite them now, or leave them for the Narrative Designer (M8 / M14)?
-- **Tuning:** her toughness (#113), her attacks (#116), the final battle (#129), trap density (#122).
+- None blocking. #136 (the witch-tagging item) is for an encounter session (M9-M11). #105-134 are tuning for M14.
 
-## Play-test script for Aaron (M7: steps 2-6)
+## Play-test script for Aaron (Session 9's last changes)
 
-The debug menu's **Witch** and **Hut & explosives** categories hold every shortcut. "Witch > Show her on the map" helps you find her.
+All verified by Aaron during the session; nothing is waiting.
 
-1. **Ambush a ritual (step 2):** wait at a sigil ground at night, or use "Teleport near her". Shoot her mid-ritual.
-   - The ritual breaks and she shrieks and turns on you.
-   - **Good:** she circles you throwing glowing hexes you can sidestep or block with a tree, rushes in if you stand still, and calls up 3-4 zombies.
-2. **Make her flee:** keep shooting (or "Fight: set her health" to 50%).
-   - Below about 60% she runs home, weaving, faster than your sprint, dropping traps behind her.
-   - Fight her near her hut and she stays and fights even when hurt.
-3. **Traps (step 3):** "Traps: lay a snare, a totem and a charm ahead of me".
-   - Walk into the snare and mash A to tear free (about 2 s).
-   - Stand in the totem's ring (it burns), then shoot the totem.
-   - Walk into the charm and nearby zombies come.
-   - Then walk the hut's approach: it should be thick with them near the hut.
-4. **The hut (step 4):**
-   - "Give 2 charges", then "Teleport: to the hut door". Hold X by the wall to plant both ("1 of 2", "2 of 2"); she stays inside until they go off (Aaron).
-   - Back off, switch to the detonator (RB / LB) and pull RT.
-   - Try one charge first: "The hut shudders, but holds."
-   - Try a charge on a path as a trap for zombies.
-5. **The final battle (step 5):** blowing up the hut starts it. Try it by day too: it should jump to night.
-   - Letterbox, a red flash, the sky bleeds red, and she claws up out of the wreck.
-   - A ring of green witchfire you can't leave. She never flees, hits harder, summons more and lays snares and totems round you.
-   - **Good:** tense and hard, but fair at full health with ammo.
-6. **The endings (step 6):**
-   - **Kill her:** she bursts apart, the dead fall, then the trail-cam, Ground Zero and dawn cards and the family's lines, then the summary.
-   - **Die in a later run:** a fade to black, static and the family calling Tom, then the summary. A starts a new run.
-7. **A full run (the gate):** play from Day 1 without the witch shortcuts (explosives still come from the debug menu).
-   - **Watch:** how long it takes, how often you meet her, whether she's too tough or too easy, and whether the dusk choice (defend or hunt) feels real.
-
-## Session kickoff prompt for Session 9
+## Session kickoff prompt for Session 10
 
 ```
-You are QA & Balance on Witch Hunt, Session 9: the gate (play-test the vertical slice).
-Read docs/DESIGN.md (especially "The witch", "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
-Then confirm your role, this session's goal and any questions before starting. Support Aaron's two or three full runs, fix what he finds, and tune the numbers with him (they're all in config).
+You are the Graphics Engineer on Witch Hunt, Session 10: style pass 1 (make the slice look good: ground, trees, mist, post-processing).
+Read docs/DESIGN.md (especially "Art style and rendering", "Build plan" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
+Then confirm your role, this session's goal and any questions before starting. Propose the look and its performance cost to Aaron before building, and build in steps he can play-test on the tablet.
 Follow the handover protocol, and end with the HANDOVER READY signal.
 ```
