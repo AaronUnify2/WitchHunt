@@ -201,9 +201,9 @@ export const config = {
       drift: 0.2, // m/s, along fog.mist.drift's direction (Aaron: halved, it moved too fast)
       billow: 0.5, // how fast the noise inside each one churns (1 = the first speed)
       // Aaron: they fade away as you approach, gone by about 25 m, so you
-      // see mist out ahead, never a flat sheet up close. Scaled down on a
+      // see mist out ahead, never a flat sheet up close (now about 22 m). Scaled down on a
       // fog night (the fog ends sooner).
-      fadeNear: [20, 30], // metres: gone inside the first, full beyond the second
+      fadeNear: [17, 27], // metres: gone inside the first, full beyond the second (Aaron: 3 m closer)
       fadeIn: 2.5, // seconds to appear after being moved
       noiseScale: 0.35, // texture repeats per metre-ish
       noiseSize: 64, // pixels, the generated noise texture
