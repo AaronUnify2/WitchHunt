@@ -1,6 +1,14 @@
 # Witch Hunt: Status
 
-Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights**, in progress. Step 1 (simulation tiers, no 64-zombie cap) is done: on the tablet, a full map of 480 zombies ran at 90 fps (zombie sim 0.33 ms). Step 2 (night marches, revisits) is done: Aaron saw waves reach the fence at about 9pm and 11:30pm, good group sizes, nothing stuck. Step 4 (dawn autosave, Continue / New run) is built and waiting for Aaron's play-test and the M6 performance gate on the tablet. Step 3 (danger, the dusk forecast, nights resolved while away, the alarm) is done; Aaron's first play-test of it brought fixes (attacks now take time, fast-forward, sigil grounds spread over the map, a new run on death, fence glare, the starting broken panel, no aiming while reloading), waiting for his second look. Before that: Session 6b finished M5 (vehicles and batteries); Aaron confirmed it on the tablet.
+Last updated: Session 7 (Lead Engineer), milestone **M6: simulation LOD and nights, complete.** Aaron play-tested every step on the tablet:
+- simulation tiers with no 64-zombie cap (480 zombies at 90 fps);
+- night marches arriving in waves, and revisited encounters;
+- the danger rating, the dusk forecast, nights resolved while away and the alarm ("balanced really well");
+- the dawn autosave with Continue / New run ("worked 100% properly").
+
+**The M6 performance gate passed:** about 20 minutes of five-sigil nights at Medium, never below 60 fps, the tablet barely warm.
+
+Late additions from his tests: hiding off the path, a forecast that matches what happens, a stronger fence, a new run on death, the map's sigil grounds spread 2 north / 2 middle / 1 south, the Car Armory in the north, and doubled stamina. Next: Session 8 (AI Programmer), M7: the witch (the vertical slice).
 
 Design source of truth: [`docs/DESIGN.md`](docs/DESIGN.md). Open decisions: [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Next session: [`HANDOVER.md`](HANDOVER.md).
 
@@ -20,7 +28,9 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
-### M6: the performance gate, sneaking, and the forecast recalibrated
+### M6: the performance gate, sneaking, and the forecast recalibrated (Session 7, done)
+
+- **Gate passed (Aaron):** no drops below 60 fps.
 
 - **Performance gate (Aaron, tablet, Medium):** about 20 minutes of nights with five sigils. The tablet stayed "barely warm" and the overlay showed 80 fps, frame 12.4 ms (simulation 0.9 ms, render 2.6 ms), 69 draw calls. Earlier: 90 fps with the full 480 zombies (zombie simulation 0.33 ms).
 - **Hiding (Aaron):** crouched, torch off and in the brush (undergrowth 0.3 or more, so just off the path counts): seen from no further than **6 m**, day or night, at any level. A zombie already chasing you still gets its pursuit ×1.7. A placeholder "◉ HIDDEN" over the health bar (DESIGN.md's stealth eye). `detection.isHidden()`, `config.detection.hidden`.
@@ -34,7 +44,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
   - Aaron's own station (129) would now read about -5, "may fall".
 - **Tests:** 323 pass (2 new for hiding).
 
-### M6 step 4: Dawn autosave (Session 7, in progress)
+### M6 step 4: Dawn autosave (Session 7)
 
 - **Aaron's tablet test:** the autosave "worked 100% properly": he checked everything he could think of. Real playthroughs (doing things in the right order) will be the fuller check.
 - **One save slot in localStorage** (`src/core/saveData.js` pure, `src/core/SaveStore.js`; key `witchHunt.save`, about 11 KB).
@@ -102,7 +112,7 @@ Aaron's second test: the zombies vanished once the fence was down, and a horde t
 - **No shouldering the gun while reloading** (the rounds came up to your face).
 - **Tests:** 315 pass (2 new for the map bands; the station tests follow the new starting panel).
 
-### M6 step 3: Danger, the forecast, nights while away, the alarm (Session 7, in progress)
+### M6 step 3: Danger, the forecast, nights while away, the alarm (Session 7)
 
 - **Danger** (`src/base/danger.js`), in the same units as security:
   - **Spawn strength:** each sigil's marchers tonight (its night quota × ⅔).
@@ -485,7 +495,13 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - **M5 part 2 on the tablet: verified by Aaron** (looks, looting, alarms, map markers, fights among cars, the turret's east end). Not yet tuned: loot amounts, how often batteries and alarms turn up (M14 balance).
 - **M5 part 1 on the tablet: mostly verified** (Aaron: a night at the station is great, no fps drop, no warm tablet, prices pretty balanced, ledger good, nothing stuck). Still open: whether a night at the station is tense and readable, frame rate with the compound in view (draw calls are up to the mid-80s by day), the ledger on the controller (LB / RB tabs), whether the floodlights and wires read at night, the turret's spectacle, prices and health numbers.
 - **M4 on the tablet** (Aaron's play-test): frame rate with many zombies and up to five sigils visible, whether the level changes are visible enough, whether the detection numbers feel fair, the mutant's look and toughness, and the sigil glow at night on the real screen.
-- The dawn thinning over a real 60 s dawn in the browser (the unit test covers it; the debug time speed-up only speeds the clock, not the zombies, so it can't be hurried).
+- The dawn thinning over a real 60 s dawn (now checkable with the debug fast-forward).
+- **M6 on the tablet: verified by Aaron:**
+  - the tiers (480 zombies, 90 fps) and the marches in waves;
+  - nights away resolving fairly, the radio calls, the forecast, the autosave;
+  - the 20-minute gate.
+
+  Not yet tried on the tablet: hiding at 6 m and the recalibrated forecast (pushed last; Aaron is checking them).
 - The M3 follow-ups (smooth minimap, more bushes, sign glare) on the tablet.
 - How long the world takes to build on the tablet (about 0.55 s on a desktop CPU).
 
@@ -507,7 +523,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
 - The east, west and south map edges are an invisible line inside dense forest (Aaron: fine as it is).
 - The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 19); no pause menu.
-- **M6 is in progress:** tiers are in (step 1). Night marches to the station, danger, the forecast, simulated nights while away, the alarm and the dawn autosave are next.
+- **The save is M6's dawn autosave only:** no save and quit, no pause menu (M12). It leaves out zombies, pickups and the random streams (OPEN_QUESTIONS #102). The Continue / New run screen is a placeholder until the main menu (M9).
+- **Nights while away are an abstraction:** groups held at the fence, damage at a rate, the turret's rounds turned into kills. Its numbers are first-pass (M14 tunes them).
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
@@ -551,14 +568,32 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 11. **Desktop Esc** releases the mouse and exits fullscreen, showing "Tap to resume". Expected.
 12. Production sourcemaps are deployed (~3 MB, only downloaded with devtools open) for remote debugging via `chrome://inspect`.
 
-## What M6 needs next
+## What M7 needs next
 
-Session 7 (Lead Engineer): **simulation LOD and nights** (DESIGN.md M6): active / nearby / abstract tiers, simulated nights while away, the dusk forecast, the alarm, dawn autosave.
+Session 8 (AI Programmer): **the witch, the playable loop** (DESIGN.md M7). It covers:
+- witch states, planting at sigil grounds, interruption, fight or flee, wounds and traps;
+- the hut, explosives (debug-given), the final battle and blood night;
+- the ending and defeat screens.
 
-- The station's numbers for the night resolver: `StationState.security` (and its breakdown), `charge` and `nightDrainPerSecond()`, the turret's `turretSecurity()` and coverage (`turretMath.js`), `config.station.security`.
-- **Aaron (M5): "if zombies trickled in one at a time it would be boring"**: he's been using the siege-wave debug (10 at once). How the night's zombies reach the station (in groups) is worth designing with the tiers.
-- Vehicles to save (M6 autosave or M12): per vehicle `searched.door`, `searched.boot`, `bonnetUp`, `hasBattery`, `flat`, `alarmArmed`, `seen` (`src/world/Vehicles.js`); placement is rebuilt from the seed. The station's state is `StationState`.
-- Zombies at home use `enemies.station` (the route hook); vehicles are colliders in the shared grid, so tiers that move zombies abstractly should still respect them when they drop back to active.
+**Vertical slice:** a complete run from day 1 to killing her (or dying).
+
+- **Replace the stand-in planter** (`ZombieDirector.plantForNight()`, `plantOne()`, `ai/sigilPlanter.js`).
+  - `chooseSigilSpot()` already follows her rules: mostly empty sigil grounds, else off a pathway, away from home and other sigils.
+  - `director.plant(spot)` is the one way to put a sigil down (renderer, events, variants).
+- **Simulation tiers:** she should follow them (DESIGN.md "The station and the witch follow the same tiers").
+  - `EnemyManager` runs zombies only; the witch will be her own system.
+  - `ai/simTiers.js` (`tierFor()`) and `ai/marchRoutes.js` (shortest pathway routes, `remaining()`) are reusable as they are.
+  - `PathRoutes` gives random walks.
+- **Danger and the forecast:** `base/danger.js` sums sigils. If she affects the night (summons, a blood night), add her there so the forecast stays honest.
+- **Blood night:**
+  - "The station is still attacked (simulated)": `NightWatch` resolves attacks while the player is away. The hut is far beyond 150 m, so a fight there counts as away.
+  - The clock freezes for the fight: NightWatch's attacks run on game time, so freezing the clock alone won't stop them. Decide whether they should.
+- **The defeat screen:**
+  - `Combat.overrun(reason)` and `die()` show the placeholder death screen.
+  - A on it emits `run:newRequested` (Game deletes the save and reloads on a fresh map).
+  - `station:overrun` and `player:died` delete the save.
+- **The save** (`core/saveData.js`): add her state, wounds, the hut and explosives. Bump `SAVE_VERSION` if old saves can't be read.
+- **Detection:** `ai/detection.js` (`notices()`, `isHidden()`) is the shared model; she should use it. Hidden = crouched, torch off, in the brush: 6 m.
 
 ## What M5 part 2 needed (done)
 
