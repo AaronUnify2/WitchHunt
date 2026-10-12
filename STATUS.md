@@ -20,6 +20,11 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### M6 step 3: Aaron's verdict
+
+- Five sigils, a topped-up battery, away at the hut at x1 speed: urgent radio calls, much of the fence fell while he ran home, then the front door. The station fell right at dawn with him about 180 m out. **"I think that's balanced really well."** The doors stay at 300.
+- **Stamina doubled** (100 -> 200, about 10 s of sprint) for the long runs home; regen unchanged.
+
 ### M6 step 3 follow-up 2: attacks last the night, a stronger fence, graded radio calls
 
 Aaron's second test: the zombies vanished once the fence was down, and a horde took the fence far too fast. "15 zombies might not pull down a chain-link fence in a couple of hours. It might take them an evening."

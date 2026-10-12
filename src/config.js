@@ -476,7 +476,7 @@ export const config = {
       returnSpeed: 8, // how fast the bob settles when stopping
     },
     stamina: {
-      max: 100,
+      max: 200, // Aaron (M6): doubled (was 100): about 10 s of sprint, for the long runs home
       drainPerSecond: 20,
       regenPerSecond: 15,
       regenDelay: 1, // seconds after sprinting before stamina refills
