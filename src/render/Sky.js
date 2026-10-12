@@ -1,6 +1,8 @@
-// Sky dome, stars, moon, the sun/moon directional light, ambient light
-// and fog colour, all driven by the clock's hour through config.sky.keys.
-// The dome follows the camera and sits just inside the far plane.
+// Sky dome, stars, moon, the sun/moon directional light, ambient light,
+// fog colour and the ground mist's colour and strength, all driven by the
+// clock's hour through config.sky.keys. The dome follows the camera and
+// sits just inside the far plane. Fog nights (Session 10, setFogNight)
+// pull the fog in, grey it toward the mist and hide the sky.
 
 import * as THREE from 'three';
 import { findKeyframes, lerp, sunDirection } from './skyPalette.js';
@@ -51,7 +53,8 @@ const STAR_FRAGMENT = /* glsl */ `
   }
 `;
 
-const COLOR_FIELDS = ['skyTop', 'horizon', 'ambient', 'light'];
+const COLOR_FIELDS = ['skyTop', 'horizon', 'ambient', 'light', 'mist'];
+const BLOOD_FIELDS = ['skyTop', 'horizon', 'ambient', 'light'];
 
 export class Sky {
   constructor(skyConfig, fogConfig, clockConfig, rng) {
@@ -84,6 +87,12 @@ export class Sky {
     scene.fog = this.fog;
     this.time = 0;
     this.blood = 0; // M7: the blood night (setBlood)
+    this.fogNight = 0; // Session 10: fog nights (setFogNight)
+    this.baseNear = 1;
+    this.baseFar = 2;
+    // Session 10: the ground mist's colour and strength now (read by Atmosphere).
+    this.mistColor = new THREE.Color();
+    this.mistAmount = 0;
   }
 
   buildDome() {
@@ -169,8 +178,14 @@ export class Sky {
     this.blood = Math.max(0, Math.min(1, amount));
     if (colours && !this.bloodColours) {
       this.bloodColours = {};
-      for (const f of COLOR_FIELDS) this.bloodColours[f] = new THREE.Color(colours[f]);
+      for (const f of BLOOD_FIELDS) this.bloodColours[f] = new THREE.Color(colours[f]);
+      this.bloodColours.mist = this.bloodColours.horizon;
     }
+  }
+
+  // Session 10: a fog night. amount 0..1 (it rolls in and lifts).
+  setFogNight(amount) {
+    this.fogNight = Math.max(0, Math.min(1, amount));
   }
 
   // hour: clock-face hour. Call after the camera has moved this frame.
@@ -180,14 +195,28 @@ export class Sky {
     const s = this.scratch;
     for (const f of COLOR_FIELDS) s[f].lerpColors(a[f], b[f], t);
     let stars = lerp(a.stars, b.stars, t);
+    this.mistAmount = lerp(a.mistAmount, b.mistAmount, t);
     if (this.blood > 0 && this.bloodColours) {
       for (const f of COLOR_FIELDS) s[f].lerp(this.bloodColours[f], this.blood);
       stars *= 1 - this.blood;
     }
+    this.mistColor.copy(s.mist);
+
+    // Fog nights: the fog greys toward the mist and closes in; the sky
+    // and stars vanish into it.
+    const fn = this.fogNight;
+    const n = this.fogCfg.nights;
+    this.fog.color.copy(s.horizon).lerp(s.mist, fn * n.colourMix);
+    if (fn > 0) {
+      s.skyTop.lerp(this.fog.color, fn * n.skyMix);
+      s.horizon.lerp(this.fog.color, fn * n.skyMix);
+      stars *= 1 - fn;
+    }
+    this.fog.near = lerp(this.baseNear, Math.min(n.fogNear, this.baseNear), fn);
+    this.fog.far = lerp(this.baseFar, Math.min(n.fogFar, this.baseFar), fn);
 
     this.domeUniforms.uTop.value.copy(s.skyTop);
     this.domeUniforms.uHorizon.value.copy(s.horizon);
-    this.fog.color.copy(s.horizon);
     this.ambient.color.copy(s.ambient);
     this.ambient.intensity = lerp(a.ambientIntensity, b.ambientIntensity, t);
     this.light.color.copy(s.light);
@@ -210,9 +239,12 @@ export class Sky {
     this.light.position.copy(camera.position).addScaledVector(this.lightDir, this.cfg.lightDistance);
   }
 
+  // The quality preset's draw distance (fog nights close in from it).
   setDrawDistance(distance) {
-    this.fog.near = distance * this.fogCfg.nearFraction;
-    this.fog.far = distance;
+    this.baseNear = distance * this.fogCfg.nearFraction;
+    this.baseFar = distance;
+    this.fog.near = this.baseNear;
+    this.fog.far = this.baseFar;
   }
 
   dispose() {

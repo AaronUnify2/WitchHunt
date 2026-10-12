@@ -15,6 +15,8 @@ import { shortPadName } from './GamepadInput.js';
 import { Renderer } from '../render/Renderer.js';
 import { DynamicResolution } from '../render/DynamicResolution.js';
 import { Sky } from '../render/Sky.js';
+import { Atmosphere } from '../render/Atmosphere.js';
+import { installAtmosphereShader } from '../render/atmosphereShader.js';
 import { World } from '../world/World.js';
 import { SpatialGrid } from '../world/SpatialGrid.js';
 import { Player } from '../player/Player.js';
@@ -66,6 +68,9 @@ export class Game {
 
   init(root) {
     const cfg = this.cfg;
+    // Session 10: the ground mist in every fogged material. First, before
+    // any material is made (it hooks their onBeforeCompile).
+    installAtmosphereShader();
     this.bus = new EventBus();
     this.bus.init();
     // M6: a saved run is offered if the URL asks for no other map.
@@ -132,6 +137,9 @@ export class Game {
 
     this.sky = new Sky(cfg.sky, cfg.fog, cfg.clock, this.rng.fork('sky'));
     this.sky.init(this.scene);
+    // Session 10: ground mist and fog nights.
+    this.atmosphere = new Atmosphere(cfg.fog, cfg.quality.presets, this.seed, this.rng.fork('atmosphere'));
+    this.atmosphere.init(this.scene, ground);
     this.flashlight = new Flashlight(cfg.flashlight, this.rng.fork('flashlight'), this.bus);
     this.flashlight.init(this.scene, this.colliders, ground);
     this.combat = new Combat(cfg, this.rng.fork('combat'), this.bus);
@@ -204,6 +212,8 @@ export class Game {
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.station.hud);
+    const L = this.station.layout;
+    if (this.cfg.fog.puffs.avoidStation) this.atmosphere.mist.avoid = [{ x: L.centre.x, z: L.centre.z, r: L.radius }];
     // While the ledger is open the player's controls go to it; the world carries on.
     const input = () => this.input;
     const still = { x: 0, y: 0 };
@@ -298,6 +308,7 @@ export class Game {
     this.overlay.addStat('final', () => this.finalBattle.overlayLine());
     this.overlay.addStat('station', () => this.station.overlayLine());
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
+    this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
   }
 
@@ -323,6 +334,7 @@ export class Game {
     this.nightWatch.addDebugItems(menu);
     this.vehicles.addDebugItems(menu);
     this.mapUi.addDebugItems(menu);
+    this.atmosphere.addDebugItems(menu, (text) => this.toast.show(text));
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -424,16 +436,24 @@ export class Game {
     this.qualityName = name;
     this.renderer.setScale(dr.scale);
     this.renderer.setPostFX(q.postFX, q.bloom);
-    this.drawDistance = q.drawDistance;
+    this.presetDrawDistance = q.drawDistance;
     this.sky.setDrawDistance(q.drawDistance);
-    this.world.setDrawDistance(q.drawDistance);
-    this.director?.setDrawDistance(q.drawDistance);
-    this.witch?.setDrawDistance(q.drawDistance);
-    this.combat.setDrawDistance(q.drawDistance);
-    this.station?.renderer.setDrawDistance(q.drawDistance);
-    this.player.setFar(q.drawDistance + this.cfg.render.farMargin);
+    this.setViewDistance(q.drawDistance);
+    this.atmosphere.setQuality(q);
     this.flashlight.setShadow(q.flashlightShadow, q.shadowMapSize);
     this.setFrameCap(q.frameCap);
+  }
+
+  // How far everything is drawn: the preset's distance, or less while a
+  // fog night is in (Session 10). Visual only.
+  setViewDistance(distance) {
+    this.drawDistance = distance;
+    this.world.setDrawDistance(distance);
+    this.director?.setDrawDistance(distance);
+    this.witch?.setDrawDistance(distance);
+    this.combat.setDrawDistance(distance);
+    this.station?.renderer.setDrawDistance(distance);
+    this.player.setFar(distance + this.cfg.render.farMargin);
   }
 
   setFrameCap(cap) {
@@ -654,7 +674,11 @@ export class Game {
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
     const witchOnMap = this.witch.showOnMap ? this.witch : null;
     this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
+    this.atmosphere.preUpdate(this.clock, this.sky);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
+    this.atmosphere.update(dt, this.player.camera, this.sky, this.flashlight);
+    const view = this.atmosphere.viewDistance(this.presetDrawDistance, this.sky.fog.far);
+    if (view !== this.drawDistance) this.setViewDistance(view);
     this.world.update(dt, this.player.camera.position);
     this.hut.update(dt, this.player.camera.position, this.drawDistance);
 
@@ -721,6 +745,7 @@ export class Game {
     this.combat.dispose();
     this.flashlight.dispose();
     this.world.dispose();
+    this.atmosphere.dispose();
     this.sky.dispose();
     this.dynamicResolution.dispose();
     this.player.dispose();

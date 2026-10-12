@@ -32,6 +32,28 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 1: fog and mist (Graphics Engineer, style pass 1)
+
+Agreed with Aaron: always-on ground mist at night, and fog nights about one night in three (never night 1). Art stays generated in code.
+
+- **Ground mist in every fogged material** (`render/atmosphereShader.js`):
+  - Replaces three.js's fog shader chunks. The mist is thickest at the ground and thins about a metre up, so tree crowns and the witch's head and shoulders stand above it.
+  - It builds with distance (the ground round you stays clear), drifts in patches, and is heavier in hollows below you.
+  - Shared uniforms reach every material through a hook on `Material.prototype.onBeforeCompile` (it wraps any material's own hook). `installAtmosphereShader()` runs first thing in `Game.init`, before any material exists.
+  - Colour and strength by hour are in `config.sky.keys` (`mist`, `mistAmount`): thick at night and at dawn, burnt off by mid-morning. The blood night turns it red.
+- **Drifting mist billboards** (`render/GroundMist.js`): soft, wide camera-facing sheets in the low mist near you (18 on Medium, 32 on High, none on Low). One draw call. They drift with the wind, billow through a noise texture made in code, fade as you walk into one, and brighten where the torch beam hits them. None inside the station's fence.
+- **Fog nights** (`world/fogNights.js`, pure and tested; `render/Atmosphere.js`):
+  - Picked from the seed and night number, so nothing is saved: about one night in three, never night 1.
+  - The fog rolls in through dusk and holds through dawn. It burns off over the first 15% of the next day.
+  - You see about 38 m. The fog greys toward the mist colour, and the sky and stars vanish into it.
+  - **The draw distance shrinks with the fog** (in 5 m steps), so a fog night is cheaper: 59 to 48 draw calls in the headless check.
+- **Quality:** each preset has `mist` (shader strength: Low 0, Medium 0.75, High 1) and `mistPuffs` (billboard count).
+- **Debug** (Display & performance):
+  - "Fog night: auto / on / off".
+  - "Ground mist (shader)" on/off and "Mist billboards" on/off, to see each layer's cost on the tablet.
+  - The overlay's `atmosphere` line shows the fog night, tonight's forecast and the mist strength.
+- **Checked headless (seed 4242):** clear night, fog night, dawn, dusk and the blood night, with the witch at 20 m. She stays a silhouette above the mist; on a fog night she's a dim shape. No console errors. Frame rate on the tablet: not yet measured.
+
 ### Session 9 (the gate): her fight reworked (Aaron)
 
 **Verified by Aaron on the tablet:** 20 m is the right balance, the hexes can still be sidestepped, and she doesn't snag in the final battle. The witch is settled for now.
@@ -658,7 +680,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
-- Not built from "Visual ambition": ground mist layers, height fog, fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
+- Not built from "Visual ambition" (Session 10 step 1 built the ground mist, height mist and fog nights): fake light shafts, fireflies and other particles, normal-mapped blended ground, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
 - Billboard trees look like flat cards when you stand right next to one, the expected trade-off of sprites (the decision Aaron made). Final art can soften this with wider, bushier sprites.
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 

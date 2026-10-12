@@ -1,5 +1,20 @@
 # Open questions
 
+## Session 10 (style pass 1, Graphics Engineer)
+
+Agreed with Aaron before building:
+- **Art stays generated in code** (no texture files).
+- **Night and dusk first**; the day only gets a polish.
+- **Push each step to `main`** so he can play-test it.
+- **References:** Appalachia, US forest rangers, a 1980s made-in-the-USA chainsaw manual, American folklore; Left 4 Dead, Silent Hill, Evil Dead 2.
+- **Mist:** always-on low ground mist at night, plus **fog nights** about one night in three. Night 1 (the tutorial) is always clear.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 137 | Should fog nights do more than change the look? (Zombies spotting you from less far, harder to find the witch, a line in the dusk forecast.) | Look only. The draw distance shrinks with the fog, so they're cheaper to draw. Gameplay effects are for the balance session; the forecast line is for the UI session. | `config.fog.nights`, `world/fogNights.js`, `render/Atmosphere.js` |
+| 138 | How thick should the everyday night mist be? | A pale band low in the distance (strongest about 20 m out), thinner up a tree, heavier in hollows. Medium is 75% of High; Low has none. Thickest at dawn, burnt off by mid-morning. | `config.sky.keys` (`mist`, `mistAmount`), `config.fog.mist`, `config.quality.presets.*.mist` |
+| 139 | The mist sits relative to the ground under you, not each spot's own ground. | Cheap (no height texture to sample): looking down into a hollow it's thicker, up a rise it's thinner. Inside the station's buildings the floor gets a faint haze. | `render/atmosphereShader.js` |
+
 ## Session 9 (the gate, QA & Balance)
 
 From Aaron at the start of the gate:

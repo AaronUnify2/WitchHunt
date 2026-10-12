@@ -85,6 +85,8 @@ export const config = {
         postFX: false,
         bloom: false,
         frameCap: 30, // 0 = no cap (display refresh rate)
+        mist: 0, // Session 10: height-mist strength (0 = off, 1 = full)
+        mistPuffs: 0, // drifting ground-mist billboards near you
       },
       medium: {
         renderScaleMin: 0.45,
@@ -95,6 +97,8 @@ export const config = {
         postFX: true,
         bloom: true,
         frameCap: 0,
+        mist: 0.75,
+        mistPuffs: 18,
       },
       high: {
         renderScaleMin: 0.5,
@@ -105,6 +109,8 @@ export const config = {
         postFX: true,
         bloom: true,
         frameCap: 0,
+        mist: 1,
+        mistPuffs: 32,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -151,20 +157,63 @@ export const config = {
     sunsetHour: 19,
     sunMaxElevation: 55, // degrees at midday
     lightDistance: 60, // metres from the camera to place the directional light
+    // mist / mistAmount (Session 10): the low ground mist's colour and
+    // strength (thick at night and at dawn, burnt off by mid-morning).
     keys: [
-      { hour: 0, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1 },
-      { hour: 5.25, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1 },
-      { hour: 6.5, skyTop: 0x2c3c60, horizon: 0x8a6c72, ambient: 0x6a72a0, ambientIntensity: 0.8, light: 0xffb98c, lightIntensity: 0.9, stars: 0.15 },
-      { hour: 8, skyTop: 0x5d7da6, horizon: 0x9ca8b4, ambient: 0xa4b0c8, ambientIntensity: 1.2, light: 0xfff0dc, lightIntensity: 1.8, stars: 0 },
-      { hour: 17.5, skyTop: 0x5d7da6, horizon: 0x9ca8b4, ambient: 0xa4b0c8, ambientIntensity: 1.2, light: 0xfff0dc, lightIntensity: 1.8, stars: 0 },
-      { hour: 19, skyTop: 0x2a2c52, horizon: 0x9a5c4a, ambient: 0x5c5274, ambientIntensity: 0.75, light: 0xff9c62, lightIntensity: 0.8, stars: 0.15 },
-      { hour: 20, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1 },
+      { hour: 0, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1, mist: 0x2c3850, mistAmount: 0.8 },
+      { hour: 5.25, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1, mist: 0x2c3850, mistAmount: 0.85 },
+      { hour: 6.5, skyTop: 0x2c3c60, horizon: 0x8a6c72, ambient: 0x6a72a0, ambientIntensity: 0.8, light: 0xffb98c, lightIntensity: 0.9, stars: 0.15, mist: 0x7c7480, mistAmount: 1.0 },
+      { hour: 8, skyTop: 0x5d7da6, horizon: 0x9ca8b4, ambient: 0xa4b0c8, ambientIntensity: 1.2, light: 0xfff0dc, lightIntensity: 1.8, stars: 0, mist: 0x9aa4ae, mistAmount: 0.3 },
+      { hour: 17.5, skyTop: 0x5d7da6, horizon: 0x9ca8b4, ambient: 0xa4b0c8, ambientIntensity: 1.2, light: 0xfff0dc, lightIntensity: 1.8, stars: 0, mist: 0x9aa4ae, mistAmount: 0.12 },
+      { hour: 19, skyTop: 0x2a2c52, horizon: 0x9a5c4a, ambient: 0x5c5274, ambientIntensity: 0.75, light: 0xff9c62, lightIntensity: 0.8, stars: 0.15, mist: 0x6a5a62, mistAmount: 0.45 },
+      { hour: 20, skyTop: 0x050915, horizon: 0x18233a, ambient: 0x3a4a78, ambientIntensity: 1.1, light: 0x8ea6dc, lightIntensity: 0.9, stars: 1, mist: 0x2c3850, mistAmount: 0.8 },
     ],
   },
 
   // Fog: linear, ending at the quality preset's draw distance.
   fog: {
     nearFraction: 0.12, // fog starts at this fraction of the draw distance
+    // Session 10: the low ground mist, in every fogged material's shader.
+    // Its colour and strength by hour are in sky.keys (mist, mistAmount);
+    // the Quality preset's 'mist' scales it.
+    mist: {
+      layerHeight: 0.8, // metres: thins to about a third every this far above the ground under you
+      hollowCap: 2.2, // in hollows below your feet it thickens, up to this many times
+      reach: 0.035, // per metre: how fast it builds with distance (half at about 20 m)
+      noiseScale: 0.07, // per metre: size of the thick and thin patches
+      noiseAmount: 0.55, // how much the patches thin it (0 = even)
+      drift: { x: 0.35, z: 0.15 }, // m/s the patches drift
+      maxOpacity: 0.85,
+    },
+    // Drifting mist billboards near you (count from the Quality preset).
+    puffs: {
+      radius: 32, // metres: they live within this of you (and inside the fog)
+      nearRadius: 4, // metres: none start closer than this
+      width: [6, 11], // metres
+      height: [1.4, 2.4], // metres
+      sink: 0.5, // metres below the ground their base sits (hides the cut)
+      peak: 0.35, // 0..1 up the billboard where it's thickest
+      opacity: 0.32,
+      drift: 0.45, // m/s, along fog.mist.drift's direction
+      fadeNear: [1.5, 5], // metres: fade out as you walk into one
+      fadeIn: 2.5, // seconds to appear after being moved
+      noiseScale: 0.35, // texture repeats per metre-ish
+      noiseSize: 64, // pixels, the generated noise texture
+      torchLit: 0.9, // how much the torch's beam brightens one it hits
+      avoidStation: true, // none inside the compound's fence
+    },
+    // Fog nights (Aaron): about one night in three, never night 1.
+    nights: {
+      chance: 0.34,
+      firstNight: 2,
+      liftDayFraction: 0.15, // it burns off over this much of the next day
+      fogNear: 2, // metres: the fog's start on a fog night
+      fogFar: 38, // metres: you see about this far (draw distance shrinks with it)
+      mistBoost: 1.6, // the ground mist is thicker too
+      colourMix: 0.65, // fog colour moves this far toward the mist colour (grey, not black)
+      skyMix: 0.9, // how far the sky disappears into the fog
+      drawDistanceStep: 5, // metres: the draw distance follows the fog in steps
+    },
   },
 
   // World and collision
