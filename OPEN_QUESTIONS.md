@@ -1,5 +1,19 @@
 # Open questions
 
+## Session 9 (the gate, QA & Balance)
+
+From Aaron at the start of the gate:
+- **#130 answered:** destroying the hut deletes the save (see #130 below).
+- **#131-132:** the ending and defeat lines stay placeholders for the Narrative Designer.
+- **Explosives** for full runs come from the debug menu (Hut & explosives).
+- **The final battle's frame rate on the tablet:** Aaron has played it a couple of times and saw no drop.
+- **Ambushing a ritual feels balanced:** shooting her, or walking up very close, breaks it and she attacks.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 135 | Day 1 has nothing to do but loot cars, which gets old fast, so a full run is hard to judge. Aaron: the abandoned campsite (every run, next to home) would fill a chunk of Day 1 and make the cars a bonus. | Not built: it's M9 content (Session 12, Level & Encounter Designer), and rule 10 says workshop it first. Decision for Aaron: build it early, ahead of the gate, or play the gate's runs knowing Day 1 is thin. | DESIGN.md "Abandoned campsite" |
+| 136 | Aaron's idea: an item from a random encounter that tags the witch, so she shows on the map for good. Perhaps a special one-shot rifle: hit her once and she's tagged permanently. | An idea for the encounter sessions (M9-M11), not built. The map already has a debug "Show her on the map" (`witch.showOnMap`) the item could switch on. | `ai/Witch.js` `showOnMap`, `ui/MapUi.js` |
+
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
 
 ## Session 8 (M7, AI Programmer)
@@ -39,7 +53,7 @@ Agreed with Aaron before building (rule 10):
 | 127 | The blood night. | Day jumps to night (Aaron), then the clock freezes until it's over. The sky, fog and light bleed red over 3 s; embers rise and ash falls round you. Zombie marches and the station's attacks carry on in real time (Aaron agreed), so a weak station can still fall. No forecast panel for it. | `config.finalBattle.sky`, `bloodRampSeconds` |
 | 128 | No escape. | A ring of green witchfire round the hut clearing (1.15 x its radius, at least 22 m) holds you and her inside. The hut's approach traps inside it stay. | `config.finalBattle.ringScale`, `ringMin` |
 | 129 | Her final-battle attacks. | No fleeing and she always knows where you are (hiding doesn't work). Hexes every 1.8 s (was 2.6); swipes 40 damage with a 0.3 s wind-up (was 30, 0.4); she rushes you after 1 s standing still (was 1.5); 3-5 zombies every 25 s (was 3-4 every 60 s); every 6 s she lays two traps (55% snares, the rest totems) 4-9 m round you. Her wounds carry in. | `config.finalBattle.attack`, `trapEvery` |
-| 130 | Quitting mid-battle. | The dawn autosave can't happen while the clock is frozen, so quitting during the final battle and continuing goes back to the last dawn, before the hut was destroyed. Should destroying the hut save (or delete the save) as the point of no return? Step 6. | `Game.js` |
+| 130 | Quitting mid-battle. | **Aaron (Session 9): destroying the hut deletes the save**, a true point of no return; nothing saves again that run. When the second charge goes on the hut, a radio call from Junie ("Are you sure you're ready? ... she's got nowhere left to run"), then 5 s later a pop-up that pauses the game: once you set them off, the final battle begins and you can't reload from dawn (A / Enter closes it). Placeholder lines. | `Game.js` (`pastNoReturn`), `ui/NoReturnNotice.js`, `data/ending.json` `noReturn`, `config.ending.noReturnDelay`, `noReturnRadioSeconds` |
 | 131 | The ending (step 6). | Placeholder text cards until M8's cutscene system: two trail-cam cards (the dead falling, Ground Zero going dark), a dawn card, three closing lines (Junie, Ellen, Wyatt), then the run summary. In the world first: she writhes in her witchfire and bursts apart, every zombie collapses, the red drains away (4 s before the cards). The lines are placeholders in `data/ending.json` for the Narrative Designer and Aaron. | `config.ending`, `data/ending.json` |
 | 132 | Defeat. | The screen fades to black over 2.5 s with bursts of radio static; then "[static]" and three lines calling Tom (Ellen, Junie, Wyatt); then the summary ("YOU DIED" or "THE STATION FELL" with the reason). The save is deleted. | `config.ending`, `data/ending.json` |
 | 133 | The run summary. | Nights survived, zombies killed, sigils dug up, sigils she planted, rituals you broke, times you fought her, damage dealt to her (overkill not counted), time played. Kept in the save. A starts a new run (M12 brings the main menu and achievements). | `core/runStats.js` |

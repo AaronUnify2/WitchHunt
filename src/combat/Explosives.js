@@ -14,8 +14,9 @@
 //    just shakes it. Destroying it is the point of no return (step 5: the
 //    final battle).
 //
-// Events: 'charge:planted' { charge, onHut }, 'explosion' { x, z, radius },
-// 'charge:hutHeld' (one charge on the hut wasn't enough).
+// Events: 'charge:planted' { charge, onHut }, 'hut:armed' (both charges are
+// on the hut), 'explosion' { x, z, radius }, 'charge:hutHeld' (one charge on
+// the hut wasn't enough).
 
 import * as THREE from 'three';
 import { HoldAction } from '../player/HoldAction.js';
@@ -98,7 +99,9 @@ export class Explosives {
     this.combat.sfx.play('chargePlant');
     this.bus.emit('charge:planted', { charge, onHut });
     const n = this.placed.filter((c) => c.onHut).length;
-    if (onHut) this.notify(n >= 2 ? 'Both charges are on the hut. Get clear, then set them off.' : 'A charge on the hut. It will take two, set off together.');
+    // Both on: the point of no return's radio call and pop-up (ui/NoReturnNotice.js).
+    if (onHut && n >= 2) this.bus.emit('hut:armed');
+    else if (onHut) this.notify('A charge on the hut. It will take two, set off together.');
     return charge;
   }
 

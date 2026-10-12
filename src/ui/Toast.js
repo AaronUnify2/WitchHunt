@@ -12,10 +12,11 @@ export class Toast {
     this.remaining = 0;
   }
 
-  show(text) {
+  // seconds: how long it stays (default config.ui.toastSeconds).
+  show(text, seconds = this.cfg.toastSeconds) {
     this.el.textContent = text;
     this.el.classList.remove('hidden');
-    this.remaining = this.cfg.toastSeconds;
+    this.remaining = seconds;
   }
 
   update(dt) {

@@ -26,6 +26,7 @@ import { Hut } from '../world/Hut.js';
 import { Explosives } from '../combat/Explosives.js';
 import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
+import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
@@ -94,6 +95,9 @@ export class Game {
     this.stats = createStats();
     this.victoryTimer = -1;
     this.runEnd = new RunEndScreen(cfg.ending, this.bus, this.combat.sfx);
+    // Session 9 (#130): both charges on the hut warn there's no going back.
+    this.noReturn = new NoReturnNotice(cfg.ending, this.bus, this.combat.sfx, (text, seconds) => this.toast.show(text, seconds));
+    this.noReturn.init(root);
     this.runEnd.init(root);
     this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
     this.addOverlayStats();
@@ -357,7 +361,7 @@ export class Game {
         const w = this.hut.wallPoint(this.hut.x + Math.sin(f) * 10, this.hut.z + Math.cos(f) * 10);
         ex().placed.push({ x: w.x, z: w.z, y: this.world.ground.heightAt(w.x, w.z), onHut: true });
       }
-      this.toast.show('Two charges on the hut: detonator in hand, RT');
+      this.bus.emit('hut:armed'); // the point of no return's radio call and pop-up
     });
     hut.addItem('Set off every planted charge now', () => this.toast.show(`${ex().detonate()} charge(s) went off`));
     hut.addItem(() => `Destroy the hut now: starts the final battle (${this.hut.destroyed ? 'destroyed' : 'standing'})`, () => this.hut.destroy());
@@ -390,7 +394,7 @@ export class Game {
       reloadWithSeed(this.seed);
     });
     // M6: the save slot.
-    run.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : 'Could not save (storage blocked?)'));
+    run.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : this.pastNoReturn ? 'No saving after the hut is destroyed' : 'Could not save (storage blocked?)'));
     run.addItem('Delete the save', () => {
       this.saves.clear();
       this.toast.show('Save deleted');
@@ -463,6 +467,12 @@ export class Game {
         this.endRun('defeat', 'YOU DIED', this.deathReason());
       }),
       bus.on('station:overrun', () => this.saves.clear()),
+      // Session 9 (Aaron, #130): destroying the hut is a true point of no
+      // return. The save goes, and nothing saves again this run.
+      bus.on('hut:destroyed', () => {
+        this.pastNoReturn = true;
+        this.saves.clear();
+      }),
       bus.on('player:overrun', ({ reason }) => this.endRun('defeat', 'THE STATION FELL', reason)),
       bus.on('player:respawned', () => this.runEnd.hide()), // debug "try again"
       // M7: killing the witch wins the run. She bursts apart, the dead
@@ -553,6 +563,7 @@ export class Game {
   }
 
   autosave() {
+    if (this.pastNoReturn) return false;
     return this.saves.save(this.collectSave());
   }
 
@@ -625,7 +636,9 @@ export class Game {
     const running = this.state === 'running';
     // The debug menu and the map screen stop the action. The map screen
     // pauses the clock too (Aaron, M4); the debug menu lets it run on.
-    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen;
+    // The point-of-no-return pop-up (Session 9) holds the game until it's closed.
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen);
+    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen;
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
     // Debug fast-forward (M6): the whole world (clock, zombies, marches,
@@ -664,7 +677,7 @@ export class Game {
   // fast-forward steps have them locked).
   step(dt, running, playing, first) {
     const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !ledgerPause) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const locked = this.station.ledger.isOpen || !first || this.finalBattle.cinematic;
@@ -699,6 +712,7 @@ export class Game {
     this.vehicles.dispose();
     this.station.dispose();
     this.runEnd.dispose();
+    this.noReturn.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();
     this.witch.dispose();

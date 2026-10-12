@@ -88,6 +88,18 @@ describe('explosives', () => {
     expect(env.hut.destroyed).toBe(true);
   });
 
+  it('the second charge on the hut arms it (the point of no return), the first does not', () => {
+    const env = setup();
+    let armed = 0;
+    env.bus.on('hut:armed', () => armed++);
+    env.player.position.x = 46;
+    env.ex.give(2);
+    env.ex.plant(true);
+    expect(armed).toBe(0);
+    env.ex.plant(true);
+    expect(armed).toBe(1);
+  });
+
   it('the detonator is a weapon slot only while charges are out or in hand', () => {
     const env = setup();
     env.ex.update(0.1, { isDown: () => false, activeDevice: 'gamepad' }, true);

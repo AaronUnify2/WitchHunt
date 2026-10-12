@@ -845,3 +845,30 @@ body {
 .hud-hidden.on {
   display: block;
 }
+
+/* Session 9 (#130): the point-of-no-return pop-up (a placeholder; the look is Session 19's). */
+.no-return {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  font-family: ui-monospace, monospace;
+  color: #e8e0cc;
+}
+
+.no-return.hidden { display: none; }
+
+.no-return-panel {
+  width: min(80vw, 38rem);
+  padding: 1.6rem 2rem;
+  background: #120806;
+  outline: 1px solid #8a2418;
+  text-align: center;
+}
+
+.no-return-title { margin: 0 0 1rem; letter-spacing: 0.25em; color: #e04030; font-size: 1.3em; }
+.no-return-text { margin: 0 0 1.2rem; line-height: 1.5; }
+.no-return-prompt { margin: 0; font-size: 0.85em; opacity: 0.75; }

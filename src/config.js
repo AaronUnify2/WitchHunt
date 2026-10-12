@@ -1143,6 +1143,8 @@ export const config = {
     lineSeconds: 3.2,
     defeatFadeSeconds: 2.5,
     staticEvery: 1.6, // seconds between bursts of radio static on the defeat screen
+    noReturnRadioSeconds: 5, // the radio call when both charges are on the hut stays this long (Aaron, #130)
+    noReturnDelay: 5, // seconds from that call to the point-of-no-return pop-up
   },
 
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real

@@ -30,6 +30,14 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 9 (the gate): the point of no return (Aaron, #130)
+
+`src/ui/NoReturnNotice.js`, `src/data/ending.json` (`noReturn`), `config.ending.noReturnDelay` and `noReturnRadioSeconds`.
+- When the second charge goes on the hut, Junie calls on the radio: is Tom sure he's ready? Once the hut goes, the witch has nowhere to run.
+- 5 s later a pop-up pauses the game (world and clock): setting the charges off starts the final battle and deletes the save, so there's no reloading from dawn. A / Enter closes it. The debug "Plant both charges on the hut now" shows it too.
+- Destroying the hut deletes the save, and nothing saves again that run (`Game.pastNoReturn`).
+- Checked headless: the call, the pop-up after 5 s, the frozen clock, the save gone after the blast and autosave refused.
+
 ### Debug menu in categories (Session 8, Aaron's request)
 
 - The top level lists eight categories, each with its tool count: **Time & night, Teleport & map, Witch, Sigils & zombies, Player, Station & vehicles, Run & save, Display & performance.** A opens one, B goes back (B at the top closes). It reopens where you left it.
@@ -679,7 +687,7 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 Aaron plays two or three full runs of the slice (DESIGN.md "Gate: play-test the slice"): is the core loop fun before any content goes in?
 - **Watch for:** pacing (1.5-2.5 hours, cornering her around nights 6-8), her toughness (about 3-4 good ambushes), the night's danger against the station, whether the dusk choice (defend or hunt) is a real one, trap density on the hut approach, the final battle's difficulty.
 - **Explosives** come from the debug menu (Hut & explosives) until M9-M11; a full run has to give them that way.
-- **Open questions for Aaron:** OPEN_QUESTIONS.md #130 (quitting mid final battle), plus all of #105-134 as tuning.
+- **Open questions for Aaron:** #130 answered (Session 9: destroying the hut deletes the save). #135 (Day 1 needs the campsite?) and #136 (a witch-tagging item), plus all of #105-134 as tuning.
 - **Tuning lives in config:** `witch` (planting, speed, health, attacks, wounds, traps), `finalBattle`, `explosives`, `ending`.
 
 ## What M7 needed (done)
