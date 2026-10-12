@@ -32,6 +32,20 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10 step 4a: colour grade, fireflies and beam dust (Graphics Engineer, style pass 1)
+
+- **The colour grade follows the time of day** (`render/PostFX.js`, `config.postFX.grade.keys`, keyed by hour like the sky):
+  - It **split-tones**: shadows toward a cool colour, highlights (the torch, fires) toward a warm one, keeping the brightness.
+  - It **lifts the blacks** a touch toward the shadow colour, for a faded, printed look (Aaron's 1980s chainsaw manual), and sets saturation and contrast.
+  - **By time:** night is cool blue-grey shadows with warm torchlight, slightly desaturated. Dawn is violet and pink-gold. Day is nearly neutral. Dusk is warm violet and orange.
+  - **The blood night** pulls it toward deep red shadows (`grade.blood`, driven by `sky.blood`).
+  - The old fixed tint is gone. Off on Low (no post-processing there, as before).
+- **Fireflies** (`render/Fireflies.js`, `config.fog.fireflies`): soft green glows 0.3–1.6 m over the ground at dusk and at night, drifting and blinking every few seconds, bright enough for the bloom.
+  - One draw call. The points fill a 44 m box that wraps round you in the vertex shader, so there's no CPU work.
+  - Fewer on fog nights, none on the blood night. 70 on Medium, 120 on High, none on Low.
+- **Dust in the torch beam** (`render/BeamDust.js`, `config.fog.beamDust`): tiny motes in a 9 m box round you that show only where the beam catches them, up to 8 m out. Brightest at night. One draw call. 300 on Medium, 500 on High, none on Low.
+- **Debug** (Display & performance): Fireflies on/off, Dust in the torch beam on/off.
+
 ### Session 10 step 3b: solid trunks up close (Graphics Engineer, style pass 1)
 
 - **Trees near you get a real 3D trunk** (`render/NearTrunks.js`). It's a tapered, flared, 8-sided cylinder drawn to the sprite's trunk sizes and a touch wider, so the flat sprite trunk stays hidden inside. You walk round a solid trunk instead of a card turning to face you; the canopy stays a sprite above it.

@@ -89,6 +89,8 @@ export const config = {
         mistPuffs: 0, // drifting ground-mist billboards near you
         groundTwoSizes: false, // read each ground texture at two sizes (hides repeats; 3 more texture reads)
         treeTrunks: 0, // metres: trees this near you get a solid 3D trunk (0 = off)
+        fireflies: 0, // Session 10: fireflies round you at night
+        beamDust: 0, // motes of dust that show in the torch beam
       },
       medium: {
         renderScaleMin: 0.45,
@@ -103,6 +105,8 @@ export const config = {
         mistPuffs: 54, // Aaron: triple the first count (18), now that they fade out from 25 m
         groundTwoSizes: true,
         treeTrunks: 30,
+        fireflies: 70,
+        beamDust: 300,
       },
       high: {
         renderScaleMin: 0.5,
@@ -117,6 +121,8 @@ export const config = {
         mistPuffs: 96,
         groundTwoSizes: true,
         treeTrunks: 40,
+        fireflies: 120,
+        beamDust: 500,
       },
     },
     frameCapSteps: [0, 30, 60], // debug menu cycles through these
@@ -129,11 +135,23 @@ export const config = {
       radius: 0.4,
       threshold: 0.92, // only brighter-than-this pixels bloom (flashlight hot spot, moon)
     },
+    // Session 10: the colour grade by clock-face hour (blended like the
+    // sky). shadows / highlights: the split-tone colours (cold shadows,
+    // warm highlights); split: how strongly (0..1). lift: faded blacks,
+    // toward the shadow colour (a printed look). saturation / contrast: 1 =
+    // unchanged (contrast above 1 crushes night shadows to black).
     grade: {
-      saturation: 0.8, // 1 = unchanged
-      contrast: 1, // 1 = unchanged; above 1 crushes night shadows to black
-      tint: 0xc4d2ff, // multiplied in at tintStrength: cold moonlit grade
-      tintStrength: 0.1,
+      keys: [
+        { hour: 0, saturation: 0.8, contrast: 1.04, shadows: 0x8898bc, highlights: 0xffe4c4, split: 0.38, lift: 0.022 },
+        { hour: 5.25, saturation: 0.8, contrast: 1.04, shadows: 0x8898bc, highlights: 0xffe4c4, split: 0.38, lift: 0.022 },
+        { hour: 6.5, saturation: 0.86, contrast: 1, shadows: 0x9a88c0, highlights: 0xffc4a0, split: 0.42, lift: 0.03 },
+        { hour: 8, saturation: 0.84, contrast: 1, shadows: 0x98a4b4, highlights: 0xfff0d6, split: 0.2, lift: 0.025 },
+        { hour: 17.5, saturation: 0.84, contrast: 1, shadows: 0x98a4b4, highlights: 0xfff0d6, split: 0.2, lift: 0.025 },
+        { hour: 19, saturation: 0.88, contrast: 1.02, shadows: 0x9088a8, highlights: 0xffbc80, split: 0.38, lift: 0.028 },
+        { hour: 20, saturation: 0.8, contrast: 1.04, shadows: 0x8898bc, highlights: 0xffe4c4, split: 0.38, lift: 0.022 },
+      ],
+      // The blood night (the final battle) pulls the grade toward this.
+      blood: { saturation: 1.05, contrast: 1.08, shadows: 0x6a1010, highlights: 0xffa070, split: 0.6, lift: 0.03 },
     },
     vignette: {
       strength: 0.35, // how dark the corners get (0..1)
@@ -215,6 +233,29 @@ export const config = {
       noiseSize: 64, // pixels, the generated noise texture
       torchLit: 0.9, // how much the torch's beam brightens one it hits
       avoidMargin: 1, // metres round the station's cabin where none stand (they may drift inside the fence)
+    },
+    // Fireflies (Session 10): soft blinking glows low over the ground at
+    // dusk and at night. Count from the Quality preset.
+    fireflies: {
+      box: 44, // metres: they fill a box this wide round you (it moves with you)
+      height: [0.3, 1.6], // metres above the ground under you
+      wander: 0.8, // metres each drifts about
+      blinkPeriod: 4, // seconds between blinks (each one varies)
+      size: 0.14, // metres
+      fade: [14, 22], // metres: full inside the first, gone beyond the second
+      near: 1.2, // metres: none right in your face
+      color: 0xa8ff40,
+      intensity: 4, // above 1, so the bloom catches them
+      fogNightCut: 0.7, // fog nights have this much fewer
+    },
+    // Dust in the torch beam (Session 10). Count from the Quality preset.
+    beamDust: {
+      box: 9, // metres: the motes fill a box this wide round you
+      range: 8, // metres: they show this far down the beam
+      size: 0.012, // metres
+      near: 0.5, // metres
+      brightness: 0.9,
+      day: 0.25, // how visible by day (1 at night)
     },
     // Fog nights (Aaron): about one night in three, never night 1.
     nights: {

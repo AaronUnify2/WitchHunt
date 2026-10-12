@@ -6,9 +6,10 @@ import * as THREE from 'three';
 import { PostFX } from './PostFX.js';
 
 export class Renderer {
-  constructor(renderConfig, postConfig, bus) {
+  constructor(renderConfig, postConfig, bus, hoursPerDay = 24) {
     this.cfg = renderConfig;
     this.postCfg = postConfig;
+    this.hoursPerDay = hoursPerDay;
     this.bus = bus;
     this.bufferSize = new THREE.Vector2();
     this.scale = renderConfig.renderScale;
@@ -31,7 +32,7 @@ export class Renderer {
     this.renderer.info.autoReset = false;
     container.appendChild(this.renderer.domElement);
 
-    this.postFX = new PostFX(this.postCfg);
+    this.postFX = new PostFX(this.postCfg, this.hoursPerDay);
     this.postFX.init(this.renderer, scene, camera);
 
     this.onResize = () => this.resize();

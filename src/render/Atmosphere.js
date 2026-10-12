@@ -1,6 +1,7 @@
 // The atmosphere (Session 10, style pass 1): the low ground mist in every
 // fogged material (atmosphereShader.js), the drifting mist billboards near
-// you (GroundMist.js) and fog nights (world/fogNights.js). Sky owns the
+// you (GroundMist.js), fog nights (world/fogNights.js), fireflies
+// (Fireflies.js) and dust in the torch beam (BeamDust.js). Sky owns the
 // colours and the fog itself; this feeds it the fog night's thickness and
 // feeds the shader the mist's values each frame.
 //
@@ -10,6 +11,8 @@
 import * as THREE from 'three';
 import { atmosphereUniforms } from './atmosphereShader.js';
 import { GroundMist } from './GroundMist.js';
+import { Fireflies } from './Fireflies.js';
+import { BeamDust } from './BeamDust.js';
 import { isFogNight, fogNightAmount } from '../world/fogNights.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
@@ -21,7 +24,10 @@ export class Atmosphere {
     this.cfg = fogCfg;
     this.seed = seed;
     this.rng = rng;
-    this.maxPuffs = Math.max(...Object.values(presets).map((q) => q.mistPuffs ?? 0));
+    const most = (key) => Math.max(...Object.values(presets).map((q) => q[key] ?? 0));
+    this.maxPuffs = most('mistPuffs');
+    this.maxFireflies = most('fireflies');
+    this.maxDust = most('beamDust');
     this.quality = 0; // the preset's mist strength
     this.heightMist = true; // debug switches
     this.force = 'auto';
@@ -48,12 +54,25 @@ export class Atmosphere {
     this.mist = new GroundMist(this.cfg.puffs, this.maxPuffs, this.rng);
     this.mist.init(scene, ground);
     this.mist.avoid = avoid;
+    this.fireflies = new Fireflies(this.cfg.fireflies, this.maxFireflies, this.rng.fork('fireflies'));
+    this.fireflies.init(scene);
+    this.dust = new BeamDust(this.cfg.beamDust, this.maxDust, this.rng.fork('dust'));
+    this.dust.init(scene);
+    this.pixels = 500; // pixels per metre at 1 m (setViewport)
+  }
+
+  // The drawing buffer's height in pixels and the camera's vertical field
+  // of view (degrees), so particles are sized in metres.
+  setViewport(heightPixels, fovDegrees) {
+    this.pixels = heightPixels / (2 * Math.tan((fovDegrees * Math.PI) / 360));
   }
 
   // From the Quality preset.
   setQuality(preset) {
     this.quality = preset.mist ?? 0;
     this.mist.setCount(preset.mistPuffs ?? 0);
+    this.fireflies.setCount(preset.fireflies ?? 0);
+    this.dust.setCount(preset.beamDust ?? 0);
   }
 
   isFoggy(night) {
@@ -106,6 +125,12 @@ export class Atmosphere {
     }
     const puffAmount = sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount);
     this.mist.update(dt, camera, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t);
+    const groundY = u.uMistShape.value.z;
+    const ff = this.cfg.fireflies;
+    const fireflies = sky.night * (1 - sky.blood) * (1 - ff.fogNightCut * this.amount);
+    this.fireflies.update(dt, camera, fireflies, groundY, this.pixels);
+    const bd = this.cfg.beamDust;
+    this.dust.update(dt, camera, t, bd.day + (1 - bd.day) * sky.night, this.pixels);
   }
 
   // The draw distance to use: the preset's, or less while the fog is in
@@ -139,9 +164,19 @@ export class Atmosphere {
       () => `Mist billboards: ${this.mist.enabled ? 'on' : 'off'}`,
       () => (this.mist.enabled = !this.mist.enabled),
     );
+    display.addItem(
+      () => `Fireflies: ${this.fireflies.enabled ? 'on' : 'off'}`,
+      () => (this.fireflies.enabled = !this.fireflies.enabled),
+    );
+    display.addItem(
+      () => `Dust in the torch beam: ${this.dust.enabled ? 'on' : 'off'}`,
+      () => (this.dust.enabled = !this.dust.enabled),
+    );
   }
 
   dispose() {
+    this.fireflies.dispose();
+    this.dust.dispose();
     this.mist.dispose();
   }
 }

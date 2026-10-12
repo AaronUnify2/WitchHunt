@@ -129,7 +129,7 @@ export class Game {
     const spawn = this.world.spawn;
     this.player.setSpawn(spawn.x, spawn.z, spawn.yaw);
     this.player.init();
-    this.renderer = new Renderer(cfg.render, cfg.postFX, this.bus);
+    this.renderer = new Renderer(cfg.render, cfg.postFX, this.bus, cfg.clock.hoursPerDay);
     this.renderer.init(root, this.scene, this.player.camera);
     this.input = new Input(cfg.input, this.bus);
     this.input.init(this.renderer.canvas);
@@ -682,7 +682,9 @@ export class Game {
     this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
     this.atmosphere.preUpdate(this.clock, this.sky);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
+    this.atmosphere.setViewport(this.renderer.canvas.height, this.player.camera.fov);
     this.atmosphere.update(dt, this.player.camera, this.sky, this.flashlight);
+    this.renderer.postFX.setTime(this.clock.hourOfDay, this.sky.blood); // Session 10: the colour grade
     const view = this.atmosphere.viewDistance(this.presetDrawDistance, this.sky.fog.far);
     if (view !== this.drawDistance) this.setViewDistance(view);
     this.world.update(dt, this.player.camera.position);

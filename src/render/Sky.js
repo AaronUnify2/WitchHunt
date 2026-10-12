@@ -93,6 +93,7 @@ export class Sky {
     // Session 10: the ground mist's colour and strength now (read by Atmosphere).
     this.mistColor = new THREE.Color();
     this.mistAmount = 0;
+    this.night = 0;
   }
 
   buildDome() {
@@ -196,6 +197,7 @@ export class Sky {
     for (const f of COLOR_FIELDS) s[f].lerpColors(a[f], b[f], t);
     let stars = lerp(a.stars, b.stars, t);
     this.mistAmount = lerp(a.mistAmount, b.mistAmount, t);
+    this.night = stars; // Session 10: how much it's night (0 by day, 1 at night), before blood and fog
     if (this.blood > 0 && this.bloodColours) {
       for (const f of COLOR_FIELDS) s[f].lerp(this.bloodColours[f], this.blood);
       stars *= 1 - this.blood;
