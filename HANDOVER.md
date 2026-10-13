@@ -23,14 +23,17 @@ Details are in `STATUS.md` (the Session 10 sections) and `OPEN_QUESTIONS.md` (Se
 4. **Light and post-processing:**
    - **A colour grade by hour** (`render/PostFX.js`): split-toned, with faded print blacks and a blood-night grade.
    - **Fireflies** (`render/Fireflies.js`) and **dust in the torch beam** (`render/BeamDust.js`).
-   - **Moonlight shafts in the clearings** (`render/LightShafts.js`).
+   - **Moonlight shafts in the clearings** (`render/LightShafts.js`). Aaron: much more subtle, now 0.025.
    - **A faint torch beam in the air** (`render/TorchBeam.js`). Aaron: "much more subtle", now 0.01.
    - `render/Atmosphere.js` drives all of the above.
 5. **The retro pixel filter** (`Renderer.setRetro()`): 270 lines with hard pixels, switched in the debug menu.
-6. **Quality and debug:**
+6. **Aaron's last notes:**
+   - The witch glides upright while travelling (`config.witch.look.stoop` and the rest).
+   - White pine trunks and branches are thick enough to survive far off (no floating clumps).
+7. **Quality and debug:**
    - Each effect has a Quality-preset lever (`config.quality.presets`) and an on/off switch in the debug menu (Display & performance).
    - The overlay's `atmosphere` line shows the fog night and the mist.
-7. **Tests:** 380 pass (fog nights, the packed ground masks, tree kinds by weight).
+8. **Tests:** 380 pass (fog nights, the packed ground masks, tree kinds by weight).
 
 ### Unfinished
 
@@ -83,10 +86,13 @@ Nothing in this session's scope. Left for later style passes (STATUS "Stubbed / 
 
 ## Play-test script for Aaron (Session 10's last changes)
 
-All verified by Aaron during the session except the last two:
+All verified by Aaron during the session except these:
 
-1. **The torch beam, now much more subtle.** At night on a pathway, and on a fog night (debug "Fog night: on"), it should be a barely-there haze, never a shape.
-2. **The retro pixel filter** (debug menu, Display & performance → "Retro pixel filter"). The world goes to chunky pixels while the HUD stays sharp. Check that it's playable and see if you like it. It's optional and off by default.
+1. **The witch travelling** (Witch → "Send her out to plant now", then "Teleport near her"): she glides upright and tall, arms hanging at her sides. She should read as an entity, not an old woman.
+2. **White pines from the pathways:** no floating green clumps or tufts, near or far.
+3. **Moonbeams in a clearing at night:** much fainter, a hint rather than a beam.
+4. **The torch beam, now much more subtle.** At night on a pathway, and on a fog night (debug "Fog night: on"), it should be a barely-there haze, never a shape.
+5. **The retro pixel filter** (debug menu, Display & performance → "Retro pixel filter"). The world goes to chunky pixels while the HUD stays sharp. Check that it's playable and see if you like it. It's optional and off by default.
 
 ## Session kickoff prompt for Session 11
 

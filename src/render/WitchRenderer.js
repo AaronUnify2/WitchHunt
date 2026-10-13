@@ -10,8 +10,8 @@
 // on the neck) and two arms, each with a shoulder, an elbow and a wrist.
 // Travelling, she glides (Aaron: walking with swinging arms looked too
 // human): no steps, floating a little off the ground with a slow sway,
-// folded forward, her cloak trailing and her arms held back, limp at the
-// wrists. Planting, she drops into a low crouch folded flat over the
+// upright and tall (Aaron, Session 10), her cloak trailing and her arms
+// hanging straight and limp. Planting, she drops into a low crouch folded flat over the
 // spot, and her head and arms snap between wrong angles (elbows bending
 // the wrong way at times), holding still between jerks.
 //
@@ -499,9 +499,10 @@ export class WitchRenderer {
   }
 
   // Gliding: no steps. Floating a little off the ground with a slow
-  // sway, folded forward, head up and still, the cloak trailing behind
-  // as she moves, arms held back and limp at the wrists.
-  // fleeing: folded further forward, streaming behind her.
+  // sway, upright and tall (Aaron, Session 10: bent over read as an old
+  // woman), head level and still, the cloak trailing behind as she moves,
+  // arms hanging straight and limp at her sides.
+  // fleeing: leaning a touch forward, streaming behind her.
   poseGliding(w, dt, fleeing = false) {
     const c = this.cfg;
     const g = c.glide;
@@ -515,15 +516,16 @@ export class WitchRenderer {
     // The hem trails behind (tilting the skirt back) and ripples.
     this.skirt.rotation.set(-g.trail * m + Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
     this.waist.position.set(0, WAIST, 0);
-    this.waist.rotation.set(c.stoop + m * 0.12 + (fleeing ? 0.25 : 0), 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
-    this.neck.rotation.set(-c.stoop * 0.9 - m * 0.1, 0, 0);
-    // Arms swept back, slightly out, barely moving; hands hanging limp.
-    const drift = Math.sin(t * 1.7) * 0.05;
+    const lean = c.stoop + m * c.moveLean + (fleeing ? c.fleeLean : 0);
+    this.waist.rotation.set(lean, 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
+    this.neck.rotation.set(-lean * 0.9, 0, 0);
+    // Arms hanging straight at her sides, barely moving; hands limp.
+    const drift = Math.sin(t * 1.7) * 0.03;
     this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
       const side = i === 0 ? -1 : 1;
-      shoulder.rotation.set(0.45 + m * 0.35 + drift * side, 0, side * (0.18 + m * 0.1));
-      elbow.rotation.set(-0.35 - m * 0.2, 0, 0);
-      wrist.rotation.set(0.7 + Math.sin(t * 2 + i) * 0.08, 0, 0);
+      shoulder.rotation.set(c.armsBack + m * 0.1 + drift * side, 0, side * 0.08);
+      elbow.rotation.set(-0.08, 0, 0);
+      wrist.rotation.set(0.25 + Math.sin(t * 2 + i) * 0.05, 0, 0);
     });
   }
 

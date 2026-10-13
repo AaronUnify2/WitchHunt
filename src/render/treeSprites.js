@@ -227,12 +227,15 @@ function drawWhitePine(ctx, kind, w, h, cfg, rng) {
   const cx = w / 2;
   drawTrunk(ctx, kind, w, h, cfg, rng);
   const trunkTop = h * (1 - kind.trunk.to);
-  // The trunk carries on up through the crown, thinning.
+  // The trunk carries on up through the crown, thinning. Not too thin:
+  // seen far off the sprite is shrunk, and anything a few pixels wide drops
+  // out of the cut-out, leaving the clumps floating (Aaron, Session 10).
+  const crownTop = c.crownTrunkTop * w;
   ctx.fillStyle = css(cfg.trunkColor);
   ctx.beginPath();
   ctx.moveTo(cx - (kind.trunk.top * w) / 2, trunkTop + 2);
-  ctx.lineTo(cx - 1.5, h * 0.04);
-  ctx.lineTo(cx + 1.5, h * 0.04);
+  ctx.lineTo(cx - crownTop / 2, h * 0.03);
+  ctx.lineTo(cx + crownTop / 2, h * 0.03);
   ctx.lineTo(cx + (kind.trunk.top * w) / 2, trunkTop + 2);
   ctx.closePath();
   ctx.fill();
@@ -247,7 +250,7 @@ function drawWhitePine(ctx, kind, w, h, cfg, rng) {
       const ex = cx + side * reach;
       const ey = y - h * rng.range(0.01, 0.04); // branches rise a little to their tips
       ctx.strokeStyle = css(cfg.trunkColor);
-      ctx.lineWidth = 2 + 3 * t;
+      ctx.lineWidth = w * (c.branchWidth[0] + (c.branchWidth[1] - c.branchWidth[0]) * t);
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(cx, y + h * 0.01);

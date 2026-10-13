@@ -32,6 +32,14 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10: Aaron's last notes
+
+| Aaron | Change | Where |
+| --- | --- | --- |
+| The moonbeams look odd: a small moon in a clear sky can't throw strong shafts | Shafts much fainter: strength 0.025 (was 0.07) | `config.fog.shafts.strength` |
+| Bent over while travelling reads as an old woman, not a scary entity | She glides **upright**, head level, arms hanging straight and limp at her sides; only a slight lean when fleeing. The fight and ritual poses are unchanged | `config.witch.look` (`stoop`, `moveLean`, `fleeLean`, `armsBack`), `WitchRenderer.poseGliding()` |
+| Floating green leaves and branches on the pine-style trees, very noticeable from the pathways | The white pine's trunk through its crown narrowed to 3 px and its branches were 2–5 px. Far off, the shrunk sprite lost them below the cut-out, leaving the needle clumps and top tuft floating. The crown trunk now stays 2.2% of the sprite wide and branches are 1.6–3%. Checked by shrinking the atlas 8× and cutting it out as the shader does | `config.forest.whitePine` (`crownTrunkTop`, `branchWidth`), `treeSprites.js` |
+
 ### Session 10 step 5: the retro pixel filter (Graphics Engineer, style pass 1)
 
 - **The optional retro pixel filter** (DESIGN.md "Rendering pipeline" step 4): renders 270 lines (`config.render.retro.lines`), upscaled by the browser with hard, nearest-neighbour pixels (`image-rendering: pixelated`). The HUD stays sharp (it's HTML).

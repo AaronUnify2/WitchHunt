@@ -273,7 +273,7 @@ export const config = {
       width: [2, 4.5], // metres
       length: 26, // metres, up toward the light
       spread: 1.6, // this much wider at the top
-      strength: 0.07, // additive brightness at full
+      strength: 0.025, // additive brightness at full (Aaron: much more subtle; was 0.07: a small moon in a clear sky can't throw strong beams)
       fadeNear: [3, 9], // metres: fade out as you walk into one
       minElevation: 0.2, // the light must be at least this high (sin of its angle) for shafts
       fogNightCut: 0.5, // fog nights hide this much of them
@@ -629,6 +629,10 @@ export const config = {
       whorlsMin: 6,
       whorlsMax: 8,
       skipChance: 0.25, // a whorl missing on one side (the gaps a white pine has)
+      // Kept thick enough to survive the sprite being shrunk far off (Aaron:
+      // thin ones vanished and left the needle clumps floating).
+      crownTrunkTop: 0.022, // the trunk's width at the very top, as a fraction of the sprite's width
+      branchWidth: [0.016, 0.03], // branch thickness, top whorl to bottom, as a fraction of the sprite's width
       blobsPerClump: 60,
       lit: [0x52705a, 0x5a7862, 0x4a6852],
       mid: 0x2e4636,
@@ -1282,7 +1286,13 @@ export const config = {
       shadow: 0x030304, // her whole body, unlit
       eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
       thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
-      stoop: 0.32, // radians she folds forward at the waist as she travels
+      // Aaron (Session 10): upright while she travels. Bent over read as an
+      // old woman, not a scary entity. She glides tall, head level, arms
+      // hanging straight and limp at her sides.
+      stoop: 0, // radians she folds forward at the waist as she travels (was 0.32)
+      moveLean: 0, // extra fold at full speed (was 0.12)
+      fleeLean: 0.1, // extra fold while fleeing (was 0.25)
+      armsBack: 0.08, // radians her arms hang back from straight down (was 0.45 + 0.35 moving)
       // Aaron (step 1 test): she glides, no steps or arm swing (too human).
       glide: {
         hover: 0.12, // metres her hem floats off the ground
