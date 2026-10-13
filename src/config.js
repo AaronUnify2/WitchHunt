@@ -279,11 +279,11 @@ export const config = {
     torchBeam: {
       length: 12, // metres
       width: 0.85, // the cone's angle as a share of the torch's
-      strength: 0.03, // additive brightness at full
-      near: [1.5, 5], // metres from your eye: none inside the first, full beyond the second
+      strength: 0.01, // additive brightness at full (Aaron: much more subtle; was 0.03)
+      near: [3, 8], // metres from your eye: none inside the first, full beyond the second
       day: 0.1, // how visible by day (1 at night)
       clear: 0.35, // how visible with no mist (1 in full mist)
-      fogNightBoost: 1.6, // thicker on a fog night
+      fogNightBoost: 1.3, // thicker on a fog night
     },
     // Fog nights (Aaron): about one night in three, never night 1.
     nights: {

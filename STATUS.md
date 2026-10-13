@@ -38,7 +38,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
   - Two to four per clearing (about 70 on the map): soft, striped, additive billboards slanting down from the moon, or the sun once it's high enough. Each turns about its own slanted axis to face you.
   - Brighter in the mist, cut back on fog nights, none on the blood night. They fade as you walk into one and before the fog's end.
   - One instanced draw call for all of them. Strength by Quality: Low 0 (off), Medium 0.8, High 1.
-- **The torch beam in the air** (`render/TorchBeam.js`, `config.fog.torchBeam`): a faint additive cone following the torch, 12 m long.
+- **The torch beam in the air** (`render/TorchBeam.js`, `config.fog.torchBeam`): a faint additive cone following the torch, 12 m long. **Aaron: much more subtle**: strength 0.01 (was 0.03), nothing within 3 m of your eye (full from 8 m), ×1.3 on fog nights (was ×1.6).
   - Brightest through its middle and fading to nothing at its outline, so its walls never show as edges. Nothing within 1.5 m of your eye.
   - Stronger in the mist and on fog nights (×1.6), faint by day.
   - One draw call. Quality: Low off, Medium and High on.
