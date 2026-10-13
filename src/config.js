@@ -62,6 +62,9 @@ export const config = {
     targetFps: 60, // dynamic resolution aims for this (or the frame cap if set)
     toneMapping: 'ACESFilmic', // three.js tone mapping name without "ToneMapping"
     exposure: 1.0,
+    // Session 10: the optional retro pixel filter (DESIGN.md "Rendering
+    // pipeline"): render this many lines, upscaled with hard pixels.
+    retro: { lines: 270 },
     dynamicResolution: {
       enabled: true,
       sampleSeconds: 1, // frame times are averaged over this window

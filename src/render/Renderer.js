@@ -14,6 +14,7 @@ export class Renderer {
     this.bufferSize = new THREE.Vector2();
     this.scale = renderConfig.renderScale;
     this.postEnabled = false;
+    this.retro = false; // Session 10: the optional retro pixel filter (setRetro)
   }
 
   init(container, scene, camera) {
@@ -60,7 +61,18 @@ export class Renderer {
   }
 
   get pixelRatio() {
+    // The retro filter renders a fixed number of lines and lets the
+    // browser blow them up with hard, nearest-neighbour pixels.
+    if (this.retro) return this.cfg.retro.lines / Math.max(1, this.container.clientHeight);
     return Math.min(window.devicePixelRatio || 1, this.cfg.maxDevicePixelRatio) * this.scale;
+  }
+
+  // Session 10 (DESIGN.md "Rendering pipeline" step 4): the optional retro
+  // pixel filter. Overrides the render scale while it's on.
+  setRetro(on) {
+    this.retro = on;
+    this.renderer.domElement.style.imageRendering = on ? 'pixelated' : '';
+    this.resize();
   }
 
   // Render scale = fraction of native resolution.

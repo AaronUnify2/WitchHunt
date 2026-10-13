@@ -14,6 +14,8 @@ Agreed with Aaron before building:
 | 137 | Should fog nights do more than change the look? (Zombies spotting you from less far, harder to find the witch, a line in the dusk forecast.) | Look only. The draw distance shrinks with the fog, so they're cheaper to draw. Gameplay effects are for the balance session; the forecast line is for the UI session. | `config.fog.nights`, `world/fogNights.js`, `render/Atmosphere.js` |
 | 138 | How thick should the everyday night mist be? | A pale band low in the distance (strongest about 20 m out), thinner up a tree, heavier in hollows. Medium is 75% of High; Low has none. Thickest at dawn, burnt off by mid-morning. | `config.sky.keys` (`mist`, `mistAmount`), `config.fog.mist`, `config.quality.presets.*.mist` |
 | 139 | The mist sits relative to the ground under you, not each spot's own ground. | Cheap (no height texture to sample): looking down into a hollow it's thicker, up a rise it's thinner. Inside the station's buildings the floor gets a faint haze. | `render/atmosphereShader.js` |
+| 140 | Where does the retro pixel filter live, and how coarse? | 270 lines, switched from the debug menu. It belongs in the Quality settings once there's a settings screen (Session 19). | `config.render.retro.lines`, `Renderer.setRetro()` |
+| 141 | The new Quality levers have no settings screen. | Each preset sets them (mist, mistPuffs, groundTwoSizes, treeTrunks, fireflies, beamDust, lightShafts, torchBeam); the debug menu switches each effect on and off. A player-facing Quality screen is Session 19's. | `config.quality.presets` |
 
 ## Session 9 (the gate, QA & Balance)
 

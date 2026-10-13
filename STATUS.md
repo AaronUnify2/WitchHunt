@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 9 (QA & Balance), **the gate: the slice play-tested by Aaron and the witch retuned.** Fighting her (on the pathways and in the final battle), her traps, the hut and its point-of-no-return pop-up, killing her and the endings all work and play well on the tablet. Her fight was reworked (retreat to 20 m, hex, rush on a hit) and her health doubled. Full runs wait for the encounters: Day 1 has little to do but loot cars (#135), so ammo and loot pacing can only be judged after M9. Aaron kept the session order as it is. Next: **Session 10, Graphics Engineer: style pass 1.**
+Last updated: Session 10 (Graphics Engineer), **style pass 1: the slice looks good.** Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Session 11, Narrative Designer: M8.**
 
 Session 8 (AI Programmer) built M7, the witch, the vertical slice, in six steps:
 1. The witch roams and plants.
@@ -31,6 +31,12 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 10 step 5: the retro pixel filter (Graphics Engineer, style pass 1)
+
+- **The optional retro pixel filter** (DESIGN.md "Rendering pipeline" step 4): renders 270 lines (`config.render.retro.lines`), upscaled by the browser with hard, nearest-neighbour pixels (`image-rendering: pixelated`). The HUD stays sharp (it's HTML).
+- While it's on it overrides the render scale (dynamic resolution keeps running underneath).
+- Switched in the debug menu (Display & performance: "Retro pixel filter"). It becomes a Quality setting when the settings screen exists (Session 19).
 
 ### Session 10 step 4b: moonlight shafts and the torch beam (Graphics Engineer, style pass 1)
 
@@ -753,7 +759,7 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
 - The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
-- Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): normal maps on the ground, fallen logs and roots, breath on cold nights, distant impostor tweaks, retro pixel filter. These belong to the style passes (OPEN_QUESTIONS #21).
+- Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): normal maps on the ground, fallen logs and roots, breath on cold nights, distant impostor tweaks. These belong to the later style passes (OPEN_QUESTIONS #21).
 - Billboard trees: the canopy is still a sprite that turns to face you up close; the trunk near you is a solid 3D trunk (Session 10, `NearTrunks.js`).
 - The placeholder drawing proportions in `proceduralTextures.js` (tier shapes, gradient stops) are hard-coded rather than in config, since the whole file is thrown away in the art pass. Colours, counts and sizes are in config.
 

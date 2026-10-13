@@ -353,6 +353,12 @@ export class Game {
       () => `Dynamic resolution: ${this.dynamicResolution.enabled ? 'on' : 'off'}`,
       () => this.dynamicResolution.setEnabled(!this.dynamicResolution.enabled),
     );
+    // Session 10: the optional retro pixel filter (a Quality setting once
+    // there's a settings screen, Session 19).
+    display.addItem(
+      () => `Retro pixel filter: ${this.renderer.retro ? 'on' : 'off'}`,
+      () => this.renderer.setRetro(!this.renderer.retro),
+    );
   }
 
   // M7 step 4: the hut and explosives.
