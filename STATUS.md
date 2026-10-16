@@ -32,6 +32,13 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10b: the shovel carried upright, the tower's torch glare (Aaron)
+
+- **The shovel at rest** (Aaron: it looked held out in front): carried upright, the handle near vertical and the blade up by your shoulder (`config.viewModel.slash.rest`). Swings wind up from it and settle back into it.
+- **The watchtower under the torch** (Aaron: it looked reflective):
+  - **Darker wood** for the tower's legs, braces, platform, posts, rails and ladder (`config.station.look.tower`, `towerDark`, `towerPlank`).
+  - **The torch's glare check sees the tower.** While you're up there it counts the platform floor and the cab roof's underside (`Flashlight.platformHit()`, `config.flashlight.glare.platform`). The corner posts are glare colliders, like the railing has been since M5. So the torch dims on them instead of flooding the view.
+
 ### Session 10b: the shovel's slice, and the heat glow again (Aaron)
 
 - **A Fruit Ninja style slice** (Aaron: the shovel's attack was lacklustre; `ViewModel.updateSwing()`, `config.viewModel.slash`):

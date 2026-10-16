@@ -708,6 +708,7 @@ export class Game {
     const steps = playing ? this.fastForward : 1;
     for (let i = 0; i < steps; i++) this.step(dt, running, playing, i === 0);
     if (playing) {
+      this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
     }
     const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;

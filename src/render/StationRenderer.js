@@ -159,7 +159,7 @@ export class StationRenderer {
     const top = gy + t.height;
     const spread = t.legSpread;
     const legs = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-    for (const [sx, sz] of legs) parts.push(this.beam(t.x + sx * spread, gy - 0.3, t.z + sz * spread, t.x + sx * t.half * 0.9, top, t.z + sz * t.half * 0.9, 0.22, k.woodDark));
+    for (const [sx, sz] of legs) parts.push(this.beam(t.x + sx * spread, gy - 0.3, t.z + sz * spread, t.x + sx * t.half * 0.9, top, t.z + sz * t.half * 0.9, 0.22, k.towerDark));
     for (let lvl = 0; lvl < 3; lvl++) {
       const y0 = gy + 1 + lvl * 2.6;
       const y1 = y0 + 2.4;
@@ -168,21 +168,21 @@ export class StationRenderer {
       for (let i = 0; i < 4; i++) {
         const [ax, az] = legs[i];
         const [bx, bz] = legs[(i + 1) % 4];
-        parts.push(this.beam(t.x + ax * r0, y0, t.z + az * r0, t.x + bx * r1, y1, t.z + bz * r1, 0.1, k.wood));
+        parts.push(this.beam(t.x + ax * r0, y0, t.z + az * r0, t.x + bx * r1, y1, t.z + bz * r1, 0.1, k.tower));
       }
     }
-    parts.push(this.box(t.half * 2, 0.2, t.half * 2, t.x, top - 0.2, t.z, k.plank));
-    for (const [sx, sz] of legs) parts.push(this.box(0.12, 2.6, 0.12, t.x + sx * t.half, top, t.z + sz * t.half, k.woodDark));
+    parts.push(this.box(t.half * 2, 0.2, t.half * 2, t.x, top - 0.2, t.z, k.towerPlank));
+    for (const [sx, sz] of legs) parts.push(this.box(0.12, 2.6, 0.12, t.x + sx * t.half, top, t.z + sz * t.half, k.towerDark));
     for (const side of [-1, 1]) {
-      parts.push(this.box(t.half * 2, 0.08, 0.08, t.x, top + 1, t.z + side * t.half, k.wood));
-      parts.push(this.box(0.08, 0.08, t.half * 2, t.x + side * t.half, top + 1, t.z, k.wood));
+      parts.push(this.box(t.half * 2, 0.08, 0.08, t.x, top + 1, t.z + side * t.half, k.tower));
+      parts.push(this.box(0.08, 0.08, t.half * 2, t.x + side * t.half, top + 1, t.z, k.tower));
     }
     parts.push(this.box(t.half * 2 + 0.6, 0.15, t.half * 2 + 0.6, t.x, top + 2.6, t.z, k.roof));
     const lad = L.tower.ladder;
-    for (const sx of [-0.25, 0.25]) parts.push(this.beam(lad.x + sx, gy, lad.z, lad.x + sx, top, t.z + t.half, 0.07, k.wood));
+    for (const sx of [-0.25, 0.25]) parts.push(this.beam(lad.x + sx, gy, lad.z, lad.x + sx, top, t.z + t.half, 0.07, k.tower));
     for (let y = gy + 0.4; y < top; y += 0.4) {
       const f = (y - gy) / (top - gy);
-      parts.push(this.box(0.5, 0.05, 0.05, lad.x, y, lad.z + (t.z + t.half - lad.z) * f, k.wood));
+      parts.push(this.box(0.5, 0.05, 0.05, lad.x, y, lad.z + (t.z + t.half - lad.z) * f, k.tower));
     }
     // Fence posts and rails (the panels themselves are instanced).
     const H2 = this.cfg.layout.fenceHeight;

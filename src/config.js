@@ -1006,7 +1006,7 @@ export const config = {
     },
     hip: { x: 0.2, y: -0.245, z: -0.46 }, // Session 10b (Aaron): a little lower at the hip (was -0.21)
     aim: { x: 0, y: -0.082, z: -0.36 }, // centred under the crosshair (Session 10b: the new models' sights sit lower)
-    shovelHip: { x: 0.2, y: -0.28, z: -0.5 },
+    shovelHip: { x: 0.22, y: -0.3, z: -0.46 },
     // Weapon sway while moving, paced like footsteps (Aaron's M2 play-test:
     // tying it to the head bob made it vibrate at a sprint). One vertical dip
     // per step; side to side once every two steps.
@@ -1032,6 +1032,10 @@ export const config = {
     // at the end of the slash).
     slash: {
       seconds: 0.34,
+      // Aaron: at rest it looked held out in front. Now it's carried upright,
+      // the handle near vertical and the blade up by your shoulder; swings
+      // start and end here.
+      rest: { yaw: -0.15, pitch: 0.95, roll: -0.25, x: 0.02, y: -0.06 },
       windup: 0.14,
       strike: 0.42,
       start: { yaw: -0.75, pitch: 0.55, roll: -0.6, x: 0.06, y: 0.06 }, // raised, blade out to the right
@@ -1804,6 +1808,11 @@ export const config = {
     },
     look: {
       wood: 0x3a2a1e, // the tower's railing glared at 0x4a3626
+      // Session 10b (Aaron: the watchtower still glared under the torch):
+      // the tower's own, darker, weathered wood.
+      tower: 0x2a2018,
+      towerDark: 0x221a14,
+      towerPlank: 0x2c2219,
       woodDark: 0x2e2118,
       roof: 0x24382a, // Forest Service green
       trim: 0x5e4a36,
@@ -1975,6 +1984,10 @@ export const config = {
       ringRays: 6, // extra rays round the beam (besides its centre) to find close surfaces
       ringSpread: 0.7, // how far out in the cone the ring rays go (fraction of the cone angle)
       groundStep: 0.5, // metres per step when finding where a ray meets the hills
+      // Session 10b: up the tower, its floor and the cab roof's underside
+      // (metres above the floor; overhang past the platform's edge) count as
+      // close surfaces. The railing and corner posts are glare colliders (Station).
+      platform: { roofY: 2.6, roofOverhang: 0.3 },
     },
   },
 

@@ -671,16 +671,22 @@ export class ViewModel {
     if (weapons.swingTime < this.lastSwingTime) this.swingDir = -this.swingDir;
     this.lastSwingTime = weapons.swingTime;
     const t = Math.min(1, weapons.swingTime / sl.seconds);
+    const rest = sl.rest;
+    const d = this.swingDir;
     if (t >= 1) {
-      g.rotation.y = 0;
-      g.rotation.z = 0;
+      // At rest: carried upright, blade by the shoulder.
+      g.rotation.x += rest.pitch;
+      g.rotation.y = rest.yaw;
+      g.rotation.z = rest.roll;
+      g.position.x += rest.x;
+      g.position.y += rest.y;
       this.slash.visible = false;
       return;
     }
-    const d = this.swingDir;
     const start = sl.start;
     const end = sl.end;
     // Pose blend: rest -> start (wind-up), start -> end (the slash), end -> rest.
+    // The rest pose doesn't mirror; the swing poses do.
     let from;
     let to;
     let k;
@@ -697,12 +703,14 @@ export class ViewModel {
       to = null;
       k = smooth((t - sl.strike) / (1 - sl.strike));
     }
-    const pick = (pose, key) => (pose ? pose[key] : 0);
+    const mirrored = (key) => key === 'yaw' || key === 'roll' || key === 'x';
+    // A pose's value as applied: swing poses mirror with the direction, rest doesn't.
+    const pick = (pose, key) => (pose ? pose[key] * (mirrored(key) ? d : 1) : rest[key]);
     const mix = (key) => pick(from, key) + (pick(to, key) - pick(from, key)) * k;
     g.rotation.x += mix('pitch');
-    g.rotation.y = mix('yaw') * d;
-    g.rotation.z = mix('roll') * d;
-    g.position.x += mix('x') * d;
+    g.rotation.y = mix('yaw');
+    g.rotation.z = mix('roll');
+    g.position.x += mix('x');
     g.position.y += mix('y');
 
     // The trail: its head follows the blade across during the slash; after

@@ -28,6 +28,7 @@ export class Flashlight {
     this.glareFactor = 1;
     this.surfaceDistance = c.glare.fullDistance;
     this.hit = { distance: 0, facing: 0 };
+    this.platform = null; // Session 10b: { x, z, y, half } while up the lookout tower
     this.cookie = makeFlashlightCookie(c, this.rng);
     this.light = new THREE.SpotLight(c.color, c.intensity, c.distance, c.angle * DEG_TO_RAD, c.penumbra, c.decay);
     this.light.map = this.cookie;
@@ -95,6 +96,7 @@ export class Flashlight {
         this.ray.addScaledVector(this.right, Math.cos(a) * spread).addScaledVector(this.up, Math.sin(a) * spread).normalize();
       }
       nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit, this.ground, g.groundStep);
+      if (this.platform) this.platformHit(origin, this.ray, this.platform, g.platform);
       const strength = this.hit.facing / Math.pow(Math.max(this.hit.distance, g.minDistance), decay);
       if (strength > strongest) {
         strongest = strength;
@@ -107,6 +109,22 @@ export class Flashlight {
     this.glareFactor += (target - this.glareFactor) * (1 - Math.exp(-g.response * dt));
     this.light.intensity = this.cfg.intensity * this.glareFactor;
     this.spill.intensity = this.cfg.spill.intensity * this.glareFactor;
+  }
+
+  // Session 10b (Aaron: the tower glared under the torch): up the tower,
+  // the platform's floor and the cab roof's underside are close surfaces
+  // too (the railing and posts are colliders). Both are flat planes over
+  // the platform's square.
+  platformHit(origin, dir, pl, cfg) {
+    if (dir.y === 0) return;
+    const roof = dir.y > 0;
+    const y = roof ? pl.y + cfg.roofY : pl.y;
+    const half = roof ? pl.half + cfg.roofOverhang : pl.half;
+    const t = (y - origin.y) / dir.y;
+    if (t <= 0 || t >= this.hit.distance) return;
+    if (Math.abs(origin.x + dir.x * t - pl.x) > half || Math.abs(origin.z + dir.z * t - pl.z) > half) return;
+    this.hit.distance = t;
+    this.hit.facing = Math.abs(dir.y);
   }
 
   setOn(on) {

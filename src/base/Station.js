@@ -202,6 +202,10 @@ export class Station {
       col.noBody = true;
       grid.insert(col);
     }
+    // Session 10b (Aaron: the tower still glared): its corner posts too.
+    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      grid.insert({ x: tw.x + dx * h, z: tw.z + dz * h, r: 0.08, base: towerTop, top: towerTop + 2.6, noBody: true, glareOnly: true });
+    }
     const box = this.layout.fenceBox;
     solid(box.x, box.z, 0.35, 1.3);
     for (const f of c.family) grid.insert({ x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7 });
