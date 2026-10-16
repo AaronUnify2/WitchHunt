@@ -474,6 +474,8 @@ export class Game {
     this.thermal = on;
     this.sky.setThermal(on ? t.world : null);
     this.renderer.postFX.setThermal(on, t.tint);
+    // Bloom smeared the glowing zombies into blobs (Aaron): off through the scope.
+    this.renderer.postFX.setBloom(on ? t.bloom : this.cfg.quality.presets[this.qualityName].bloom);
     this.combat.zombieRenderer.setThermal(on, t);
     this.combat.mutantRenderer.setThermal(on, t);
     if (!on) this.witch.renderer.setThermal(false);

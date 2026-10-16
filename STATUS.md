@@ -32,6 +32,18 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10b: the shovel's slice, and the heat glow again (Aaron)
+
+- **A Fruit Ninja style slice** (Aaron: the shovel's attack was lacklustre; `ViewModel.updateSwing()`, `config.viewModel.slash`):
+  - **The swing:** a quick wind-up to a raised pose, then a fast diagonal sweep across the view (ease-out), then back to rest, over 0.34 s.
+  - **Alternating:** swings go right to left, then left to right.
+  - **The trail:** a bright, curved ribbon in the view plane, drawn in a shader. Its head follows the blade across, and after the strike its tail catches up and it fades. It's additive and bright enough for the bloom.
+  - The hit still lands at 0.14 s (the end of the sweep). Damage, reach and arc are unchanged.
+- **The heat glow, again** (Aaron: still too bright from the tower to the fence):
+  - **Bloom is off** while looking through the heat scope (it smeared the glowing zombies into blobs), and back on when you lower it.
+  - **Lower glow:** 1.0 (was 1.6), fading over a longer range: full from 60 m (was 30 m), 65% at 4 m.
+- **The SMG's sights** (Aaron had pictured a laser sight): the iron sights look good, so they stay.
+
 ### Session 10b: guns to experiment with (Aaron)
 
 Aaron first asked for these as experiments, then **kept them** ("they're really good"). They're in DESIGN.md's weapons table, coming from encounters to be chosen (#143). Until then they're in the debug menu only (Player → "Give the …").

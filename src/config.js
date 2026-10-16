@@ -1025,7 +1025,28 @@ export const config = {
     kickRecover: 14,
     reloadDip: 0.7, // radians the gun tips down while reloading
     switchDrop: 0.35, // metres it drops out of view while switching
-    swingDegrees: 110, // shovel swing arc, right to left
+    // Session 10b (Aaron: "a Fruit Ninja style slice"): the shovel's swing.
+    // Fractions of `seconds`: wind up to `start`, slash to `end` by
+    // `strike`, then back to rest. Swings alternate direction (yaw, roll
+    // and x mirror). The hit still lands at weapons.shovel.hitDelay (0.14 s,
+    // at the end of the slash).
+    slash: {
+      seconds: 0.34,
+      windup: 0.14,
+      strike: 0.42,
+      start: { yaw: -0.75, pitch: 0.55, roll: -0.6, x: 0.06, y: 0.06 }, // raised, blade out to the right
+      end: { yaw: 0.95, pitch: -0.5, roll: 0.7, x: -0.22, y: -0.08 }, // swept across, low left
+      // The trail: a curve in the view plane (x right, y up, metres at `depth`).
+      from: [0.5, 0.32],
+      bend: [0.1, -0.28], // a deep curve, dipping below the centre
+      to: [-0.55, -0.12],
+      depth: -0.7,
+      width: 0.05,
+      tail: 0.55, // trail length, as a share of the curve
+      fadeAfter: 0.3, // share of the swing it takes to fade after the slash
+      color: 0xe6f0ff,
+      intensity: 1.3, // above 1, so the bloom catches it
+    },
     muzzleFlashSeconds: 0.05,
     muzzleFlashColor: 0xffd890,
     scopeHideAt: 0.8, // Session 10b: the scope view replaces the gun once the zoom is this far in
@@ -1033,13 +1054,16 @@ export const config = {
     // is cold and dark grey, day or night, and the living glow white.
     thermal: {
       world: { sky: 0x3a3e3e, fog: 0x343838, ambient: 2.2, light: 1 }, // flat, even light: no torch, no moon
-      glow: 1.6, // emissive white on zombies and mutants at range (the witch goes plain white)
-      // Aaron: up close (within about 30 m) they glowed too bright. The glow
-      // falls to nearGlow of full at nearMetres, full from farMetres out.
-      nearGlow: 0.6, // still white-hot, with far less bloom
+      // Aaron: too bright to see clearly from the tower to the fence (20-40 m),
+      // even after a first fade. Now bloom is off through the heat scope, the
+      // glow is lower, and it fades from full at farMetres to nearGlow of
+      // that at nearMetres.
+      glow: 1.0, // emissive white on zombies and mutants at range (was 1.6)
+      nearGlow: 0.65,
       witchNearGlow: 0.8, // she's plain white with no light on her, so she needs more to read as hot
       nearMetres: 4,
-      farMetres: 30,
+      farMetres: 60, // was 30
+      bloom: false, // the bloom pass is off while looking through it
       tint: 0xe8f4ea, // a faint cold green-white over the whole view
     },
     // Session 10b: where guns other than the long guns sit (the pistol is held

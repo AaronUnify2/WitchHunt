@@ -17,6 +17,79 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 
+// Session 10b: the shovel's slash trail (Aaron: "a Fruit Ninja style
+// slice"). A ribbon across the view, revealed head-first as the blade
+// sweeps and fading from its tail. t runs along it, v across it.
+const SLASH_VERTEX = /* glsl */ `
+  attribute vec2 aTV;
+  varying vec2 vTV;
+  void main() {
+    vTV = aTV;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const SLASH_FRAGMENT = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uHead; // how far along the blade has swept (0..1)
+  uniform float uTail; // trail length, as a share of the ribbon
+  uniform float uFade; // 1 fresh, 0 gone
+  varying vec2 vTV;
+  void main() {
+    float t = vTV.x;
+    if (t > uHead) discard;
+    float along = clamp((t - (uHead - uTail)) / uTail, 0.0, 1.0);
+    float across = 1.0 - abs(vTV.y * 2.0 - 1.0);
+    float a = along * along * pow(across, 1.5) * uFade;
+    if (a < 0.003) discard;
+    gl_FragColor = vec4(uColor, a);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+// A ribbon along a quadratic curve p0 -> p2 (bending toward p1), in the
+// camera's view plane at depth z, `width` across, narrower at both ends.
+function slashGeometry(p0, p1, p2, z, width, segments) {
+  const positions = [];
+  const tv = [];
+  const point = (t) => [
+    (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0],
+    (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1],
+  ];
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const [x, y] = point(t);
+    const [x2, y2] = point(Math.min(1, t + 0.01));
+    const [x0, y0] = point(Math.max(0, t - 0.01));
+    let nx = -(y2 - y0);
+    let ny = x2 - x0;
+    const len = Math.hypot(nx, ny) || 1;
+    nx /= len;
+    ny /= len;
+    const half = (width / 2) * Math.sin(Math.PI * (0.06 + 0.88 * t)); // tapered ends, never zero
+    positions.push(x - nx * half, y - ny * half, z, x + nx * half, y + ny * half, z);
+    tv.push(t, 0, t, 1);
+  }
+  const index = [];
+  for (let i = 0; i < segments; i++) {
+    const a = i * 2;
+    index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('aTV', new THREE.Float32BufferAttribute(tv, 2));
+  geometry.setIndex(index);
+  return geometry;
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function smooth(t) {
+  return t * t * (3 - 2 * t);
+}
+
 // Colours of the woodwork and steel.
 const WALNUT = 0x6a4428;
 const DARK_WALNUT = 0x553520;
@@ -195,6 +268,34 @@ export class ViewModel {
     this.flash = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), this.flashMaterial);
     this.flash.visible = false;
     this.root.add(this.flash);
+    // Session 10b: the shovel's slash trail.
+    const sl = this.cfg.slash;
+    this.slashUniforms = {
+      uColor: { value: new THREE.Color(sl.color).multiplyScalar(sl.intensity) },
+      uHead: { value: 0 },
+      uTail: { value: sl.tail },
+      uFade: { value: 0 },
+    };
+    this.slash = new THREE.Mesh(
+      slashGeometry(sl.from, sl.bend, sl.to, sl.depth, sl.width, 40),
+      new THREE.ShaderMaterial({
+        uniforms: this.slashUniforms,
+        vertexShader: SLASH_VERTEX,
+        fragmentShader: SLASH_FRAGMENT,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        fog: false,
+      }),
+    );
+    this.slash.renderOrder = 10;
+    this.slash.frustumCulled = false;
+    this.slash.visible = false;
+    this.root.add(this.slash);
+    this.swingDir = 1; // alternates each swing: 1 right to left, -1 left to right
+    this.lastSwingTime = Infinity;
     this.kick = 0;
     this.bobPhase = 0;
     this.bobAmount = 0;
@@ -546,6 +647,7 @@ export class ViewModel {
     g.rotation.set(this.kick * c.kickRotate - dipHold, 0, 0);
 
     if (melee) this.updateSwing(g, weapons);
+    else this.slash.visible = false;
     if (model.pump) model.pump.position.z = -0.3 + Math.max(0, Math.sin(Math.min(1, weapons.shotTime / weapons.weapon.fireInterval) * Math.PI)) * 0.08;
 
     // Muzzle flash: a quick additive card at the barrel's end.
@@ -559,21 +661,58 @@ export class ViewModel {
     }
   }
 
-  // Swing from upper right to lower left over the first part of the swing.
+  // Session 10b (Aaron: "a Fruit Ninja style slice"): a quick wind-up, a
+  // fast diagonal sweep across the view, then back to rest. Swings
+  // alternate direction (right to left, then left to right), and a bright
+  // trail streaks across behind the blade.
   updateSwing(g, weapons) {
-    const w = weapons.weapon;
-    const t = Math.min(1, weapons.swingTime / (w.fireInterval * 0.6));
+    const sl = this.cfg.slash;
+    // A new swing: flip the direction.
+    if (weapons.swingTime < this.lastSwingTime) this.swingDir = -this.swingDir;
+    this.lastSwingTime = weapons.swingTime;
+    const t = Math.min(1, weapons.swingTime / sl.seconds);
     if (t >= 1) {
       g.rotation.y = 0;
       g.rotation.z = 0;
+      this.slash.visible = false;
       return;
     }
-    const arc = this.cfg.swingDegrees * DEG_TO_RAD;
-    const ease = t < 0.4 ? t / 0.4 : 1 - (t - 0.4) / 0.6; // fast out, slower return
-    g.rotation.y = ease * arc * 0.5;
-    g.rotation.z = ease * arc * 0.35;
-    g.rotation.x += -ease * 0.6;
-    g.position.x -= ease * 0.15;
+    const d = this.swingDir;
+    const start = sl.start;
+    const end = sl.end;
+    // Pose blend: rest -> start (wind-up), start -> end (the slash), end -> rest.
+    let from;
+    let to;
+    let k;
+    if (t < sl.windup) {
+      from = null;
+      to = start;
+      k = smooth(t / sl.windup);
+    } else if (t < sl.strike) {
+      from = start;
+      to = end;
+      k = easeOutCubic((t - sl.windup) / (sl.strike - sl.windup));
+    } else {
+      from = end;
+      to = null;
+      k = smooth((t - sl.strike) / (1 - sl.strike));
+    }
+    const pick = (pose, key) => (pose ? pose[key] : 0);
+    const mix = (key) => pick(from, key) + (pick(to, key) - pick(from, key)) * k;
+    g.rotation.x += mix('pitch');
+    g.rotation.y = mix('yaw') * d;
+    g.rotation.z = mix('roll') * d;
+    g.position.x += mix('x') * d;
+    g.position.y += mix('y');
+
+    // The trail: its head follows the blade across during the slash; after
+    // the strike its tail catches up with the head and it fades out.
+    const head = Math.max(0, Math.min(1, (t - sl.windup) / (sl.strike - sl.windup)));
+    const after = t < sl.strike ? 0 : Math.min(1, (t - sl.strike) / sl.fadeAfter);
+    this.slash.visible = head > 0 && after < 1;
+    this.slash.scale.x = d; // mirrored for a left-to-right swing
+    this.slashUniforms.uHead.value = t < sl.strike ? head : 1 + sl.tail * smooth(after);
+    this.slashUniforms.uFade.value = 1 - smooth(after) * 0.6;
   }
 
   dispose() {
@@ -583,5 +722,6 @@ export class ViewModel {
     this.woodMaterial.dispose();
     this.grain.dispose();
     this.flashMaterial.dispose();
+    this.slash.material.dispose();
   }
 }
