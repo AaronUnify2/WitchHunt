@@ -32,6 +32,24 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10b step 2: the hunting rifle (a sniper rifle, Aaron)
+
+- **The gun** (`config.weapons.sniper`): a scoped bolt-action hunting rifle with its own rare rounds. **It kills with a headshot** (Aaron):
+  - 50 to the body never kills even a level 1 citizen (60 health).
+  - 150 to the head kills the toughest zombie (an army zombie at level 5, 144).
+  - **Its power is penetration:** it goes through 10 zombies, keeping 95% of its damage each time. The service rifle goes through 4 and keeps 75%.
+  - The rest: 5 rounds, a slow 1.5 s bolt, a 3 s reload, clumsy from the hip (3.5° spread), very loud (heard 100 m away).
+  - Tests pin the kill-by-headshot rule and the penetration against the zombie and rifle numbers (`tests/sniper.test.js`).
+- **The scope** (`ui/ScopeOverlay.js`, `style.css`): aiming fades into a 4× scope view and hides the gun.
+  - A black ring round the lens, a fine crosshair with heavy posts, and a small dim red dot lit at the centre so it reads at night.
+  - **Turning slows with the zoom** (`scopeLookScale` 0.3, mouse and controller), so 4× isn't twitchy.
+- **The model** (`ViewModel.buildSniper()`): a Monte Carlo walnut stock with a cheek piece, a heavy barrel and crown, and a scope with bells, turrets and two rings. The bolt handle bends down under the scope.
+- **Where it comes from: an encounter** (Aaron), not chosen yet. Until then the debug menu gives it (Player → "Give the hunting rifle (+10 rounds)").
+  - `Combat.giveWeapon(id, rounds)` adds the slot and switches to it. Any of its rounds picked up before the gun load into it.
+  - Loot can hand out its rounds as `ammo: 'sniper'` (OPEN_QUESTIONS #142).
+- **Saves keep it:** loading a save restores guns picked up along the way (the hunting rifle) with their rounds (`saveData.loadPlayer`).
+- **On the HUD** it's "Hunting rifle", with the usual magazine and reserve. It's the 4th slot (key 4).
+
 ### Session 10b step 1: the guns (Graphics Engineer)
 
 Aaron asked for more in this pass: better guns, a sniper rifle, zombies, cars, the hut, the station's interior and the family. It's logged as Session 10b.

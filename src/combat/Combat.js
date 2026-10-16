@@ -15,6 +15,7 @@ import { Armour } from '../player/Armour.js';
 import { Inventory } from '../player/Inventory.js';
 import { Weapons } from '../player/Weapons.js';
 import { ViewModel } from '../player/ViewModel.js';
+import { ScopeOverlay } from '../ui/ScopeOverlay.js';
 import { EnemyManager } from '../ai/EnemyManager.js';
 import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { MutantRenderer } from '../render/MutantRenderer.js';
@@ -78,6 +79,8 @@ export class Combat {
     this.fx.init(scene, ground);
     this.hud = new Hud(c.hud);
     this.hud.init(root);
+    this.scope = new ScopeOverlay(); // Session 10b: the hunting rifle's scope view
+    this.scope.init(root);
     this.sfx = new Sfx(c.sfx);
     this.sfx.init();
 
@@ -185,6 +188,17 @@ export class Combat {
     this.player.fovMultiplier = 1;
   }
 
+  // Session 10b: a gun found in the world (the hunting rifle). Any of its
+  // rounds picked up before it (kept in the inventory) load into it.
+  giveWeapon(id, rounds = 0) {
+    const w = this.weapons;
+    w.setSlot(id, true);
+    const stored = this.inventory.ammo[id] ?? 0;
+    if (stored > 0) delete this.inventory.ammo[id];
+    w.states[id].addAmmo(rounds + stored);
+    w.select(w.order.indexOf(id));
+  }
+
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.
   respawn() {
     this.health.init();
@@ -278,6 +292,7 @@ export class Combat {
     this.mutantRenderer.update(this.enemies.pool, dt);
     this.pickupRenderer.update(dt, this.pickups.pool);
     this.viewModel.update(dt, this.weapons, player);
+    this.scope.update(this.alive ? this.weapons.scoped : 0);
     this.fx.update(dt);
     this.sfx.setListener(player.position.x, player.position.z, player.yaw);
     this.hud.update(dt, {
@@ -351,6 +366,8 @@ export class Combat {
       (this.cfg.aimAssist.enabled = !this.cfg.aimAssist.enabled),
     );
     player.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
+    // Session 10b: the hunting rifle comes from an encounter later (Aaron).
+    player.addItem(`Give the hunting rifle (+${this.cfg.weapons.sniper.debugRounds} rounds)`, () => this.giveWeapon('sniper', this.cfg.weapons.sniper.debugRounds));
     player.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
     player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => this.inventory.addFirstAid(d.giveFirstAid));
     player.addItem('Hurt me (-25)', () => {
@@ -386,6 +403,7 @@ export class Combat {
     this.hud.dispose();
     this.fx.dispose();
     this.viewModel.dispose();
+    this.scope.dispose();
     this.weapons.dispose();
     this.pickupRenderer.dispose();
     this.pickups.dispose();

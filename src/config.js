@@ -834,6 +834,40 @@ export const config = {
       shake: 0.4,
       noise: 55,
     },
+    // Session 10b (Aaron): a scoped bolt-action hunting rifle, from an
+    // encounter (the debug menu gives it until then), with its own rare
+    // rounds. It kills with a headshot: 50 to the body never drops even a
+    // level 1 citizen (60), 150 to the head drops the toughest (an army
+    // zombie at level 5, 144). Its power is how far it punches through a
+    // line of them (10 zombies, keeping 95% each time; the service rifle 4 at 75%).
+    sniper: {
+      name: 'Hunting rifle',
+      kind: 'hitscan',
+      damage: 50,
+      pellets: 1,
+      spreadDegrees: 3.5, // from the hip: unscoped it's clumsy
+      aimSpreadDegrees: 0, // through the scope
+      range: 250,
+      pierce: 10,
+      pierceKeep: 0.95,
+      falloffStart: 250,
+      falloffEnd: 250,
+      falloffMin: 1,
+      fireInterval: 1.5, // a slow bolt
+      magSize: 5,
+      startReserve: 0,
+      reloadSeconds: 3,
+      reloadStyle: 'magazine',
+      stagger: 0.5,
+      knockback: 0.6,
+      recoilDegrees: 4.5,
+      aimFovMultiplier: 0.25, // a 4x scope
+      scope: true, // aiming shows the scope view instead of the gun
+      scopeLookScale: 0.3, // turning slows this much at full zoom, so 4x isn't twitchy
+      shake: 0.3,
+      noise: 100, // loud: every zombie this close hears it
+      debugRounds: 10, // the debug menu's "give the hunting rifle" comes with these
+    },
   },
 
   // Aiming down sights (LT)
@@ -880,6 +914,7 @@ export const config = {
     swingDegrees: 110, // shovel swing arc, right to left
     muzzleFlashSeconds: 0.05,
     muzzleFlashColor: 0xffd890,
+    scopeHideAt: 0.8, // Session 10b: the scope view replaces the gun once the zoom is this far in
   },
 
   // First aid kits (DESIGN.md "Healing"): kept in the inventory, used with

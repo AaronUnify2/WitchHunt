@@ -173,6 +173,7 @@ export class ViewModel {
     this.models = {
       rifle: this.buildRifle(),
       shotgun: this.buildShotgun(),
+      sniper: this.buildSniper(),
       shovel: this.buildShovel(),
       detonator: this.buildDetonator(),
     };
@@ -269,6 +270,44 @@ export class ViewModel {
     return { group, muzzle: new THREE.Vector3(0, 0.022, f(0.88)), pump };
   }
 
+  // Session 10b: the scoped hunting rifle: a Monte Carlo walnut stock with
+  // a raised cheek piece, a heavy barrel and a scope on two rings. Butt at
+  // z = 0.27, muzzle at z = -0.75.
+  buildSniper() {
+    const group = new THREE.Group();
+    const butt = 0.27;
+    const f = (forward) => butt - forward;
+    this.mesh([
+      [profile([[0, -0.105], [0, 0.03], [0.05, 0.036], [0.16, 0.034], [0.2, 0.008], [0.25, 0.006], [0.64, 0.004], [0.68, -0.008], [0.675, -0.034], [0.44, -0.04], [0.32, -0.046], [0.25, -0.046], [0.236, -0.092], [0.208, -0.094], [0.196, -0.052], [0.15, -0.058]], 0.042, DARK_WALNUT), 0, -0.02, butt],
+    ], group, this.woodMaterial);
+    const scopeY = 0.06;
+    this.mesh([
+      [box(0.044, 0.13, 0.014, RUBBER), 0, -0.058, f(0.005)], // recoil pad
+      [rod(0.018, 0.22, BLUED, 12), 0, 0.006, f(0.36)], // receiver
+      [rod(0.0125, 0.55, STEEL, 12, 0.0115), 0, 0.006, f(0.745)], // heavy barrel
+      [rod(0.0135, 0.03, DARK_STEEL, 12), 0, 0.006, f(1.0)], // muzzle crown
+      // The scope: tube, eyepiece and objective bells, turrets.
+      [rod(0.0125, 0.2, DARK_STEEL, 14), 0, scopeY, f(0.36)],
+      [rod(0.017, 0.06, DARK_STEEL, 14, 0.0125), 0, scopeY, f(0.235)], // eyepiece (wider toward you)
+      [rod(0.0125, 0.07, DARK_STEEL, 14, 0.021), 0, scopeY, f(0.49)], // objective bell (wider at the front)
+      [shade(new THREE.CylinderGeometry(0.008, 0.008, 0.016, 10), DARK_STEEL), 0, scopeY + 0.018, f(0.36)], // elevation turret
+      [shade(new THREE.CylinderGeometry(0.008, 0.008, 0.016, 10).rotateZ(Math.PI / 2), DARK_STEEL), 0.018, scopeY, f(0.36)], // windage turret
+      [box(0.03, 0.04, 0.014, BLUED), 0, 0.033, f(0.3)], // rear ring and base
+      [box(0.03, 0.04, 0.014, BLUED), 0, 0.033, f(0.42)], // front ring and base
+      [rod(0.006, 0.03, STEEL), 0.022, 0.012, f(0.28)], // bolt body
+      [shade(new THREE.CylinderGeometry(0.004, 0.004, 0.045, 6).rotateZ(-1.2), STEEL), 0.04, 0.0, f(0.28)], // bolt handle (bent down under the scope)
+      [ball(0.008, STEEL), 0.06, -0.011, f(0.28)], // bolt knob
+      [box(0.03, 0.006, 0.08, DARK_STEEL), 0, -0.065, f(0.36)], // floorplate
+      [box(0.004, 0.026, 0.004, DARK_STEEL), 0, -0.052, f(0.27)], // trigger
+      [box(0.012, 0.004, 0.06, DARK_STEEL), 0, -0.072, f(0.27)], // trigger guard
+      [box(0.012, 0.022, 0.004, DARK_STEEL), 0, -0.06, f(0.24)],
+      [box(0.012, 0.016, 0.004, DARK_STEEL), 0, -0.064, f(0.3)],
+      [box(0.006, 0.012, 0.012, DARK_STEEL), 0, -0.1, f(0.07)], // sling swivels
+      [box(0.006, 0.012, 0.012, DARK_STEEL), 0, -0.066, f(0.58)],
+    ], group);
+    return { group, muzzle: new THREE.Vector3(0, 0.006, f(1.02)) };
+  }
+
   buildShovel() {
     const group = new THREE.Group();
     this.mesh([
@@ -329,6 +368,8 @@ export class ViewModel {
     }
     const model = this.models[id];
     const g = model.group;
+    // Session 10b: looking through a scope, the scope view replaces the gun.
+    g.visible = weapons.scoped < c.scopeHideAt;
     const melee = weapons.weapon.kind === 'melee';
     const hip = melee ? c.shovelHip : c.hip;
     const z = weapons.zoom;

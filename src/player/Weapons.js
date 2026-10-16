@@ -87,6 +87,11 @@ export class Weapons {
     return this.states[this.id];
   }
 
+  // Session 10b: how far into a scope view (0 unless the gun has a scope).
+  get scoped() {
+    return this.weapon.scope ? this.zoom : 0;
+  }
+
   // 0..1 through a weapon switch (1 = ready).
   get switchProgress() {
     return 1 - this.switchTimer / this.cfg.switchSeconds;
@@ -127,6 +132,8 @@ export class Weapons {
     const zoomTarget = this.aiming ? 1 : 0;
     this.zoom += (zoomTarget - this.zoom) * Math.min(1, this.aimingCfg.zoomSpeed * dt);
     this.player.fovMultiplier = 1 + ((w.aimFovMultiplier ?? 1) - 1) * this.zoom;
+    // Session 10b: a scope slows the look with its zoom, so 4x isn't twitchy.
+    this.player.scopeLookScale = 1 + ((w.scopeLookScale ?? 1) - 1) * this.zoom;
 
     if (ready && input.wasPressed('reload') && this.state.startReload()) this.bus.emit('weapon:reload', { id: this.id });
     if (ready) this.updateFiring(input);

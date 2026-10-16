@@ -16,6 +16,7 @@ Agreed with Aaron before building:
 | 139 | The mist sits relative to the ground under you, not each spot's own ground. | Cheap (no height texture to sample): looking down into a hollow it's thicker, up a rise it's thinner. Inside the station's buildings the floor gets a faint haze. | `render/atmosphereShader.js` |
 | 140 | Where does the retro pixel filter live, and how coarse? | 270 lines, switched from the debug menu. It belongs in the Quality settings once there's a settings screen (Session 19). | `config.render.retro.lines`, `Renderer.setRetro()` |
 | 141 | The new Quality levers have no settings screen. | Each preset sets them (mist, mistPuffs, groundTwoSizes, treeTrunks, fireflies, beamDust, lightShafts, torchBeam); the debug menu switches each effect on and off. A player-facing Quality screen is Session 19's. | `config.quality.presets` |
+| 142 | Which encounter gives the hunting rifle, and where do its rounds come from? | Aaron: an encounter (it suits the military outpost or the lookout-style places). Debug menu only for now. Its rounds are rare: a loot entry with `ammo: 'sniper'`. | `config.weapons.sniper`, `Combat.giveWeapon()`, `data/loot.json` |
 
 ## Session 9 (the gate, QA & Balance)
 

@@ -73,6 +73,11 @@ export function loadPlayer(combat, d) {
   inv.batteries = d.inventory.batteries;
   inv.ammo = { ...d.inventory.ammo };
   const w = combat.weapons;
+  // Session 10b: guns picked up along the way (the hunting rifle) come back
+  // too. The detonator's slot belongs to the charges, which restore it.
+  for (const id of Object.keys(d.weapons ?? {})) {
+    if (!w.order.includes(id) && w.cfg[id]?.kind === 'hitscan') w.setSlot(id, true);
+  }
   for (const id of w.order) {
     const s = d.weapons[id];
     if (s) w.states[id].init(s.mag, s.reserve);

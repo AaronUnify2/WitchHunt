@@ -64,6 +64,7 @@ export class Player {
     this.moveMultiplier = 1;
     this.lookScale = 1;
     this.fovMultiplier = 1;
+    this.scopeLookScale = 1; // Session 10b: set by Weapons while looking through a scope
     this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
     this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
@@ -101,7 +102,7 @@ export class Player {
 
   updateLook(input) {
     const look = input.getLook();
-    const scale = input.activeDevice === 'gamepad' ? this.lookScale : 1; // the mouse is never assisted
+    const scale = (input.activeDevice === 'gamepad' ? this.lookScale : 1) * this.scopeLookScale; // the mouse is never assisted
     const limit = this.cfg.pitchLimit * DEG_TO_RAD;
     this.yaw -= look.x * scale;
     this.pitch = THREE.MathUtils.clamp(this.pitch + look.y * scale, -limit, limit);

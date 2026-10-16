@@ -872,3 +872,68 @@ body {
 .no-return-title { margin: 0 0 1rem; letter-spacing: 0.25em; color: #e04030; font-size: 1.3em; }
 .no-return-text { margin: 0 0 1.2rem; line-height: 1.5; }
 .no-return-prompt { margin: 0; font-size: 0.85em; opacity: 0.75; }
+
+/* ---- Session 10b: the hunting rifle's scope view ---- */
+.scope {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+  z-index: 4;
+}
+.scope-lens {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(10, 20, 14, 0) 0, rgba(10, 20, 14, 0.08) 34vmin, rgba(0, 0, 0, 0.85) 40vmin, #000 41.5vmin, #000 100%);
+}
+.scope-line {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+}
+.scope-line-h {
+  left: calc(50% - 40vmin);
+  width: 80vmin;
+  top: 50%;
+  height: 1px;
+}
+.scope-line-v {
+  top: calc(50% - 40vmin);
+  height: 80vmin;
+  left: 50%;
+  width: 1px;
+}
+/* The heavy posts that stop short of the centre (a duplex reticle). */
+.scope-post {
+  position: absolute;
+  background: #000;
+}
+.scope-post-l {
+  left: calc(50% - 41vmin);
+  width: 28vmin;
+  top: calc(50% - 2px);
+  height: 4px;
+}
+.scope-post-r {
+  left: calc(50% + 13vmin);
+  width: 28vmin;
+  top: calc(50% - 2px);
+  height: 4px;
+}
+.scope-post-b {
+  top: calc(50% + 13vmin);
+  height: 28vmin;
+  left: calc(50% - 2px);
+  width: 4px;
+}
+.scope-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(255, 50, 30, 0.85);
+  box-shadow: 0 0 4px rgba(255, 40, 20, 0.6);
+}
