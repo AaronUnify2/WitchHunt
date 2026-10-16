@@ -575,8 +575,10 @@ export class WitchRenderer {
 
   // Session 10b: through the heat scope she glows white-hot (her shadow
   // goes white; she's unlit, so plain white is as bright as it gets).
-  setThermal(on) {
-    this.material.color.set(on ? 0xffffff : this.cfg.shadow);
+  // brightness: 0..1 (her glow fades up close: Aaron).
+  setThermal(on, brightness = 1) {
+    if (on) this.material.color.setScalar(brightness);
+    else this.material.color.set(this.cfg.shadow);
   }
 
   dispose() {

@@ -81,6 +81,7 @@ export class ZombieRenderer {
       uTintActive: { value: new THREE.Color(c.lod.tierColors.active) },
       uTintNearby: { value: new THREE.Color(c.lod.tierColors.nearby) },
       uThermal: { value: 0 }, // Session 10b: glowing white through the heat scope
+      uThermalNear: { value: new THREE.Vector3(1, 0, 1) }, // near share, near m, far m
     };
     const albedo = new THREE.Color().setScalar(c.albedoScale);
     this.material = this.patch(new THREE.MeshLambertMaterial({ map: this.atlas, color: albedo, alphaTest: c.alphaTest }), true);
@@ -120,8 +121,10 @@ export class ZombieRenderer {
   }
 
   // Session 10b: through the heat scope they glow white-hot.
-  setThermal(on, glow) {
-    this.uniforms.uThermal.value = on ? glow : 0;
+  // t: config.viewModel.thermal (the glow fades up close: Aaron).
+  setThermal(on, t) {
+    this.uniforms.uThermal.value = on ? t.glow : 0;
+    this.uniforms.uThermalNear.value.set(t.nearGlow, t.nearMetres, t.farMetres);
   }
 
   patch(material, colour) {
@@ -137,11 +140,11 @@ export class ZombieRenderer {
         shader.fragmentShader = shader.fragmentShader
           .replace(
             '#include <common>',
-            '#include <common>\nvarying float vFlash;\nvarying float vLit;\nvarying float vTint;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;',
+            '#include <common>\nvarying float vFlash;\nvarying float vLit;\nvarying float vTint;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;\nuniform vec3 uThermalNear;',
           )
           .replace(
             '#include <emissivemap_fragment>',
-            '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uLitColor * vLit;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;\nif (vTint > 0.5) totalEmissiveRadiance += (vTint < 1.5 ? uTintActive : uTintNearby) * 0.5;\ntotalEmissiveRadiance += vec3(uThermal);',
+            '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uLitColor * vLit;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uFlashColor, vFlash);\ntotalEmissiveRadiance += uFlashColor * vFlash;\nif (vTint > 0.5) totalEmissiveRadiance += (vTint < 1.5 ? uTintActive : uTintNearby) * 0.5;\ntotalEmissiveRadiance += vec3(uThermal * mix(uThermalNear.x, 1.0, smoothstep(uThermalNear.y, uThermalNear.z, length(vViewPosition))));',
           );
       }
       shader.vertexShader = vertex;

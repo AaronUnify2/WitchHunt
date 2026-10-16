@@ -34,7 +34,14 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ### Session 10b: guns to experiment with (Aaron)
 
-Aaron: "these may not go into the final game, no need to stress on the aesthetic". **Debug menu only** (Player → "Give the …"), with simple models.
+Aaron first asked for these as experiments, then **kept them** ("they're really good"). They're in DESIGN.md's weapons table, coming from encounters to be chosen (#143). Until then they're in the debug menu only (Player → "Give the …").
+
+- **Models at the hunting rifle's level** (`ViewModel.buildPistol/Smg/ThermalRifle/AutoShotgun`):
+  - **Pistol:** a 1911-style blued slide with rear serrations, walnut grips, hammer, beavertail and barrel bushing.
+  - **SMG:** an MP5-style ribbed receiver, cocking tube, ribbed handguard, stepped curved magazine, drum sight and sliding stock.
+  - **Semi-auto rifle:** a synthetic stock, shaped receiver, gas block and raked magazine. The heat scope has a bevelled housing, a focus ring, a green lens and an IR emitter.
+  - **Auto shotgun:** an AA-12-style rounded receiver, carry handle, vented shroud, ribbed drum and shaped stock.
+- **The heat scope's glow fades up close** (Aaron: within about 30 m it was too bright). It's full from 30 m and 60% at 4 m for zombies and mutants (in their shaders, by distance), and 80% for the witch (set each frame by distance). They stay white-hot with much less bloom.
 
 | Gun | Ammo | How it handles |
 |---|---|---|

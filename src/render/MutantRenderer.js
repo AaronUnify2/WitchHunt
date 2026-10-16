@@ -143,8 +143,21 @@ export class MutantRenderer {
   }
 
   // Session 10b: through the heat scope it glows white-hot.
-  setThermal(on, glow) {
-    this.material.emissive.setScalar(on ? glow : 0);
+  // t: config.viewModel.thermal (the glow fades up close: Aaron).
+  setThermal(on, t) {
+    this.material.emissive.setScalar(on ? t.glow : 0);
+    if (!this.thermalNear) {
+      this.thermalNear = { value: new THREE.Vector3() };
+      this.material.onBeforeCompile = (shader) => {
+        shader.uniforms.uThermalNear = this.thermalNear;
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nuniform vec3 uThermalNear;')
+          .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance *= mix(uThermalNear.x, 1.0, smoothstep(uThermalNear.y, uThermalNear.z, length(vViewPosition)));');
+      };
+      this.material.customProgramCacheKey = () => 'mutant-thermal';
+      this.material.needsUpdate = true;
+    }
+    this.thermalNear.value.set(t.nearGlow, t.nearMetres, t.farMetres);
   }
 
   dispose() {

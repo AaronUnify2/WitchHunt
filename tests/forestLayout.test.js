@@ -86,11 +86,9 @@ describe('layoutUndergrowth', () => {
   });
 
   it('keeps sizes and variants in range', () => {
-    for (const b of bushes) {
-      expect(b.height).toBeGreaterThanOrEqual(u.heightMin);
-      expect(b.height).toBeLessThan(u.heightMax);
-      expect(b.variant).toBeGreaterThanOrEqual(0);
-      expect(b.variant).toBeLessThan(u.variants);
-    }
+    // Checked in plain code, then asserted once: four expects on each of
+    // ~190,000 bushes timed out when the whole suite ran in parallel.
+    const bad = bushes.filter((b) => !(b.height >= u.heightMin && b.height < u.heightMax && b.variant >= 0 && b.variant < u.variants));
+    expect(bad).toEqual([]);
   });
 });

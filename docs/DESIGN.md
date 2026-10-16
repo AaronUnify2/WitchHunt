@@ -104,6 +104,10 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 | Service rifle | Long range, good against the witch | Start | 25 per round |
 | Shotgun | Close range, crowd control | Campsite (guaranteed, every run) | 8 pellets × 6 |
 | Pistol | Reliable sidearm | The crashed plane (pilot's pistol) | 10 per round |
+| Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies. Its own rare rounds | An encounter (Session 10b; which one is open) | 50 per round (150 to the head) |
+| Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter (Session 10b; which one is open) | 50 per round |
+| SMG (MP5-style) | Full auto; fires pistol rounds | An encounter (Session 10b; which one is open) | 10 per round |
+| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | An encounter (Session 10b; which one is open) | 8 pellets × 6 |
 | Flare gun | Light; lures zombies | Start | — |
 | Explosive charge | Remote-detonated blast | Mineshaft, military outpost, Car Armory | Config |
 

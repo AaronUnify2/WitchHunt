@@ -17,6 +17,7 @@ Agreed with Aaron before building:
 | 140 | Where does the retro pixel filter live, and how coarse? | 270 lines, switched from the debug menu. It belongs in the Quality settings once there's a settings screen (Session 19). | `config.render.retro.lines`, `Renderer.setRetro()` |
 | 141 | The new Quality levers have no settings screen. | Each preset sets them (mist, mistPuffs, groundTwoSizes, treeTrunks, fireflies, beamDust, lightShafts, torchBeam); the debug menu switches each effect on and off. A player-facing Quality screen is Session 19's. | `config.quality.presets` |
 | 142 | Which encounter gives the hunting rifle, and where do its rounds come from? | Aaron: an encounter (it suits the military outpost or the lookout-style places). Debug menu only for now. Its rounds are rare: a loot entry with `ammo: 'sniper'`. | `config.weapons.sniper`, `Combat.giveWeapon()`, `data/loot.json` |
+| 143 | Which encounters give the pistol's partners: the SMG, the semi-auto rifle with the heat scope and the auto shotgun? (Aaron kept all four.) | Debug menu only. They share rounds: the SMG with the pistol, the semi-auto with the hunting rifle, the auto shotgun with the pump. DESIGN.md's weapons table lists them. | `config.weapons`, `docs/DESIGN.md` "Weapons" |
 
 ## Session 9 (the gate, QA & Balance)
 

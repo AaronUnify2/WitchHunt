@@ -462,14 +462,21 @@ export class Game {
   updateThermal() {
     const w = this.combat.weapons;
     const on = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive;
+    const t = this.cfg.viewModel.thermal;
+    if (on) {
+      // The witch's glow fades up close, like the zombies' (Aaron).
+      const p = this.player.camera.position;
+      const d = Math.hypot(this.witch.x - p.x, this.witch.z - p.z);
+      const k = Math.max(0, Math.min(1, (d - t.nearMetres) / (t.farMetres - t.nearMetres)));
+      this.witch.renderer.setThermal(true, t.witchNearGlow + (1 - t.witchNearGlow) * k * k * (3 - 2 * k));
+    }
     if (on === !!this.thermal) return;
     this.thermal = on;
-    const t = this.cfg.viewModel.thermal;
     this.sky.setThermal(on ? t.world : null);
     this.renderer.postFX.setThermal(on, t.tint);
-    this.combat.zombieRenderer.setThermal(on, t.glow);
-    this.combat.mutantRenderer.setThermal(on, t.glow);
-    this.witch.renderer.setThermal(on);
+    this.combat.zombieRenderer.setThermal(on, t);
+    this.combat.mutantRenderer.setThermal(on, t);
+    if (!on) this.witch.renderer.setThermal(false);
     this.atmosphere.thermal = on;
     const torch = this.flashlight;
     torch.light.visible = torch.on && !on;

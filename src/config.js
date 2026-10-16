@@ -868,9 +868,10 @@ export const config = {
       noise: 100, // loud: every zombie this close hears it
       debugRounds: 10, // the debug menu's "give the hunting rifle" comes with these
     },
-    // Session 10b: guns for Aaron to experiment with (they may not stay in
-    // the game). Debug menu only. `ammo`: the rounds they share with
-    // another gun's pool; `auto`: keeps firing while the trigger is held.
+    // Session 10b: guns Aaron tried and kept. They come from encounters
+    // (not chosen yet, OPEN_QUESTIONS #143); the debug menu gives them until
+    // then. `ammo`: the rounds they share with another gun's pool; `auto`:
+    // keeps firing while the trigger is held.
     pistol: {
       name: 'Pistol',
       kind: 'hitscan',
@@ -1032,14 +1033,20 @@ export const config = {
     // is cold and dark grey, day or night, and the living glow white.
     thermal: {
       world: { sky: 0x3a3e3e, fog: 0x343838, ambient: 2.2, light: 1 }, // flat, even light: no torch, no moon
-      glow: 1.6, // emissive white on zombies and mutants (the witch goes plain white)
+      glow: 1.6, // emissive white on zombies and mutants at range (the witch goes plain white)
+      // Aaron: up close (within about 30 m) they glowed too bright. The glow
+      // falls to nearGlow of full at nearMetres, full from farMetres out.
+      nearGlow: 0.6, // still white-hot, with far less bloom
+      witchNearGlow: 0.8, // she's plain white with no light on her, so she needs more to read as hot
+      nearMetres: 4,
+      farMetres: 30,
       tint: 0xe8f4ea, // a faint cold green-white over the whole view
     },
     // Session 10b: where guns other than the long guns sit (the pistol is held
     // closer and lower; the SMG a touch closer).
     offsets: {
       pistol: { hip: { x: 0.17, y: -0.2, z: -0.38 }, aim: { x: 0, y: -0.075, z: -0.32 } },
-      smg: { hip: { x: 0.19, y: -0.225, z: -0.42 }, aim: { x: 0, y: -0.085, z: -0.32 } },
+      smg: { hip: { x: 0.19, y: -0.225, z: -0.42 }, aim: { x: 0, y: -0.098, z: -0.34 } },
     },
   },
 
