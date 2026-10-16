@@ -582,9 +582,9 @@ export class Station {
     return 'Turret installed. Hold X at it to load ammo and set its fire mode';
   }
 
+  // id: an ammo type. Rounds in the guns' pool, or in the pack (no gun for them yet).
   ammoCount(id) {
-    const w = this.combat.weapons.states[id];
-    return w ? w.reserve : this.combat.inventory.ammo[id] ?? 0;
+    return this.combat.weapons.ammoRounds(id) ?? this.combat.inventory.ammo[id] ?? 0;
   }
 
   loadTurret(id, rounds) {
@@ -592,9 +592,7 @@ export class Station {
     const have = this.ammoCount(id);
     const n = Math.min(have, rounds);
     if (n <= 0) return this.denied(`No ${AMMO_NAMES[id]} to load`);
-    const w = this.combat.weapons.states[id];
-    if (w) w.reserve -= n;
-    else this.combat.inventory.ammo[id] -= n;
+    if (!this.combat.weapons.addAmmo(id, -n)) this.combat.inventory.ammo[id] -= n;
     const gained = this.state.loadTurret(n, ammoDamage(id, this.cfg.weapons, this.sc.turret));
     this.combat.sfx.play('loaded');
     return `Loaded ${n} ${AMMO_NAMES[id]}: +${gained.toFixed(1)} turret rounds (${Math.floor(this.state.turret.rounds)})`;

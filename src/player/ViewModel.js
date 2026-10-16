@@ -174,6 +174,10 @@ export class ViewModel {
       rifle: this.buildRifle(),
       shotgun: this.buildShotgun(),
       sniper: this.buildSniper(),
+      pistol: this.buildPistol(),
+      smg: this.buildSmg(),
+      thermal: this.buildThermalRifle(),
+      autoShotgun: this.buildAutoShotgun(),
       shovel: this.buildShovel(),
       detonator: this.buildDetonator(),
     };
@@ -308,6 +312,80 @@ export class ViewModel {
     return { group, muzzle: new THREE.Vector3(0, 0.006, f(1.02)) };
   }
 
+  // ---- Session 10b: guns for Aaron to experiment with (simple models) ----
+
+  // A service pistol: slide, frame, grip, trigger guard. Muzzle at z = -0.19.
+  buildPistol() {
+    const group = new THREE.Group();
+    this.mesh([
+      [box(0.03, 0.03, 0.19, BLUED), 0, 0.012, -0.095], // slide
+      [box(0.006, 0.006, 0.012, DARK_STEEL), 0, 0.03, -0.18], // front sight
+      [box(0.018, 0.008, 0.01, DARK_STEEL), 0, 0.03, -0.005], // rear sight
+      [box(0.028, 0.018, 0.15, DARK_STEEL), 0, -0.01, -0.09], // frame
+      [shade(new THREE.BoxGeometry(0.03, 0.1, 0.045).rotateX(0.25), RUBBER), 0, -0.06, 0.0], // grip
+      [box(0.01, 0.004, 0.04, DARK_STEEL), 0, -0.032, -0.06], // trigger guard
+      [box(0.004, 0.016, 0.004, DARK_STEEL), 0, -0.024, -0.05], // trigger
+    ], group);
+    return { group, muzzle: new THREE.Vector3(0, 0.012, -0.2) };
+  }
+
+  // An MP5-style SMG: receiver, curved magazine, handguard, stock, drum sights.
+  buildSmg() {
+    const group = new THREE.Group();
+    this.mesh([
+      [rod(0.02, 0.3, DARK_STEEL, 10), 0, 0.01, -0.12], // receiver tube
+      [box(0.034, 0.044, 0.12, 0x2a2c30), 0, -0.012, -0.32], // handguard
+      [rod(0.008, 0.06, STEEL), 0, 0.01, -0.3], // barrel stub
+      [shade(new THREE.BoxGeometry(0.02, 0.12, 0.03).rotateX(0.25), DARK_STEEL), 0, -0.07, -0.16], // curved magazine (leaning forward)
+      [shade(new THREE.BoxGeometry(0.03, 0.09, 0.04).rotateX(0.3), RUBBER), 0, -0.06, 0.02], // pistol grip
+      [box(0.01, 0.004, 0.05, DARK_STEEL), 0, -0.035, -0.04], // trigger guard
+      [box(0.03, 0.03, 0.02, DARK_STEEL), 0, 0.04, 0.0], // rear drum sight
+      [box(0.006, 0.03, 0.012, DARK_STEEL), 0, 0.035, -0.26], // front sight post
+      [box(0.012, 0.012, 0.16, DARK_STEEL), 0, 0.0, 0.12], // stock arm
+      [box(0.03, 0.07, 0.012, RUBBER), 0, -0.02, 0.2], // butt plate
+    ], group);
+    return { group, muzzle: new THREE.Vector3(0, 0.01, -0.34) };
+  }
+
+  // The semi-auto hunting rifle: black synthetic stock, box magazine, a
+  // squat heat scope. Butt at z = 0.25.
+  buildThermalRifle() {
+    const group = new THREE.Group();
+    const butt = 0.25;
+    const f = (forward) => butt - forward;
+    const scopeY = 0.065;
+    this.mesh([
+      [profile([[0, -0.1], [0, 0.026], [0.16, 0.02], [0.2, 0.006], [0.6, 0.004], [0.64, -0.01], [0.62, -0.034], [0.42, -0.04], [0.235, -0.042], [0.222, -0.09], [0.195, -0.092], [0.185, -0.05], [0.15, -0.055]], 0.042, 0x26282a), 0, -0.02, butt], // synthetic stock
+      [rod(0.018, 0.22, BLUED, 12), 0, 0.006, f(0.33)], // receiver
+      [rod(0.011, 0.48, STEEL, 12, 0.01), 0, 0.006, f(0.68)], // barrel
+      [box(0.026, 0.07, 0.06, DARK_STEEL), 0, -0.07, f(0.33)], // box magazine
+      [box(0.05, 0.05, 0.17, 0x303436), 0, scopeY, f(0.36)], // heat scope body (boxy)
+      [rod(0.022, 0.03, DARK_STEEL, 14), 0, scopeY, f(0.47)], // its lens housing
+      [rod(0.016, 0.03, RUBBER, 12), 0, scopeY, f(0.26)], // eyecup
+      [box(0.02, 0.02, 0.03, DARK_STEEL), 0.032, scopeY, f(0.36)], // battery cap
+      [box(0.03, 0.03, 0.12, BLUED), 0, 0.035, f(0.36)], // mount
+      [box(0.004, 0.026, 0.004, DARK_STEEL), 0, -0.052, f(0.255)], // trigger
+      [box(0.012, 0.004, 0.06, DARK_STEEL), 0, -0.072, f(0.255)], // trigger guard
+    ], group);
+    return { group, muzzle: new THREE.Vector3(0, 0.006, f(0.93)) };
+  }
+
+  // An AA-12-style auto shotgun: a long boxy receiver, a drum, a shrouded barrel.
+  buildAutoShotgun() {
+    const group = new THREE.Group();
+    this.mesh([
+      [box(0.06, 0.08, 0.5, 0x2a2c2e), 0, 0.0, -0.13], // receiver (boxy, full length)
+      [box(0.04, 0.03, 0.4, DARK_STEEL), 0, 0.055, -0.12], // carry rail
+      [rod(0.016, 0.2, STEEL, 10), 0, 0.01, -0.46], // barrel
+      [rod(0.026, 0.16, DARK_STEEL, 10), 0, 0.01, -0.44], // perforated shroud (as a sleeve)
+      [shade(new THREE.CylinderGeometry(0.07, 0.07, 0.05, 16).rotateZ(Math.PI / 2), 0x34383a), 0, -0.1, -0.18], // drum magazine
+      [shade(new THREE.BoxGeometry(0.035, 0.1, 0.045).rotateX(0.3), RUBBER), 0, -0.08, 0.02], // pistol grip
+      [box(0.012, 0.004, 0.06, DARK_STEEL), 0, -0.05, -0.03], // trigger guard
+      [box(0.045, 0.1, 0.03, RUBBER), 0, -0.02, 0.15], // butt
+    ], group);
+    return { group, muzzle: new THREE.Vector3(0, 0.01, -0.57) };
+  }
+
   buildShovel() {
     const group = new THREE.Group();
     this.mesh([
@@ -371,12 +449,14 @@ export class ViewModel {
     // Session 10b: looking through a scope, the scope view replaces the gun.
     g.visible = weapons.scoped < c.scopeHideAt;
     const melee = weapons.weapon.kind === 'melee';
-    const hip = melee ? c.shovelHip : c.hip;
+    const offset = c.offsets?.[id];
+    const hip = melee ? c.shovelHip : offset?.hip ?? c.hip;
+    const aim = offset?.aim ?? c.aim;
     const z = weapons.zoom;
     const base = {
-      x: hip.x + (c.aim.x - hip.x) * z,
-      y: hip.y + (c.aim.y - hip.y) * z,
-      z: hip.z + (c.aim.z - hip.z) * z,
+      x: hip.x + (aim.x - hip.x) * z,
+      y: hip.y + (aim.y - hip.y) * z,
+      z: hip.z + (aim.z - hip.z) * z,
     };
 
     // Walk sway, paced like footsteps, damped while aiming.

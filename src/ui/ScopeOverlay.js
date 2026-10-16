@@ -13,8 +13,13 @@ export class ScopeOverlay {
     this.shown = -1;
   }
 
-  // amount: 0..1, how far into the scope view.
-  update(amount) {
+  // amount: 0..1, how far into the scope view. thermal: the heat scope's
+  // look (a pale reticle that reads on its dark view, no red dot).
+  update(amount, thermal = false) {
+    if (thermal !== this.thermal) {
+      this.thermal = thermal;
+      this.el.classList.toggle('scope-thermal', thermal);
+    }
     const a = Math.max(0, Math.min(1, (amount - 0.6) / 0.35));
     const rounded = Math.round(a * 50) / 50;
     if (rounded === this.shown) return;

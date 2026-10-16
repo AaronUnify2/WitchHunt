@@ -868,6 +868,119 @@ export const config = {
       noise: 100, // loud: every zombie this close hears it
       debugRounds: 10, // the debug menu's "give the hunting rifle" comes with these
     },
+    // Session 10b: guns for Aaron to experiment with (they may not stay in
+    // the game). Debug menu only. `ammo`: the rounds they share with
+    // another gun's pool; `auto`: keeps firing while the trigger is held.
+    pistol: {
+      name: 'Pistol',
+      kind: 'hitscan',
+      damage: 10, // DESIGN.md: 10 per round
+      pellets: 1,
+      spreadDegrees: 2.5,
+      aimSpreadDegrees: 0.8,
+      range: 60,
+      pierce: 1,
+      falloffStart: 25,
+      falloffEnd: 60,
+      falloffMin: 0.7,
+      fireInterval: 0.18, // as fast as you pull
+      magSize: 12,
+      startReserve: 0,
+      reloadSeconds: 1.4,
+      reloadStyle: 'magazine',
+      stagger: 0.2,
+      knockback: 0.15,
+      recoilDegrees: 1.6,
+      aimFovMultiplier: 0.8,
+      shake: 0.08,
+      noise: 40,
+      debugRounds: 36,
+    },
+    smg: {
+      name: 'SMG',
+      kind: 'hitscan',
+      ammo: 'pistol', // shares the pistol's rounds
+      auto: true,
+      damage: 10,
+      pellets: 1,
+      spreadDegrees: 3,
+      aimSpreadDegrees: 1.2,
+      range: 70,
+      pierce: 1,
+      falloffStart: 30,
+      falloffEnd: 70,
+      falloffMin: 0.6,
+      fireInterval: 0.08, // 750 rounds a minute
+      magSize: 30,
+      startReserve: 0,
+      reloadSeconds: 2.2,
+      reloadStyle: 'magazine',
+      stagger: 0.12,
+      knockback: 0.08,
+      recoilDegrees: 0.7,
+      aimFovMultiplier: 0.75,
+      shake: 0.05,
+      noise: 50,
+      debugRounds: 90,
+    },
+    thermal: {
+      name: 'Semi-auto rifle (heat scope)',
+      kind: 'hitscan',
+      ammo: 'sniper', // the hunting rifle's rare rounds
+      damage: 50, // like the hunting rifle: it kills with a headshot
+      pellets: 1,
+      spreadDegrees: 3.5,
+      aimSpreadDegrees: 0.3,
+      range: 220,
+      pierce: 6,
+      pierceKeep: 0.9,
+      falloffStart: 220,
+      falloffEnd: 220,
+      falloffMin: 1,
+      fireInterval: 0.3, // semi-automatic
+      magSize: 10,
+      startReserve: 0,
+      reloadSeconds: 2.6,
+      reloadStyle: 'magazine',
+      stagger: 0.4,
+      knockback: 0.5,
+      recoilDegrees: 3,
+      aimFovMultiplier: 0.33, // a 3x scope
+      scope: true,
+      thermal: true, // the scope sees heat: the living glow white, the world goes dark
+      scopeLookScale: 0.4,
+      shake: 0.25,
+      noise: 100,
+      debugRounds: 20,
+    },
+    autoShotgun: {
+      name: 'Auto shotgun',
+      kind: 'hitscan',
+      ammo: 'shotgun', // shares the pump shotgun's shells
+      auto: true,
+      damage: 6,
+      pellets: 8,
+      spreadDegrees: 7,
+      aimSpreadDegrees: 5,
+      range: 40,
+      pierce: 2,
+      pierceKeep: 0.5,
+      falloffStart: 8,
+      falloffEnd: 25,
+      falloffMin: 0.3,
+      fireInterval: 0.2, // 300 rounds a minute
+      magSize: 20, // a drum
+      startReserve: 0,
+      reloadSeconds: 3.2,
+      reloadStyle: 'magazine',
+      stagger: 0.4,
+      knockback: 0.6,
+      recoilDegrees: 3.5,
+      aimFovMultiplier: 0.85,
+      shake: 0.3,
+      noise: 60,
+      debugRounds: 40,
+    },
   },
 
   // Aiming down sights (LT)
@@ -915,6 +1028,19 @@ export const config = {
     muzzleFlashSeconds: 0.05,
     muzzleFlashColor: 0xffd890,
     scopeHideAt: 0.8, // Session 10b: the scope view replaces the gun once the zoom is this far in
+    // Session 10b: the heat scope (the semi-auto rifle). Through it the world
+    // is cold and dark grey, day or night, and the living glow white.
+    thermal: {
+      world: { sky: 0x3a3e3e, fog: 0x343838, ambient: 2.2, light: 1 }, // flat, even light: no torch, no moon
+      glow: 1.6, // emissive white on zombies and mutants (the witch goes plain white)
+      tint: 0xe8f4ea, // a faint cold green-white over the whole view
+    },
+    // Session 10b: where guns other than the long guns sit (the pistol is held
+    // closer and lower; the SMG a touch closer).
+    offsets: {
+      pistol: { hip: { x: 0.17, y: -0.2, z: -0.38 }, aim: { x: 0, y: -0.075, z: -0.32 } },
+      smg: { hip: { x: 0.19, y: -0.225, z: -0.42 }, aim: { x: 0, y: -0.085, z: -0.32 } },
+    },
   },
 
   // First aid kits (DESIGN.md "Healing"): kept in the inventory, used with
@@ -1935,6 +2061,10 @@ export const config = {
       weaponSlot2: ['Digit2'],
       weaponSlot3: ['Digit3'],
       weaponSlot4: ['Digit4'],
+      weaponSlot5: ['Digit5'], // Session 10b: more guns
+      weaponSlot6: ['Digit6'],
+      weaponSlot7: ['Digit7'],
+      weaponSlot8: ['Digit8'],
       firstAid: ['KeyH'],
       flare: ['KeyF'],
       map: ['KeyM'],

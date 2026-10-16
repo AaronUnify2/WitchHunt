@@ -28,6 +28,8 @@ const GradeShader = {
     uHighlights: { value: new THREE.Color(1, 1, 1) },
     uSplit: { value: 0 },
     uLift: { value: 0 },
+    uThermal: { value: 0 },
+    uThermalTint: { value: new THREE.Color(1, 1, 1) },
     uVignette: { value: 0 },
     uVignetteStart: { value: 0 },
     uGrain: { value: 0 },
@@ -48,6 +50,8 @@ const GradeShader = {
     uniform vec3 uHighlights;
     uniform float uSplit;
     uniform float uLift;
+    uniform float uThermal;
+    uniform vec3 uThermalTint;
     uniform float uVignette;
     uniform float uVignetteStart;
     uniform float uGrain;
@@ -72,6 +76,14 @@ const GradeShader = {
       col = (col - 0.5) * uContrast + 0.5;
       // Faded blacks, tinted like the shadows.
       col = col * (1.0 - uLift) + uShadows * uLift;
+      // Session 10b: the heat scope's white-hot view: the cold world dim
+      // grey, anything glowing (the living) pushed to white.
+      if (uThermal > 0.0) {
+        float l = dot(src.rgb, LUMA);
+        float hot = smoothstep(0.55, 0.9, l);
+        float v = mix(pow(l, 0.8) * 0.6, 1.0, hot);
+        col = mix(col, vec3(v) * uThermalTint, uThermal);
+      }
       // 0 at the centre, 1 in the corners.
       float edge = length(vUv - 0.5) * 1.41421356;
       col *= 1.0 - uVignette * smoothstep(uVignetteStart, 1.0, edge);
@@ -131,6 +143,12 @@ export class PostFX {
     u.uContrast.value = n.contrast;
     u.uSplit.value = n.split;
     u.uLift.value = n.lift;
+  }
+
+  // Session 10b: the heat scope's view on (tint: its colour) or off.
+  setThermal(on, tint = 0xffffff) {
+    this.grade.uniforms.uThermal.value = on ? 1 : 0;
+    this.grade.uniforms.uThermalTint.value.setHex(tint);
   }
 
   setCamera(camera) {

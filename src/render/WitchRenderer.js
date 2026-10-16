@@ -573,6 +573,12 @@ export class WitchRenderer {
     this.innerRing.scale.setScalar(0.6 + w.plantProgress * 1.4);
   }
 
+  // Session 10b: through the heat scope she glows white-hot (her shadow
+  // goes white; she's unlit, so plain white is as bright as it gets).
+  setThermal(on) {
+    this.material.color.set(on ? 0xffffff : this.cfg.shadow);
+  }
+
   dispose() {
     this.root.removeFromParent();
     this.ritual.removeFromParent();

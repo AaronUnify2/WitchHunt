@@ -142,6 +142,11 @@ export class MutantRenderer {
     if (spots > 0) this.spots.instanceMatrix.needsUpdate = true;
   }
 
+  // Session 10b: through the heat scope it glows white-hot.
+  setThermal(on, glow) {
+    this.material.emissive.setScalar(on ? glow : 0);
+  }
+
   dispose() {
     this.mesh.geometry.dispose();
     this.mesh.removeFromParent();

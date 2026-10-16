@@ -22,7 +22,7 @@ import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, part
 const PART_RANK = { body: 0, head: 1, weak: 2 };
 
 const DEG_TO_RAD = Math.PI / 180;
-const SLOT_ACTIONS = ['weaponSlot1', 'weaponSlot2', 'weaponSlot3', 'weaponSlot4'];
+const SLOT_ACTIONS = ['weaponSlot1', 'weaponSlot2', 'weaponSlot3', 'weaponSlot4', 'weaponSlot5', 'weaponSlot6', 'weaponSlot7', 'weaponSlot8'];
 const MISS_CHECK_DISTANCE = 40; // metres: how far a missed shot looks for a tree or the ground to puff
 
 export class Weapons {
@@ -59,11 +59,8 @@ export class Weapons {
   reset() {
     this.order = [...this.cfg.startingLoadout];
     this.states = {};
-    for (const id of this.order) {
-      const state = new WeaponState(this.cfg[id]);
-      state.init();
-      this.states[id] = state;
-    }
+    this.pools = {}; // Session 10b: reserve rounds by ammo type, shared by the guns that fire them
+    for (const id of this.order) this.addState(id);
     this.index = Math.max(0, this.order.indexOf(this.cfg.startingWeapon));
     this.switchTimer = 0;
     this.aiming = false;
@@ -161,7 +158,8 @@ export class Weapons {
     }
     const w = this.weapon;
     const s = this.state;
-    const wants = w.kind === 'melee' ? input.isDown('attack') : input.wasPressed('attack');
+    // Session 10b: automatic guns keep firing while the trigger is held.
+    const wants = w.kind === 'melee' || w.auto ? input.isDown('attack') : input.wasPressed('attack');
     if (!wants) return;
     // M7: the detonator only signals (combat/Explosives.js sets the charges off).
     if (w.kind === 'remote') {
@@ -282,6 +280,42 @@ export class Weapons {
     this.player.lookScale = aimSlowdown(this.eye, this.forward, targets, this.aiming ? this.assistCfgAiming : this.assistCfg, n);
   }
 
+  // Which rounds a gun fires (its config's `ammo`, else its own id).
+  ammoType(id) {
+    return this.cfg[id].ammo ?? id;
+  }
+
+  // A weapon's state, drawing on its ammo type's pool (made the first
+  // time, holding that gun's starting reserve).
+  addState(id) {
+    if (!(this.cfg[id].magSize > 0)) {
+      // No rounds (the shovel, the detonator): no pool.
+      const state = new WeaponState(this.cfg[id]);
+      state.init();
+      this.states[id] = state;
+      return state;
+    }
+    const type = this.ammoType(id);
+    const fresh = !this.pools[type];
+    if (fresh) this.pools[type] = { rounds: 0 };
+    const state = new WeaponState(this.cfg[id], this.pools[type]);
+    state.init(this.cfg[id].magSize, fresh ? this.cfg[id].startReserve ?? 0 : null);
+    this.states[id] = state;
+    return state;
+  }
+
+  // Rounds of an ammo type in reserve (null if no gun here fires them).
+  ammoRounds(type) {
+    return this.pools[type] ? this.pools[type].rounds : null;
+  }
+
+  // Add rounds to a pool; false if no gun here fires them.
+  addAmmo(type, rounds) {
+    if (!this.pools[type]) return false;
+    this.pools[type].rounds += rounds;
+    return true;
+  }
+
   // M7: add or take away a weapon slot (the detonator, while charges are
   // out or in hand). Taking away the one in hand switches back to the
   // starting weapon.
@@ -291,9 +325,7 @@ export class Weapons {
     const current = this.id;
     if (present) {
       this.order.push(id);
-      const state = new WeaponState(this.cfg[id]);
-      state.init();
-      this.states[id] = state;
+      this.addState(id);
       return;
     }
     this.order = this.order.filter((x) => x !== id);
@@ -333,8 +365,9 @@ export class Weapons {
     return this.enemies.damage(target, amount, part, weapon, at, from);
   }
 
+  // Debug: rounds into every pool (each shared pool once).
   giveAmmo(rounds) {
-    for (const id of this.order) if (this.states[id].usesAmmo) this.states[id].addAmmo(rounds);
+    for (const pool of Object.values(this.pools)) pool.rounds += rounds;
   }
 
   dispose() {}

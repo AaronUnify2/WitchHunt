@@ -193,9 +193,10 @@ export class Combat {
   giveWeapon(id, rounds = 0) {
     const w = this.weapons;
     w.setSlot(id, true);
-    const stored = this.inventory.ammo[id] ?? 0;
-    if (stored > 0) delete this.inventory.ammo[id];
-    w.states[id].addAmmo(rounds + stored);
+    const type = w.ammoType(id);
+    const stored = this.inventory.ammo[type] ?? 0;
+    if (stored > 0) delete this.inventory.ammo[type];
+    w.addAmmo(type, rounds + stored);
     w.select(w.order.indexOf(id));
   }
 
@@ -238,9 +239,8 @@ export class Combat {
       if (this.inventory.firstAidFull) return false;
       this.inventory.addFirstAid(amount);
     } else if (def.ammo) {
-      const state = this.weapons.states[def.ammo];
-      if (state) state.addAmmo(amount);
-      else this.inventory.addAmmo(def.ammo, amount);
+      // Into the pool of the guns that fire it, or the pack until you have one.
+      if (!this.weapons.addAmmo(def.ammo, amount)) this.inventory.addAmmo(def.ammo, amount);
     } else if (def.inventory === 'scrap') {
       this.inventory.addScrap(amount);
     } else {
@@ -292,7 +292,7 @@ export class Combat {
     this.mutantRenderer.update(this.enemies.pool, dt);
     this.pickupRenderer.update(dt, this.pickups.pool);
     this.viewModel.update(dt, this.weapons, player);
-    this.scope.update(this.alive ? this.weapons.scoped : 0);
+    this.scope.update(this.alive ? this.weapons.scoped : 0, !!this.weapons.weapon.thermal);
     this.fx.update(dt);
     this.sfx.setListener(player.position.x, player.position.z, player.yaw);
     this.hud.update(dt, {
@@ -368,6 +368,11 @@ export class Combat {
     player.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
     // Session 10b: the hunting rifle comes from an encounter later (Aaron).
     player.addItem(`Give the hunting rifle (+${this.cfg.weapons.sniper.debugRounds} rounds)`, () => this.giveWeapon('sniper', this.cfg.weapons.sniper.debugRounds));
+    // Session 10b: guns for Aaron to experiment with.
+    for (const id of ['pistol', 'smg', 'thermal', 'autoShotgun']) {
+      const w = this.cfg.weapons[id];
+      player.addItem(`Give the ${w.name.toLowerCase()} (+${w.debugRounds} rounds)`, () => this.giveWeapon(id, w.debugRounds));
+    }
     player.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
     player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => this.inventory.addFirstAid(d.giveFirstAid));
     player.addItem('Hurt me (-25)', () => {

@@ -184,6 +184,26 @@ export class Sky {
     }
   }
 
+  // Session 10b: the heat scope. thermal: config.thermal.world (or null to stop).
+  setThermal(thermal) {
+    this.thermal = thermal;
+  }
+
+  // Through the heat scope the world is cold: a flat dark-grey sky, fog and
+  // light, day or night, so only the living glow.
+  applyThermal() {
+    const t = this.thermal;
+    this.domeUniforms.uTop.value.setHex(t.sky);
+    this.domeUniforms.uHorizon.value.setHex(t.sky);
+    this.fog.color.setHex(t.fog);
+    this.ambient.color.setHex(0xffffff);
+    this.ambient.intensity = t.ambient;
+    this.light.color.setHex(0xffffff);
+    this.light.intensity = t.light;
+    this.stars.visible = false;
+    this.moon.visible = false;
+  }
+
   // Session 10: a fog night. amount 0..1 (it rolls in and lifts).
   setFogNight(amount) {
     this.fogNight = Math.max(0, Math.min(1, amount));
@@ -229,6 +249,7 @@ export class Sky {
     this.stars.visible = stars > 0;
     this.moon.material.opacity = stars;
     this.moon.visible = stars > 0;
+    if (this.thermal) this.applyThermal();
 
     // Sunlight by day, moonlight by night.
     sunDirection(hour, this.cfg, this.sunDir);

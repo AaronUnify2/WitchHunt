@@ -456,6 +456,26 @@ export class Game {
     this.setFrameCap(q.frameCap);
   }
 
+  // Session 10b: looking through the heat scope (the semi-auto rifle) turns
+  // the world cold and the living white-hot. Switched as the scope view
+  // takes over from the gun, and back as you lower it.
+  updateThermal() {
+    const w = this.combat.weapons;
+    const on = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive;
+    if (on === !!this.thermal) return;
+    this.thermal = on;
+    const t = this.cfg.viewModel.thermal;
+    this.sky.setThermal(on ? t.world : null);
+    this.renderer.postFX.setThermal(on, t.tint);
+    this.combat.zombieRenderer.setThermal(on, t.glow);
+    this.combat.mutantRenderer.setThermal(on, t.glow);
+    this.witch.renderer.setThermal(on);
+    this.atmosphere.thermal = on;
+    const torch = this.flashlight;
+    torch.light.visible = torch.on && !on;
+    torch.spill.visible = torch.on && !on;
+  }
+
   // How far everything is drawn: the preset's distance, or less while a
   // fog night is in (Session 10). Visual only.
   setViewDistance(distance) {
@@ -688,6 +708,7 @@ export class Game {
     this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
     this.atmosphere.preUpdate(this.clock, this.sky);
     this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
+    this.updateThermal();
     this.atmosphere.setViewport(this.renderer.canvas.height, this.player.camera.fov);
     this.atmosphere.update(dt, this.player.camera, this.sky, this.flashlight);
     this.renderer.postFX.setTime(this.clock.hourOfDay, this.sky.blood); // Session 10: the colour grade

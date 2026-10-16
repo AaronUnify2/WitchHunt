@@ -107,6 +107,12 @@ export class Atmosphere {
   // After sky.update() (the mist's colour and strength are fresh).
   // flashlight: the player's Flashlight.
   update(dt, camera, sky, flashlight) {
+    // Session 10b: through the heat scope there's no mist, no particles, no beams.
+    if (this.thermal) {
+      atmosphereUniforms.uMistShape.value.x = 0;
+      for (const fx of [this.mist.mesh, this.fireflies.points, this.dust.points, this.shafts.mesh, this.beam.mesh]) fx.visible = false;
+      return;
+    }
     const m = this.cfg.mist;
     const n = this.cfg.nights;
     this.drift.x += m.drift.x * dt;

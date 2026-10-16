@@ -32,6 +32,29 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 10b: guns to experiment with (Aaron)
+
+Aaron: "these may not go into the final game, no need to stress on the aesthetic". **Debug menu only** (Player → "Give the …"), with simple models.
+
+| Gun | Ammo | How it handles |
+|---|---|---|
+| **Pistol** (`weapons.pistol`) | Pistol rounds | Semi-auto, 12 rounds, 10 damage (DESIGN.md's pistol), 1.4 s reload, held closer and lower |
+| **SMG** (`weapons.smg`, MP5-style) | Pistol rounds, shared with the pistol | **Full auto**, 750 rounds a minute, 30 rounds, 10 damage |
+| **Semi-auto rifle, heat scope** (`weapons.thermal`) | The hunting rifle's rare rounds, shared | 10-round magazine, as fast as you pull (0.3 s). 50 damage, so it also kills by headshot. Goes through 6 zombies at 90%. A 3× **heat scope** |
+| **Auto shotgun** (`weapons.autoShotgun`, AA-12-style) | Shotgun shells, shared with the pump | **Full auto**, 300 rounds a minute, a 20-round drum, 3.2 s reload |
+
+- **Shared ammo pools** (`WeaponState.pool`, `Weapons.addState/ammoType/ammoRounds/addAmmo`):
+  - Guns firing the same rounds draw on one reserve. A gun's config names its rounds with `ammo`; otherwise they're its own.
+  - Pickups go into the pool, or into the pack until you own a gun that fires them. A gun given later takes the rounds in the pack.
+  - The turret's loading and the debug "give ammo" (each pool once) use the pools too. Tests: `tests/ammoPools.test.js`.
+- **Full auto:** `auto: true` keeps firing while the trigger is held.
+- **Number keys 5–8** select the extra guns. RB/LB still cycle through all of them.
+- **The heat scope** (`viewModel.thermal`, `Game.updateThermal()`): as the scope view takes over, the world goes cold, day or night.
+  - **The cold world:** a flat grey sky, fog and light, with the torch, mist, fireflies, dust, shafts and beam all hidden. The grade becomes white-hot greyscale with a faint cold green-white tint.
+  - **What glows:** zombies (a heat uniform in their sprite shader), mutants (emissive) and the witch (her shadow turns white) glow white, and the bloom catches them.
+  - **The reticle** is pale, so it reads on the dark view, with no red dot. Lowering the scope switches it all back.
+  - Checked headless: the witch at 20 m glows white against the grey forest.
+
 ### Session 10b step 2: the hunting rifle (a sniper rifle, Aaron)
 
 - **The gun** (`config.weapons.sniper`): a scoped bolt-action hunting rifle with its own rare rounds. **It kills with a headshot** (Aaron):

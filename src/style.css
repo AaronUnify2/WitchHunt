@@ -937,3 +937,10 @@ body {
   background: rgba(255, 50, 30, 0.85);
   box-shadow: 0 0 4px rgba(255, 40, 20, 0.6);
 }
+.scope-thermal .scope-line,
+.scope-thermal .scope-post {
+  background: rgba(220, 240, 220, 0.75);
+}
+.scope-thermal .scope-dot {
+  display: none;
+}

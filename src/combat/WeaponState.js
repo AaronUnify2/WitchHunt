@@ -5,15 +5,29 @@
 // Reload styles: 'magazine' refills in one go after reloadSeconds;
 // 'single' loads one round every reloadSeconds and can be cut short by
 // firing (shotgun shells).
+//
+// Session 10b: the reserve lives in an ammo pool, { rounds }, which guns
+// firing the same rounds share (the pistol and the SMG, the two hunting
+// rifles, the two shotguns). Without one passed in, the gun has its own.
 
 export class WeaponState {
-  constructor(weaponConfig) {
+  constructor(weaponConfig, pool = { rounds: 0 }) {
     this.cfg = weaponConfig;
+    this.pool = pool;
   }
 
+  get reserve() {
+    return this.pool.rounds;
+  }
+
+  set reserve(rounds) {
+    this.pool.rounds = rounds;
+  }
+
+  // reserve null: leave the (possibly shared) pool as it is.
   init(mag = this.cfg.magSize, reserve = this.cfg.startReserve ?? 0) {
     this.mag = mag;
-    this.reserve = reserve;
+    if (reserve !== null) this.reserve = reserve;
     this.cooldown = 0;
     this.reloadTimer = 0;
     this.reloading = false;
