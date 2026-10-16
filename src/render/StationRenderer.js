@@ -179,10 +179,10 @@ export class StationRenderer {
     }
     parts.push(this.box(t.half * 2 + 0.6, 0.15, t.half * 2 + 0.6, t.x, top + 2.6, t.z, k.roof));
     const lad = L.tower.ladder;
-    for (const sx of [-0.25, 0.25]) parts.push(this.beam(lad.x + sx, gy, lad.z, lad.x + sx, top, t.z + t.half, 0.07, k.tower));
+    for (const sx of [-0.25, 0.25]) parts.push(this.beam(lad.x + sx, gy, lad.z, lad.x + sx, top, t.z + t.half, 0.07, k.towerLadder));
     for (let y = gy + 0.4; y < top; y += 0.4) {
       const f = (y - gy) / (top - gy);
-      parts.push(this.box(0.5, 0.05, 0.05, lad.x, y, lad.z + (t.z + t.half - lad.z) * f, k.tower));
+      parts.push(this.box(0.5, 0.05, 0.05, lad.x, y, lad.z + (t.z + t.half - lad.z) * f, k.towerLadder));
     }
     // Fence posts and rails (the panels themselves are instanced).
     const H2 = this.cfg.layout.fenceHeight;

@@ -1035,7 +1035,7 @@ export const config = {
       // Aaron: at rest it looked held out in front. Now it's carried upright,
       // the handle near vertical and the blade up by your shoulder; swings
       // start and end here.
-      rest: { yaw: -0.15, pitch: 0.95, roll: -0.25, x: 0.02, y: -0.06 },
+      rest: { yaw: -0.15, pitch: 0.95, roll: -0.25, x: 0.02, y: -0.27 }, // Aaron: blade at or just below the centre of the view
       windup: 0.14,
       strike: 0.42,
       start: { yaw: -0.75, pitch: 0.55, roll: -0.6, x: 0.06, y: 0.06 }, // raised, blade out to the right
@@ -1813,6 +1813,7 @@ export const config = {
       tower: 0x2a2018,
       towerDark: 0x221a14,
       towerPlank: 0x2c2219,
+      towerLadder: 0x1e1712, // Aaron: the ladder still glared at the tower's colour
       woodDark: 0x2e2118,
       roof: 0x24382a, // Forest Service green
       trim: 0x5e4a36,

@@ -206,6 +206,15 @@ export class Station {
     for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
       grid.insert({ x: tw.x + dx * h, z: tw.z + dz * h, r: 0.08, base: towerTop, top: towerTop + 2.6, noBody: true, glareOnly: true });
     }
+    // And the ladder (Aaron: it still glared): a thin slab over its rails and
+    // rungs, which lean from the ladder spot in to the platform's edge.
+    const lad = this.layout.tower.ladder;
+    const ladZ = (lad.z + tw.z + h) / 2;
+    const ladder = segmentCollider(lad.x - 0.3, ladZ, lad.x + 0.3, ladZ, (lad.z - tw.z - h) / 2 + 0.05, g.heightAt(lad.x, lad.z) - 0.1, towerTop, false);
+    ladder.glare = true;
+    ladder.glareOnly = true;
+    ladder.noBody = true;
+    grid.insert(ladder);
     const box = this.layout.fenceBox;
     solid(box.x, box.z, 0.35, 1.3);
     for (const f of c.family) grid.insert({ x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7 });
