@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 10 (Graphics Engineer), **style pass 1: the slice looks good.** Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Session 11, Narrative Designer: M8.**
+Last updated: Session 10b (Graphics Engineer), **style pass 1 plus a second pass Aaron asked for (guns, sniper rifle, zombies, cars, hut, station interior, family): in progress.** Session 10: Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Session 11, Narrative Designer: M8.**
 
 Session 8 (AI Programmer) built M7, the witch, the vertical slice, in six steps:
 1. The witch roams and plants.
@@ -31,6 +31,17 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 10b step 1: the guns (Graphics Engineer)
+
+Aaron asked for more in this pass: better guns, a sniper rifle, zombies, cars, the hut, the station's interior and the family. It's logged as Session 10b.
+
+- **Rebuilt in code with more detail** (`player/ViewModel.js`):
+  - The woodwork is shaped side profiles, extruded with rounded edges: comb, wrist, pistol grip, fore-end, butt pad. It's textured with walnut grain drawn in code.
+  - The steel is round: receivers, a tapering barrel, the bolt with its knob, a barrel band, sights, the trigger guard, a floorplate and sling swivels.
+  - The shotgun has a rounded receiver, a vent rib with a bead sight, a magazine tube and a ribbed pump. The shovel has a proper D-grip, socket and step.
+- **Two meshes per gun** (wood and steel), so one extra draw call for the gun in hand. The same sky-tinted, unlit colours as before.
+- **Lower at the hip** (Aaron: it sat a little high): `viewModel.hip.y` is -0.245 (was -0.21). `aim.y` is -0.082 (was -0.105), so the new, lower sights still sit just under the crosshair.
 
 ### Session 10: Aaron's last notes
 

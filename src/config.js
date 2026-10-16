@@ -856,8 +856,8 @@ export const config = {
       flashBoost: 0.6, // added for a moment when firing
       response: 8, // how quickly the gun follows a change in light
     },
-    hip: { x: 0.2, y: -0.21, z: -0.46 },
-    aim: { x: 0, y: -0.105, z: -0.36 }, // centred under the crosshair
+    hip: { x: 0.2, y: -0.245, z: -0.46 }, // Session 10b (Aaron): a little lower at the hip (was -0.21)
+    aim: { x: 0, y: -0.082, z: -0.36 }, // centred under the crosshair (Session 10b: the new models' sights sit lower)
     shovelHip: { x: 0.2, y: -0.28, z: -0.5 },
     // Weapon sway while moving, paced like footsteps (Aaron's M2 play-test:
     // tying it to the head bob made it vibrate at a sprint). One vertical dip

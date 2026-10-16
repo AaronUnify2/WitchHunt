@@ -1,42 +1,131 @@
-// The weapon in the player's hands: simple placeholder shapes (boxes and
-// cylinders) attached to the camera, with walk sway, recoil kick, a
-// reload dip, a lower-and-raise on switching, the shovel's swing and a
-// muzzle flash. Unlit colours with baked shading: the torch sits right
-// beside the gun, so real lighting would blow it out. Instead the colours
-// are tinted each frame by the sky's ambient and sun/moon light (dark at
-// night, full colour by day), a warm fill from the torch and the muzzle
-// flash. The art pass replaces the shapes with models.
+// The weapon in the player's hands, attached to the camera, with walk
+// sway, recoil kick, a reload dip, a lower-and-raise on switching, the
+// shovel's swing and a muzzle flash.
+//
+// Session 10b (Aaron: upgrade the guns): each gun is built in code from
+// shaped parts: side profiles extruded with rounded edges for the
+// woodwork (stock, grip, fore-end), round steel for receivers, barrels
+// and bolts, and small details (sights, trigger guard, swivels, butt pad).
+// Two meshes per gun: wood (with a walnut grain texture drawn in code) and
+// steel. Unlit colours with baked shading: the torch sits right beside the
+// gun, so real lighting would blow it out. Instead the colours are tinted
+// each frame by the sky's ambient and sun/moon light (dark at night, full
+// colour by day), a warm fill from the torch and the muzzle flash.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 
-// Box with shading baked into vertex colours (top light, bottom dark).
-function shadedBox(w, h, d, hex, brightness) {
-  const geometry = new THREE.BoxGeometry(w, h, d).toNonIndexed();
-  return shade(geometry, hex, brightness);
-}
+// Colours of the woodwork and steel.
+const WALNUT = 0x6a4428;
+const DARK_WALNUT = 0x553520;
+const BLUED = 0x2c3036;
+const STEEL = 0x464c54;
+const DARK_STEEL = 0x202226;
+const RUBBER = 0x1c1a18;
 
-function shadedCylinder(r, length, hex, brightness) {
-  const geometry = new THREE.CylinderGeometry(r, r, length, 8).rotateX(Math.PI / 2).toNonIndexed();
-  return shade(geometry, hex, brightness);
-}
-
-function shade(geometry, hex, brightness) {
+// Shading baked into vertex colours (top light, bottom dark, a little
+// darker on the right, away from the moon).
+function shade(geometry, hex, brightness = 1) {
+  const g = geometry.index ? geometry.toNonIndexed() : geometry;
+  if (g !== geometry) geometry.dispose();
   const base = new THREE.Color(hex);
-  const normals = geometry.attributes.normal;
+  const normals = g.attributes.normal;
   const colors = new Float32Array(normals.count * 3);
   for (let i = 0; i < normals.count; i++) {
     const ny = normals.getY(i);
     const nx = normals.getX(i);
-    const light = brightness * (0.7 + 0.3 * ny - 0.12 * nx);
+    const light = brightness * (0.68 + 0.34 * ny - 0.12 * nx);
     colors[i * 3] = base.r * light;
     colors[i * 3 + 1] = base.g * light;
     colors[i * 3 + 2] = base.b * light;
   }
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  return geometry;
+  g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(normals.count * 2), 2));
+  return g;
+}
+
+function box(w, h, d, hex) {
+  return shade(new THREE.BoxGeometry(w, h, d), hex);
+}
+
+// A round part along z (forward is -z), centred on its length.
+function rod(r, length, hex, sides = 10, rEnd = r) {
+  return shade(new THREE.CylinderGeometry(rEnd, r, length, sides).rotateX(-Math.PI / 2), hex);
+}
+
+function ball(r, hex) {
+  return shade(new THREE.SphereGeometry(r, 8, 6), hex);
+}
+
+// A side profile, points [forward, up] in metres from the butt, extruded
+// `width` across with rounded edges. After this, forward runs along -z
+// from z = 0, centred across x.
+function profile(points, width, hex, bevel = 0.006) {
+  const shape = new THREE.Shape(points.map(([f, y]) => new THREE.Vector2(f, y)));
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: width - bevel * 2,
+    bevelEnabled: true,
+    bevelThickness: bevel,
+    bevelSize: bevel * 0.8,
+    bevelSegments: 2,
+    curveSegments: 6,
+  });
+  geometry.translate(0, 0, -(width - bevel * 2) / 2);
+  geometry.rotateY(Math.PI / 2); // shape x (forward) -> -z, extrusion -> x
+  // Grain runs along the gun: scale the generated UVs into the texture.
+  const uv = geometry.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 3, uv.getY(i) * 6);
+  return shade(geometry, hex);
+}
+
+// Walnut grain, drawn in code: long, slightly wavy dark streaks on a near-
+// white base (the vertex colours carry the wood's colour).
+function makeGrainTexture() {
+  const w = 256;
+  const h = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 70; i++) {
+    const y0 = rand() * h;
+    const dark = rand() < 0.7;
+    ctx.strokeStyle = dark ? `rgba(40,20,8,${0.12 + rand() * 0.25})` : `rgba(255,235,200,${0.15 + rand() * 0.2})`;
+    ctx.lineWidth = 0.6 + rand() * 1.6;
+    ctx.beginPath();
+    const amp = rand() * 3;
+    const freq = 1 + rand() * 3;
+    const phase = rand() * 6.28;
+    for (let x = 0; x <= w; x += 8) {
+      const y = y0 + Math.sin((x / w) * Math.PI * 2 * freq + phase) * amp;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  // A few knots.
+  for (let i = 0; i < 3; i++) {
+    ctx.strokeStyle = 'rgba(40,20,8,0.35)';
+    ctx.lineWidth = 1;
+    const x = rand() * w;
+    const y = rand() * h;
+    for (let r = 2; r < 9; r += 2.5) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, r * 2.2, r, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  return texture;
 }
 
 // Weapon sway for a ground speed: steps per second (walk pace up to sprint
@@ -72,19 +161,20 @@ export class ViewModel {
 
   // sky: the Sky (its ambient and directional lights); flashlight: the torch.
   init(camera, sky, flashlight) {
-    const b = 1; // full colour baked in; the light tint scales it each frame
     this.sky = sky;
     this.flashlight = flashlight;
     this.tint = new THREE.Color();
     this.torchColor = new THREE.Color(this.cfg.lighting.torchColor);
-    this.material = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false });
+    this.grain = makeGrainTexture();
+    this.material = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }); // steel
+    this.woodMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, map: this.grain, fog: false });
     this.root = new THREE.Group();
     camera.add(this.root);
     this.models = {
-      rifle: this.buildRifle(b),
-      shotgun: this.buildShotgun(b),
-      shovel: this.buildShovel(b),
-      detonator: this.buildDetonator(b),
+      rifle: this.buildRifle(),
+      shotgun: this.buildShotgun(),
+      shovel: this.buildShovel(),
+      detonator: this.buildDetonator(),
     };
     for (const m of Object.values(this.models)) {
       m.group.visible = false;
@@ -107,58 +197,101 @@ export class ViewModel {
     this.current = null;
   }
 
-  // One mesh per weapon (one draw call): parts are merged into a single geometry.
-  mesh(parts, group) {
+  // One mesh per material: parts [geometry, x, y, z] merged into one geometry.
+  mesh(parts, group, material = this.material) {
     const geometry = mergeGeometries(parts.map(([geo, x, y, z]) => geo.translate(x, y, z)));
     parts.forEach(([geo]) => geo.dispose());
-    const mesh = new THREE.Mesh(geometry, this.material);
+    const mesh = new THREE.Mesh(geometry, material);
     group.add(mesh);
     return mesh;
   }
 
-  buildRifle(b) {
+  // The bolt-action service rifle. Butt at z = 0.25, muzzle at z = -0.67.
+  buildRifle() {
     const group = new THREE.Group();
+    const butt = 0.25;
+    const f = (forward) => butt - forward; // z of a point this far forward of the butt
+    // Walnut stock in one piece: butt, comb, wrist, pistol grip, belly, long fore-end.
     this.mesh([
-      [shadedBox(0.045, 0.07, 0.24, 0x6a4428, b), 0, -0.02, 0.12], // stock (walnut)
-      [shadedBox(0.05, 0.06, 0.2, 0x44484e, b), 0, 0, -0.09], // receiver (blued steel)
-      [shadedBox(0.04, 0.045, 0.3, 0x6a4428, b), 0, -0.015, -0.3], // fore-end
-      [shadedCylinder(0.011, 0.5, 0x6e747c, b), 0, 0.02, -0.4], // barrel (steel)
-      [shadedBox(0.008, 0.03, 0.01, 0x2a2c30, b), 0, 0.045, -0.62], // front sight
-      [shadedBox(0.01, 0.012, 0.03, 0x8a9098, b), 0.035, 0.015, -0.07], // bolt handle
+      [profile([[0, -0.1], [0, 0.022], [0.15, 0.012], [0.2, 0.004], [0.24, 0.006], [0.62, 0.004], [0.66, -0.006], [0.655, -0.03], [0.42, -0.036], [0.31, -0.042], [0.235, -0.042], [0.222, -0.088], [0.195, -0.09], [0.185, -0.05], [0.15, -0.055]], 0.04, WALNUT), 0, -0.02, butt],
+    ], group, this.woodMaterial);
+    this.mesh([
+      [box(0.042, 0.122, 0.012, RUBBER), 0, -0.059, f(0.004)], // butt pad
+      [rod(0.017, 0.2, BLUED, 12), 0, 0.006, f(0.33)], // receiver
+      [rod(0.0095, 0.5, STEEL, 10, 0.0085), 0, 0.006, f(0.67)], // barrel, tapering to the muzzle
+      [rod(0.012, 0.012, DARK_STEEL), 0, 0.004, f(0.58)], // barrel band
+      [box(0.004, 0.022, 0.006, DARK_STEEL), 0, 0.024, f(0.9)], // front sight post
+      [box(0.016, 0.006, 0.014, DARK_STEEL), 0, 0.016, f(0.9)], // its ramp
+      [box(0.022, 0.012, 0.012, DARK_STEEL), 0, 0.028, f(0.42)], // rear sight
+      [rod(0.006, 0.03, STEEL), 0.022, 0.012, f(0.27)], // bolt body (handle root)
+      [shade(new THREE.CylinderGeometry(0.004, 0.004, 0.04, 6).rotateZ(-1.1), STEEL), 0.038, 0.002, f(0.27)], // bolt handle
+      [ball(0.0075, STEEL), 0.055, -0.008, f(0.27)], // bolt knob
+      [box(0.03, 0.006, 0.09, DARK_STEEL), 0, -0.062, f(0.33)], // floorplate
+      [box(0.004, 0.026, 0.004, DARK_STEEL), 0, -0.05, f(0.255)], // trigger
+      [box(0.012, 0.004, 0.06, DARK_STEEL), 0, -0.07, f(0.255)], // trigger guard (bottom)
+      [box(0.012, 0.024, 0.004, DARK_STEEL), 0, -0.058, f(0.225)], // trigger guard (back)
+      [box(0.012, 0.016, 0.004, DARK_STEEL), 0, -0.062, f(0.285)], // trigger guard (front)
+      [box(0.006, 0.012, 0.012, DARK_STEEL), 0, -0.1, f(0.07)], // sling swivel (butt)
+      [box(0.006, 0.012, 0.012, DARK_STEEL), 0, -0.064, f(0.55)], // sling swivel (fore-end)
     ], group);
-    return { group, muzzle: new THREE.Vector3(0, 0.02, -0.67) };
+    return { group, muzzle: new THREE.Vector3(0, 0.006, f(0.93)) };
   }
 
-  buildShotgun(b) {
+  // The pump shotgun. Butt at z = 0.24, muzzle at z = -0.63.
+  buildShotgun() {
     const group = new THREE.Group();
+    const butt = 0.24;
+    const f = (forward) => butt - forward;
+    // Stock: a straight-ish butt into a rounded grip, ending at the receiver.
     this.mesh([
-      [shadedBox(0.05, 0.075, 0.24, 0x5a3a24, b), 0, -0.025, 0.12], // stock
-      [shadedBox(0.055, 0.065, 0.18, 0x3c3e44, b), 0, 0, -0.08], // receiver
-      [shadedCylinder(0.016, 0.48, 0x60666e, b), 0, 0.022, -0.38], // barrel
-      [shadedCylinder(0.013, 0.4, 0x4c5058, b), 0, -0.012, -0.34], // magazine tube
+      [profile([[0, -0.11], [0, 0.026], [0.16, 0.012], [0.235, 0.006], [0.235, -0.04], [0.21, -0.05], [0.19, -0.088], [0.165, -0.09], [0.15, -0.055]], 0.044, DARK_WALNUT), 0, -0.022, butt],
+    ], group, this.woodMaterial);
+    this.mesh([
+      [box(0.044, 0.135, 0.012, RUBBER), 0, -0.064, f(0.004)], // recoil pad
+      // Receiver: a rounded block (an extruded profile in steel).
+      [profile([[0, -0.035], [0, 0.02], [0.17, 0.02], [0.18, 0.012], [0.18, -0.035]], 0.05, BLUED, 0.008), 0, 0, f(0.235)],
+      [rod(0.0155, 0.47, STEEL, 12), 0, 0.022, f(0.645)], // barrel
+      [box(0.008, 0.005, 0.46, DARK_STEEL), 0, 0.04, f(0.645)], // vent rib
+      [ball(0.004, 0xd0c8a0), 0, 0.045, f(0.87)], // bead sight
+      [rod(0.0125, 0.39, BLUED, 10), 0, -0.012, f(0.6)], // magazine tube
+      [rod(0.0135, 0.012, DARK_STEEL), 0, -0.012, f(0.795)], // tube cap
+      [box(0.004, 0.026, 0.004, DARK_STEEL), 0, -0.05, f(0.27)], // trigger
+      [box(0.012, 0.004, 0.06, DARK_STEEL), 0, -0.07, f(0.27)], // trigger guard
+      [box(0.012, 0.02, 0.004, DARK_STEEL), 0, -0.06, f(0.24)],
+      [box(0.012, 0.014, 0.004, DARK_STEEL), 0, -0.063, f(0.3)],
+      [box(0.002, 0.024, 0.06, DARK_STEEL), 0.026, 0.004, f(0.33)], // ejection port
     ], group);
-    const pump = this.mesh([[shadedBox(0.05, 0.045, 0.13, 0x6a4428, b), 0, -0.014, 0]], group); // slides on each shot
+    // The pump: ribbed walnut round the tube; slides on each shot.
+    const ribs = [];
+    for (let k = 0; k < 7; k++) ribs.push([rod(0.022, 0.009, WALNUT, 12), 0, -0.012, -0.06 + k * 0.02]);
+    const pump = this.mesh([[rod(0.02, 0.14, DARK_WALNUT, 12), 0, -0.012, 0], ...ribs], group, this.woodMaterial);
     pump.position.z = -0.3;
-    return { group, muzzle: new THREE.Vector3(0, 0.022, -0.63), pump };
+    return { group, muzzle: new THREE.Vector3(0, 0.022, f(0.88)), pump };
   }
 
-  buildShovel(b) {
+  buildShovel() {
     const group = new THREE.Group();
     this.mesh([
-      [shadedCylinder(0.016, 0.75, 0x7a5a38, b), 0, 0, -0.2], // handle (ash)
-      [shadedBox(0.1, 0.02, 0.02, 0x4a3420, b), 0, 0, 0.17], // D-grip
-      [shadedBox(0.17, 0.012, 0.22, 0x7a8288, b).rotateX(-0.1), 0, 0, -0.66], // blade (steel)
+      [rod(0.016, 0.72, 0x7a5a38, 8), 0, 0, -0.22], // handle (ash)
+      [box(0.1, 0.022, 0.024, 0x4a3420), 0, 0, 0.16], // D-grip
+      [box(0.022, 0.05, 0.02, 0x4a3420), -0.04, 0, 0.14],
+      [box(0.022, 0.05, 0.02, 0x4a3420), 0.04, 0, 0.14],
+    ], group, this.woodMaterial);
+    this.mesh([
+      [rod(0.02, 0.1, 0x5a6066, 8), 0, 0, -0.58], // the socket round the handle
+      [shade(new THREE.BoxGeometry(0.17, 0.012, 0.22).rotateX(-0.1), 0x7a8288), 0, 0, -0.73], // blade (steel)
+      [box(0.17, 0.02, 0.012, 0x6a7076), 0, 0.006, -0.625], // the step at the top of the blade
     ], group);
     return { group };
   }
 
   // M7: the remote detonator: a grey box, a stubby aerial and a red button.
-  buildDetonator(b) {
+  buildDetonator() {
     const group = new THREE.Group();
     this.mesh([
-      [shadedBox(0.07, 0.04, 0.13, 0x50545a, b), 0.02, -0.02, -0.12], // body
-      [shadedBox(0.012, 0.12, 0.012, 0x2a2c30, b), 0.045, 0.05, -0.17], // aerial
-      [shadedBox(0.03, 0.015, 0.03, 0xc02018, b), 0.02, 0.006, -0.1], // the button
+      [box(0.07, 0.04, 0.13, 0x50545a), 0.02, -0.02, -0.12], // body
+      [box(0.012, 0.12, 0.012, 0x2a2c30), 0.045, 0.05, -0.17], // aerial
+      [box(0.03, 0.015, 0.03, 0xc02018), 0.02, 0.006, -0.1], // the button
     ], group);
     return { group };
   }
@@ -181,6 +314,7 @@ export class ViewModel {
     }
     if (weapons.weapon.kind !== 'melee' && weapons.shotTime < this.cfg.muzzleFlashSeconds * 2) tint.addScalar(l.flashBoost);
     this.material.color.lerp(tint, Math.min(1, l.response * dt));
+    this.woodMaterial.color.copy(this.material.color);
   }
 
   // weapons: the Weapons system; player: for walk sway.
@@ -260,6 +394,8 @@ export class ViewModel {
     this.root.traverse((o) => o.geometry?.dispose());
     this.root.removeFromParent();
     this.material.dispose();
+    this.woodMaterial.dispose();
+    this.grain.dispose();
     this.flashMaterial.dispose();
   }
 }
