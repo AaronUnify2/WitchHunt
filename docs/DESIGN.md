@@ -1138,7 +1138,8 @@ The family run the station's radio and trail-camera network, so they stay part o
 - **They radio about:** the dusk forecast, the base alarm, milestones (the fifth sigil, a document decoded, a light to the south), lore and character moments.
 - **CCTV patch-through:** when a camera catches something, they patch the feed to Tom. Most mid-run cutscenes are framed this way.
 - **Witch sightings are limited on purpose:** trail cameras sit at fixed spots (config, 5–6 in the north and middle). They report her only if she passes one, after a delay, and the map marks the camera, not her. A lead, never a tracker.
-- Calls are rate-limited (config).
+- Calls are rate-limited (config): calls of one kind at least `kindGap` apart, any two at least `minGap` apart, urgent ones cut in. A one-off call that has to wait queues for a while; a repeatable one is dropped (M8).
+- **Trail cameras as built (M8):** six seeded posts at clearing edges in the north and middle, numbered north to south, on both maps. She's reported 25-60 s after passing one while she's out; the map marks that camera (red, blinking) for four minutes, and the clip goes on the comms room's monitors. The family's sighting lines are still to be written (a notice stands in). The fixed camera near the storm shelter (#153) comes with M9.1.
 
 ### Dialogue system
 
@@ -1147,6 +1148,7 @@ The family run the station's radio and trail-camera network, so they stay part o
 - Talking picks an unheard line whose conditions are met, newest milestone first; otherwise an idle line. Heard lines are saved.
 - **New-line marker:** a small marker floats over a family member with something new to say.
 - **What lines do:** piece things together in step with the player; drop gentle hints; explain oddities (e.g. Wyatt on why aliens carry shotgun shells); build character.
+- **As built (M8, Session 12):** `src/data/dialogue.json`. A line has an id, speaker, channel (`radio`, `face`, or `caption`), text with `{names}` a system fills in, `when` (night range, phase, `all` and `none` flags), priority, `on` (an event that plays it), `next` (the line that follows it straight away), `repeatable`, the radio's `kind` and `urgent`, and `script` (a scripted sequence's lines play from their triggers only while it's live: Day 1's until M9.2 wires them). Milestone flags come from events (`config.story.milestones`) and lore hand-ins (`lore.<id>`). A `face` line heard while Tom isn't in the cabin comes over the radio. Talking to the family: hold interact while looking at one of them **in the comms room**. Nobody has idle lines yet ("has nothing new to say" shows instead).
 
 ### Dialogue presentation (no voice acting)
 
@@ -1161,6 +1163,7 @@ The family run the station's radio and trail-camera network, so they stay part o
 - **Classified documents** from the government base (5) and Ground Zero (3): 8 in total, listed below.
 - Found items: the camcorder (campsite), the gas station owner's diary and trail-cam tapes (storm shelter), the pilot's log (crashed plane), the foreman's logbook (mineshaft), the field report (outpost), the time capsule.
 - Each item is handed in at the comms room and unlocks family lines.
+- **As built (M8):** `src/data/lore.json` lists each item by name and where it's found (the texts are written with Aaron in each encounter's session, which also places the pickup). Items are handed in on the ledger's **Monitors** page. Each sets the flag `lore.<id>`, and one with a clip puts it on the monitors. The monitors keep every clip seen (trail cam sightings, and cutscenes marked `rewatch`) to watch again.
 
 ### The classified documents
 
@@ -1238,6 +1241,7 @@ Three styles, all rendered live from the real game world from one data-driven ti
 
 - **Camera styles tell you where you are:** ranger trail-cam (night-vision green), government security (crisp, blue, classified watermark), battered military feed (static, dropped frames), warped alien feed (glyphs, glitching), camcorder (shaky handheld).
 - All cutscenes are skippable and have subtitles. Clips seen in the comms room can be rewatched on its monitors.
+- **As built (M8, Session 12):** `src/data/cutscenes.json`, one timeline format: camera keys relative to anchors (the map is seeded: home, the hut, the witch, the player, a trail camera, a clearing by encounter, the nearest clearing), eased or cut, orbits for the sweep; placeholder actors (figures, the portal ring, glows, boxes, eyes); timed events (lines, captions, moves, poses, flares, glitches, fades, sounds, a cut to another camera with its own look and hour). The looks are a pass in PostFX (`config.postFX.looks`): CCTV, trail cam (night vision), camcorder, military, government, the scope. The on-screen display shows the camera's name, the time (OCT 2003), a blinking REC and a CLASSIFIED watermark. **A cutscene pauses the clock** (Aaron, Session 12). Clips from elsewhere also hold the world still; first-person ones (`"world": "run"`) let it carry on with your controls locked. The HUD hides, A / Enter skips, and the grade and look are handed back afterwards. CCTV runs at about 10-12 fps. At night the camera's lamp lights the actors only (a real light would recompile every shader). The final battle's intro and the ending and defeat are cutscenes now.
 - **Every cutscene is in the debug menu** (Aaron, Session 11): a Cutscenes category lists every one (the placeholders too) and plays it on the spot, from anywhere, so each can be watched, tweaked and watched again until it's really good. M8 builds the category; every session that adds a cutscene adds it there in the same step.
 
 **Planned clips:** the Ground Zero cold open; the campers' camcorder; the Night 1 trail-cam clip of the witch planting; an establishing clip for each encounter (see the design checklist); the witch's fifth sigil going in (a warning); the dogfight and both crashes through the hunting rifle scope (military outpost; this replaces the earlier "UFO passing over the treeline" foreshadowing clip); the Mothman's torn-open container (military outpost; a hint, never named); government footage of the portal programme (unlocked by classified documents); the hut exploding (first-person); the victory montage.
@@ -1432,18 +1436,18 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
   main.js                entry: creates Game
   config.js              ALL tuning numbers
   core/                  Game (loop, phases), Clock, EventBus, Rng, Input (gamepad + kb/m), SaveStore and saveData, runStats
-  render/                Renderer (dynamic resolution), Sky, Forest, NearTrunks, Atmosphere and the mist, PostFX (tone mapping, bloom, grade, grain, heat scope; CCTV to come), the renderers for zombies, the witch, the station, vehicles, the hut, traps and pickups
+  render/                Renderer (dynamic resolution), Sky, Forest, NearTrunks, Atmosphere and the mist, PostFX (tone mapping, bloom, grade, grain, heat scope, the cutscene camera looks), the renderers for zombies, the witch, the station, vehicles, the hut, traps and pickups
   world/                 MapGraph, MapGenerator, Terrain, GroundField, FogOfWar, Vehicles, Hut, fog nights (Interiors to come)
   player/                Player, Weapons, ViewModel, Inventory, Armour, Health, Flashlight, Digging
   combat/                Combat (the hub), WeaponState, hit-scan, aim assist, loot, Explosives
   ai/                    EnemyManager (pools, sim tiers), Zombie, ZombieDirector, Sigils, detection, marches, revisits, Witch and her routes, hexes and traps (Beetle, Alien, MenInBlack, Mothman to come)
   base/                  Station, StationState, Turret, siege routing, danger, NightWatch (forecast and alarm), nightResolver
   encounters/            FinalBattle now; one module per encounter to come
-  story/                 (M8) Dialogue (picker + conditions), Radio, Cutscenes, Lore
+  story/                 (M8) Dialogue (lines, picker, conditions; the radio's rate limit in radioGate), FamilyTalk, TrailCams, Cutscenes (and the pure cutsceneTimeline), Lore (hand-ins, the monitors)
   meta/                  (M12) Achievements, Modifiers
   audio/                 Sfx now (placeholders); AudioEngine, Ambience, Stingers, Blips in the audio pass
-  ui/                    Hud, Minimap, MapScreen, Ledger, ScopeOverlay, NoReturnNotice, RunEndScreen, StartScreen, Toast (Menus and Subtitles to come)
-  data/                  encounters.json, clearingTypes.json, sigilGrounds.json, loot.json, vehicles.json, ending.json (dialogue.json, cutscenes.json to come)
+  ui/                    Hud, Minimap, MapScreen, Ledger, ScopeOverlay, NoReturnNotice, RunEndScreen, StartScreen, Toast, Subtitles (Menus to come)
+  data/                  encounters.json, clearingTypes.json, sigilGrounds.json, loot.json, vehicles.json, ending.json, dialogue.json, cutscenes.json, lore.json
   debug/                 DebugMenu (in categories), DebugOverlay
 /tests                   unit tests for pure logic
 ```
@@ -1550,7 +1554,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 9 | QA & Balance | Test the slice on the tablet, fix bugs, tune; prepare Aaron's play-test | Gate |
 | 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M13 |
 | 11 | Lead Engineer (design review, with the Narrative and Level & Encounter Designer hats) | Folded in Aaron's story and encounter design (the opening cluster); reviewed DESIGN.md against what's built; redid the milestones and this plan. No feature code | — |
-| 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines (split 12a / 12b if it grows) | M8 |
+| 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines. **Done** (12a and 12b in one session; the looks are a first pass for Aaron to react to) | M8 |
 | 13 | Graphics Engineer / Technical Artist | **Characters and the deferred art, play-test driven** (Aaron, Session 11: in its own session, sooner, with time to sit down and play-test, changing things a step at a time). The character models the coming encounters need, to a near-finished level so writing and play-testing them has something to spark off: the zombies (citizen, police, army with its helmet; #144), the mutant, the witch's real model, the grey alien, the beetle, the dead (the gas station owner, soldiers), the family (#148, after M8). Then the cars (#145), the station's interior (#147) and the hut (#146). A debug model viewer. Split 13a / 13b as needed; frontier creatures (Bigfoot, the Mothman, cowboy aliens, Men in Black) if time allows, else before M10 | Part of M13 |
 | 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun | M9.1 |
 | 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron | M9.2 |

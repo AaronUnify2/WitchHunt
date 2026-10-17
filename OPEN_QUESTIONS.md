@@ -1,5 +1,20 @@
 # Open questions
 
+## Session 12 (Narrative Designer: M8, the story systems)
+
+Agreed with Aaron at the start: **push each step to `main`**; skip the separate workshop and **put a first pass into the game to react to**; **cutscenes pause the clock**.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 155 | **The cutscene, subtitle and camera looks** (rule 10's workshop, done as a first pass in the game). | Subtitles: a dark strip at the bottom centre, the speaker's name in their colour, typed on with a blip at each speaker's pitch, a RADIO tag, a crackle and a faint green flicker for radio calls. Looks: CCTV (grey-green, scanlines, lens bend), trail cam (night-vision green), camcorder (warm, colour fringe, handheld shake), military (static, torn rows, dropped frames), government (blue, CLASSIFIED), scope (round mask). Name, time and REC on screen. | `config.subtitles`, `config.story.speakers`, `config.postFX.looks`, `config.cutscenes`, `src/style.css` (Subtitles, Cutscenes) |
+| 156 | **How the family appear face to face.** | The station's placeholder figures, which bob while their line types on; a small gold diamond floats over anyone with something new to say. Hold interact while looking at them in the comms room. The real models are Session 13's (#148). | `config.familyTalk`, `story/FamilyTalk.js` |
+| 157 | **Clips from elsewhere hold the world still** (proposed). Only the clock was asked for. | A CCTV, trail cam or camcorder clip freezes everything (zombies, the station) as well as the clock, so a patch-through mid-night can't get you killed. First-person ones (the final battle's intro, the hut exploding) let the world carry on with your controls locked. | `"world": "run"` per cutscene in `src/data/cutscenes.json` |
+| 158 | **Should a trail cam sighting play its clip** (a patch-through), or only mark the map and go on the monitors? | It marks the camera on the map and puts the clip on the monitors, with a notice ("CAMERA 3: something moved past it"). It doesn't play by itself. The family's sighting lines are still to be written. | `story/TrailCams.js` `report()` |
+| 159 | **Idle lines.** "When nobody has anything new" (DESIGN.md: about 2 each). | No idle lines are written (M8 wires only the existing lines). Talking to someone with nothing new shows "Wyatt has nothing new to say". | `src/data/dialogue.json` (`"idle": true`) |
+| 160 | **The camera looks at night.** | The actors are lit by the camera's lamp (they glow a little in their own colour, plus some grey), since a real light would recompile every shader as it came and went. The world stays as dark as the hour. | `config.cutscenes.actorLight`, `actorLightGrey` |
+
+**Decided here:** the clock pauses for every cutscene (Aaron). NightWatch's radio calls, the point-of-no-return call, the final battle's intro and the ending and defeat cards now run on the story systems. Day 1's lines are data, played from the debug menu, with a toggle to make them live in a run; their real triggers come with M9.2. Lines 1-2 (the opening) wait for a `story:opening` event that M9.2 sends.
+
 ## Session 11 (design review, Lead Engineer)
 
 Aaron brought his story and encounter design (the fixed opening cluster: campsite, storm shelter, gas station, military outpost; written into DESIGN.md on Oct 16). Agreed with Aaron in this session:

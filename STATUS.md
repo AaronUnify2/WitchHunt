@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 11 (Lead Engineer, design review): **no code changed.** Aaron's story and encounter design (the fixed opening cluster) is in `docs/DESIGN.md`, the doc is reviewed against what's built, and the milestones and session plan are redone. **Next: Session 12, the Narrative Designer: M8, the story systems.** Then Session 13, a play-test-driven art session (characters and the deferred art #144-148), then M9, the opening cluster, in four parts (Sessions 14-17). See HANDOVER.md.
+Last updated: Session 12 (Narrative Designer): **M8, the story systems, is done.** Dialogue from one data file, subtitles, the radio and its rate limit, talking to the family, trail cameras, the cutscene system with its camera looks, lore hand-ins and the comms room's monitors, and a Cutscenes debug category that plays every cutscene. The looks are a first pass for Aaron to react to (OPEN_QUESTIONS #155-160). **Next: Session 13, the Graphics Engineer / Technical Artist: characters and the deferred art, play-test driven.** Then M9, the opening cluster, in four parts (Sessions 14-17). See HANDOVER.md.
+
+Before that, Session 11 (Lead Engineer, design review, no code): Aaron's story and encounter design (the fixed opening cluster) is in `docs/DESIGN.md`, the doc was reviewed against what's built, and the milestones and session plan were redone.
 
 Before that, Session 10b (Graphics Engineer): style pass 1 plus a second pass Aaron asked for, **done for the guns** (detailed models, a sniper rifle, four more guns, the heat scope, the shovel's slice) **and paused for the rest** (zombies, cars, hut, station interior, family: OPEN_QUESTIONS #144-148). Session 10: ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. Session 9 (QA & Balance) passed the gate.
 
@@ -33,6 +35,31 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 12: M8, the story systems (Narrative Designer)
+
+Three steps, each pushed to `main`:
+
+1. **Dialogue, subtitles, the radio, the family, trail cameras (12a).**
+   - **The lines** (`src/data/dialogue.json`): the 23 Day 1 lines word for word, the ending's, and the old placeholders moved out of the code (NightWatch's arrival and alarm calls, the point-of-no-return call). Fields: speaker, channel (radio / face / caption), `{names}` filled in by the caller, conditions (`when`: night range, phase, flags), priority, `on` (an event plays it), `next`, `repeatable`, the radio's `kind` and `urgent`, `script`. Checked on load and in the tests.
+   - **The picker** (`story/dialoguePicker.js`, pure): the unheard line whose conditions hold, newest milestone first, then priority. Milestones come from events (`config.story.milestones`: she planted, a sigil dug, she was seen, wounded, on camera, the hut armed or destroyed) and lore hand-ins (`lore.<id>`). Heard lines and milestones are saved.
+   - **Subtitles** (`ui/Subtitles.js`): a dark strip at the bottom centre with the speaker's name in their colour above it. The text types on with a blip at each speaker's pitch (`Sfx.blip`), holds for a readable time (or advances on interact face to face), and queues. Radio calls get a RADIO tag, a crackle and a faint flicker.
+   - **The radio's rate limit** (`story/radioGate.js`): calls of one kind are `kindGap` apart (10 s, as before), any two are `minGap` apart, and urgent calls cut in. A one-off call queues for up to 20 s; a repeatable one is dropped.
+   - **Talking to the family** (`story/FamilyTalk.js`): hold interact (0.35 s) while looking at Ellen, Wyatt or Junie in the comms room. Their prompt comes first and the station's waits (the ledger is still reachable at the desk). The talking bob, and the new-line marker (a gold diamond). The station's family placeholders are now three meshes.
+   - **Trail cameras** (`story/TrailCams.js`, `trailCamPlacement.js`): six seeded posts in the north and middle, on both maps (a legend entry too). She's reported 25-60 s after passing one while she's out. The camera blinks red on the map for four minutes. It's a lead, never a tracker.
+2. **The cutscene system (12b).**
+   - **One timeline format** (`src/data/cutscenes.json`, `story/cutsceneTimeline.js` pure): camera keys in an anchor's frame (eased, cut, or orbiting for the sweep), placeholder actors, timed events.
+   - **The player** (`story/Cutscenes.js`): its own camera (or the player's, first person). The clock pauses; clips from elsewhere hold the world still too. The HUD hides and A / Enter skips (after 0.5 s). It sets the grade hour and the camera look and hands both back, keeps the heat scope off, and runs CCTV at 10-12 fps (`holdFrame`). The world draws round the cutscene camera, wherever it is.
+   - **The looks** (`render/PostFX.js`, a last pass, off when not in use): CCTV, trail cam, camcorder, military, government, scope (`config.postFX.looks`). The on-screen display shows the name, time, REC and a watermark.
+   - **Every cutscene** (Cutscenes debug category): the cold open at Ground Zero, the campers' camcorder, Night 1's trail-cam clip (with lines 17-19), a trail cam sighting, the establishing sweep, the fifth sigil, the dogfight through the scope, the Mothman's container, the programme footage, the hut exploding, the final battle's intro, victory, defeat.
+   - **Placeholders taken over:** the final battle's intro (FinalBattle plays `final.intro`; skipping starts the fight), the ending and defeat cards (RunEndScreen now plays `ending.victory` / `ending.defeat`, then the summary).
+3. **Lore and the monitors (12b).** `src/data/lore.json` (15 items, names and sources only) and `story/Lore.js`. Hand items in on the ledger's new **Monitors** page: each sets its flag, and one with a clip puts it on the monitors. The monitors keep every clip seen (sightings at their camera, cutscenes marked `rewatch`), and selecting one plays it. Saved.
+
+**Debug menu:** *Cutscenes* (play any), *Story, radio & trail cams* (Day 1 lines live or not, heard lines and milestones, test radio calls and the rate limit, report a sighting now, teleport to each camera, give lore), *Dialogue: Day 1 lines* (each of the 23, with its cue).
+
+**Stubbed / not yet:** Day 1's real triggers (M9.2; `story:opening` for lines 1-2), the storm shelter's fixed camera (M9.1, #153), the family's sighting lines and idle lines (written with Aaron), lore pickups in the world (each encounter's session), the radio action (D-pad down) still does nothing.
+
+**Tests:** 431 pass (dialogue, the radio gate, trail cam placement, the timeline and the cutscene data, lore and the monitors, the ending as cutscenes).
 
 ### Session 11: the design review (Lead Engineer, no code)
 
