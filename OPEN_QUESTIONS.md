@@ -1,5 +1,17 @@
 # Open questions
 
+## Session 10b (Graphics Engineer): art work deferred for the story pivot
+
+Aaron asked for these in Session 10b, then paused them to work on the story and the random encounters ("we're just going to do a quick pivot"). None is started. They're folded into Session 16 (style pass 2) in DESIGN.md's session plan, unless Aaron calls for them sooner. Details and starting points are in HANDOVER.md, "Deferred art work".
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 144 | **The zombies' look.** Aaron: they need work to look better. The heat scope showed they read well far off. | Placeholder atlas sprites drawn in code. The proposed plan: re-render the atlas at load from simple 3D procedural bodies, with more variety per variant. The thermal hook must keep working. | `render/zombieSprite.js`, `render/ZombieRenderer.js` |
+| 145 | **The cars.** | Placeholder boxes with hinged bonnet, boot and doors. Era and models to agree with Aaron (suggested: 1970s-80s American cars, a pickup and a Forest Service truck). | `render/VehicleRenderer.js`, `world/Vehicles.js` |
+| 146 | **The witch's hut.** | The M7 placeholder, with blast and destroyed states. Its look is to agree with Aaron. | `render/HutRenderer.js`, `world/Hut.js` |
+| 147 | **The ranger station's interior** (the comms desk, radio, ledger, table, bunks, cabinets). | Boxes. | `render/StationRenderer.js` |
+| 148 | **The family** (Ellen, Wyatt, Junie). | Placeholder figures that never move. **Workshop their look with Aaron before building**, after M8 decides how they speak and appear in cutscenes. | `render/StationRenderer.js`, `config.station.look.family` |
+
 ## Session 10 (style pass 1, Graphics Engineer)
 
 Agreed with Aaron before building:

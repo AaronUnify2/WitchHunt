@@ -1097,13 +1097,13 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 7 | Lead Engineer | Simulation LOD, simulated nights, forecast, alarm, autosave | M6 |
 | 8 | AI Programmer | The witch, hut, explosives, final battle, ending: the vertical slice | M7 |
 | 9 | QA & Balance | Test the slice on the tablet, fix bugs, tune; prepare Aaron's play-test | Gate |
-| 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing) | Part of M13 |
+| 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M13 |
 | 11 | Narrative Designer | Dialogue system, radio, subtitles, cutscene system, CCTV grain | M8 |
 | 12 | Level & Encounter Designer | Main menu flow, opening, Day 1 tutorial, campsite, gas station, barn | M9 (part 1) |
 | 13 | Level & Encounter Designer | Storm shelter, crashed plane, mineshaft, military outpost | M9 (part 2) |
 | 14 | Level & Encounter Designer + AI Programmer | Interior system, Bigfoot cave, beetles, the Mothman, Bigfoot | M10 (part 1) |
 | 15 | Level & Encounter Designer | Stairs, time capsule, the Caller, Mothman flare attention | M10 (part 2) |
-| 16 | Graphics Engineer | Style pass 2: encounters, interiors, camera-style shaders | Part of M13 |
+| 16 | Graphics Engineer | Style pass 2: encounters, interiors, camera-style shaders; plus Session 10b's deferred art: zombies, cars, the witch's hut, the station's interior and the family (OPEN_QUESTIONS #144-148) | Part of M13 |
 | 17 | Level & Encounter Designer + AI Programmer | Car Armory, government base, Men in Black, stealth | M11 (part 1) |
 | 18 | Level & Encounter Designer + AI Programmer | Ground Zero, crashed UFO, alien ship, aliens | M11 (part 2) |
 | 19 | UI / UX Programmer | Final HUD, menus, save and quit, achievements, modifiers, run summary | M12 |

@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 10b (Graphics Engineer), **style pass 1 plus a second pass Aaron asked for (guns, sniper rifle, zombies, cars, hut, station interior, family): in progress.** Session 10: Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Session 11, Narrative Designer: M8.**
+Last updated: Session 10b (Graphics Engineer), **style pass 1 plus a second pass Aaron asked for: done for the guns (detailed models, a sniper rifle, four more guns, the heat scope, the shovel's slice), and paused for the rest** (zombies, cars, hut, station interior, family: OPEN_QUESTIONS #144-148), so Aaron can pivot to story and encounter design. Session 10: Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Aaron's story and encounter design folded into DESIGN.md, then Session 11, Narrative Designer: M8** (HANDOVER.md).
 
 Session 8 (AI Programmer) built M7, the witch, the vertical slice, in six steps:
 1. The witch roams and plants.
@@ -844,7 +844,8 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - **The save is M6's dawn autosave only:** no save and quit, no pause menu (M12). It leaves out zombies, pickups and the random streams (OPEN_QUESTIONS #102). The Continue / New run screen is a placeholder until the main menu (M9).
 - **Nights while away are an abstraction:** groups held at the fence, damage at a rate, the turret's rounds turned into kills. Its numbers are first-pass (M14 tunes them).
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
-- The zombie sprite, the in-hand weapons and every sound are placeholders (art pass M13, audio pass Session 20).
+- The zombie sprite and every sound are placeholders (art pass M13, audio pass Session 20). The in-hand weapons got their models in Session 10b.
+- **Deferred from Session 10b (Aaron's pivot to story):** the zombies' look, the cars, the witch's hut, the station's interior and the family (OPEN_QUESTIONS #144-148, planned for Session 16).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
 - Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): normal maps on the ground, fallen logs and roots, breath on cold nights, distant impostor tweaks. These belong to the later style passes (OPEN_QUESTIONS #21).
 - Billboard trees: the canopy is still a sprite that turns to face you up close; the trunk near you is a solid 3D trunk (Session 10, `NearTrunks.js`).
