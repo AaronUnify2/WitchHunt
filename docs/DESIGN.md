@@ -6,7 +6,7 @@ Oct 9, 2026 · @Aaron
 
 This is the single source of truth for building **Witch Hunt**. It is written for a coding agent (Claude Code) and for Aaron, the designer.
 
-- Every decision here is final unless it is listed in **Open questions** at the end.
+- Every decision here is final unless it is listed in **Open questions** at the end, or marked *(proposed)* or *(open question)* where it appears.
 - Every number is a **placeholder** that belongs in `config.js`, not in code.
 - Build in the order given in **Build plan**. Do not build ahead.
 - Where the doc is silent, pick the simplest option, make it a config value, and log it in `OPEN_QUESTIONS.md` in the repo.
@@ -51,7 +51,7 @@ The game runs on a repeating day/night cycle. Each night the witch plants more s
 
 - A run should feel like a long board game session, like a game of Monopoly: roughly 1.5–2.5 hours across about 6–10 nights. Tune the witch so a skilled player can corner her around night 6–8.
 - **Permadeath:** one life per run, a new map seed each run.
-- **Saving:** autosave at each dawn; save and quit from the pause menu. One save slot per run, deleted when the run ends (win, death or overrun).
+- **Saving:** autosave at each dawn; save and quit from the pause menu. One save slot per run, deleted when the run ends (win, death or overrun). **Destroying the hut also deletes it** (Aaron, Session 9): the final battle is a true point of no return, and nothing saves again that run.
 - **The save stores:** seed, clock and night number, player stats and inventory, armour bars, revealed map, station state (defences, damage, fence charge, turret ammo and mode), sigils, enemies, witch state and wounds, looted containers and vehicles, prizes secured, documents found, dialogue lines heard, Mothman attention, Men in Black state.
 - **Persistent across runs** (stored with settings, never deleted): achievements, unlocked modifiers, Skip intro.
 
@@ -72,7 +72,7 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 | LT | Right click | Aim down sights |
 | X (hold) | E (hold) | Interact: dig, search, build, repair, fit battery, plant charge |
 | B | R | Reload |
-| RB / LB | 1–4 / scroll | Next / previous weapon (decided with Aaron in M2; LB instead of Y from M5) |
+| RB / LB | 1–8 / scroll | Next / previous weapon (decided with Aaron in M2; LB instead of Y from M5; keys 5–8 for the Session 10b guns) |
 | Y | F | Fire flare (Y from M5; was LB) |
 | D-pad up | M | Full map |
 | D-pad left | L | Toggle flashlight |
@@ -92,11 +92,15 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 - **Crouch:** toggle. Slower (config, e.g. 0.5×), quieter, smaller silhouette.
 - **One detection model for every enemy:** distance, line of sight, light level, flashlight on/off, crouching, and noise (sprinting, gunfire).
 - **Crouched with the light off, the player is much harder to see:** zombies notice from much closer, Men in Black can be slipped past or quietly taken down, and the player can watch the witch plant without spooking her.
+- **Hiding** (Aaron, M6): crouched, torch off and in the brush (just off the path counts), the player is seen from no further than about 6 m, day or night, at any zombie level. A zombie already chasing keeps its longer pursuit range. A stealth eye on the HUD shows it.
 - **Trade-off:** dark and low is slow and hard to see by. Good for sneaking and ambushes, bad for running from a horde.
 
 ### Weapons
 
 The player starts each run with the **shovel**, the **flare gun** (and a few flares) and the **ranger service rifle** with only a handful of rounds.
+
+- **As built** (Session 11 review): the shotgun is still in the starting kit (M2, so the guns could be compared); it moves to the campsite with the opening cluster (M9). **The flare gun isn't built yet** (it comes with M9, and the Mothman's flare attention with M10).
+- Guns that fire the same rounds share one pool (Session 10b): the pistol and SMG, the pump and auto shotgun, the hunting rifle and the heat-scope rifle.
 
 | Weapon | Role | Where it comes from | Damage (placeholder) |
 | --- | --- | --- | --- |
@@ -326,7 +330,7 @@ One per run, from the Car Armory.
 
 ### Danger rating, forecast and simulated nights
 
-- **Danger** = sum over active sigils of (spawn strength × zombie level), weighted by closeness to the station.
+- **Danger** = sum over active sigils (and the sigils she's out to plant tonight) of each one's marchers × the share that reaches home before dawn × a per-zombie weight. The level counts through the marchers, their pace and their damage, not as a second multiplier (recalibrated with Aaron, M6, so the forecast matches what happens).
 - **Dusk forecast:** security vs danger, with a breakdown of both.
 - **Player at home:** the night plays out for real.
 - **Player away:** the night is resolved by simulation using the margin:
@@ -395,6 +399,10 @@ Every few seconds each enemy picks a goal:
 1. Player detected (see detection model) or closer than the station → go for the player.
 2. Else station within its base radius → attack the defences.
 3. Else → random walk along the pathway graph.
+
+- **Night marches** (Aaron, M6): about two thirds of each night's zombies rise as marching groups (4 at level 1 up to 10 at level 5; a horde always marches) and set off for the station along the pathways at once, faster while out of sight so far sigils still arrive before dawn. Meeting them on the pathways protects the base. A cap per sigil per night keeps the totals in check.
+- **Revisits** (Aaron, M6, night only): come back at night to an encounter you've already been inside and a few zombies of its mix have turned up there, once per clearing per night.
+- **At the station**, a chasing zombie goes for whichever is nearer, the player or the defence between it and the family (Aaron, M5).
 
 ### Zombies
 
@@ -471,8 +479,10 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 | Attacking | Healthy, or cornered near the hut | Ranged hexes, close strikes, summons a few zombies |
 
 - **By day** she stays hidden inside the hut and comes out in the early evening (Aaron, M7). You can stake out the hut and take shots at her as she leaves. (One scripted exception: the gas station sighting, which plays whatever the time.)
-- **Planting pace:** night 1 is safe, then 1–2 sigils a night (Aaron, M7).
-- **Toughness:** about 3–4 good ambushes on the pathways to kill her outright, if she isn't given time to heal (Aaron, M7: "make her good and strong"; tune after play-tests).
+- **Planting pace:** night 1 is safe at the station, then 1–2 sigils a night (Aaron, M7). Night 1's one scripted sigil at the storm shelter is the exception (see Opening and first run), and until the cordon is crossed she plants only inside the opening cluster (see Map).
+- **Toughness:** about 3–4 good ambushes on the pathways to kill her outright, if she isn't given time to heal (Aaron, M7: "make her good and strong"; 1000 health after the gate, Session 9).
+- **Her fight** (Aaron, Session 9): when she turns on you she backs off, weaving, to about 20 m, dropping traps, and holds there throwing a hex every few seconds (fast, but they can be sidestepped or blocked by a trunk). Come within 10 m and she backs off again. Any hit but the shotgun's sends her **rushing** in to swipe again and again; a shotgun hit, or enough damage, drives her back out. She summons a few zombies whenever she can.
+- **Her look** (Aaron, M7): a thin **shadow creature**, unlit near-black so the torch never lights her; only her silhouette and narrow slit eyes read. She **glides** upright, head level, arms hanging limp, with no steps. In the ritual she folds right down and contorts (head craned too far, arms splayed like a spider's, joints that jerk and hold, elbows that sometimes bend the wrong way). The real model comes in the art pass; she's one of the few characters worth extra drawing.
 - **Fight-or-flee score** = health % plus a bonus for being near her hut. High → attack; low → flee. She's far more dangerous near home.
 - **Movement:** a Left 4 Dead–style agile runner (vaults logs, weaves, doubles back). Faster than the player on paths; slower while dropping traps. Simulated as a point on the graph when far away.
 - **Planting interruption:** enough damage while planting (config) cancels the sigil; she then flees or attacks.
@@ -498,7 +508,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 - **Only explosives** can destroy it: **two charges, planted at the hut and detonated together** by remote.
 - The carry limit is two, so both are used on the hut and none can be brought into the final battle.
 - Planting is dangerous: the approach is the most trapped area and she may come out to stop the player.
-- Detonation is a **point of no return**.
+- Detonation is a **point of no return** (Aaron, Session 9): when the second charge goes on, Junie radios to ask if Tom is sure he's ready, then a pop-up pauses the game to say that setting them off starts the final battle and deletes the save.
 
 ### Explosives
 
@@ -512,7 +522,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 - **Blood night:** the game jumps to a special night: red sky, embers and ash, witchfire. **The clock freezes** for the whole fight. Detonating by day jumps straight to night (Aaron, M7).
 - **The station is still attacked** (simulated), so a weak base can still be overrun mid-fight. Secure it first. The attacks run on in real time while the clock is frozen (Aaron, M7).
 - **No escape:** the hut clearing is sealed (ring of thorns or witchfire). Her fight-or-flee logic is off; she attacks until one of them dies.
-- **Attacks:** fast heavy swipes that punish standing still; summoning zombies; spamming snares and hex totems across the ground.
+- **Attacks:** her pathway pattern (retreat, hex, rush), faster and harder: heavier swipes, hexes more often, more summoning, and snares and hex totems spammed round the player. She keeps a few metres inside the witchfire ring so she never snags on its trees.
 - Her current wounds carry in, so pathway fights beforehand make it easier.
 
 ### The ending
@@ -529,7 +539,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 
 ## Encounters
 
-Hand-built set pieces placed by the map generator. The campsite and gas station are the exception: they're part of the fixed opening cluster (see Map: Fixed opening cluster). Every encounter needs nine things: opening cutscene, aesthetic, enemies, loot, dungeon or not, lore, whether it appears every game, its band, and a novel interaction. All are designed below.
+Hand-built set pieces placed by the map generator. The campsite, gas station, storm shelter and military outpost are the exception: they're part of the fixed opening cluster (see Map: Fixed opening cluster). Every encounter needs nine things: opening cutscene, aesthetic, enemies, loot, dungeon or not, lore, whether it appears every game, its band, and a novel interaction. All are designed below.
 
 **More to come (Aaron, Oct 17).** Aaron is redesigning the random encounters, and many more encounter updates will land in this doc. So far the four in the fixed opening cluster (campsite, gas station, storm shelter, military outpost) are fleshed out in full; the rest are still their earlier designs and will change. Each encounter's session takes its design from here, workshopped with Aaron first (rule 10).
 
@@ -1173,6 +1183,7 @@ Eight documents tell the programme's story in order. Each unlocks lines from Ell
 | Group | Trigger | Mainly | Rough count |
 | --- | --- | --- | --- |
 | Day 1 tutorial | Scripted steps | Ellen, Wyatt, Junie | 23 (written, below) |
+| The opening cluster | Gas station (cars, the mutant, the witch confirmed), storm shelter (arrival, the combination, the tapes cutscene), Ellen's call to adventure, the outpost (the lulls between waves, the dogfight) | All | \~25 |
 | Dusk forecast | Each dusk, by margin band | Ellen | \~8 |
 | Alarm and base trouble | Under 50%, doors failing, low batteries, turret dry | Wyatt | \~8 |
 | Dawn reports | Each dawn | Ellen, Wyatt | \~6 |
@@ -1186,7 +1197,7 @@ Eight documents tell the programme's story in order. Each unlocks lines from Ell
 | Final battle and ending | Hut blown, mid-fight, victory dawn | All | \~8 |
 | Idle | Nothing new to say | Each | \~2 each |
 
-Roughly 130–150 lines in total.
+Roughly 155–175 lines in total (the opening cluster added about 25, Session 11), plus the written texts: the owner's diary (drafted above), the owner's note, the field report and the 8 classified documents.
 
 ### Day 1 tutorial lines
 
@@ -1328,9 +1339,10 @@ The goal is graphics as close to Xbox 360 level as a browser on a mid-range tabl
 Cheap techniques to do well:
 
 - **Night sky:** gradient dome, dense starfield with twinkle, a moon with a soft halo, thin clouds drifting across it from a scrolling noise texture, moonlight tinting the whole scene.
-- **Fog and mist:** height fog plus distance fog; low ground-mist layers drifting between trees; fake light shafts (soft billboards) where moonlight or the flashlight cuts through.
-- **Trees:** instanced camera-facing billboard sprites (alpha-cut, several variants in one atlas), wind sway in the vertex shader. Decided with Aaron in M1: every tree is a billboard, near and far.
-- **Ground:** blended tiled textures (dirt, grass, moss, mud, leaf litter) with a detail texture up close, normal maps, scattered rocks, roots and fallen logs.
+- **Fog and mist:** height fog plus distance fog; low ground-mist layers drifting between trees; fake light shafts (soft billboards) where moonlight or the flashlight cuts through. **Fog nights** (Session 10): about one night in three (never night 1), seeing about 38 m, with the draw distance pulled in to match. Look only for now (OPEN_QUESTIONS #137).
+- **The heat scope** (Session 10b): through the semi-auto rifle's scope the world turns cold grey and the living glow white-hot. Anything new that lives (encounter creatures, the family) needs a heat hook.
+- **Trees:** instanced camera-facing billboard sprites (alpha-cut, six Appalachian kinds in one atlas: hemlock, two spruces, white pine, bare oak, dead snag), wind sway in the vertex shader. Decided with Aaron in M1: every canopy is a billboard, near and far; since Session 10 the trees near the player get a solid 3D trunk under the sprite.
+- **Ground:** blended tiled textures (dirt, grass, moss, mud, leaf litter) with a detail texture up close, normal maps, scattered rocks, roots and fallen logs. (Session 10 built the blend; normal maps, roots and fallen logs are for a later style pass.)
 - **The flashlight:** a spotlight with a cookie texture (that imperfect torch pattern) and the one real-time shadow in the game. One shadow-casting light is affordable and is the single biggest atmosphere win.
 - **Post-processing:** filmic tone mapping, bloom on lights and witchfire, colour grading, vignette, subtle film grain.
 - **Particles:** fireflies, embers, dust motes in the flashlight beam, breath on cold nights.
@@ -1348,13 +1360,14 @@ All of this is tiered by the Quality setting so the tablet gets a version that h
 
 ### Assets
 
-- Normal-resolution textures with mipmaps and normal maps, compressed for mobile; a consistent, moody colour palette across all assets.
+- **Art is generated in code** (agreed with Aaron, Session 10): textures, sprites and models are drawn or built at load, with no texture files to download. A consistent, moody colour palette across all assets, kept dark so the torch doesn't glare.
+- **References** (Session 10): Appalachia, US forest rangers, a 1980s made-in-the-USA chainsaw manual, American folklore; Left 4 Dead, Silent Hill, Evil Dead 2.
 
 | Thing | Render as |
 | --- | --- |
-| Zombies | Billboard sprites with 8 facing angles, pre-rendered from lit 3D models so they sit naturally in the scene |
+| Zombies | Billboard sprites with 8 facing angles in one atlas. The plan (OPEN_QUESTIONS #144): render the atlas at load from simple lit 3D bodies, with more variety per variant |
 | Mutants, beetles, the Mothman, aliens, Bigfoot, the witch | Low-poly 3D, animated |
-| Trees | Billboard sprites, instanced, camera-facing (near and far) |
+| Trees | Billboard sprites, instanced, camera-facing (near and far), with solid 3D trunks near the player |
 | Bushes, grass, ferns | Instanced sprites |
 | Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D |
 | Pickups and sigils | Small 3D or sprite with a glow |
@@ -1418,20 +1431,20 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
 /src
   main.js                entry: creates Game
   config.js              ALL tuning numbers
-  core/                  Game (loop, phases), Clock, EventBus, Rng, Input (gamepad + kb/m), SaveSystem, Settings
-  render/                Renderer (dynamic resolution), Sky, Forest, SpriteBatch, PostFX (tone mapping, bloom, grading, grain, CCTV, retro filter, blood night)
-  world/                 MapGraph, MapGenerator, Terrain, FogOfWar, Interiors
-  player/                Player, Weapons, Inventory, Armour, Detection
-  ai/                    Enemy, EnemyManager (pools, LOD tiers), Zombie, Beetle, Alien, MenInBlack, Mothman, Witch
-  sigils/                Sigil, SigilManager, SigilGrounds
-  base/                  Station, Fence, Turret, Defences, Ledger, NightResolver, Forecast
-  encounters/            one module per encounter, plus EncounterRegistry
-  story/                 Dialogue (picker + conditions), Radio, Cutscenes, Lore
-  meta/                  Achievements, Modifiers
-  audio/                 AudioEngine, Ambience, Stingers, Blips
-  ui/                    Hud, Minimap, MapScreen, LedgerUI, ForecastUI, Menus, Subtitles
-  data/                  dialogue.json, cutscenes.json, encounters.json, clearingTypes.json, lootTables.json
-  debug/                 DebugMenu, DebugOverlay
+  core/                  Game (loop, phases), Clock, EventBus, Rng, Input (gamepad + kb/m), SaveStore and saveData, runStats
+  render/                Renderer (dynamic resolution), Sky, Forest, NearTrunks, Atmosphere and the mist, PostFX (tone mapping, bloom, grade, grain, heat scope; CCTV to come), the renderers for zombies, the witch, the station, vehicles, the hut, traps and pickups
+  world/                 MapGraph, MapGenerator, Terrain, GroundField, FogOfWar, Vehicles, Hut, fog nights (Interiors to come)
+  player/                Player, Weapons, ViewModel, Inventory, Armour, Health, Flashlight, Digging
+  combat/                Combat (the hub), WeaponState, hit-scan, aim assist, loot, Explosives
+  ai/                    EnemyManager (pools, sim tiers), Zombie, ZombieDirector, Sigils, detection, marches, revisits, Witch and her routes, hexes and traps (Beetle, Alien, MenInBlack, Mothman to come)
+  base/                  Station, StationState, Turret, siege routing, danger, NightWatch (forecast and alarm), nightResolver
+  encounters/            FinalBattle now; one module per encounter to come
+  story/                 (M8) Dialogue (picker + conditions), Radio, Cutscenes, Lore
+  meta/                  (M12) Achievements, Modifiers
+  audio/                 Sfx now (placeholders); AudioEngine, Ambience, Stingers, Blips in the audio pass
+  ui/                    Hud, Minimap, MapScreen, Ledger, ScopeOverlay, NoReturnNotice, RunEndScreen, StartScreen, Toast (Menus and Subtitles to come)
+  data/                  encounters.json, clearingTypes.json, sigilGrounds.json, loot.json, vehicles.json, ending.json (dialogue.json, cutscenes.json to come)
+  debug/                 DebugMenu (in categories), DebugOverlay
 /tests                   unit tests for pure logic
 ```
 
@@ -1606,7 +1619,12 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 ## Open questions
 
 - The full text of the 8 classified documents (outlines are done).
-- The rest of the dialogue lines (Day 1 is written; about 110–130 to go).
+- The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
+- **The encounter redesign is still under way** (Aaron, Oct 17): many more encounter updates are coming. The opening cluster's four are done; the rest are earlier designs.
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). The hunting rifle is settled (the gas station's safe).
+- Should one of the north sigil grounds sit inside the opening cluster? (See Map: Fixed opening cluster.)
+- The setting year (about 2003, Aaron's leaning) and the time capsule's date (proposed 1903). See Ideas for later.
+- The gas station owner's name.
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
 - Art direction details for the Men in Black (sprite or 3D).
