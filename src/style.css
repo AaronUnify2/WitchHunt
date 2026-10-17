@@ -593,48 +593,19 @@ body {
 }
 
 /* M6: the station-under-attack banner (top centre, under the toasts) */
-/* M7 step 6: the end of a run (placeholders until M8's cutscenes and Session 19's look). */
+/* M7 step 6: the end of a run. M8: the ending and defeat are cutscenes;
+   this is the run summary after them (the final look is Session 28's). */
 .run-end {
   position: absolute;
   inset: 0;
   z-index: 20;
   font-family: ui-monospace, monospace;
   color: #e8e0cc;
-}
-
-.run-end.hidden { display: none; }
-
-.run-end-black {
-  position: absolute;
-  inset: 0;
-  background: #000; /* its opacity is set each frame (the defeat's fade) */
-}
-
-.run-end-card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(80vw, 46rem);
-  text-align: center;
+  background: #000;
   animation: run-end-in 0.8s ease-out;
 }
 
-.run-end-card.hidden { display: none; }
-.run-end-caption { font-size: 0.8em; letter-spacing: 0.25em; opacity: 0.75; margin-bottom: 1rem; }
-.run-end-text { font-size: 1.35em; line-height: 1.5; }
-.run-end-speaker { margin-top: 0.8rem; font-size: 0.8em; letter-spacing: 0.3em; color: #d8b870; }
-
-/* A trail camera's feed: green-grey, scan lines, a timestamp. */
-.run-end-card.cctv {
-  padding: 3rem 2rem;
-  background: repeating-linear-gradient(0deg, rgba(160, 200, 160, 0.08) 0 2px, transparent 2px 4px), #0c120c;
-  color: #b8d8b0;
-  outline: 1px solid rgba(160, 200, 160, 0.3);
-}
-
-.run-end-card.cctv .run-end-caption { text-align: left; color: #e04030; }
-.run-end-card.dawn { padding: 3rem 2rem; background: linear-gradient(180deg, #2a2440, #c88a60); color: #fff4e0; }
+.run-end.hidden { display: none; }
 
 .run-end-summary {
   position: absolute;
@@ -648,40 +619,24 @@ body {
   text-align: center;
 }
 
-.run-end-summary.hidden { display: none; }
 .run-end-summary h2 { margin: 0 0 0.4rem; letter-spacing: 0.25em; color: #d8b870; }
 .run-end.defeat .run-end-summary h2 { color: #c84838; }
 .run-end-summary table { margin: 1rem auto; border-collapse: collapse; }
 .run-end-summary td { padding: 0.2rem 0.8rem; text-align: left; }
 .run-end-summary td + td { text-align: right; color: #fff; }
-.run-end-prompt, .run-end-skip { font-size: 0.8em; opacity: 0.7; }
-.run-end-skip { position: absolute; right: 1.5rem; bottom: 1rem; margin: 0; }
-.run-end-skip.hidden { display: none; }
+.run-end-prompt { font-size: 0.8em; opacity: 0.7; }
 
 @keyframes run-end-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* M7 step 5: the final battle's letterbox bars and red flash. */
+/* M7 step 5: the final battle's red flash (M8: its letterbox is the cutscene's). */
 .final-battle {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-
-.final-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 0;
-  background: #000;
-  transition: height 0.6s;
-}
-
-.final-bar.top { top: 0; }
-.final-bar.bottom { bottom: 0; }
-.final-battle.letterbox .final-bar { height: 12vh; }
 
 .final-flash {
   position: absolute;
@@ -1002,4 +957,81 @@ body {
   49% { opacity: 1; }
   83% { opacity: 0.92; }
   84% { opacity: 1; }
+}
+
+/* ---- Cutscenes (M8). Placeholder look: the final OSD font is Session 28's. ---- */
+.cutscene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.cs-fade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+
+.cs-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #000;
+  transition: height 0.5s;
+}
+
+.cs-bar.top { top: 0; }
+.cs-bar.bottom { bottom: 0; }
+.cutscene.letterbox .cs-bar { height: 11vh; }
+
+/* The camera's on-screen display: its name, the time, REC, a watermark. */
+.cs-osd {
+  position: absolute;
+  inset: 6vh 6vw;
+  color: #f4f4ec;
+  font-size: clamp(12px, 2.4vmin, 22px);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 2px #000, 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.cs-osd-name { position: absolute; top: 0; left: 0; }
+.cs-osd-time { position: absolute; bottom: 0; left: 0; }
+.cs-osd-rec { position: absolute; top: 0; right: 0; color: #ff3a2a; }
+
+.cs-osd-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-size: 2.6em;
+  font-weight: bold;
+  letter-spacing: 0.4em;
+  color: rgba(220, 230, 255, 0.16);
+  border: 3px solid rgba(220, 230, 255, 0.16);
+  padding: 0.2em 0.6em;
+}
+
+.cs-skip {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1rem;
+  margin: 0;
+  color: rgba(240, 238, 230, 0.7);
+  font-size: 0.85em;
+}
+
+/* The HUD steps aside while a cutscene plays. */
+body.in-cutscene .hud,
+body.in-cutscene .minimap,
+body.in-cutscene .forecast,
+body.in-cutscene .toast {
+  visibility: hidden;
+}
+
+/* Subtitles sit above the letterbox bar. */
+body.in-cutscene .subtitles {
+  z-index: 6;
 }

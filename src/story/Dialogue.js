@@ -93,6 +93,17 @@ export class Dialogue {
     return this.deliver(line, vars, force);
   }
 
+  // Play a line by id past its conditions and the rate limit (a cutscene's
+  // caption). radio: true / false, or null to work it out.
+  play(id, vars = {}, radio = null) {
+    const line = this.byId.get(id);
+    if (!line) {
+      console.warn(`No dialogue line ${id}`);
+      return false;
+    }
+    return this.deliver(line, vars, true, radio);
+  }
+
   // Talk to a family member face to face: what they say, or a note that
   // they've nothing new. Returns the line played, or null.
   talkTo(speaker) {

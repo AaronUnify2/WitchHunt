@@ -9,6 +9,8 @@
 // touch toward the shadow colour (a faded, printed look: Aaron's 1980s
 // chainsaw manual), and sets saturation and contrast. The blood night
 // pulls it toward grade.blood.
+//
+// M8: a last, optional pass for a cutscene's camera look (setLook).
 
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -93,6 +95,93 @@ const GradeShader = {
   `,
 };
 
+// M8: a cutscene's camera look (CCTV, trail cam, camcorder, military,
+// government, scope). Off (uOn 0) the pass is disabled, so it costs nothing.
+const LookShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uTint: { value: new THREE.Color(1, 1, 1) },
+    uSaturation: { value: 1 },
+    uContrast: { value: 1 },
+    uGain: { value: 1 },
+    uNoise: { value: 0 },
+    uScanlines: { value: 0 },
+    uLines: { value: 240 },
+    uBend: { value: 0 },
+    uVignette: { value: 0 },
+    uTear: { value: 0 },
+    uStatic: { value: 0 },
+    uChroma: { value: 0 },
+    uMask: { value: 0 },
+    uAspect: { value: 1 },
+    uTexel: { value: new THREE.Vector2(1 / 1024, 1 / 768) },
+  },
+  vertexShader: GradeShader.vertexShader,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse;
+    uniform float uTime;
+    uniform vec3 uTint;
+    uniform float uSaturation;
+    uniform float uContrast;
+    uniform float uGain;
+    uniform float uNoise;
+    uniform float uScanlines;
+    uniform float uLines;
+    uniform float uBend;
+    uniform float uVignette;
+    uniform float uTear;
+    uniform float uStatic;
+    uniform float uChroma;
+    uniform float uMask;
+    uniform float uAspect;
+    uniform vec2 uTexel;
+    varying vec2 vUv;
+
+    const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+
+    void main() {
+      // Barrel lens.
+      vec2 c = vUv - 0.5;
+      float r2 = dot(c, c);
+      vec2 uv = 0.5 + c * (1.0 + uBend * r2);
+      // Torn rows: now and then a band of rows slides sideways.
+      float row = floor(uv.y * uLines * 0.25);
+      float t = floor(uTime * 12.0);
+      float tearOn = step(1.0 - uTear * 0.15, hash(vec2(row, t)));
+      uv.x += tearOn * (hash(vec2(t, row)) - 0.5) * 0.08;
+      if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+      }
+      vec2 off = vec2(uChroma * uTexel.x, 0.0);
+      vec3 col = vec3(texture2D(tDiffuse, uv + off).r, texture2D(tDiffuse, uv).g, texture2D(tDiffuse, uv - off).b);
+      col *= uGain;
+      float l = dot(col, LUMA);
+      col = mix(vec3(l), col, uSaturation) * uTint;
+      col = (col - 0.5) * uContrast + 0.5;
+      // Scanlines and static.
+      col *= 1.0 - uScanlines * (0.5 + 0.5 * sin(uv.y * uLines * 3.14159));
+      float n = hash(uv * 900.0 + fract(uTime * 7.0) * 50.0);
+      col += (n - 0.5) * uNoise;
+      col = mix(col, vec3(n), uStatic);
+      // Vignette, and the scope's round mask.
+      col *= 1.0 - uVignette * smoothstep(0.15, 0.55, r2 * 2.0);
+      if (uMask > 0.0) {
+        vec2 m = vec2(c.x * uAspect, c.y);
+        float d = length(m);
+        col *= 1.0 - smoothstep(0.40, 0.42, d);
+        col = mix(col, vec3(0.0), (step(abs(m.x), 0.0015) + step(abs(m.y), 0.0015)) * step(d, 0.4) * 0.9);
+      }
+      gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    }
+  `,
+};
+
 const GRADE_COLOURS = ['shadows', 'highlights'];
 const GRADE_NUMBERS = ['saturation', 'contrast', 'split', 'lift'];
 
@@ -127,7 +216,46 @@ export class PostFX {
     this.bloodKey = toKey(c.grade.blood);
     this.setTime(12, 0);
 
-    for (const pass of [this.renderPass, this.bloom, this.output, this.grade]) this.composer.addPass(pass);
+    this.look = new ShaderPass(LookShader);
+    this.look.enabled = false;
+    this.lookName = null;
+    this.staticFlash = 0;
+    this.staticFade = 1;
+    this.dropout = 0;
+
+    for (const pass of [this.renderPass, this.bloom, this.output, this.grade, this.look]) this.composer.addPass(pass);
+  }
+
+  // M8: a cutscene's camera look by name (config.postFX.looks), or null for none.
+  setLook(name) {
+    const k = name ? this.cfg.looks[name] : null;
+    this.lookName = k ? name : null;
+    this.look.enabled = Boolean(k);
+    if (!k) return;
+    const u = this.look.uniforms;
+    u.uTint.value.setHex(k.tint);
+    u.uSaturation.value = k.saturation;
+    u.uContrast.value = k.contrast;
+    u.uGain.value = k.gain;
+    u.uNoise.value = k.noise;
+    u.uScanlines.value = k.scanlines;
+    u.uLines.value = k.lines;
+    u.uBend.value = k.bend;
+    u.uVignette.value = k.vignette;
+    u.uTear.value = k.tear;
+    u.uChroma.value = k.chroma;
+    u.uMask.value = k.mask;
+    this.dropout = k.dropout;
+  }
+
+  // M8: a burst of full static (a feed glitching or dying), 0..1, fading over `seconds`.
+  glitch(amount = 1, seconds = 0.4) {
+    this.staticFlash = amount;
+    this.staticFade = amount / Math.max(0.01, seconds);
+  }
+
+  get lookActive() {
+    return this.look.enabled;
   }
 
   // The grade for the clock-face hour, pulled toward the blood night's by blood (0..1).
@@ -162,10 +290,21 @@ export class PostFX {
   setSize(width, height, pixelRatio) {
     this.composer.setPixelRatio(pixelRatio);
     this.composer.setSize(width, height);
+    const u = this.look.uniforms;
+    u.uAspect.value = width / Math.max(1, height);
+    u.uTexel.value.set(1 / Math.max(1, width * pixelRatio), 1 / Math.max(1, height * pixelRatio));
   }
 
   render(dt) {
     this.grade.uniforms.uTime.value += dt;
+    if (this.look.enabled) {
+      const u = this.look.uniforms;
+      u.uTime.value += dt;
+      // A battered feed drops whole frames to static now and then.
+      if (this.dropout > 0 && Math.random() < this.dropout * dt) this.glitch(0.8, 0.15); // cosmetic: not gameplay
+      this.staticFlash = Math.max(0, this.staticFlash - this.staticFade * dt);
+      u.uStatic.value = this.staticFlash;
+    }
     this.composer.render(dt);
   }
 
@@ -173,6 +312,7 @@ export class PostFX {
     this.bloom.dispose();
     this.output.dispose();
     this.grade.dispose();
+    this.look.dispose();
     this.composer.dispose();
   }
 }

@@ -81,6 +81,12 @@ export class Renderer {
     this.resize();
   }
 
+  // M8: what's drawn from (a cutscene's camera, or the player's).
+  setCamera(camera) {
+    this.camera = camera;
+    this.postFX.setCamera(camera);
+  }
+
   setPostFX(enabled, bloom) {
     this.postEnabled = enabled;
     this.postFX.setBloom(bloom);
@@ -102,7 +108,8 @@ export class Renderer {
       camera.updateProjectionMatrix();
     }
     this.renderer.info.reset();
-    if (this.postEnabled) this.postFX.render(dt);
+    // M8: a cutscene's camera look needs the post chain, whatever the quality.
+    if (this.postEnabled || this.postFX.lookActive) this.postFX.render(dt);
     else this.renderer.render(this.scene, camera);
   }
 

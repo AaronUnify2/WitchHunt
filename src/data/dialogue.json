@@ -31,6 +31,12 @@
     { "id": "nights.arrival.urgent", "_note": "Placeholder from M6 (NightWatch): a group at the fence that will get through.", "speaker": "wyatt", "channel": "radio", "repeatable": true, "kind": "urgent", "urgent": true, "text": "{who} at the {where}! That fence isn't going to last the night. Get back here, Tom!" },
     { "id": "nights.arrival.calm", "_note": "Placeholder from M6 (NightWatch): a group at the fence that won't.", "speaker": "wyatt", "channel": "radio", "repeatable": true, "kind": "calm", "text": "{who} at the {where}. Looks like the fence will hold tonight." },
     { "id": "nights.alarm", "_note": "Placeholder from M6 (NightWatch): security below half of dusk's.", "speaker": "wyatt", "channel": "radio", "repeatable": true, "kind": "alarm", "urgent": true, "text": "Tom! They're through the fence, get back here!" },
+    { "id": "ending.victory.junie", "_note": "Placeholder ending lines from M7 (DESIGN.md 'The ending'), played by the cutscene ending.victory.", "speaker": "junie", "channel": "face", "repeatable": true, "text": "Is it over? Dad, is it really over?", "next": "ending.victory.ellen" },
+    { "id": "ending.victory.ellen", "speaker": "ellen", "channel": "face", "repeatable": true, "text": "Whatever was coming through... it's quiet now. It's quiet.", "next": "ending.victory.wyatt" },
+    { "id": "ending.victory.wyatt", "speaker": "wyatt", "channel": "face", "repeatable": true, "text": "We held it. All of us." },
+    { "id": "ending.defeat.ellen", "_note": "Placeholder defeat lines from M7, played by the cutscene ending.defeat over a black screen.", "speaker": "ellen", "channel": "radio", "repeatable": true, "text": "Tom? Tom, can you hear me?", "next": "ending.defeat.junie" },
+    { "id": "ending.defeat.junie", "speaker": "junie", "channel": "radio", "repeatable": true, "text": "Dad? Dad, please answer.", "next": "ending.defeat.wyatt" },
+    { "id": "ending.defeat.wyatt", "speaker": "wyatt", "channel": "radio", "repeatable": true, "text": "Dad, come in. Come in!" },
     { "id": "noReturn.radio", "_note": "Aaron (Session 9, #130): both charges on the hut.", "on": "hut:armed", "speaker": "junie", "channel": "radio", "repeatable": true, "urgent": true, "text": "Dad? Are you sure you're ready? Once that hut goes she's got nowhere left to run. You'll have to finish her." }
   ]
 }

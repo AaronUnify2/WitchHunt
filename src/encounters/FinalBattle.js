@@ -1,6 +1,6 @@
 // The final battle (M7 step 5; DESIGN.md "Final battle"). Destroying the
 // hut is the point of no return:
-//  - A short placeholder cutscene (the real cutscene system is M8):
+//  - A short cutscene (M8: "final.intro" in src/data/cutscenes.json):
 //    letterbox bars, a red flash, the camera turns to the wreck and she
 //    rises out of it. Your controls are locked while it plays.
 //  - The blood night: if it's day the clock jumps to night (Aaron, M7),
@@ -26,7 +26,8 @@ export class FinalBattle {
     this.bus = bus;
   }
 
-  // ctx: { root, witch, hut, player, clock, sky, world, skipToNight(), combat }.
+  // ctx: { root, witch, hut, player, clock, sky, world, skipToNight(), combat,
+  // playCutscene(id) (M8) }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.state = 'idle'; // 'intro' | 'fight' | 'over'
@@ -43,6 +44,10 @@ export class FinalBattle {
       this.bus.on('hut:destroyed', () => this.start()),
       this.bus.on('witch:killed', () => {
         if (this.state !== 'idle') this.state = 'over';
+      }),
+      // Skipping the intro starts the fight at once.
+      this.bus.on('cutscene:ended', ({ id }) => {
+        if (id === 'final.intro' && this.state === 'intro') this.fight();
       }),
     ];
   }
@@ -67,8 +72,13 @@ export class FinalBattle {
     if (this.clock.phase !== 'night') this.skipToNight();
     this.clock.setPaused(true);
     this.flash(1);
-    this.letterbox(true);
+    this.playCutscene?.('final.intro');
     this.bus.emit('final:started');
+  }
+
+  fight() {
+    this.state = 'fight';
+    this.bus.emit('final:fight');
   }
 
   // After the player's own step: hold them (and her) inside the ring, run
@@ -77,18 +87,8 @@ export class FinalBattle {
     if (this.state === 'idle') return;
     this.timer += dt;
     const fc = this.fc;
-    if (this.state === 'intro') {
-      // The camera turns to the wreck as she rises.
-      const p = this.player;
-      const want = Math.atan2(p.position.x - this.witch.x, p.position.z - this.witch.z);
-      p.yaw = turnToward(p.yaw, want, fc.introTurnRate * dt);
-      p.pitch += (0.12 - p.pitch) * Math.min(1, dt * 3);
-      if (this.timer >= fc.introSeconds) {
-        this.state = 'fight';
-        this.letterbox(false);
-        this.bus.emit('final:fight');
-      }
-    }
+    // The intro cutscene turns the camera to the wreck as she rises.
+    if (this.state === 'intro' && this.timer >= fc.introSeconds) this.fight();
     if (this.active) {
       this.blood = Math.min(1, this.blood + dt / fc.bloodRampSeconds);
       this.fire = Math.min(1, this.fire + dt / fc.bloodRampSeconds);
@@ -120,19 +120,15 @@ export class FinalBattle {
     }
   }
 
-  // ---- the screen: letterbox bars and a red flash ----------------------------------
+  // ---- the screen: a red flash (the letterbox is the cutscene's) ----------------------------------
 
   initDom(root) {
     this.el = document.createElement('div');
     this.el.className = 'final-battle';
-    this.el.innerHTML = '<div class="final-bar top"></div><div class="final-bar bottom"></div><div class="final-flash"></div>';
+    this.el.innerHTML = '<div class="final-flash"></div>';
     root.appendChild(this.el);
     this.flashEl = this.el.querySelector('.final-flash');
     this.flashEl.style.opacity = '0';
-  }
-
-  letterbox(on) {
-    this.el.classList.toggle('letterbox', on);
   }
 
   flash(amount) {
@@ -267,11 +263,4 @@ function wrap(v, centre, size) {
 function hash(i, k) {
   const s = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
   return s - Math.floor(s);
-}
-
-function turnToward(from, to, max) {
-  let d = to - from;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return from + Math.max(-max, Math.min(max, d));
 }

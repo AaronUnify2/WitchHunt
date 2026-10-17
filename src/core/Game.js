@@ -38,6 +38,7 @@ import { Subtitles } from '../ui/Subtitles.js';
 import { Dialogue } from '../story/Dialogue.js';
 import { FamilyTalk } from '../story/FamilyTalk.js';
 import { TrailCams } from '../story/TrailCams.js';
+import { Cutscenes } from '../story/Cutscenes.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
@@ -102,11 +103,11 @@ export class Game {
     this.initNightWatch(root);
     this.initExplosives();
     this.initFinalBattle(root);
-    this.initStory();
+    this.initStory(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
     this.victoryTimer = -1;
-    this.runEnd = new RunEndScreen(cfg.ending, this.bus, this.combat.sfx);
+    this.runEnd = new RunEndScreen(cfg.ending, this.bus, (id, opts) => this.cutscenes.play(id, opts));
     // Session 9 (#130): both charges on the hut warn there's no going back.
     this.noReturn = new NoReturnNotice(cfg.ending, this.bus);
     this.noReturn.init(root);
@@ -203,6 +204,7 @@ export class Game {
       world: this.world,
       combat: this.combat,
       skipToNight: () => this.skipToPhase('night'),
+      playCutscene: (id, opts) => this.cutscenes.play(id, opts), // M8: its intro
     });
   }
 
@@ -290,8 +292,8 @@ export class Game {
     });
   }
 
-  // M8: talking to the family face to face, and the trail cameras.
-  initStory() {
+  // M8: talking to the family face to face, the trail cameras, cutscenes.
+  initStory(root) {
     this.familyTalk = new FamilyTalk(this.cfg, this.bus);
     this.familyTalk.init(this.scene, {
       dialogue: this.dialogue,
@@ -313,6 +315,24 @@ export class Game {
       sfx: this.combat.sfx,
       notify: (text) => this.toast.show(text, this.cfg.ui.toastSeconds * 2),
       teleport: (x, z, yaw) => this.player.teleport(x, z, yaw),
+    });
+    this.cutscenes = new Cutscenes(this.cfg, this.bus);
+    this.cutscenes.init({
+      root,
+      scene: this.scene,
+      renderer: this.renderer,
+      postFX: this.renderer.postFX,
+      player: this.player,
+      clock: this.clock,
+      world: this.world,
+      station: this.station,
+      witch: this.witch,
+      hut: this.hut,
+      trailCams: this.trailCams,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      sfx: this.combat.sfx,
+      drawDistance: () => this.drawDistance,
     });
   }
 
@@ -378,7 +398,7 @@ export class Game {
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
-    this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}`);
+    this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}`);
   }
 
   // Each system adds its tools to its category (DEBUG in DebugMenu.js).
@@ -404,6 +424,7 @@ export class Game {
     this.vehicles.addDebugItems(menu);
     this.mapUi.addDebugItems(menu);
     this.atmosphere.addDebugItems(menu, (text) => this.toast.show(text));
+    this.cutscenes.addDebugItems(menu);
     this.dialogue.addDebugItems(menu);
     this.trailCams.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
@@ -528,7 +549,8 @@ export class Game {
   // takes over from the gun, and back as you lower it.
   updateThermal() {
     const w = this.combat.weapons;
-    const on = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive;
+    // M8: never through a cutscene.
+    const on = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive && !this.cutscenes.active;
     const t = this.cfg.viewModel.thermal;
     if (on) {
       // The witch's glow fades up close, like the zombies' (Aaron).
@@ -753,7 +775,8 @@ export class Game {
     const t0 = performance.now();
     this.update(dt);
     const t1 = performance.now();
-    this.renderer.render(dt);
+    // M8: a CCTV feed's low frame rate holds the last picture between its frames.
+    if (!this.cutscenes.holdFrame(dt)) this.renderer.render(dt);
     const t2 = performance.now();
     this.overlay.recordFrame(dt, t1 - t0, t2 - t1);
     if (this.dynamicResolution.update(dt)) this.renderer.setScale(this.dynamicResolution.scale);
@@ -768,8 +791,12 @@ export class Game {
     // The debug menu and the map screen stop the action. The map screen
     // pauses the clock too (Aaron, M4); the debug menu lets it run on.
     // The point-of-no-return pop-up (Session 9) holds the game until it's closed.
-    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen);
-    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen;
+    // M8: a cutscene pauses the clock (Aaron) and, unless it's in the moment
+    // (first person), holds the world still; A / Enter skips it.
+    const cs = this.cutscenes;
+    cs.update(dt, this.input, !this.debugMenu.isOpen);
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active);
+    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld;
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
     // Debug fast-forward (M6): the whole world (clock, zombies, marches,
@@ -785,17 +812,20 @@ export class Game {
     const enemies = this.combat.enemies;
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
     const witchOnMap = this.witch.showOnMap ? this.witch : null;
-    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked, sigilsOnMap, tierColors, witchOnMap);
+    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked && !cs.active, sigilsOnMap, tierColors, witchOnMap);
+    // M8: a cutscene draws from its own camera, at its own hour (the grade and sky).
+    const camera = cs.ownCamera ? cs.camera : this.player.camera;
+    const hour = cs.hour ?? this.clock.hourOfDay;
     this.atmosphere.preUpdate(this.clock, this.sky);
-    this.sky.update(dt, this.clock.hourOfDay, this.player.camera);
+    this.sky.update(dt, hour, camera);
     this.updateThermal();
-    this.atmosphere.setViewport(this.renderer.canvas.height, this.player.camera.fov);
-    this.atmosphere.update(dt, this.player.camera, this.sky, this.flashlight);
-    this.renderer.postFX.setTime(this.clock.hourOfDay, this.sky.blood); // Session 10: the colour grade
+    this.atmosphere.setViewport(this.renderer.canvas.height, camera.fov);
+    this.atmosphere.update(dt, camera, this.sky, this.flashlight);
+    this.renderer.postFX.setTime(hour, this.sky.blood); // Session 10: the colour grade
     const view = this.atmosphere.viewDistance(this.presetDrawDistance, this.sky.fog.far);
     if (view !== this.drawDistance) this.setViewDistance(view);
-    this.world.update(dt, this.player.camera.position);
-    this.hut.update(dt, this.player.camera.position, this.drawDistance);
+    this.world.update(dt, camera.position);
+    this.hut.update(dt, camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
     if (playing && this.combat.alive) this.stats.seconds += dt;
@@ -820,8 +850,9 @@ export class Game {
     if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
-    const locked = this.station.ledger.isOpen || !first || this.finalBattle.cinematic;
-    const input = first && !this.finalBattle.cinematic ? this.input : this.lockedInput;
+    const cinematic = this.finalBattle.cinematic || this.cutscenes.locksControls;
+    const locked = this.station.ledger.isOpen || !first || cinematic;
+    const input = first && !cinematic ? this.input : this.lockedInput;
     const controls = locked ? this.lockedInput : this.input;
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
     this.combat.update(dt, input, playing, daylight, locked);
@@ -853,6 +884,7 @@ export class Game {
     this.toast.dispose();
     this.mapUi.dispose();
     this.nightWatch.dispose();
+    this.cutscenes.dispose();
     this.trailCams.dispose();
     this.familyTalk.dispose();
     this.dialogue.dispose();

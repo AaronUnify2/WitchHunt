@@ -1,59 +1,45 @@
-// The end of a run (M7 step 6; DESIGN.md "The ending"). Placeholders: the
-// cutscene system (M8) replaces the cards, the Narrative Designer the
-// lines (src/data/ending.json), Session 19 the look.
-//  - Victory: after the witch bursts apart and the red drains away (in the
-//    world), cards: trail cam after trail cam, Ground Zero going dark,
-//    dawn with the family, their closing lines. Then the run summary.
-//  - Defeat (you died, or the station fell): the screen fades to black as
-//    the radio fills with static and the family call Tom's name. No
-//    graphic scene. Then the run summary.
-//  - A / Enter skips a card; on the summary it starts a new run
-//    ('run:newRequested'; Game deletes the save and loads a fresh map).
+// The end of a run (M7 step 6; DESIGN.md "The ending"). M8: the ending
+// and the defeat are cutscenes (src/data/cutscenes.json):
+//  - Victory ("ending.victory"): after the witch bursts apart and the red
+//    drains away, trail cam after trail cam as the dead fall, Ground Zero
+//    going dark, dawn with the family and their closing lines.
+//  - Defeat ("ending.defeat"; you died, or the station fell): the screen
+//    fades to black as the radio fills with static and the family call
+//    Tom's name. No graphic scene.
+// Then the run summary. A / Enter skips the cutscene; on the summary it
+// starts a new run ('run:newRequested'; Game deletes the save and loads a
+// fresh map). The summary's final look is Session 28's.
 
-import endingData from '../data/ending.json';
 import { summaryRows } from '../core/runStats.js';
 
 export class RunEndScreen {
-  constructor(endingConfig, bus, sfx) {
+  // playCutscene(id, opts): Cutscenes.play (false if it can't).
+  constructor(endingConfig, bus, playCutscene) {
     this.cfg = endingConfig;
     this.bus = bus;
-    this.sfx = sfx;
-    this.data = endingData;
+    this.playCutscene = playCutscene;
   }
 
   init(root) {
     this.el = document.createElement('div');
     this.el.className = 'run-end hidden';
     this.el.innerHTML = `
-      <div class="run-end-black"></div>
-      <div class="run-end-card">
-        <div class="run-end-caption"></div>
-        <div class="run-end-text"></div>
-        <div class="run-end-speaker"></div>
-      </div>
-      <div class="run-end-summary hidden">
+      <div class="run-end-summary">
         <h2></h2>
         <p class="run-end-reason"></p>
         <table></table>
         <p class="run-end-prompt">A / Enter: start a new run</p>
       </div>
-      <p class="run-end-skip">A / Enter: skip</p>
     `;
     root.appendChild(this.el);
     const q = (s) => this.el.querySelector(s);
-    this.blackEl = q('.run-end-black');
-    this.cardEl = q('.run-end-card');
-    this.captionEl = q('.run-end-caption');
-    this.textEl = q('.run-end-text');
-    this.speakerEl = q('.run-end-speaker');
-    this.summaryEl = q('.run-end-summary');
     this.titleEl = q('.run-end-summary h2');
     this.reasonEl = q('.run-end-reason');
     this.tableEl = q('.run-end-summary table');
-    this.skipEl = q('.run-end-skip');
     this.hide();
   }
 
+  // Open from the moment the run ends (its cutscene playing) until a new run.
   get isOpen() {
     return this.kind !== null;
   }
@@ -66,46 +52,22 @@ export class RunEndScreen {
     this.reason = reason;
     this.stats = stats;
     this.nights = nights;
-    this.cards = kind === 'victory' ? this.data.victory : this.data.defeat;
-    this.index = -1;
-    this.timer = 0;
-    this.fade = 0;
-    this.staticTimer = 0;
-    this.el.className = `run-end ${kind}`;
-    this.summaryEl.classList.add('hidden');
-    this.cardEl.classList.add('hidden');
-    this.skipEl.classList.remove('hidden');
-    // Defeat fades to black before the voices; victory cuts to its first card.
-    this.blackEl.style.opacity = kind === 'victory' ? '1' : '0';
-    if (kind === 'victory') this.next();
+    this.summaryShown = false;
+    this.summaryTime = 0;
+    if (!this.playCutscene(`ending.${kind}`, { onDone: () => this.showSummary() })) this.showSummary();
   }
 
   hide() {
     this.kind = null;
+    this.summaryShown = false;
     this.el.className = 'run-end hidden';
   }
 
-  next() {
-    this.index++;
-    this.timer = 0;
-    if (this.index >= this.cards.length) {
-      this.showSummary();
-      return;
-    }
-    const card = this.cards[this.index];
-    this.cardEl.className = `run-end-card ${card.style ?? 'line'}`;
-    this.captionEl.textContent = card.caption ?? '';
-    // A spoken line is quoted, with who says it; the radio's static isn't.
-    const spoken = Boolean(card.speaker) && card.speaker !== 'Radio';
-    this.textEl.textContent = spoken ? `"${card.text}"` : card.text;
-    this.speakerEl.textContent = spoken ? card.speaker.toUpperCase() : '';
-  }
-
   showSummary() {
-    this.index = this.cards.length;
-    this.cardEl.classList.add('hidden');
-    this.skipEl.classList.add('hidden');
-    this.summaryEl.classList.remove('hidden');
+    if (!this.isOpen) return;
+    this.summaryShown = true;
+    this.summaryTime = 0;
+    this.el.className = `run-end ${this.kind}`;
     this.titleEl.textContent = this.title;
     this.reasonEl.textContent = this.reason ?? '';
     this.tableEl.innerHTML = summaryRows(this.stats, this.nights)
@@ -113,34 +75,12 @@ export class RunEndScreen {
       .join('');
   }
 
-  // input: the raw controls (A / Enter skips or starts a new run).
+  // input: the raw controls (A / Enter starts a new run, once the summary
+  // has been up a moment: the press that skipped the cutscene doesn't count).
   update(dt, input) {
-    if (!this.isOpen) return;
-    const c = this.cfg;
-    const confirm = input.wasPressed('menuConfirm');
-    if (this.index >= this.cards.length) {
-      if (confirm) this.bus.emit('run:newRequested');
-      return;
-    }
-    // Defeat: the fade to black, the radio's static under the voices.
-    if (this.kind === 'defeat') {
-      this.fade = Math.min(1, this.fade + dt / c.defeatFadeSeconds);
-      this.blackEl.style.opacity = String(this.fade);
-      this.staticTimer -= dt;
-      if (this.staticTimer <= 0) {
-        this.staticTimer = c.staticEvery;
-        this.sfx.play('radioStatic');
-      }
-      if (this.index < 0) {
-        if (this.fade >= 1 || confirm) this.next();
-        return;
-      }
-    }
-    this.timer += dt;
-    this.cardEl.classList.toggle('hidden', false);
-    const card = this.cards[this.index];
-    const seconds = card.style === 'line' || this.kind === 'defeat' ? c.lineSeconds : c.cardSeconds;
-    if (confirm || this.timer >= seconds) this.next();
+    if (!this.summaryShown) return;
+    this.summaryTime += dt;
+    if (this.summaryTime > this.cfg.summaryInputDelay && input.wasPressed('menuConfirm')) this.bus.emit('run:newRequested');
   }
 
   dispose() {

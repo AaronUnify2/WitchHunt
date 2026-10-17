@@ -1,0 +1,303 @@
+{
+  "_note": "Every cutscene (M8; DESIGN.md 'Cutscenes'), in one timeline format: story/cutsceneTimeline.js explains positions (in an anchor's frame: x right, y up, z ahead), camera keys and events. Anchors: player, home, homeDoor, hut, witch, trailCam (the camera that saw her, else camera 1), nearestClearing, clearing:<encounter id>. style: cctv | firstPerson | sweep | black. look: config.postFX.looks. hour: the grade and sky while it plays (else the clock's). light: the camera's light on the actors (else config.cutscenes.actorLight for its look). fps: a CCTV feed's frame rate. world: 'run' keeps the world going (else it holds still). Events: line (dialogue.json id; radio true/false), text, move, pose (stand/kneel/down), show, hide, flare, glitch, fade, emit, lookAt, shake, osd (cut to another camera: look, hour, osd), sfx. 'placeholder': the shot is a stand-in until its encounter session makes it properly. Every cutscene is in the debug menu's Cutscenes category (Aaron, Session 11).",
+  "cutscenes": [
+    {
+      "id": "opening.coldOpen",
+      "name": "Opening: the cold open at Ground Zero (government CCTV)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "government",
+      "fps": 12,
+      "hour": 2.1,
+      "osd": { "name": "SITE GZ  CAM 02", "time": "clock", "rec": true, "mark": "CLASSIFIED" },
+      "camera": [
+        { "at": 0, "anchor": "clearing:groundZero", "pos": [-10, 7, -9], "look": [0, 4, 6] },
+        { "at": 9, "anchor": "clearing:groundZero", "pos": [-8.5, 6.4, -7], "look": [0, 4.2, 6] }
+      ],
+      "actors": [
+        { "id": "ring", "kind": "ring", "anchor": "clearing:groundZero", "pos": [0, 0, 7], "size": 5, "color": 10475775 },
+        { "id": "mib1", "kind": "figure", "look": "mib", "anchor": "clearing:groundZero", "pos": [-3.5, 0, 2] },
+        { "id": "mib2", "kind": "figure", "look": "mib", "anchor": "clearing:groundZero", "pos": [2.5, 0, 1.2] },
+        { "id": "mib3", "kind": "figure", "look": "mib", "anchor": "clearing:groundZero", "pos": [0.5, 0, -1.5], "yaw": 20 }
+      ],
+      "tracks": [
+        { "at": 1.5, "do": "move", "actor": "mib3", "to": [0.8, 0, 3], "seconds": 3 },
+        { "at": 3.2, "do": "flare", "actor": "ring", "amount": 0.15, "seconds": 1 },
+        { "at": 5.4, "do": "flare", "actor": "ring", "amount": 0.6, "seconds": 1.6 },
+        { "at": 5.6, "do": "glitch", "amount": 0.5, "seconds": 0.5 },
+        { "at": 6.4, "do": "move", "actor": "mib1", "to": [-6, 0, -2], "seconds": 1.4 },
+        { "at": 7.0, "do": "glitch", "amount": 1, "seconds": 2.5 },
+        { "at": 7.6, "do": "fade", "to": 1, "seconds": 0.2 }
+      ],
+      "duration": 9
+    },
+    {
+      "id": "clip.camcorder",
+      "name": "Day 1: the campers' camcorder (camcorder)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "camcorder",
+      "hour": 23.85,
+      "osd": { "name": "PLAY ▶", "time": "clock", "rec": false, "mark": "" },
+      "camera": [
+        { "at": 0, "anchor": "clearing:campsite", "pos": [0, 1.5, -1], "look": [0, 1.2, 8], "shake": 0.35 },
+        { "at": 5.2, "anchor": "clearing:campsite", "pos": [0, 1.5, -1], "look": [1, 1.7, 13], "shake": 0.5 },
+        { "at": 5.6, "anchor": "clearing:campsite", "pos": [0.3, 1.3, -1], "look": [5, 0.4, 5], "shake": 1.6, "linear": true },
+        { "at": 7, "anchor": "clearing:campsite", "pos": [0.3, 0.6, -1], "look": [6, -1, 4], "shake": 1.2 }
+      ],
+      "actors": [
+        { "id": "tent1", "kind": "box", "anchor": "clearing:campsite", "pos": [-3, 0, 4], "dims": [2.4, 1.4, 2.2], "color": 6978122 },
+        { "id": "tent2", "kind": "box", "anchor": "clearing:campsite", "pos": [3.2, 0, 5.5], "dims": [2.2, 1.3, 2], "color": 5929546 },
+        { "id": "fire", "kind": "glow", "anchor": "clearing:campsite", "pos": [0, 0.15, 4], "size": 0.16, "color": 16747066 },
+        { "id": "her", "kind": "figure", "look": "witch", "anchor": "clearing:campsite", "pos": [2.5, 0, 15], "yaw": 180, "hidden": true }
+      ],
+      "tracks": [
+        { "at": 3.0, "do": "show", "actor": "her" },
+        { "at": 3.0, "do": "move", "actor": "her", "to": [-0.5, 0, 12.5], "seconds": 2.4 },
+        { "at": 5.4, "do": "sfx", "sfx": "witchShriek" },
+        { "at": 6.4, "do": "glitch", "amount": 0.7, "seconds": 0.6, "sound": false },
+        { "at": 7.2, "do": "glitch", "amount": 1, "seconds": 1.5 },
+        { "at": 7.6, "do": "fade", "to": 1, "seconds": 0.15 }
+      ],
+      "duration": 8.6
+    },
+    {
+      "id": "clip.night1",
+      "name": "Night 1: the witch planting her first sigil (trail cam)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "trailcam",
+      "fps": 10,
+      "hour": 23.2,
+      "osd": { "name": "CAMERA 6", "time": "clock", "rec": true },
+      "camera": [{ "at": 0, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 }],
+      "actors": [
+        { "id": "her", "kind": "figure", "look": "witch", "anchor": "trailCam", "pos": [-11, 0, 9] },
+        { "id": "sigil", "kind": "disc", "anchor": "trailCam", "pos": [-1, 0, 7.2], "size": 0.9, "hidden": true }
+      ],
+      "tracks": [
+        { "at": 0.2, "do": "line", "line": "day1.17" },
+        { "at": 0.5, "do": "move", "actor": "her", "to": [-1, 0, 8], "seconds": 4 },
+        { "at": 4.6, "do": "pose", "actor": "her", "pose": "kneel" },
+        { "at": 4.8, "do": "line", "line": "day1.18" },
+        { "at": 6.2, "do": "show", "actor": "sigil" },
+        { "at": 6.2, "do": "flare", "actor": "sigil", "amount": 0.6, "seconds": 2, "hold": true },
+        { "at": 9.2, "do": "pose", "actor": "her", "pose": "stand" },
+        { "at": 9.6, "do": "move", "actor": "her", "to": [11, 0, 11], "seconds": 4 },
+        { "at": 11.5, "do": "line", "line": "day1.19" }
+      ],
+      "duration": 14
+    },
+    {
+      "id": "clip.sighting",
+      "name": "A trail cam sighting (trail cam)",
+      "style": "cctv",
+      "look": "trailcam",
+      "fps": 10,
+      "osd": { "name": "TRAIL CAM", "time": "clock", "rec": true },
+      "camera": [{ "at": 0, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 }],
+      "actors": [{ "id": "her", "kind": "figure", "look": "witch", "anchor": "trailCam", "pos": [-10, 0, 8] }],
+      "tracks": [{ "at": 0.6, "do": "move", "actor": "her", "to": [10, 0, 11.5], "seconds": 6.5 }],
+      "duration": 7.6
+    },
+    {
+      "id": "sweep.arrival",
+      "name": "Establishing sweep: arriving at an encounter (the nearest clearing)",
+      "placeholder": true,
+      "style": "sweep",
+      "camera": [
+        { "at": 0, "anchor": "nearestClearing", "orbit": { "radius": 24, "height": 10, "angle": 150, "lookY": 1 } },
+        { "at": 5.5, "anchor": "nearestClearing", "orbit": { "radius": 19, "height": 7, "angle": 250, "lookY": 1 } },
+        { "at": 7.5, "anchor": "nearestClearing", "orbit": { "radius": 7, "height": 2.6, "angle": 280, "lookY": 1.2 } }
+      ],
+      "duration": 8.2
+    },
+    {
+      "id": "clip.fifthSigil",
+      "name": "Warning: the fifth sigil goes in (trail cam)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "trailcam",
+      "fps": 10,
+      "hour": 1.4,
+      "osd": { "name": "CAMERA 2", "time": "clock", "rec": true },
+      "camera": [
+        { "at": 0, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 },
+        { "at": 6, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 0.6, 8], "fov": 52 }
+      ],
+      "actors": [
+        { "id": "her", "kind": "figure", "look": "witch", "anchor": "trailCam", "pos": [0.5, 0, 9], "yaw": 180 },
+        { "id": "sigil", "kind": "disc", "anchor": "trailCam", "pos": [0.3, 0, 8], "size": 1.1, "color": 16733240, "hidden": true }
+      ],
+      "tracks": [
+        { "at": 0.4, "do": "pose", "actor": "her", "pose": "kneel" },
+        { "at": 3.2, "do": "show", "actor": "sigil" },
+        { "at": 3.2, "do": "flare", "actor": "sigil", "amount": 1.6, "seconds": 2.5, "hold": true },
+        { "at": 5.0, "do": "pose", "actor": "her", "pose": "stand" },
+        { "at": 5.6, "do": "sfx", "sfx": "witchShriek" },
+        { "at": 6.6, "do": "glitch", "amount": 1, "seconds": 1.2 },
+        { "at": 7.0, "do": "fade", "to": 1, "seconds": 0.2 }
+      ],
+      "duration": 8
+    },
+    {
+      "id": "clip.dogfight",
+      "name": "The outpost: the dogfight through the hunting rifle's scope",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "scope",
+      "hour": 22.5,
+      "letterbox": false,
+      "camera": [
+        { "at": 0, "anchor": "player", "pos": [0, 1.7, 0], "look": [-20, 42, 120], "fov": 18 },
+        { "at": 5, "anchor": "player", "pos": [0, 1.7, 0], "look": [25, 40, 125], "fov": 18 },
+        { "at": 8, "anchor": "player", "pos": [0, 1.7, 0], "look": [55, 12, 130], "fov": 22 }
+      ],
+      "actors": [
+        { "id": "jet", "kind": "glow", "anchor": "player", "pos": [-60, 46, 135], "size": 1.8, "color": 16772300 },
+        { "id": "ufo", "kind": "glow", "anchor": "player", "pos": [-85, 50, 140], "size": 2.6, "color": 9502608 }
+      ],
+      "tracks": [
+        { "at": 0, "do": "move", "actor": "jet", "to": [30, 42, 128], "seconds": 5.2 },
+        { "at": 0.3, "do": "move", "actor": "ufo", "to": [18, 46, 132], "seconds": 5.4 },
+        { "at": 5.0, "do": "flare", "actor": "jet", "amount": 2, "seconds": 0.8 },
+        { "at": 5.4, "do": "move", "actor": "jet", "to": [62, 2, 132], "seconds": 3 },
+        { "at": 5.6, "do": "move", "actor": "ufo", "to": [-40, 70, 160], "seconds": 3 }
+      ],
+      "duration": 9
+    },
+    {
+      "id": "clip.mothmanContainer",
+      "name": "The outpost: the Mothman's torn-open container (military feed)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "military",
+      "fps": 12,
+      "hour": 1.6,
+      "osd": { "name": "CONTAINMENT C-7", "time": "clock", "rec": true },
+      "camera": [{ "at": 0, "anchor": "clearing:outpost", "pos": [-5, 4.5, -4], "look": [0, 1.4, 6] }],
+      "actors": [
+        { "id": "container", "kind": "box", "anchor": "clearing:outpost", "pos": [0, 0, 7], "dims": [2.6, 2.6, 6], "color": 4872762 },
+        { "id": "door", "kind": "box", "anchor": "clearing:outpost", "pos": [1.6, 0, 3.6], "dims": [0.12, 2.4, 1.3], "color": 3818026, "yaw": 55 },
+        { "id": "eyes", "kind": "eyes", "anchor": "clearing:outpost", "pos": [0.2, 1.9, 4.2], "hidden": true }
+      ],
+      "tracks": [
+        { "at": 4.2, "do": "show", "actor": "eyes" },
+        { "at": 5.1, "do": "hide", "actor": "eyes" },
+        { "at": 5.2, "do": "glitch", "amount": 1, "seconds": 0.8 },
+        { "at": 6.4, "do": "fade", "to": 1, "seconds": 0.2 }
+      ],
+      "duration": 7
+    },
+    {
+      "id": "clip.programme",
+      "name": "Classified: footage of the portal programme (government)",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "government",
+      "fps": 12,
+      "hour": 14,
+      "osd": { "name": "PROJECT FOOTAGE 03", "time": "none", "rec": false, "mark": "CLASSIFIED" },
+      "camera": [
+        { "at": 0, "anchor": "clearing:groundZero", "pos": [6, 2.2, -6], "look": [0, 4.5, 7] },
+        { "at": 8, "anchor": "clearing:groundZero", "pos": [4, 2.4, -4], "look": [0, 5.2, 7] }
+      ],
+      "actors": [
+        { "id": "ring", "kind": "ring", "anchor": "clearing:groundZero", "pos": [0, 0, 7], "size": 5, "color": 10475775 },
+        { "id": "mib1", "kind": "figure", "look": "mib", "anchor": "clearing:groundZero", "pos": [-2.5, 0, 2.5] },
+        { "id": "mib2", "kind": "figure", "look": "mib", "anchor": "clearing:groundZero", "pos": [2, 0, 3] }
+      ],
+      "tracks": [
+        { "at": 2, "do": "flare", "actor": "ring", "amount": 0.25, "seconds": 2 },
+        { "at": 5, "do": "flare", "actor": "ring", "amount": 0.4, "seconds": 2 },
+        { "at": 8.5, "do": "fade", "to": 1, "seconds": 0.6 }
+      ],
+      "duration": 9.2
+    },
+    {
+      "id": "scene.hutExplodes",
+      "name": "The hut explodes (first person)",
+      "placeholder": true,
+      "style": "firstPerson",
+      "world": "run",
+      "tracks": [
+        { "at": 0, "do": "lookAt", "target": "hut", "rate": 3 },
+        { "at": 0.4, "do": "shake", "amount": 4, "seconds": 1.4 },
+        { "at": 0.4, "do": "glitch", "amount": 0.25, "seconds": 0.3, "sound": false }
+      ],
+      "duration": 2.6
+    },
+    {
+      "id": "final.intro",
+      "name": "The final battle: she rises from the wreck (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "tracks": [{ "at": 0, "do": "lookAt", "target": "witch", "rate": 2.5, "pitch": 0.12 }],
+      "duration": 3.2
+    },
+    {
+      "id": "ending.victory",
+      "name": "The ending: victory",
+      "placeholder": true,
+      "style": "cctv",
+      "look": "trailcam",
+      "fps": 10,
+      "hour": 2.2,
+      "letterbox": true,
+      "osd": { "name": "TRAIL CAM 03", "time": "clock", "rec": true },
+      "camera": [
+        { "at": 0, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 },
+        { "at": 4.5, "anchor": "clearing:groundZero", "pos": [-10, 7, -9], "look": [0, 4, 6], "cut": true },
+        { "at": 9, "anchor": "homeDoor", "pos": [1.5, 1.7, 7], "look": [0, 1.4, -2], "cut": true },
+        { "at": 17, "anchor": "homeDoor", "pos": [1, 1.6, 5], "look": [0, 1.3, -1] }
+      ],
+      "actors": [
+        { "id": "z1", "kind": "figure", "look": "zombie", "anchor": "trailCam", "pos": [-3, 0, 9], "yaw": 180 },
+        { "id": "z2", "kind": "figure", "look": "zombie", "anchor": "trailCam", "pos": [2, 0, 11.5], "yaw": 170 },
+        { "id": "z3", "kind": "figure", "look": "zombie", "anchor": "trailCam", "pos": [5, 0, 14], "yaw": 200 },
+        { "id": "ring", "kind": "ring", "anchor": "clearing:groundZero", "pos": [0, 0, 7], "size": 5, "color": 10475775 },
+        { "id": "ellen", "kind": "figure", "look": "ellen", "anchor": "homeDoor", "pos": [-0.4, 0, -2.6], "hidden": true },
+        { "id": "wyatt", "kind": "figure", "look": "wyatt", "anchor": "homeDoor", "pos": [0.4, 0, -2.6], "hidden": true },
+        { "id": "junie", "kind": "figure", "look": "junie", "anchor": "homeDoor", "pos": [0, 0, -2.4], "hidden": true }
+      ],
+      "tracks": [
+        { "at": 0.2, "do": "move", "actor": "z1", "to": [-2.6, 0, 7.8], "seconds": 3 },
+        { "at": 0.2, "do": "move", "actor": "z2", "to": [1.6, 0, 10.2], "seconds": 3 },
+        { "at": 0.2, "do": "move", "actor": "z3", "to": [4.5, 0, 12.8], "seconds": 3 },
+        { "at": 1.6, "do": "pose", "actor": "z2", "pose": "down" },
+        { "at": 2.0, "do": "pose", "actor": "z1", "pose": "down" },
+        { "at": 2.3, "do": "pose", "actor": "z3", "pose": "down" },
+        { "at": 4.5, "do": "osd", "look": "government", "hour": 2.25, "osd": { "name": "GROUND ZERO  CAM 01", "time": "clock", "rec": true, "mark": "CLASSIFIED" } },
+        { "at": 6.2, "do": "flare", "actor": "ring", "amount": 0.3, "seconds": 0.8 },
+        { "at": 7.2, "do": "hide", "actor": "ring" },
+        { "at": 7.2, "do": "glitch", "amount": 0.6, "seconds": 1 },
+        { "at": 9, "do": "osd", "look": null, "hour": 6.6 },
+        { "at": 9, "do": "show", "actor": "ellen" },
+        { "at": 9, "do": "show", "actor": "wyatt" },
+        { "at": 9, "do": "show", "actor": "junie" },
+        { "at": 9.3, "do": "move", "actor": "junie", "to": [0, 0, 2.5], "seconds": 2.2 },
+        { "at": 9.6, "do": "move", "actor": "ellen", "to": [-0.8, 0, 1.2], "seconds": 2.4 },
+        { "at": 9.8, "do": "move", "actor": "wyatt", "to": [0.9, 0, 1.4], "seconds": 2.4 },
+        { "at": 11.4, "do": "line", "line": "ending.victory.junie", "radio": false }
+      ],
+      "duration": 18
+    },
+    {
+      "id": "ending.defeat",
+      "name": "The ending: defeat (the radio over black)",
+      "placeholder": true,
+      "style": "black",
+      "tracks": [
+        { "at": 0, "do": "fade", "to": 1, "seconds": 2.5 },
+        { "at": 0.3, "do": "sfx", "sfx": "radioStatic" },
+        { "at": 1.9, "do": "sfx", "sfx": "radioStatic" },
+        { "at": 2.6, "do": "line", "line": "ending.defeat.ellen", "radio": true },
+        { "at": 3.5, "do": "sfx", "sfx": "radioStatic" },
+        { "at": 5.1, "do": "sfx", "sfx": "radioStatic" },
+        { "at": 6.7, "do": "sfx", "sfx": "radioStatic" },
+        { "at": 8.3, "do": "sfx", "sfx": "radioStatic" }
+      ],
+      "duration": 9
+    }
+  ]
+}

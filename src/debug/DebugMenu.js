@@ -11,6 +11,7 @@
 // The categories, in the order the top level lists them.
 export const DEBUG = {
   time: 'Time & night',
+  cutscenes: 'Cutscenes',
   teleport: 'Teleport & map',
   witch: 'Witch',
   hut: 'Hut & explosives',

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createStats, loadStats, formatDuration, summaryRows } from '../src/core/runStats.js';
-import ending from '../src/data/ending.json';
+import cutscenes from '../src/data/cutscenes.json';
+import dialogue from '../src/data/dialogue.json';
 
 describe('run stats and the ending (step 6)', () => {
   it('stats round-trip through a save, ignoring junk', () => {
@@ -26,13 +27,23 @@ describe('run stats and the ending (step 6)', () => {
     expect(rows.length).toBe(8);
   });
 
-  it('the ending has its cards, in DESIGN.md order, and the defeat its radio voices', () => {
-    const v = ending.victory;
-    expect(v[0].style).toBe('cctv'); // trail cams
-    expect(v[1].caption).toContain('GROUND ZERO');
-    expect(v[2].style).toBe('dawn');
-    expect(v.slice(3).every((c) => c.speaker && c.text)).toBe(true);
-    expect(ending.defeat[0].speaker).toBe('Radio');
-    expect(ending.defeat.slice(1).every((c) => c.text.includes('Tom') || c.text.includes('Dad'))).toBe(true);
+  it('the ending plays as cutscenes (M8): trail cams, Ground Zero, dawn and the family; the defeat its radio voices', () => {
+    const byId = new Map(cutscenes.cutscenes.map((c) => [c.id, c]));
+    const lines = new Map(dialogue.lines.map((l) => [l.id, l]));
+    const v = byId.get('ending.victory');
+    expect(v.look).toBe('trailcam'); // trail cams first
+    const cuts = v.tracks.filter((e) => e.do === 'osd');
+    expect(cuts[0].osd.name).toContain('GROUND ZERO');
+    expect(cuts[1].hour).toBeGreaterThan(5); // then dawn
+    const said = v.tracks.find((e) => e.do === 'line').line;
+    const chain = [];
+    for (let l = lines.get(said); l; l = lines.get(l.next)) chain.push(l);
+    expect(chain.map((l) => l.speaker)).toEqual(['junie', 'ellen', 'wyatt']);
+    const d = byId.get('ending.defeat');
+    expect(d.style).toBe('black');
+    const voices = [];
+    for (let l = lines.get(d.tracks.find((e) => e.do === 'line').line); l; l = lines.get(l.next)) voices.push(l);
+    expect(voices.length).toBe(3);
+    expect(voices.every((l) => l.channel === 'radio' && (l.text.includes('Tom') || l.text.includes('Dad')))).toBe(true);
   });
 });

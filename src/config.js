@@ -169,6 +169,22 @@ export const config = {
     grain: {
       strength: 0.045, // subtle film grain amplitude
     },
+    // M8: the camera looks for cutscenes (DESIGN.md "Cutscenes"): "camera
+    // styles tell you where you are". One full-screen pass after the grade.
+    // tint: multiplied in after going to grey by (1 - saturation). gain:
+    // brightness (night vision lifts the dark). noise: per-pixel static.
+    // scanlines: strength, at lines per screen height. bend: barrel lens.
+    // tear: rows that jump sideways now and then (a battered feed).
+    // dropout: chance per second of a frame of static. chroma: colour
+    // fringe (pixels). mask: a round scope mask (0 off).
+    looks: {
+      cctv: { tint: 0xd8e4dc, saturation: 0.25, contrast: 1.15, gain: 1.6, noise: 0.12, scanlines: 0.18, lines: 240, bend: 0.12, vignette: 0.55, tear: 0.0, dropout: 0.0, chroma: 1.2, mask: 0 },
+      trailcam: { tint: 0x7cff8c, saturation: 0, contrast: 1.25, gain: 3.4, noise: 0.16, scanlines: 0.12, lines: 200, bend: 0.06, vignette: 0.6, tear: 0.0, dropout: 0.0, chroma: 0.6, mask: 0 },
+      camcorder: { tint: 0xfff0dc, saturation: 0.8, contrast: 1.08, gain: 1.5, noise: 0.07, scanlines: 0.08, lines: 288, bend: 0.03, vignette: 0.4, tear: 0.02, dropout: 0.0, chroma: 2.2, mask: 0 },
+      military: { tint: 0xd4dcc4, saturation: 0.35, contrast: 1.2, gain: 1.8, noise: 0.2, scanlines: 0.22, lines: 200, bend: 0.1, vignette: 0.6, tear: 0.25, dropout: 0.6, chroma: 1.8, mask: 0 },
+      government: { tint: 0xb8d0ff, saturation: 0.3, contrast: 1.1, gain: 1.7, noise: 0.06, scanlines: 0.1, lines: 360, bend: 0.04, vignette: 0.45, tear: 0.0, dropout: 0.0, chroma: 0.4, mask: 0 },
+      scope: { tint: 0xffffff, saturation: 0.9, contrast: 1.05, gain: 1.3, noise: 0.03, scanlines: 0, lines: 240, bend: 0, vignette: 0.2, tear: 0, dropout: 0, chroma: 0, mask: 1 },
+    },
   },
 
   // Sky, sun/moon light and fog colour, keyed by clock-face hour.
@@ -1544,8 +1560,7 @@ export const config = {
 
   // The final battle (M7 step 5; DESIGN.md "Final battle"): the blood night.
   finalBattle: {
-    introSeconds: 3.2, // the placeholder cutscene (controls locked)
-    introTurnRate: 2.5, // radians a second the camera turns to the wreck
+    introSeconds: 3.2, // the intro (controls locked): the cutscene final.intro in src/data/cutscenes.json (M8)
     riseSeconds: 2.6, // her climbing out of the wreck
     bloodRampSeconds: 3, // the sky bleeding red
     drainSeconds: 4, // ...and draining away after she dies
@@ -1583,13 +1598,10 @@ export const config = {
     snareShare: 0.55,
   },
 
-  // The end of a run (M7 step 6; ui/RunEndScreen.js; lines in data/ending.json).
+  // The end of a run (M7 step 6; ui/RunEndScreen.js). M8: the ending and defeat are cutscenes (data/cutscenes.json).
   ending: {
-    victoryDelay: 4, // seconds after she dies before the ending cards (she bursts, the red drains, the dead fall)
-    cardSeconds: 4.5,
-    lineSeconds: 3.2,
-    defeatFadeSeconds: 2.5,
-    staticEvery: 1.6, // seconds between bursts of radio static on the defeat screen
+    victoryDelay: 4, // seconds after she dies before the ending cutscene (she bursts, the red drains, the dead fall)
+    summaryInputDelay: 0.6, // seconds before A / Enter on the run summary starts a new run (M8: the ending is a cutscene)
     noReturnDelay: 5, // seconds from the radio call (both charges on the hut; Aaron, #130) to the point-of-no-return pop-up
   },
 
@@ -2050,6 +2062,32 @@ export const config = {
     minGap: 4, // seconds between any two calls
     kindGap: 10, // seconds between calls of the same kind (was nights.resolver.radioGap)
     queueSeconds: 20, // a one-off call that has to wait gives up after this
+  },
+
+  // Cutscenes (M8; DESIGN.md "Cutscenes"): src/data/cutscenes.json. The
+  // camera looks are config.postFX.looks.
+  cutscenes: {
+    fov: 60, // a cutscene camera's field of view unless a key sets one
+    skipAfter: 0.5, // seconds before A / Enter can skip (so a held button doesn't)
+    lineGrace: 6, // seconds a cutscene waits past its end for its lines to finish
+    dateText: 'OCT 2003', // the date on the camera feeds (#151: 2003)
+    // The camera's own light (a trail cam's infrared lamp, a camcorder's
+    // lamp), on the actors only: they glow this fraction of their own
+    // colour, by look, so a clip at night shows them. A cutscene's "light"
+    // overrides it. (A real light would recompile every shader as it came
+    // and went: a stutter on the tablet.)
+    actorLight: { trailcam: 0.3, camcorder: 0.35, cctv: 0.3, military: 0.3, government: 0.3, scope: 0.2, default: 0.1 },
+    actorLightGrey: 0.18, // and this x the same in grey
+    // Placeholder actors (the real models are Session 13's): metres, colours.
+    figures: {
+      witch: { height: 2.15, width: 0.5, legs: 0x1a1612, body: 0x2a221a, head: 0xb8b0a0, antlers: true, eyes: 0xd8ffd0 },
+      mib: { height: 1.85, width: 0.55, legs: 0x101014, body: 0x15151a, head: 0xc8a890 },
+      camper: { height: 1.75, width: 0.52, legs: 0x3a4a6a, body: 0xa04a2a, head: 0xc8a890 },
+      zombie: { height: 1.7, width: 0.52, legs: 0x3a3a30, body: 0x5a6a48, head: 0x8a9a78 },
+      ellen: { height: 1.7, width: 0.5, legs: 0x22252a, body: 0x5a6a7a, head: 0x8a6a58 },
+      wyatt: { height: 1.62, width: 0.48, legs: 0x22252a, body: 0x6a5a48, head: 0x8a6a58 },
+      junie: { height: 1.2, width: 0.4, legs: 0x22252a, body: 0x7a5a6a, head: 0x8a6a58 },
+    },
   },
 
   // Talking to the family face to face (M8): hold interact while looking
