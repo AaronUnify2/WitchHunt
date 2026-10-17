@@ -15,6 +15,13 @@
 // spot, and her head and arms snap between wrong angles (elbows bending
 // the wrong way at times), holding still between jerks.
 //
+// Session 13 (more detail, still only a silhouette, no face: Aaron): her
+// cloak's hem torn into long strips, wide tattered sleeves hanging past her
+// wrists, lank hair from under a ragged hood, five long two-jointed fingers
+// with claws, a crown of gnarled, forking sticks. The rags flutter in the
+// vertex shader (aFlutter: how free each vertex hangs), sway as she floats,
+// stream out behind her as she moves and whip about as she contorts.
+//
 // Ten draw calls (skirt, torso, head, eyes, three per arm) plus the torch
 // shadow, only while she's out and near. The ritual ring (two glowing
 // rings on the ground) is two more.
@@ -30,6 +37,8 @@ const SHOULDER = { x: 0.21, y: 0.62, z: 0.02 }; // from the waist (x before thin
 const UPPER_ARM = 0.55; // shoulder to elbow
 const FOREARM = 0.5; // elbow to wrist
 const HEX_POOL = 8; // most hexes drawn at once
+const X_AXIS = new THREE.Vector3(1, 0, 0);
+const Z_AXIS = new THREE.Vector3(0, 0, 1);
 const SHARDS = 72; // pieces she bursts into
 
 export class WitchRenderer {
@@ -47,6 +56,13 @@ export class WitchRenderer {
     scene.add(this.root);
     // Unlit: the torch can't light her or glint off her. Fog still applies.
     this.material = new THREE.MeshBasicMaterial({ color: c.shadow });
+    // The rags' flutter: sway (metres), trail (metres back), rate.
+    this.clothUniforms = { uTime: { value: 0 }, uCloth: { value: new THREE.Vector3() } };
+    this.material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, this.clothUniforms);
+      shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\n${CLOTH_PARS}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${CLOTH_VERTEX}`);
+    };
+    this.material.customProgramCacheKey = () => 'witch-rags';
 
     this.geometries = [];
     const mesh = (geometry, parent) => {
@@ -158,118 +174,184 @@ export class WitchRenderer {
 
   // ---- the model ---------------------------------------------------------------
 
-  // Merge parts into one geometry, thinned in width and depth.
+  // Merge parts into one geometry, thinned in width and depth. Every part
+  // carries the flutter attributes (cloth() or rigid()) so they merge.
   merge(parts, thin) {
-    for (const g of parts) g.scale(thin, 1, thin);
-    const merged = mergeGeometries(parts);
+    const flat = parts.map((g) => {
+      const f = g.index ? g.toNonIndexed() : g;
+      if (!f.attributes.aFlutter) rigid(f);
+      f.scale(thin, 1, thin);
+      return f;
+    });
+    const merged = mergeGeometries(flat);
     for (const g of parts) g.dispose();
+    for (const g of flat) g.dispose();
     return merged;
   }
 
-  // The cloak from the ground to the waist: an open cone with a torn hem.
+  // The cloak from the ground to the waist (Session 13): an open cone, as
+  // wide as her chest at the top, its hem cut into long uneven strips that
+  // flutter and trail (the vertex shader: aFlutter grows down the cloak).
   skirtGeometry(thin) {
     const rng = this.rng;
-    // A tapered cloak whose top is as wide as her chest (Aaron: not a cone
-    // narrowing to a point at the waist).
-    const cloak = new THREE.CylinderGeometry(0.19, 0.44, 1.4, 9, 3, true);
+    const c = this.cfg.rags;
+    const height = 1.4;
+    const radial = c.cloakStrips * 2; // a strip and a notch each
+    const cloak = new THREE.CylinderGeometry(0.19, 0.46, height, radial, 6, true).toNonIndexed();
     const pos = cloak.attributes.position;
+    // Each column's tear: strips hang long, notches are cut up into the cloak.
+    const tears = Array.from({ length: radial + 1 }, (_, k) => (k % 2 === 0 ? rng.range(0.05, c.cloakTear) : -rng.range(0.05, c.cloakNotch)));
+    tears[radial] = tears[0];
     for (let i = 0; i < pos.count; i++) {
-      if (pos.getY(i) < -0.6) {
-        pos.setY(i, pos.getY(i) - rng.range(0, 0.22)); // tatters
-        pos.setX(i, pos.getX(i) * rng.range(0.8, 1.2));
-        pos.setZ(i, pos.getZ(i) * rng.range(0.8, 1.2));
+      const y = pos.getY(i);
+      const below = (height / 2 - y) / height; // 0 at the waist, 1 at the hem
+      if (below > 0.55) {
+        const a = Math.atan2(pos.getZ(i), pos.getX(i));
+        const k = Math.round(((a / (Math.PI * 2) + 1) % 1) * radial);
+        const deep = (below - 0.55) / 0.45;
+        pos.setY(i, y - tears[k] * deep * deep);
+        const out = 1 + rng.range(-0.06, 0.1) * deep;
+        pos.setX(i, pos.getX(i) * out);
+        pos.setZ(i, pos.getZ(i) * out);
       }
     }
     cloak.translate(0, 0.72, 0);
+    cloth(cloak, (x, y, z) => Math.pow(Math.max(0, 1.42 - y) / 1.4, 1.6), rng);
     const under = new THREE.CylinderGeometry(0.16, 0.26, 1.1, 6);
     under.translate(0, 0.55, 0);
-    return this.merge([cloak.toNonIndexed(), under.toNonIndexed()], thin);
+    return this.merge([cloak, under], thin);
   }
 
   // Chest and shawl, from the waist up (the waist joint is the origin).
   torsoGeometry(thin) {
     const rng = this.rng;
-    const chest = new THREE.BoxGeometry(0.34, 0.66, 0.22);
+    // Narrow-waisted, the shoulders sloping (not a box).
+    const chest = new THREE.CylinderGeometry(0.15, 0.1, 0.66, 6);
+    chest.scale(1, 1, 0.7);
     chest.translate(0, 0.31, 0);
-    const shawl = new THREE.ConeGeometry(0.33, 0.62, 8, 2, true);
+    const shawl = new THREE.ConeGeometry(0.33, 0.62, 12, 2, true).toNonIndexed();
     const sp = shawl.attributes.position;
-    for (let i = 0; i < sp.count; i++) if (sp.getY(i) < -0.2) sp.setY(i, sp.getY(i) - rng.range(0, 0.18));
+    for (let i = 0; i < sp.count; i++) if (sp.getY(i) < -0.2) sp.setY(i, sp.getY(i) - rng.range(0, 0.22));
     shawl.translate(0, 0.42, 0.02);
+    cloth(shawl, (x, y) => Math.max(0, 0.35 - y) * 0.9, rng);
     const neck = new THREE.BoxGeometry(0.06, 0.16, 0.06);
     neck.translate(0, 0.68, 0.05);
-    return this.merge([chest.toNonIndexed(), shawl.toNonIndexed(), neck.toNonIndexed()], thin);
+    return this.merge([chest, shawl, neck], thin);
   }
 
-  // Head, jaw, hood and the crown of sticks (the neck joint is the origin).
+  // Head, jaw, a ragged hood with a drooping point, lank hair hanging to
+  // the chest, and the crown of gnarled sticks (the neck joint is the origin).
   headGeometry(thin) {
     const rng = this.rng;
-    const parts = [];
+    const c = this.cfg.rags;
+    const body = [];
     const head = new THREE.BoxGeometry(0.15, 0.25, 0.18);
     head.translate(0, 0.14, 0.08);
-    parts.push(head);
+    body.push(head);
     const jaw = new THREE.BoxGeometry(0.09, 0.1, 0.12);
     jaw.translate(0, 0.0, 0.11);
-    parts.push(jaw);
-    const hood = new THREE.ConeGeometry(0.16, 0.48, 6, 1, true);
+    body.push(jaw);
+    // The hood: its rim torn, its point long and drooping back.
+    const hood = new THREE.ConeGeometry(0.17, 0.52, 10, 2, true).toNonIndexed();
+    const hp = hood.attributes.position;
+    for (let i = 0; i < hp.count; i++) {
+      if (hp.getY(i) < -0.2) hp.setY(i, hp.getY(i) - rng.range(0, 0.1)); // the torn rim
+      if (hp.getY(i) > 0.2) hp.setZ(i, hp.getZ(i) - 0.12); // the point droops back
+    }
     hood.rotateX(-0.45);
     hood.translate(0, 0.27, 0.02);
-    parts.push(hood);
+    body.push(hood);
+    // Hair: thin strands from under the hood, round the face to the chest.
+    for (let i = 0; i < c.hairStrands; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const k = Math.floor(i / 2) / Math.max(1, Math.floor(c.hairStrands / 2) - 1); // front to back
+      const len = rng.range(0.35, 0.62);
+      const g = new THREE.BoxGeometry(rng.range(0.012, 0.022), len, 0.012).toNonIndexed();
+      g.translate(0, -len / 2, 0);
+      g.rotateZ(side * rng.range(0.02, 0.12));
+      g.translate(side * (0.08 + k * 0.02), 0.2, 0.14 - k * 0.16);
+      cloth(g, (x, y) => Math.max(0, 0.2 - y) * 0.6, rng);
+      body.push(g);
+    }
     // The crown: sticks splayed up and out like antlers (kept full width:
-    // the silhouette's best feature).
-    const sticks = 7;
+    // the silhouette's best feature), each bending as it grows, with twigs.
     const crown = [];
+    const sticks = 7;
     for (let i = 0; i < sticks; i++) {
       const t = i / (sticks - 1) - 0.5; // -0.5..0.5, left to right
-      const len = rng.range(0.35, 0.6) * (1 - Math.abs(t) * 0.5);
-      const a = -t * 2.2 + rng.range(-0.15, 0.15); // splay, about z
-      const tilt = rng.range(-0.3, 0.1);
-      const g = new THREE.BoxGeometry(0.025, len, 0.025);
-      g.translate(0, len / 2, 0);
-      g.rotateZ(a);
-      g.rotateX(tilt);
-      g.translate(t * 0.12, 0.27, 0.06);
-      crown.push(g);
-      // A forked tine from halfway up most of them, splayed further out.
-      if (Math.abs(t) > 0.1) {
-        const f = new THREE.BoxGeometry(0.018, len * 0.4, 0.018);
-        f.translate(0, len * 0.2, 0);
-        f.rotateZ(a * 1.6);
-        f.rotateX(tilt);
-        f.translate(t * 0.12 - Math.sin(a) * len * 0.5, 0.27 + Math.cos(a) * len * 0.5, 0.06);
-        crown.push(f);
-      }
+      const len = rng.range(0.38, 0.62) * (1 - Math.abs(t) * 0.5);
+      const splay = -t * 2.2 + rng.range(-0.15, 0.15);
+      gnarledStick(crown, rng, { x: t * 0.12, y: 0.27, z: 0.06 }, splay, rng.range(-0.3, 0.1), len, 0.026, Math.abs(t) > 0.1 ? 2 : 1);
     }
-    const body = parts.map((g) => g.toNonIndexed());
-    for (const g of parts) g.dispose();
-    for (const g of body) g.scale(thin, 1, thin);
-    const all = [...body, ...crown.map((g) => g.toNonIndexed())];
-    for (const g of crown) g.dispose();
-    const merged = mergeGeometries(all);
-    for (const g of all) g.dispose();
+    for (const g of crown) rigid(g);
+    // The body is thinned; the crown keeps its full width.
+    const thinned = body.map((g) => {
+      const f = g.index ? g.toNonIndexed() : g;
+      if (!f.attributes.aFlutter) rigid(f);
+      f.scale(thin, 1, thin);
+      return f;
+    });
+    const merged = mergeGeometries([...thinned, ...crown]);
+    for (const g of [...body, ...thinned, ...crown]) g.dispose();
     return merged;
   }
 
   // An arm in three pieces, each hanging from its joint (the origin) down
-  // -y: a thin sleeve to the elbow, a bony forearm to the wrist, and a
-  // narrow hand with long fanned fingers.
+  // -y: a thin sleeve to the elbow; the forearm in a wide, tattered sleeve
+  // that hangs past the wrist and flaps; and a narrow hand with five long,
+  // two-jointed fingers ending in thin claws.
   armGeometries(thin) {
+    const rng = this.rng;
+    const c = this.cfg.rags;
     const sleeve = new THREE.BoxGeometry(0.085, UPPER_ARM + 0.04, 0.085);
     sleeve.translate(0, -UPPER_ARM / 2, 0);
     const forearm = new THREE.BoxGeometry(0.045, FOREARM + 0.03, 0.045);
     forearm.translate(0, -FOREARM / 2, 0);
+    // The hanging sleeve: an open bell from the elbow, its hem torn into strips.
+    const bellLength = FOREARM + c.sleeveHang;
+    const bell = new THREE.CylinderGeometry(0.05, 0.15, bellLength, 12, 4, true).toNonIndexed(); // narrow at the elbow, flaring at the wrist
+    bell.translate(0, -bellLength / 2, 0);
+    const bp = bell.attributes.position;
+    const tears = Array.from({ length: 13 }, (_, k) => (k % 2 === 0 ? rng.range(0.02, 0.16) : -rng.range(0.02, 0.1)));
+    tears[12] = tears[0];
+    for (let i = 0; i < bp.count; i++) {
+      const y = bp.getY(i);
+      const below = -y / bellLength;
+      if (below > 0.6) {
+        const k = Math.round((((Math.atan2(bp.getZ(i), bp.getX(i)) / (Math.PI * 2)) + 1) % 1) * 12);
+        bp.setY(i, y - tears[k] * ((below - 0.6) / 0.4));
+      }
+      bp.setZ(i, bp.getZ(i) - below * 0.05); // it hangs back a little
+    }
+    cloth(bell, (x, y) => Math.pow(Math.max(0, -y) / bellLength, 1.5) * 0.8, rng);
     const parts = [];
     const palm = new THREE.BoxGeometry(0.06, 0.09, 0.025);
     palm.translate(0, -0.045, 0);
     parts.push(palm);
-    for (let i = 0; i < 4; i++) {
-      const f = new THREE.BoxGeometry(0.013, 0.26, 0.013);
-      f.translate(0, -0.13, 0);
-      f.rotateX(0.25); // curled in
-      f.rotateZ((i - 1.5) * 0.14); // fanned
-      f.translate((i - 1.5) * 0.017, -0.085, 0.005);
-      parts.push(f);
+    // Four fingers and a thumb: two joints each, curled in, then a claw.
+    for (let i = 0; i < 5; i++) {
+      const thumb = i === 4;
+      const spread = thumb ? 0.6 : (i - 1.5) * 0.13;
+      const base = { x: thumb ? 0.03 : (i - 1.5) * 0.016, y: thumb ? -0.03 : -0.085, z: 0.005 };
+      const l1 = thumb ? 0.09 : rng.range(0.12, 0.15);
+      const l2 = thumb ? 0.07 : rng.range(0.11, 0.14);
+      const curl = thumb ? 0.3 : rng.range(0.15, 0.3);
+      const seg = (len, w, x, y, z, bendX) => {
+        const g = new THREE.BoxGeometry(w, len, w);
+        g.translate(0, -len / 2, 0);
+        g.rotateX(bendX);
+        g.rotateZ(spread);
+        g.translate(x, y, z);
+        parts.push(g);
+        // The segment's end (turned as the segment is), for the next.
+        const end = new THREE.Vector3(0, -len, 0).applyAxisAngle(X_AXIS, bendX).applyAxisAngle(Z_AXIS, spread);
+        return { x: x + end.x, y: y + end.y, z: z + end.z };
+      };
+      const k1 = seg(l1, 0.014, base.x, base.y, base.z, curl);
+      const k2 = seg(l2, 0.011, k1.x, k1.y, k1.z, curl * 2.2);
+      seg(c.claw, 0.006, k2.x, k2.y, k2.z, curl * 3.2);
     }
-    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm], thin), hand: this.merge(parts, thin) };
+    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm, bell], thin), hand: this.merge(parts, thin) };
   }
 
   // ---- posing --------------------------------------------------------------------
@@ -278,6 +360,12 @@ export class WitchRenderer {
   // plantProgress, spot). Shown while she's out, near and within the draw distance.
   update(w, dt, cameraPosition, drawDistance) {
     this.time += dt;
+    // The rags: swaying as she floats, streaming behind as she moves,
+    // whipping about as she contorts or fights.
+    const r = this.cfg.rags;
+    const wild = w.state === 'planting' || w.state === 'attacking' || w.state === 'rising' || w.state === 'dead' ? r.agitated : 1;
+    this.clothUniforms.uTime.value = this.time;
+    this.clothUniforms.uCloth.value.set(r.sway * wild, r.trail * (w.state === 'fleeing' ? 1 : this.motion), r.rate * Math.sqrt(wild));
     const dist = cameraPosition ? Math.hypot(w.x - cameraPosition.x, w.z - cameraPosition.z) : 0;
     const planting = w.state === 'planting';
     const dead = w.state === 'dead';
@@ -594,6 +682,80 @@ export class WitchRenderer {
     this.hexHalos.removeFromParent();
     this.hexCoreMaterial.dispose();
     this.hexHaloMaterial.dispose();
+  }
+}
+
+// The rags' flutter, in each part's own space (aFlutter 0 is fixed, 1
+// hangs free; aPhase sets each strip apart).
+const CLOTH_PARS = /* glsl */ `
+  attribute float aFlutter;
+  attribute float aPhase;
+  uniform float uTime;
+  uniform vec3 uCloth;
+`;
+const CLOTH_VERTEX = /* glsl */ `
+  float wcPhase = aPhase * 6.2832;
+  float wcT = uTime * uCloth.z;
+  transformed.x += sin( wcT + wcPhase + position.y * 4.0 ) * uCloth.x * aFlutter;
+  transformed.z += ( cos( wcT * 1.3 + wcPhase ) * 0.6 * uCloth.x - uCloth.y ) * aFlutter;
+  transformed.y += sin( wcT * 1.7 + wcPhase * 1.4 ) * uCloth.x * 0.3 * aFlutter;
+`;
+
+// Mark a geometry as cloth: aFlutter from weight(x, y, z) (0..1, how free
+// it hangs), aPhase by the angle round its axis (a strip flutters as one).
+function cloth(g, weight, rng) {
+  const p = g.attributes.position;
+  const flutter = new Float32Array(p.count);
+  const phase = new Float32Array(p.count);
+  const offset = rng.next();
+  for (let i = 0; i < p.count; i++) {
+    flutter[i] = Math.min(1, Math.max(0, weight(p.getX(i), p.getY(i), p.getZ(i))));
+    const a = Math.atan2(p.getZ(i), p.getX(i));
+    const h = Math.sin(Math.round(a * 4) * 12.9898 + offset * 78.233) * 43758.5453;
+    phase[i] = h - Math.floor(h);
+  }
+  g.setAttribute('aFlutter', new THREE.BufferAttribute(flutter, 1));
+  g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+  return g;
+}
+
+// Mark a geometry as fixed (no flutter), so it merges with cloth.
+function rigid(g) {
+  const n = g.attributes.position.count;
+  g.setAttribute('aFlutter', new THREE.BufferAttribute(new Float32Array(n), 1));
+  g.setAttribute('aPhase', new THREE.BufferAttribute(new Float32Array(n), 1));
+  return g;
+}
+
+// A gnarled stick of the crown into `out`: three bending segments from
+// `base`, splayed (about z) and tilted (about x), with `twigs` forking off.
+function gnarledStick(out, rng, base, splay, tilt, len, width, twigs) {
+  const up = new THREE.Vector3(0, 1, 0);
+  const dir = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(tilt, 0, splay));
+  let at = new THREE.Vector3(base.x, base.y, base.z);
+  const segments = 3;
+  for (let k = 0; k < segments; k++) {
+    const l = len / segments;
+    const w = width * (1 - k * 0.25);
+    const g = new THREE.BoxGeometry(w, l + w, w).toNonIndexed();
+    g.translate(0, l / 2, 0);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir));
+    g.translate(at.x, at.y, at.z);
+    out.push(g);
+    const end = at.clone().addScaledVector(dir, l);
+    // A twig from this joint, further out.
+    if (k < twigs) {
+      const twigDir = dir.clone().applyEuler(new THREE.Euler(rng.range(-0.4, 0.4), 0, Math.sign(splay || 1) * rng.range(0.5, 0.9)));
+      const tl = l * rng.range(0.5, 0.8);
+      const t = new THREE.BoxGeometry(w * 0.6, tl, w * 0.6).toNonIndexed();
+      t.translate(0, tl / 2, 0);
+      t.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, twigDir));
+      t.translate(end.x, end.y, end.z);
+      out.push(t);
+    }
+    // Bend for the next segment.
+    dir.applyEuler(new THREE.Euler(rng.range(-0.35, 0.35), 0, rng.range(-0.35, 0.35))).normalize();
+    at = end;
   }
 }
 

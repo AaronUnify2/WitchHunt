@@ -1583,6 +1583,19 @@ export const config = {
       shadow: 0x030304, // her whole body, unlit
       eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
       thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
+      // Session 13: her rags (render/WitchRenderer.js). Metres and seconds.
+      rags: {
+        cloakStrips: 11, // the hem's strips (with as many notches between)
+        cloakTear: 0.38, // the longest a strip hangs below the hem
+        cloakNotch: 0.22, // the deepest a notch is cut up into the cloak
+        sleeveHang: 0.2, // how far the wide sleeves hang past her wrists
+        hairStrands: 8,
+        claw: 0.06, // her claws' length
+        sway: 0.05, // the rags' flutter as she floats
+        trail: 0.35, // how far they stream behind her at full speed
+        rate: 2.2, // flutter speed
+        agitated: 2.4, // x the flutter while she contorts, fights, rises or dies
+      },
       // Aaron (Session 10): upright while she travels. Bent over read as an
       // old woman, not a scary entity. She glides tall, head level, arms
       // hanging straight and limp at her sides.

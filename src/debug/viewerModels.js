@@ -75,7 +75,7 @@ export const VIEWER_MODELS = [
   {
     id: 'witch',
     name: 'The witch',
-    note: 'The M7 figure. Getting more detail.',
+    note: 'Still only a silhouette (Session 13: rags that flutter, wide sleeves, claws, hair, a gnarled crown).',
     height: (cfg) => cfg.witch.look.height,
     variants: null,
     poses: [
