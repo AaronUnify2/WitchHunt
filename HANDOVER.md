@@ -67,21 +67,37 @@ Also still open from 10b:
 - **Which encounters give the new guns (#142-143).** They're debug-menu only for now. This now belongs to the encounter design Aaron is bringing.
 - **The SMG's laser sight.** Aaron had pictured a laser sight but liked the iron sights, so there's no laser. Nothing to do unless he asks again.
 
-## Next: story and encounter design (Aaron's pivot), then Session 11, Narrative Designer, M8
+## Next: Session 11, a review of DESIGN.md (Aaron's pivot), then the story and dialogue session
 
-Aaron worked on **the upcoming story and a better design for the random encounters** in a separate chat, and wants to pick that up next. **Start by asking Aaron for that work** (he'll paste it or summarise it). Then:
+Aaron worked on **the upcoming story and a better design for the random encounters** in a separate chat. With that and the changes made since DESIGN.md was written (Sessions 1-10b), **the milestones will change.** So the work is split into two sessions:
 
-1. **Fold it into `docs/DESIGN.md`**, which is the source of truth: "Story and lore", "Encounters" (the nine things every encounter needs, the tables for which appear and where), "Cutscenes" and "Dialogue".
-   - Show Aaron the changes before committing them.
-   - Note anything his new design changes in other places, such as milestones M9-M11, the session plan, which encounters give which guns (#142-143), and the family.
-2. **Then build M8 (Session 11)**, as planned, unless Aaron reorders:
-   - The dialogue data and picker, subtitles.
-   - The radio and its rate limiting.
-   - The three cutscene styles, the CCTV shader.
-   - Lore item hand-ins.
-   - **Done when:** a radio call, a CCTV patch-through and a face-to-face line all work from data alone.
+### Session 11 (next): review DESIGN.md and redo the milestones
 
-Workshop content with Aaron first (rule 10).
+Role: Lead Engineer, as the design reviewer (with the Narrative and Level & Encounter Designer hats for Aaron's new material). No feature code this session; the deliverable is a reviewed `docs/DESIGN.md`.
+
+1. **Ask Aaron for his story and encounter work** (he'll paste it or summarise it).
+2. **Fold it into `docs/DESIGN.md`**, which is the source of truth: "Story and lore", "Encounters" (the nine things every encounter needs, the tables for which appear and where), "Cutscenes" and "Dialogue".
+3. **Review the whole of DESIGN.md** against what's built and decided. Sources: `STATUS.md`, Aaron's decisions in `OPEN_QUESTIONS.md`, and the code where they disagree. Fix anything stale or contradictory. Known changes to check:
+   - The five new guns (in the weapons table; which encounters give them, #142-143).
+   - The heat scope, fog nights, the witch's fight pattern and the point of no return.
+   - The 10b art work deferred to Session 16 (#144-148).
+4. **Redo the milestones and the session plan** ("Build plan", "Team roles and session plan") around the new story and encounters:
+   - What M8 (story and dialogue) now covers.
+   - How M9-M11's encounters split up.
+   - Where the deferred art work goes.
+   - Renumber the sessions after this one.
+5. **Show Aaron each part before committing**, and push to `main`. Update `STATUS.md`, `OPEN_QUESTIONS.md` and `HANDOVER.md`, and write the kickoff prompt for the story and dialogue session.
+
+### The session after: story and dialogue (Narrative Designer, M8 as revised)
+
+Its scope comes from the review. As planned before the review, M8 is:
+- The dialogue data and picker, subtitles.
+- The radio and its rate limiting.
+- The three cutscene styles, the CCTV shader.
+- Lore item hand-ins.
+- **Done when:** a radio call, a CCTV patch-through and a face-to-face line all work from data alone.
+
+Workshop content with Aaron first (rule 10). The notes below ("Look at first") are mostly for that session, but the reviewer should read them too.
 
 ### Look at first
 
@@ -117,7 +133,7 @@ Workshop content with Aaron first (rule 10).
 
 ### Open questions for Aaron
 
-- **The story and encounter design** from his separate chat (the next session starts here).
+- **The story and encounter design** from his separate chat (Session 11, the design review, starts here).
 - #142-143: which encounters give the hunting rifle and the four new guns.
 - #144-148: the deferred art work. Is Session 16 (style pass 2) the right time for it, or sooner?
 - #137: should fog nights affect gameplay or the forecast? #140-141: the retro filter and the Quality levers need a settings screen (Session 19).
@@ -125,8 +141,8 @@ Workshop content with Aaron first (rule 10).
 ## Session kickoff prompt for the next session
 
 ```
-You are taking over Witch Hunt after Session 10b (Graphics Engineer). Aaron has pivoted to story and encounter design: he worked on the upcoming story and a better design for the random encounters in a separate chat. You are the Narrative Designer (with the Level & Encounter Designer's hat for the encounter design): first fold Aaron's new story and encounter design into docs/DESIGN.md with him, then build Session 11, M8 (dialogue data and picker, subtitles, radio and rate limiting, the three cutscene styles, the CCTV shader, lore item hand-ins) unless he reorders.
-Read docs/DESIGN.md (especially "Story and lore", "Encounters", "Cutscenes" and "Team roles and session plan"), STATUS.md and HANDOVER.md.
-Then confirm your role, this session's goal and any questions before starting, and ask Aaron for his story and encounter work. Workshop content with him before building it (rule 10), and build in steps he can play-test on the tablet, pushing each to main.
+You are taking over Witch Hunt after Session 10b (Graphics Engineer). This is Session 11: a review of docs/DESIGN.md. Aaron has worked on the upcoming story and a better design for the random encounters in a separate chat, and with that and the changes made since the design was written, the milestones will change. Your role is Lead Engineer as design reviewer (with the Narrative and Level & Encounter Designer hats for Aaron's new material). No feature code: ask Aaron for his story and encounter work, fold it into docs/DESIGN.md, review the whole document against what's built and decided (STATUS.md, OPEN_QUESTIONS.md, the code), and redo the milestones and the session plan with him. The session after yours is story and dialogue (Narrative Designer, M8 as you revise it); write its kickoff prompt.
+Read docs/DESIGN.md (all of it), STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md.
+Then confirm your role, this session's goal and any questions before starting. Show Aaron each change before committing it, and push to main.
 Follow the handover protocol, and end with the HANDOVER READY signal.
 ```
