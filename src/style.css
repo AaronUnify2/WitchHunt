@@ -168,6 +168,54 @@ body {
   color: var(--dim);
 }
 
+/* Session 13: the debug model viewer's panel, top right (the debug
+   overlay has the top left), out of the model's way. The HUD hides
+   while it's open. */
+.model-viewer {
+  position: absolute;
+  top: var(--safe);
+  right: var(--safe);
+  max-width: min(34rem, 60vw);
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--dim);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  z-index: 5;
+}
+
+.model-viewer h2 {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+.model-viewer .mv-name {
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.model-viewer .mv-dim,
+.model-viewer .mv-stats {
+  color: var(--dim);
+}
+
+.model-viewer .mv-note,
+.model-viewer .mv-help {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: var(--dim);
+}
+
+body.in-viewer .hud,
+body.in-viewer .minimap,
+body.in-viewer .forecast,
+body.in-viewer .scope,
+body.in-viewer .final-battle {
+  visibility: hidden;
+}
+
 /* Shown only on touch devices held in portrait */
 .rotate-notice {
   display: none;

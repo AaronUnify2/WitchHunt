@@ -2162,6 +2162,43 @@ export const config = {
     },
   },
 
+  // The debug model viewer (Session 13; debug/ModelViewer.js): any
+  // character model in any pose, in the world in front of you.
+  modelViewer: {
+    fov: 50,
+    placeAhead: 3, // metres in front of you that the model stands
+    floorTolerance: 0.3, // feet this far above the ground count as on a floor (it stands at your height)
+    // The camera a model starts with: looking down this much (radians),
+    // this far out (x the model's height, plus metres), aimed this high up it.
+    start: { pitch: 0.12, distanceScale: 1.3, distanceAdd: 1.2, heightScale: 0.55 },
+    limits: { pitchMin: -0.4, pitchMax: 1.35, distanceMin: 0.5, distanceMax: 16, heightMin: 0.05, heightMax: 4 },
+    cameraAboveGround: 0.15, // metres: the camera never dips below this
+    stickTurnSpeed: 1.6, // radians per second the left stick orbits at full tilt
+    zoomSpeed: 3, // metres per second at full tilt (faster further out)
+    raiseSpeed: 1.2, // metres per second the triggers move the aim point
+    turntableSpeed: 0.6, // radians per second
+    speeds: [1, 0.25, 0], // A cycles: playing, slow motion, paused
+    // The lighting presets X cycles. hour: what the sky and grade show
+    // (null: the game's own); torch: held from the viewer's camera
+    // ('player': as you had it); thermal: the heat scope.
+    lights: [
+      { id: 'torch', name: 'Night, torch', hour: 0.5, torch: true },
+      { id: 'moon', name: 'Night, moonlight only', hour: 0.5, torch: false },
+      { id: 'dusk', name: 'Dusk', hour: 19.5, torch: false },
+      { id: 'day', name: 'Day', hour: 13, torch: false },
+      { id: 'thermal', name: 'Heat scope', hour: 0.5, torch: false, thermal: true },
+      { id: 'game', name: "The game's own hour", hour: null, torch: 'player' },
+    ],
+    // Looping poses (seconds).
+    zombieWalkSpeed: 0.8, // metres per second the walk cycle is played at
+    hitLoopSeconds: 1.2, // a hit, then a pause, round again
+    staggerSeconds: 0.35,
+    holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    witchGlideShare: 0.6, // her gliding pose, as a share of full speed (the cloak's trail)
+    witch: { plantSeconds: 6, hexSeconds: 1.4, swipeUpSeconds: 1, swipeDownSeconds: 0.6, summonSeconds: 2.4, riseSeconds: 3 },
+    familyGap: 0.75, // metres between them side by side
+  },
+
   // Input
   input: {
     defaultDevice: 'keyboardMouse', // until the first input arrives

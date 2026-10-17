@@ -43,6 +43,7 @@ import { Lore } from '../story/Lore.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
+import { ModelViewer } from '../debug/ModelViewer.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
 import { MapUi } from '../ui/MapUi.js';
@@ -105,6 +106,7 @@ export class Game {
     this.initExplosives();
     this.initFinalBattle(root);
     this.initStory(root);
+    this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
     this.victoryTimer = -1;
@@ -341,6 +343,26 @@ export class Game {
     this.station.pageSources.push(() => [this.lore.ledgerPage()]);
   }
 
+  // Session 13: the debug model viewer (the Models category).
+  initViewer(root) {
+    this.viewer = new ModelViewer(this.cfg, this.bus);
+    this.viewer.init({
+      root,
+      scene: this.scene,
+      renderer: this.renderer,
+      player: this.player,
+      clock: this.clock,
+      flashlight: this.flashlight,
+      ground: this.world.ground,
+      station: this.station,
+      viewModel: this.combat.viewModel,
+      rng: this.rng,
+      cutscenes: this.cutscenes,
+      closeMenu: () => this.debugMenu.close(),
+      drawDistance: () => this.drawDistance,
+    });
+  }
+
   // M8: flags about the world now, for lines' conditions (DESIGN.md
   // "Dialogue system": base damaged, zombie level 4+).
   storyFlags() {
@@ -403,7 +425,7 @@ export class Game {
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
-    this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}`);
+    this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
   // Each system adds its tools to its category (DEBUG in DebugMenu.js).
@@ -430,6 +452,7 @@ export class Game {
     this.mapUi.addDebugItems(menu);
     this.atmosphere.addDebugItems(menu, (text) => this.toast.show(text));
     this.cutscenes.addDebugItems(menu);
+    this.viewer.addDebugItems(menu);
     this.dialogue.addDebugItems(menu);
     this.trailCams.addDebugItems(menu);
     this.lore.addDebugItems(menu);
@@ -555,10 +578,11 @@ export class Game {
   // takes over from the gun, and back as you lower it.
   updateThermal() {
     const w = this.combat.weapons;
-    // M8: never through a cutscene.
-    const on = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive && !this.cutscenes.active;
+    // M8: never through a cutscene. Session 13: the model viewer's heat scope light.
+    const scoped = !!w.weapon.thermal && w.scoped >= this.cfg.viewModel.scopeHideAt && this.combat.alive && !this.cutscenes.active && !this.viewer.active;
+    const on = scoped || this.viewer.thermal;
     const t = this.cfg.viewModel.thermal;
-    if (on) {
+    if (scoped) {
       // The witch's glow fades up close, like the zombies' (Aaron).
       const p = this.player.camera.position;
       const d = Math.hypot(this.witch.x - p.x, this.witch.z - p.z);
@@ -573,6 +597,7 @@ export class Game {
     this.renderer.postFX.setBloom(on ? t.bloom : this.cfg.quality.presets[this.qualityName].bloom);
     this.combat.zombieRenderer.setThermal(on, t);
     this.combat.mutantRenderer.setThermal(on, t);
+    this.viewer.setThermal(on, t);
     if (!on) this.witch.renderer.setThermal(false);
     this.atmosphere.thermal = on;
     const torch = this.flashlight;
@@ -803,8 +828,15 @@ export class Game {
     // (first person), holds the world still; A / Enter skips it.
     const cs = this.cutscenes;
     cs.update(dt, this.input, !this.debugMenu.isOpen);
-    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active);
-    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld;
+    // Session 13: the model viewer holds the world and the clock still and
+    // takes the controls. (Open at the start of the frame counts, so the
+    // press that closes it doesn't also reach the game.)
+    const viewer = this.viewer;
+    const viewing = viewer.active;
+    viewer.update(dt, this.input, !this.debugMenu.isOpen);
+    const held = viewing || viewer.active;
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held);
+    const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
     // Debug fast-forward (M6): the whole world (clock, zombies, marches,
@@ -815,15 +847,18 @@ export class Game {
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
+    } else if (viewer.active) {
+      this.flashlight.update(dt, this.lockedInput, viewer.camera, []); // held from the viewer's camera
     }
     const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
     const enemies = this.combat.enemies;
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
     const witchOnMap = this.witch.showOnMap ? this.witch : null;
-    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked && !cs.active, sigilsOnMap, tierColors, witchOnMap);
+    this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked && !cs.active && !held, sigilsOnMap, tierColors, witchOnMap);
     // M8: a cutscene draws from its own camera, at its own hour (the grade and sky).
-    const camera = cs.ownCamera ? cs.camera : this.player.camera;
-    const hour = cs.hour ?? this.clock.hourOfDay;
+    // Session 13: the model viewer draws from its own camera, at its light's hour.
+    const camera = viewer.active ? viewer.camera : cs.ownCamera ? cs.camera : this.player.camera;
+    const hour = viewer.active ? (viewer.hour ?? this.clock.hourOfDay) : (cs.hour ?? this.clock.hourOfDay);
     this.atmosphere.preUpdate(this.clock, this.sky);
     this.sky.update(dt, hour, camera);
     this.updateThermal();
@@ -893,6 +928,7 @@ export class Game {
     this.mapUi.dispose();
     this.nightWatch.dispose();
     this.lore.dispose();
+    this.viewer.dispose();
     this.cutscenes.dispose();
     this.trailCams.dispose();
     this.familyTalk.dispose();

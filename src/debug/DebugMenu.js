@@ -12,6 +12,7 @@
 export const DEBUG = {
   time: 'Time & night',
   cutscenes: 'Cutscenes',
+  models: 'Models',
   teleport: 'Teleport & map',
   witch: 'Witch',
   hut: 'Hut & explosives',
