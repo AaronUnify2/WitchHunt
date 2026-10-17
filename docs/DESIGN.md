@@ -1239,6 +1239,7 @@ Three styles, all rendered live from the real game world from one data-driven ti
 
 - **Camera styles tell you where you are:** ranger trail-cam (night-vision green), government security (crisp, blue, classified watermark), battered military feed (static, dropped frames), warped alien feed (glyphs, glitching), camcorder (shaky handheld).
 - All cutscenes are skippable and have subtitles. Clips seen in the comms room can be rewatched on its monitors.
+- **Every cutscene is in the debug menu** (Aaron, Session 11): a Cutscenes category lists every one (the placeholders too) and plays it on the spot, from anywhere, so each can be watched, tweaked and watched again until it's really good. M8 builds the category; every session that adds a cutscene adds it there in the same step.
 
 **Planned clips:** the Ground Zero cold open; the campers' camcorder; the Night 1 trail-cam clip of the witch planting; an establishing clip for each encounter (see the design checklist); the witch's fifth sigil going in (a warning); the dogfight and both crashes through the hunting rifle scope (military outpost; this replaces the earlier "UFO passing over the treeline" foreshadowing clip); the Mothman's torn-open container (military outpost; a hint, never named); government footage of the portal programme (unlocked by classified documents); the hut exploding (first-person); the victory montage.
 
@@ -1472,11 +1473,12 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 9. **Complete files, small modules, no new dependencies without a reason** written in `STATUS.md`.
 10. **Workshop content before building it.** Before building any encounter, enemy, boss, interior, cutscene or other piece of content, write a short practical build plan (how it will be made, what it will look like, how it plays, what it costs in performance) and workshop the design and execution with Aaron. Build only once he has agreed. This applies to content, not core systems.
 11. **Each milestone ends with a short play-test script** for Aaron: what to try on the controller and what "good" looks like.
+12. **Play-test generously** (Aaron, Session 11: "I don't think we can really overdo playtesting"). Each milestone part ends with Aaron's play-test and its fixes before the next part starts, push each step to `main` so he can try it, and a QA session follows each content milestone (M9, M10, M11).
 
 ### Debug tools (built in M0, extended every milestone)
 
 - Overlay: fps, frame time (simulation vs render), draw calls, active enemy count, seed, clock.
-- Debug menu: set seed, skip time and phases, reveal map, god mode, give items, spawn any enemy, place or remove sigils, set zombie level, teleport to any clearing or encounter, trigger any cutscene or dialogue line, force the witch's state, toggle LOD tier colours.
+- Debug menu: set seed, skip time and phases, reveal map, god mode, give items, spawn any enemy, place or remove sigils, set zombie level, teleport to any clearing or encounter, trigger any cutscene (its own Cutscenes category, Aaron, Session 11) or dialogue line, force the witch's state, toggle LOD tier colours, and (from Session 13) a model viewer to look at any character model in any pose.
 
 ### Milestones
 
@@ -1491,17 +1493,17 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 | M6 | Simulation LOD and nights | Active / nearby / abstract tiers, simulated nights while away, dusk forecast, alarm, dawn autosave | The full map stays alive at the frame target on the tablet; leaving home at night resolves fairly |
 | M7 | **The witch: playable loop** | Witch states, planting at sigil grounds, interruption, fight or flee, wounds, traps, hut, explosives (debug-given), final battle, blood night, ending and defeat screens | **Vertical slice:** a complete run from Day 1 to killing her (or dying) with placeholder content |
 | — | **Gate: play-test the slice** | Aaron plays two or three full runs | The core loop is fun before any content is added. Fix the loop first if it isn't |
-| M8 | Family and storytelling | Dialogue data and picker, subtitles, bob, blips, new-line marker, radio and rate limiting, the three cutscene styles, CCTV shader, lore item hand-ins | A radio call, a CCTV patch-through and a face-to-face line all work from data alone |
-| M9 | First run and the north | Main menu, opening cutscene, guided Day 1 and Night 1 with the 23 lines, Skip intro; campsite, gas station, barn, storm shelter, crashed plane, mineshaft, outpost | A new player gets through Day 1 without help; every north encounter is playable |
-| M10 | Interiors and the middle | Interior system; Bigfoot cave (seeded) with beetles, the Mothman and Bigfoot; Mothman flare attention; stairs, time capsule, the Caller | The cave is completable and the Blessing works at home |
-| M11 | Government base and the south | Car Armory and the base (Men in Black, stealth, documents, turret, restocking explosives); Ground Zero and anomalies; crashed UFO and alien ship | All three unique prizes obtainable; explosives come from the world instead of debug |
+| M8 | Story systems | Dialogue data and picker, subtitles, talking bob, blips, new-line marker, radio and rate limiting, trail cameras (witch sightings as leads), the cutscene timeline and its three styles, the CCTV, camcorder and trail-cam looks, lore item hand-ins and rewatching on the monitors, **the Cutscenes debug category**. Takes over today's placeholders (the no-return call, NightWatch's radio calls, the ending and defeat cards, the final battle's intro). Wires up only the lines already written (Day 1, the ending); new lines are written with each encounter (Aaron, Session 11) | A radio call, a CCTV patch-through and a face-to-face line all work from data alone; every cutscene plays from the debug menu |
+| M9 | **The opening cluster** (Aaron's Oct 16 design), in four parts | **9.1 The cluster on the map:** the fixed sub-graph placed first, the road, the cordon (blocks Tom only; torn gaps for the dead), the gates on each path, story progress flags (saved), the witch planting only inside the cluster until the crossing, the flare gun and its lure. **9.2 First day:** main menu, opening cutscene, the Day 1 tower, the campsite (camcorder, shotgun wave, first battery), the scripted Night 1 sigil, Dawn 1, Skip intro, the shotgun out of the starting kit. **9.3 Shelter and gas station:** the storm shelter (the horde that holds the hatch, the room below, the combination, diary, tapes cutscene at home), the gas station (store and back office, the authored mutant, the witch sighting, the safe), the rifle chain. **9.4 The outpost:** approach waves, helmets, the watchtower and its rounds, the scope as binoculars, the dogfight cutscene, the barricade peak, the containers and the Mothman's container, beetles, Ellen's call to adventure; crossing opens the frontier | A new player gets from waking up to the frontier without help, on every seed. (Each part: 9.1 the same cluster on every seed and the gates open in order; 9.2 through Day 1 and Night 1 without help; 9.3 the hunting rifle claimable on every seed; 9.4 the frontier opens) |
+| M10 | The north frontier and the middle | Barn, crashed plane (one simple grey alien), mineshaft; the interior system, Bigfoot cave (seeded) with the Mothman and Bigfoot; Mothman flare attention; stairs, time capsule, the Caller and its first whisper. **The designs wait on Aaron's encounter redesign** (more updates to come) | The cave is completable and the Blessing works at home |
+| M11 | Government base and the south | Car Armory (north frontier) and the base (Men in Black, stealth, documents, turret, restocking explosives); Ground Zero and anomalies; crashed UFO and alien ship, the full aliens | All three unique prizes obtainable; explosives come from the world instead of debug |
 | M12 | Meta and persistence | Full save and quit, achievements, modifiers (Coven included), run summary | Achievements and modifiers survive permadeath and a browser restart |
 | M13 | Art and audio | Final sprites and models, the full lighting, fog and post-processing pass, grain and camera-style shaders, the audio pass, the final HUD | Matches the art and audio direction |
-| M14 | Balance and polish | Tune every number, 130–150 dialogue lines, performance pass, bug bash | A full run lands in 1.5–2.5 hours and feels fair |
+| M14 | Balance and polish | Tune every number, the remaining dialogue lines (about 155–175 in all), performance pass, bug bash | A full run lands in 1.5–2.5 hours and feels fair |
 
 ### Performance gates
 
-Check on the Samsung tablet, against the budgets, at the end of **M1, M3, M6, M11 and M14**. If a gate fails, fix performance before starting the next milestone.
+Check on the Samsung tablet, against the budgets, at the end of **M1, M3, M6, M9 (the outpost, the biggest fight so far), M11 and M14**. If a gate fails, fix performance before starting the next milestone.
 
 ### Main risks and how we handle them
 
@@ -1548,19 +1550,28 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 8 | AI Programmer | The witch, hut, explosives, final battle, ending: the vertical slice | M7 |
 | 9 | QA & Balance | Test the slice on the tablet, fix bugs, tune; prepare Aaron's play-test | Gate |
 | 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M13 |
-| 11 | Narrative Designer | Dialogue system, radio, subtitles, cutscene system, CCTV grain | M8 |
-| 12 | Level & Encounter Designer | Main menu flow, opening, Day 1 tutorial, campsite, gas station, barn | M9 (part 1) |
-| 13 | Level & Encounter Designer | Storm shelter, crashed plane, mineshaft, military outpost | M9 (part 2) |
-| 14 | Level & Encounter Designer + AI Programmer | Interior system, Bigfoot cave, beetles, the Mothman, Bigfoot | M10 (part 1) |
-| 15 | Level & Encounter Designer | Stairs, time capsule, the Caller, Mothman flare attention | M10 (part 2) |
-| 16 | Graphics Engineer | Style pass 2: encounters, interiors, camera-style shaders; plus Session 10b's deferred art: zombies, cars, the witch's hut, the station's interior and the family (OPEN_QUESTIONS #144-148) | Part of M13 |
-| 17 | Level & Encounter Designer + AI Programmer | Car Armory, government base, Men in Black, stealth | M11 (part 1) |
-| 18 | Level & Encounter Designer + AI Programmer | Ground Zero, crashed UFO, alien ship, aliens | M11 (part 2) |
-| 19 | UI / UX Programmer | Final HUD, menus, save and quit, achievements, modifiers, run summary | M12 |
-| 20 | Audio Designer | Audio engine, ambience, stingers, music, blips | Part of M13 |
-| 21 | Narrative Designer | Write the remaining dialogue and document text with Aaron | Part of M14 |
-| 22 | Graphics Engineer | Final style pass across the whole game | M13 |
-| 23 | QA & Balance | Full-run balance, performance pass on the tablet, bug bash | M14 |
+| 11 | Lead Engineer (design review, with the Narrative and Level & Encounter Designer hats) | Folded in Aaron's story and encounter design (the opening cluster); reviewed DESIGN.md against what's built; redid the milestones and this plan. No feature code | — |
+| 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines (split 12a / 12b if it grows) | M8 |
+| 13 | Graphics Engineer / Technical Artist | **Characters and the deferred art, play-test driven** (Aaron, Session 11: in its own session, sooner, with time to sit down and play-test, changing things a step at a time). The character models the coming encounters need, to a near-finished level so writing and play-testing them has something to spark off: the zombies (citizen, police, army with its helmet; #144), the mutant, the witch's real model, the grey alien, the beetle, the dead (the gas station owner, soldiers), the family (#148, after M8). Then the cars (#145), the station's interior (#147) and the hut (#146). A debug model viewer. Split 13a / 13b as needed; frontier creatures (Bigfoot, the Mothman, cowboy aliens, Men in Black) if time allows, else before M10 | Part of M13 |
+| 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun | M9.1 |
+| 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron | M9.2 |
+| 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines | M9.3 |
+| 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate | M9.4 |
+| 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs | QA |
+| 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks | Part of M13 |
+| 20 | Level & Encounter Designer (+ AI) | The north frontier: barn, crashed plane, mineshaft (designs from Aaron's redesign) | M10 (part 1) |
+| 21 | Level & Encounter Designer + AI Programmer | The interior system, Bigfoot cave, the Mothman, Bigfoot | M10 (part 2) |
+| 22 | Level & Encounter Designer | Stairs, time capsule, the Caller, Mothman flare attention | M10 (part 3) |
+| 23 | QA & Balance | Play-test the frontier's north and middle | QA |
+| 24 | Level & Encounter Designer + AI Programmer | Car Armory, government base, Men in Black, stealth | M11 (part 1) |
+| 25 | Level & Encounter Designer + AI Programmer | Ground Zero, crashed UFO, alien ship, aliens | M11 (part 2) |
+| 26 | QA & Balance | Play-test the south and full runs; the performance gate | QA |
+| 27 | Graphics Engineer | Style pass 3: the frontier's encounters and interiors, the remaining camera looks | Part of M13 |
+| 28 | UI / UX Programmer | Final HUD, menus, settings (Quality levers, retro filter), save and quit, achievements, modifiers, run summary | M12 |
+| 29 | Audio Designer | Audio engine, ambience, stingers, music, blips | Part of M13 |
+| 30 | Narrative Designer | Write the remaining dialogue and document text with Aaron | Part of M14 |
+| 31 | Graphics Engineer | Final style pass across the whole game | M13 |
+| 32 | QA & Balance | Full-run balance, performance pass on the tablet, bug bash | M14 |
 
 Sessions are a guide, not a contract: split any session that grows too big into parts ("12a", "12b"), and add QA or style sessions whenever they're needed.
 
