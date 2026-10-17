@@ -192,7 +192,9 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 - **One engine.** The cluster is a fixed sub-graph the generator places first (same positions, paths and clearings every run) and then builds the rest of the map around. It is not a separate hand-built map, so it reuses all the generation, chunking and simulation tech.
 - **Why.** It gives authored onboarding while keeping seeded replay value. The scripted early beats always land, in order, every run, and the opening is where all the tutorial teaching and starting equipment is packed: searching, the first battery, the shotgun, the first sigil, close quarters and the flashlight, the first mutant, the witch in the flesh, and a proper firefight.
 - **The arc:** home and safety → the witch on tape (*she exists*) → the first sigil (*what she does*) → the witch in the flesh (*she's here, watching you*) → the overrun checkpoint (*nobody's coming*).
-- *(proposed)* The rest of the north band (barn, crashed plane, mineshaft, Car Armory and so on) now sits just past the outpost, in the frontier's northern edge.
+- **The rest of the north band** (barn, crashed plane, mineshaft, Car Armory) sits just past the outpost, in the frontier's northern edge: the **north frontier** (Session 11). So the turret and the mineshaft's charge come after the cordon is crossed.
+- **One road** (Session 11): the cluster has one authored road, past the gas station's forecourt and south to the checkpoint (the outpost's approach). It's the only road on the map for now; the M3 hint "the gas station on a road edge" (OPEN_QUESTIONS #42) comes true here.
+- **Clearing types in the cluster** (Session 11): no checkpoint or roadside types inside it, so its sigils raise citizens and the first army zombie really is met on the outpost approach.
 
 **Soft-gated path order (the classic soft funnel).** The world stays continuous: paths open and close; nothing teleports.
 
@@ -208,6 +210,13 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 
 - *(proposed)* The cordon runs east to west across the map's full width (fence, razor wire and sandbags, cliff edge to cliff edge, or to dense impassable forest at the map's sides), with the outpost as its only gate, so the player can't walk around it.
 - *(proposed)* The gates inside the cluster (campsite path → gas station path → outpost path) are lighter in-world blocks that clear through story beats: a locked ranger gate, a fallen tree Tom cuts, a code Wyatt radios.
+
+**The cordon blocks Tom, not the dead** (Session 11). The cordon is a wall for the player only. The dead and the witch come through where it's torn: gaps pulled open from the far side, too low, too narrow or too tangled with wire for a man with a pack (a collider that blocks the player and nothing else). It's the story made visible: containment has already failed, and the things it held are getting out. So night marches from the frontier still reach the station, and the witch can reach the cluster.
+
+**Before Tom crosses the barricade** (Session 11):
+- **She plants only inside the cluster** (still preferring a sigil ground if there is one there). That's exactly what Ellen notices: sigils turning up outside containment. It also means every sigil she plants before the cordon opens is one Tom can reach and dig up.
+- Once the barricade is crossed, her normal planting rules take over across the whole map.
+- *(open question)* Should one of the two north sigil grounds sit inside the cluster, so the player learns to stake one out early?
 
 **Call to adventure.** Ellen, who worked on the edge of the portal programme, knows what a quarantine zone means. When the witch's sigils turn up **outside** the military's containment zone, she realises containment has failed and sends Tom to the military checkpoint to report that the witch has escaped it. When Tom reaches the outpost, it's already overrun: the soldiers are dead, the containment has collapsed and nobody is coming. It's just Tom now. This is the big call to adventure and the point where the game lets go of the player's hand. It recasts the push south as Tom defying a failed cordon to find out what the military were hiding, which ties into Ground Zero and the portal backstory.
 
@@ -522,22 +531,24 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 
 Hand-built set pieces placed by the map generator. The campsite and gas station are the exception: they're part of the fixed opening cluster (see Map: Fixed opening cluster). Every encounter needs nine things: opening cutscene, aesthetic, enemies, loot, dungeon or not, lore, whether it appears every game, its band, and a novel interaction. All are designed below.
 
+**More to come (Aaron, Oct 17).** Aaron is redesigning the random encounters, and many more encounter updates will land in this doc. So far the four in the fixed opening cluster (campsite, gas station, storm shelter, military outpost) are fleshed out in full; the rest are still their earlier designs and will change. Each encounter's session takes its design from here, workshopped with Aaron first (rule 10).
+
 ### Overview
 
 | Encounter | Band | Appears | Placement |
 | --- | --- | --- | --- |
 | Abandoned campsite | North | Every run (fixed opening cluster) | Next to the ranger station; first gated path |
-| Roadside gas station | North | Every run (fixed opening cluster; guaranteed witch sighting) | On a road edge; second gated path from home |
-| Old barn (Milo the Clown) | North | Common | A farm clearing |
+| Roadside gas station | North | Every run (fixed opening cluster; guaranteed witch sighting) | On the cluster's road; second gated path from home |
+| Old barn (Milo the Clown) | North (frontier) | Common | A farm clearing |
 | Storm shelter | North | Every run (fixed opening cluster; Night 1 sigil) | Inside the home cluster |
-| Crashed plane | North | Every run (Aaron, Oct 16: the outpost's scope cutscene shows it come down) | Just past the cordon, where the cutscene shows it crash |
-| Abandoned mineshaft | North | Uncommon | Hillside edge |
+| Crashed plane | North (frontier) | Every run (Aaron, Oct 16: the outpost's scope cutscene shows it come down) | Just past the cordon, where the cutscene shows it crash |
+| Abandoned mineshaft | North (frontier) | Uncommon | Hillside edge |
 | Overrun military outpost | North | Every run (fixed opening cluster; the gateway south) | The checkpoint in the military cordon, the only way out of the home cluster |
 | Stairs in the woods | Middle | 2–3 per run | Off-path clearings |
 | Time capsule | Middle | Uncommon | A ruined old church |
 | The Caller (night event) | Middle | 0–2 per run | Over the radio |
 | Bigfoot cave | Middle | Every run (unique prize) | Rocky clearing or path edge |
-| Car Armory | Middle | Every run (unique prize) | A clearing of wrecked military vehicles |
+| Car Armory | North (frontier; Aaron, M6) | Every run (unique prize) | A clearing of wrecked military vehicles |
 | Ground Zero | South | Every run | A crater clearing |
 | Crashed UFO | South | Every run (unique prize) | A south clearing; enterable from night 5 (config) |
 | Witch's hut | South | Every run (fixed) | Deep south |
@@ -557,7 +568,7 @@ Hand-built set pieces placed by the map generator. The campsite and gas station 
 | Military outpost (gateway south) | No | Tom arrives to report the witch; waves of dead soldiers on the approach reveal it's overrun | Approach road, watchtower, sandbag barricade with breached steel fence, compound of tents, comms hut and armoured shipping containers | Waves of helmeted army zombies peaking at the barricade; caged beetles in the compound | Rifle ammo, helmets, scrap, first aid, jeep battery, one charge; hunting rifle rounds in the watchtower | A failed transfer point: torn-open containers (one held the Mothman, never named), resin-frozen alien, field report | Needs the hunting rifle to reach; the scope cutscene shows the live dogfight; crossing the barricade opens the frontier; beetle crates break open when shot |
 | Mineshaft | Short tunnel | CCTV patched through by Wyatt: the blast and the Mothman bursting out | Timber entrance, rails, abandoned gear | Zombie miners, a few beetles | Scrap, lamp batteries, one charge | The Mothman's origin | Collecting an explosive charge |
 | Crashed plane | No | Establishing sweep settling on the lone alien examining the wreck | Military patrol plane torn through the trees | One plain-grey alien | Pistol, flares, first aid, battery; alien loot | The dogfight Tom watched from the outpost tower | First alien kill and first alien loot |
-| Storm shelter | Small room | Wyatt says it's hard to find; the camera reveals a horde standing on the hatch | Half-buried steel hatch; concrete room | Horde on the hatch (the first sigil's spawn) | First aid, ammo, batteries, radio; the gas station safe's combination (on the owner's body at the hatch) | The gas station owner's diary, trail-cam photos and tapes: his family died a few feet short of the hatch | The first sigil (tutorial); clear the horde, dig the hatch open; carry the tapes home for a cutscene |
+| Storm shelter | Small room | Wyatt: whoever dug this hid it well; the camera reveals a horde standing on the hatch | Half-buried steel hatch; concrete room | Horde on the hatch (the first sigil's spawn) | First aid, ammo, batteries, radio; the gas station safe's combination (on the owner's body at the hatch) | The gas station owner's diary, trail-cam photos and tapes: his family died a few feet short of the hatch | The first sigil (tutorial); clear the horde, dig the hatch open; carry the tapes home for a cutscene |
 | Old barn | No | Slow sweep at night, heat-lamp glow from inside | Milo the Clown lettering, animals, knife-throwing pedestal | Zombies dropping from the loft | Scrap, tractor battery | Milo; mutilated cattle | Loft ambush; harmless animals |
 | Gas station | No (single-room store) | Sweep across the pumps to the car bonnets and the "Home of Bigfoot" sign; first-person cutscene of the witch on the way out | Store, pumps, cars, "Home of Bigfoot" sign; dark aisles inside | Small citizen pack outside; the authored first mutant inside | Scrap, car batteries, first aid; the hunting rifle in a locked gun safe | "Home of Bigfoot" souvenirs and sighting photos (played straight); the owner's note | First mutant reveal by torchlight; guaranteed witch sighting; a safe that needs the storm shelter combination and outpost ammo |
 | Campsite | No | Sweep to the campers' car; radio: check for guns | Tents, cold campfire, blood, stick figures, slashed tents | None on arrival; a wave when the shotgun is taken | Guaranteed shotgun, ammo, scrap, car battery | The campers were killed by the witch; a camcorder clip of her attacking them | Picking up the shotgun triggers a zombie wave; the game's first battery pull |
@@ -800,7 +811,7 @@ The clearing above is a fight; the room below is the game's **first proper inter
 
 **Beat by beat**
 
-1. **Arrival.** Wyatt says the shelter is hard to find; the establishing camera reveals a horde standing on the hatch.
+1. **Arrival.** Wyatt (radio): whoever dug this hid it well (it's marked on the map from the Night 1 clip, so the line is about the owner, not about finding it). The establishing camera reveals a horde standing on the hatch.
 2. **The fight.** The horde is the **first sigil's own spawn**. The witch planted a sigil here before the family arrived, and the zombies it raised caught them in the open. Clearing the horde, digging up the sigil and opening the hatch are one connected fight.
 3. **Digging up the sigil.** The sigil tutorial: hold interact with the shovel; taking damage interrupts it. The glow dies, and the night (if it's night) goes noticeably quieter.
 4. **The owner.** His body lies at the hatch: he never made it down. On him: the **gas station safe's combination** *(proposed: on a tag on his keyring, or written inside the cover of a pocket notebook)*.
@@ -828,7 +839,7 @@ The owner's diary, written **before** the end. It's a reflective object, so it s
 
 Then a **blank page**. The blank page is the horror.
 
-*(proposed)* Entry dates: entry 1 around 1987, entry 2 around 1989, entry 3 around 2002, entry 4 in 2003, a few weeks before the game. That fits Bigfoot predating the portal by 15+ years (see Ideas for later).
+*(proposed)* Entry dates: entry 1 around 1987, entry 2 around 1989, entry 3 around 2002, entry 4 in 2003, a few weeks before the game. That fits Bigfoot predating the portal by at least 15 years (see Ideas for later).
 
 **The trail-cam tapes**
 
@@ -867,7 +878,7 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 | Shelves below | First aid kits, ammo, batteries, a radio | Storm shelter loot table (*proposed:* at least one first aid kit and one battery guaranteed) |
 | The wall below | Trail-cam photos | Set dressing |
 
-**Day vs night.** The witch plants this sigil on Night 1, and the family can urge Tom to dig it up in the dark. *(proposed)* By night the horde is on the hatch and the sigil glows; by day the horde lingers on the hatch anyway, since they're the sigil's spawn and the sigil is still there.
+**Day vs night.** The witch plants this sigil on Night 1, and the family can urge Tom to dig it up in the dark. *(proposed)* By night the horde is on the hatch and the sigil glows; by day the horde lingers on the hatch anyway, since they're the sigil's spawn and the sigil is still there. **An encounter exception** (Session 11): normally zombies rise only at night and most sink at dawn; the shelter's own horde doesn't sink, and holds the hatch until the sigil is dug up.
 
 **Revisits** *(proposed)*
 
@@ -878,7 +889,7 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 **Lore and dialogue hooks**
 
-- Wyatt's arrival line (the shelter is hard to find).
+- Wyatt's arrival line (the owner hid it well).
 - The combination found: a family line connecting it back to the safe *(proposed)*.
 - The diary and the tapes, handed in at the comms room: the cutscene above, and Ellen's lore lines.
 - The Night 1 trail-cam clip and the owner's tape show the same night from two cameras (see the open questions).
@@ -991,7 +1002,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 **Edge cases** *(proposed)*
 
 - The player retreats mid-wave: the waves reset to the last one cleared, and stragglers may follow toward the home cluster.
-- The player skips the tower and goes straight for the barricade: the barricade wave is still beatable with rifle and shotgun ammo, but much harder, and the radio suggests the tower. The scope cutscene then plays the first time the scope is raised anywhere past the cordon.
+- The player skips the tower and goes straight for the barricade: the barricade wave is still beatable with rifle and shotgun ammo, but much harder, and the radio suggests the tower. The scope cutscene then plays as Tom crosses the barricade (Session 11), so he always sees the dogfight before he can reach either crash site.
 - The player breaks no crates: at least one beetle breaks out on its own, so the beetle tutorial always happens.
 
 **Performance cost.** Medium to high: the largest fight so far (up to about 20 active sprite zombies at the barricade, near the active-enemy cap), 3D beetles, two cutscenes, and the long approach. Waves keep the number of active enemies at any moment well under the cap except at the peak.
@@ -1002,7 +1013,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - What exactly the player sees of the Mothman's container, and for how long.
 - How the scope cutscene frames the dogfight and where the two crash sites appear relative to the outpost.
 
-#### Car Armory and the government base (every run; north band, Aaron M6: the turret matters most for travelling away from home)
+#### Car Armory and the government base (every run; north frontier, Aaron M6: the turret matters most for travelling away from home)
 
 - **Outside:** trashed military vehicles; an armoured truck with its back doors open on a glowing purple portal.
 - **Inside:** a secret government base, hand-built: corridors, labs, an armory section, far bigger than the truck. The source of the portal technology.
@@ -1082,7 +1093,7 @@ See The witch: destroying the hut and the final battle.
 
 - **The mishap:** a well-funded government programme built portals into other dimensions. It went wrong at Ground Zero, the portal is stuck open, and entities have spilled into our world.
 - **Americana made real:** the creatures on the other side are the creatures of American folklore: the Witch of the Woods, the Mothman, the Martians, and whatever the Caller is. Human legends were distant glimpses of their kind.
-- **Bigfoot is the exception (Aaron, Oct 16):** he did not come through the portal. He has been in these woods for 15+ years at least, long before the programme, a true nature spirit native to this land (see Ideas for later).
+- **Bigfoot is the exception (Aaron, Oct 16):** he did not come through the portal. He has been in these woods at least since the gas station owner's first sighting in the late 1980s, and in truth far longer than any of them: a true nature spirit native to this land, long before the programme (see Ideas for later).
 - **Why this forest:** it was already a thin place (the time capsule, the stairs), which is why the government built here.
 - **The cold open** shows only Ground Zero and Men in Black. Everything else is a surprise.
 
@@ -1232,7 +1243,7 @@ The first 20 minutes teach through the radio and the world, not pop-ups. Only co
 ### Opening cutscene (under a minute, skippable)
 
 1. **Cold open:** grainy government CCTV at Ground Zero. Men in Black around the portal ring; it flares; the feed glitches and dies.
-2. **First person:** Tom wakes in the station at dawn. Ellen at the radio, emergency broadcasts crackling (lines 1–2).
+2. **First person:** Tom wakes in the station in the early morning (runs start at 07:00, Day 1; M3). Ellen at the radio, emergency broadcasts crackling (lines 1–2).
 
 ### Day 1 (guided, can't fail)
 
@@ -1244,9 +1255,10 @@ The first 20 minutes teach through the radio and the world, not pop-ups. Only co
 
 Ellen explains the first forecast.
 
-### Night 1 (safe, no sigils)
+### Night 1 (safe at the station; the first sigil)
 
-- No sigils yet: only a few stray zombies test the fence.
+- **Safe at the station:** only a few stray zombies test the fence. The night's one sigil is far enough off that it raises nothing that reaches home before dawn.
+- **The first sigil is scripted** (Session 11): the real witch comes out on Night 1 on a fixed route and plants at the storm shelter, the one exception to "night 1 is safe, planting from night 2" (`config.witch.firstNight`). The owner's family die there that night (see Storm shelter). From Night 2 her normal rules take over (inside the cluster until the cordon is crossed).
 - The family patch through the trail-cam clip of the witch planting her first sigil at the storm shelter; it's marked on the map. *(proposed)* One of the trail cameras is fixed near the shelter, so the clip is always possible.
 - The player chooses: dig it up in the dark (optional and scary) or hold the station until dawn.
 
@@ -1587,7 +1599,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 
 - **The Caller's first whisper.** On the walk *back* from an encounter (never Day 1), the radio crackles for half a second with something that isn't the family, a wrong voice or a wrong texture, then snaps back to normal. Nobody acknowledges it and nothing explains it. It's an early, deniable seed for the Caller, placed in the comedown when the player thinks the action is over and the loop is resetting. Players who meet the Caller later may realise it was there all along.
 - **Setting year: about 2003 (Aaron's leaning, not final).** Late enough for phones and computers, but before everything went fully digital and connected. Patchy cell coverage in deep Appalachian forest is believable, so the radio, trail cams, camcorder (miniDV) and VCR tapes all earn their place, and the analog CCTV and grain aesthetic is honest rather than affectation. It touches the campsite camcorder, the storm shelter's VCR and tapes, the station's radio and CCTV, and the overall art and audio feel. **One conflict to settle:** the time capsule says it was buried in the 1920s "to be opened in 100 years", which would be due in the 2020s. *(proposed)* Bury it in **1903**, so it falls due in 2003, the year of the game: the town's capsule is opened on schedule, by the wrong person, for the wrong reason.
-- **Bigfoot as a true nature spirit (Aaron, Oct 16).** Bigfoot is not a portal creature. He has been in these woods for 15+ years at least (since the gas station owner's first sighting), long before the government opened the portal, so he belongs here in a way nothing else in the game does. It sharpens the three-sided story: the family are newcomers, the witch is a true outsider who came through the tear, and Bigfoot is the oldest rightful presence. The portal let the hostile things in; it didn't make Bigfoot, who is older than the wound. It also recasts the owner's long-ago sighting as a glimpse of the land's own guardian, the gentlest presence in the story. Consistent with the Native American influence section and the Bigfoot cave (he's the forest's guardian; the Blessing is old protective land magic); the backstory's "Americana made real" list has been updated so he's no longer counted among the portal creatures.
+- **Bigfoot as a true nature spirit (Aaron, Oct 16).** Bigfoot is not a portal creature. He has been in these woods at least since the gas station owner's first sighting in the late 1980s, and in truth far longer than any of them, long before the government opened the portal, so he belongs here in a way nothing else in the game does. It sharpens the three-sided story: the family are newcomers, the witch is a true outsider who came through the tear, and Bigfoot is the oldest rightful presence. The portal let the hostile things in; it didn't make Bigfoot, who is older than the wound. It also recasts the owner's long-ago sighting as a glimpse of the land's own guardian, the gentlest presence in the story. Consistent with the Native American influence section and the Bigfoot cave (he's the forest's guardian; the Blessing is old protective land magic); the backstory's "Americana made real" list has been updated so he's no longer counted among the portal creatures.
 - **The battery gate.** A sealed gate with no power, where fitting a battery opens it onto a horde: a real choice to open it or not. Cut from the military outpost because you could shoot through chain-link, which kills both the drama and the ammo economy. It needs a spot where the horde is truly sealed off and can't be shot through (solid doors, a bunker, a container yard).
 - **Make the walk back matter (a candidate design pillar).** The game is a push north to south, but every push creates a return trip. Seed keys, combinations, tools and knowledge in the south (and across encounters generally) that unlock new value at places already visited in the north, so return journeys are rewarding re-reads of the map rather than dead travel. The first instance is the hunting rifle chain: the gas station safe, the storm shelter combination and the outpost's watchtower ammo.
 
