@@ -39,7 +39,7 @@ All in `docs/DESIGN.md`, four commits, each agreed with Aaron:
 
 ### Unfinished
 
-Nothing in scope. Aaron has since settled #149 (the shelter is a spur), #151 (2003; the capsule buried in 1903), #152 (the owner is Earl Pruitt) and #154 (one early charge is fine). #150 and #153 are still open. Still open from before: #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun) and #136 (an item that tags the witch).
+Nothing in scope. Aaron has since settled #149 (the shelter is a spur), #151 (2003; the capsule buried in 1903), #152 (the owner is Earl Pruitt), #154 (one early charge is fine), #150 (one sigil ground inside the cluster) and #153 (the Pruitts die on Night 1). Still open from before: #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun) and #136 (an item that tags the witch).
 
 ## Next: Session 12, Narrative Designer: M8, the story systems
 
@@ -92,7 +92,7 @@ Nothing in scope. Aaron has since settled #149 (the shelter is a spur), #151 (20
 ### Open questions for Aaron
 
 - The cutscene look, the subtitle look, and how the family appear face to face (workshop at the start).
-- #153: the two cameras on Night 1. M8's trail cameras should leave room for a fixed camera near the storm shelter.
+- #153 (settled): the Pruitts die on Night 1. The Hales' camera, further off, only catches the witch after they've fled its frame. M8's trail cameras need a fixed camera near the storm shelter for the Night 1 clip.
 - The setting year is 2003 (#151, settled): it shapes the camcorder (miniDV), VCR and CCTV looks.
 - From before: #137 (fog nights and gameplay), #140-141 (the settings screen, now Session 28).
 

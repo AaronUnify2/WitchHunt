@@ -220,7 +220,7 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 **Before Tom crosses the barricade** (Session 11):
 - **She plants only inside the cluster** (still preferring a sigil ground if there is one there). That's exactly what Ellen notices: sigils turning up outside containment. It also means every sigil she plants before the cordon opens is one Tom can reach and dig up.
 - Once the barricade is crossed, her normal planting rules take over across the whole map.
-- *(open question)* Should one of the two north sigil grounds sit inside the cluster, so the player learns to stake one out early?
+- **One sigil ground is inside the cluster** (Aaron, Oct 17): one of the two north grounds is placed with the cluster, the same on every run. Her early sigils (nights 2-4 or so) usually go there, so the player learns its tells and can stake it out to ambush her mid-ritual close to home, before the frontier opens. The other north ground is in the north frontier.
 
 **Call to adventure.** Ellen, who worked on the edge of the portal programme, knows what a quarantine zone means. When the witch's sigils turn up **outside** the military's containment zone, she realises containment has failed and sends Tom to the military checkpoint to report that the witch has escaped it. When Tom reaches the outpost, it's already overrun: the soldiers are dead, the containment has collapsed and nobody is coming. It's just Tom now. This is the big call to adventure and the point where the game lets go of the player's hand. It recasts the push south as Tom defying a failed cordon to find out what the military were hiding, which ties into Ground Zero and the portal backstory.
 
@@ -914,7 +914,7 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 **Open questions for the storm shelter**
 
-- **Two cameras, one night.** The Hales' Night 1 trail-cam clip (tutorial lines 17–19, camera six) shows the witch planting this sigil. The owner's camera four shows the same night with his family. *(proposed)* The Hales' camera sits further off and only catches her after the family have scattered out of its frame, so the owner's tape later reveals what the Hales never saw. That's a strong retroactive chill, but it needs the timeline confirming: the family died on Night 1, while Tom was at the station.
+- **Two cameras, one night.** The Hales' Night 1 trail-cam clip (tutorial lines 17–19, camera six) shows the witch planting this sigil. The owner's camera four shows the same night with his family. **Settled (Aaron, Oct 17): the Pruitts die on Night 1, while Tom is at the station.** The Hales' camera sits further off and only catches her after the Pruitts have scattered out of its frame, so on Night 1 the Hales see only a witch planting something. Earl's tape later reveals what they never saw: people were there, and it happened while they watched.
 - Settled (Session 11): the combination is on a brass tag on his keyring; the owner is Earl Pruitt.
 - Whether the room below is part of the main map (a hatch and a ladder) or uses the interior system.
 
@@ -1632,7 +1632,6 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
 - **The encounter redesign is still under way** (Aaron, Oct 17): many more encounter updates are coming. The opening cluster's four are done; the rest are earlier designs.
 - Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). Aaron will answer it as he designs those encounters in depth. The hunting rifle is settled (the gas station's safe).
-- Should one of the north sigil grounds sit inside the opening cluster? (See Map: Fixed opening cluster.)
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
 - Art direction details for the Men in Black (sprite or 3D).
