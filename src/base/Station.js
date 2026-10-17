@@ -90,6 +90,7 @@ export class Station {
     this.hold.init();
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
     this.blockers = []; // M8: prompt sources that take interact first (talking to the family)
+    this.pageSources = []; // functions returning more ledger pages (NightWatch's forecast, M8's monitors)
 
     const fam = this.layout.cabin.commsCentre;
     this.routeHook = {
@@ -742,7 +743,7 @@ export class Station {
       { id: 'power', title: 'Power', rows: power },
       { id: 'upgrades', title: 'Upgrades', rows: upgrades },
       { id: 'security', title: 'Security', rows: security },
-      ...(this.extraPages?.() ?? []), // M6: NightWatch's forecast
+      ...this.pageSources.flatMap((pages) => pages()), // M6: NightWatch's forecast; M8: the comms room's monitors
     ];
   }
 

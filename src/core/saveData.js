@@ -9,7 +9,9 @@
 // the sigils, the vehicles' looted flags and which encounters have been
 // visited (revisits). Zombies are not saved: dawn sinks most of them, and
 // placement (the map, vehicles) rebuilds from the seed.
-// M7+ adds the witch, M8+ dialogue heard, documents, prizes and the rest.
+// M7 added the witch. M8: the lines heard and milestones (Dialogue), the
+// lore carried and handed in and the monitors' clips (Lore); both optional,
+// so older saves still load. Prizes and the rest come later.
 
 export const SAVE_VERSION = 1;
 

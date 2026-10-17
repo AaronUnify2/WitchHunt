@@ -1,5 +1,5 @@
 {
-  "_note": "Every cutscene (M8; DESIGN.md 'Cutscenes'), in one timeline format: story/cutsceneTimeline.js explains positions (in an anchor's frame: x right, y up, z ahead), camera keys and events. Anchors: player, home, homeDoor, hut, witch, trailCam (the camera that saw her, else camera 1), nearestClearing, clearing:<encounter id>. style: cctv | firstPerson | sweep | black. look: config.postFX.looks. hour: the grade and sky while it plays (else the clock's). light: the camera's light on the actors (else config.cutscenes.actorLight for its look). fps: a CCTV feed's frame rate. world: 'run' keeps the world going (else it holds still). Events: line (dialogue.json id; radio true/false), text, move, pose (stand/kneel/down), show, hide, flare, glitch, fade, emit, lookAt, shake, osd (cut to another camera: look, hour, osd), sfx. 'placeholder': the shot is a stand-in until its encounter session makes it properly. Every cutscene is in the debug menu's Cutscenes category (Aaron, Session 11).",
+  "_note": "Every cutscene (M8; DESIGN.md 'Cutscenes'), in one timeline format: story/cutsceneTimeline.js explains positions (in an anchor's frame: x right, y up, z ahead), camera keys and events. Anchors: player, home, homeDoor, hut, witch, trailCam (the camera that saw her, else camera 1), nearestClearing, clearing:<encounter id>. style: cctv | firstPerson | sweep | black. look: config.postFX.looks. hour: the grade and sky while it plays (else the clock's). light: the camera's light on the actors (else config.cutscenes.actorLight for its look). fps: a CCTV feed's frame rate. world: 'run' keeps the world going (else it holds still). Events: line (dialogue.json id; radio true/false), text, move, pose (stand/kneel/down), show, hide, flare, glitch, fade, emit, lookAt, shake, osd (cut to another camera: look, hour, osd), sfx. rewatch: once played it goes on the comms room's monitors. 'placeholder': the shot is a stand-in until its encounter session makes it properly. Every cutscene is in the debug menu's Cutscenes category (Aaron, Session 11).",
   "cutscenes": [
     {
       "id": "opening.coldOpen",
@@ -33,6 +33,7 @@
     },
     {
       "id": "clip.camcorder",
+      "rewatch": true,
       "name": "Day 1: the campers' camcorder (camcorder)",
       "placeholder": true,
       "style": "cctv",
@@ -63,6 +64,7 @@
     },
     {
       "id": "clip.night1",
+      "rewatch": true,
       "name": "Night 1: the witch planting her first sigil (trail cam)",
       "placeholder": true,
       "style": "cctv",
@@ -114,6 +116,7 @@
     },
     {
       "id": "clip.fifthSigil",
+      "rewatch": true,
       "name": "Warning: the fifth sigil goes in (trail cam)",
       "placeholder": true,
       "style": "cctv",
@@ -142,6 +145,7 @@
     },
     {
       "id": "clip.dogfight",
+      "rewatch": true,
       "name": "The outpost: the dogfight through the hunting rifle's scope",
       "placeholder": true,
       "style": "cctv",
@@ -168,6 +172,7 @@
     },
     {
       "id": "clip.mothmanContainer",
+      "rewatch": true,
       "name": "The outpost: the Mothman's torn-open container (military feed)",
       "placeholder": true,
       "style": "cctv",
@@ -191,6 +196,7 @@
     },
     {
       "id": "clip.programme",
+      "rewatch": true,
       "name": "Classified: footage of the portal programme (government)",
       "placeholder": true,
       "style": "cctv",

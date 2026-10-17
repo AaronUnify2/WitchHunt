@@ -1,0 +1,20 @@
+{
+  "_note": "Lore items (M8; DESIGN.md 'Lore sources', 'The classified documents'): found in the world, handed in at the comms room (the ledger's Monitors page), each setting a flag lines can ask for ('lore.<id>'). An item with a clip unlocks it on the monitors. Names and where they're found only: the texts are written with Aaron in each encounter's session. The encounter sessions place the pickups (Lore.give); until then the debug menu gives them.",
+  "items": [
+    { "id": "camcorder", "name": "The campers' camcorder", "from": "campsite", "kind": "tape", "clip": "clip.camcorder" },
+    { "id": "pruittDiary", "name": "Earl Pruitt's diary", "from": "stormShelter", "kind": "item" },
+    { "id": "pruittTapes", "name": "Earl Pruitt's trail-cam tapes", "from": "stormShelter", "kind": "tape" },
+    { "id": "pilotLog", "name": "The pilot's log", "from": "crashedPlane", "kind": "item" },
+    { "id": "foremanLog", "name": "The foreman's logbook", "from": "mineshaft", "kind": "item" },
+    { "id": "fieldReport", "name": "The field report", "from": "outpost", "kind": "document" },
+    { "id": "timeCapsule", "name": "The time capsule (1903)", "from": "timeCapsule", "kind": "item" },
+    { "id": "doc1", "name": "Classified 1: the funding memo", "from": "carArmory", "kind": "document" },
+    { "id": "doc2", "name": "Classified 2: the breakthrough report", "from": "carArmory", "kind": "document", "clip": "clip.programme" },
+    { "id": "doc3", "name": "Classified 3: the transmission log", "from": "carArmory", "kind": "document" },
+    { "id": "doc4", "name": "Classified 4: the specimen inventory", "from": "carArmory", "kind": "document" },
+    { "id": "doc5", "name": "Classified 5: the containment orders", "from": "carArmory", "kind": "document" },
+    { "id": "doc6", "name": "Classified 6: the incident log", "from": "groundZero", "kind": "document" },
+    { "id": "doc7", "name": "Classified 7: the shutdown attempts", "from": "groundZero", "kind": "document" },
+    { "id": "doc8", "name": "Classified 8: the final entry", "from": "groundZero", "kind": "document" }
+  ]
+}

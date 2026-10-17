@@ -39,6 +39,7 @@ import { Dialogue } from '../story/Dialogue.js';
 import { FamilyTalk } from '../story/FamilyTalk.js';
 import { TrailCams } from '../story/TrailCams.js';
 import { Cutscenes } from '../story/Cutscenes.js';
+import { Lore } from '../story/Lore.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
@@ -334,6 +335,10 @@ export class Game {
       sfx: this.combat.sfx,
       drawDistance: () => this.drawDistance,
     });
+    // Lore hand-ins and the monitors: the ledger's Monitors page.
+    this.lore = new Lore(this.cfg, this.bus);
+    this.lore.init({ dialogue: this.dialogue, cutscenes: this.cutscenes, ledger: this.station.ledger, notify: (text) => this.toast.show(text) });
+    this.station.pageSources.push(() => [this.lore.ledgerPage()]);
   }
 
   // M8: flags about the world now, for lines' conditions (DESIGN.md
@@ -427,6 +432,7 @@ export class Game {
     this.cutscenes.addDebugItems(menu);
     this.dialogue.addDebugItems(menu);
     this.trailCams.addDebugItems(menu);
+    this.lore.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -711,6 +717,7 @@ export class Game {
       explosives: this.explosives.saveState(), // M7: charges carried and planted
       stats: { ...this.stats }, // M7: for the run summary
       story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
+      lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
     };
   }
 
@@ -740,6 +747,7 @@ export class Game {
     this.explosives.loadState(d.explosives);
     this.stats = loadStats(d.stats);
     this.dialogue.loadState(d.story);
+    this.lore.loadState(d.lore);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -884,6 +892,7 @@ export class Game {
     this.toast.dispose();
     this.mapUi.dispose();
     this.nightWatch.dispose();
+    this.lore.dispose();
     this.cutscenes.dispose();
     this.trailCams.dispose();
     this.familyTalk.dispose();

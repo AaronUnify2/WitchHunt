@@ -52,7 +52,7 @@ export class NightWatch {
     this.groups = new Map();
     this.forceAway = false; // debug
     this.reset();
-    this.station.extraPages = () => [this.ledgerPage()];
+    this.station.pageSources.push(() => [this.ledgerPage()]);
     this.wireEvents();
   }
 
