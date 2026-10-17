@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 10b (Graphics Engineer), **style pass 1 plus a second pass Aaron asked for: done for the guns (detailed models, a sniper rifle, four more guns, the heat scope, the shovel's slice), and paused for the rest** (zombies, cars, hut, station interior, family: OPEN_QUESTIONS #144-148), so Aaron can pivot to story and encounter design. Session 10: Ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. All built in code, each with a Quality lever and a debug switch; Aaron saw no frame-rate drop on the tablet. Session 9 (QA & Balance) passed the gate before it. Next: **Session 11, a review of DESIGN.md**: fold in Aaron's new story and encounter design, and redo the milestones and the session plan. **Then the story and dialogue session** (Narrative Designer, M8 as revised). See HANDOVER.md.
+Last updated: Session 11 (Lead Engineer, design review): **no code changed.** Aaron's story and encounter design (the fixed opening cluster) is in `docs/DESIGN.md`, the doc is reviewed against what's built, and the milestones and session plan are redone. **Next: Session 12, the Narrative Designer: M8, the story systems.** Then Session 13, a play-test-driven art session (characters and the deferred art #144-148), then M9, the opening cluster, in four parts (Sessions 14-17). See HANDOVER.md.
+
+Before that, Session 10b (Graphics Engineer): style pass 1 plus a second pass Aaron asked for, **done for the guns** (detailed models, a sniper rifle, four more guns, the heat scope, the shovel's slice) **and paused for the rest** (zombies, cars, hut, station interior, family: OPEN_QUESTIONS #144-148). Session 10: ground mist and fog nights, a blended forest floor, six kinds of Appalachian tree with solid trunks up close, a time-of-day colour grade, fireflies, beam dust, moonlight shafts, a faint torch beam and the optional retro pixel filter. Session 9 (QA & Balance) passed the gate.
 
 Session 8 (AI Programmer) built M7, the witch, the vertical slice, in six steps:
 1. The witch roams and plants.
@@ -31,6 +33,15 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 11: the design review (Lead Engineer, no code)
+
+`docs/DESIGN.md` only, in four commits:
+1. **Aaron's story and encounter design**, as he wrote it: the fixed opening cluster (station, campsite, storm shelter, gas station, military outpost), the soft-gated path order, the military cordon and Ellen's call to adventure, the hunting rifle chain, the four encounters in full, helmets that block headshots, the crashed plane every run (the dogfight seen through the scope), the Mothman's container, Bigfoot as a nature spirit, "Ideas for later".
+2. **Ten conflicts settled with Aaron** (OPEN_QUESTIONS, Session 11) and a note that more encounter updates are coming.
+3. **Brought up to date with what's built:** weapon keys, shared ammo pools, the starting kit and the unbuilt flare gun, hiding, marches, revisits, danger, the witch's fight and look, the point of no return, fog nights, the heat scope, art generated in code, trees, the file structure, the dialogue plan.
+4. **New milestones and sessions:** M8 the story systems; a standalone art session (13); M9 the opening cluster in four parts (14-17); QA after each content milestone; sessions renumbered to 32. Every cutscene goes in the debug menu.
+
 
 ### Session 10b: the shovel carried upright, the tower's torch glare (Aaron)
 
@@ -123,7 +134,7 @@ Aaron asked for more in this pass: better guns, a sniper rifle, zombies, cars, t
 
 - **The optional retro pixel filter** (DESIGN.md "Rendering pipeline" step 4): renders 270 lines (`config.render.retro.lines`), upscaled by the browser with hard, nearest-neighbour pixels (`image-rendering: pixelated`). The HUD stays sharp (it's HTML).
 - While it's on it overrides the render scale (dynamic resolution keeps running underneath).
-- Switched in the debug menu (Display & performance: "Retro pixel filter"). It becomes a Quality setting when the settings screen exists (Session 19).
+- Switched in the debug menu (Display & performance: "Retro pixel filter"). It becomes a Quality setting when the settings screen exists (Session 28).
 
 ### Session 10 step 4b: moonlight shafts and the torch beam (Graphics Engineer, style pass 1)
 
@@ -633,7 +644,7 @@ Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model
 | Loot | `src/data/loot.json`, `src/combat/loot.js`, `src/world/Pickups.js`, `src/render/PickupRenderer.js` | Every table entry rolls on its own. Citizens: shells 12%, rifle rounds 4%, scrap 10%, a first aid kit 4% (cut after Aaron's test). Police: **vest (+40 ballistic) 35%**, pistol rounds 30%, shells 6%. Army: **helmet (+20 ballistic) 35%**, **rifle rounds 20%** (the main source), scrap 10%. Mutants: 2-4 rifle rounds, shells 60%, scrap, a kit 50%, a vest 30%. Drops are small coloured boxes that bob and turn by the body. **Walk over one to take it**; a full armour bar or kit bag leaves it lying. A short "+4 shotgun shells" feed shows bottom right. Pool of 48, gone after 15 minutes. Pistol rounds and scrap are counted in the inventory (overlay `combat` line) for later. |
 | Digging | `src/player/Digging.js`, `ZombieDirector.updateDigging()` | Stand within 2.2 m of a sigil: "Hold X: dig up the sigil" (E on the keyboard). 4 seconds of holding, with a progress bar and shovel sounds. Letting go pauses; stepping away starts over; **taking damage loses the progress**. When it's up: a cleansing chime, the sigil vanishes and a toast shows the level dropping. |
 | Map screen pause | `src/core/Game.js` `update()` | **Aaron: the map screen pauses the game**, now including the clock. The debug menu still lets the clock run (#9). |
-| Sounds | `src/audio/Sfx.js` | Placeholders (audio pass, Session 20): shovel digging, the cleansing chime, earth breaking as zombies rise, pickup click, a deeper mutant groan. Groans now only play for zombies within earshot. |
+| Sounds | `src/audio/Sfx.js` | Placeholders (audio pass, Session 29): shovel digging, the cleansing chime, earth breaking as zombies rise, pickup click, a deeper mutant groan. Groans now only play for zombies within earshot. |
 | Debug menu | `ZombieDirector.addDebugItems()`, `Combat.addDebugItems()` | **Zombie level: auto / fixed L1-L5** (cycles; auto counts the sigils); plant sigil (stand-in witch); plant sigil right here; raise zombies now (every sigil); teleport: next sigil; remove all sigils; **sigils on the map** (green diamonds on the minimap and map screen); spawn a horde near me; spawn a mutant near me; spawn 5 zombies near me (now with the local variant mix). The M2 "Zombie speed" toggle is replaced by the level. |
 | Overlay | `Combat.zombieOverlayLine()`, `ZombieDirector.overlayLines()` | New `zombies` line: level, alive and active, by variant (citizen/police/army/mutant), how many in hordes, by what they're doing (chase/search/wander/rising), stragglers, and **how far you can be seen and heard from right now**. New `sigils` line: count (and how many on grounds), level, the next raising, the nearest sigil. The `combat` line adds scrap, pistol rounds and pickups lying about. |
 
@@ -651,7 +662,7 @@ Agreed with Aaron before building: a **placeholder 3D mutant** (boxes; the model
 
 ### M3: The map (Session 4)
 
-Decided with Aaron before building: the map is **1 km wide by 1.4 km north to south** ("we'll see how it goes"); off the pathways, **undergrowth slows you but never blocks you** ("something the player can choose to do, but it comes at a cost"); **gentle rolling ground**; a simple but usable minimap and map screen (the final look is Session 19); runs **start at home on the cliff edge, by day**.
+Decided with Aaron before building: the map is **1 km wide by 1.4 km north to south** ("we'll see how it goes"); off the pathways, **undergrowth slows you but never blocks you** ("something the player can choose to do, but it comes at a cost"); **gentle rolling ground**; a simple but usable minimap and map screen (the final look is Session 28); runs **start at home on the cliff edge, by day**.
 
 | Area | Files | Notes |
 | --- | --- | --- |
@@ -697,7 +708,7 @@ Plan workshopped and approved by Aaron before building (rule 10). **Aaron's M2 t
 | Effects | `src/render/CombatFx.js` | Blood spurts (more on a headshot) and dust puffs where misses land: one pooled `Points` object. A pooled muzzle-flash point light (always in the scene, intensity only, no shadow). Camera kick and shake. |
 | Health, armour, healing | `src/player/Health.js`, `Armour.js`, `Inventory.js` | Health 0–100, no regen. Three armour bars soak damage ballistic → energy → nature → health. First aid kits (start with 2): **D-pad right** / H heals 30 at 10 per second; a second kit queues; nothing heals past 100. |
 | HUD (placeholder) | `src/ui/Hud.js`, `style.css` | Crosshair (dot only while aiming), hit marker (yellow on headshots, red and bigger on kills), "B: reload" / "Out of ammo" prompt, health in 10 segments (pulses red at 30 or below), a healing "+", three armour bars, weapon name, ammo, reload bar, first aid count, red screen edge when hurt, "You died" screen (A / Enter: try again). |
-| Sounds (placeholder) | `src/audio/Sfx.js` | **Placeholder, to be upgraded in the audio pass (Session 20).** Synthesised on the fly: rifle, shotgun and pump, shovel swing and hit, flesh hit, headshot, kill, positional zombie groans and swipes, hurt, reload clicks, empty click, switch, heal, death. |
+| Sounds (placeholder) | `src/audio/Sfx.js` | **Placeholder, to be upgraded in the audio pass (Session 29).** Synthesised on the fly: rifle, shotgun and pump, shovel swing and hit, flesh hit, headshot, kill, positional zombie groans and swipes, hurt, reload clicks, empty click, switch, heal, death. |
 | Debug menu | `Combat.addDebugItems()` | Spawn 5 zombies, zombie speed level 1 / 5, kill all, god mode, aim assist on/off, give ammo, give armour, give first aid kits, hurt me (−25). |
 | Debug overlay | `Combat.overlayLine()` | New `combat` line: living / active enemies, level, health, armour, weapon and ammo, current aim-assist factor, kills, GOD. |
 | Tests | `tests/*.test.js` | 116 tests (55 new): weapon sway pacing, armour order, healing queue, aim assist, weapon state (fire rate, magazine and shell reloads, melee), hit-scan geometry (body / head / blockers / falloff / spread / melee arc), zombie behaviour (walk, swipe timing, stagger, death, corpse, knockback, frames, speed rolls), rock-top glare. |
@@ -830,9 +841,9 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 ## Stubbed / placeholder (by design)
 
 - Vehicles are placeholder boxes; the bonnet, boot and door animation is a hinge swing (no arms or tools on screen). Vehicle state isn't saved yet (saving is M6/M12); each vehicle keeps its own "looted" flags for when it is. Encounter set dressing (the gas station's pumps, the outpost's sandbags) will move or replace cars when those encounters are built.
-- The turret comes from the debug menu until the Car Armory (M11). The forecast panel and alarm banner are placeholders (the final HUD is Session 19's).
-- The defeat and victory screens are M7 placeholders (ui/RunEndScreen.js): text cards until M8's cutscenes; the look is Session 19's. The family are placeholder figures that never move or speak (M8).
-- The ledger is a placeholder book (the pixel-font ledger is Session 19's).
+- The turret comes from the debug menu until the Car Armory (M11). The forecast panel and alarm banner are placeholders (the final HUD is Session 28's).
+- The defeat and victory screens are M7 placeholders (ui/RunEndScreen.js): text cards until M8's cutscenes; the look is Session 28's. The family are placeholder figures that never move or speak (M8).
+- The ledger is a placeholder book (the pixel-font ledger is Session 28's).
 - All art is procedural placeholder (tree sprites, ground, torch pattern, moon). The art pass replaces it.
 - Encounters are signposts only: each is built in its own milestone (M5 home, M7 hut, M9-M11 encounters). Sigil grounds work for play (M4) but look like a signpost and a ring of stakes; their set dressing and twists (the scarecrow that turns its head, open graves, stick figures, the hanging oak's ropes, the circus sideshows) and the tells before she uses one (crows, turned earth, candles) are for an encounter session.
 - **The witch (M7)** is a placeholder figure (Aaron wants to spend real time on her look in the art pass). The hut, traps, hexes, the blood night and the ending are placeholders too. The cutscene (letterbox and cards) waits for M8's cutscene system, the closing lines for the Narrative Designer. Explosives come from the debug menu until M9-M11.
@@ -840,12 +851,12 @@ Aaron's verdict on M1: "really great work". He asked for three changes, now made
 - Encounter placement hints not yet honoured: the gas station "on a road edge" (no roads yet), the mineshaft "hillside edge", stairs "off-path", the Bigfoot cave "rocky clearing or path edge", the crashed plane "off a pathway" (OPEN_QUESTIONS #42).
 - Clearing types (bog, graveyard, roadside, checkpoint, standing stones) tint the map, name the signpost and set the zombie variant mix (M4); their look arrives with the style passes.
 - The east, west and south map edges are an invisible line inside dense forest (Aaron: fine as it is).
-- The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 19); no pause menu.
+- The HUD is a placeholder (no pixel font, clock or glyphs); the minimap and map screen are simple placeholders (final look Session 28); no pause menu.
 - **The save is M6's dawn autosave only:** no save and quit, no pause menu (M12). It leaves out zombies, pickups and the random streams (OPEN_QUESTIONS #102). The Continue / New run screen is a placeholder until the main menu (M9).
 - **Nights while away are an abstraction:** groups held at the fence, damage at a rate, the turret's rounds turned into kills. Its numbers are first-pass (M14 tunes them).
 - Pathfinding is pathways plus straight lines: a chasing zombie walks straight at you and slides round trunks; it can snag on a rock or a dense cluster.
-- The zombie sprite and every sound are placeholders (art pass M13, audio pass Session 20). The in-hand weapons got their models in Session 10b.
-- **Deferred from Session 10b (Aaron's pivot to story):** the zombies' look, the cars, the witch's hut, the station's interior and the family (OPEN_QUESTIONS #144-148, planned for Session 16).
+- The zombie sprite and every sound are placeholders (art pass M13, audio pass Session 29). The in-hand weapons got their models in Session 10b.
+- **Deferred from Session 10b (Aaron's pivot to story):** the zombies' look, the cars, the witch's hut, the station's interior and the family (OPEN_QUESTIONS #144-148, planned for Session 13, a standalone art session straight after M8).
 - Pistol rounds and scrap are counted but have no use yet (the pistol and building arrive later); the inventory screen is later.
 - Not built from "Visual ambition" (Session 10 built the ground mist, height mist, fog nights and the blended ground): normal maps on the ground, fallen logs and roots, breath on cold nights, distant impostor tweaks. These belong to the later style passes (OPEN_QUESTIONS #21).
 - Billboard trees: the canopy is still a sprite that turns to face you up close; the trunk near you is a solid 3D trunk (Session 10, `NearTrunks.js`).
@@ -890,7 +901,7 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 ## The gate (Session 9, QA & Balance): where it stands
 
 - **Passed on the witch's side:** Aaron fought her on the pathways (ambushing rituals, making her flee, killing her), played the final battle several times and tried the traps, the hut and the endings. All play well; her fight was reworked to his design (OPEN_QUESTIONS #113, #116, #129).
-- **Still to judge with full runs:** pacing (1.5-2.5 hours, cornering her around nights 6-8), ammo and loot, and whether the dusk choice (defend or hunt) is a real one. Day 1 has little to do until the campsite exists (#135), so these wait for M9's encounters; Aaron kept the session order. A short QA play-through after Session 13 would be a good point to look again.
+- **Still to judge with full runs:** pacing (1.5-2.5 hours, cornering her around nights 6-8), ammo and loot, and whether the dusk choice (defend or hunt) is a real one. Day 1 has little to do until the campsite exists (#135), so these wait for M9's encounters; Aaron kept the session order. Session 18 (QA, after the opening cluster) is the point to look again.
 - **Open:** #136 (a witch-tagging item for an encounter), and #105-134 as tuning in M14.
 
 ## What M7 needed (done)

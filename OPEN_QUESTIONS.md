@@ -1,8 +1,29 @@
 # Open questions
 
+## Session 11 (design review, Lead Engineer)
+
+Aaron brought his story and encounter design (the fixed opening cluster: campsite, storm shelter, gas station, military outpost; written into DESIGN.md on Oct 16). Agreed with Aaron in this session:
+- **All ten review fixes** (DESIGN.md, Map: Fixed opening cluster): the cordon blocks Tom, not the dead (torn gaps); she plants only inside the cluster until the barricade is crossed; a scripted Night 1 sigil at the storm shelter; the shelter's horde holds the hatch by day; one authored road; no checkpoint or roadside clearing types in the cluster; the scope cutscene's backstop at the barricade; Bigfoot "at least since the late 1980s, in truth far older"; the rest of the north band is the **north frontier**; Wyatt's shelter line.
+- **More encounter updates are coming** (Aaron is still redesigning the random encounters).
+- **M8 builds the systems and wires up only the lines already written**; each encounter session writes its own lines with Aaron.
+- **The deferred art (#144-148) moves sooner, to its own play-test-driven session** (Session 13, straight after M8), with the character models the coming encounters need.
+- **Every cutscene goes in the debug menu** (a Cutscenes category).
+- **Play-test generously** (DESIGN.md rule 12; QA after M9, M10 and M11).
+
+| # | Question | Where it stands | Where to change it |
+| --- | --- | --- | --- |
+| 149 | Does the storm shelter sit on the forced corridor, or a spur reachable from Night 1? | Open (DESIGN.md proposes a spur). It's required either way (the rifle chain). For M9.1. | DESIGN.md "Fixed opening cluster" |
+| 150 | Should one of the two north sigil grounds sit inside the opening cluster? | Open. Before the crossing she plants only inside the cluster, preferring a sigil ground if there is one. For M9.1. | `config.map.sigilGrounds.perBand`, map generation |
+| 151 | The setting year (about 2003, Aaron's leaning) and the time capsule (proposed 1903). | Open. It touches the camcorder, the VCR and tapes, the radio and CCTV, and the art. | DESIGN.md "Ideas for later" |
+| 152 | The gas station owner's name, his note, and the combination's form. | Open: for M9.3, with Aaron. | DESIGN.md "Roadside gas station", "Storm shelter" |
+| 153 | The two cameras on Night 1 (the Hales' camera six and the owner's camera four). | Proposed: the Hales' camera only catches her after his family have fled its frame. For M8 and M9.3. | DESIGN.md "Storm shelter" |
+| 154 | One guaranteed early charge (the outpost every run) instead of "two, one or none". | Revisit if it makes the hut too easy to reach (QA, Session 18). | DESIGN.md "Explosives" |
+
+**Resolved here:** #142 (the hunting rifle is in the gas station's safe, its rounds in the outpost's watchtower). #135 (Day 1 now has the campsite, and Days 1-3 the whole opening cluster). #42, in part (the gas station sits on the cluster's road). Still open: #143 (the SMG, heat-scope rifle and auto shotgun), #136 (an item that tags the witch).
+
 ## Session 10b (Graphics Engineer): art work deferred for the story pivot
 
-Aaron asked for these in Session 10b, then paused them to work on the story and the random encounters ("we're just going to do a quick pivot"). None is started. They're folded into Session 16 (style pass 2) in DESIGN.md's session plan, unless Aaron calls for them sooner. Details and starting points are in HANDOVER.md, "Deferred art work".
+Aaron asked for these in Session 10b, then paused them to work on the story and the random encounters ("we're just going to do a quick pivot"). None is started. **Aaron (Session 11): sooner, in their own standalone session, Session 13, straight after M8**, play-test driven and with the character models the coming encounters need. Details and starting points are in HANDOVER.md, "Deferred art work".
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
@@ -26,9 +47,9 @@ Agreed with Aaron before building:
 | 137 | Should fog nights do more than change the look? (Zombies spotting you from less far, harder to find the witch, a line in the dusk forecast.) | Look only. The draw distance shrinks with the fog, so they're cheaper to draw. Gameplay effects are for the balance session; the forecast line is for the UI session. | `config.fog.nights`, `world/fogNights.js`, `render/Atmosphere.js` |
 | 138 | How thick should the everyday night mist be? | A pale band low in the distance (strongest about 20 m out), thinner up a tree, heavier in hollows. Medium is 75% of High; Low has none. Thickest at dawn, burnt off by mid-morning. | `config.sky.keys` (`mist`, `mistAmount`), `config.fog.mist`, `config.quality.presets.*.mist` |
 | 139 | The mist sits relative to the ground under you, not each spot's own ground. | Cheap (no height texture to sample): looking down into a hollow it's thicker, up a rise it's thinner. Inside the station's buildings the floor gets a faint haze. | `render/atmosphereShader.js` |
-| 140 | Where does the retro pixel filter live, and how coarse? | 270 lines, switched from the debug menu. It belongs in the Quality settings once there's a settings screen (Session 19). | `config.render.retro.lines`, `Renderer.setRetro()` |
-| 141 | The new Quality levers have no settings screen. | Each preset sets them (mist, mistPuffs, groundTwoSizes, treeTrunks, fireflies, beamDust, lightShafts, torchBeam); the debug menu switches each effect on and off. A player-facing Quality screen is Session 19's. | `config.quality.presets` |
-| 142 | Which encounter gives the hunting rifle, and where do its rounds come from? | Aaron: an encounter (it suits the military outpost or the lookout-style places). Debug menu only for now. Its rounds are rare: a loot entry with `ammo: 'sniper'`. | `config.weapons.sniper`, `Combat.giveWeapon()`, `data/loot.json` |
+| 140 | Where does the retro pixel filter live, and how coarse? | 270 lines, switched from the debug menu. It belongs in the Quality settings once there's a settings screen (Session 28). | `config.render.retro.lines`, `Renderer.setRetro()` |
+| 141 | The new Quality levers have no settings screen. | Each preset sets them (mist, mistPuffs, groundTwoSizes, treeTrunks, fireflies, beamDust, lightShafts, torchBeam); the debug menu switches each effect on and off. A player-facing Quality screen is Session 28's. | `config.quality.presets` |
+| 142 | **Resolved (Session 11): the gas station's safe; its rounds in the outpost's watchtower.** Which encounter gives the hunting rifle, and where do its rounds come from? | Aaron: an encounter (it suits the military outpost or the lookout-style places). Debug menu only for now. Its rounds are rare: a loot entry with `ammo: 'sniper'`. | `config.weapons.sniper`, `Combat.giveWeapon()`, `data/loot.json` |
 | 143 | Which encounters give the pistol's partners: the SMG, the semi-auto rifle with the heat scope and the auto shotgun? (Aaron kept all four.) | Debug menu only. They share rounds: the SMG with the pistol, the semi-auto with the hunting rifle, the auto shotgun with the pump. DESIGN.md's weapons table lists them. | `config.weapons`, `docs/DESIGN.md` "Weapons" |
 
 ## Session 9 (the gate, QA & Balance)
@@ -45,7 +66,7 @@ From Aaron at the start of the gate:
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 135 | Day 1 has nothing to do but loot cars, which gets old fast, so a full run is hard to judge. Aaron: the abandoned campsite (every run, next to home) would fill a chunk of Day 1 and make the cars a bonus. | Not built: it's M9 content (Session 12, Level & Encounter Designer), and rule 10 says workshop it first. **Aaron (Session 9): keep the session order as it is.** The campsite comes in Session 12; full-run pacing (ammo, loot, the dusk choice) is judged once the north is built. | DESIGN.md "Abandoned campsite" |
+| 135 | Day 1 has nothing to do but loot cars, which gets old fast, so a full run is hard to judge. Aaron: the abandoned campsite (every run, next to home) would fill a chunk of Day 1 and make the cars a bonus. | Not built: it's M9 content (now M9.2, Session 15, Level & Encounter Designer), and rule 10 says workshop it first. **Aaron (Session 9): keep the session order as it is.** The campsite comes in Session 15 (renumbered in Session 11); full-run pacing (ammo, loot, the dusk choice) is judged once the north is built. | DESIGN.md "Abandoned campsite" |
 | 136 | Aaron's idea: an item from a random encounter that tags the witch, so she shows on the map for good. Perhaps a special one-shot rifle: hit her once and she's tagged permanently. | An idea for the encounter sessions (M9-M11), not built. The map already has a debug "Show her on the map" (`witch.showOnMap`) the item could switch on. | `ai/Witch.js` `showOnMap`, `ui/MapUi.js` |
 
 Where `docs/DESIGN.md` was silent or unclear, the simplest option was chosen, made a config value where possible, and logged here for Aaron. Newest session first. Resolved items are kept, marked **Resolved**, for the record.
@@ -209,11 +230,11 @@ Agreed with Aaron before building: the placeholder 3D mutant; sigil grounds get 
 | 27 | Starting ammo. | Rifle 5 + 10 ("a handful"), shotgun 4 + 12. "Give ammo" in the debug menu adds 20 to each gun. | `config.weapons.*.startReserve` |
 | 28 | Can you sprint while aiming or just after firing? | No: aiming (LT) and firing slow you to 0.6× and stop a sprint, so fast zombies make you choose between running and shooting (DESIGN.md "Movement"). | `src/player/Player.js` `updateMovement()` |
 | 29 | Death in M2. | A "You died" screen with "A / Enter: try again", which resets health, armour, kits, ammo and position and removes all zombies. The real permadeath flow (defeat screen, run summary) is M7 and M12. | `src/combat/Combat.js` |
-| 30 | Placeholder sounds. | **Aaron: yes, and note they'll be upgraded.** Every combat sound is synthesised on the fly (Web Audio); no files. **To be replaced in the audio pass (Session 20).** | `src/audio/Sfx.js` |
+| 30 | Placeholder sounds. | **Aaron: yes, and note they'll be upgraded.** Every combat sound is synthesised on the fly (Web Audio); no files. **To be replaced in the audio pass (Session 29).** | `src/audio/Sfx.js` |
 | 31 | Aim assist on the mouse? | Controller only. The mouse is never slowed. Toggle it in the debug menu to compare. | `config.aimAssist` |
 | 32 | The in-hand weapons are unlit. | The torch sits right beside the gun, so real lighting blew it out. The placeholder shapes use baked shading, tinted each frame by the sky's ambient and sun/moon light plus a torch fill (after Aaron saw a black gun by day). The art pass should keep that approach (or a separate view-model light). | `src/player/ViewModel.js` |
 | 34 | Do bullets go through zombies? | **Decided with Aaron:** yes, to carve through mobs. Rifle up to 4 zombies (75% damage kept after each), shotgun pellets 2 (50%). Not decided: whether the turret (M5) and pistol penetrate too; each weapon has its own `pierce`. | `config.weapons.*.pierce` |
-| 33 | The overlay clock reads like minutes:seconds. | It's the in-game clock face (hours:minutes); one game minute at night is 0.6 real seconds, so it runs about 100× real time by design (#2). Aaron read "21:15" as a stopwatch. The final HUD (Session 19) shows "Night 1 · 21:15" in the top left, as DESIGN.md asks. | `config.clock.phases` |
+| 33 | The overlay clock reads like minutes:seconds. | It's the in-game clock face (hours:minutes); one game minute at night is 0.6 real seconds, so it runs about 100× real time by design (#2). Aaron read "21:15" as a stopwatch. The final HUD (Session 28) shows "Night 1 · 21:15" in the top left, as DESIGN.md asks. | `config.clock.phases` |
 
 ## Session 2 (M1, Graphics Engineer)
 
