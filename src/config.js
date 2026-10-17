@@ -1355,11 +1355,27 @@ export const config = {
       pulseSpeed: 1.4, // throbs, cycles per second
       pulseMin: 0.55, // brightness at the bottom of a throb
     },
+    // Session 13: the real model (render/mutantModel.js; MutantRenderer
+    // poses it). Dark albedos, as the zombies' (the torch blows out light ones).
     look: {
+      modelHeight: 2.46, // the model as built (stretched to height)
+      albedo: 0.34, // its colours x this (as config.zombies.albedoScale: the torch blows out anything light)
       skin: 0x4a5040,
       skinDark: 0x2e3428,
-      cloth: 0x1c1c22,
-      hitFlash: [2.2, 0.6, 0.6], // instance colour while flashing
+      raw: 0x3a1612, // raw patches and tumours
+      sac: 0x5a1410, // the weak spot's sac (it glows weakSpot.color)
+      mouth: 0x140606,
+      eyes: 0x9a9470,
+      eyesGlow: 0x2a2818, // a faint glow, so they catch the eye in the dark
+      bone: 0x7a7260, // spurs and claws
+      jeans: 0x1c2638, // its torn jeans
+      shirt: 0x3a3830, // the strip of shirt left on it
+      hitFlash: [2.2, 0.6, 0.6], // its colour while flashing
+      poseRate: 14, // how fast it blends into a new pose (per second)
+      slamSeconds: 0.16, // the club coming down once the swipe lands
+      lyingDepth: 1.2, // metres a corpse sinks
+      wakeSeconds: 2.2, // the authored mutant unfolding to its full height (state 'wake')
+      twitchesPerSecond: 1.3, // dormant: how often it might twitch
     },
   },
 

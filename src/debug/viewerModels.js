@@ -54,18 +54,21 @@ export const VIEWER_MODELS = [
   {
     id: 'mutant',
     name: 'Mutant',
-    note: 'Placeholder boxes (M4). Being replaced.',
+    note: 'A skinned giant built in code (Session 13): one draw call each. The weak spot is the glowing sac on its back.',
     height: (cfg) => cfg.mutant.height,
     variants: null,
     poses: [
       { id: 'walk', name: 'Walk' },
       { id: 'charge', name: 'Charge' },
       { id: 'idle', name: 'Stand' },
-      { id: 'attack', name: 'Attack (wind-up and swipe)' },
+      { id: 'attack', name: 'Attack (wind-up and slam)' },
+      { id: 'hit', name: 'Hit (flash)' },
       { id: 'stagger', name: 'Stagger' },
       { id: 'rise', name: 'Rise from the ground' },
       { id: 'dying', name: 'Dying' },
       { id: 'corpse', name: 'Corpse' },
+      { id: 'dormant', name: 'Dormant (the gas station)' },
+      { id: 'wake', name: 'Waking (unfolds to full height)' },
     ],
     create: mutantModel,
   },
@@ -231,7 +234,7 @@ function mutantModel(ctx) {
   renderer.init(ctx.scene);
   const z = { active: true, kind: 'mutant', tier: 'active', state: 'walk', x: 0, y: 0, z: 0, facing: 0, walked: 0, charging: false, struck: false, timer: 0, attackWindup: mc.attackWindup, sink: 0, height: mc.height, flash: 0 };
   return {
-    objects: [renderer.mesh, renderer.spots],
+    objects: renderer.meshes,
     update(dt, s) {
       Object.assign(z, { x: s.x, y: s.y, z: s.z, facing: s.facing, sink: 0, flash: 0, charging: false, struck: false, timer: 0 });
       const t = s.poseTime;
@@ -247,8 +250,19 @@ function mutantModel(ctx) {
           z.timer = loopTime(t, mc.attackWindup + mc.attackRecover);
           z.struck = z.timer >= mc.attackWindup;
           break;
+        case 'hit':
+          z.state = 'idle';
+          z.flash = Math.max(0, zc.hitFlashSeconds - loopTime(t, vc.hitLoopSeconds));
+          break;
         case 'stagger':
           z.state = 'stagger';
+          break;
+        case 'dormant':
+          z.state = 'dormant';
+          break;
+        case 'wake':
+          z.state = 'wake';
+          z.timer = Math.min(mc.look.wakeSeconds, loopTime(t, mc.look.wakeSeconds + vc.holdSeconds * 2));
           break;
         case 'rise': {
           const k = loopTime(t, zc.riseSeconds + vc.holdSeconds);
