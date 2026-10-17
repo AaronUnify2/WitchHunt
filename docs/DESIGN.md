@@ -205,7 +205,7 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 | Step | When | What opens | On the forced corridor? |
 | --- | --- | --- | --- |
 | 1 | Day 1 | Only the path to the abandoned campsite | Yes |
-| 2 | Night 1 onward | The way to the storm shelter, where the first sigil is planted, so the family's "go dig it up" works | *(open question; proposed: no, a short spur inside the cluster, reachable from Night 1 but never forced)* |
+| 2 | Night 1 onward | The way to the storm shelter, where the first sigil is planted, so the family's "go dig it up" works | No (Aaron, Oct 17): a short spur inside the cluster, reachable from Night 1 but never forced |
 | 3 | Day 2, after the campsite | The path to the gas station: the player's guaranteed second outing | Yes |
 | 4 | After the gas station, once the hunting rifle is claimed (safe + storm shelter combination), with Ellen's call to adventure | The path to the military outpost | Yes |
 | 5 | Once the player has fought through the outpost | The checkpoint opens and the frontier takes over | Yes |
@@ -234,7 +234,7 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 
 **The hunting rifle chain always completes (resolved Oct 16).** All three links are in the authored opening, so every seed has them: the gas station (the safe and the note) → the storm shelter (the combination on the owner's body at the hatch) → the outpost's watchtower (the rounds).
 
-**Open question:** does the storm shelter sit on the forced corridor, or slightly apart as the Night 1 beat (the proposal above)? Since Oct 16 it is **required** either way: the outpost path needs the hunting rifle, which needs the shelter's combination. The question is only whether the game forces *when* it's done.
+**The storm shelter is a spur, never forced (Aaron, Oct 17).** It's reachable from Night 1 and the game never forces *when* it's done, but it is **required** before the outpost: the outpost path needs the hunting rifle, which needs the shelter's combination.
 
 ### Clearing types
 
@@ -512,7 +512,7 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 
 ### Explosives
 
-- Sources: the mineshaft (one), the military outpost (one), and the Car Armory's crate, which restocks. The outpost is now every run (Oct 16), so every run has at least one early charge; a second depends on the mineshaft appearing. (This replaces the earlier "two, one or none" variety; revisit if one guaranteed charge makes the hut too easy to reach.)
+- Sources: the mineshaft (one), the military outpost (one), and the Car Armory's crate, which restocks. The outpost is now every run (Oct 16), so every run has at least one early charge; a second depends on the mineshaft appearing. (This replaces the earlier "two, one or none" variety. Aaron, Oct 17: one guaranteed charge is no problem, since the hut needs two charges together, so one alone can't start the final battle.)
 - Also a general weapon: plant one as a trap on a path, or drop one while chased and detonate as enemies follow.
 - Always manual detonation (no proximity trigger). The player is hurt if caught in the blast. Radius and damage are config.
 
@@ -573,7 +573,7 @@ Hand-built set pieces placed by the map generator. The campsite, gas station, st
 | Car Armory | Yes | CCTV: sleek government camera | Wrecked military vehicles; armoured truck with a purple portal; government base inside | Men in Black (smaller squads on revisits) | Turret, one-time ammo, first aid, scrap, body armour, restocking explosives | Classified documents | Portal in a truck; the one revisitable restock; stealth |
 | Bigfoot cave | Yes (seeded) | CCTV: ranger trail-cam, night-vision green | Stones and trees; Bigfoot's handmade crafts | Beetles, the Mothman | Bigfoot's Blessing, nature armour | Bigfoot as land guardian; the Mothman's brood | Beetle weak spots; Bigfoot's gift |
 | Stairs in the woods | No | Establishing sweep to the stairs | A lone staircase attached to nothing | None (zombies drawn after climbing) | None | Glimpses of the witch's dimension | Climb for a first-person vision |
-| Time capsule | No | Establishing sweep to the plaque | Ruined old church, weathered plaque | None | None | 1920s records of a woman in the woods | Dig it up |
+| Time capsule | No | Establishing sweep to the plaque | Ruined old church, weathered plaque | None | None | 1903 records of a woman in the woods | Dig it up |
 | The Caller | No | None (radio) | A too-thin silhouette at a clearing's edge | Silent zombie pack at the lure point | None | A mimic entity; Junie's aftermath | Fake radio calls; radio home to check |
 | Military outpost (gateway south) | No | Tom arrives to report the witch; waves of dead soldiers on the approach reveal it's overrun | Approach road, watchtower, sandbag barricade with breached steel fence, compound of tents, comms hut and armoured shipping containers | Waves of helmeted army zombies peaking at the barricade; caged beetles in the compound | Rifle ammo, helmets, scrap, first aid, jeep battery, one charge; hunting rifle rounds in the watchtower | A failed transfer point: torn-open containers (one held the Mothman, never named), resin-frozen alien, field report | Needs the hunting rifle to reach; the scope cutscene shows the live dogfight; crossing the barricade opens the frontier; beetle crates break open when shot |
 | Mineshaft | Short tunnel | CCTV patched through by Wyatt: the blast and the Mothman bursting out | Timber entrance, rails, abandoned gear | Zombie miners, a few beetles | Scrap, lamp batteries, one charge | The Mothman's origin | Collecting an explosive charge |
@@ -783,7 +783,7 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 - Settled (Oct 16): the gas station appears every run, as part of the fixed opening cluster, and is always the player's second outing.
 - Resolved (Oct 16): the storm shelter and the military outpost are both in the fixed opening cluster, so the chain always completes. See Map: Fixed opening cluster.
 - The mutant's exact stats once mutant tuning is reworked.
-- The wording of the owner's note, and his name.
+- The wording of the owner's note. (His name is settled: Earl Pruitt.)
 - How long the witch is on screen and how clearly she's seen.
 
 #### Old barn (Milo the Clown)
@@ -824,7 +824,7 @@ The clearing above is a fight; the room below is the game's **first proper inter
 1. **Arrival.** Wyatt (radio): whoever dug this hid it well (it's marked on the map from the Night 1 clip, so the line is about the owner, not about finding it). The establishing camera reveals a horde standing on the hatch.
 2. **The fight.** The horde is the **first sigil's own spawn**. The witch planted a sigil here before the family arrived, and the zombies it raised caught them in the open. Clearing the horde, digging up the sigil and opening the hatch are one connected fight.
 3. **Digging up the sigil.** The sigil tutorial: hold interact with the shovel; taking damage interrupts it. The glow dies, and the night (if it's night) goes noticeably quieter.
-4. **The owner.** His body lies at the hatch: he never made it down. On him: the **gas station safe's combination** *(proposed: on a tag on his keyring, or written inside the cover of a pocket notebook)*.
+4. **The owner.** His body lies at the hatch: he never made it down. On him: the **gas station safe's combination** stamped on a brass tag on his keyring (Session 11).
 5. **Opening the hatch.** Dig the hatch clear with the shovel and haul it open.
 6. **The room below (the quiet).** Sealed exactly as the family left it, stocked with care for a survival that never came. The player reads a life that was ready to wait this out:
    - Family belongings: four bunks made up, the kids' things (a colouring book, a stuffed toy, a board game on the table), Marcy's handwriting on the shelf labels.
@@ -840,7 +840,7 @@ The clearing above is a fight; the room below is the game's **first proper inter
 
 **The diary**
 
-The owner's diary, written **before** the end. It's a reflective object, so it stops where reflection stops: a man wouldn't journal while dragging his kids to safety. It doesn't narrate the final day; the tapes do. A handful of dated entries across years, so the gaps tell their own story. His wife is **Marcy**; the two kids are unnamed.
+The owner's diary, written **before** the end. It's a reflective object, so it stops where reflection stops: a man wouldn't journal while dragging his kids to safety. It doesn't narrate the final day; the tapes do. A handful of dated entries across years, so the gaps tell their own story. He is **Earl Pruitt** (named in Session 11, Aaron: dealer's choice); his wife is **Marcy**; the two kids are unnamed.
 
 1. *(years back)* "Saw it again today, up the north ridge. Taller than any man, and it just watched me, calm as you like, then walked off into the trees without a sound. Sheriff laughed me out of the office. Marcy believes me though. That's enough."
 2. *(later)* "Opened the store. Everyone thinks it's a gag, the signs, the casts, the photos. Let them. Keeps the lights on, and it keeps me out here, where I can watch. Put trail cams up along the old logging trails this spring. If he's out there, I'll get him on film, and then they'll all stop laughing."
@@ -915,8 +915,7 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 **Open questions for the storm shelter**
 
 - **Two cameras, one night.** The Hales' Night 1 trail-cam clip (tutorial lines 17–19, camera six) shows the witch planting this sigil. The owner's camera four shows the same night with his family. *(proposed)* The Hales' camera sits further off and only catches her after the family have scattered out of its frame, so the owner's tape later reveals what the Hales never saw. That's a strong retroactive chill, but it needs the timeline confirming: the family died on Night 1, while Tom was at the station.
-- The combination's exact form (keyring tag, notebook, something else).
-- The owner's name.
+- Settled (Session 11): the combination is on a brass tag on his keyring; the owner is Earl Pruitt.
 - Whether the room below is part of the main map (a hatch and a ladder) or uses the interior system.
 
 #### Crashed plane
@@ -1044,7 +1043,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Time capsule
 
-- A ruined old church with a weathered plaque: a time capsule buried in the 1920s, "to be opened in 100 years". Dig it up with the shovel.
+- A ruined old church with a weathered plaque: a time capsule buried in **1903**, "to be opened in 100 years", so it falls due in 2003, the year of the game (Aaron, Oct 17). Dig it up with the shovel.
 - **Inside:** letters, photos and clippings from the town that once stood here: a woman in the woods, missing livestock, strange lights, people who went into the trees and never came back.
 - **Lore:** she didn't arrive out of nowhere. This forest was already a thin place where she could almost reach through, which may be why the government built here. Ellen links it to the classified files.
 
@@ -1622,7 +1621,7 @@ Follow the handover protocol, and end with the HANDOVER READY signal.
 Ideas that came up while designing and don't belong to one section yet. Workshop with Aaron before building.
 
 - **The Caller's first whisper.** On the walk *back* from an encounter (never Day 1), the radio crackles for half a second with something that isn't the family, a wrong voice or a wrong texture, then snaps back to normal. Nobody acknowledges it and nothing explains it. It's an early, deniable seed for the Caller, placed in the comedown when the player thinks the action is over and the loop is resetting. Players who meet the Caller later may realise it was there all along.
-- **Setting year: about 2003 (Aaron's leaning, not final).** Late enough for phones and computers, but before everything went fully digital and connected. Patchy cell coverage in deep Appalachian forest is believable, so the radio, trail cams, camcorder (miniDV) and VCR tapes all earn their place, and the analog CCTV and grain aesthetic is honest rather than affectation. It touches the campsite camcorder, the storm shelter's VCR and tapes, the station's radio and CCTV, and the overall art and audio feel. **One conflict to settle:** the time capsule says it was buried in the 1920s "to be opened in 100 years", which would be due in the 2020s. *(proposed)* Bury it in **1903**, so it falls due in 2003, the year of the game: the town's capsule is opened on schedule, by the wrong person, for the wrong reason.
+- **Setting year: 2003 (decided with Aaron, Oct 17).** Late enough for phones and computers, but before everything went fully digital and connected. Patchy cell coverage in deep Appalachian forest is believable, so the radio, trail cams, camcorder (miniDV) and VCR tapes all earn their place, and the analog CCTV and grain aesthetic is honest rather than affectation. It touches the campsite camcorder, the storm shelter's VCR and tapes, the station's radio and CCTV, and the overall art and audio feel. **Settled:** the time capsule was buried in **1903** (it had said the 1920s), so it falls due in 2003, the year of the game: the town's capsule is opened on schedule, by the wrong person, for the wrong reason.
 - **Bigfoot as a true nature spirit (Aaron, Oct 16).** Bigfoot is not a portal creature. He has been in these woods at least since the gas station owner's first sighting in the late 1980s, and in truth far longer than any of them, long before the government opened the portal, so he belongs here in a way nothing else in the game does. It sharpens the three-sided story: the family are newcomers, the witch is a true outsider who came through the tear, and Bigfoot is the oldest rightful presence. The portal let the hostile things in; it didn't make Bigfoot, who is older than the wound. It also recasts the owner's long-ago sighting as a glimpse of the land's own guardian, the gentlest presence in the story. Consistent with the Native American influence section and the Bigfoot cave (he's the forest's guardian; the Blessing is old protective land magic); the backstory's "Americana made real" list has been updated so he's no longer counted among the portal creatures.
 - **The battery gate.** A sealed gate with no power, where fitting a battery opens it onto a horde: a real choice to open it or not. Cut from the military outpost because you could shoot through chain-link, which kills both the drama and the ammo economy. It needs a spot where the horde is truly sealed off and can't be shot through (solid doors, a bunker, a container yard).
 - **Make the walk back matter (a candidate design pillar).** The game is a push north to south, but every push creates a return trip. Seed keys, combinations, tools and knowledge in the south (and across encounters generally) that unlock new value at places already visited in the north, so return journeys are rewarding re-reads of the map rather than dead travel. The first instance is the hunting rifle chain: the gas station safe, the storm shelter combination and the outpost's watchtower ammo.
@@ -1632,10 +1631,8 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - The full text of the 8 classified documents (outlines are done).
 - The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
 - **The encounter redesign is still under way** (Aaron, Oct 17): many more encounter updates are coming. The opening cluster's four are done; the rest are earlier designs.
-- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). The hunting rifle is settled (the gas station's safe).
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). Aaron will answer it as he designs those encounters in depth. The hunting rifle is settled (the gas station's safe).
 - Should one of the north sigil grounds sit inside the opening cluster? (See Map: Fixed opening cluster.)
-- The setting year (about 2003, Aaron's leaning) and the time capsule's date (proposed 1903). See Ideas for later.
-- The gas station owner's name.
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
 - Art direction details for the Men in Black (sprite or 3D).

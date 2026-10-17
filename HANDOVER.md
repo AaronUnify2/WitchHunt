@@ -39,7 +39,7 @@ All in `docs/DESIGN.md`, four commits, each agreed with Aaron:
 
 ### Unfinished
 
-Nothing in scope. The open design questions are #149-154 in OPEN_QUESTIONS (Session 11). Still open from before: #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun) and #136 (an item that tags the witch).
+Nothing in scope. Aaron has since settled #149 (the shelter is a spur), #151 (2003; the capsule buried in 1903), #152 (the owner is Earl Pruitt) and #154 (one early charge is fine). #150 and #153 are still open. Still open from before: #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun) and #136 (an item that tags the witch).
 
 ## Next: Session 12, Narrative Designer: M8, the story systems
 
@@ -93,7 +93,7 @@ Nothing in scope. The open design questions are #149-154 in OPEN_QUESTIONS (Sess
 
 - The cutscene look, the subtitle look, and how the family appear face to face (workshop at the start).
 - #153: the two cameras on Night 1. M8's trail cameras should leave room for a fixed camera near the storm shelter.
-- #151: the setting year (2003). It shapes the camcorder (miniDV), VCR and CCTV looks.
+- The setting year is 2003 (#151, settled): it shapes the camcorder (miniDV), VCR and CCTV looks.
 - From before: #137 (fog nights and gameplay), #140-141 (the settings screen, now Session 28).
 
 ## Session kickoff prompt for the next session
