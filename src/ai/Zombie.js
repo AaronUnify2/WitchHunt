@@ -28,6 +28,15 @@ export const ZOMBIE_FRAMES = {
 
 const ALIVE = new Set(['rise', 'walk', 'attack', 'stagger']);
 
+// Session 13: each zombie spawned gets a fresh look seed, which picks its
+// clothes, hair and build (render/zombieLook.js). Cosmetic: a plain
+// counter, never the game's random numbers.
+let lookCounter = 0;
+function nextLookSeed() {
+  lookCounter = (lookCounter + 1) | 0;
+  return lookCounter;
+}
+
 // Roll a zombie's speed (m/s) for a level: a multiple of the player's
 // sprint, skewed toward the slow end (DESIGN.md "Speed variance").
 export function rollSpeed(levelCfg, sprintSpeed, skew, rng) {
@@ -77,6 +86,7 @@ export class Zombie {
   spawn(x, z, facing, speed, opts = {}) {
     this.kind = opts.kind ?? 'zombie';
     this.variant = opts.variant ?? 'citizen';
+    this.lookSeed = nextLookSeed(); // Session 13: its clothes, hair and build (cosmetic)
     this.applyBody(opts.body ?? this.cfg);
     this.state = opts.rise ? 'rise' : 'walk';
     this.x = x;

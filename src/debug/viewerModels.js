@@ -4,10 +4,13 @@
 // the game draws, lit by the same world.
 //
 // An entry: { id, name, note, height(cfg, variant) (metres, for framing),
-// variants: [names] or null, poses: [{ id, name }], create(ctx) }.
+// startDistance(cfg, variant) (optional: metres out the camera starts, or
+// null for the usual), variants: [names] or null, poses: [{ id, name }],
+// create(ctx) }.
 // ctx: { scene, cfg, rng (the game's), station }.
 // create returns { objects: [Object3D] (for the triangle count),
-// update(dt, s), setThermal(on, t), dispose() }, where s is
+// update(dt, s), setThermal(on, t), dispose(), reroll() (optional: new
+// random looks) }, where s is
 // { x, y, z (the feet), facing (radians; the model faces +z at 0), pose
 // (an id), poseTime (seconds since the pose was picked, slowed or paused
 // with the viewer), variant (an index), camera }. dt is the viewer's
@@ -21,6 +24,7 @@ import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { MutantRenderer } from '../render/MutantRenderer.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
+import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
 import { loopTime } from './viewerOrbit.js';
 
@@ -30,9 +34,11 @@ export const VIEWER_MODELS = [
   {
     id: 'zombie',
     name: 'Zombie',
-    note: 'Placeholder sprites drawn in code (M4). Being replaced (#144).',
+    note: 'Sprites drawn in code, each coloured in with its own look (#144). Menu / R: new looks.',
     height: (cfg) => cfg.zombies.height,
-    variants: (cfg) => cfg.zombies.texture.variantOrder.map(title),
+    // The crowd is seen from further out.
+    startDistance: (cfg, variant) => (variant >= cfg.zombies.texture.variantOrder.length ? cfg.modelViewer.crowd.distance : null),
+    variants: (cfg) => [...cfg.zombies.texture.variantOrder.map(title), `Crowd of ${cfg.modelViewer.crowd.size * cfg.modelViewer.crowd.size}`],
     poses: [
       { id: 'walk', name: 'Walk' },
       { id: 'idle', name: 'Stand' },
@@ -116,64 +122,103 @@ export function variantNames(entry, cfg) {
   return entry.variants ? entry.variants(cfg) : [];
 }
 
-// ---- the zombie: its own one-sprite copy of the billboard renderer -----------------------
+// ---- the zombie: its own copy of the billboard renderer ------------------------------------------
 
+// One zombie of each variant, or a crowd (config.modelViewer.crowd) of
+// mixed looks to judge the variety by. Every look is re-rolled with
+// "new look" (the viewer's reroll).
 function zombieModel(ctx) {
   const zc = ctx.cfg.zombies;
   const vc = ctx.cfg.modelViewer;
+  const crowd = vc.crowd;
+  const order = zc.texture.variantOrder;
   // The same fork as Combat's, so the sprites match the game's.
   const renderer = new ZombieRenderer(zc, ctx.rng.fork('combat').fork('zombie-sprite'));
-  renderer.init(ctx.scene, 1);
+  renderer.init(ctx.scene, crowd.size * crowd.size);
   const F = ZOMBIE_FRAMES;
-  const z = { active: true, kind: 'zombie', tier: 'active', x: 0, y: 0, z: 0, sink: 0, frame: 0, facing: 0, flash: 0, lit: 0, variant: 'citizen' };
+  const zombies = Array.from({ length: crowd.size * crowd.size }, (_, i) => ({ active: true, kind: 'zombie', tier: 'active', x: 0, y: 0, z: 0, sink: 0, frame: 0, facing: 0, flash: 0, lit: 0, variant: 'citizen', lookSeed: i + 1, offset: hash01(i, 1) }));
+  let seedBase = 1;
   let walked = 0;
+  // A crowd member's variant, by the crowd's mix.
+  const crowdVariant = (i) => {
+    let u = hash01(seedBase + i, 2);
+    for (const v of order) {
+      u -= crowd.mix[v] ?? 0;
+      if (u < 0) return v;
+    }
+    return order[0];
+  };
   return {
     objects: [renderer.mesh],
     update(dt, s) {
-      Object.assign(z, { x: s.x, y: s.y, z: s.z, facing: s.facing, variant: zc.texture.variantOrder[s.variant] ?? 'citizen', sink: 0, flash: 0 });
-      const t = s.poseTime;
-      switch (s.pose) {
-        case 'walk':
-          walked += dt * vc.zombieWalkSpeed;
-          z.frame = F.walk[Math.floor(walked * zc.walkFrameRate * F.walk.length) % F.walk.length];
-          break;
-        case 'attack': {
-          const k = loopTime(t, zc.attackWindup + zc.attackRecover);
-          z.frame = k < zc.attackWindup ? F.attackWindup : F.attackStrike;
-          break;
-        }
-        case 'hit': {
-          const k = loopTime(t, vc.hitLoopSeconds);
-          z.flash = Math.max(0, zc.hitFlashSeconds - k);
-          z.frame = k < vc.staggerSeconds ? F.stagger : F.walk[0];
-          break;
-        }
-        case 'stagger':
-          z.frame = F.stagger;
-          break;
-        case 'rise': {
-          const k = loopTime(t, zc.riseSeconds + vc.holdSeconds);
-          z.sink = Math.max(0, 1 - k / zc.riseSeconds);
-          z.frame = F.walk[0];
-          break;
-        }
-        case 'dying': {
-          const k = loopTime(t, zc.deathSeconds + vc.holdSeconds);
-          z.frame = F.dying[Math.min(F.dying.length - 1, Math.floor((k / zc.deathSeconds) * F.dying.length))];
-          break;
-        }
-        case 'corpse':
-          z.frame = F.corpse;
-          break;
-        default:
-          z.frame = F.walk[0];
-          break;
-      }
-      renderer.update([z], s.camera.position, Infinity);
+      const isCrowd = s.variant >= order.length;
+      const shown = isCrowd ? zombies : zombies.slice(0, 1);
+      walked += dt * vc.zombieWalkSpeed;
+      const half = (crowd.size - 1) / 2;
+      const cos = Math.cos(s.facing);
+      const sin = Math.sin(s.facing);
+      shown.forEach((z, i) => {
+        // A grid round the spot, turned with the model's facing.
+        const gx = isCrowd ? ((i % crowd.size) - half) * crowd.spacing : 0;
+        const gz = isCrowd ? (Math.floor(i / crowd.size) - half) * crowd.spacing : 0;
+        z.x = s.x + gx * cos + gz * sin;
+        z.z = s.z - gx * sin + gz * cos;
+        z.y = s.y;
+        z.facing = s.facing + (isCrowd ? (z.offset - 0.5) * crowd.turn : 0);
+        z.variant = isCrowd ? crowdVariant(i) : order[s.variant];
+        z.lookSeed = seedBase + i;
+        poseZombie(z, s.pose, s.poseTime + (isCrowd ? z.offset * 2 : 0), walked + (isCrowd ? z.offset : 0), zc, vc, F);
+      });
+      renderer.update(shown, s.camera.position, Infinity);
+    },
+    reroll() {
+      seedBase += zombies.length;
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),
   };
+}
+
+// One zombie's frame and sink for a pose, t seconds in, `walked` metres along.
+function poseZombie(z, pose, t, walked, zc, vc, F) {
+  z.sink = 0;
+  z.flash = 0;
+  switch (pose) {
+    case 'walk':
+      z.frame = F.walk[Math.floor(walked * zc.walkFrameRate * F.walk.length) % F.walk.length];
+      break;
+    case 'attack': {
+      const k = loopTime(t, zc.attackWindup + zc.attackRecover);
+      z.frame = k < zc.attackWindup ? F.attackWindup : F.attackStrike;
+      break;
+    }
+    case 'hit': {
+      const k = loopTime(t, vc.hitLoopSeconds);
+      z.flash = Math.max(0, zc.hitFlashSeconds - k);
+      z.frame = k < vc.staggerSeconds ? F.stagger : F.walk[0];
+      break;
+    }
+    case 'stagger':
+      z.frame = F.stagger;
+      break;
+    case 'rise': {
+      const k = loopTime(t, zc.riseSeconds + vc.holdSeconds);
+      z.sink = Math.max(0, 1 - k / zc.riseSeconds);
+      z.frame = F.walk[0];
+      break;
+    }
+    case 'dying': {
+      const k = loopTime(t, zc.deathSeconds + vc.holdSeconds);
+      z.frame = F.dying[Math.min(F.dying.length - 1, Math.floor((k / zc.deathSeconds) * F.dying.length))];
+      break;
+    }
+    case 'corpse':
+      z.frame = F.corpse;
+      break;
+    default:
+      z.frame = F.walk[0];
+      break;
+  }
 }
 
 // ---- the mutant: its own copy of the instanced renderer ---------------------------------------

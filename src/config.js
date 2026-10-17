@@ -1209,29 +1209,84 @@ export const config = {
     groanIntervalMin: 3,
     groanIntervalMax: 9,
     glareRange: 6, // zombies this close are fed into the torch glare check
-    // Placeholder sprite (drawn on a canvas; final sprites in the art pass)
+    // The sprite atlas, drawn on a canvas at load (render/zombieSprite.js).
+    // Session 13 (#144, Aaron: keep the sprites, vary the citizens): a
+    // palette swap. Shirts, trousers, hair and skin are painted grey and
+    // each zombie is coloured in as it's drawn (render/zombieLook.js), so
+    // every one can look different in the same single draw call.
     texture: {
       frameWidth: 96,
       frameHeight: 128,
-      // Dark albedos: the torch blows out anything light (as with the rocks).
-      skin: 0x4e5844,
-      skinDark: 0x2c3428,
-      shirt: 0x20262e,
-      shirtAlt: 0x34221e,
-      trousers: 0x16161a,
-      hair: 0x120e0c,
+      atlasMaxSize: 4096, // pixels: the atlas is laid out in a grid no bigger than this (any tablet loads it)
+      // Fixed colours (dark albedos: the torch blows out anything light).
       blood: 0x2e0404,
       eyes: 0xc8c090, // the pale eyes are meant to catch the torch
       bloodSpots: 14,
-      // One block of 8 facing rows per variant, in this order (the shader
-      // picks the block). Each variant overrides the colours above and
-      // adds its kit: a police vest and cap, an army helmet.
+      // Grey the coloured-in parts are painted with (1 = the palette colour
+      // as it is): the arm behind the body, the torn hem.
+      tones: { behind: 0.58, hem: 0.62 },
+      // One block of 8 facing rows per variant and hairstyle, in this
+      // order (the shader picks the block). A hairstyle changes the
+      // outline, so each gets its own block; colours are free.
       variantOrder: ['citizen', 'police', 'army'],
-      variants: {
-        citizen: {},
-        police: { shirt: 0x161c2c, shirtAlt: 0x101420, trousers: 0x12141c, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
-        army: { shirt: 0x283020, shirtAlt: 0x1c2216, trousers: 0x20261a, hat: 'helmet', hatColor: 0x2a3222 },
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail'], police: ['short'], army: ['short'] },
+      // The palettes (Appalachia, 2003), shared unless a variant has its own.
+      palettes: {
+        shirt: [
+          0x4a1a16, // flannel red
+          0x1e2a3c, // denim
+          0x26321e, // faded green
+          0x3e2c18, // work-jacket brown
+          0x2e2e30, // grey hoodie
+          0x34141c, // maroon
+          0x4a3a14, // mustard
+          0x46443c, // off-white tee (kept dark: the torch blows it out)
+          0x141416, // black tee
+          0x161c2c, // navy
+          0x173232, // teal
+          0x5a2a0c, // blaze orange (hunting)
+        ],
+        trousers: [
+          0x1c2638, // jeans
+          0x12161e, // dark jeans
+          0x2c3648, // faded jeans
+          0x4a4230, // khaki
+          0x121214, // black
+          0x2e2418, // work brown
+          0x262c1c, // olive
+        ],
+        hair: [
+          0x0e0c0a, // black
+          0x1e140c, // dark brown
+          0x2e1e12, // brown
+          0x4a3c22, // dirty blond
+          0x4a4a46, // grey
+          0x4a1e0c, // ginger
+          0x6a6a64, // white
+        ],
+        // Living complexions gone grey and sick.
+        skin: [
+          0x4e5844, // grey-green
+          0x6a6e5c, // pale
+          0x4a4a32, // olive
+          0x3a3024, // brown
+          0x2a241c, // dark brown
+          0x48505a, // bluish
+          0x5a5a3c, // sallow
+        ],
       },
+      // Each variant: its own palettes (replacing the shared ones), the
+      // share with long sleeves, the share in plaid flannel; and its kit
+      // (a police vest and cap, an army helmet), in fixed colours.
+      looks: {
+        citizen: { longSleeves: 0.5, plaid: 0.3 },
+        police: { shirt: [0x161c2c, 0x1a2234], trousers: [0x12141c], longSleeves: 0.4, plaid: 0, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
+        army: { shirt: [0x283020, 0x2c3222], trousers: [0x20261a, 0x262a1c], longSleeves: 1, plaid: 0, hat: 'helmet', hatColor: 0x2a3222 },
+      },
+      plaid: { every: 6, line: 2, dark: 0.55 }, // atlas pixels between the lines, their width, how dark they are
+      // Each zombie's build: a little wider or narrower, taller or shorter
+      // (the sprite only: its hit box stays the same).
+      build: { width: [0.9, 1.12], height: [0.96, 1.04] },
     },
     alphaTest: 0.5,
     normalUpBias: 0.4,
@@ -2197,6 +2252,8 @@ export const config = {
     witchGlideShare: 0.6, // her gliding pose, as a share of full speed (the cloak's trail)
     witch: { plantSeconds: 6, hexSeconds: 1.4, swipeUpSeconds: 1, swipeDownSeconds: 0.6, summonSeconds: 2.4, riseSeconds: 3 },
     familyGap: 0.75, // metres between them side by side
+    // The zombie's crowd variant: a size x size grid of mixed looks.
+    crowd: { size: 5, spacing: 1.3, turn: 1.2, distance: 9, mix: { citizen: 0.7, police: 0.15, army: 0.15 } },
   },
 
   // Input

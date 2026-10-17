@@ -1,41 +1,143 @@
-// Placeholder zombie sprite atlas, drawn on a canvas at load (the art pass
-// replaces it with sprites pre-rendered from lit 3D models). Doom-style:
-// one row per facing angle (8 rows, 45 degrees apart: row 0 faces the
-// viewer, row 4 shows its back), one column per animation frame (see
-// ZOMBIE_FRAMES in ai/Zombie.js). Rows 1-3 face image-right; rows 5-7 are
-// their mirror images. One block of 8 rows per variant (citizen, police,
-// army), stacked top to bottom in config.zombies.texture.variantOrder.
+// The zombie sprite atlas, drawn on a canvas at load. Doom-style: one row
+// per facing angle (8 rows, 45 degrees apart: row 0 faces the viewer, row
+// 4 shows its back), one column per animation frame (see ZOMBIE_FRAMES in
+// ai/Zombie.js). Rows 1-3 face image-right; rows 5-7 are their mirror
+// images. One block of 8 rows per variant and hairstyle (zombieLook.js
+// atlasBlocks), the blocks laid out in a grid (atlasLayout).
+//
+// Session 13 (#144): a palette swap. The shirt, trousers, hair and skin
+// are painted grey (shaded) in the picture, and a second texture, the
+// mask, says how much of each texel is shirt (red), trousers (green), hair
+// (blue) and skin (alpha). The renderer colours each zombie in with its
+// own palette (ZombieRenderer). The forearm is in both the shirt and the
+// skin: long sleeves or short, per zombie. Blood, eyes and kit (the police
+// vest and cap, the army helmet) keep their own colours.
+//
+// The figure is drawn five times (the picture, then once per mask
+// channel) with the same strokes, so what's in front hides what's behind
+// in the mask exactly as in the picture.
 
 import * as THREE from 'three';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
+import { atlasBlocks, atlasLayout } from './zombieLook.js';
 
 export const ATLAS_ROWS = 8;
+
+const CHANNELS = ['shirt', 'trousers', 'hair', 'skin']; // the mask's r, g, b, a
+
+// Which mask channels each painted part belongs to.
+const PART_CHANNELS = {
+  shirt: ['shirt'],
+  hem: ['shirt'],
+  sleeve: ['shirt'], // the upper arm: always sleeved
+  forearm: ['shirt', 'skin'], // sleeved or bare, per zombie
+  trousers: ['trousers'],
+  hair: ['hair'],
+  skin: ['skin'],
+};
 
 function css(hex, alpha = 1) {
   return `rgba(${(hex >> 16) & 255},${(hex >> 8) & 255},${hex & 255},${alpha})`;
 }
 
+function grey(level, alpha = 1) {
+  const v = Math.round(255 * level);
+  return `rgba(${v},${v},${v},${alpha})`;
+}
+
+// The atlas: { map (the picture), mask, blocks, layout }. Both textures
+// share the layout, so one UV reads both.
 export function makeZombieAtlas(cfg, rng) {
-  const base = cfg.texture;
-  const order = base.variantOrder;
-  const canvas = document.createElement('canvas');
-  canvas.width = base.frameWidth * ZOMBIE_FRAMES.count;
-  canvas.height = base.frameHeight * ATLAS_ROWS * order.length;
-  const ctx = canvas.getContext('2d');
+  const t = cfg.texture;
+  const blocks = atlasBlocks(t);
+  const blockW = t.frameWidth * ZOMBIE_FRAMES.count;
+  const blockH = t.frameHeight * ATLAS_ROWS;
+  const layout = atlasLayout(blocks.length, blockW, blockH, t.atlasMaxSize);
   // The same blood spatter on every frame, so it doesn't flicker.
-  const spots = Array.from({ length: base.bloodSpots }, () => ({
+  const spots = Array.from({ length: t.bloodSpots }, () => ({
     x: rng.range(-1, 1),
     y: rng.range(0, 1),
     r: rng.range(1, 3.5),
   }));
-  order.forEach((variant, block) => {
-    const t = { ...base, ...(base.variants[variant] ?? {}) };
+
+  const canvas = document.createElement('canvas');
+  canvas.width = layout.width;
+  canvas.height = layout.height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  // The mask, one channel at a time, written bottom row first (a
+  // DataTexture's first row is the bottom, a canvas's the top).
+  const maskData = new Uint8Array(layout.width * layout.height * 4);
+  CHANNELS.forEach((channel, c) => {
+    ctx.clearRect(0, 0, layout.width, layout.height);
+    drawAll(ctx, t, blocks, layout, spots, maskPaint(t, channel));
+    const src = ctx.getImageData(0, 0, layout.width, layout.height).data;
+    const w = layout.width;
+    for (let y = 0; y < layout.height; y++) {
+      const from = y * w * 4;
+      const to = (layout.height - 1 - y) * w * 4;
+      // White's share of the texel: its brightness times its coverage (antialiased edges).
+      for (let x = 0; x < w; x++) maskData[to + x * 4 + c] = Math.round((src[from + x * 4] * src[from + x * 4 + 3]) / 255);
+    }
+  });
+  const mask = new THREE.DataTexture(maskData, layout.width, layout.height, THREE.RGBAFormat);
+  mask.magFilter = THREE.NearestFilter;
+  mask.minFilter = THREE.LinearMipmapLinearFilter;
+  mask.generateMipmaps = true;
+  mask.needsUpdate = true;
+
+  // The picture last, so the canvas keeps it.
+  ctx.clearRect(0, 0, layout.width, layout.height);
+  drawAll(ctx, t, blocks, layout, spots, basePaint(t));
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  // Doom-style: crisp pixels up close, smooth mipmaps far away.
+  map.magFilter = THREE.NearestFilter;
+  map.needsUpdate = true;
+  return { map, mask, blocks, layout };
+}
+
+// The picture: coloured-in parts in grey, the rest in their own colours.
+function basePaint(t) {
+  return {
+    base: true,
+    part(name, behind = false) {
+      const tone = (behind ? t.tones.behind : 1) * (name === 'hem' ? t.tones.hem : 1);
+      return grey(tone);
+    },
+    fixed(hex, alpha = 1) {
+      return css(hex, alpha);
+    },
+  };
+}
+
+// One mask channel: white where a part belongs to it, black elsewhere
+// (so a part in front hides the one behind, as in the picture).
+function maskPaint(t, channel) {
+  return {
+    base: false,
+    part(name) {
+      return PART_CHANNELS[name].includes(channel) ? '#fff' : '#000';
+    },
+    fixed() {
+      return '#000';
+    },
+  };
+}
+
+function drawAll(ctx, t, blocks, layout, spots, paint) {
+  const blockW = t.frameWidth * ZOMBIE_FRAMES.count;
+  const blockH = t.frameHeight * ATLAS_ROWS;
+  blocks.forEach((block, b) => {
+    const kit = { ...(t.looks[block.variant] ?? {}), hair: block.hair };
+    const bx = (b % layout.cols) * blockW;
+    const by = Math.floor(b / layout.cols) * blockH;
     for (let row = 0; row < ATLAS_ROWS; row++) {
       const mirror = row > 4;
       const angle = ((mirror ? ATLAS_ROWS - row : row) * Math.PI) / 4; // 0 front .. pi back
       for (let col = 0; col < ZOMBIE_FRAMES.count; col++) {
         ctx.save();
-        ctx.translate(col * t.frameWidth, (block * ATLAS_ROWS + row) * t.frameHeight);
+        ctx.translate(bx + col * t.frameWidth, by + row * t.frameHeight);
         ctx.beginPath();
         ctx.rect(0, 0, t.frameWidth, t.frameHeight);
         ctx.clip();
@@ -43,17 +145,11 @@ export function makeZombieAtlas(cfg, rng) {
           ctx.translate(t.frameWidth, 0);
           ctx.scale(-1, 1);
         }
-        drawFrame(ctx, t, angle, col, spots);
+        drawFrame(ctx, t, kit, angle, col, spots, paint);
         ctx.restore();
       }
     }
   });
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  // Doom-style: crisp pixels up close, smooth mipmaps far away.
-  texture.magFilter = THREE.NearestFilter;
-  texture.needsUpdate = true;
-  return texture;
 }
 
 // Pose for each frame column.
@@ -68,7 +164,7 @@ function poseFor(col) {
   return { stride: 0, bob: 0, armUp: 0.2, lunge: 0, lean: -3, fall: (dying + 1) / F.dying.length };
 }
 
-function drawFrame(ctx, t, angle, col, spots) {
+function drawFrame(ctx, t, kit, angle, col, spots, paint) {
   const pose = poseFor(col);
   const w = t.frameWidth;
   const h = t.frameHeight;
@@ -85,15 +181,23 @@ function drawFrame(ctx, t, angle, col, spots) {
     ctx.scale(fit, fit);
     ctx.translate(-w / 2, -ground);
   }
-  drawFigure(ctx, t, angle, pose, spots, w, h);
+  drawFigure(ctx, t, kit, angle, pose, spots, w, h, paint);
   ctx.restore();
+}
+
+// A point on the quadratic curve a -> b (control c) at k.
+function quadAt(a, c, b, k) {
+  const u = 1 - k;
+  return { x: u * u * a.x + 2 * u * k * c.x + k * k * b.x, y: u * u * a.y + 2 * u * k * c.y + k * k * b.y };
 }
 
 // The figure: legs, arms, torso and head, seen from `angle` (0 = from
 // the front, pi/2 = from its left so it faces image-right, pi = from behind).
-function drawFigure(ctx, t, angle, pose, spots, w, h) {
+// kit: the variant's look (vest, hat) and this block's hairstyle.
+function drawFigure(ctx, t, kit, angle, pose, spots, w, h, paint) {
   const side = Math.sin(angle); // 1 = full profile, facing image-right
   const front = Math.cos(angle); // 1 = facing the viewer, -1 = back
+  const fromBehind = front < -0.2;
   const cx = w / 2 + pose.lean * side * 0.5;
   const ground = h - 2;
   const hipY = ground - 56 + pose.bob;
@@ -101,9 +205,11 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
   const headY = shoulderY - 11;
   const hunch = 5 * side + pose.lunge * side; // head and shoulders forward
   const torsoHalf = 15 * Math.abs(front) + 8 * Math.abs(side);
+  const hx = cx + hunch + pose.lean * side * 0.3; // the head's centre
+  const hy = headY + Math.abs(pose.lunge) * 0.3;
 
   const legs = () => {
-    ctx.fillStyle = css(t.trousers);
+    ctx.fillStyle = paint.part('trousers');
     for (const s of [-1, 1]) {
       const swing = pose.stride * s * 9 * side;
       const lift = pose.stride * s * 4 * Math.abs(front);
@@ -118,8 +224,9 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
     }
   };
 
+  // Each arm: the sleeved upper half, the forearm (sleeved or bare, per
+  // zombie) and the hand.
   const arms = (behind) => {
-    ctx.strokeStyle = css(behind ? t.skinDark : t.skin);
     ctx.lineCap = 'round';
     ctx.lineWidth = 5;
     for (const s of [-1, 1]) {
@@ -131,18 +238,27 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
       const reach = 34 * side + pose.lunge * side; // arms held out in front
       // Seen from the front the arms reach toward the viewer: hands in
       // front of the chest, foreshortened.
-      const hx = sx + reach - s * 5 * Math.max(0, front) * (1 - pose.armUp * 0.5);
-      const hy = sy + 6 + 6 * Math.max(0, front) - pose.armUp * 26 + (s > 0 ? 2 : -2) * pose.stride;
-      const ex = (sx + hx) / 2;
-      const ey = (sy + hy) / 2 + 4;
+      const handX = sx + reach - s * 5 * Math.max(0, front) * (1 - pose.armUp * 0.5);
+      const handY = sy + 6 + 6 * Math.max(0, front) - pose.armUp * 26 + (s > 0 ? 2 : -2) * pose.stride;
+      const a = { x: sx, y: sy };
+      const c = { x: (sx + handX) / 2, y: (sy + handY) / 2 + 4 };
+      const b = { x: handX, y: handY };
+      const elbow = quadAt(a, c, b, 0.5);
+      // The halves of the curve: control points halfway along each leg.
+      ctx.strokeStyle = paint.part('sleeve', behind);
       ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.quadraticCurveTo(ex, ey, hx, hy);
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo((a.x + c.x) / 2, (a.y + c.y) / 2, elbow.x, elbow.y);
+      ctx.stroke();
+      ctx.strokeStyle = paint.part('forearm', behind);
+      ctx.beginPath();
+      ctx.moveTo(elbow.x, elbow.y);
+      ctx.quadraticCurveTo((c.x + b.x) / 2, (c.y + b.y) / 2, b.x, b.y);
       ctx.stroke();
       // Hand
-      ctx.fillStyle = css(behind ? t.skinDark : t.skin);
+      ctx.fillStyle = paint.part('skin', behind);
       ctx.beginPath();
-      ctx.arc(hx, hy, 3 + Math.max(0, front) * 1.2, 0, Math.PI * 2);
+      ctx.arc(b.x, b.y, 3 + Math.max(0, front) * 1.2, 0, Math.PI * 2);
       ctx.fill();
     }
   };
@@ -150,7 +266,7 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
   const torso = () => {
     const top = shoulderY;
     const lean = hunch;
-    ctx.fillStyle = css(t.shirt);
+    ctx.fillStyle = paint.part('shirt');
     ctx.beginPath();
     ctx.moveTo(cx - torsoHalf + lean, top);
     ctx.lineTo(cx + torsoHalf + lean, top);
@@ -161,9 +277,9 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
     // Torn hem and blood, painted over the shirt only.
     ctx.save();
     ctx.globalCompositeOperation = 'source-atop';
-    ctx.fillStyle = css(t.shirtAlt, 0.6);
+    ctx.fillStyle = paint.part('hem');
     ctx.fillRect(cx - torsoHalf, hipY - 6, torsoHalf * 2, 10);
-    ctx.fillStyle = css(t.blood, 0.85);
+    ctx.fillStyle = paint.fixed(t.blood); // solid: over the pale grey shirt a see-through spot showed pink
     for (const sp of spots) {
       ctx.beginPath();
       ctx.arc(cx + sp.x * torsoHalf + lean * (1 - sp.y), top + sp.y * (hipY - top), sp.r, 0, Math.PI * 2);
@@ -171,11 +287,11 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
     }
     ctx.restore();
     // Police: a bulletproof vest over the chest.
-    if (t.vest !== undefined) {
+    if (kit.vest !== undefined) {
       const vTop = top + 3;
       const vBottom = hipY - 6;
       const vHalf = torsoHalf * 0.82;
-      ctx.fillStyle = css(t.vest);
+      ctx.fillStyle = paint.fixed(kit.vest);
       ctx.beginPath();
       ctx.moveTo(cx - vHalf + lean, vTop);
       ctx.lineTo(cx + vHalf + lean, vTop);
@@ -183,44 +299,111 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
       ctx.lineTo(cx - vHalf * 0.8 + lean * 0.3, vBottom);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = css(t.vest, 0.6);
+      ctx.fillStyle = paint.fixed(kit.vest, 0.6);
       ctx.fillRect(cx - vHalf * 0.8 + lean * 0.5, (vTop + vBottom) / 2, vHalf * 1.6, 2); // a strap
     }
   };
 
+  // Hair that hangs behind the head (long hair, a ponytail): behind the
+  // body from the front and in profile, over the back from behind.
+  const hangingHair = () => {
+    ctx.fillStyle = paint.part('hair');
+    if (kit.hair === 'long') {
+      const bottom = shoulderY + 12;
+      if (fromBehind) {
+        ctx.beginPath();
+        ctx.ellipse(hx, hy, 8, 8.5, 0, Math.PI, Math.PI * 2);
+        ctx.lineTo(hx + 8, bottom - 3);
+        ctx.quadraticCurveTo(hx, bottom + 3, hx - 8, bottom - 3);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        // A curtain behind the head, showing past it at the sides.
+        const back = -side * 3;
+        const half = 8.5 - Math.abs(side) * 2;
+        ctx.beginPath();
+        ctx.moveTo(hx + back - half, hy - 4);
+        ctx.lineTo(hx + back + half, hy - 4);
+        ctx.lineTo(hx + back + half + 1, bottom - 6 + Math.abs(side) * 4);
+        ctx.lineTo(hx + back - half - 1, bottom - 6 + Math.abs(side) * 4);
+        ctx.closePath();
+        ctx.fill();
+      }
+    } else if (kit.hair === 'ponytail') {
+      // Tied at the back of the head, hanging to the shoulders.
+      const tx = hx - side * 6;
+      const ty = hy - 1;
+      ctx.beginPath();
+      if (fromBehind || Math.abs(side) < 0.3) {
+        ctx.ellipse(tx, ty + 9, 3, 9, 0, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(tx, ty - 2);
+        ctx.quadraticCurveTo(tx - side * 6, ty + 2, tx - side * 5, ty + 16);
+        ctx.lineTo(tx - side * 2, ty + 16);
+        ctx.quadraticCurveTo(tx - side * 2, ty + 4, tx, ty + 3);
+        ctx.closePath();
+      }
+      ctx.fill();
+    }
+  };
+
   const head = () => {
-    const hx = cx + hunch + pose.lean * side * 0.3;
-    const hy = headY + Math.abs(pose.lunge) * 0.3;
-    ctx.fillStyle = css(t.skin);
+    ctx.fillStyle = paint.part('skin');
     ctx.beginPath();
     ctx.ellipse(hx, hy, 7 - 1.5 * Math.abs(side), 8, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Hair: a cap on top, the whole back of the head from behind.
-    ctx.fillStyle = css(t.hair);
+    // Hair on the head: a cap on top (the whole back of the head from
+    // behind); balding, only round the sides and back.
+    ctx.fillStyle = paint.part('hair');
     ctx.beginPath();
-    if (front < -0.2) ctx.ellipse(hx, hy, 7, 8, 0, 0, Math.PI * 2);
-    else ctx.ellipse(hx - side * 2, hy - 4, 7, 4.5, 0, Math.PI, Math.PI * 2);
+    if (kit.hair === 'balding') {
+      if (fromBehind) ctx.ellipse(hx, hy + 1, 7, 6.5, 0, -0.15, Math.PI + 0.15);
+      else {
+        for (const s of [-1, 1]) {
+          if (s * side > 0.5) continue; // the far side is hidden by the head
+          ctx.ellipse(hx + s * (5.5 - Math.abs(side) * 2) - side * 2, hy - 0.5, 2, 3.5, 0, 0, Math.PI * 2);
+        }
+      }
+    } else if (fromBehind) {
+      ctx.ellipse(hx, hy, 7, 8, 0, 0, Math.PI * 2);
+    } else {
+      ctx.ellipse(hx - side * 2, hy - 4, 7, 4.5, 0, Math.PI, Math.PI * 2);
+    }
     ctx.fill();
-    if (front > -0.2) {
+    // Long hair: locks down past the cheeks, seen from the front.
+    if (kit.hair === 'long' && !fromBehind) {
+      for (const s of [-1, 1]) {
+        if (s * side > 0.5) continue;
+        const x = hx + s * (6 - Math.abs(side) * 2) - side * 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x - 2, hy - 5);
+        ctx.lineTo(x + 2, hy - 5);
+        ctx.lineTo(x + 1.5 + s, hy + 9);
+        ctx.lineTo(x - 2 + s, hy + 9);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    if (!fromBehind) {
       // Pale eyes and a dark open mouth, sliding round with the angle.
-      ctx.fillStyle = css(t.eyes);
+      ctx.fillStyle = paint.fixed(t.eyes);
       const ex = hx + side * 3.5;
       const spread = 3 * Math.max(0, front);
       ctx.fillRect(Math.round(ex - spread - 1), Math.round(hy - 2), 2, 2);
       if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1), Math.round(hy - 2), 2, 2);
-      ctx.fillStyle = css(t.blood);
+      ctx.fillStyle = paint.fixed(t.blood);
       ctx.fillRect(Math.round(ex - 2), Math.round(hy + 3), 4, 2);
     }
     // Police cap or army helmet.
-    if (t.hat === 'cap') {
-      ctx.fillStyle = css(t.hatColor);
+    if (kit.hat === 'cap') {
+      ctx.fillStyle = paint.fixed(kit.hatColor);
       ctx.beginPath();
       ctx.ellipse(hx - side, hy - 5, 7.5, 4, 0, Math.PI, Math.PI * 2);
       ctx.fill();
       ctx.fillRect(hx - 7.5 - side, hy - 6, 15, 2);
-      if (front > -0.2) ctx.fillRect(Math.round(hx + side * 6 - 4), hy - 5, 8 + Math.abs(side) * 3, 2); // the peak
-    } else if (t.hat === 'helmet') {
-      ctx.fillStyle = css(t.hatColor);
+      if (!fromBehind) ctx.fillRect(Math.round(hx + side * 6 - 4), hy - 5, 8 + Math.abs(side) * 3, 2); // the peak
+    } else if (kit.hat === 'helmet') {
+      ctx.fillStyle = paint.fixed(kit.hatColor);
       ctx.beginPath();
       ctx.ellipse(hx - side, hy - 3, 9, 7.5, 0, Math.PI, Math.PI * 2);
       ctx.fill();
@@ -228,13 +411,17 @@ function drawFigure(ctx, t, angle, pose, spots, w, h) {
     }
   };
 
+  if (!fromBehind) hangingHair();
   arms(true);
   legs();
   torso();
+  if (fromBehind) hangingHair();
   head();
   arms(false);
 
-  // Simple lighting: lit from the upper left (moonlight), as the trees are.
+  // Simple lighting: lit from the upper left (moonlight), as the trees
+  // are. The picture only: the mask says what a texel is, not how lit.
+  if (!paint.base) return;
   ctx.save();
   ctx.globalCompositeOperation = 'source-atop';
   const shade = ctx.createLinearGradient(0, 0, w, 0);

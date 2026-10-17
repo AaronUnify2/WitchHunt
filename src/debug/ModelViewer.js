@@ -9,6 +9,7 @@
 //  - D-pad left / right, LB / RB (arrows left / right, Q): the model.
 //  - D-pad up / down (arrows up / down): the pose.
 //  - Y (F): the variant (police, army...). X (E): the lighting.
+//  - Menu (R): new random looks (the zombies).
 //  - A (Enter): playing / slow motion / paused.
 //  - R3 (C): turntable. L3 (Shift): reset the camera.
 //  - B (Esc): close.
@@ -166,7 +167,10 @@ export class ModelViewer {
   }
 
   resetOrbit() {
-    this.orbit = startOrbit(this.entry.height(this.cfg, this.variant), this.place.facing, this.vc.start);
+    const e = this.entry;
+    this.orbit = startOrbit(e.height(this.cfg, this.variant), this.place.facing, this.vc.start);
+    const distance = e.startDistance?.(this.cfg, this.variant);
+    if (distance) this.orbit.distance = distance;
   }
 
   // ---- each frame ------------------------------------------------------------------------------
@@ -216,10 +220,18 @@ export class ModelViewer {
     if (input.wasPressed('flare')) {
       const n = variantNames(e, this.cfg).length;
       if (n > 1) {
+        const before = e.startDistance?.(this.cfg, this.variant) ?? null;
         this.variant = cycle(this.variant, n, 1);
+        // Reframe when the variant wants another distance (the zombie crowd).
+        if ((e.startDistance?.(this.cfg, this.variant) ?? null) !== before) this.resetOrbit();
         this.statsDirty = true;
         this.render();
       }
+    }
+    // New random looks (Menu / R), for models that have them.
+    if ((input.wasPressed('pause') || input.wasPressed('reload')) && this.inst.reroll) {
+      this.inst.reroll();
+      this.statsDirty = true;
     }
     if (input.wasPressed('interact')) {
       this.lightIndex = cycle(this.lightIndex, this.vc.lights.length, 1);
@@ -305,8 +317,10 @@ export class ModelViewer {
     this.noteEl.textContent = e.note ?? '';
     this.helpEl.innerHTML =
       this.device === 'gamepad'
-        ? 'D-pad &larr;&rarr;: model &middot; &uarr;&darr;: pose &middot; Y: variant &middot; X: light &middot; A: play / slow / pause<br>Right stick: orbit &middot; left stick: zoom &middot; LT / RT: lower / higher &middot; R3: turntable &middot; L3: reset &middot; B: close'
-        : '&larr;&rarr;: model &middot; &uarr;&darr;: pose &middot; F: variant &middot; E: light &middot; Enter: play / slow / pause<br>Mouse: orbit &middot; W / S: zoom &middot; mouse buttons: higher / lower &middot; C: turntable &middot; Shift: reset &middot; Esc: close';
+        ? `D-pad &larr;&rarr;: model &middot; &uarr;&darr;: pose &middot; Y: variant &middot; X: light &middot; A: play / slow / pause${this.inst?.reroll ? ' &middot; Menu: new looks' : ''}<br>` +
+          'Right stick: orbit &middot; left stick: zoom &middot; LT / RT: lower / higher &middot; R3: turntable &middot; L3: reset &middot; B: close'
+        : `&larr;&rarr;: model &middot; &uarr;&darr;: pose &middot; F: variant &middot; E: light &middot; Enter: play / slow / pause${this.inst?.reroll ? ' &middot; R: new looks' : ''}<br>` +
+          'Mouse: orbit &middot; W / S: zoom &middot; mouse buttons: higher / lower &middot; C: turntable &middot; Shift: reset &middot; Esc: close';
   }
 
   // ---- debug ---------------------------------------------------------------------------------------
