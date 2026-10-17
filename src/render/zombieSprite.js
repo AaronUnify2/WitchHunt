@@ -10,8 +10,9 @@
 // mask, says how much of each texel is shirt (red), trousers (green), hair
 // (blue) and skin (alpha). The renderer colours each zombie in with its
 // own palette (ZombieRenderer). The forearm is in both the shirt and the
-// skin: long sleeves or short, per zombie. Blood, eyes and kit (the police
-// vest and cap, the army helmet) keep their own colours.
+// skin: long sleeves or short, per zombie. The mouth's blood, the eyes and
+// kit (the police vest and cap, the army helmet) keep their own colours.
+// The blood on the body is the renderer's, different on each zombie.
 //
 // The figure is drawn five times (the picture, then once per mask
 // channel) with the same strokes, so what's in front hides what's behind
@@ -47,18 +48,12 @@ function grey(level, alpha = 1) {
 
 // The atlas: { map (the picture), mask, blocks, layout }. Both textures
 // share the layout, so one UV reads both.
-export function makeZombieAtlas(cfg, rng) {
+export function makeZombieAtlas(cfg) {
   const t = cfg.texture;
   const blocks = atlasBlocks(t);
   const blockW = t.frameWidth * ZOMBIE_FRAMES.count;
   const blockH = t.frameHeight * ATLAS_ROWS;
   const layout = atlasLayout(blocks.length, blockW, blockH, t.atlasMaxSize);
-  // The same blood spatter on every frame, so it doesn't flicker.
-  const spots = Array.from({ length: t.bloodSpots }, () => ({
-    x: rng.range(-1, 1),
-    y: rng.range(0, 1),
-    r: rng.range(1, 3.5),
-  }));
 
   const canvas = document.createElement('canvas');
   canvas.width = layout.width;
@@ -70,7 +65,7 @@ export function makeZombieAtlas(cfg, rng) {
   const maskData = new Uint8Array(layout.width * layout.height * 4);
   CHANNELS.forEach((channel, c) => {
     ctx.clearRect(0, 0, layout.width, layout.height);
-    drawAll(ctx, t, blocks, layout, spots, maskPaint(t, channel));
+    drawAll(ctx, t, blocks, layout, maskPaint(t, channel));
     const src = ctx.getImageData(0, 0, layout.width, layout.height).data;
     const w = layout.width;
     for (let y = 0; y < layout.height; y++) {
@@ -88,7 +83,7 @@ export function makeZombieAtlas(cfg, rng) {
 
   // The picture last, so the canvas keeps it.
   ctx.clearRect(0, 0, layout.width, layout.height);
-  drawAll(ctx, t, blocks, layout, spots, basePaint(t));
+  drawAll(ctx, t, blocks, layout, basePaint(t));
   const map = new THREE.CanvasTexture(canvas);
   map.colorSpace = THREE.SRGBColorSpace;
   // Doom-style: crisp pixels up close, smooth mipmaps far away.
@@ -125,7 +120,7 @@ function maskPaint(t, channel) {
   };
 }
 
-function drawAll(ctx, t, blocks, layout, spots, paint) {
+function drawAll(ctx, t, blocks, layout, paint) {
   const blockW = t.frameWidth * ZOMBIE_FRAMES.count;
   const blockH = t.frameHeight * ATLAS_ROWS;
   blocks.forEach((block, b) => {
@@ -145,7 +140,7 @@ function drawAll(ctx, t, blocks, layout, spots, paint) {
           ctx.translate(t.frameWidth, 0);
           ctx.scale(-1, 1);
         }
-        drawFrame(ctx, t, kit, angle, col, spots, paint);
+        drawFrame(ctx, t, kit, angle, col, paint);
         ctx.restore();
       }
     }
@@ -164,7 +159,7 @@ function poseFor(col) {
   return { stride: 0, bob: 0, armUp: 0.2, lunge: 0, lean: -3, fall: (dying + 1) / F.dying.length };
 }
 
-function drawFrame(ctx, t, kit, angle, col, spots, paint) {
+function drawFrame(ctx, t, kit, angle, col, paint) {
   const pose = poseFor(col);
   const w = t.frameWidth;
   const h = t.frameHeight;
@@ -181,7 +176,7 @@ function drawFrame(ctx, t, kit, angle, col, spots, paint) {
     ctx.scale(fit, fit);
     ctx.translate(-w / 2, -ground);
   }
-  drawFigure(ctx, t, kit, angle, pose, spots, w, h, paint);
+  drawFigure(ctx, t, kit, angle, pose, w, h, paint);
   ctx.restore();
 }
 
@@ -194,7 +189,7 @@ function quadAt(a, c, b, k) {
 // The figure: legs, arms, torso and head, seen from `angle` (0 = from
 // the front, pi/2 = from its left so it faces image-right, pi = from behind).
 // kit: the variant's look (vest, hat) and this block's hairstyle.
-function drawFigure(ctx, t, kit, angle, pose, spots, w, h, paint) {
+function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   const side = Math.sin(angle); // 1 = full profile, facing image-right
   const front = Math.cos(angle); // 1 = facing the viewer, -1 = back
   const fromBehind = front < -0.2;
@@ -274,17 +269,11 @@ function drawFigure(ctx, t, kit, angle, pose, spots, w, h, paint) {
     ctx.lineTo(cx - torsoHalf * 0.75, hipY + 4);
     ctx.closePath();
     ctx.fill();
-    // Torn hem and blood, painted over the shirt only.
+    // The torn hem, painted over the shirt only.
     ctx.save();
     ctx.globalCompositeOperation = 'source-atop';
     ctx.fillStyle = paint.part('hem');
     ctx.fillRect(cx - torsoHalf, hipY - 6, torsoHalf * 2, 10);
-    ctx.fillStyle = paint.fixed(t.blood); // solid: over the pale grey shirt a see-through spot showed pink
-    for (const sp of spots) {
-      ctx.beginPath();
-      ctx.arc(cx + sp.x * torsoHalf + lean * (1 - sp.y), top + sp.y * (hipY - top), sp.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
     ctx.restore();
     // Police: a bulletproof vest over the chest.
     if (kit.vest !== undefined) {

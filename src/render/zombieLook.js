@@ -61,7 +61,8 @@ export const PARTS = ['shirt', 'trousers', 'hair', 'skin'];
 // One zombie's look from its variant and seed. blocks: atlasBlocks();
 // table: paletteTable(). Returns { block, shirt, trousers, hair, skin
 // (indices into the table), sleeves (1 long, 0 short), plaid (0 / 1),
-// width, height (scales) }. out: an object to fill (no allocation).
+// blood (0..1, how bloody), bloodSeed (its pattern), width, height
+// (scales) }. out: an object to fill (no allocation).
 export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   const look = tex.looks[variant] ?? {};
   const offsets = table.offsets[variant] ?? table.offsets[tex.variantOrder[0]];
@@ -81,6 +82,10 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   out.skin = pick(offsets.skin, r(5));
   out.sleeves = r(6) < (look.longSleeves ?? 0.5) ? 1 : 0;
   out.plaid = r(7) < (look.plaid ?? 0) ? 1 : 0;
+  // How bloody (skewed toward lightly) and its blood's pattern.
+  const bb = tex.bodyBlood;
+  out.blood = bb.amount[0] + (bb.amount[1] - bb.amount[0]) * Math.pow(r(10), bb.skew);
+  out.bloodSeed = Math.floor(r(11) * bb.seeds);
   const b = tex.build;
   out.width = b.width[0] + (b.width[1] - b.width[0]) * r(8);
   out.height = b.height[0] + (b.height[1] - b.height[0]) * r(9);

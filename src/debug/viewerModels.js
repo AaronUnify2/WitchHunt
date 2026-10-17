@@ -132,8 +132,7 @@ function zombieModel(ctx) {
   const vc = ctx.cfg.modelViewer;
   const crowd = vc.crowd;
   const order = zc.texture.variantOrder;
-  // The same fork as Combat's, so the sprites match the game's.
-  const renderer = new ZombieRenderer(zc, ctx.rng.fork('combat').fork('zombie-sprite'));
+  const renderer = new ZombieRenderer(zc);
   renderer.init(ctx.scene, crowd.size * crowd.size);
   const F = ZOMBIE_FRAMES;
   const zombies = Array.from({ length: crowd.size * crowd.size }, (_, i) => ({ active: true, kind: 'zombie', tier: 'active', x: 0, y: 0, z: 0, sink: 0, frame: 0, facing: 0, flash: 0, lit: 0, variant: 'citizen', lookSeed: i + 1, offset: hash01(i, 1) }));
@@ -150,6 +149,7 @@ function zombieModel(ctx) {
   };
   return {
     objects: [renderer.mesh],
+    renderer, // for debugging its uniforms
     update(dt, s) {
       const isCrowd = s.variant >= order.length;
       const shown = isCrowd ? zombies : zombies.slice(0, 1);

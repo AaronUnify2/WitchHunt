@@ -11,7 +11,9 @@
 // Session 13 (#144): every zombie is coloured in as it's drawn (a palette
 // swap: zombieSprite.js paints the parts grey and masks them), with its
 // own shirt, trousers, hair and skin, sleeves, plaid and build
-// (zombieLook.js). Still one draw call.
+// (zombieLook.js), and its own blood: spots and splashes laid over its
+// body in the shader, more or less of them per zombie (Aaron). Still one
+// draw call.
 
 import * as THREE from 'three';
 import { makeZombieAtlas, ATLAS_ROWS as ROWS } from './zombieSprite.js';
@@ -20,11 +22,12 @@ import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 
 // Per instance: aState (frame, facing, hit flash, floodlit), aStyle
 // (atlas block, long sleeves, plaid, debug tier tint), aLook (palette
-// indices: shirt, trousers, hair, skin).
+// indices: shirt, trousers, hair, skin), aBlood (how bloody, its pattern's seed).
 const COMMON = /* glsl */ `
   attribute vec4 aState;
   attribute vec4 aStyle;
   attribute vec4 aLook;
+  attribute vec2 aBlood;
   uniform float uFrames;
   uniform float uBlockCols;
   uniform float uBlockRows;
@@ -73,16 +76,48 @@ const LOOK_VERTEX = /* glsl */ `
   vLit = aState.w;
   vTint = aStyle.w;
   vStyle = aStyle.yz;
+  vBlood = aBlood;
   vShirt = uPalette[int(aLook.x + 0.5)];
   vTrousers = uPalette[int(aLook.y + 0.5)];
   vHair = uPalette[int(aLook.z + 0.5)];
   vSkin = uPalette[int(aLook.w + 0.5)];
 `;
 
+// The body's blood: in each cell of a grid over the frame (in atlas
+// pixels, snapped to them so it's as crisp as the sprite), maybe a round
+// spot, placed and sized by a hash of the cell and the zombie's seed. Two
+// layers: small drops and big splashes, some of which run in a drip down
+// the body (frame y runs up). Kept inside the cell, so one hash per layer.
+const BLOOD_FUNCTIONS = /* glsl */ `
+  vec4 zbHash( vec2 c, float s ) {
+    vec4 p4 = fract( vec4( c.xyx, s ) * vec4( 0.1031, 0.1030, 0.0973, 0.1099 ) );
+    p4 += dot( p4, p4.wzxy + 33.33 );
+    return fract( ( p4.xxyz + p4.yzzw ) * p4.zywx );
+  }
+  // layer: cell size, chance of a spot, smallest and largest radius.
+  // drip: the share of spots that drip.
+  float zbSpots( vec2 p, vec4 layer, float amount, float seed, float drip ) {
+    vec2 c = floor( p / layer.x );
+    vec4 h = zbHash( c, seed );
+    if ( h.x >= layer.y * amount ) return 0.0;
+    float r = mix( layer.z, layer.w, h.w );
+    vec2 centre = ( c + 0.5 ) * layer.x + ( h.yz - 0.5 ) * max( 0.0, layer.x - 2.0 * r );
+    float spot = step( length( p - centre ), r );
+    if ( fract( h.w * 5.0 ) < drip ) {
+      float len = r * ( 1.5 + 3.0 * fract( h.y * 7.0 ) );
+      float x = centre.x + ( fract( h.z * 13.0 ) - 0.5 ) * r;
+      spot = max( spot, step( abs( p.x - x ), 0.6 ) * step( p.y, centre.y ) * step( centre.y - len, p.y ) );
+    }
+    return spot;
+  }
+`;
+
 // Colour in the grey parts by the mask: r shirt, g trousers, b hair, a
 // skin. The forearm is in both shirt and skin: long sleeves take the
 // shirt there, short the skin. Plaid darkens the shirt in atlas-pixel
-// lines (faded out once they'd be finer than a screen pixel).
+// lines (faded out once they'd be finer than a screen pixel). Then the
+// blood, heaviest on the shirt (uBloodParts: shirt, trousers, hair, skin),
+// fading to an even stain far off.
 const MAP_FRAGMENT = /* glsl */ `
   #ifdef USE_MAP
     vec4 sampledDiffuseColor = texture2D( map, vMapUv );
@@ -98,15 +133,27 @@ const MAP_FRAGMENT = /* glsl */ `
     }
     float zbW = zbShirtW + zbM.g + zbM.b + zbSkinW;
     vec3 zbTintColour = ( zbShirtW * zbShirt + zbM.g * vTrousers + zbM.b * vHair + zbSkinW * vSkin ) / max( zbW, 0.0001 );
-    sampledDiffuseColor.rgb = mix( sampledDiffuseColor.rgb, sampledDiffuseColor.rgb * zbTintColour, smoothstep( 0.0, 0.08, zbW ) );
+    float zbBody = smoothstep( 0.0, 0.08, zbW );
+    sampledDiffuseColor.rgb = mix( sampledDiffuseColor.rgb, sampledDiffuseColor.rgb * zbTintColour, zbBody );
+    vec2 zbFrameP = mod( vMapUv * uAtlasSize, uFrameSize );
+    vec2 zbP = floor( zbFrameP ) + 0.5;
+    // How many atlas pixels to a screen pixel (from the unsnapped position:
+    // the snapped one jumps at every pixel's edge).
+    float zbFar = smoothstep( 0.6, 1.4, max( fwidth( vMapUv.x * uAtlasSize.x ), fwidth( vMapUv.y * uAtlasSize.y ) ) );
+    // The seed is a whole number, but interpolation can wobble it (40.9999),
+    // and the hash would change from one screen row to the next: round it.
+    float zbSeed = floor( vBlood.y + 0.5 );
+    float zbSpot = max( zbSpots( zbP, uBloodDrops, vBlood.x, zbSeed, 0.0 ), zbSpots( zbP + 101.0, uBloodSplashes, vBlood.x, zbSeed + 17.0, uBloodDrip ) );
+    zbSpot = mix( zbSpot, vBlood.x * uBloodFar, zbFar );
+    float zbWhere = ( zbShirtW * uBloodParts.x + zbM.g * uBloodParts.y + zbM.b * uBloodParts.z + zbSkinW * uBloodParts.w ) / max( zbW, 0.0001 );
+    sampledDiffuseColor.rgb = mix( sampledDiffuseColor.rgb, uBloodColor, zbSpot * zbWhere * zbBody );
     diffuseColor *= sampledDiffuseColor;
   #endif
 `;
 
 export class ZombieRenderer {
-  constructor(zombieConfig, rng) {
+  constructor(zombieConfig) {
     this.cfg = zombieConfig;
-    this.rng = rng;
   }
 
   // capacity: the most sprites drawn at once (config.zombies.lod.renderCap).
@@ -115,7 +162,7 @@ export class ZombieRenderer {
     this.capacity = capacity;
     const c = this.cfg;
     const t = c.texture;
-    const atlas = makeZombieAtlas(c, this.rng);
+    const atlas = makeZombieAtlas(c);
     this.atlas = atlas.map;
     this.mask = atlas.mask;
     this.blocks = atlas.blocks;
@@ -133,6 +180,13 @@ export class ZombieRenderer {
       uPalette: { value: palette },
       uAtlasSize: { value: new THREE.Vector2(this.layout.width, this.layout.height) },
       uPlaid: { value: new THREE.Vector3(t.plaid.every, t.plaid.line, t.plaid.dark) },
+      uFrameSize: { value: new THREE.Vector2(t.frameWidth, t.frameHeight) },
+      uBloodColor: { value: new THREE.Color(t.blood) },
+      uBloodDrops: { value: bloodLayer(t.bodyBlood.drops) },
+      uBloodSplashes: { value: bloodLayer(t.bodyBlood.splashes) },
+      uBloodParts: { value: new THREE.Vector4(...['shirt', 'trousers', 'hair', 'skin'].map((k) => t.bodyBlood.parts[k])) },
+      uBloodFar: { value: t.bodyBlood.far },
+      uBloodDrip: { value: t.bodyBlood.splashes.drip },
       uFlashColor: { value: new THREE.Color(c.hitFlashColor) },
       uLitColor: { value: new THREE.Color(c.floodlit.color).multiplyScalar(c.floodlit.strength) },
       uTintActive: { value: new THREE.Color(c.lod.tierColors.active) },
@@ -153,9 +207,12 @@ export class ZombieRenderer {
     this.stateAttr = new THREE.InstancedBufferAttribute(this.states, 4).setUsage(THREE.DynamicDrawUsage);
     this.styleAttr = new THREE.InstancedBufferAttribute(this.styles, 4).setUsage(THREE.DynamicDrawUsage);
     this.lookAttr = new THREE.InstancedBufferAttribute(this.looks, 4).setUsage(THREE.DynamicDrawUsage);
+    this.bloods = new Float32Array(poolSize * 2);
+    this.bloodAttr = new THREE.InstancedBufferAttribute(this.bloods, 2).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('aState', this.stateAttr);
     geometry.setAttribute('aStyle', this.styleAttr);
     geometry.setAttribute('aLook', this.lookAttr);
+    geometry.setAttribute('aBlood', this.bloodAttr);
 
     this.mesh = new THREE.InstancedMesh(geometry, this.material, poolSize);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -179,7 +236,7 @@ export class ZombieRenderer {
     const paletteSize = this.table.colours.length;
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
-      const varyings = 'varying float vFlash;\nvarying float vLit;\nvarying float vTint;\nvarying vec2 vStyle;\nvarying vec3 vShirt;\nvarying vec3 vTrousers;\nvarying vec3 vHair;\nvarying vec3 vSkin;';
+      const varyings = 'varying float vFlash;\nvarying float vLit;\nvarying float vTint;\nvarying vec2 vStyle;\nvarying vec2 vBlood;\nvarying vec3 vShirt;\nvarying vec3 vTrousers;\nvarying vec3 vHair;\nvarying vec3 vSkin;';
       let vertex = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${COMMON}${colour ? `uniform vec3 uPalette[${paletteSize}];\n${varyings}` : ''}`)
         .replace('#include <uv_vertex>', UV)
@@ -190,7 +247,7 @@ export class ZombieRenderer {
         shader.fragmentShader = shader.fragmentShader
           .replace(
             '#include <common>',
-            `#include <common>\n${varyings}\nuniform sampler2D uMask;\nuniform vec2 uAtlasSize;\nuniform vec3 uPlaid;\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;\nuniform vec3 uThermalNear;`,
+            `#include <common>\n${varyings}\nuniform sampler2D uMask;\nuniform vec2 uAtlasSize;\nuniform vec2 uFrameSize;\nuniform vec3 uPlaid;\nuniform vec3 uBloodColor;\nuniform vec4 uBloodDrops;\nuniform vec4 uBloodSplashes;\nuniform vec4 uBloodParts;\nuniform float uBloodFar;\nuniform float uBloodDrip;\n${BLOOD_FUNCTIONS}\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;\nuniform vec3 uThermalNear;`,
           )
           .replace('#include <map_fragment>', MAP_FRAGMENT)
           .replace(
@@ -200,7 +257,7 @@ export class ZombieRenderer {
       }
       shader.vertexShader = vertex;
     };
-    material.customProgramCacheKey = () => (colour ? 'zombie-billboard-looks' : 'zombie-billboard-depth');
+    material.customProgramCacheKey = () => (colour ? 'zombie-billboard-looks-blood' : 'zombie-billboard-depth');
     return material;
   }
 
@@ -216,6 +273,7 @@ export class ZombieRenderer {
       this.stateAttr.needsUpdate = true;
       this.styleAttr.needsUpdate = true;
       this.lookAttr.needsUpdate = true;
+      this.bloodAttr.needsUpdate = true;
     }
   }
 
@@ -246,6 +304,8 @@ export class ZombieRenderer {
       this.looks[i + 1] = look.trousers;
       this.looks[i + 2] = look.hair;
       this.looks[i + 3] = look.skin;
+      this.bloods[n * 2] = look.blood;
+      this.bloods[n * 2 + 1] = look.bloodSeed;
       n++;
     }
     return n;
@@ -269,4 +329,9 @@ export class ZombieRenderer {
     this.atlas.dispose();
     this.mask.dispose();
   }
+}
+
+// A blood layer for the shader: (cell size, chance, smallest radius, largest radius).
+function bloodLayer(l) {
+  return new THREE.Vector4(l.cell, l.chance, l.radius[0], l.radius[1]);
 }

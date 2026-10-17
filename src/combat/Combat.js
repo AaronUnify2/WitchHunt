@@ -53,7 +53,7 @@ export class Combat {
 
     this.enemies = new EnemyManager(c, this.rng.fork('zombies'), this.bus, world);
     this.enemies.init(colliders);
-    this.zombieRenderer = new ZombieRenderer(c.zombies, this.rng.fork('zombie-sprite'));
+    this.zombieRenderer = new ZombieRenderer(c.zombies);
     this.zombieRenderer.init(scene, c.zombies.lod.renderCap);
     this.mutantRenderer = new MutantRenderer(c.mutant, c.zombies);
     this.mutantRenderer.init(scene);

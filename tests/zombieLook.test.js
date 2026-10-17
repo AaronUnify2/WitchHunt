@@ -100,6 +100,22 @@ describe('zombie looks', () => {
     expect(plaid / n).toBeLessThan(tex.looks.citizen.plaid + 0.08);
   });
 
+  it('gives each zombie its own blood, from light to heavy, mostly light', () => {
+    const bb = tex.bodyBlood;
+    const seeds = new Set();
+    let light = 0;
+    for (let seed = 1; seed <= 1000; seed++) {
+      const look = zombieLook('citizen', seed, tex, blocks, table);
+      expect(look.blood).toBeGreaterThanOrEqual(bb.amount[0]);
+      expect(look.blood).toBeLessThanOrEqual(bb.amount[1]);
+      expect(Number.isInteger(look.bloodSeed)).toBe(true);
+      seeds.add(look.bloodSeed);
+      if (look.blood < (bb.amount[0] + bb.amount[1]) / 2) light++;
+    }
+    expect(seeds.size).toBeGreaterThan(400);
+    expect(light).toBeGreaterThan(500);
+  });
+
   it('never plaids a uniform, and the army always wears long sleeves', () => {
     for (let seed = 1; seed < 200; seed++) {
       expect(zombieLook('police', seed, tex, blocks, table).plaid).toBe(0);

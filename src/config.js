@@ -1219,9 +1219,22 @@ export const config = {
       frameHeight: 128,
       atlasMaxSize: 4096, // pixels: the atlas is laid out in a grid no bigger than this (any tablet loads it)
       // Fixed colours (dark albedos: the torch blows out anything light).
-      blood: 0x2e0404,
+      blood: 0x2e0404, // the mouth, and the blood on the body
       eyes: 0xc8c090, // the pale eyes are meant to catch the torch
-      bloodSpots: 14,
+      // The blood on the body (Aaron: different on each zombie): spots
+      // drawn by the shader in a grid of cells over each frame, in atlas
+      // pixels. amount: how bloody a zombie is (skew > 1: most lightly);
+      // each layer's chance of a spot per cell is x that. parts: how much
+      // each part takes it. far: the even stain it fades to far off.
+      bodyBlood: {
+        amount: [0.08, 1],
+        skew: 1.6,
+        seeds: 997, // different patterns
+        drops: { cell: 5, chance: 0.5, radius: [0.7, 1.6] },
+        splashes: { cell: 13, chance: 0.6, radius: [2, 4.5], drip: 0.6 }, // drip: the share that run down
+        parts: { shirt: 1, trousers: 0.5, hair: 0.25, skin: 0.7 },
+        far: 0.18,
+      },
       // Grey the coloured-in parts are painted with (1 = the palette colour
       // as it is): the arm behind the body, the torn hem.
       tones: { behind: 0.58, hem: 0.62 },
@@ -1264,15 +1277,17 @@ export const config = {
           0x4a1e0c, // ginger
           0x6a6a64, // white
         ],
-        // Living complexions gone grey and sick.
+        // Living complexions gone grey and sick. Aaron: one dark
+        // complexion in eight (the rest pale), nearer the region's people.
         skin: [
           0x4e5844, // grey-green
           0x6a6e5c, // pale
-          0x4a4a32, // olive
+          0x646a58, // pale grey-green
+          0x6a665a, // ashen
+          0x5c5a44, // sallow
+          0x58606a, // bluish
+          0x6a5e56, // greyish pink
           0x3a3024, // brown
-          0x2a241c, // dark brown
-          0x48505a, // bluish
-          0x5a5a3c, // sallow
         ],
       },
       // Each variant: its own palettes (replacing the shared ones), the
