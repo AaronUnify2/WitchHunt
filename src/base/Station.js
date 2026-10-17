@@ -89,6 +89,7 @@ export class Station {
     this.hold = new HoldAction(sc.hold.releaseDrain);
     this.hold.init();
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
+    this.blockers = []; // M8: prompt sources that take interact first (talking to the family)
 
     const fam = this.layout.cabin.commsCentre;
     this.routeHook = {
@@ -392,7 +393,7 @@ export class Station {
       this.stripTimer = this.sc.hudRefresh;
       this.combat.hud.station(this.stripHtml());
     }
-    const canInteract = playing && !this.ledger.isOpen && this.combat.alive;
+    const canInteract = playing && !this.ledger.isOpen && this.combat.alive && !this.blockers.some((b) => b.prompt);
     if (canInteract) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';

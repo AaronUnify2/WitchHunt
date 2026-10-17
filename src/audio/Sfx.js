@@ -121,6 +121,12 @@ export class Sfx {
     if (recipe) recipe(this, pos);
   }
 
+  // M8: a dialogue blip (a short square pip at the speaker's pitch).
+  blip(freq, seconds, gain) {
+    if (!this.ready) return;
+    this.tone(this.out(), { seconds, wave: 'square', freq, gain, attack: 0.003 });
+  }
+
   dispose() {
     this.ctx?.close();
     this.ctx = null;
@@ -344,6 +350,11 @@ const RECIPES = {
     const o = s.out(undefined, undefined, 0.8);
     s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 1800, q: 1.2, gain: 0.25, attack: 0.02 });
     for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.16, wave: 'square', freq: 990, gain: 0.18 }), 380 + i * 230);
+  },
+  // M8: a radio call opens with a short crackle.
+  radioCrackle(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.noiseBurst(o, { seconds: 0.28, type: 'bandpass', freq: 2100, endFreq: 1500, q: 1.1, gain: 0.2, attack: 0.01 });
   },
   overrun(s) {
     const o = s.out();

@@ -36,7 +36,7 @@ export class NightWatch {
     this.bus = bus;
   }
 
-  // ctx: { station, director, witch, combat, player, clock, notify(text) }.
+  // ctx: { station, director, witch, combat, player, clock, dialogue, notify(text) }.
   init(root, ctx) {
     Object.assign(this, ctx);
     this.enemies = ctx.combat.enemies;
@@ -68,7 +68,6 @@ export class NightWatch {
     this.attacks = []; // attacks under way while you're away
     this.attacksTonight = 0;
     this.time = 0;
-    this.lastRadio = {};
     this.el?.classList.add('hidden');
   }
 
@@ -370,12 +369,9 @@ export class NightWatch {
     const fence = first.filter((b) => b.kind !== 'door').reduce((sum, b) => sum + b.health, 0);
     const left = this.clock.phase === 'night' ? this.clock.phaseRemaining : 0;
     const through = a.result.falls || this.attackDps(a, a.weight * (a.size / a.zombies.length)) * left >= fence;
-    const who = n <= 2 ? 'One or two of them' : n <= 5 ? 'A few of them' : 'A horde';
-    if (through) {
-      this.radio(`Radio: "${who} at the ${where}! That fence isn't going to last the night. Get back here, Tom!"`, 'urgent');
-    } else {
-      this.radio(`Radio: "${who} at the ${where}. Looks like the fence will hold tonight."`, 'calm');
-    }
+    // M8: the calls are lines in src/data/dialogue.json (rate limited by the radio).
+    const who = this.dialogue.word('groupSize', n <= 2 ? 0 : n <= 5 ? 1 : 2);
+    this.dialogue.say(through ? 'nights.arrival.urgent' : 'nights.arrival.calm', { who, where });
   }
 
   // Each attack under way, every frame until dawn: the turret fires and
@@ -434,15 +430,6 @@ export class NightWatch {
     }
   }
 
-  // kind: calls of the same kind are at least radioGap apart (an urgent
-  // call always gets through after a calm one).
-  radio(text, kind = 'any') {
-    if (this.time - (this.lastRadio[kind] ?? -Infinity) < this.nc.resolver.radioGap) return;
-    this.lastRadio[kind] = this.time;
-    this.combat.sfx.play('radioAlarm');
-    this.notify(text);
-  }
-
   // Back within range of home after attacks while you were away (the
   // ones still under way carry on for real).
   reportReturn() {
@@ -459,8 +446,8 @@ export class NightWatch {
     if (this.securityNow() >= this.nc.alarmFraction * this.duskSecurity) return;
     this.alarmDone = true;
     this.alarmOn = true;
-    this.combat.sfx.play('radioAlarm');
-    this.notify('Radio: "Tom! They\'re through the fence, get back here!" Station security below half');
+    this.dialogue.say('nights.alarm');
+    this.notify('Station security below half');
     this.bus.emit('night:alarm');
   }
 

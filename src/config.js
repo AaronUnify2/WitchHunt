@@ -1360,7 +1360,6 @@ export const config = {
       mutantWeight: 4, // a mutant in an attack counts as this many zombies
       standOff: 5, // metres outside the fence the group gathers
       gatherRadius: 4,
-      radioGap: 10, // seconds between radio calls of the same kind
     },
   },
 
@@ -1591,8 +1590,7 @@ export const config = {
     lineSeconds: 3.2,
     defeatFadeSeconds: 2.5,
     staticEvery: 1.6, // seconds between bursts of radio static on the defeat screen
-    noReturnRadioSeconds: 5, // the radio call when both charges are on the hut stays this long (Aaron, #130)
-    noReturnDelay: 5, // seconds from that call to the point-of-no-return pop-up
+    noReturnDelay: 5, // seconds from the radio call (both charges on the hut; Aaron, #130) to the point-of-no-return pop-up
   },
 
   // Sigil grounds' placeholder marker: a ring of dark stakes (the real
@@ -1995,6 +1993,92 @@ export const config = {
   // UI
   ui: {
     toastSeconds: 3,
+  },
+
+  // The story systems (M8; DESIGN.md "Story and lore"). The lines are in
+  // src/data/dialogue.json; who says them and how they sound is here.
+  story: {
+    // Each speaker: the name on the subtitle, its colour, and the pitch of
+    // their blips (Hz). The pitch wobbles by blipJitter (fraction) per blip.
+    speakers: {
+      ellen: { name: 'Ellen', color: '#9cc3e6', blipFreq: 520 },
+      wyatt: { name: 'Wyatt', color: '#e6c27a', blipFreq: 380 },
+      junie: { name: 'Junie', color: '#e6a0c4', blipFreq: 760 },
+      tom: { name: 'Tom', color: '#c8d0b8', blipFreq: 300 },
+      radio: { name: 'Radio', color: '#a8b0a0', blipFreq: 440 },
+    },
+    // The family in the comms room, in the order the station places them.
+    family: ['ellen', 'wyatt', 'junie'],
+    // Lines with a "script" only play from their triggers while that script
+    // is live. Day 1's real triggers are M9.2's; until then the debug menu
+    // plays them (and can turn the script on to try them in a run).
+    liveScripts: [],
+    // Milestones: the event that sets each flag lines can ask for ("when":
+    // { "all": [...] }). Remembered in order (newest first wins) and saved.
+    milestones: {
+      'witch:planted': 'witchPlanted',
+      'sigil:dug': 'sigilDug',
+      'witch:attacking': 'witchSighted',
+      'witch:hurt': 'witchWounded',
+      'witch:trailCam': 'witchOnCamera',
+      'hut:armed': 'hutArmed',
+      'hut:destroyed': 'hutDestroyed',
+    },
+    blipJitter: 0.06,
+    blipEvery: 2, // a blip every this many letters (spaces don't blip)
+    blipSeconds: 0.035,
+    blipGain: 0.07,
+  },
+
+  // Subtitles (M8): every line is subtitled, never voiced. A dark strip at
+  // the bottom centre, the speaker's name above. The text types on with
+  // blips, then holds for a readable time, or advances on a button
+  // (interact, while talking face to face).
+  subtitles: {
+    lettersPerSecond: 45,
+    holdBase: 1.4, // seconds after the line has typed on...
+    holdPerWord: 0.28, // ...plus this per word
+    holdMax: 7,
+    gapSeconds: 0.25, // between queued lines
+    maxQueue: 6, // older queued lines are dropped past this (never the one showing)
+  },
+
+  // The radio (M8): calls play as subtitles with a crackle; you keep full
+  // control. Rate limited: calls of one kind at least kindGap apart, and
+  // any two calls at least minGap apart. An urgent call cuts the queue.
+  radio: {
+    minGap: 4, // seconds between any two calls
+    kindGap: 10, // seconds between calls of the same kind (was nights.resolver.radioGap)
+    queueSeconds: 20, // a one-off call that has to wait gives up after this
+  },
+
+  // Talking to the family face to face (M8): hold interact while looking
+  // at one of them in the comms room.
+  familyTalk: {
+    range: 2.4, // metres
+    lookAngle: 28, // degrees either side of the view
+    holdSeconds: 0.35,
+    bobHeight: 0.05, // metres, while their line types on
+    bobRate: 11, // radians per second
+    // The new-line marker: a small diamond over a family member with
+    // something new to say.
+    marker: { color: 0xf0d070, size: 0.06, above: 0.3, bob: 0.04, checkEvery: 1 },
+  },
+
+  // Trail cameras (M8; DESIGN.md "The radio"): fixed spots in the north
+  // and middle bands. They report the witch only if she passes one, after
+  // a delay, and the map marks the camera, not her: a lead, never a tracker.
+  trailCams: {
+    count: 6,
+    bands: ['north', 'middle'],
+    minSpacing: 120, // metres between cameras
+    fromCentre: 0.6, // fraction of a clearing's radius: the camera's post sits at its edge, facing in
+    range: 26, // metres the camera sees
+    cooldown: 90, // seconds before the same camera can report her again
+    reportDelay: { min: 25, max: 60 }, // seconds from her passing to the family's call
+    leadSeconds: 240, // how long the map marks the camera after a report
+    post: { height: 1.6, color: 0x3a3226, box: 0x2e3a2a, led: 0xff3020 },
+    map: { color: '#9cdc8c', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 },
   },
 
   // The station's ledger (M5): a full-screen book in the comms room.

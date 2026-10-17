@@ -232,6 +232,24 @@ export function drawVehicleMarker(ctx, x, y, angle, size, color) {
   ctx.restore();
 }
 
+// M8: the trail cameras: a small square each; a camera with a lead (it
+// caught the witch recently) is drawn bigger, in the lead colour, and blinks.
+// toScreen(x, z) -> [sx, sy]. style: config.trailCams.map. now: game seconds.
+// skip(sx, sy, size): true to leave one out (off the minimap's disc).
+export function drawTrailCams(ctx, cams, toScreen, size, style, now, skip = () => false) {
+  for (const cam of cams) {
+    const [sx, sy] = toScreen(cam.x, cam.z);
+    const lead = cam.leadUntil > now;
+    const s = lead ? size * 1.6 : size;
+    if (skip(sx, sy, s)) continue;
+    if (lead && Math.floor(now * 2.5) % 2 === 1) continue;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(sx - s / 2 - 1, sy - s / 2 - 1, s + 2, s + 2);
+    ctx.fillStyle = lead ? style.leadColor : style.color;
+    ctx.fillRect(sx - s / 2, sy - s / 2, s, s);
+  }
+}
+
 // Is a vehicle shown on the maps: seen up close (or the debug "show all")?
 export function vehicleShown(v) {
   return v.seen || v.seenByDebug;

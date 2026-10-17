@@ -17,6 +17,8 @@ export const DEBUG = {
   zombies: 'Sigils & zombies',
   player: 'Player',
   station: 'Station & vehicles',
+  story: 'Story, radio & trail cams',
+  day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',
 };

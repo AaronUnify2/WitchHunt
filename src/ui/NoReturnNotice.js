@@ -5,18 +5,18 @@
 //  2. A moment later, a pop-up that pauses the game: setting the charges
 //     off starts the final battle and deletes the save, so there's no
 //     reloading from dawn. A / Enter closes it.
-// Game deletes the save when the hut is destroyed. The lines are
-// placeholders in src/data/ending.json ("noReturn"); the look is Session 19's.
+// Game deletes the save when the hut is destroyed. The radio call is a
+// line in src/data/dialogue.json ("noReturn.radio", played on 'hut:armed'
+// by the dialogue system, M8); the pop-up's text is in
+// src/data/ending.json ("noReturn"). The look is Session 28's.
 
 import endingData from '../data/ending.json';
 
 export class NoReturnNotice {
-  // endingConfig: config.ending. notify(text, seconds): the toast. sfx: Sfx.
-  constructor(endingConfig, bus, sfx, notify) {
+  // endingConfig: config.ending.
+  constructor(endingConfig, bus) {
     this.cfg = endingConfig;
     this.bus = bus;
-    this.sfx = sfx;
-    this.notify = notify;
     this.data = endingData.noReturn;
   }
 
@@ -46,9 +46,6 @@ export class NoReturnNotice {
   }
 
   armed() {
-    const r = this.data.radio;
-    this.sfx.play('radioAlarm');
-    this.notify(`Radio (${r.speaker}): "${r.text}"`, this.cfg.noReturnRadioSeconds);
     this.pending = this.cfg.noReturnDelay;
   }
 

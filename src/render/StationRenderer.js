@@ -562,16 +562,20 @@ export class StationRenderer {
   buildFamily() {
     const look = this.look.family;
     const sizes = [1, 0.95, 0.7]; // Ellen, Wyatt, Junie
-    const parts = [];
-    this.layout.cabin.family.forEach((f, i) => {
+    // M8: one mesh each, standing at its spot, so each can bob as they talk
+    // (story/FamilyTalk.js).
+    this.family = this.layout.cabin.family.map((f, i) => {
       const s = sizes[i];
-      const y = this.floorY;
       const color = look[i % look.length];
-      parts.push(this.box(0.34 * s, 0.85 * s, 0.22 * s, f.x, y, f.z, 0x22252a, 0.4 * i));
-      parts.push(this.box(0.44 * s, 0.62 * s, 0.26 * s, f.x, y + 0.85 * s, f.z, color, 0.4 * i));
-      parts.push(this.box(0.22 * s, 0.24 * s, 0.22 * s, f.x, y + 1.5 * s, f.z, 0x8a6a58, 0.4 * i));
+      const parts = [
+        this.box(0.34 * s, 0.85 * s, 0.22 * s, 0, 0, 0, 0x22252a, 0.4 * i),
+        this.box(0.44 * s, 0.62 * s, 0.26 * s, 0, 0.85 * s, 0, color, 0.4 * i),
+        this.box(0.22 * s, 0.24 * s, 0.22 * s, 0, 1.5 * s, 0, 0x8a6a58, 0.4 * i),
+      ];
+      const mesh = this.merged(parts, this.lambert);
+      mesh.position.set(f.x, this.floorY, f.z);
+      return mesh;
     });
-    this.family = this.merged(parts, this.lambert);
   }
 
   // ---- each frame -------------------------------------------------------------------------

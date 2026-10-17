@@ -44,6 +44,16 @@ export class MapUi {
     }
   }
 
+  // M8: the trail cameras show on both maps (the family's network, so
+  // always known). now(): game seconds, for the leads' blinking.
+  setTrailCams(list, style, now) {
+    for (const view of [this.minimap, this.screen]) {
+      view.trailCams = list;
+      view.trailCamStyle = style;
+      view.trailCamTime = now;
+    }
+  }
+
   get isOpen() {
     return this.screen.isOpen;
   }

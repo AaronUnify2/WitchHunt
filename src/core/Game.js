@@ -33,6 +33,11 @@ import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
 import { NightWatch } from '../base/NightWatch.js';
+import { zoneOf } from '../base/stationLayout.js';
+import { Subtitles } from '../ui/Subtitles.js';
+import { Dialogue } from '../story/Dialogue.js';
+import { FamilyTalk } from '../story/FamilyTalk.js';
+import { TrailCams } from '../story/TrailCams.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
 import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
@@ -87,6 +92,7 @@ export class Game {
 
     this.initWorld(root);
     this.initUi(root);
+    this.initDialogue(root);
     this.initDirector();
     this.hut = new Hut(this.cfg, this.bus); // M7 step 4
     this.hut.init(this.scene, this.world, this.colliders);
@@ -96,12 +102,13 @@ export class Game {
     this.initNightWatch(root);
     this.initExplosives();
     this.initFinalBattle(root);
+    this.initStory();
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
     this.victoryTimer = -1;
     this.runEnd = new RunEndScreen(cfg.ending, this.bus, this.combat.sfx);
     // Session 9 (#130): both charges on the hut warn there's no going back.
-    this.noReturn = new NoReturnNotice(cfg.ending, this.bus, this.combat.sfx, (text, seconds) => this.toast.show(text, seconds));
+    this.noReturn = new NoReturnNotice(cfg.ending, this.bus);
     this.noReturn.init(root);
     this.runEnd.init(root);
     this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
@@ -262,8 +269,65 @@ export class Game {
       combat: this.combat,
       player: this.player,
       clock: this.clock,
+      dialogue: this.dialogue,
       notify: (text) => this.toast.show(text),
     });
+  }
+
+  // M8: subtitles and the dialogue system (lines, the radio). Early, so
+  // every system can ask for a line.
+  initDialogue(root) {
+    this.subtitles = new Subtitles(this.cfg.subtitles, this.cfg.story, this.combat.sfx);
+    this.subtitles.init(root);
+    this.dialogue = new Dialogue(this.cfg, this.bus);
+    this.dialogue.init({
+      subtitles: this.subtitles,
+      clock: this.clock,
+      // In the cabin, the family hear Tom (and he hears them) without the radio.
+      withFamily: () => zoneOf(this.station.layout, this.player.position.x, this.player.position.z) >= 2,
+      stateFlags: () => this.storyFlags(),
+      notify: (text) => this.toast.show(text),
+    });
+  }
+
+  // M8: talking to the family face to face, and the trail cameras.
+  initStory() {
+    this.familyTalk = new FamilyTalk(this.cfg, this.bus);
+    this.familyTalk.init(this.scene, {
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      player: this.player,
+      figures: this.station.renderer.family,
+      inRoom: () => zoneOf(this.station.layout, this.player.position.x, this.player.position.z) === 3,
+    });
+    // Its prompt comes first, and the station's wait while it shows.
+    this.combat.promptSources.unshift(this.familyTalk.hud);
+    this.station.blockers.push(this.familyTalk.hud);
+    this.trailCams = new TrailCams(this.cfg, this.rng.fork('trailcams'), this.bus);
+    this.trailCams.init(this.scene, {
+      world: this.world,
+      witch: this.witch,
+      clock: this.clock,
+      mapUi: this.mapUi,
+      player: this.player,
+      sfx: this.combat.sfx,
+      notify: (text) => this.toast.show(text, this.cfg.ui.toastSeconds * 2),
+      teleport: (x, z, yaw) => this.player.teleport(x, z, yaw),
+    });
+  }
+
+  // M8: flags about the world now, for lines' conditions (DESIGN.md
+  // "Dialogue system": base damaged, zombie level 4+).
+  storyFlags() {
+    const flags = [];
+    if (this.director.effectiveLevel >= 4) flags.push('zombieLevel4');
+    for (const b of this.station.state.barriers()) {
+      if (b.kind !== 'barricade' && b.health < b.max) {
+        flags.push('baseDamaged');
+        break;
+      }
+    }
+    return flags;
   }
 
   initUi(root) {
@@ -314,6 +378,7 @@ export class Game {
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
+    this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}`);
   }
 
   // Each system adds its tools to its category (DEBUG in DebugMenu.js).
@@ -339,6 +404,8 @@ export class Game {
     this.vehicles.addDebugItems(menu);
     this.mapUi.addDebugItems(menu);
     this.atmosphere.addDebugItems(menu, (text) => this.toast.show(text));
+    this.dialogue.addDebugItems(menu);
+    this.trailCams.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -575,6 +642,7 @@ export class Game {
   // M7 step 6: the run's over. kind: 'victory' | 'defeat'.
   endRun(kind, title, reason) {
     if (this.runEnd.isOpen) return;
+    this.subtitles.clear();
     this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived);
   }
 
@@ -620,6 +688,7 @@ export class Game {
       witch: this.witch.saveState(), // M7: her wounds and traps (optional: older saves have none)
       explosives: this.explosives.saveState(), // M7: charges carried and planted
       stats: { ...this.stats }, // M7: for the run summary
+      story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
     };
   }
 
@@ -648,6 +717,7 @@ export class Game {
     this.witch.loadState(d.witch);
     this.explosives.loadState(d.explosives);
     this.stats = loadStats(d.stats);
+    this.dialogue.loadState(d.story);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -738,6 +808,7 @@ export class Game {
     }
     this.runEnd.update(dt, this.input);
     this.debugMenu.update(dt);
+    this.subtitles.update(dt);
     this.toast.update(dt);
     this.overlay.update(dt);
   }
@@ -758,6 +829,10 @@ export class Game {
     this.witch.update(dt, playing, this.player.camera.position, first ? controls : this.lockedInput);
     this.explosives.update(dt, first ? controls : this.lockedInput, playing && first && !locked);
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
+    // M8: the family (before the station, whose prompts wait while theirs shows).
+    if (first) this.familyTalk.update(dt, controls, playing && this.combat.alive && !locked);
+    this.dialogue.update(dt, playing);
+    this.trailCams.update(dt, playing);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);
@@ -778,6 +853,10 @@ export class Game {
     this.toast.dispose();
     this.mapUi.dispose();
     this.nightWatch.dispose();
+    this.trailCams.dispose();
+    this.familyTalk.dispose();
+    this.dialogue.dispose();
+    this.subtitles.dispose();
     this.vehicles.dispose();
     this.station.dispose();
     this.runEnd.dispose();

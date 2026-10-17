@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -33,6 +33,7 @@ export class MapScreen {
     root.appendChild(this.el);
     this.ctx = this.canvas.getContext('2d');
     this.timer = 0;
+    this.trailCams = null; // set by MapUi.setTrailCams (M8)
     this.vehicles = null; // set by MapUi.setVehicles (M5 part 2)
   }
 
@@ -61,7 +62,7 @@ export class MapScreen {
     this.resize();
     this.draw(player, enemies, sigils, tierColors, witch);
     const sigilKey = (sigils ? '   ◆ (green) Sigil (debug)' : '') + (witch ? '   ✕ (violet) The witch (debug)' : '');
-    const vehicleKey = this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '';
+    const vehicleKey = (this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '') + (this.trailCams ? '   ▪ Trail cam (red: saw something)' : '');
     this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
 
@@ -135,6 +136,7 @@ export class MapScreen {
         drawVehicleMarker(ctx, sx, sy, -v.yaw, length, vehicleColor(v, vs));
       }
     }
+    if (this.trailCams) drawTrailCams(ctx, this.trailCams, toScreen, this.trailCamStyle.screenPixels * Math.max(1, Math.min(W, H) / 700), this.trailCamStyle, this.trailCamTime());
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * Math.max(1, Math.min(W, H) / 700);
     for (const e of enemies) {

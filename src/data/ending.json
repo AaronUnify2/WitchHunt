@@ -9,8 +9,7 @@
     { "style": "line", "speaker": "Wyatt", "text": "We held it. All of us." }
   ],
   "noReturn": {
-    "_note": "Aaron (Session 9, #130): both charges on the hut. A radio call, then a pop-up: once they go off there's no reloading from dawn.",
-    "radio": { "speaker": "Junie", "text": "Dad? Are you sure you're ready? Once that hut goes she's got nowhere left to run. You'll have to finish her." },
+    "_note": "Aaron (Session 9, #130): both charges on the hut. A radio call (dialogue.json noReturn.radio), then this pop-up: once they go off there's no reloading from dawn.",
     "title": "POINT OF NO RETURN",
     "text": "Both charges are on the hut. Once you set them off, the final battle begins and your save is deleted: you can't reload from dawn. Get clear, then set them off with the detonator (RT) when you're ready."
   },

@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -31,6 +31,7 @@ export class Minimap {
     root.appendChild(this.el);
     this.ctx = this.canvas.getContext('2d');
     this.timer = 0;
+    this.trailCams = null; // set by MapUi.setTrailCams (M8)
     this.vehicles = null; // set by MapUi.setVehicles (M5 part 2)
   }
 
@@ -117,6 +118,7 @@ export class Minimap {
         drawVehicleMarker(ctx, sx, sy, player.yaw - v.yaw, length, vehicleColor(v, vs));
       }
     }
+    if (this.trailCams) drawTrailCams(ctx, this.trailCams, toScreen, this.trailCamStyle.minimapPixels * (size / 200), this.trailCamStyle, this.trailCamTime(), (sx, sy, s) => Math.hypot(sx - half, sy - half) > half + s);
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * (size / 200);
     for (const e of enemies) {
