@@ -1599,10 +1599,20 @@ export const config = {
       // Aaron (Session 10): upright while she travels. Bent over read as an
       // old woman, not a scary entity. She glides tall, head level, arms
       // hanging straight and limp at her sides.
-      stoop: 0, // radians she folds forward at the waist as she travels (was 0.32)
-      moveLean: 0, // extra fold at full speed (was 0.12)
-      fleeLean: 0.1, // extra fold while fleeing (was 0.25)
+      // Aaron (Session 13): never bent forward at the waist, anywhere.
       armsBack: 0.08, // radians her arms hang back from straight down (was 0.45 + 0.35 moving)
+      standBack: 0.08, // radians she leans back at the waist facing you (was 0.18 forward)
+      lunge: 0.4, // radians the whole of her tilts into a swipe (a lunge, not a bow)
+      // Fleeing (Aaron, Session 13): she lifts and flies off head first, her
+      // back arched backwards, arms and rags streaming behind.
+      flee: {
+        lift: 0.45, // metres higher off the ground
+        pitch: 0.45, // radians the whole of her tilts into the flight (about the waist)
+        arch: 0.4, // radians her back arches backwards
+        headBack: 0.15, // radians her head tips back further
+        armsBack: 1.0, // radians her arms stream back
+        trail: 0.35, // radians more her cloak streams behind
+      },
       // Aaron (step 1 test): she glides, no steps or arm swing (too human).
       glide: {
         hover: 0.12, // metres her hem floats off the ground
@@ -1611,11 +1621,13 @@ export const config = {
         trail: 0.22, // radians her cloak tilts back behind her at full speed
         fullSpeed: 6, // m/s that counts as full speed for the trailing
       },
-      // The ritual (Aaron: fold right down and contort, so she reads as
-      // something horrible): crouched low, folded flat over the spot,
-      // head and arms snapping between wrong angles.
+      // The ritual (Aaron: contort, so she reads as something horrible;
+      // Session 13: no fold at the waist): sunk low in her cloak, upright
+      // and arched back, her head craned down over the spot, arms splayed
+      // to the ground, head and arms snapping between wrong angles.
       crouch: 0.42, // her cloak's height while crouched, as a share of standing
-      fold: 1.25, // radians forward at the waist
+      plantArch: 0.3, // radians her back arches backwards
+      crane: 0.9, // radians her neck cranes her head forward and down
       snapsPerSecond: 1.6, // how often her head and arms jerk to a new angle
       snapTime: 0.12, // share of each snap spent moving (the rest she holds still)
       ritual: { color: 0x9cff4a, radius: 1.6, opacity: 0.55, pulse: 1.4 }, // the glowing ring round her as she plants

@@ -1,6 +1,6 @@
 // The witch's placeholder 3D figure (M7; Aaron agreed, and she gets more
 // detail in the art pass). A thin shadow creature (Aaron, step 1 test):
-// tall and stooped, a ragged cloak with a torn hem, a hood, a crown of
+// tall and thin, a ragged cloak with a torn hem, a hood, a crown of
 // sticks like antlers, long arms with long fingers. Her whole body is
 // unlit near-black, so the torch can't light her or glint off her: she
 // reads only as a silhouette, with two small glowing eyes.
@@ -52,6 +52,7 @@ export class WitchRenderer {
     const thin = c.thinness;
     this.root = new THREE.Group();
     this.root.visible = false;
+    this.root.rotation.order = 'YXZ'; // her facing, then a whole-body tilt (pitch)
     this.root.scale.setScalar(c.height / MODEL_HEIGHT);
     scene.add(this.root);
     // Unlit: the torch can't light her or glint off her. Fog still applies.
@@ -170,6 +171,9 @@ export class WitchRenderer {
     this.shardScale = new THREE.Vector3();
     this.time = 0;
     this.motion = 0; // 0 still .. 1 gliding at full speed (eased)
+    this.fleeing = 0; // 0 .. 1, eased into and out of her flight
+    this.pivot = new THREE.Vector3();
+    this.pitch = 0; // radians the whole of her tilts forward (a lunge, her flight), about her waist
   }
 
   // ---- the model ---------------------------------------------------------------
@@ -379,6 +383,8 @@ export class WitchRenderer {
     this.root.position.set(w.x, w.y, w.z);
     this.root.rotation.set(0, w.facing, 0);
     this.root.scale.setScalar(this.cfg.height / MODEL_HEIGHT);
+    this.pitch = 0;
+    this.fleeing += ((w.state === 'fleeing' ? 1 : 0) - this.fleeing) * Math.min(1, dt * 3);
     if (dead) this.poseDying(w);
     else if (w.state === 'rising') this.poseRising(w);
     else if (planting) this.poseContorted();
@@ -390,6 +396,31 @@ export class WitchRenderer {
       this.waist.rotation.x -= 0.5 * f;
       this.neck.rotation.z += 0.6 * f;
     }
+    this.tilt();
+  }
+
+  // Swing the cloak about her waist (x: + swings the hem back; z: sideways),
+  // so its top stays on her however far it swings.
+  // Set its scale first: the pivot is its (squashed) top.
+  swingSkirt(x, z) {
+    const s = this.skirt;
+    s.rotation.set(x, 0, z);
+    const top = WAIST * s.scale.y;
+    this.pivot.set(0, top, 0).applyEuler(s.rotation);
+    s.position.set(-this.pivot.x, top - this.pivot.y, -this.pivot.z);
+  }
+
+  // Tilt the whole of her as one piece (never a fold at the waist: Aaron,
+  // Session 13), about her waist so she stays where she is.
+  tilt() {
+    const p = this.pitch;
+    if (p === 0) return;
+    this.root.rotation.x = p;
+    const h = WAIST * this.root.scale.y;
+    const back = h * Math.sin(p);
+    this.root.position.x -= Math.sin(this.root.rotation.y) * back;
+    this.root.position.z -= Math.cos(this.root.rotation.y) * back;
+    this.root.position.y += h * (1 - Math.cos(p));
   }
 
   // Facing you: upright and still, claws out, head jerking. Then the
@@ -403,9 +434,9 @@ export class WitchRenderer {
     const ease = (x) => x * x * (3 - 2 * x);
     this.root.position.y += c.glide.hover + Math.sin(t * c.glide.floatSpeed) * c.glide.float;
     this.skirt.scale.set(1, 1, 1);
-    this.skirt.rotation.set(Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
+    this.swingSkirt(Math.sin(t * 3.1) * 0.02, Math.sin(t * 2.3) * 0.03);
     this.waist.position.set(0, WAIST, 0);
-    this.waist.rotation.set(0.18, 0, 0);
+    this.waist.rotation.set(-c.standBack, 0, 0); // upright, looming a little back (never bent over: Aaron)
     const snap = (k, lo, hi) => snapValue(t + k * 0.37, c.snapsPerSecond * 0.6, c.snapTime, k, lo, hi);
     this.neck.rotation.set(-0.1 + snap(20, -0.15, 0.2), snap(21, -0.35, 0.35), snap(22, -0.5, 0.5));
     // Claws out, ready.
@@ -437,7 +468,9 @@ export class WitchRenderer {
           arm.elbow.rotation.set(up ? -0.9 + e * 0.4 : -0.2, 0, 0);
           arm.wrist.rotation.set(-0.6, 0, 0);
         }
-        this.waist.rotation.x = up ? 0.18 - e * 0.3 : -0.12 + e * 0.8;
+        // Rearing back, then the whole of her lunges into the slash (a tilt, not a bow).
+        this.waist.rotation.x = up ? -c.standBack - e * 0.3 : -c.standBack - 0.3 * (1 - e);
+        this.pitch = up ? -0.08 * e : c.lunge * e;
         break;
       }
       case 'summon': {
@@ -451,7 +484,7 @@ export class WitchRenderer {
           arm.elbow.rotation.set(-0.9 + e * 0.7, 0, 0);
           arm.wrist.rotation.set(0.3 + tremble, 0, 0);
         }
-        this.waist.rotation.x = 0.18 - e * 0.45;
+        this.waist.rotation.x = -c.standBack - e * 0.45;
         this.neck.rotation.x = -0.1 - e * 0.7;
         break;
       }
@@ -466,7 +499,7 @@ export class WitchRenderer {
     const t = this.time;
     const k = w.riseProgress;
     this.skirt.scale.set(1, 1, 1);
-    this.skirt.rotation.set(0, 0, 0);
+    this.swingSkirt(0, 0);
     this.waist.position.set(0, WAIST, 0);
     this.waist.rotation.set(-0.35 + Math.sin(t * 7) * 0.05, 0, Math.sin(t * 3) * 0.1);
     const snap = (key, lo, hi) => snapValue(t + key * 0.37, this.cfg.snapsPerSecond * 1.5, this.cfg.snapTime, key, lo, hi);
@@ -493,7 +526,7 @@ export class WitchRenderer {
     const k = w.deathTimer / burstAt;
     const jitter = (a) => Math.sin(t * 40 + a) * 0.06 * (1 + k * 2);
     this.skirt.scale.set(1 + k * 0.3, 1 - k * 0.25, 1 + k * 0.3);
-    this.skirt.rotation.set(jitter(1), 0, jitter(2));
+    this.swingSkirt(jitter(1), jitter(2));
     this.waist.position.set(0, WAIST, 0);
     this.waist.rotation.set(-0.5 - k * 0.3 + jitter(3), jitter(4), jitter(5));
     this.neck.rotation.set(-0.9 + jitter(6), jitter(7) * 4, jitter(8) * 6);
@@ -590,36 +623,46 @@ export class WitchRenderer {
   // sway, upright and tall (Aaron, Session 10: bent over read as an old
   // woman), head level and still, the cloak trailing behind as she moves,
   // arms hanging straight and limp at her sides.
-  // fleeing: leaning a touch forward, streaming behind her.
+  // Fleeing (Aaron, Session 13): she lifts and flies off head first, the
+  // whole of her tilted into it, her back arched backwards, her arms and
+  // rags streaming out behind her. Never bent forward at the waist.
   poseGliding(w, dt, fleeing = false) {
     const c = this.cfg;
     const g = c.glide;
+    const fl = c.flee;
     const t = this.time;
     // How fast she's moving (0..1), eased so stopping and starting is smooth.
     const speed = fleeing ? 1 : dt > 0 ? Math.min(1, w.moved / dt / g.fullSpeed) : 0;
     this.motion += (speed - this.motion) * Math.min(1, dt * 4);
     const m = this.motion;
-    this.root.position.y += g.hover + Math.sin(t * g.floatSpeed) * g.float;
+    const f = this.fleeing;
+    this.root.position.y += g.hover + fl.lift * f + Math.sin(t * g.floatSpeed) * g.float;
     this.skirt.scale.set(1, 1, 1);
-    // The hem trails behind (tilting the skirt back) and ripples.
-    this.skirt.rotation.set(-g.trail * m + Math.sin(t * 3.1) * 0.02, 0, Math.sin(t * 2.3) * 0.03);
+    // The hem trails behind (the cloak swinging back from her waist) and ripples.
+    this.swingSkirt(g.trail * m + fl.trail * f + Math.sin(t * 3.1) * 0.02, Math.sin(t * 2.3) * 0.03);
     this.waist.position.set(0, WAIST, 0);
-    const lean = c.stoop + m * c.moveLean + (fleeing ? c.fleeLean : 0);
-    this.waist.rotation.set(lean, 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
-    this.neck.rotation.set(-lean * 0.9, 0, 0);
-    // Arms hanging straight at her sides, barely moving; hands limp.
+    const arch = -fl.arch * f; // bent backwards, never forwards
+    this.waist.rotation.set(arch, 0, Math.sin(t * g.floatSpeed * 0.5) * 0.05);
+    // The head stays level with the world, or tips back in flight.
+    this.neck.rotation.set(-arch * 0.5 - fl.pitch * f - fl.headBack * f, 0, 0);
+    this.pitch = fl.pitch * f;
+    // Arms hanging straight at her sides, barely moving; hands limp. In
+    // flight they stream out behind her.
     const drift = Math.sin(t * 1.7) * 0.03;
     this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
       const side = i === 0 ? -1 : 1;
-      shoulder.rotation.set(c.armsBack + m * 0.1 + drift * side, 0, side * 0.08);
-      elbow.rotation.set(-0.08, 0, 0);
-      wrist.rotation.set(0.25 + Math.sin(t * 2 + i) * 0.05, 0, 0);
+      const flap = Math.sin(t * 7 + i * 1.3) * 0.08 * f;
+      shoulder.rotation.set(c.armsBack + m * 0.1 + drift * side + (fl.armsBack + flap) * f, 0, side * (0.08 + 0.25 * f));
+      elbow.rotation.set(-0.08 + 0.3 * f, 0, 0);
+      wrist.rotation.set(0.25 + Math.sin(t * 2 + i) * 0.05 + 0.4 * f, 0, 0);
     });
   }
 
-  // Crouched low and folded flat over the spot. The head cranes up and
-  // twists too far; the arms claw at the ground or fling up behind her;
-  // every joint jerks to a new angle and holds.
+  // Planting (Aaron, Session 13: no fold at the waist): she sinks into
+  // her pooled cloak with her torso upright and arched back, her neck
+  // craning her head down and round over the spot, too far; her arms
+  // splayed down to the ground like a spider's legs, clawing; every joint
+  // jerks to a new angle and holds.
   poseContorted() {
     const c = this.cfg;
     const t = this.time;
@@ -629,22 +672,21 @@ export class WitchRenderer {
     const squash = c.crouch;
     // The cloak puddles out as she sinks.
     this.skirt.scale.set(1 + (1 - squash) * 0.7, squash, 1 + (1 - squash) * 0.7);
-    this.skirt.rotation.z = 0;
-    this.waist.position.set(0, WAIST * squash * 0.85, 0.12);
-    // Folded flat, now and then arching back with a jerk.
-    this.waist.rotation.set(c.fold + breath + snap(1, -0.35, 0.15), snap(2, -0.25, 0.25), snap(3, -0.2, 0.2));
-    // The head: craned up off the folded body, rolled and twisted too far.
-    this.neck.rotation.set(-c.fold - 0.25 + snap(4, -0.3, 0.4, 1.3), snap(5, -1.0, 1.0, 0.9), snap(6, -1.2, 1.2, 1.1));
-    // Arms: in the waist's frame, -(fold + 1.35) about x points the upper
-    // arm forward, just off the ground; splayed out like a spider's legs.
-    // The elbow bends the forearm down to the ground (and now and then
-    // the wrong way, up); the wrist curls the claw in or snaps back.
-    const reach = -(c.fold + 1.35);
+    this.swingSkirt(0, 0);
+    this.waist.position.set(0, WAIST * squash * 0.85, 0);
+    // Upright and arched back, jerking further back now and then.
+    this.waist.rotation.set(-c.plantArch + breath + snap(1, -0.25, 0.1), snap(2, -0.25, 0.25), snap(3, -0.2, 0.2));
+    // The head: craned forward and down over the spot from the neck,
+    // rolled and twisted too far.
+    this.neck.rotation.set(c.plantArch + c.crane + snap(4, -0.3, 0.3, 1.3), snap(5, -1.0, 1.0, 0.9), snap(6, -1.2, 1.2, 1.1));
+    // Arms: down and out to the ground at her sides, splayed like a
+    // spider's legs. The elbow bends the forearm to the ground (and now and
+    // then the wrong way, up); the wrist curls the claw in or snaps back.
     this.arms.forEach(({ shoulder, elbow, wrist }, i) => {
       const side = i === 0 ? -1 : 1;
       const k = 7 + i * 6;
-      shoulder.rotation.set(reach + snap(k, -0.7, 0.6, 0.8 - i * 0.1), snap(k + 1, -0.5, 0.5), side * 0.8 + snap(k + 2, -0.5, 0.5));
-      elbow.rotation.set(snap(k + 3, -0.9, 1.7, 0.9 + i * 0.15), snap(k + 4, -0.4, 0.4), 0);
+      shoulder.rotation.set(-0.55 + snap(k, -0.5, 0.5, 0.8 - i * 0.1), snap(k + 1, -0.5, 0.5), side * 1.05 + snap(k + 2, -0.4, 0.4));
+      elbow.rotation.set(snap(k + 3, -0.9, 1.7, 0.9 + i * 0.15), snap(k + 4, -0.4, 0.4), side * 0.6);
       wrist.rotation.set(snap(k + 5, -0.9, 1.2, 1.2), 0, 0);
     });
   }

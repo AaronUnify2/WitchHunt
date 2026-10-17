@@ -1,7 +1,7 @@
 // The mutant's model (Session 13; DESIGN.md "Mutants (3D)"): a 2.5 m
 // giant that was once a man. Hunched, a small head sunk between hulking
 // shoulders, the jaw hanging slack; its right arm swollen into a club with
-// bone spurs, the left long and wasted with long claws; a hump of tumours
+// bone spurs, the left long and wasted, a small bony fist; a hump of tumours
 // on its back with the weak spot, a raw sac, nested in it; torn jeans and a
 // strip of shirt from its old life.
 //
@@ -73,6 +73,11 @@ const MASSES = [
   ['wristR', null, -0.86, 0.42, 0.5, 0.08, 0.075, 0.08, 'skinDark', 0.01, null],
   ['wristR', null, -0.94, 0.43, 0.48, 0.075, 0.07, 0.075, 'skinDark', 0.01, null],
   ['wristR', null, -1.0, 0.46, 0.42, 0.065, 0.06, 0.065, 'skinDark', 0.01, null],
+  // The wasted hand: a small, bony fist, clenched (Aaron: the long claws read as a broom).
+  ['wristL', null, 0.67, 0.72, 0.25, 0.07, 0.085, 0.075, 'skin', 0.012, null],
+  ['wristL', null, 0.64, 0.68, 0.32, 0.03, 0.03, 0.03, 'skinDark', 0, null],
+  ['wristL', null, 0.68, 0.67, 0.33, 0.032, 0.03, 0.03, 'skinDark', 0, null],
+  ['wristL', null, 0.71, 0.68, 0.32, 0.028, 0.028, 0.028, 'skinDark', 0, null],
   // Feet.
   ['ankleR', null, -0.27, 0.06, 0.08, 0.11, 0.065, 0.19, 'skinDark', 0.015, null],
   ['ankleL', null, 0.27, 0.06, 0.08, 0.11, 0.065, 0.19, 'skinDark', 0.015, null],
@@ -98,12 +103,6 @@ const LIMBS = [
   ['kneeL', 'ankleL', 0.13, 0.09, 'shin', 0.02, 0.25],
 ];
 
-// The wasted hand's long claws: from the wrist to these tips.
-const CLAWS = [
-  [0.6, 0.42, 0.32],
-  [0.68, 0.4, 0.34],
-  [0.76, 0.44, 0.3],
-];
 
 // Bone spurs out of the club and the club side's shoulder: [bone, base x, y, z, tip x, y, z, radius].
 const SPURS = [
@@ -137,8 +136,6 @@ export function buildMutantGeometry(look) {
     const knob = new THREE.SphereGeometry(r0 * 1.02, 10, 7).translate(a.x, a.y, a.z);
     parts.push(finish(knob, { bone: from, other: JOINT[from].parent, share: 0.5, paint: paint[key], key, lumps: lumps * 0.6, glow: [0, 0], colours: paint }));
   }
-  const wrist = JOINT.wristL.p;
-  for (const [x, y, z] of CLAWS) parts.push(finish(tube(wrist, new THREE.Vector3(x, y, z), 0.03, 0.006, 5, 3), { bone: 'wristL', paint: paint.bone, key: 'bone', lumps: 0, glow: [0, 0], colours: paint }));
   for (const [bone, ax, ay, az, bx, by, bz, r] of SPURS) {
     parts.push(finish(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r, 0.004, 5, 2), { bone, paint: paint.bone, key: 'bone', lumps: 0, glow: [0, 0], colours: paint }));
   }
