@@ -1827,6 +1827,24 @@ export const config = {
       wheelSegments: 12, // sides on each round wheel (Aaron: square wheels didn't read as a car)
       hubSize: 0.5, // the hub's diameter as a fraction of the wheel's
       pillarThickness: 0.06, // metres: the windscreen and rear window pillars (Aaron)
+      // Session 13: the models' wear (render/VehicleRenderer.js), rolled per
+      // vehicle: rust up to this much (skew > 1: most only a little; a
+      // type's own `rust` in vehicles.json scales it), grime and dust
+      // [min, max], the chance of dried blood, of a cracked window, and
+      // the share of those smashed through.
+      wear: {
+        rust: 0.85,
+        rustSkew: 1.2,
+        dirt: [0.3, 1],
+        bloodChance: 0.15,
+        crackChance: 0.3,
+        smashedShare: 0.4,
+        rustColour: 0x3e2010,
+        dirtColour: 0x4a3e2c,
+        dustColour: 0x4a4436,
+        bloodColour: 0x1a0404,
+        crackColour: 0x6a7076,
+      },
     },
   },
 

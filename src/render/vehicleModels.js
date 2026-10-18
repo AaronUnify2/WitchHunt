@@ -4,12 +4,14 @@
 // profiles with rounded edges, painted with vertex colours, in the
 // vehicle's own frame (x to its right, y up, z forward; data/vehicles.json).
 //
-// A model is { body, lids: { bonnet, boot, door }, extras } of geometries
+// A model is { body, lids: { bonnet, boot, door }, extras, windows } of
+// geometries (windows: each pane's centre [x, y, z], for the wear pass's
+// cracked and smashed glass)
 // (extras: { name: geometry }, kit only some carry: the type's `extras` in
 // vehicles.json give the chance of each), each
 // with a colour and an aPaint attribute: 1 where it takes the vehicle's
-// paint (its instance colour), 0 where it keeps its own colour (glass,
-// rubber, chrome, the wheel arches). Each lid is built where it sits shut;
+// paint (its instance colour), 0 where it keeps its own colour (rubber,
+// chrome, the wheel arches), 2 on glass (its own colour too). Each lid is built where it sits shut;
 // the renderer swings it on its hinge (the type's lids in vehicles.json)
 // and makes the passenger door by mirroring the driver's. The wheels and
 // lamps stay the data's parts (round wheels, unlit lamps).
@@ -136,6 +138,7 @@ function paint(g, key, colours) {
       paintAttr[i] = 1;
     } else {
       colour.set(colours[k] ?? '#ff00ff');
+      if (k === 'glass' || k === 'glassTop') paintAttr[i] = 2; // glass: it can crack (the renderer's wear)
     }
     colour.multiplyScalar(0.72 + 0.28 * (nv.y * 0.5 + 0.5));
     colour.toArray(col, i * 3);
@@ -419,7 +422,14 @@ function fourDoor(colours, S) {
   const own = S.extra ? S.extra(colours, side) : { body: [], door: [] };
   const body = merge([tub, cabin, ...glassParts, ...frames, ...trim, ...own.body]);
   const door = merge([...doorParts, ...own.door]);
-  return { body, lids: { bonnet: merge([bonnet]), boot: merge([boot]), door } };
+  const mid = ([a, b]) => [0, (a[1] + b[1]) / 2, (a[0] + b[0]) / 2];
+  const centre = (outline, sx) => {
+    const z = outline.reduce((t, q) => t + q[0], 0) / outline.length;
+    const y = outline.reduce((t, q) => t + q[1], 0) / outline.length;
+    return [sx * side(y), y, z];
+  };
+  const windows = [mid(S.windscreen), mid(S.rearScreen), ...[-1, 1].flatMap((sx) => [centre(S.frontWindow, sx), centre(S.rearWindow, sx)])];
+  return { body, lids: { bonnet: merge([bonnet]), boot: merge([boot]), door }, windows };
 }
 
 function sedan(colours) {
@@ -806,7 +816,14 @@ function pickup(colours) {
   for (const x of [-0.45, 0, 0.45]) rackParts.push(paint(rod([x, P.belt, -0.62], [x, 1.95, -0.62], 0.012), 'rubber', colours));
   const rack = merge(rackParts);
 
-  return { body, lids: { bonnet: merge([bonnet]), boot: merge([gate, gateHandle]), door }, extras: { toolbox, rack } };
+  const doorWin = (sx) => [sx * side(1.5), 1.5, 0.08];
+  const windows = [
+    [0, 1.5, 0.42],
+    [0, 1.51, -0.55],
+    doorWin(-1),
+    doorWin(1),
+  ];
+  return { body, lids: { bonnet: merge([bonnet]), boot: merge([gate, gateHandle]), door }, extras: { toolbox, rack }, windows };
 }
 
 // ---- the army truck: an M35 'deuce-and-a-half' ------------------------------------------------
@@ -910,7 +927,7 @@ function armyTruck(colours) {
   );
   paint(top, (p) => (p.y > A.roof - 0.07 ? 'canvas' : 'body'), colours);
   parts.push(top);
-  const side = (y) => A.cabHalf - 0.02 + 0.007 + 0 * y;
+  const side = () => A.cabHalf - 0.013; // the cab sides are upright
   // The split windscreen: two flat panes either side of a bar.
   for (const [x0, x1] of [
     [-0.88, -0.05],
@@ -1006,7 +1023,14 @@ function armyTruck(colours) {
     ...surround(ARMY_WINDOW, (y) => -(side(y) + 0.004), colours, 'body'),
     paint(box(0.02, 0.04, 0.12, -(A.cabHalf + 0.02), 1.45, dz1 + 0.15, 0.008), 'rubber', colours),
   ]);
-  return { body, lids: { bonnet, boot: flap, door } };
+  const windows = [
+    [-0.46, 1.99, cf],
+    [0.46, 1.99, cf],
+    [0, 1.95, cb],
+    [-side(2), 1.97, 1.66],
+    [side(2), 1.97, 1.66],
+  ];
+  return { body, lids: { bonnet, boot: flap, door }, windows };
 }
 
 export const VEHICLE_MODELS = { sedan, pickup, police, army: armyTruck };

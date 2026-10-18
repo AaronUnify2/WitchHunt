@@ -23,6 +23,14 @@
 // that model, its body and each lid one instanced mesh for the type (the
 // paint per instance, the glass, rubber and chrome their own colours), its
 // lids swung on the same hinges. Its wheels and lamps are still the data's.
+//
+// The wear pass (Session 13): each modelled vehicle wears differently, in
+// the same draw calls: per-instance numbers (aWear: its seed, rust, dirt,
+// blood; aWear2: a cracked or smashed window's centre and which) drive the
+// shader: rust patches on the paint (worst low down), grime splashed up
+// from the ground and dust on the top surfaces, dried blood smeared down
+// one side now and then, a window cracked from a point or smashed through
+// to the dark inside. config.vehicles.looks.wear sets the chances.
 
 import * as THREE from 'three';
 import { VEHICLE_MODELS, mirrorGeometry } from './vehicleModels.js';
@@ -57,6 +65,78 @@ function makeWedge() {
   return g;
 }
 
+// The wear, in the model material's shader (vLocal: the vehicle's own frame).
+const WEAR_VERTEX = `attribute float aPaint;
+attribute vec4 aWear;
+attribute vec4 aWear2;
+varying vec3 vLocal;
+varying vec3 vLocalNormal;
+varying float vPaint;
+varying vec4 vWear;
+varying vec4 vWear2;`;
+
+const WEAR_FRAGMENT = `varying vec3 vLocal;
+varying vec3 vLocalNormal;
+varying float vPaint;
+varying vec4 vWear;
+varying vec4 vWear2;
+uniform vec3 uRust;
+uniform vec3 uDirt;
+uniform vec3 uDust;
+uniform vec3 uBlood;
+uniform vec3 uCrack;
+float wHash( vec3 p ) {
+  p = fract( p * 0.3183099 + 0.1 );
+  p *= 17.0;
+  return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
+}
+float wNoise( vec3 x ) {
+  vec3 i = floor( x );
+  vec3 f = fract( x );
+  f = f * f * ( 3.0 - 2.0 * f );
+  return mix( mix( mix( wHash( i ), wHash( i + vec3( 1, 0, 0 ) ), f.x ), mix( wHash( i + vec3( 0, 1, 0 ) ), wHash( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+              mix( mix( wHash( i + vec3( 0, 0, 1 ) ), wHash( i + vec3( 1, 0, 1 ) ), f.x ), mix( wHash( i + vec3( 0, 1, 1 ) ), wHash( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z );
+}
+vec3 vehicleWear( vec3 col ) {
+  vec3 p = vLocal + vec3( vWear.x * 1.7, vWear.x * 0.3, vWear.x * 2.3 );
+  float painted = step( 0.5, vPaint ) * step( vPaint, 1.5 );
+  float glass = step( 1.5, vPaint );
+  float low = smoothstep( 1.0, 0.3, vLocal.y );
+  // Rust: patches on the paint, worst low down, flecked.
+  float rn = wNoise( p * 5.5 ) * 0.55 + wNoise( p * 17.0 ) * 0.45;
+  float rustW = vWear.y * ( 0.35 + 0.65 * low );
+  float rust = smoothstep( 0.0, 0.06, rn - ( 1.0 - rustW ) ) * painted;
+  col = mix( col, uRust * ( 0.55 + 0.6 * wNoise( p * 45.0 ) ), rust * 0.9 );
+  // Grime splashed up from the ground; dust settled on what faces up.
+  float grime = smoothstep( 0.9, 0.3, vLocal.y ) * vWear.z * ( 0.35 + 0.65 * wNoise( p * vec3( 6.0, 2.0, 6.0 ) ) );
+  col = mix( col, uDirt, grime * 0.8 * ( 1.0 - glass * 0.5 ) );
+  col = mix( col, uDust, smoothstep( 0.6, 0.95, vLocalNormal.y ) * vWear.z * 0.35 * ( 0.5 + wNoise( p * 8.0 ) ) );
+  // Dried blood: smeared on one side and run down it.
+  if ( vWear.w > 0.5 ) {
+    float sideSign = fract( vWear.x * 0.37 ) > 0.5 ? 1.0 : -1.0;
+    vec2 c = vec2( ( fract( vWear.x * 0.71 ) - 0.5 ) * 1.6, 1.0 );
+    float facing = smoothstep( 0.4, 0.7, vLocalNormal.x * sideSign );
+    float d = length( ( vec2( vLocal.z, vLocal.y ) - c ) * vec2( 1.0, 1.3 ) );
+    float smear = smoothstep( 0.34, 0.2, d + ( wNoise( p * 9.0 ) - 0.5 ) * 0.3 );
+    float run = smoothstep( 0.72, 0.86, wNoise( vec3( vLocal.z * 22.0, 0.0, vWear.x ) ) ) * step( vLocal.y, c.y ) * smoothstep( c.y - 0.7, c.y - 0.15, vLocal.y ) * smoothstep( 0.4, 0.1, abs( vLocal.z - c.x ) );
+    col = mix( col, uBlood * ( 0.7 + 0.5 * wNoise( p * 25.0 ) ), clamp( smear + run, 0.0, 1.0 ) * facing );
+  }
+  // A window cracked from a point, or smashed through to the dark inside.
+  if ( vWear2.w > 0.5 && glass > 0.5 ) {
+    vec3 q = vLocal - vWear2.xyz;
+    float r = length( q );
+    float a = atan( q.y, q.z + q.x * 0.7 );
+    float rays = smoothstep( 0.955, 0.99, wNoise( vec3( a * 6.0, r * 1.5, vWear.x ) ) ) * smoothstep( 0.55, 0.08, r );
+    float rings = smoothstep( 0.49, 0.5, abs( fract( r * 7.0 + wNoise( vec3( a * 2.0, 0.0, vWear.x ) ) * 0.5 ) - 0.5 ) ) * smoothstep( 0.3, 0.06, r );
+    col = mix( col, uCrack, clamp( rays + rings * 0.5, 0.0, 1.0 ) );
+    if ( vWear2.w > 1.5 ) {
+      float hole = 0.22 + 0.12 * wNoise( vec3( a * 3.0, 0.0, vWear.x ) );
+      col = mix( col, vec3( 0.004 ), smoothstep( hole + 0.01, hole - 0.01, r ) );
+    }
+  }
+  return col;
+}`;
+
 export class VehicleRenderer {
   constructor(cfg, data, rng) {
     this.cfg = cfg;
@@ -78,23 +158,33 @@ export class VehicleRenderer {
     const modelCount = {};
     for (const v of vehicles) if (data.types[v.type].model) modelCount[v.type] = (modelCount[v.type] ?? 0) + 1;
     this.modelMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+    const wear = looks.wear;
     this.modelMaterial.onBeforeCompile = (shader) => {
+      shader.uniforms.uRust = { value: new THREE.Color(wear.rustColour) };
+      shader.uniforms.uDirt = { value: new THREE.Color(wear.dirtColour) };
+      shader.uniforms.uDust = { value: new THREE.Color(wear.dustColour) };
+      shader.uniforms.uBlood = { value: new THREE.Color(wear.bloodColour) };
+      shader.uniforms.uCrack = { value: new THREE.Color(wear.crackColour) };
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nattribute float aPaint;')
-        .replace('#include <color_vertex>', '#include <color_vertex>\n#ifdef USE_INSTANCING_COLOR\n  vColor.xyz = color.xyz * mix( vec3( 1.0 ), instanceColor.xyz, aPaint );\n#endif');
+        .replace('#include <common>', `#include <common>\n${WEAR_VERTEX}`)
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLocal = position;\nvLocalNormal = normal;\nvPaint = aPaint;\nvWear = aWear;\nvWear2 = aWear2;')
+        .replace('#include <color_vertex>', '#include <color_vertex>\n#ifdef USE_INSTANCING_COLOR\n  vColor.xyz = color.xyz * mix( vec3( 1.0 ), instanceColor.xyz, step( 0.5, aPaint ) * step( aPaint, 1.5 ) );\n#endif');
+      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>\n${WEAR_FRAGMENT}`).replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = vehicleWear( diffuseColor.rgb );');
     };
-    this.modelMaterial.customProgramCacheKey = () => 'vehicle-model-paint';
+    this.modelMaterial.customProgramCacheKey = () => 'vehicle-model-wear';
     for (const [id, count] of Object.entries(modelCount)) {
       const built = VEHICLE_MODELS[data.types[id].model](data.colours);
       const geometries = { body: built.body, ...built.lids, door2: mirrorGeometry(built.lids.door), ...built.extras };
       const meshes = {};
       for (const [name, g] of Object.entries(geometries)) {
+        g.setAttribute('aWear', new THREE.InstancedBufferAttribute(new Float32Array(count * 4), 4));
+        g.setAttribute('aWear2', new THREE.InstancedBufferAttribute(new Float32Array(count * 4), 4));
         const mesh = new THREE.InstancedMesh(g, this.modelMaterial, count);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         meshes[name] = mesh;
       }
-      this.models[id] = { meshes, geometries, extras: Object.keys(built.extras ?? {}), next: 0 };
+      this.models[id] = { meshes, geometries, extras: Object.keys(built.extras ?? {}), windows: built.windows ?? [], next: 0 };
     }
 
     let solids = 0;
@@ -173,6 +263,12 @@ export class VehicleRenderer {
         model.meshes.body.setMatrixAt(look.model, base);
         // Its extras (a toolbox, a rack), each by its chance.
         for (const name of model.extras) model.meshes[name].setMatrixAt(look.model, this.rng.chance(t.extras?.[name] ?? 0) ? base : this.hidden);
+        // Its wear.
+        const w = this.rollWear(t, model.windows);
+        for (const g of Object.values(model.geometries)) {
+          g.attributes.aWear.setXYZW(look.model, ...w.wear);
+          g.attributes.aWear2.setXYZW(look.model, ...w.wear2);
+        }
       }
 
       for (const part of t.parts) {
@@ -229,6 +325,12 @@ export class VehicleRenderer {
       this.refresh(v);
     }
     const modelMeshes = Object.values(this.models).flatMap((m) => Object.values(m.meshes));
+    for (const m of Object.values(this.models)) {
+      for (const g of Object.values(m.geometries)) {
+        g.attributes.aWear.needsUpdate = true;
+        g.attributes.aWear2.needsUpdate = true;
+      }
+    }
     for (const mesh of [this.solid, this.wedge, this.wheel, this.lamp, ...modelMeshes]) {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -237,6 +339,20 @@ export class VehicleRenderer {
     this.group = new THREE.Group();
     this.group.add(this.solid, this.wedge, this.wheel, this.lamp, ...modelMeshes);
     scene.add(this.group);
+  }
+
+  // One vehicle's wear, from the looks' rng: { wear: [seed, rust, dirt,
+  // blood], wear2: [x, y, z, 0 none | 1 cracked | 2 smashed] }.
+  rollWear(type, windows) {
+    const c = this.cfg.looks.wear;
+    const rng = this.rng;
+    const rust = Math.pow(rng.range(0, 1), c.rustSkew) * c.rust * (type.rust ?? 1);
+    const dirt = rng.range(c.dirt[0], c.dirt[1]);
+    const blood = rng.chance(c.bloodChance) ? 1 : 0;
+    const seed = rng.range(0, 97);
+    let wear2 = [0, 0, 0, 0];
+    if (windows.length && rng.chance(c.crackChance)) wear2 = [...rng.pick(windows), rng.chance(c.smashedShare) ? 2 : 1];
+    return { wear: [seed, rust, dirt, blood], wear2 };
   }
 
   resolve(key, look) {
