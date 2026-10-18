@@ -22,6 +22,9 @@ function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'sk
     ['chest', 'shoulderR', -0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
     ['chest', 'shoulderL', 0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
     ['neck', 'chest', 0, 1.475, 0, 0.046, 0.05, 0.046, 'skin'],
+    // The trapezius: a slope from the neck down to each shoulder (Aaron: without it, a deep V).
+    ['chest', null, -0.085 * sh, 1.43, -0.012, 0.085 * sh, 0.035, 0.058, top, [0, 0, 0.42]],
+    ['chest', null, 0.085 * sh, 1.43, -0.012, 0.085 * sh, 0.035, 0.058, top, [0, 0, -0.42]],
     // The head (one smooth shape: a separate jaw shaded like a moustache), a
     // nose, ears; dark eyes and light brows.
     ['head', null, 0, 1.59, 0.012, 0.086, 0.118, 0.1, 'skin'],
@@ -38,10 +41,6 @@ function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'sk
     ['ankleR', null, -0.1, 0.045, 0.05, 0.055, 0.045, 0.12, 'shoes'],
     ['ankleL', null, 0.1, 0.045, 0.05, 0.055, 0.045, 0.12, 'shoes'],
   ];
-  if (female) {
-    // A modest bust, soft under the clothes.
-    for (const s of [-1, 1]) masses.push(['chest', null, s * 0.052, 1.285, 0.072, 0.064, 0.058, 0.052, top]);
-  }
   const limbs = [
     // The trunk: an oval from the hips to the shoulders, so the shapes on it
     // blend, pinched at the waist (the spine joint).
@@ -57,7 +56,19 @@ function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'sk
     ['hipL', 'kneeL', 0.085 * hip, 0.058, 'trousers', 0.1],
     ['kneeL', 'ankleL', 0.056, 0.04, 'trousers', 0.14],
   ];
-  return { masses, limbs, tubes: [], rings: [] };
+  return { masses, limbs, tubes: [], rings: [], deform: female ? bust : null };
+}
+
+// A modest bust, made by pushing the front of the chest out (Aaron: two
+// spheres read as fabric over two balls): rising gently from the collarbone,
+// fullest low, then tucking back under, a rounded triangle in profile; one
+// soft swell across, with no cleavage, as under a fleece.
+function bust(p, n, bone) {
+  if ((bone !== 'chest' && bone !== 'spine') || n.z <= 0) return 0;
+  const across = Math.exp(-Math.pow(p.x / 0.105, 4)); // flat-topped across her chest
+  const y = p.y - 1.275; // the fullest point
+  const profile = y > 0 ? Math.max(0, 1 - y / 0.1) ** 1.5 : Math.exp(-Math.pow(y / 0.035, 2));
+  return 0.045 * across * profile * n.z;
 }
 
 // Hair: a cap over the skull, set back so the face shows, and the style.

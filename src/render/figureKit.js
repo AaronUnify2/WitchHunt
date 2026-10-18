@@ -37,21 +37,26 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 
 // spec: { joints (default HUMAN_JOINTS), height (metres), width (x and z
 // scale), head (the head's own scale, about the neck), colours: { key: hex },
-// masses: [[bone, other bone or null, x, y, z, rx, ry, rz, key]],
+// masses: [[bone, other bone or null, x, y, z, rx, ry, rz, key, turn (optional:
+// [x, y, z] radians, the ellipsoid turned before it's placed)]],
 // limbs: [[from joint, to joint, r0, r1, key, bulge, flat (depth / width:
 // an oval, for a trunk)]], tubes: [[bone, ax,
 // ay, az, bx, by, bz, r0, r1, key]], rings: [[bone, x, y, z, radius, tube,
 // key]] (facing +z), paint(key, p, out) (optional: patterns; p in the
-// built space) }. Returns { geometry, joints } (joints: { name: { i,
+// built space), deform(p, n, bone) (optional: how far to push a vertex out
+// along its normal, in metres: one smooth field moves every surface there
+// together, so shapes reshape without creases) }. Returns { geometry, joints } (joints: { name: { i,
 // parent, p } }, scaled).
 export function buildFigure(spec) {
   const joints = jointMap(spec.joints ?? HUMAN_JOINTS);
   const colours = Object.fromEntries(Object.entries(spec.colours).map(([k, hex]) => [k, new THREE.Color(hex)]));
   const parts = [];
   const add = (g, o) => parts.push(finish(g, { ...o, joints, colours, paint: spec.paint }));
-  for (const [bone, other, x, y, z, rx, ry, rz, key] of spec.masses) {
+  for (const [bone, other, x, y, z, rx, ry, rz, key, turn] of spec.masses) {
     const g = new THREE.SphereGeometry(1, 16, 12);
-    g.scale(rx, ry, rz).translate(x, y, z);
+    g.scale(rx, ry, rz);
+    if (turn) g.rotateX(turn[0]).rotateY(turn[1]).rotateZ(turn[2]);
+    g.translate(x, y, z);
     add(g, { bone, other, share: other ? 0.5 : 0, key });
   }
   for (const [from, to, r0, r1, key, bulge = 0, flat = 1] of spec.limbs) {
@@ -69,6 +74,7 @@ export function buildFigure(spec) {
   }
   let geometry = mergeGeometries(parts);
   for (const p of parts) p.dispose();
+  if (spec.deform) deformFigure(geometry, joints, spec.deform);
   // The head's own scale (a child's is bigger for their height), about the neck.
   if (spec.head && spec.head !== 1) scaleBone(geometry, joints, 'head', joints.neck.p, spec.head);
   // To the person's height and build.
@@ -96,6 +102,24 @@ export function buildBones(joints) {
   });
   for (const [name, j] of entries) if (j.parent) bones[j.parent].add(bones[name]);
   return { root: bones.root, bones, list };
+}
+
+// Push each vertex out along its normal by deform(p, n, bone name), then
+// smooth the normals again.
+function deformFigure(geometry, joints, deform) {
+  const names = Object.entries(joints).sort((a, b) => a[1].i - b[1].i).map(([name]) => name);
+  const pos = geometry.attributes.position;
+  const nor = geometry.attributes.normal;
+  const si = geometry.attributes.skinIndex;
+  const p = new THREE.Vector3();
+  const n = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    n.fromBufferAttribute(nor, i);
+    const d = deform(p, n, names[si.getX(i)]);
+    if (d) pos.setXYZ(i, p.x + n.x * d, p.y + n.y * d, p.z + n.z * d);
+  }
+  geometry.computeVertexNormals();
 }
 
 function jointMap(list) {
