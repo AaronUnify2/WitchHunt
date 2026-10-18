@@ -176,6 +176,13 @@ export class Station {
     // Small solid things: the desk, tower legs, turret pad, fence box, family.
     const d = c.desk;
     add(null, [{ ax: d.x - 0.8, az: d.z, bx: d.x + 0.8, bz: d.z }], low, this.floorY + 0.8, true);
+    // Session 13: the furniture, each a bar along its long side.
+    for (const f of c.furniture) {
+      const along = f.w >= f.d;
+      const half = (along ? f.w : f.d) / 2;
+      const seg = along ? { ax: f.x - half, az: f.z, bx: f.x + half, bz: f.z } : { ax: f.x, az: f.z - half, bx: f.x, bz: f.z + half };
+      add(null, [seg], low, this.floorY + f.h, true);
+    }
     const tw = this.layout.tower;
     const legs = tw.legSpread;
     // Each has a top, so shots (the turret's own included) pass over it.

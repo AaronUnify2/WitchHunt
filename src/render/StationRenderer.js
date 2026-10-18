@@ -11,9 +11,14 @@
 //  - The turret turns, pitches and kicks back as it fires.
 //  - Windows and the CCTV monitors glow at night; the family (placeholder
 //    figures) wait in the comms room.
+//  - Session 13 (#147): the furnished interior (render/stationInterior.js),
+//    merged into the static mesh; lit warm inside by a point light a room
+//    (dimmer while the fence has no charge), the woodstove's fire
+//    flickering through its door, static on the monitors.
 
 import * as THREE from 'three';
 import { FamilyRenderer } from './FamilyRenderer.js';
+import { buildInterior } from './stationInterior.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export class StationRenderer {
@@ -146,15 +151,9 @@ export class StationRenderer {
     }
     // Corner posts and a trim line under the eaves.
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) parts.push(this.box(0.3, H, 0.3, c.x + sx * c.halfW, fy, c.z + sz * c.halfD, k.woodDark));
-    // Comms room: the desk with the radio and the ledger book; main room: a table and bunks.
-    const d = c.desk;
-    parts.push(this.box(1.8, 0.78, 0.7, d.x, fy, d.z, k.woodDark));
-    parts.push(this.box(0.6, 0.3, 0.35, d.x - 0.5, fy + 0.78, d.z - 0.1, k.metalDark)); // the radio
-    parts.push(this.box(0.4, 0.06, 0.3, d.x + 0.4, fy + 0.78, d.z + 0.05, 0x5a1e14)); // the ledger
-    parts.push(this.box(1.4, 0.75, 0.9, c.x - 3, fy, c.z + c.halfD - 2, k.woodDark)); // table
-    parts.push(this.box(2, 0.5, 0.9, c.x + c.halfW - 1.1, fy, c.z + c.halfD - 1.6, k.plank)); // bunk
-    parts.push(this.box(2, 0.12, 0.9, c.x + c.halfW - 1.1, fy + 1.3, c.z + c.halfD - 1.6, k.plank));
-    parts.push(this.box(2.2, 0.6, 0.6, c.x - c.halfW + 1.3, fy, c.z - c.halfD + 0.4, k.metalDark)); // cabinets
+    // Session 13 (#147): the furnished interior; what glows is kept for buildGlow().
+    this.interior = buildInterior(c, fy, k, (...a) => this.box(...a), this.rng);
+    parts.push(...this.interior.parts);
     // The lookout tower: four legs, cross braces, the platform, rails, a cab roof, a ladder.
     const t = L.tower;
     const gy = this.ground.heightAt(t.x, t.z);
@@ -553,12 +552,33 @@ export class StationRenderer {
     // Windows: either side of the front door, and in the east and west walls.
     for (const sx of [-1, 1]) parts.push(this.box(1.1, 0.8, 0.24, c.x + sx * 3.2, fy + 1.3, c.z + c.halfD, k.windowGlow));
     for (const sx of [-1, 1]) parts.push(this.box(0.24, 0.8, 1.1, c.x + sx * c.halfW, fy + 1.3, c.z + c.halfD - 2.2, k.windowGlow));
-    // CCTV monitors above the desk, facing into the room.
-    const d = c.desk;
-    for (let i = 0; i < 3; i++) parts.push(this.box(0.45, 0.32, 0.05, d.x - 0.5 + i * 0.5, fy + 1.45, d.z - 0.25, k.monitorGlow));
-    parts.push(this.box(0.08, 0.05, 0.02, d.x - 0.5, fy + 1.0, d.z + 0.08, 0xff4030)); // the radio's light
+    // The interior's bulbs, the lantern, the radio's meter.
+    parts.push(...this.interior.glow);
     this.glowMaterial = this.keep(new THREE.MeshBasicMaterial({ vertexColors: true }));
     this.glow = this.merged(parts, this.glowMaterial, false);
+    // The woodstove's fire, through its door: flickers (update()).
+    this.fireMaterial = this.keep(new THREE.MeshBasicMaterial({ vertexColors: true }));
+    this.merged(this.interior.fire, this.fireMaterial, false);
+    // The monitors: static, rolling (update()).
+    this.staticUniforms = { uTime: { value: 0 }, uTint: { value: new THREE.Color(k.monitorGlow) }, uLevel: { value: 1 } };
+    const screens = this.keep(
+      new THREE.ShaderMaterial({
+        uniforms: this.staticUniforms,
+        vertexShader: 'varying vec2 vUv;\nvoid main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+        fragmentShader: STATIC_FRAGMENT,
+      }),
+    );
+    this.screens = this.merged(this.interior.screens, screens, false);
+    this.screens.receiveShadow = false;
+    // The rooms' light: a warm point light at each room's lamp (the main
+    // room's bulb, the comms room's desk lamp), no shadows.
+    const il = this.look.interiorLight;
+    this.interiorLights = this.interior.lamps.map((at) => {
+      const light = new THREE.PointLight(il.color, il.intensity, il.distance, il.decay);
+      light.position.set(at.x, at.y, at.z);
+      this.group.add(light);
+      return light;
+    });
   }
 
   // Session 13 (#148): the real family (render/FamilyRenderer.js). One
@@ -617,6 +637,13 @@ export class StationRenderer {
     }
     // Windows and monitors: faint by day, bright at night.
     this.glowMaterial.color.setScalar(0.3 + 0.7 * night);
+    // The fire flickers; the room's light breathes with it, dimmer without the fence's charge.
+    const flame = 0.75 + 0.15 * Math.sin(this.time * 9.1) + 0.1 * Math.sin(this.time * 23.7 + 1.3);
+    this.fireMaterial.color.setScalar(flame);
+    const il = this.look.interiorLight;
+    for (const light of this.interiorLights) light.intensity = il.intensity * (this.state.powered ? 1 : il.unpowered) * (0.95 + 0.05 * flame);
+    this.staticUniforms.uTime.value = this.time;
+    this.staticUniforms.uLevel.value = 0.55 + 0.45 * night;
     this.familyRenderer.update(dt, cameraPosition);
     // The wires glow while charged, flickering, and flare when a battery goes in.
     this.wirePulse = Math.max(0, this.wirePulse - dt * 0.8);
@@ -634,6 +661,22 @@ export class StationRenderer {
     this.group.removeFromParent();
   }
 }
+
+// The monitors' static: snow, a rolling bar, scanlines, in the monitors' tint.
+const STATIC_FRAGMENT = `uniform float uTime;
+uniform vec3 uTint;
+uniform float uLevel;
+varying vec2 vUv;
+float h( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }
+void main() {
+  vec2 px = floor( vUv * vec2( 96.0, 72.0 ) );
+  float snow = h( px + floor( uTime * 24.0 ) * vec2( 7.0, 13.0 ) );
+  float roll = smoothstep( 0.0, 0.08, abs( fract( vUv.y + uTime * 0.23 ) - 0.5 ) - 0.38 );
+  float lines = 0.75 + 0.25 * sin( vUv.y * 72.0 * 3.14159 );
+  float vignette = smoothstep( 0.75, 0.3, length( vUv - 0.5 ) );
+  float v = ( 0.25 + 0.6 * snow ) * lines * vignette * ( 0.75 + 0.25 * roll );
+  gl_FragColor = vec4( uTint * v * uLevel, 1.0 );
+}`;
 
 const X_AXIS = new THREE.Vector3(1, 0, 0);
 const Y_AXIS = new THREE.Vector3(0, 1, 0);

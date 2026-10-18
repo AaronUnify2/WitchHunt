@@ -161,6 +161,17 @@ function cabinLayout(centre, c, deskCfg) {
     frontDoor,
     commsDoor,
     desk,
+    // Session 13 (#147): the furniture you can't walk through (world
+    // coordinates; w across x, d along z, h tall), kept clear of the
+    // zombies' way in from the front door to the comms door. The rest of
+    // the interior (render/stationInterior.js) is set dressing.
+    furniture: [
+      { id: 'stove', x: cx - 5.3, z: cz + 0.5, w: 0.75, d: 0.65, h: 0.8 },
+      { id: 'kitchen', x: cx - 3.95, z: cz + hd - 0.42, w: 3.9, d: 0.62, h: 0.92 },
+      { id: 'table', x: cx - 2.8, z: cz + 2.0, w: 1.3, d: 0.85, h: 0.76 },
+      { id: 'bunks', x: cx + hw - 1.15, z: cz + 2.45, w: 2.0, d: 0.9, h: 1.9 },
+      { id: 'cabinets', x: cx + 1.5, z: cz - hd + 0.4, w: 1.45, d: 0.6, h: 1.32 },
+    ],
     // Where the family wait out the night (placeholders until M8).
     family: [
       { x: cx - 4.6, z: cz - hd + 1.9 },
