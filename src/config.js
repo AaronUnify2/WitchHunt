@@ -2240,6 +2240,26 @@ export const config = {
     },
   },
 
+  // Aliens (Session 13: the model; their AI is M10 and M11).
+  aliens: {
+    // The grey (render/alienModel.js, render/AlienRenderer.js): the crashed
+    // plane's survivor; every Martian's body.
+    grey: {
+      height: 1.4,
+      poolSize: 8, // most drawn at once
+      albedo: 0.26, // its colours x this (the torch blows out light ones: at 0.6 it glowed white)
+      poseRate: 10, // how fast it blends into a new pose (per second)
+      walkRate: 8, // radians of stride per metre walked
+      ambushSeconds: 1.2, // coiled, springing up, landing
+      recoilDecay: 9, // how fast the shotgun's kick settles (per second)
+      deathSeconds: 1.4,
+      hitFlashSeconds: 0.15,
+      hitFlash: [1.8, 0.7, 1.6], // its colour while flashing (a purplish tinge: not blood red)
+      thermalGlow: 0.25, // x the heat scope's glow: faint and cold, not from here (proposed)
+      colours: { skin: 0x6a7476, back: 0x464e52, eyes: 0x050608, shine: 0xd8e0e0, slit: 0x2a3032, gunMetal: 0x2a2c30, gunWood: 0x4a3020 },
+    },
+  },
+
   // Other people built with the figure kit (Session 13): the cutscenes'.
   // Same shape as config.family.people.
   people: {

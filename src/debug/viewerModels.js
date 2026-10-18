@@ -24,6 +24,7 @@ import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { MutantRenderer } from '../render/MutantRenderer.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
 import { FamilyRenderer } from '../render/FamilyRenderer.js';
+import { AlienRenderer } from '../render/AlienRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -108,6 +109,26 @@ export const VIEWER_MODELS = [
       { id: 'down', name: 'Down (cutscenes)' },
     ],
     create: familyModel,
+  },
+  {
+    id: 'grey',
+    name: 'Grey alien',
+    note: 'The crashed plane\'s survivor and every Martian\'s body (Session 13). One draw call. Faint and cold in the heat scope.',
+    height: (cfg) => cfg.aliens.grey.height,
+    variants: null,
+    poses: [
+      { id: 'idle', name: 'Idle (head tilting, curious)' },
+      { id: 'examine', name: 'Examining (the wreck)' },
+      { id: 'sneak', name: 'Sneaking' },
+      { id: 'walk', name: 'Walk' },
+      { id: 'ambush', name: 'Ambush (springs up)' },
+      { id: 'aim', name: 'Aiming the shotgun' },
+      { id: 'fire', name: 'Firing' },
+      { id: 'hit', name: 'Hit (flash and flinch)' },
+      { id: 'dying', name: 'Dying' },
+      { id: 'corpse', name: 'Corpse' },
+    ],
+    create: greyModel,
   },
   {
     id: 'mib',
@@ -428,6 +449,49 @@ function familyModel(ctx) {
       renderer.dispose();
       group.removeFromParent();
     },
+  };
+}
+
+// ---- the grey alien: its own renderer ---------------------------------------------------------------
+
+function greyModel(ctx) {
+  const gc = ctx.cfg.aliens.grey;
+  const vc = ctx.cfg.modelViewer;
+  const renderer = new AlienRenderer(gc);
+  renderer.init(ctx.scene, 1);
+  const a = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, flash: 0 };
+  return {
+    objects: renderer.meshes,
+    update(dt, s) {
+      Object.assign(a, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, state: s.pose, timer: s.poseTime });
+      const t = s.poseTime;
+      switch (s.pose) {
+        case 'walk':
+        case 'sneak':
+          a.walked += dt * vc.zombieWalkSpeed;
+          break;
+        case 'ambush':
+          a.timer = loopTime(t, gc.ambushSeconds + vc.holdSeconds);
+          break;
+        case 'fire':
+          a.timer = loopTime(t, 0.9); // a shot every 0.9 s
+          break;
+        case 'hit': {
+          const k = loopTime(t, vc.hitLoopSeconds);
+          a.flash = Math.max(0, gc.hitFlashSeconds - k);
+          a.state = k < vc.staggerSeconds ? 'flinch' : 'idle';
+          break;
+        }
+        case 'dying':
+          a.timer = Math.min(gc.deathSeconds, loopTime(t, gc.deathSeconds + vc.holdSeconds));
+          break;
+        default:
+          break;
+      }
+      renderer.update([a], dt);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => renderer.dispose(),
   };
 }
 
