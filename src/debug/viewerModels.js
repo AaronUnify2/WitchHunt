@@ -110,9 +110,23 @@ export const VIEWER_MODELS = [
     create: familyModel,
   },
   {
+    id: 'mib',
+    name: 'Man in Black',
+    note: 'The figure kit (Session 13): in the cutscenes for now; their in-game look is to decide.',
+    height: (cfg) => cfg.people.mib.height,
+    variants: null,
+    poses: [
+      { id: 'stand', name: 'Stand (hands clasped; looks at you)' },
+      { id: 'walk', name: 'Walk' },
+      { id: 'kneel', name: 'Kneel' },
+      { id: 'down', name: 'Down' },
+    ],
+    create: (ctx) => personModel(ctx, 'mib'),
+  },
+  {
     id: 'standIns',
     name: 'Cutscene stand-ins',
-    note: "Cutscenes' box figures (M8). Each is swapped for its real model.",
+    note: 'The old box figures (M8). Cutscenes now use the real models; only the camper is still a box.',
     height: (cfg, variant) => Object.values(cfg.cutscenes.figures)[variant]?.height ?? 1.8,
     variants: (cfg) => Object.keys(cfg.cutscenes.figures).map(title),
     poses: [
@@ -407,6 +421,30 @@ function familyModel(ctx) {
         // Their facing, for turning their heads: the group's.
         renderer.people[i].facing = s.facing;
       });
+      renderer.update(dt, s.camera.position);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => {
+      renderer.dispose();
+      group.removeFromParent();
+    },
+  };
+}
+
+// ---- one person the figure kit builds (a Man in Black) ---------------------------------------
+
+function personModel(ctx, id) {
+  const group = new THREE.Group();
+  ctx.scene.add(group);
+  const renderer = new FamilyRenderer({ ...ctx.cfg.family, people: { ...ctx.cfg.family.people, ...ctx.cfg.people } }, [id]);
+  renderer.init(group, [{ x: 0, z: 0 }], 0, 0);
+  return {
+    objects: [group],
+    update(dt, s) {
+      group.position.set(s.x, s.y, s.z);
+      group.rotation.y = s.facing;
+      renderer.setPose(0, s.pose);
+      renderer.people[0].facing = s.facing;
       renderer.update(dt, s.camera.position);
     },
     setThermal: (on, t) => renderer.setThermal(on, t),

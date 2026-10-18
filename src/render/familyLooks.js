@@ -120,6 +120,24 @@ const LOOKS = {
       },
     };
   },
+  // A Man in Black (the cutscenes; Session 13): a black suit, a white
+  // shirt and a thin black tie, sunglasses, short dark hair; hands clasped
+  // in front of him.
+  mib() {
+    const b = body({ sh: 1.05, hip: 1, bulk: 1 });
+    b.masses.push(hairCap(1.64, -0.02, [0.093, 0.09, 0.1]));
+    for (const s of [-1, 1]) b.masses.push(['head', null, s * 0.034, 1.608, 0.098, 0.026, 0.017, 0.012, 'shades']);
+    b.tubes.push(['head', -0.012, 1.612, 0.106, 0.012, 1.612, 0.106, 0.004, 0.004, 'shades']);
+    return {
+      ...b,
+      // The shirt in the jacket's V, the tie down its middle.
+      paint(key, q, out, c) {
+        if (key !== 'top' || q.z < 0.05) return;
+        const v = (q.y - 1.18) * 0.32; // the V narrows downward
+        if (q.y > 1.18 && Math.abs(q.x) < v) out.copy(Math.abs(q.x) < 0.012 ? c.tie : c.shirt);
+      },
+    };
+  },
   junie() {
     // The hoodie: big on her, the sleeves over her hands, the hood down her back.
     const b = body({ sh: 0.92, hip: 0.95, bulk: 1.15, hand: 'sleeve' });
@@ -155,7 +173,6 @@ export function familySpec(id, person) {
   return { ...look, height: person.height, width: person.width ?? 1, head: person.head ?? 1, colours: person.colours };
 }
 
-export const FAMILY_IDS = Object.keys(LOOKS);
 
 function frac(x) {
   return x - Math.floor(x);

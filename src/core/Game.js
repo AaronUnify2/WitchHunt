@@ -336,6 +336,8 @@ export class Game {
       subtitles: this.subtitles,
       sfx: this.combat.sfx,
       drawDistance: () => this.drawDistance,
+      rng: this.rng, // Session 13: the witch's model is built as the game's
+      zombieRenderer: this.combat.zombieRenderer, // its atlas, shared
     });
     // Lore hand-ins and the monitors: the ledger's Monitors page.
     this.lore = new Lore(this.cfg, this.bus);

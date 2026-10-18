@@ -16,6 +16,14 @@ import { familySpec } from './familyLooks.js';
 
 const tmp = new THREE.Vector3();
 
+// Each person's body is built once and shared (the station, the viewer,
+// cutscenes): { geometry, joints } by id. Kept for the page's life.
+const BUILT = new Map();
+function bodyOf(id, person) {
+  if (!BUILT.has(id)) BUILT.set(id, buildFigure(familySpec(id, person)));
+  return BUILT.get(id);
+}
+
 export class FamilyRenderer {
   // cfg: config.family; ids: who, in order (config.story.family).
   constructor(cfg, ids) {
@@ -40,7 +48,7 @@ export class FamilyRenderer {
 
   makeOne(id, i) {
     const person = this.cfg.people[id];
-    const { geometry, joints } = buildFigure(familySpec(id, person));
+    const { geometry, joints } = bodyOf(id, person);
     const { root, bones, list } = buildBones(joints);
     const material = new THREE.MeshLambertMaterial({ vertexColors: true });
     material.color.setScalar(this.cfg.albedo);
@@ -168,6 +176,12 @@ export class FamilyRenderer {
         set('elbowL', -0.38);
         set('wristL', 0.2);
         break;
+      case 'clasped': // hands clasped in front (the Men in Black)
+        set('shoulderR', -0.2, 0.55, 0.12);
+        set('elbowR', -0.85);
+        set('shoulderL', -0.2, -0.55, -0.12);
+        set('elbowL', -0.85);
+        break;
       case 'hug': // hugging her rabbit to her chest
         set('shoulderR', -0.55, 0.9, 0.15);
         set('elbowR', -1.95);
@@ -221,7 +235,6 @@ export class FamilyRenderer {
     for (const p of this.people) {
       p.mesh.removeFromParent();
       p.mesh.skeleton.dispose();
-      p.mesh.geometry.dispose();
       p.material.dispose();
     }
   }

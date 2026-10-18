@@ -2188,7 +2188,13 @@ export const config = {
     // and went: a stutter on the tablet.)
     actorLight: { trailcam: 0.3, camcorder: 0.35, cctv: 0.3, military: 0.3, government: 0.3, scope: 0.2, default: 0.1 },
     actorLightGrey: 0.18, // and this x the same in grey
-    // Placeholder actors (the real models are Session 13's): metres, colours.
+    // Session 13: the real models in cutscenes.
+    zombieCap: 16, // most zombies one cutscene shows
+    zombieWalkSpeed: 1.1, // metres per second their walk cycle plays at
+    zombieLampScale: 1, // the camera's lamp on a zombie sprite, x actorLight
+    witchGlideSpeed: 3, // m/s her rags stream at while she moves
+    // Box stand-ins: a figure with no real model yet (Session 13: only the
+    // camper) is drawn as one of these. Metres, colours.
     figures: {
       witch: { height: 2.15, width: 0.5, legs: 0x1a1612, body: 0x2a221a, head: 0xb8b0a0, antlers: true, eyes: 0xd8ffd0 },
       mib: { height: 1.85, width: 0.55, legs: 0x101014, body: 0x15151a, head: 0xc8a890 },
@@ -2231,6 +2237,17 @@ export const config = {
         idle: 'hug',
         colours: { skin: 0xd0a88c, top: 0x5e4a72, sleeve: 0x5e4a72, forearm: 0x5e4a72, trousers: 0x2a2a34, shoes: 0x7a5a6a, hair: 0x7a5434, tie: 0xa04a5a, rabbit: 0x9a9080, eyes: 0x141010, brows: 0x5a3a24 },
       },
+    },
+  },
+
+  // Other people built with the figure kit (Session 13): the cutscenes'.
+  // Same shape as config.family.people.
+  people: {
+    mib: {
+      height: 1.86,
+      head: 1.04,
+      idle: 'clasped',
+      colours: { skin: 0xc8a08a, top: 0x141418, sleeve: 0x141418, forearm: 0x141418, shirt: 0x8a8a86, tie: 0x0a0a0c, trousers: 0x141418, shoes: 0x0a0a0c, hair: 0x1a1612, eyes: 0x1a1410, brows: 0x1a1612, shades: 0x060608 },
     },
   },
 

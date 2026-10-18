@@ -12,8 +12,11 @@
 // and A / Enter skips it. It sets its own grade and look and hands both
 // back afterwards; the heat scope stays off.
 //
-// Actors are placeholders made here (figures, rings, glows, boxes); the
-// characters' real models are Session 13's.
+// Actors: rings, glows, discs, boxes and eyes are made here. Figures are
+// the real models (Session 13): the witch (gliding, or planting with her
+// rings), the family and the Men in Black (the figure kit), and zombies
+// (the game's sprites, every one in one draw call). A figure with no model
+// yet (a camper) is a box stand-in.
 //
 // Events: 'cutscene:started' { id }, 'cutscene:ended' { id, skipped }.
 
@@ -21,6 +24,10 @@ import * as THREE from 'three';
 import cutsceneData from '../data/cutscenes.json';
 import { cameraAt, localToWorld, eventsDue, cutsceneLength, validateCutscenes } from './cutsceneTimeline.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { WitchRenderer } from '../render/WitchRenderer.js';
+import { FamilyRenderer } from '../render/FamilyRenderer.js';
+import { ZombieRenderer } from '../render/ZombieRenderer.js';
+import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 
 export class Cutscenes {
   constructor(cfg, bus, data = cutsceneData) {
@@ -31,9 +38,16 @@ export class Cutscenes {
   }
 
   // ctx: { root, scene, renderer, postFX, player, clock, world, station,
-  // witch, hut, trailCams, dialogue, subtitles, sfx, drawDistance() }.
+  // witch, hut, trailCams, dialogue, subtitles, sfx, drawDistance(), rng,
+  // zombieRenderer (the game's: its atlas is shared) }.
   init(ctx) {
     Object.assign(this, ctx);
+    // Session 13: the cutscenes' zombies, all in one draw call.
+    this.zombieSprites = new ZombieRenderer(this.cfg.zombies);
+    this.zombieSprites.init(this.scene, this.cc.zombieCap, ctx.zombieRenderer);
+    this.zombieList = [];
+    // The people the figure kit builds: the family and the cutscenes' others.
+    this.peopleCfg = { ...this.cfg.family, people: { ...this.cfg.family.people, ...this.cfg.people } };
     this.byId = new Map(this.list.map((c) => [c.id, c]));
     const problems = validateCutscenes(this.list, { looks: this.cfg.postFX.looks, lineIds: new Set(this.dialogue.lines.map((l) => l.id)) });
     if (problems.length) console.warn('cutscenes.json:', problems.join('; '));
@@ -150,6 +164,8 @@ export class Cutscenes {
       a.mesh.removeFromParent();
       a.dispose();
     }
+    this.zombieList.length = 0;
+    this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
     if (skipped) this.subtitles.clear();
     this.renderer.setCamera(this.player.camera);
     this.setLook(null);
@@ -426,7 +442,8 @@ export class Cutscenes {
   // look (a figure's: config.cutscenes.figures), anchor, pos, yaw (degrees,
   // from the anchor's facing), size, color, hidden }.
   makeActor(spec) {
-    const mesh = buildActor(spec, this.cc);
+    const model = spec.kind === 'figure' ? this.makeModel(spec) : null; // Session 13
+    const mesh = model ? model.mesh : buildActor(spec, this.cc);
     const pos = this.at(spec.anchor, spec.pos ?? [0, 0, 0]);
     const anchor = this.anchor(spec.anchor);
     mesh.position.set(pos.x, pos.y, pos.z);
@@ -437,6 +454,7 @@ export class Cutscenes {
     mesh.traverse((o) => o.material && materials.push(o.material));
     return {
       spec,
+      model,
       mesh,
       anchor: spec.anchor,
       pos,
@@ -449,17 +467,117 @@ export class Cutscenes {
       walk: 0,
       // The camera's light on it: lit materials glow k of their own colour,
       // plus a little grey, so a dark figure still shows as a silhouette.
+      light: model
+        ? model.light
+        : (k) => {
+            for (const m of materials) if (m.emissive) m.emissive.copy(m.color).multiplyScalar(k).addScalar(k * this.cc.actorLightGrey);
+          },
+      dispose: model
+        ? model.dispose
+        : () => {
+            mesh.traverse((o) => o.geometry?.dispose());
+            for (const m of materials) m.dispose();
+          },
+    };
+  }
+
+  // ---- the real models (Session 13) -----------------------------------------------------------
+
+  // A figure's model by its look, or null for a box stand-in: { mesh (a
+  // Group the timeline places), animate(dt, actor), light(k), dispose() }.
+  makeModel(spec) {
+    const look = spec.look;
+    if (look === 'witch') return this.witchModel();
+    if (look === 'zombie') return this.zombieModel(spec);
+    if (this.peopleCfg.people[look]) return this.personModel(look);
+    return null;
+  }
+
+  // The witch: gliding (her rags streaming as she moves), or planting
+  // (kneel: her contortion and its rings). Unlit: a silhouette whatever the light.
+  witchModel() {
+    const mesh = new THREE.Group();
+    const r = new WitchRenderer(this.cfg.witch.look, this.rng.fork('witch').fork('witch-look')); // as the game's
+    r.init(mesh);
+    const w = { x: 0, y: 0, z: 0, facing: 0, state: 'roaming', tier: 'near', moved: 0, action: null, actionProgress: 0, struck: false, flinch: 0, wc: this.cfg.witch, deathTimer: 0, spot: null, plantProgress: 0, riseProgress: 1 };
+    let planting = 0;
+    return {
+      mesh,
+      animate: (dt, a) => {
+        const kneel = a.pose === 'kneel' || a.pose === 'down';
+        w.state = kneel ? 'planting' : 'roaming';
+        planting = kneel ? planting + dt : 0;
+        w.plantProgress = Math.min(1, planting / this.cfg.witch.plantSeconds);
+        w.moved = a.move ? this.cc.witchGlideSpeed * dt : 0;
+        r.update(w, dt, null, Infinity);
+      },
+      light: () => {},
+      dispose: () => r.dispose(),
+    };
+  }
+
+  // A zombie: a sprite in the cutscenes' own zombie renderer, walking while
+  // it moves, falling when it's put down; its look from its actor id.
+  zombieModel(spec) {
+    const mesh = new THREE.Group();
+    const zc = this.cfg.zombies;
+    const F = ZOMBIE_FRAMES;
+    const z = { active: true, kind: 'zombie', tier: 'active', x: 0, y: 0, z: 0, sink: 0, frame: 0, facing: 0, flash: 0, lit: 0, variant: spec.variant ?? 'citizen', lookSeed: seedOf(spec.id) };
+    let walked = 0;
+    let down = 0;
+    let lit = 0;
+    return {
+      mesh,
+      animate: (dt, a) => {
+        mesh.getWorldPosition(this.tmpV ?? (this.tmpV = new THREE.Vector3()));
+        z.x = this.tmpV.x;
+        z.y = this.tmpV.y;
+        z.z = this.tmpV.z;
+        z.facing = mesh.rotation.y;
+        z.lit = lit;
+        if (a.pose === 'down') {
+          down += dt;
+          const k = down / zc.deathSeconds;
+          z.frame = k >= 1 ? F.corpse : F.dying[Math.min(F.dying.length - 1, Math.floor(k * F.dying.length))];
+        } else if (a.move) {
+          down = 0;
+          walked += dt * this.cc.zombieWalkSpeed;
+          z.frame = F.walk[Math.floor(walked * zc.walkFrameRate * F.walk.length) % F.walk.length];
+        } else {
+          down = 0;
+          z.frame = F.walk[0];
+        }
+        if (mesh.visible) this.zombieList.push(z);
+      },
+      // The camera's lamp brightens the sprite as a station floodlight would.
       light: (k) => {
-        for (const m of materials) if (m.emissive) m.emissive.copy(m.color).multiplyScalar(k).addScalar(k * this.cc.actorLightGrey);
+        lit = k * this.cc.zombieLampScale;
       },
-      dispose: () => {
-        mesh.traverse((o) => o.geometry?.dispose());
-        for (const m of materials) m.dispose();
+      dispose: () => {},
+    };
+  }
+
+  // One of the family, or a Man in Black: the figure kit's model, walking
+  // while it moves, kneeling or down when put so.
+  personModel(id) {
+    const mesh = new THREE.Group();
+    const r = new FamilyRenderer(this.peopleCfg, [id]);
+    r.init(mesh, [{ x: 0, z: 0 }], 0, 0);
+    const material = r.people[0].material;
+    return {
+      mesh,
+      animate: (dt, a) => {
+        r.setPose(0, a.move ? 'walk' : a.pose === 'kneel' ? 'kneel' : a.pose === 'down' ? 'down' : 'stand');
+        r.update(dt, null);
       },
+      // The camera's lamp on them: a grey glow (their colours are in the vertices).
+      light: (k) => material.emissive.setScalar(k * (this.peopleCfg.albedo + this.cc.actorLightGrey)),
+      dispose: () => r.dispose(),
     };
   }
 
   updateActors(dt) {
+    this.zombieList.length = 0;
     for (const a of this.current.actors.values()) {
       const m = a.mesh;
       if (a.move) {
@@ -477,7 +595,8 @@ export class Cutscenes {
       a.poseAmount += (want - a.poseAmount) * Math.min(1, dt * 4);
       const bob = a.move ? Math.abs(Math.sin(a.walk)) * 0.06 : 0;
       m.position.set(a.pos.x, a.pos.y + bob, a.pos.z);
-      if (a.spec.kind === 'figure') {
+      if (a.model) a.model.animate(dt, a);
+      else if (a.spec.kind === 'figure') {
         const kneel = Math.min(1, a.poseAmount);
         const down = Math.max(0, a.poseAmount - 1);
         m.scale.y = 1 - kneel * 0.4;
@@ -495,6 +614,7 @@ export class Cutscenes {
         }
       }
     }
+    this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
   }
 
   // ---- debug ---------------------------------------------------------------------------------------------
@@ -518,8 +638,16 @@ export class Cutscenes {
 
   dispose() {
     this.stop(true);
+    this.zombieSprites.dispose();
     this.el.remove();
   }
+}
+
+// A zombie's look seed from its actor id (the same look every time it plays).
+function seedOf(id) {
+  let h = 7;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) | 0;
+  return h;
 }
 
 // ---- building the placeholder actors --------------------------------------------------------------------------

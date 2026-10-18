@@ -157,12 +157,15 @@ export class ZombieRenderer {
   }
 
   // capacity: the most sprites drawn at once (config.zombies.lod.renderCap).
-  init(scene, capacity) {
+  // shareFrom: another ZombieRenderer whose atlas to draw from (Session 13:
+  // the cutscenes' zombies use the game's, so none is built twice).
+  init(scene, capacity, shareFrom = null) {
     const poolSize = capacity;
     this.capacity = capacity;
     const c = this.cfg;
     const t = c.texture;
-    const atlas = makeZombieAtlas(c);
+    this.ownsAtlas = !shareFrom;
+    const atlas = shareFrom ? { map: shareFrom.atlas, mask: shareFrom.mask, blocks: shareFrom.blocks, layout: shareFrom.layout } : makeZombieAtlas(c);
     this.atlas = atlas.map;
     this.mask = atlas.mask;
     this.blocks = atlas.blocks;
@@ -326,6 +329,7 @@ export class ZombieRenderer {
     this.mesh.removeFromParent();
     this.material.dispose();
     this.depthMaterial.dispose();
+    if (!this.ownsAtlas) return;
     this.atlas.dispose();
     this.mask.dispose();
   }
