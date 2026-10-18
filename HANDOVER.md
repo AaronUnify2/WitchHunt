@@ -1,138 +1,144 @@
 # Handover
 
-## Just finished: Session 12, Narrative Designer: M8, the story systems
+## Just finished: Session 13, Graphics Engineer / Technical Artist: characters and the deferred art
 
-**Status: done.** Everything is pushed to `main`, which Aaron play-tests from (agreed at the start of the session). 431 tests pass and the build is clean.
+**Status: done.** Everything is pushed to `main`, which Aaron play-tests from. 462 tests pass and the build is clean.
 
-**Agreed with Aaron at the start:**
-- Push each step to `main`.
-- No separate workshop: a first pass of the looks goes into the game for Aaron to react to.
-- Cutscenes pause the clock.
+**How we worked (agreed with Aaron at the start):** a short written proposal in the chat, then a version pushed to `main` for him to react to in-game, one step at a time. He play-tested along the way and his notes were folded in as we went.
 
 ### What was done
 
-Three steps. Details are in `STATUS.md` (Session 12) and `OPEN_QUESTIONS.md` (#155-160).
+26 steps. Details are in `STATUS.md` (Session 13). The open points are in `OPEN_QUESTIONS.md` (#161-170).
 
-1. **12a: dialogue, subtitles, the radio, the family, trail cameras.**
-   - **The lines:** `src/data/dialogue.json` holds the 23 Day 1 lines word for word, the ending's lines, and the old placeholder calls (moved out of the code).
-   - **The picker** (`story/dialoguePicker.js`): conditions, newest milestone first, heard lines saved.
-   - **Subtitles** (`ui/Subtitles.js`): typed on with a blip at each speaker's pitch; radio calls get a tag and a crackle.
-   - **The radio's rate limit** (`story/radioGate.js`).
-   - **Talking to the family** (`story/FamilyTalk.js`): hold interact in the comms room. The talking bob and the new-line marker.
-   - **Trail cameras** (`story/TrailCams.js`): six seeded posts. A sighting is a lead on the map, never a tracker.
-2. **12b: the cutscene system.**
-   - **One timeline format:** `src/data/cutscenes.json` and `story/cutsceneTimeline.js`.
-   - **The player** (`story/Cutscenes.js`): its own camera; the clock paused; clips hold the world still; skippable.
-   - **The camera looks:** a pass in `render/PostFX.js` (CCTV, trail cam, camcorder, military, government, scope).
-   - **Every planned clip as a placeholder,** all in the **Cutscenes** debug category.
-   - **Placeholders taken over:** the final battle's intro and the ending and defeat cards are cutscenes now.
-3. **12b: lore and the monitors.** `src/data/lore.json` and `story/Lore.js`. Items are handed in on the ledger's **Monitors** page, and clips are rewatched from there.
+1. **A debug model viewer** (debug menu → **Models**): any model in any pose, under any light.
+2. **The zombies** stay sprites (Aaron), with per-zombie variety from a palette swap, still one draw call:
+   - blood per zombie;
+   - skin tones nearer the region;
+   - army camo and helmet loss;
+   - Men in Black zombies;
+   - Earl Pruitt;
+   - trucker caps for the citizens.
+3. **3D characters:**
+   - the mutant;
+   - the witch;
+   - the family;
+   - the grey alien and the cowboy drift;
+   - the giant beetle;
+   - the armed Men in Black (pistol, SMG, sniper rifle, posed by IK).
 
-**Done when (M8):** all three work from data alone.
-- **A radio call:** "Test: a radio call from data".
-- **A CCTV patch-through:** any clip in the Cutscenes category, e.g. Night 1's trail cam with Ellen's and Junie's radio lines over it.
-- **A face-to-face line:** turn the Day 1 lines live, then talk to Wyatt or Junie on Day 1.
-- Every cutscene plays from the debug menu.
+   Cutscenes now use the real models.
+4. **The vehicles:** four types (sedan, pickup, sheriff's car, M35), with per-vehicle wear.
+5. **The station's interior:** lit, with static on the monitors and a woodstove.
+6. **The witch's hut:** a taken settler's cabin; its wreck burns.
+
+**Decided with Aaron (also in OPEN_QUESTIONS, Session 13):**
+- The zombies stay sprites, because hordes must stay cheap.
+- The family talk with the bob, no mouth.
+- The grey alien is the cowboy Martians' species, with the cowboyness dialled back.
+- The witch never shows a face and never bends at the hips.
+- The mutant has a fist, not claws.
+- The living Men in Black are the cutscenes' 3D model with minimal changes.
+- Earl is a zombie at the shelter.
+- Four vehicle types only, and the police car is the sheriff's.
+- The station is lit.
+- The hut is a taken cabin, its chair rocks when you're near, and the hand-prints are pale ash.
+- Exploding cars come later (DESIGN.md "Ideas for later").
 
 ### Unfinished
 
 Nothing in scope. Still to come, by design:
-- **Day 1's real triggers** (M9.2). Line 1 waits for a `story:opening` event.
-- **The storm shelter's fixed camera** (M9.1, #153).
-- **The family's sighting and idle lines** (written with Aaron, #158-159).
-- **Lore pickups in the world** (each encounter's session calls `Lore.give(id)`).
-- **The radio button** (D-pad down / V) still does nothing.
+- **The AI** for the grey alien (M10), the beetles (M9.4) and the armed Men in Black (M11). Their renderers take an entity list; see each file's header for its states.
+- **The army helmet coming off** (M9.4): set `z.helmetOff = true` and the sprite swaps to the bare-headed block.
+- **Earl Pruitt at the storm shelter** (M9.3): `enemies.spawnZombie(x, z, { variant: 'earl' })`. His loot table is empty, so the combination is the encounter's to give.
+- **Models for Bigfoot and the Mothman**, needed before M10. Build them with the same approach: the figure kit or their own model files, a renderer, and a model viewer entry.
 
-### Play-test script for Aaron (Session 12)
+### Play-test script for Aaron (Session 13)
 
-On the tablet with the controller. The debug menu is View + D-pad down.
+On the tablet with the controller. The debug menu is View + D-pad down; the model viewer is the **Models** category.
 
-1. **Cutscenes.** Open the menu, then *Cutscenes*, and play each one.
-   - **What good looks like:** each feed reads as its own kind of camera (the government's blue CLASSIFIED feed, the green trail cam, the shaky camcorder, the battered military feed, the round scope). The clock stops while they play, A skips, and you're handed back exactly where you were.
-   - **Tell me:** which looks are right, which to push further, and the timing of each clip. They're placeholders, and the actors are boxes until Session 13.
-2. **Radio calls.** *Story, radio & trail cams*: "Test: a radio call", "an urgent radio call", and "the rate limit" (only one of three should play).
-   - **Tell me:** the subtitle strip, the speaker colours, the blips (too much? too quiet?) and the crackle.
-3. **The family.** In the same menu, turn the Day 1 lines live. On Day 1, walk into the comms room.
-   - Gold diamonds float over Wyatt and Junie. Look at Wyatt and hold X: his line, with him bobbing as it types. Then Junie: her question, and Ellen answers.
-   - X moves a line on. Talking to someone with nothing new says so.
-   - **Tell me:** how this feels face to face, and how close or how squarely you should have to stand.
-4. **Trail cameras.** Open the map: small green squares are the cameras.
-   - *Report a sighting now*: the nearest camera blinks red on the map.
-   - At the comms desk, open the ledger and go to the new **Monitors** tab. Watch the sighting.
-5. **Lore.** *Give the next item* a few times, then hand them in on the Monitors tab. The camcorder puts its clip on the monitors, and so does the second classified document.
-6. **The ending.** *Hut & explosives*, then the final battle (teleport and start it): the intro turns you to the wreck. Kill her (*Witch*, then *Fight: kill her*): trail cams as the dead fall, Ground Zero going dark, the family at dawn, then the summary. Dying: black, static, the family calling Tom.
+1. **The model viewer.**
+   - Step through every model: D-pad left/right changes model, up/down changes pose, Y changes variant, X changes light, and A plays, slows or pauses. Menu re-rolls the looks.
+   - **Tell me:** anything that reads wrong under the torch or by day.
+2. **The zombies.**
+   - Let a night's horde come, or spawn some from the debug menu. Look for variety (no two alike), the army in camo, Men in Black zombies in the crowd mix (viewer only for now), and blood that differs per zombie.
+   - In the viewer, check *Army (helmet lost)* and *Earl Pruitt*.
+3. **The station at night.**
+   - Walk in: warm light, the stove flickering, static on the monitors, the family in the comms room.
+   - Charge the fence and see the light come up from 60%.
+   - Let a siege break in and watch whether zombies snag on the furniture (#165).
+4. **The cars.** Walk a road at night with the torch: each car worn differently (rust, mud, blood, a cracked or smashed window).
+   - Search one, lift a bonnet, and set off a sheriff's car alarm (the light bar flashes).
+   - **Tell me:** whether the wear is right (#166).
+5. **The hut.** Teleport there (*Teleport: witch's hut*).
+   - Walk up: the rocking chair starts by itself. Then blow it up (*Hut & explosives*): the burning ruin and its firelight.
+   - **Tell me:** whether the hand-prints and flames are toned down too far (#170).
+6. **The armed Men in Black** (viewer, *Man in Black, armed*): each weapon (Y) through every pose. Recoil strength (#167).
+7. **The torch up close** (#161): pale models blow out at point-blank range. Is that worth a game-wide fix in a style pass?
 
-## Next: Session 13, Graphics Engineer / Technical Artist: characters and the deferred art, play-test driven
+## Next: Session 14, Lead Engineer: the cluster on the map (M9.1)
 
-**Goal (DESIGN.md "Team roles and session plan", Session 13):**
-- **Aaron, Session 11:** in its own session, sooner, with time to sit down and play-test, changing things a step at a time.
-- **Character models, to a near-finished level,** so writing and play-testing the coming encounters has something to spark off:
-  - the zombies (citizen, police, army with its helmet; #144)
-  - the mutant
-  - the witch's real model
-  - the grey alien
-  - the beetle
-  - the dead (Earl Pruitt, soldiers)
-  - the family (#148, now that M8's decisions are in)
-- **Then the rest of the deferred art:** the cars (#145), the station's interior (#147) and the hut (#146).
-- **A debug model viewer:** any character model in any pose.
-- Frontier creatures (Bigfoot, the Mothman, cowboy aliens, Men in Black) if time allows; otherwise before M10.
-- Split 13a / 13b as needed.
+**Goal (DESIGN.md "Build plan", M9 part 9.1, and "Team roles and session plan", Session 14):**
+- **The fixed opening sub-graph,** placed first and identical every run: the station, campsite, storm shelter, gas station and military outpost (DESIGN.md "Fixed opening cluster").
+- **The road** through the cluster.
+- **The cordon:** it blocks Tom only, with torn gaps for the dead.
+- **The gates** on each path, opening in order.
+- **Story progress flags,** saved.
+- **The witch's cluster rule:** she plants only inside the cluster until the crossing.
+- **The flare gun** and its lure.
+- **The storm shelter's fixed camera** (#153).
+- **Done when:** the same cluster on every seed, and the gates open in order.
 
-**Workshop first (rule 10).** Each model is content: propose how it's made and looks, agree it with Aaron, then build.
-
-### Deferred art work (Aaron's 10b list, not started; #144-148)
-
-1. **Zombies (#144).**
-   - Aaron: they "need some additional work to look better". The heat scope showed they read well at a distance.
-   - The plan proposed to Aaron: re-render the sprite atlas at load from simple 3D procedural bodies (posed, lit, with torn clothes), with more variety per variant.
-   - Look at `render/ZombieRenderer.js` (instanced billboards from an atlas; its thermal hook must keep working) and `render/zombieSprite.js`.
-2. **Cars (#145).** Placeholder boxes (`world/Vehicles.js`, `render/VehicleRenderer.js`). A suggestion not yet put to Aaron: 1970s-80s American cars and trucks to suit the references (a pickup, a station wagon, a sedan, a Forest Service truck). The bonnet, boot and doors must still hinge.
-3. **The witch's hut (#146).** A placeholder from M7. A suggestion: folklore, Evil Dead 2's cabin turned wrong. Its blast and destroyed states must keep working (`world/Hut.js`, `render/HutRenderer.js`, `combat/Explosives.js`).
-4. **The ranger station's interior (#147).** The comms room's desk, radio, ledger, table, bunks and cabinets are boxes (`render/StationRenderer.js`). A suggestion: a lived-in 1980s Forest Service lookout. The three CCTV monitors over the desk could now show the monitors' clips.
-5. **The family (#148).** Ellen, Wyatt and Junie. **Workshop their look with Aaron first.**
+Workshop first (rule 10) where it's content: the road's look, the cordon, the gates.
 
 ### Look at first
 
-- **The family's figures** are `StationRenderer.family`, three meshes standing at `layout.cabin.family`.
-  - `story/FamilyTalk.js` bobs them (it moves `position.y`) and floats markers over their heads, worked out from each mesh's bounding box.
-  - A new model must keep one Object3D per family member, in `config.story.family`'s order (Ellen, Wyatt, Junie). Or it can give FamilyTalk a two-frame mouth to animate instead of the bob (DESIGN.md "Talking bob").
-- **Cutscene actors** are built in `story/Cutscenes.js` `buildActor()`: figures by `look` (`config.cutscenes.figures`: witch, mib, camper, zombie, the family), plus rings, glows, boxes and eyes.
-  - Swapping a figure for its real model there upgrades every cutscene at once.
-  - `light(k)` sets lit materials' emissive for the camera's lamp at night. Keep `MeshLambertMaterial` (or anything with `emissive`).
-- **The witch** in the world: `render/WitchRenderer.js`. Her heat-scope hook is `setThermal`.
-- **The zombies:** `render/zombieSprite.js` and `render/ZombieRenderer.js`.
-- **The debug menu:** add a **Models** category (`menu.category('Models')`) for the viewer.
+- **Map generation:** `world/MapGenerator.js`, `world/mapGraph.js`, `world/mapGeometry.js`, `src/data/encounters.json`, `src/data/clearingTypes.json`.
+- **Station placement:** `base/stationLayout.js`.
+- **Vehicles on the new road:** `world/vehiclePlacement.js`, the placement table in `src/data/vehicles.json`.
+- **The witch's planting:** `ai/Witch.js` and how she picks sigil grounds.
+- **Saving the new flags:** `core/saveData.js`, `core/Game.js` `autosave()`.
 
-### Gotchas and decisions
+### Gotchas and decisions from Session 13
 
-- **The atmosphere hook:** `installAtmosphereShader()` hooks every material's `onBeforeCompile`. Use `fog: false` for screen-space or glowing materials (the cutscene glows do).
-- **Never add or remove lights while playing.** Changing the light count recompiles every shader (a stutter on the tablet). That's why the cutscene camera's lamp lights only the actors.
-- **The heat scope** switches the sky, grade, bloom, torch and atmosphere each frame (`Game.updateThermal()`). New living things need a `setThermal` hook.
-- **Cutscenes draw the world round their own camera** (`Game.update` passes the cutscene camera to the world, sky and atmosphere), so a remote shot (Ground Zero) loads its chunks. Draw distance still applies.
-- **Headless runs:** drive `game.update(1/30)` with the render loop cancelled (`window.game` in dev). The software GPU runs at about 10 fps, so frame rates can only be judged on Aaron's tablet.
-- **Vite `base` is `/WitchHunt/`. The live build deploys from `main`.** Push each step to `main` so Aaron can play-test it.
+- **Vehicle sizes changed with the models:**
+  - sedan 4.48 × 1.78, 1.45 tall;
+  - pickup 5.4 × 1.98, 1.86 tall;
+  - police 4.72 × 1.82, 1.6 tall;
+  - army truck 6.5 × 2.3, 2.72 tall.
+
+  Placement reads `type.size`, so roadblock rows and gaps follow automatically. A type with a `model` in `vehicles.json` draws from `render/vehicleModels.js`; its lids still hinge on the data's boxes.
+- **The station's furniture is solid** (`layout.cabin.furniture`). It's kept clear of the zombies' way in from the front door to the comms door. Moving the doors or the cabin means checking that route.
+- **Zombie variants `mib` and `earl`** are in `config.zombies.variants` but in no clearing type's spawn mix, so they only appear when spawned by name. Keep `earl` out of random mixes.
+- **Lights:** never add or remove them while playing, because a recompile stutters on the tablet. The station adds two point lights and the hut one firelight; all are made once at load, and their intensity changes instead.
+- **The model viewer** is the quickest way to check any new model or prop: add an entry in `debug/viewerModels.js`, and `tests/modelViewer.test.js` builds every entry and plays every pose.
+- **Headless renders:** drive `game.update(1/30)` with the render loop cancelled (`window.game` in dev). The software GPU runs at about 10 fps, so judge frame rates only on Aaron's tablet.
+- **Vite `base` is `/WitchHunt/`. The live build deploys from `main`;** push each step there so Aaron can play-test it.
 
 ### Open questions for Aaron
 
-- **#155-160 (Session 12):**
-  - the looks
-  - the family face to face
-  - clips holding the world still
-  - whether a sighting plays its clip
-  - idle lines
-  - the camera's lamp at night
-- From before:
-  - #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun)
-  - #136 (an item that tags the witch)
-  - #137 (fog nights and gameplay)
-  - #140-141 (the settings screen, Session 28)
+- **#161-170 (Session 13):**
+  - the torch on pale models;
+  - the witch's eyes in feeds;
+  - her planting pose;
+  - the station's brightness;
+  - the furniture and sieges;
+  - the cars' wear;
+  - the Men in Black's recoil and armour;
+  - the zombie Men in Black's toughness;
+  - Earl's spawn;
+  - the toned-down looks.
+- **From before:**
+  - #155-160 (the looks, the family face to face, clips holding the world still, sightings, idle lines, the camera's lamp);
+  - #143 (which encounters give the SMG, the heat-scope rifle and the auto shotgun);
+  - #136 (an item that tags the witch);
+  - #137 (fog nights and gameplay);
+  - #140-141 (the settings screen, Session 28).
 
 ## Session kickoff prompt for the next session
 
 ```
-You are the Graphics Engineer / Technical Artist on Witch Hunt, Session 13: characters and the deferred art, play-test driven (the character models the coming encounters need, near-finished: zombies, the mutant, the witch, the grey alien, the beetle, the dead, the family; then the cars, the station's interior and the hut; a debug model viewer). Session 12 built M8, the story systems (dialogue, subtitles, the radio, trail cameras, cutscenes and their looks, lore and the monitors).
-Read docs/DESIGN.md (especially "Art style and rendering", "Build plan" and "Team roles and session plan"), STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md.
-Then confirm your role, this session's goal and any questions before starting. Workshop each model with Aaron first (rule 10), and push each step to main so he can play-test it.
+You are the Lead Engineer on Witch Hunt, Session 14: the cluster on the map (M9.1): the fixed opening sub-graph placed first, the road, the cordon, the gates, story progress flags, the witch's cluster rule, the flare gun. Session 13 (Graphics Engineer / Technical Artist) built the characters and the deferred art (zombie variety, the 3D characters, the vehicles, the station's interior, the hut) and a debug model viewer.
+Read docs/DESIGN.md (especially "Map", "Fixed opening cluster", "Build plan" and "Team roles and session plan"), STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md.
+Then confirm your role, this session's goal and any questions before starting. Workshop content with Aaron first (rule 10), and push each step to main so he can play-test it.
 Follow the handover protocol, and end with the HANDOVER READY signal.
 ```

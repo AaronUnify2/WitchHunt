@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 12 (Narrative Designer): **M8, the story systems, is done.** Dialogue from one data file, subtitles, the radio and its rate limit, talking to the family, trail cameras, the cutscene system with its camera looks, lore hand-ins and the comms room's monitors, and a Cutscenes debug category that plays every cutscene. The looks are a first pass for Aaron to react to (OPEN_QUESTIONS #155-160). **Next: Session 13, the Graphics Engineer / Technical Artist: characters and the deferred art, play-test driven.** Then M9, the opening cluster, in four parts (Sessions 14-17). See HANDOVER.md.
+Last updated: Session 13 (Graphics Engineer / Technical Artist): **characters and the deferred art, done.** A debug model viewer; the zombies' variety (a palette swap, still one draw call), army camo and helmet loss, Men in Black zombies and Earl Pruitt; real models for the mutant, the witch, the family, the grey alien and its cowboy drift, the giant beetle and the armed Men in Black; the four vehicle types and their wear; the ranger station's interior; the witch's hut. Built a step at a time, each pushed to `main` and play-tested by Aaron. Open points: OPEN_QUESTIONS #161-170. **Next: Session 14, the Lead Engineer: the cluster on the map (M9.1).** See HANDOVER.md.
+
+Before that, Session 12 (Narrative Designer): **M8, the story systems.** Dialogue from one data file, subtitles, the radio and its rate limit, talking to the family, trail cameras, the cutscene system with its camera looks, lore hand-ins and the comms room's monitors, and a Cutscenes debug category that plays every cutscene (OPEN_QUESTIONS #155-160).
 
 Before that, Session 11 (Lead Engineer, design review, no code): Aaron's story and encounter design (the fixed opening cluster) is in `docs/DESIGN.md`, the doc was reviewed against what's built, and the milestones and session plan were redone.
 
@@ -35,6 +37,38 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 13: characters and the deferred art (Graphics Engineer / Technical Artist)
+
+26 steps, each pushed to `main` for Aaron to react to in-game. Everything is built in code (no texture or model files).
+
+**The model viewer** (`debug/ModelViewer.js`, `viewerOrbit.js`, `viewerModels.js`; debug menu → **Models**): any model in any pose, an orbit camera, light presets (torch, moonlight, dusk, day, heat scope, the game's own), variants on Y / F, new looks on Menu / R, play / slow / pause, draw calls and triangles shown. Entries: zombies (each variant, the army bare-headed, a crowd), the mutant, the witch, the family, the grey alien (its kit stages), the giant beetle, the Man in Black (cutscenes), the Man in Black armed, the vehicles, the witch's hut, the old stand-ins.
+
+**Zombies** (`render/zombieSprite.js`, `zombieLook.js`, `ZombieRenderer.js`; Aaron: keep the sprites, hordes must stay cheap):
+- **A palette swap:** the atlas paints shirts, trousers, hair and skin in grey, and a mask says which is which, so each zombie is coloured in as it's drawn, all in one draw call. Per zombie (hashed from its look seed): hairstyle block (short, long, balding, ponytail, trucker cap), shirt, trousers, hair and skin colours, long or short sleeves, plaid or camo, build, and **its own blood** (a procedural pattern in the shader). Skin tones: one dark complexion in eight (Aaron).
+- **The atlas stores 5 angles,** the shader mirroring the other 3 (37% less memory).
+- **Variants:** police (vest, cap); **army** (camo, webbing, helmet; a bare-headed block for when the helmet's knocked off, `z.helmetOff`, the mechanic for M9.4); **Men in Black** (a torn black suit over a white shirt that shows the blood, tie, the body armour's plate, sunglasses; as tough as the army, drops a vest and pistol ammo); **Earl Pruitt** (`'earl'`: one fixed look, a faded red trucker cap, grey stubble and sideburns, a tan work shirt, jeans; for the storm shelter, M9.3).
+
+**3D characters** (each one skinned mesh and one draw call, posed procedurally and blended; each with a heat-scope hook):
+- **The mutant** (`MutantRenderer.js`, `mutantModel.js`): a club arm and a fist (Aaron), tumours, the glowing sac weak spot; walk, charge, slam, stagger, rise, dying, dormant and waking (the gas station's).
+- **The witch** (`WitchRenderer.js`): her rags and antlers, never a face, never bent at the hips (Aaron): gliding, fleeing arched back with her cloak trailing, planting upright and contorted, hexes, swipes, summoning, flinching, rising from the wreck, dying.
+- **The family** (`figureKit.js`, `familyLooks.js`, `FamilyRenderer.js`): Ellen, Wyatt and Junie at the station, each with their own idle (arms folded, hands in pockets, hugging her rabbit), looking at you when you're near, bobbing as they talk; walk, kneel, down for cutscenes. Clothes worn loose (Aaron).
+- **Cutscenes use the real models** (`story/Cutscenes.js` `makeModel`): the witch, zombies and people.
+- **The grey alien** (`alienModel.js`, `AlienRenderer.js`): the cowboy Martians' species, with an Earth pump shotgun; the **cowboy drift** in four kit stages (plain; hat and bandana; gun belt and holster; the full saloon gunslinger, its vest and boots worn loose). Idle, examine, sneak, walk, ambush, aim, fire, flinch, dying. AI is M10.
+- **The giant beetle** (`beetleModel.js`, `BeetleRenderer.js`): glossy shell, horn and mandibles, the glowing weak spot; a tripod gait, charge, rear and snap, threat display, flinch, emerging, flipping over dead.
+- **The Men in Black, armed** (`mibModel.js`, `MibRenderer.js`): the cutscenes' Man in Black unchanged, with a pistol (most), an SMG or a sniper rifle (`config.mibAgents.weaponMix`). The arms are solved with two-bone IK to wherever the weapon is held. Unaware (idle, patrol), alert, walk, run, aim, fire (the kick), cover, cover aim, flinch, dying, corpse; `muzzleOf()` for shots. AI is M11.
+
+**The vehicles** (`render/vehicleModels.js`, `VehicleRenderer.js`): four models built from extruded side profiles with rounded edges (Aaron: four types only): a boxy late-80s **sedan**; a 90s regular-cab **pickup** (some with a toolbox or headache rack); a county **sheriff's** Crown Victoria (brown, white doors and roof, gold stars and stripe, light bar, push bar, spotlight); an **M35 army truck** (canvas-covered bed, its flap the boot). The bonnet, boot and doors swing on their old hinges, so searching, batteries and alarms are unchanged. One instanced mesh per type per part (about 23 draw calls for the whole fleet). **Wear in the shader**, rolled per vehicle: rust, mud and dust, dried blood (1 in 7), cracked or smashed windows (`config.vehicles.looks.wear`).
+
+**The station's interior** (`render/stationInterior.js`, merged into the station's static mesh): a lived-in 1980s Forest Service station. The comms room's steel desk, radio, open ledger, lamp, three CRTs showing static, map, fire-danger sign, cabinets; the main room's woodstove (its fire flickering), kitchen, table and chairs, bunks, coats and boots. Lit by a warm light a room (Aaron), dimmer while the fence has no charge. The bigger furniture is solid (`layout.cabin.furniture`).
+
+**The witch's hut** (`render/HutRenderer.js`): a taken settler's log cabin (Aaron), leaning, its roof sagging, boarded windows leaking witchfire, the door hanging open onto black; roots, stick figures, bones, pale ash hand-prints and scratches; a porch whose rocking chair rocks by itself when you're near (Aaron); totems and a fire pit. The wreck is blown apart and burns, with firelight. Same footprint and API.
+
+**Exploding cars** are noted for later (Aaron; DESIGN.md "Ideas for later").
+
+**Stubbed / not yet:** the AI for the grey alien (M10), the beetles (M9.4), the Men in Black (M11); the army's helmet coming off (M9.4); Earl Pruitt placed at the shelter (M9.3); Bigfoot and the Mothman's models (before M10).
+
+**Tests:** 462 pass (zombie looks and the atlas, the model viewer builds every entry and plays every pose and variant, vehicles, loot).
 
 ### Session 12: M8, the story systems (Narrative Designer)
 

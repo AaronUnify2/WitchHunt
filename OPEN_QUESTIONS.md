@@ -1,5 +1,24 @@
 # Open questions
 
+## Session 13 (Graphics Engineer / Technical Artist: characters and the deferred art)
+
+Agreed with Aaron at the start: **a short written proposal in the chat, then a version pushed to `main` to react to in-game**, a step at a time. Decided along the way: the zombies stay sprites (huge hordes must stay cheap: one draw call); the family talk with the bob, no mouth; the grey alien is the cowboy Martians' species, the cowboyness dialled back (AI in M10); the witch never shows a face and never bends at the hips; the living Men in Black are the cutscenes' 3D model with minimal changes; four vehicle types only, the sheriff's paint; the station lit; the hut a taken settler's cabin.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 161 | **The torch up close on pale models** (a game-wide question for a style pass). | At point-blank range the torch blows pale things out (the grey alien, faces, the sheriff's white doors, Earl's shirt, the suits go charcoal). Each model's albedo is a compromise; a gentler torch falloff in the last metre or two would fix them all at once. | `config.flashlight`, the models' `albedo` |
+| 162 | **The witch's eyes in dark cutscene feeds.** | Her eyes glow faintly; in the darkest feeds (trail cam at night) they can be lost. Brighten them for cutscenes only? | `config.witch.look`, `config.cutscenes.actorLight` |
+| 163 | **The witch's planting pose.** M7 asked for her "folded flat"; Aaron (Session 13) wants no bend at the hips anywhere. | She plants upright, arched back, arms raised, contorting (no fold). Confirm it reads as the ritual. | `render/WitchRenderer.js` (plant), `config.witch.look.plantArch` |
+| 164 | **How bright the station is inside.** | A warm point light a room, at 60% while the fence has no charge, breathing with the woodstove. With no charge, the bunk corner is dark. | `config.station.look.interiorLight` |
+| 165 | **The furniture is solid.** | The stove, kitchen counter, table, bunks and filing cabinets block bodies, kept clear of the zombies' way from the front door to the comms door. Watch a siege for snagging. | `stationLayout.js` `cabin.furniture` |
+| 166 | **The vehicles' wear.** | Rust (most a little), mud and dust (all), dried blood (1 in 7), a cracked window (1 in 3, 40% of those smashed). Is the rust right, does the blood read as blood? | `config.vehicles.looks.wear` |
+| 167 | **The armed Men in Black: recoil, armour.** | The kick is subtle (pistol and sniper most). Their body armour (DESIGN.md: they drop it) isn't visible: taken as worn under the jacket. | `config.mibAgents.recoil` |
+| 168 | **The zombie Men in Black's toughness.** | As tough as the army (1.6), so the hunting rifle still kills every zombie with a headshot (Session 10b); they drop a vest (+40, as body armour) and pistol ammo. | `config.zombies.variants.mib`, `data/loot.json` |
+| 169 | **Earl Pruitt's spawn and the combination.** | A zombie variant (`'earl'`, one fixed look), not placed yet: the storm shelter's encounter (M9.3) spawns him at the hatch and drops the combination on his body. His loot table is empty until then. | `EnemyManager.spawnZombie(x, z, { variant: 'earl' })`, `data/loot.json` |
+| 170 | **The softened looks** (tone-downs made from renders, not play-tested). | The hut's hand-prints dimmed (they read as white gloves under the torch), its flames moved toward orange; the clothes' fit loosened (Ellen keeps about half her waist: is her fleece too boxy?). | `config.hut.look.ash`, `HutRenderer.js` FIRE_FRAGMENT, `familyLooks.js` EASE |
+
+**Resolved here:** #144-148 (the deferred art, Session 10b), and DESIGN.md's open question on the Men in Black's art direction (3D, the cutscenes' model).
+
 ## Session 12 (Narrative Designer: M8, the story systems)
 
 Agreed with Aaron at the start: **push each step to `main`**; skip the separate workshop and **put a first pass into the game to react to**; **cutscenes pause the clock**.
@@ -42,11 +61,11 @@ Aaron asked for these in Session 10b, then paused them to work on the story and 
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 144 | **The zombies' look.** Aaron: they need work to look better. The heat scope showed they read well far off. | Placeholder atlas sprites drawn in code. The proposed plan: re-render the atlas at load from simple 3D procedural bodies, with more variety per variant. The thermal hook must keep working. | `render/zombieSprite.js`, `render/ZombieRenderer.js` |
-| 145 | **The cars.** | Placeholder boxes with hinged bonnet, boot and doors. Era and models to agree with Aaron (suggested: 1970s-80s American cars, a pickup and a Forest Service truck). | `render/VehicleRenderer.js`, `world/Vehicles.js` |
-| 146 | **The witch's hut.** | The M7 placeholder, with blast and destroyed states. Its look is to agree with Aaron. | `render/HutRenderer.js`, `world/Hut.js` |
-| 147 | **The ranger station's interior** (the comms desk, radio, ledger, table, bunks, cabinets). | Boxes. | `render/StationRenderer.js` |
-| 148 | **The family** (Ellen, Wyatt, Junie). | Placeholder figures that never move. **Workshop their look with Aaron before building**, after M8 decides how they speak and appear in cutscenes. | `render/StationRenderer.js`, `config.station.look.family` |
+| 144 | **The zombies' look.** Aaron: they need work to look better. The heat scope showed they read well far off. | **Resolved (Session 13).** Aaron kept the sprites; the variety is a palette swap per zombie (hair, clothes, sleeves, plaid, camo, blood), still one draw call. Army camo and helmet loss, Men in Black zombies, Earl Pruitt. | `render/zombieSprite.js`, `render/ZombieRenderer.js` |
+| 145 | **The cars.** | **Resolved (Session 13).** Four types only (Aaron): a late-80s sedan, a 90s pickup, a county sheriff's car, an M35 army truck, with per-vehicle wear. Exploding cars: later (DESIGN.md "Ideas for later"). | `render/VehicleRenderer.js`, `world/Vehicles.js` |
+| 146 | **The witch's hut.** | **Resolved (Session 13).** A taken settler's log cabin (Aaron), the chair rocking when you're near, pale ash hand-prints; the wreck burns. | `render/HutRenderer.js`, `world/Hut.js` |
+| 147 | **The ranger station's interior** (the comms desk, radio, ledger, table, bunks, cabinets). | **Resolved (Session 13).** A lived-in 1980s Forest Service station; lit (Aaron), static on the monitors, a woodstove. | `render/StationRenderer.js` |
+| 148 | **The family** (Ellen, Wyatt, Junie). | **Resolved (Session 13).** Built with the figure kit, workshopped with Aaron (talking is the bob, no mouth; Ellen reshaped twice; clothes worn loose). | `render/StationRenderer.js`, `config.station.look.family` |
 
 ## Session 10 (style pass 1, Graphics Engineer)
 

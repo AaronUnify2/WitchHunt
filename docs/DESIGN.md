@@ -382,11 +382,11 @@ More grounds = a look, set dressing and one atmospheric twist.
 
 | Enemy | Where | Render | Behaviour |
 | --- | --- | --- | --- |
-| Zombie (citizen, police, army) | Forest, from sigils | Doom-style billboard sprite, 8 angles | The main enemy. Levels 1–5 |
+| Zombie (citizen, police, army, Men in Black; Earl Pruitt) | Forest, from sigils | Doom-style billboard sprite, 8 angles (5 stored, 3 mirrored); a palette swap gives each zombie its own hair, clothes, sleeves and blood (Session 13) | The main enemy. Levels 1–5 |
 | Mutant zombie | Forest, level 3+ | 3D | Giant, mutated, much more health. A mini-boss in the horde |
 | Giant beetle | Mineshaft (a few), Bigfoot cave | 3D | Armoured shell; only the soft spot on its face takes full damage |
 | The Mothman | Bigfoot cave (boss); the forest if flares are spammed | 3D | Flying dive attacks, disorienting screech, calls beetles |
-| Men in Black | Government base, Ground Zero | Sprite or 3D (art pass) | Armed agents using cover; stealth-aware squads |
+| Men in Black | Government base, Ground Zero | 3D: the cutscenes' Man in Black with a pistol (most), an SMG or a sniper rifle (Session 13) | Armed agents using cover; stealth-aware squads |
 | Alien | Alien ship; one at the crashed plane | 3D | Hides behind cover, ambushes up close |
 | The witch | Forest and hut | 3D | See The witch |
 
@@ -1370,11 +1370,12 @@ All of this is tiered by the Quality setting so the tablet gets a version that h
 
 | Thing | Render as |
 | --- | --- |
-| Zombies | Billboard sprites with 8 facing angles in one atlas. The plan (OPEN_QUESTIONS #144): render the atlas at load from simple lit 3D bodies, with more variety per variant |
+| Zombies | Billboard sprites with 8 facing angles in one atlas, drawn in code (Aaron, Session 13: keep the sprites). Grey-painted with a mask: each zombie is coloured in as it's drawn (a palette swap), all in one draw call |
+| The family, the Men in Black, the grey alien | Low-poly 3D from the figure kit (`render/figureKit.js`): ellipsoids, tapered limbs and tubes, vertex-painted, skinned to a skeleton, one draw call each |
 | Mutants, beetles, the Mothman, aliens, Bigfoot, the witch | Low-poly 3D, animated |
 | Trees | Billboard sprites, instanced, camera-facing (near and far), with solid 3D trunks near the player |
 | Bushes, grass, ferns | Instanced sprites |
-| Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D |
+| Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D. Vehicles: four models built in code from extruded profiles, instanced per type, each one worn differently in the shader (Session 13) |
 | Pickups and sigils | Small 3D or sprite with a glow |
 
 Everything shares the same fog and moonlight colour so the mix reads as one style.
@@ -1556,7 +1557,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M13 |
 | 11 | Lead Engineer (design review, with the Narrative and Level & Encounter Designer hats) | Folded in Aaron's story and encounter design (the opening cluster); reviewed DESIGN.md against what's built; redid the milestones and this plan. No feature code | — |
 | 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines. **Done** (12a and 12b in one session; the looks are a first pass for Aaron to react to) | M8 |
-| 13 | Graphics Engineer / Technical Artist | **Characters and the deferred art, play-test driven** (Aaron, Session 11: in its own session, sooner, with time to sit down and play-test, changing things a step at a time). The character models the coming encounters need, to a near-finished level so writing and play-testing them has something to spark off: the zombies (citizen, police, army with its helmet; #144), the mutant, the witch's real model, the grey alien, the beetle, the dead (the gas station owner, soldiers), the family (#148, after M8). Then the cars (#145), the station's interior (#147) and the hut (#146). A debug model viewer. Split 13a / 13b as needed; frontier creatures (Bigfoot, the Mothman, cowboy aliens, Men in Black) if time allows, else before M10 | Part of M13 |
+| 13 | Graphics Engineer / Technical Artist | Characters and the deferred art, play-test driven. **Done:** a debug model viewer; the zombies' variety (a palette swap), army camo and helmet loss, Men in Black zombies, Earl Pruitt; the mutant, the witch, the family, the grey alien and the cowboy drift, the giant beetle, the armed Men in Black; the cars (four types and their wear), the station's interior, the witch's hut. Frontier creatures still to model: Bigfoot and the Mothman (before M10) | Part of M13 |
 | 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun | M9.1 |
 | 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron | M9.2 |
 | 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines | M9.3 |
@@ -1640,5 +1641,4 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). Aaron will answer it as he designs those encounters in depth. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
-- Art direction details for the Men in Black (sprite or 3D).
 - Candidate entities for later, not in scope: Jersey Devil, Flatwoods Monster, Dogman, Headless Horseman.
