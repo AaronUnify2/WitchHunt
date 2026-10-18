@@ -11,13 +11,16 @@
 //    leggings, sneakers; she holds a stuffed rabbit.
 
 // The body every one of them shares (an adult's, 1.7 m; the kit scales it).
-// sh: shoulder width; hip: hip width; bulk: the torso's girth.
-function body({ sh = 1, hip = 1, bulk = 1, hand = 'skin', top = 'top' }) {
+// sh: shoulder width; hip: hip width; bulk: the torso's girth; waist: the
+// waist's width; female (Aaron: Ellen read too masculine): a narrower
+// ribcage and waist, softer shoulders, wider hips and a bust.
+function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'skin', top = 'top' }) {
+  const cap = female ? 0.056 : 0.068; // the shoulders' caps
   const masses = [
-    ['hips', null, 0, 0.95, 0, 0.155 * hip, 0.11, 0.11, 'trousers'],
-    ['chest', 'spine', 0, 1.31, 0.005, 0.18 * sh * bulk, 0.13, 0.115 * bulk, top],
-    ['chest', 'shoulderR', -0.163 * sh, 1.405, 0, 0.068 * bulk, 0.062, 0.068 * bulk, top],
-    ['chest', 'shoulderL', 0.163 * sh, 1.405, 0, 0.068 * bulk, 0.062, 0.068 * bulk, top],
+    ['hips', null, 0, 0.95, 0, 0.155 * hip, 0.11, 0.11 * (female ? 1.08 : 1), 'trousers'],
+    ['chest', 'spine', 0, 1.31, 0.005, 0.18 * sh * bulk, 0.13, (female ? 0.1 : 0.115) * bulk, top],
+    ['chest', 'shoulderR', -0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
+    ['chest', 'shoulderL', 0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
     ['neck', 'chest', 0, 1.475, 0, 0.046, 0.05, 0.046, 'skin'],
     // The head (one smooth shape: a separate jaw shaded like a moustache), a
     // nose, ears; dark eyes and light brows.
@@ -35,10 +38,16 @@ function body({ sh = 1, hip = 1, bulk = 1, hand = 'skin', top = 'top' }) {
     ['ankleR', null, -0.1, 0.045, 0.05, 0.055, 0.045, 0.12, 'shoes'],
     ['ankleL', null, 0.1, 0.045, 0.05, 0.055, 0.045, 0.12, 'shoes'],
   ];
+  if (female) {
+    // A modest bust, soft under the clothes.
+    for (const s of [-1, 1]) masses.push(['chest', null, s * 0.052, 1.285, 0.072, 0.064, 0.058, 0.052, top]);
+  }
   const limbs = [
-    // The trunk: an oval from the hips to the shoulders, so the shapes on it blend.
-    ['hips', 'spine', 0.15 * hip, 0.145 * bulk, top, 0, 0.7], // the shirt hangs over the waistband
-    ['spine', 'neck', 0.145 * bulk, 0.17 * sh * bulk, top, 0.1, 0.68],
+    // The trunk: an oval from the hips to the shoulders, so the shapes on it
+    // blend, pinched at the waist (the spine joint).
+    ['hips', 'spine', 0.15 * hip, 0.145 * bulk * waist, top, 0, 0.7], // the shirt hangs over the waistband
+    // It narrows into the neck (the chest and the shoulders' caps make the shoulders: no ledge).
+    ['spine', 'neck', 0.145 * bulk * waist, 0.085 * bulk, top, female ? 0.25 : 0.4, 0.75],
     ['shoulderR', 'elbowR', 0.047 * bulk, 0.04 * bulk, 'sleeve', 0.1],
     ['elbowR', 'wristR', 0.04 * bulk, 0.03 * bulk, 'forearm', 0.08],
     ['shoulderL', 'elbowL', 0.047 * bulk, 0.04 * bulk, 'sleeve', 0.1],
@@ -58,7 +67,7 @@ function hairCap(y = 1.632, z = -0.016, r = [0.097, 0.1, 0.104]) {
 
 const LOOKS = {
   ellen(p) {
-    const b = body({ sh: 0.9, hip: 1.05 });
+    const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true });
     b.masses.push(hairCap(), ['head', null, 0, 1.57, -0.112, 0.034, 0.07, 0.034, 'hair'], ['head', null, 0, 1.605, -0.1, 0.022, 0.02, 0.022, 'tie']);
     // Thin wire glasses: two rims and a bridge.
     b.rings.push(['head', -0.034, 1.608, 0.104, 0.021, 0.0032, 'frames'], ['head', 0.034, 1.608, 0.104, 0.021, 0.0032, 'frames']);
