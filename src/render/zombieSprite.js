@@ -1,9 +1,10 @@
-// The zombie sprite atlas, drawn on a canvas at load. Doom-style: one row
-// per facing angle (8 rows, 45 degrees apart: row 0 faces the viewer, row
-// 4 shows its back), one column per animation frame (see ZOMBIE_FRAMES in
-// ai/Zombie.js). Rows 1-3 face image-right; rows 5-7 are their mirror
-// images. One block of 8 rows per variant and hairstyle (zombieLook.js
-// atlasBlocks), the blocks laid out in a grid (atlasLayout).
+// The zombie sprite atlas, drawn on a canvas at load. Doom-style: 8 facing
+// angles, 45 degrees apart (0 faces the viewer, 4 shows its back), one
+// column per animation frame (see ZOMBIE_FRAMES in ai/Zombie.js). Angles
+// 1-3 face image-right; 5-7 are their mirror images, so only rows 0-4 are
+// stored (Session 13: the shader mirrors the rest, 37% less atlas). One
+// block of 5 rows per variant and hairstyle (zombieLook.js atlasBlocks),
+// the blocks laid out in a grid (atlasLayout).
 //
 // Session 13 (#144): a palette swap. The shirt, trousers, hair and skin
 // are painted grey (shaded) in the picture, and a second texture, the
@@ -22,7 +23,8 @@ import * as THREE from 'three';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { atlasBlocks, atlasLayout } from './zombieLook.js';
 
-export const ATLAS_ROWS = 8;
+export const ANGLES = 8;
+export const ATLAS_ROWS = 5; // stored: angles 0-4
 
 const CHANNELS = ['shirt', 'trousers', 'hair', 'skin']; // the mask's r, g, b, a
 
@@ -124,22 +126,19 @@ function drawAll(ctx, t, blocks, layout, paint) {
   const blockW = t.frameWidth * ZOMBIE_FRAMES.count;
   const blockH = t.frameHeight * ATLAS_ROWS;
   blocks.forEach((block, b) => {
+    // A bare block is its variant without its hat (an army zombie that's lost its helmet).
     const kit = { ...(t.looks[block.variant] ?? {}), hair: block.hair };
+    if (block.bare) kit.hat = undefined;
     const bx = (b % layout.cols) * blockW;
     const by = Math.floor(b / layout.cols) * blockH;
     for (let row = 0; row < ATLAS_ROWS; row++) {
-      const mirror = row > 4;
-      const angle = ((mirror ? ATLAS_ROWS - row : row) * Math.PI) / 4; // 0 front .. pi back
+      const angle = (row * Math.PI) / 4; // 0 front .. pi back
       for (let col = 0; col < ZOMBIE_FRAMES.count; col++) {
         ctx.save();
         ctx.translate(bx + col * t.frameWidth, by + row * t.frameHeight);
         ctx.beginPath();
         ctx.rect(0, 0, t.frameWidth, t.frameHeight);
         ctx.clip();
-        if (mirror) {
-          ctx.translate(t.frameWidth, 0);
-          ctx.scale(-1, 1);
-        }
         drawFrame(ctx, t, kit, angle, col, paint);
         ctx.restore();
       }
@@ -275,6 +274,21 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     ctx.fillStyle = paint.part('hem');
     ctx.fillRect(cx - torsoHalf, hipY - 6, torsoHalf * 2, 10);
     ctx.restore();
+    // Army: webbing, two straps down from the shoulders to a belt.
+    if (kit.webbing !== undefined) {
+      ctx.strokeStyle = paint.fixed(kit.webbing);
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'butt';
+      const wTop = top + 2;
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(cx + s * torsoHalf * 0.55 + lean, wTop);
+        ctx.lineTo(cx + s * torsoHalf * 0.3 + lean * 0.3, hipY - 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = paint.fixed(kit.webbing);
+      ctx.fillRect(cx - torsoHalf * 0.78, hipY - 3, torsoHalf * 1.56, 4); // the belt
+    }
     // Police: a bulletproof vest over the chest.
     if (kit.vest !== undefined) {
       const vTop = top + 3;

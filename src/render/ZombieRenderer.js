@@ -16,12 +16,12 @@
 // draw call.
 
 import * as THREE from 'three';
-import { makeZombieAtlas, ATLAS_ROWS as ROWS } from './zombieSprite.js';
+import { makeZombieAtlas, ANGLES, ATLAS_ROWS as ROWS } from './zombieSprite.js';
 import { paletteTable, zombieLook } from './zombieLook.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 
 // Per instance: aState (frame, facing, hit flash, floodlit), aStyle
-// (atlas block, long sleeves, plaid, debug tier tint), aLook (palette
+// (atlas block, long sleeves, pattern: 0 plain, 1 plaid, 2 camo, debug tier tint), aLook (palette
 // indices: shirt, trousers, hair, skin), aBlood (how bloody, its pattern's seed).
 const COMMON = /* glsl */ `
   attribute vec4 aState;
@@ -61,10 +61,13 @@ const UV = /* glsl */ `
   #ifdef USE_MAP
     vec2 zbCam = zbToCamera();
     float zbRel = atan(zbCam.x, zbCam.y) - aState.y;
-    float zbRow = mod(floor(-zbRel / (6.2831853 / ${ROWS}.0) + 0.5), ${ROWS}.0);
+    float zbAngle = mod(floor(-zbRel / (6.2831853 / ${ANGLES}.0) + 0.5), ${ANGLES}.0);
+    // Angles 5-7 are 3-1 mirrored (only 0-4 are stored).
+    float zbMirror = step(4.5, zbAngle);
+    float zbRow = mix(zbAngle, ${ANGLES}.0 - zbAngle, zbMirror);
     float zbBlockCol = mod(aStyle.x + 0.5, uBlockCols) - 0.5;
     float zbBlockRow = floor((aStyle.x + 0.5) / uBlockCols);
-    vMapUv.x = (vMapUv.x + aState.x + zbBlockCol * uFrames) / (uFrames * uBlockCols);
+    vMapUv.x = (mix(vMapUv.x, 1.0 - vMapUv.x, zbMirror) + aState.x + zbBlockCol * uFrames) / (uFrames * uBlockCols);
     float zbRows = ${ROWS}.0 * uBlockRows;
     vMapUv.y = (vMapUv.y + zbRows - 1.0 - (zbBlockRow * ${ROWS}.0 + zbRow)) / zbRows;
   #endif
@@ -125,14 +128,26 @@ const MAP_FRAGMENT = /* glsl */ `
     float zbShirtW = zbM.r * mix( 1.0 - zbM.a, 1.0, vStyle.x );
     float zbSkinW = zbM.a * mix( 1.0, 1.0 - zbM.r, vStyle.x );
     vec3 zbShirt = vShirt;
-    if ( vStyle.y > 0.5 ) {
-      vec2 zbTx = vMapUv * uAtlasSize;
+    vec3 zbTrousers = vTrousers;
+    vec2 zbTx = vMapUv * uAtlasSize;
+    float zbFade = 1.0 - smoothstep( 0.6, 1.4, max( fwidth( zbTx.x ), fwidth( zbTx.y ) ) );
+    if ( vStyle.y > 1.5 ) {
+      // Camouflage (the army): soft blotches, dark brown and pale khaki, on shirt and trousers.
+      vec2 zbC = zbTx / uCamo.x;
+      vec2 zbI = floor( zbC );
+      vec2 zbF = fract( zbC );
+      zbF = zbF * zbF * ( 3.0 - 2.0 * zbF );
+      float zbN = mix( mix( zbHash( zbI, 5.0 ).x, zbHash( zbI + vec2( 1.0, 0.0 ), 5.0 ).x, zbF.x ), mix( zbHash( zbI + vec2( 0.0, 1.0 ), 5.0 ).x, zbHash( zbI + vec2( 1.0 ), 5.0 ).x, zbF.x ), zbF.y );
+      vec3 zbTone = zbN < 0.4 ? uCamo.y * vec3( 1.1, 0.92, 0.7 ) : zbN > 0.62 ? vec3( uCamo.z ) : vec3( 1.0 );
+      zbTone = mix( vec3( 1.0 ), zbTone, zbFade );
+      zbShirt *= zbTone;
+      zbTrousers *= zbTone;
+    } else if ( vStyle.y > 0.5 ) {
       vec2 zbLines = step( mod( zbTx, uPlaid.x ), vec2( uPlaid.y ) );
-      float zbFade = 1.0 - smoothstep( 0.6, 1.4, max( fwidth( zbTx.x ), fwidth( zbTx.y ) ) );
       zbShirt *= mix( 1.0, uPlaid.z, ( zbLines.x + zbLines.y ) * 0.5 * zbFade );
     }
     float zbW = zbShirtW + zbM.g + zbM.b + zbSkinW;
-    vec3 zbTintColour = ( zbShirtW * zbShirt + zbM.g * vTrousers + zbM.b * vHair + zbSkinW * vSkin ) / max( zbW, 0.0001 );
+    vec3 zbTintColour = ( zbShirtW * zbShirt + zbM.g * zbTrousers + zbM.b * vHair + zbSkinW * vSkin ) / max( zbW, 0.0001 );
     float zbBody = smoothstep( 0.0, 0.08, zbW );
     sampledDiffuseColor.rgb = mix( sampledDiffuseColor.rgb, sampledDiffuseColor.rgb * zbTintColour, zbBody );
     vec2 zbFrameP = mod( vMapUv * uAtlasSize, uFrameSize );
@@ -183,6 +198,7 @@ export class ZombieRenderer {
       uPalette: { value: palette },
       uAtlasSize: { value: new THREE.Vector2(this.layout.width, this.layout.height) },
       uPlaid: { value: new THREE.Vector3(t.plaid.every, t.plaid.line, t.plaid.dark) },
+      uCamo: { value: new THREE.Vector3(t.camo.cell, t.camo.dark, t.camo.light) },
       uFrameSize: { value: new THREE.Vector2(t.frameWidth, t.frameHeight) },
       uBloodColor: { value: new THREE.Color(t.blood) },
       uBloodDrops: { value: bloodLayer(t.bodyBlood.drops) },
@@ -250,7 +266,7 @@ export class ZombieRenderer {
         shader.fragmentShader = shader.fragmentShader
           .replace(
             '#include <common>',
-            `#include <common>\n${varyings}\nuniform sampler2D uMask;\nuniform vec2 uAtlasSize;\nuniform vec2 uFrameSize;\nuniform vec3 uPlaid;\nuniform vec3 uBloodColor;\nuniform vec4 uBloodDrops;\nuniform vec4 uBloodSplashes;\nuniform vec4 uBloodParts;\nuniform float uBloodFar;\nuniform float uBloodDrip;\n${BLOOD_FUNCTIONS}\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;\nuniform vec3 uThermalNear;`,
+            `#include <common>\n${varyings}\nuniform sampler2D uMask;\nuniform vec2 uAtlasSize;\nuniform vec2 uFrameSize;\nuniform vec3 uPlaid;\nuniform vec3 uCamo;\nuniform vec3 uBloodColor;\nuniform vec4 uBloodDrops;\nuniform vec4 uBloodSplashes;\nuniform vec4 uBloodParts;\nuniform float uBloodFar;\nuniform float uBloodDrip;\n${BLOOD_FUNCTIONS}\nuniform vec3 uFlashColor;\nuniform vec3 uLitColor;\nuniform vec3 uTintActive;\nuniform vec3 uTintNearby;\nuniform float uThermal;\nuniform vec3 uThermalNear;`,
           )
           .replace('#include <map_fragment>', MAP_FRAGMENT)
           .replace(
@@ -260,7 +276,7 @@ export class ZombieRenderer {
       }
       shader.vertexShader = vertex;
     };
-    material.customProgramCacheKey = () => (colour ? 'zombie-billboard-looks-blood' : 'zombie-billboard-depth');
+    material.customProgramCacheKey = () => (colour ? 'zombie-billboard-looks-blood-camo' : 'zombie-billboard-depth-mirror');
     return material;
   }
 
@@ -299,9 +315,10 @@ export class ZombieRenderer {
       this.states[i + 1] = z.facing;
       this.states[i + 2] = z.flash > 0 ? z.flash / c.hitFlashSeconds : 0;
       this.states[i + 3] = z.lit ?? 0; // M5: standing in a station floodlight (0..1)
-      this.styles[i] = look.block;
+      // Session 13: an army zombie that's lost its helmet (z.helmetOff, M9.4) is drawn bare-headed.
+      this.styles[i] = z.helmetOff && look.bare >= 0 ? look.bare : look.block;
       this.styles[i + 1] = look.sleeves;
-      this.styles[i + 2] = look.plaid;
+      this.styles[i + 2] = look.pattern;
       this.styles[i + 3] = showTiers ? (tier === 'active' ? 1 : 2) : 0; // M6 debug: 0 none, 1 active, 2 nearby
       this.looks[i] = look.shirt;
       this.looks[i + 1] = look.trousers;

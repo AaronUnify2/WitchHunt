@@ -8,14 +8,17 @@ const tex = config.zombies.texture;
 describe('zombie atlas blocks and layout', () => {
   it('has a block per variant and hairstyle, in order', () => {
     const blocks = atlasBlocks(tex);
-    const expected = tex.variantOrder.flatMap((v) => (tex.hairStyles[v] ?? ['short']).map((hair) => ({ variant: v, hair })));
+    const expected = tex.variantOrder.flatMap((v) => {
+      const hairs = tex.hairStyles[v] ?? ['short'];
+      return [...hairs.map((hair) => ({ variant: v, hair, bare: false })), ...(tex.looks[v]?.bare ? [{ variant: v, hair: hairs[0], bare: true }] : [])];
+    });
     expect(blocks).toEqual(expected);
   });
 
   it('fits the atlas inside the size limit', () => {
     const blocks = atlasBlocks(tex);
     const bw = tex.frameWidth * ZOMBIE_FRAMES.count;
-    const bh = tex.frameHeight * 8;
+    const bh = tex.frameHeight * 5; // angles 0-4 stored
     const l = atlasLayout(blocks.length, bw, bh, tex.atlasMaxSize);
     expect(l.width).toBeLessThanOrEqual(tex.atlasMaxSize);
     expect(l.height).toBeLessThanOrEqual(tex.atlasMaxSize);
@@ -64,6 +67,8 @@ describe('zombie looks', () => {
       for (let seed = 1; seed < 300; seed++) {
         const look = zombieLook(v, seed, tex, blocks, table);
         expect(blocks[look.block].variant).toBe(v);
+        expect(blocks[look.block].bare).toBe(false);
+        if (look.bare >= 0) expect(blocks[look.bare]).toMatchObject({ variant: v, bare: true });
         for (const part of PARTS) {
           const [start, count] = table.offsets[v][part];
           expect(look[part]).toBeGreaterThanOrEqual(start);
@@ -74,7 +79,7 @@ describe('zombie looks', () => {
         expect(look.height).toBeGreaterThanOrEqual(tex.build.height[0]);
         expect(look.height).toBeLessThanOrEqual(tex.build.height[1]);
         expect([0, 1]).toContain(look.sleeves);
-        expect([0, 1]).toContain(look.plaid);
+        expect([0, 1, 2]).toContain(look.pattern);
       }
     }
   });
@@ -90,7 +95,7 @@ describe('zombie looks', () => {
       hair.add(blocks[look.block].hair);
       shirts.add(look.shirt);
       long += look.sleeves;
-      plaid += look.plaid;
+      plaid += look.pattern === 1 ? 1 : 0;
     }
     expect(hair.size).toBe(tex.hairStyles.citizen.length);
     expect(shirts.size).toBe(tex.palettes.shirt.length);
@@ -116,10 +121,13 @@ describe('zombie looks', () => {
     expect(light).toBeGreaterThan(500);
   });
 
-  it('never plaids a uniform, and the army always wears long sleeves', () => {
+  it('never plaids a uniform; the army always in long sleeves and camouflage, and able to lose its helmet', () => {
     for (let seed = 1; seed < 200; seed++) {
-      expect(zombieLook('police', seed, tex, blocks, table).plaid).toBe(0);
-      expect(zombieLook('army', seed, tex, blocks, table).sleeves).toBe(1);
+      expect(zombieLook('police', seed, tex, blocks, table).pattern).toBe(0);
+      const army = zombieLook('army', seed, tex, blocks, table);
+      expect(army.sleeves).toBe(1);
+      expect(army.pattern).toBe(2);
+      expect(blocks[army.bare]).toMatchObject({ variant: 'army', bare: true });
     }
   });
 

@@ -41,8 +41,8 @@ export const VIEWER_MODELS = [
     note: 'Sprites drawn in code, each coloured in with its own look (#144). Menu / R: new looks.',
     height: (cfg) => cfg.zombies.height,
     // The crowd is seen from further out.
-    startDistance: (cfg, variant) => (variant >= cfg.zombies.texture.variantOrder.length ? cfg.modelViewer.crowd.distance : null),
-    variants: (cfg) => [...cfg.zombies.texture.variantOrder.map(title), `Crowd of ${cfg.modelViewer.crowd.size * cfg.modelViewer.crowd.size}`],
+    startDistance: (cfg, variant) => (variant > cfg.zombies.texture.variantOrder.length ? cfg.modelViewer.crowd.distance : null),
+    variants: (cfg) => [...cfg.zombies.texture.variantOrder.map(title), 'Army (helmet lost)', `Crowd of ${cfg.modelViewer.crowd.size * cfg.modelViewer.crowd.size}`],
     poses: [
       { id: 'walk', name: 'Walk' },
       { id: 'idle', name: 'Stand' },
@@ -215,7 +215,8 @@ function zombieModel(ctx) {
     objects: [renderer.mesh],
     renderer, // for debugging its uniforms
     update(dt, s) {
-      const isCrowd = s.variant >= order.length;
+      const isCrowd = s.variant > order.length;
+      const helmetLost = s.variant === order.length; // the army, bare-headed
       const shown = isCrowd ? zombies : zombies.slice(0, 1);
       walked += dt * vc.zombieWalkSpeed;
       const half = (crowd.size - 1) / 2;
@@ -229,7 +230,8 @@ function zombieModel(ctx) {
         z.z = s.z - gx * sin + gz * cos;
         z.y = s.y;
         z.facing = s.facing + (isCrowd ? (z.offset - 0.5) * crowd.turn : 0);
-        z.variant = isCrowd ? crowdVariant(i) : order[s.variant];
+        z.variant = isCrowd ? crowdVariant(i) : helmetLost ? 'army' : order[s.variant];
+        z.helmetOff = helmetLost;
         z.lookSeed = seedBase + i;
         poseZombie(z, s.pose, s.poseTime + (isCrowd ? z.offset * 2 : 0), walked + (isCrowd ? z.offset : 0), zc, vc, F);
       });

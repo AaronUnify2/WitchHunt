@@ -8,11 +8,14 @@
 // zombie's look seed, never the game's random numbers.
 
 // The atlas's blocks, in order: one per variant and hairstyle
-// (texture.hairStyles). [{ variant, hair }].
+// (texture.hairStyles), then a bare one for a variant that can lose its
+// hat (looks[variant].bare: the army's helmet). [{ variant, hair, bare }].
 export function atlasBlocks(tex) {
   const blocks = [];
   for (const variant of tex.variantOrder) {
-    for (const hair of tex.hairStyles[variant] ?? ['short']) blocks.push({ variant, hair });
+    const hairs = tex.hairStyles[variant] ?? ['short'];
+    for (const hair of hairs) blocks.push({ variant, hair, bare: false });
+    if (tex.looks[variant]?.bare) blocks.push({ variant, hair: hairs[0], bare: true });
   }
   return blocks;
 }
@@ -59,8 +62,9 @@ export function paletteTable(tex) {
 export const PARTS = ['shirt', 'trousers', 'hair', 'skin'];
 
 // One zombie's look from its variant and seed. blocks: atlasBlocks();
-// table: paletteTable(). Returns { block, shirt, trousers, hair, skin
-// (indices into the table), sleeves (1 long, 0 short), plaid (0 / 1),
+// table: paletteTable(). Returns { block, bare (its bare block, for when
+// its hat's gone, or -1), shirt, trousers, hair, skin (indices into the
+// table), sleeves (1 long, 0 short), pattern (0 plain, 1 plaid, 2 camo),
 // blood (0..1, how bloody), bloodSeed (its pattern), width, height
 // (scales) }. out: an object to fill (no allocation).
 export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
@@ -70,8 +74,13 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   // Its block: one of the variant's hairstyles (the first block if none).
   let first = -1;
   let count = 0;
+  out.bare = -1;
   for (let i = 0; i < blocks.length; i++) {
     if (blocks[i].variant !== variant) continue;
+    if (blocks[i].bare) {
+      out.bare = i;
+      continue;
+    }
     if (first < 0) first = i;
     count++;
   }
@@ -81,7 +90,7 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   out.hair = pick(offsets.hair, r(4));
   out.skin = pick(offsets.skin, r(5));
   out.sleeves = r(6) < (look.longSleeves ?? 0.5) ? 1 : 0;
-  out.plaid = r(7) < (look.plaid ?? 0) ? 1 : 0;
+  out.pattern = r(7) < (look.plaid ?? 0) ? 1 : r(12) < (look.camo ?? 0) ? 2 : 0;
   // How bloody (skewed toward lightly) and its blood's pattern.
   const bb = tex.bodyBlood;
   out.blood = bb.amount[0] + (bb.amount[1] - bb.amount[0]) * Math.pow(r(10), bb.skew);
