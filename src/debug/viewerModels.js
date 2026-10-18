@@ -28,6 +28,9 @@ import { AlienRenderer } from '../render/AlienRenderer.js';
 import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { MibRenderer } from '../render/MibRenderer.js';
+import { VehicleRenderer } from '../render/VehicleRenderer.js';
+import { Rng } from '../core/Rng.js';
+import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -190,6 +193,22 @@ export const VIEWER_MODELS = [
       { id: 'corpse', name: 'Corpse' },
     ],
     create: agentModel,
+  },
+  {
+    id: 'vehicle',
+    name: 'Vehicles',
+    note: 'Session 13 (#145): the real models replace the boxes type by type. New look (R) re-rolls the paint and the flat tyre.',
+    height: () => 1.0,
+    startDistance: () => 7,
+    variants: () => Object.values(vehicleData.types).map((t) => title(t.name)),
+    poses: [
+      { id: 'shut', name: 'Shut' },
+      { id: 'searched', name: 'Searched (doors and boot open a crack)' },
+      { id: 'bonnet', name: 'Bonnet up, the battery in' },
+      { id: 'wide', name: 'Everything wide open (to check the hinges)' },
+      { id: 'alarm', name: 'Alarm (lamps flashing)' },
+    ],
+    create: vehicleModel,
   },
   {
     id: 'standIns',
@@ -661,6 +680,50 @@ function agentModel(ctx) {
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- the vehicles: one at a time, rebuilt when the type or look changes -------------------------
+
+function vehicleModel(ctx) {
+  const vcfg = ctx.cfg.vehicles;
+  const types = Object.keys(vehicleData.types);
+  let renderer = null;
+  let built = '';
+  let seed = 1;
+  const v = { type: types[0], x: 0, z: 0, yaw: 0, open: {}, hasBattery: true, def: null };
+  const ground = { y: 0, heightAt: () => ground.y };
+  return {
+    get objects() {
+      return renderer ? [renderer.group] : [];
+    },
+    update(dt, s) {
+      const type = types[s.variant] ?? types[0];
+      const key = `${type}:${seed}:${s.x}:${s.y}:${s.z}:${s.facing}`;
+      if (key !== built) {
+        renderer?.dispose();
+        Object.assign(v, { type, x: s.x, z: s.z, yaw: s.facing, open: {}, def: vehicleData.types[type] });
+        ground.y = s.y;
+        renderer = new VehicleRenderer(vcfg, vehicleData, new Rng(seed));
+        renderer.init(ctx.scene, [v], ground);
+        built = key;
+      }
+      const wide = s.pose === 'wide';
+      const crack = s.pose === 'searched';
+      v.open = {
+        bonnet: wide || s.pose === 'bonnet' ? 1 : 0,
+        boot: wide ? 2.5 : crack ? 1 : 0,
+        door: wide ? 2.5 : crack ? 1 : 0,
+        door2: wide ? 2.5 : crack ? 1 : 0,
+      };
+      renderer.refresh(v);
+      renderer.setLamps(v, s.pose === 'alarm' && Math.floor(s.poseTime * 3) % 2 === 0);
+    },
+    reroll() {
+      seed++;
+    },
+    setThermal() {}, // cold metal: nothing to show
+    dispose: () => renderer?.dispose(),
   };
 }
 

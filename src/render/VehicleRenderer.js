@@ -17,8 +17,15 @@
 // piece. Behind an open boot or door a dark hollow shows. The battery
 // shows under a lifted bonnet until it's pulled. Vehicles.js owns the
 // state and calls refresh(v) when a vehicle's look changes.
+//
+// Session 13 (#145): the real models (render/vehicleModels.js) replace the
+// shapes type by type: a type with a `model` in vehicles.json is drawn as
+// that model, its body and each lid one instanced mesh for the type (the
+// paint per instance, the glass, rubber and chrome their own colours), its
+// lids swung on the same hinges. Its wheels and lamps are still the data's.
 
 import * as THREE from 'three';
+import { VEHICLE_MODELS, mirrorGeometry } from './vehicleModels.js';
 
 const UP_SINK = 0.04; // metres the body sits into the ground
 export const LIDS = ['bonnet', 'boot', 'door', 'door2']; // door2: the passenger door, the driver's mirrored
@@ -66,12 +73,37 @@ export class VehicleRenderer {
     this.lids = {};
     for (const [id, t] of Object.entries(data.types)) this.lids[id] = { ...t.lids, door2: mirrorLid(t.lids.door) };
 
+    // The real models, built once per type, with a mesh each for the body and every lid.
+    this.models = {};
+    const modelCount = {};
+    for (const v of vehicles) if (data.types[v.type].model) modelCount[v.type] = (modelCount[v.type] ?? 0) + 1;
+    this.modelMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+    this.modelMaterial.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute float aPaint;')
+        .replace('#include <color_vertex>', '#include <color_vertex>\n#ifdef USE_INSTANCING_COLOR\n  vColor.xyz = color.xyz * mix( vec3( 1.0 ), instanceColor.xyz, aPaint );\n#endif');
+    };
+    this.modelMaterial.customProgramCacheKey = () => 'vehicle-model-paint';
+    for (const [id, count] of Object.entries(modelCount)) {
+      const built = VEHICLE_MODELS[data.types[id].model](data.colours);
+      const geometries = { body: built.body, ...built.lids, door2: mirrorGeometry(built.lids.door) };
+      const meshes = {};
+      for (const [name, g] of Object.entries(geometries)) {
+        const mesh = new THREE.InstancedMesh(g, this.modelMaterial, count);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        meshes[name] = mesh;
+      }
+      this.models[id] = { meshes, geometries, next: 0 };
+    }
+
     let solids = 0;
     let wedges = 0;
     let wheels = 0;
     let lamps = 0;
     for (const v of vehicles) {
       const t = data.types[v.type];
+      const model = !!t.model;
       for (const p of t.parts) {
         if (p[6] === 'tyre') wheels += 2; // a tyre and its hub
         else if (p[7] === 'wedgeF' || p[7] === 'wedgeB') wedges++;
@@ -79,7 +111,7 @@ export class VehicleRenderer {
       }
       for (const name of LIDS) {
         const lid = this.lids[v.type][name];
-        solids += 1 + (lid.extra?.length ?? 0) + (lid.hollow ? 1 : 0);
+        solids += (model ? 0 : 1 + (lid.extra?.length ?? 0)) + (lid.hollow ? 1 : 0);
       }
       solids += 2 + 1; // the battery (body and top), the engine bay
       lamps += t.lamps.length;
@@ -134,6 +166,12 @@ export class VehicleRenderer {
       const look = { base, paint, paint2, lampAt: li };
       v.look = look;
       v.groundY = y;
+      const model = this.models[v.type];
+      if (model) {
+        look.model = model.next++;
+        for (const mesh of Object.values(model.meshes)) mesh.setColorAt(look.model, paint);
+        model.meshes.body.setMatrixAt(look.model, base);
+      }
 
       for (const part of t.parts) {
         if (part[6] === 'tyre') {
@@ -161,11 +199,14 @@ export class VehicleRenderer {
       look.lids = {};
       for (const name of LIDS) {
         const lid = this.lids[v.type][name];
-        const at = { lid: si, extra: [], hollow: -1 };
-        this.solid.setColorAt(si++, this.resolve(lid.colour, look));
-        for (const e of lid.extra ?? []) {
-          at.extra.push(si);
-          this.solid.setColorAt(si++, this.resolve(e[6], look));
+        const at = { lid: -1, extra: [], hollow: -1 };
+        if (!model) {
+          at.lid = si;
+          this.solid.setColorAt(si++, this.resolve(lid.colour, look));
+          for (const e of lid.extra ?? []) {
+            at.extra.push(si);
+            this.solid.setColorAt(si++, this.resolve(e[6], look));
+          }
         }
         if (lid.hollow) {
           at.hollow = si;
@@ -185,13 +226,14 @@ export class VehicleRenderer {
       look.lampsOn = false;
       this.refresh(v);
     }
-    for (const mesh of [this.solid, this.wedge, this.wheel, this.lamp]) {
+    const modelMeshes = Object.values(this.models).flatMap((m) => Object.values(m.meshes));
+    for (const mesh of [this.solid, this.wedge, this.wheel, this.lamp, ...modelMeshes]) {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       mesh.computeBoundingSphere();
     }
     this.group = new THREE.Group();
-    this.group.add(this.solid, this.wedge, this.wheel, this.lamp);
+    this.group.add(this.solid, this.wedge, this.wheel, this.lamp, ...modelMeshes);
     scene.add(this.group);
   }
 
@@ -232,12 +274,19 @@ export class VehicleRenderer {
   refresh(v) {
     const look = v.look;
     const lids = this.lids[v.type];
+    const model = this.models[v.type];
     for (const name of LIDS) {
       const lid = lids[name];
       const at = look.lids[name];
       const amount = v.open[name] ?? 0;
-      this.solid.setMatrixAt(at.lid, this.lidMatrix(look.base, lid, amount, lid.box, this.out));
-      (lid.extra ?? []).forEach((e, k) => this.solid.setMatrixAt(at.extra[k], this.lidMatrix(look.base, lid, amount, e, this.out)));
+      if (model) {
+        const mesh = model.meshes[name];
+        mesh.setMatrixAt(look.model, this.lidMatrix(look.base, lid, amount, null, this.out));
+        mesh.instanceMatrix.needsUpdate = true;
+      } else {
+        this.solid.setMatrixAt(at.lid, this.lidMatrix(look.base, lid, amount, lid.box, this.out));
+        (lid.extra ?? []).forEach((e, k) => this.solid.setMatrixAt(at.extra[k], this.lidMatrix(look.base, lid, amount, e, this.out)));
+      }
       if (at.hollow >= 0) {
         if (amount > 0.02) this.setBox(this.solid, at.hollow, look.base, lid.hollow);
         else this.solid.setMatrixAt(at.hollow, this.hidden);
@@ -257,6 +306,7 @@ export class VehicleRenderer {
 
   // The matrix of `shape` ([w, h, l, x, y, z], the lid itself or something
   // that swings with it), turned about the lid's hinge by angle x amount.
+  // shape null: a model's lid (built in place), turned about the hinge.
   lidMatrix(base, lid, amount, shape, out) {
     const [, h, l, x, y, z] = lid.box;
     const a = lid.angle * amount;
@@ -296,6 +346,7 @@ export class VehicleRenderer {
       default:
         rot.identity();
     }
+    if (!shape) return out.copy(base).multiply(this.local.makeTranslation(hx, hy, hz)).multiply(rot).multiply(this.local.makeTranslation(-hx, -hy, -hz));
     const [sw, sh, sl, sx, sy, sz] = shape;
     out.copy(base).multiply(this.local.makeTranslation(hx, hy, hz)).multiply(rot);
     out.multiply(this.local.makeTranslation(sx - hx, sy - hy, sz - hz)).multiply(this.local.makeScale(sw, sh, sl));
@@ -322,5 +373,10 @@ export class VehicleRenderer {
     this.wedge?.dispose();
     this.wheel?.dispose();
     this.lamp?.dispose();
+    for (const m of Object.values(this.models ?? {})) {
+      for (const mesh of Object.values(m.meshes)) mesh.dispose();
+      for (const g of Object.values(m.geometries)) g.dispose();
+    }
+    this.modelMaterial?.dispose();
   }
 }
