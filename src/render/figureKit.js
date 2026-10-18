@@ -42,7 +42,8 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // limbs: [[from joint, to joint, r0, r1, key, bulge, flat (depth / width:
 // an oval, for a trunk), knob (the joint's knob, as a share of r0: default
 // 1.01, none for a trunk)]], tubes: [[bone, ax,
-// ay, az, bx, by, bz, r0, r1, key]], rings: [[bone, x, y, z, radius, tube,
+// ay, az, bx, by, bz, r0, r1, key, flat, bulge (optional, as limbs': a
+// garment's shell)]], rings: [[bone, x, y, z, radius, tube,
 // key, turn (optional, as masses')]] (facing +z unturned), paint(key, p, out) (optional: patterns; p in the
 // built space), deform(p, n, bone) (optional: how far to push a vertex out
 // along its normal, in metres: one smooth field moves every surface there
@@ -69,8 +70,9 @@ export function buildFigure(spec) {
     // A knob over the joint it starts from (not a trunk's: it would show below the hips).
     if (knob) add(new THREE.SphereGeometry(r0 * knob, 12, 8).translate(a.x, a.y, a.z), { bone: from, other: joints[from].parent, share: 0.5, key });
   }
-  for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key] of spec.tubes ?? []) {
-    add(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, 8, 4), { bone, key });
+  for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key, flat = 1, bulge = 0] of spec.tubes ?? []) {
+    const shell = flat !== 1 || bulge;
+    add(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, shell ? 40 : 8, shell ? 10 : 4, bulge, flat), { bone, key }); // a shell: fine enough to paint
   }
   for (const [bone, x, y, z, radius, thickness, key, turn] of spec.rings ?? []) {
     const g = new THREE.TorusGeometry(radius, thickness, 6, 20);

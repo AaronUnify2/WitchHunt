@@ -154,9 +154,24 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
       masses.push(['hips', null, side * 0.1, 0.9, -0.012, 0.012, 0.03, 0.018, 'gunWood', [-0.4, 0, 0]]); // the revolver's grip
     }
   }
+  if (kit.vest) {
+    // A leather vest worn loose (Aaron: not skin-tight): a shell hanging
+    // straight from a yoke over the shoulders, standing off the body, open
+    // in a V down the front (painted), the shoulders bare through its armholes.
+    tubes.push(['spine', 0, 0.96, 0.004, 0, 1.24, 0.004, 0.108, 0.104, 'vest', 0.8, 0.05]);
+    masses.push(['chest', 'spine', 0, 1.235, 0.004, 0.106, 0.1, 0.082, 'vest']);
+  }
   if (kit.boots) {
-    // Spurs at its heels.
-    for (const side of [-1, 1]) rings.push([side < 0 ? 'ankleR' : 'ankleL', side * 0.08, 0.045, -0.045, 0.02, 0.004, 'spur', [0, Math.PI / 2, 0]]);
+    // Cowboy boots, too big for its spindly legs: wide shafts to mid-shin,
+    // a boot round each foot with a heel, spurs.
+    for (const side of [-1, 1]) {
+      const knee = side < 0 ? 'kneeR' : 'kneeL';
+      const ankle = side < 0 ? 'ankleR' : 'ankleL';
+      tubes.push([knee, side * 0.08, 0.06, -0.01, side * 0.08, 0.3, 0.012, 0.045, 0.048, 'boots', 1, 0.05]);
+      masses.push([ankle, null, side * 0.08, 0.035, 0.045, 0.044, 0.036, 0.1, 'boots']);
+      masses.push([ankle, null, side * 0.08, 0.018, -0.035, 0.03, 0.02, 0.028, 'boots']); // the heel
+      rings.push([ankle, side * 0.08, 0.045, -0.06, 0.02, 0.004, 'spur', [0, Math.PI / 2, 0]]);
+    }
   }
   return {
     joints: ALIEN_JOINTS,
@@ -168,18 +183,11 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
     width: 1,
     head: 1,
     colours: alien.colours,
-    // Darker down its back; faintly mottled. The gunslinger's vest (open in
-    // a V at the front) and boots are painted on.
+    // Darker down its back; faintly mottled. The vest's opening down the
+    // front: its skin showing.
     paint(key, q, out, c) {
+      if (key === 'vest' && q.z > 0.03 && Math.abs(q.x) < 0.02 + Math.max(0, q.y - 1.08) * 0.36) out.copy(c.skin).multiplyScalar(0.85); // the lapels open to a V, hanging just apart below
       if (key !== 'skin') return;
-      if (kit.vest && q.y > 0.93 && q.y < 1.34 && Math.abs(q.x) < 0.115 && !(q.z > 0.03 && Math.abs(q.x) < (1.34 - q.y) * 0.22)) {
-        out.copy(c.vest);
-        return;
-      }
-      if (kit.boots && q.y < 0.3) {
-        out.copy(c.boots);
-        return;
-      }
       if (q.z < -0.02) out.lerp(c.back, Math.min(1, (-0.02 - q.z) * 8));
       const m = Math.sin(q.x * 61 + q.y * 37) * Math.sin(q.y * 53 - q.z * 41);
       out.multiplyScalar(0.93 + 0.07 * m);
