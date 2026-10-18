@@ -86,7 +86,7 @@ export class VehicleRenderer {
     this.modelMaterial.customProgramCacheKey = () => 'vehicle-model-paint';
     for (const [id, count] of Object.entries(modelCount)) {
       const built = VEHICLE_MODELS[data.types[id].model](data.colours);
-      const geometries = { body: built.body, ...built.lids, door2: mirrorGeometry(built.lids.door) };
+      const geometries = { body: built.body, ...built.lids, door2: mirrorGeometry(built.lids.door), ...built.extras };
       const meshes = {};
       for (const [name, g] of Object.entries(geometries)) {
         const mesh = new THREE.InstancedMesh(g, this.modelMaterial, count);
@@ -94,7 +94,7 @@ export class VehicleRenderer {
         mesh.receiveShadow = true;
         meshes[name] = mesh;
       }
-      this.models[id] = { meshes, geometries, next: 0 };
+      this.models[id] = { meshes, geometries, extras: Object.keys(built.extras ?? {}), next: 0 };
     }
 
     let solids = 0;
@@ -171,6 +171,8 @@ export class VehicleRenderer {
         look.model = model.next++;
         for (const mesh of Object.values(model.meshes)) mesh.setColorAt(look.model, paint);
         model.meshes.body.setMatrixAt(look.model, base);
+        // Its extras (a toolbox, a rack), each by its chance.
+        for (const name of model.extras) model.meshes[name].setMatrixAt(look.model, this.rng.chance(t.extras?.[name] ?? 0) ? base : this.hidden);
       }
 
       for (const part of t.parts) {

@@ -4,7 +4,9 @@
 // profiles with rounded edges, painted with vertex colours, in the
 // vehicle's own frame (x to its right, y up, z forward; data/vehicles.json).
 //
-// A model is { body, lids: { bonnet, boot, door } } of geometries, each
+// A model is { body, lids: { bonnet, boot, door }, extras } of geometries
+// (extras: { name: geometry }, kit only some carry: the type's `extras` in
+// vehicles.json give the chance of each), each
 // with a colour and an aPaint attribute: 1 where it takes the vehicle's
 // paint (its instance colour), 0 where it keeps its own colour (glass,
 // rubber, chrome, the wheel arches). Each lid is built where it sits shut;
@@ -389,7 +391,250 @@ function sedan(colours) {
   return { body, lids: { bonnet: merge([bonnet]), boot: merge([boot]), door } };
 }
 
-export const VEHICLE_MODELS = { sedan };
+// ---- the pickup: a 90s full-size, regular cab --------------------------------------------------
+
+const PICKUP = {
+  half: 0.95,
+  belt: 1.2,
+  roof: 1.84,
+  cabinHalf: (y) => 0.89 - ((y - 1.2) / 0.64) * 0.06,
+  arches: [
+    [1.6, 0.42],
+    [-1.6, 0.42],
+  ],
+  archRadius: 0.52,
+};
+const PICKUP_WINDOW = [
+  [0.6, 1.27],
+  [0.15, 1.765],
+  [-0.4, 1.765],
+  [-0.4, 1.27],
+];
+
+function pickup(colours) {
+  const P = PICKUP;
+  const [front, rear] = P.arches;
+  const r = P.archRadius;
+  const ends = Math.asin((0.5 - front[1]) / r); // where the arch meets the rocker
+  // The front clip and cab: the grille's face, the long flat bonnet, the
+  // cowl, the cab's beltline, down its back to the rocker.
+  const tub = extrude(
+    [
+      [2.56, 0.6],
+      [2.585, 0.76],
+      [2.57, 1.08],
+      [2.5, 1.15],
+      [0.8, 1.15],
+      [0.7, P.belt],
+      [-0.5, P.belt],
+      [-0.545, 1.16],
+      [-0.545, 0.6],
+      [-0.5, 0.5],
+      ...arch(front, r, Math.PI - ends, ends),
+      [2.4, 0.52],
+    ],
+    P.half * 2,
+    0.06,
+  );
+  reshape(tub, (p) => {
+    const end = Math.max(0, (p.z - 2.15) / 0.43);
+    const tuck = Math.max(0, (0.6 - p.y) / 0.12);
+    p.x *= 1 - 0.05 * end * end - 0.03 * Math.min(1, tuck);
+  });
+  paint(tub, (p, n) => {
+    if (n.y < -0.55) return 'under';
+    if (Math.hypot(p.z - front[0], p.y - front[1]) < r + 0.025 && Math.abs(n.x) < 0.6) return 'under';
+    return 'body';
+  }, colours);
+
+  // The cab: a near-upright back window, a flat roof.
+  const cabin = extrude(
+    [
+      [0.7, P.belt],
+      [0.14, 1.8],
+      [0.06, P.roof],
+      [-0.42, P.roof],
+      [-0.5, 1.8],
+      [-0.53, P.belt],
+    ],
+    1.78,
+    0.05,
+  );
+  reshape(cabin, (p) => {
+    p.x *= P.cabinHalf(Math.max(P.belt, p.y)) / 0.89;
+  });
+  paint(cabin, 'body', colours);
+  const side = (y) => P.cabinHalf(y) + 0.007;
+
+  // Glass: the windscreen, the back window, and behind each door's window a dark pane.
+  const glass = [];
+  const windscreen = [
+    [0.7, P.belt],
+    [0.14, 1.8],
+  ];
+  const along = ([a, b], t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const ws = [
+    [0.07, -1],
+    [0.07, 1],
+    [0.94, 1],
+    [0.94, -1],
+  ].map(([t, sx]) => {
+    const [z, y] = along(windscreen, t);
+    return [sx * (P.cabinHalf(y) - 0.09), y + 0.006, z + 0.007];
+  });
+  glass.push(panel(ws));
+  const back = [
+    [-1, 1.3],
+    [1, 1.3],
+    [1, 1.72],
+    [-1, 1.72],
+  ].map(([sx, y]) => [sx * (P.cabinHalf(y) - 0.2), y, -0.538 - (y - 1.2) * 0.05]);
+  glass.push(panel(back.reverse()));
+  const frames = [];
+  for (const sx of [-1, 1]) {
+    const inner = PICKUP_WINDOW.map(([z, y]) => [sx * (side(y) - 0.004), y, z]);
+    glass.push(panel(sx > 0 ? inner.reverse() : inner));
+  }
+  const glassParts = glass.map((g) => paint(g, (p) => (p.y > 1.6 ? 'glassTop' : 'glass'), colours));
+
+  // The bed: two sides cut round the rear wheels, a front wall, a ribbed
+  // floor, wheel humps, black rail caps; the frame dark beneath.
+  const bed = [];
+  for (const sx of [-1, 1]) {
+    const wall = extrude(
+      [
+        [-0.58, P.belt],
+        [-2.585, P.belt],
+        [-2.585, 0.6],
+        [-2.5, 0.52],
+        ...arch(rear, r, Math.PI - ends, ends),
+        [-0.58, 0.52],
+      ],
+      0.07,
+      0.02,
+      sx * (P.half - 0.035),
+    );
+    bed.push(
+      paint(wall, (p, n) => {
+        if (n.y < -0.55) return 'under';
+        if (Math.hypot(p.z - rear[0], p.y - rear[1]) < r + 0.025 && Math.abs(n.x) < 0.6) return 'under';
+        return n.x * sx < -0.5 ? 'bedSide' : 'body';
+      }, colours),
+    );
+    bed.push(paint(box(0.1, 0.03, 2.02, sx * (P.half - 0.04), P.belt + 0.012, -1.58, 0.01), 'rubber', colours)); // the rail cap
+    bed.push(paint(box(0.26, 0.24, 0.98, sx * 0.76, 1.05, rear[0], 0.06), 'bed', colours)); // the wheel hump
+    bed.push(paint(box(0.08, 0.13, 0.03, sx * 0.93, 0.98, -2.6, 0.005), 'tailOff', colours)); // the tail lamp housing
+  }
+  bed.push(paint(box(1.84, 0.66, 0.07, 0, 0.88, -0.6, 0.02), 'body', colours));
+  bed.push(paint(box(1.78, 0.04, 1.98, 0, 0.93, -1.58, 0.005), 'bed', colours));
+  for (const x of [-0.6, -0.3, 0, 0.3, 0.6]) bed.push(paint(box(0.05, 0.015, 1.94, x, 0.955, -1.58, 0.004), 'bedRib', colours));
+  bed.push(paint(box(1.6, 0.36, 1.98, 0, 0.72, -1.58, 0.02), 'under', colours));
+
+  // The front: a big chrome-framed grille, the bumper; the step bumper behind.
+  const trim = [];
+  trim.push(paint(box(1.02, 0.27, 0.03, 0, 0.92, 2.575), 'grille', colours));
+  for (const y of [0.85, 0.92, 0.99]) trim.push(paint(box(1.0, 0.014, 0.02, 0, y, 2.592, 0.004), 'chrome', colours));
+  trim.push(paint(box(0.014, 0.27, 0.02, 0, 0.92, 2.592, 0.004), 'chrome', colours));
+  trim.push(paint(box(1.08, 0.33, 0.025, 0, 0.92, 2.57, 0.01), 'chrome', colours)); // the grille's surround
+  const bumper = (z, dir, top) => {
+    const g = extrude(
+      [
+        [z - 0.1, 0.5],
+        [z + 0.1, 0.5],
+        [z + 0.1, top],
+        [z - 0.1, top],
+      ],
+      1.98,
+      0.035,
+    );
+    reshape(g, (p) => {
+      const wrap = Math.max(0, (Math.abs(p.x) - 0.82) / 0.17);
+      p.z -= dir * wrap * wrap * 0.1;
+    });
+    return paint(g, (p, n) => (n.y < -0.5 ? 'rubber' : 'chrome'), colours);
+  };
+  trim.push(bumper(2.67, 1, 0.73), bumper(-2.66, -1, 0.68));
+  trim.push(paint(box(0.4, 0.04, 0.12, 0, 0.69, -2.71, 0.01), 'rubber', colours)); // the step's tread
+  trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.6, 2.775, 0.003), 'plate', colours));
+  trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.6, -2.765, 0.003), 'plate', colours));
+  // The cab's back pillar seams, the fuel door, and the antenna.
+  for (const sx of [-1, 1]) {
+    trim.push(paint(box(0.008, 0.62, 0.012, sx * 0.952, 0.86, -0.46, 0.002), 'seam', colours));
+    trim.push(paint(box(0.008, 0.1, 0.12, sx * 0.958, 1.05, -2.1, 0.002), 'seam', colours));
+  }
+  trim.push(paint(rod([0.82, 1.15, 2.2], [0.82, 1.9, 2.28], 0.004), 'rubber', colours));
+
+  const body = merge([tub, cabin, ...glassParts, ...frames, ...bed, ...trim]);
+
+  // ---- the lids ----
+  const bonnet = extrude(
+    [
+      [2.52, 1.151],
+      [2.52, 1.172],
+      [2.47, 1.19],
+      [0.79, 1.19],
+      [0.79, 1.151],
+    ],
+    1.78,
+    0.03,
+  );
+  reshape(bonnet, (p) => {
+    if (p.y > 1.17) p.y += 0.01 * (1 - (p.x / 0.89) ** 2);
+    const end = Math.max(0, (p.z - 2.15) / 0.37);
+    p.x *= 1 - 0.05 * end * end;
+  });
+  paint(bonnet, (p, n) => (n.y < -0.5 ? 'under' : 'body'), colours);
+
+  // The tailgate (drops on its bottom hinge): the paint outside, its handle.
+  const gate = extrude(
+    [
+      [-2.555, 0.6],
+      [-2.555, 1.195],
+      [-2.615, 1.195],
+      [-2.615, 0.6],
+    ],
+    1.76,
+    0.02,
+  );
+  paint(gate, (p, n) => (n.z > 0.5 ? 'bedSide' : 'body'), colours);
+  const gateHandle = paint(box(0.24, 0.05, 0.02, 0, 1.1, -2.62, 0.008), 'chrome', colours);
+
+  // The driver's door: skin, window and its chrome surround, handle, a big mirror.
+  const skin = extrude(
+    [
+      [0.72, 0.53],
+      [0.72, P.belt],
+      [-0.45, P.belt],
+      [-0.45, 0.53],
+    ],
+    0.035,
+    0.012,
+    -(P.half - 0.012),
+  );
+  paint(skin, (p, n) => (n.x > 0.5 ? 'under' : 'body'), colours);
+  const winPts = PICKUP_WINDOW.map(([z, y]) => [-side(y), y, z]);
+  const door = merge([
+    skin,
+    paint(panel(winPts), (p) => (p.y > 1.6 ? 'glassTop' : 'glass'), colours),
+    ...surround(PICKUP_WINDOW, (y) => -(side(y) + 0.004), colours),
+    paint(box(0.014, 0.035, 0.1, -(P.half + 0.008), 1.06, -0.32, 0.005), 'chrome', colours),
+    paint(box(0.04, 0.2, 0.14, -(P.half + 0.09), 1.4, 0.58, 0.02), 'rubber', colours), // the towing-style mirror
+    paint(rod([-(P.half + 0.005), 1.36, 0.62], [-(P.half + 0.08), 1.38, 0.6], 0.008), 'rubber', colours),
+    paint(box(0.008, 0.62, 0.012, -(P.half + 0.004), 0.86, 0.715, 0.002), 'seam', colours),
+  ]);
+
+  // Extras, some trucks only: a crossbed toolbox; a headache rack.
+  const toolbox = merge([paint(box(1.86, 0.26, 0.46, 0, P.belt + 0.155, -0.86, 0.02), 'toolbox', colours), paint(box(0.2, 0.03, 0.02, 0, P.belt + 0.2, -1.095, 0.005), 'chrome', colours)]);
+  const rackParts = [];
+  for (const sx of [-0.88, 0.88]) rackParts.push(paint(rod([sx, P.belt, -0.62], [sx, 1.95, -0.62], 0.025), 'rubber', colours));
+  rackParts.push(paint(rod([-0.88, 1.95, -0.62], [0.88, 1.95, -0.62], 0.025), 'rubber', colours));
+  for (const x of [-0.45, 0, 0.45]) rackParts.push(paint(rod([x, P.belt, -0.62], [x, 1.95, -0.62], 0.012), 'rubber', colours));
+  const rack = merge(rackParts);
+
+  return { body, lids: { bonnet: merge([bonnet]), boot: merge([gate, gateHandle]), door }, extras: { toolbox, rack } };
+}
+
+export const VEHICLE_MODELS = { sedan, pickup };
 
 // A lid mirrored across the vehicle (the passenger door from the driver's).
 export function mirrorGeometry(g) {
