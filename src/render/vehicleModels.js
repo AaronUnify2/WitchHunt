@@ -152,20 +152,7 @@ function merge(parts) {
   return g;
 }
 
-// ---- the sedan: a boxy late-80s American four-door ---------------------------------------------
-
-// Its body's half-width, and the cabin's half-width up its tumblehome.
-const SEDAN = {
-  half: 0.885,
-  belt: 0.93, // the tub's top under the cabin
-  roof: 1.42,
-  cabinHalf: (y) => 0.82 - ((y - 0.9) / 0.52) * 0.1,
-  arches: [
-    [1.35, 0.34],
-    [-1.35, 0.34],
-  ],
-  archRadius: 0.44,
-};
+// ---- the four-doors: the sedan and the police car --------------------------------------------
 
 function arch([cz, cy], r, from, to, steps = 10) {
   const pts = [];
@@ -176,219 +163,407 @@ function arch([cz, cy], r, from, to, steps = 10) {
   return pts;
 }
 
-// The side windows' outlines [[z, y], ...]: the front door's (under the
-// windscreen's slope) and the rear door's (its back edge raked).
-const FRONT_WINDOW = [
-  [0.56, 0.97],
-  [-0.07, 1.355],
-  [-0.4, 1.355],
-  [-0.4, 0.97],
-];
-const REAR_WINDOW = [
-  [-0.47, 0.97],
-  [-1.0, 0.97],
-  [-0.86, 1.355],
-  [-0.47, 1.355],
-];
+// The wheel wells' liners: the arches are cut right through the body, so
+// a dark block inside each, between the wheels, stops you seeing through
+// to the far wheel (width: across, clear of the tyres).
+function wells(arches, r, width, colours) {
+  return arches.map(([cz, cy]) => paint(box(width, r * 1.1, r * 2, 0, cy + r * 0.45, cz, 0.01), 'under', colours));
+}
 
 // A chrome surround round a side window: a thin rod along each edge
 // (x(y): where the cabin's side is at that height).
-function surround(outline, x, colours) {
+function surround(outline, x, colours, key = 'chrome') {
   return outline.map(([z, y], i) => {
     const [z2, y2] = outline[(i + 1) % outline.length];
-    return paint(rod([x(y), y, z], [x(y2), y2, z2], 0.009), 'chrome', colours);
+    return paint(rod([x(y), y, z], [x(y2), y2, z2], 0.009), key, colours);
   });
 }
 
-function sedan(colours) {
-  const S = SEDAN;
-  const [front, rear] = S.arches;
-  const r = S.archRadius;
-  // The tub: bumper to bumper, bonnet and boot deck flat (the lids sit on
-  // them), the wheel arches cut up into its lower edge.
-  const tubProfile = [
+// A boxy late-80s American four-door. All in metres, the vehicle's frame:
+// the body's half-width; the cabin's half-width up its tumblehome; the
+// side profiles of the tub (bumper to bumper, bonnet and boot deck flat
+// for the lids, the wheel arches cut up into its lower edge), the cabin
+// (the windscreen, roof and rear window's frame: painted, the pillars),
+// the bonnet and boot lids and the front door; the side windows' outlines
+// [[z, y], ...] (the front door's under the windscreen's slope, the rear
+// door's raked).
+const SEDAN = {
+  half: 0.885,
+  belt: 0.93,
+  cabinBase: 0.9,
+  cabinHalf: (y) => 0.82 - ((y - 0.9) / 0.52) * 0.1,
+  arches: [
+    [1.35, 0.34],
+    [-1.35, 0.34],
+  ],
+  archRadius: 0.44,
+  pinch: [1.75, 0.47, 0.07], // in plan: from |z|, over, by
+  tuck: 0.48, // the sills tuck under below this
+  tub: [
     [2.18, 0.42],
     [2.21, 0.6],
     [2.2, 0.82],
     [2.14, 0.865],
     [0.78, 0.865], // under the bonnet
     [0.7, 0.9], // the cowl
-    [-1.46, S.belt],
+    [-1.46, 0.93],
     [-1.5, 0.935], // the boot deck
     [-2.13, 0.935],
     [-2.2, 0.88],
     [-2.22, 0.66],
     [-2.19, 0.46],
     [-2.08, 0.38],
-    ...arch(rear, r, Math.PI + 0.25, -0.25),
-    ...arch(front, r, Math.PI + 0.25, -0.25),
+    'arches',
     [2.08, 0.38],
-  ];
-  const tub = extrude(tubProfile, S.half * 2, 0.06);
-  // Pinched in at the ends in plan, tucked under at the sills.
+  ],
+  cabin: [
+    [0.7, 0.9],
+    [-0.12, 1.39],
+    [-0.2, 1.42],
+    [-0.94, 1.42],
+    [-1.02, 1.39],
+    [-1.47, 0.93],
+  ],
+  cabinRound: 0.05,
+  windscreen: [
+    [0.7, 0.9],
+    [-0.12, 1.39],
+  ],
+  rearScreen: [
+    [-1.02, 1.39],
+    [-1.47, 0.93],
+  ],
+  frontWindow: [
+    [0.56, 0.97],
+    [-0.07, 1.355],
+    [-0.4, 1.355],
+    [-0.4, 0.97],
+  ],
+  rearWindow: [
+    [-0.47, 0.97],
+    [-1.0, 0.97],
+    [-0.86, 1.355],
+    [-0.47, 1.355],
+  ],
+  glassTop: 1.25,
+  bumpers: { front: 2.24, rear: -2.25, low: 0.4, high: 0.58, width: 1.84, wrap: 0.72 },
+  grille: { y: 0.71, width: 0.62, z: 2.205 },
+  plates: [
+    [0.47, 2.33],
+    [0.72, -2.226],
+  ],
+  strip: 0.64, // the rubbing strips' height
+  seams: [-0.44, -1.02],
+  bonnet: [
+    [2.16, 0.866],
+    [2.16, 0.885],
+    [2.1, 0.905],
+    [0.77, 0.906],
+    [0.77, 0.866],
+  ],
+  bonnetWidth: 1.66,
+  boot: [
+    [-1.52, 0.936],
+    [-1.52, 0.968],
+    [-2.12, 0.968],
+    [-2.17, 0.95],
+    [-2.17, 0.936],
+  ],
+  bootWidth: 1.62,
+  door: [0.64, -0.42, 0.4, 0.92], // front z, back z, bottom, top
+  mirror: [0.99, 0.5],
+  aerial: [
+    [0.72, 0.88, 1.9],
+    [0.72, 1.6, 1.98],
+  ],
+};
+
+// One four-door from its numbers (SEDAN's shape). S.extra(parts): the
+// type's own kit added to the body and the door (the police car's).
+function fourDoor(colours, S) {
+  const [front, rear] = S.arches;
+  const r = S.archRadius;
+  const pinch = (p, from = S.pinch[0]) => {
+    const end = Math.max(0, (Math.abs(p.z) - from) / S.pinch[1]);
+    return 1 - S.pinch[2] * end * end;
+  };
+  const tubProfile = S.tub.flatMap((pt) => (pt === 'arches' ? [...arch(rear, r, Math.PI + 0.25, -0.25), ...arch(front, r, Math.PI + 0.25, -0.25)] : [pt]));
+  const tub = extrude(tubProfile, S.half * 2, 0.035); // rounded no more than the thin strip over the front arch allows
   reshape(tub, (p) => {
-    const end = Math.max(0, (Math.abs(p.z) - 1.75) / 0.47);
-    const tuck = Math.max(0, (0.48 - p.y) / 0.14);
-    p.x *= 1 - 0.07 * end * end - 0.035 * Math.min(1, tuck);
+    const tuck = Math.max(0, (S.tuck - p.y) / 0.14);
+    p.x *= pinch(p) - 0.035 * Math.min(1, tuck);
   });
-  paint(tub, (p, n) => {
+  const archKey = (p, n) => {
     if (n.y < -0.55) return 'under';
     for (const [cz, cy] of S.arches) if (Math.hypot(p.z - cz, p.y - cy) < r + 0.025 && Math.abs(n.x) < 0.6) return 'under';
-    return 'body';
-  }, colours);
+    return null;
+  };
+  paint(tub, (p, n) => archKey(p, n) ?? S.tubKey?.(p, n) ?? 'body', colours);
 
-  // The cabin: the windscreen, roof and rear window's frame (painted: the
-  // pillars), with tumblehome; the glass laid over it.
-  const cabin = extrude(
-    [
-      [0.7, 0.9],
-      [-0.12, 1.39],
-      [-0.2, S.roof],
-      [-0.94, S.roof],
-      [-1.02, 1.39],
-      [-1.47, S.belt],
-    ],
-    1.64,
-    0.05,
-  );
+  const base = S.cabinHalf(S.cabinBase);
+  const cabin = extrude(S.cabin, base * 2, S.cabinRound);
   reshape(cabin, (p) => {
-    p.x *= S.cabinHalf(Math.max(0.9, p.y)) / 0.82;
+    p.x *= S.cabinHalf(Math.max(S.cabinBase, p.y)) / base;
   });
-  paint(cabin, 'body', colours);
+  paint(cabin, (p, n) => S.cabinKey?.(p, n) ?? 'body', colours);
 
   const glass = [];
   const side = (y) => S.cabinHalf(y) + 0.007;
   // The windscreen and rear window, inset from their pillars.
-  const slope = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  const pane = (a, b, out, t0, t1, inset) => {
+  const pane = ([a, b], t0, t1, inset) => {
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    const n = [((b[1] - a[1]) / len) * out, (-(b[0] - a[0]) / len) * out]; // (z, y) outward
-    const pts = [];
-    for (const [t, sgn] of [
+    const n = [(b[1] - a[1]) / len, -(b[0] - a[0]) / len]; // (z, y) outward
+    return [
       [t0, -1],
       [t0, 1],
       [t1, 1],
       [t1, -1],
-    ]) {
-      const [z, y] = slope(a, b, t);
-      pts.push([sgn * (S.cabinHalf(y) - inset), y + n[1] * 0.008, z + n[0] * 0.008]);
-    }
-    return pts;
+    ].map(([t, sgn]) => {
+      const z = a[0] + (b[0] - a[0]) * t;
+      const y = a[1] + (b[1] - a[1]) * t;
+      return [sgn * (S.cabinHalf(y) - inset), y + n[1] * 0.008, z + n[0] * 0.008];
+    });
   };
-  glass.push(panel(pane([0.7, 0.9], [-0.12, 1.39], 1, 0.07, 0.95, 0.09)));
-  glass.push(panel(pane([-1.02, 1.39], [-1.47, S.belt], 1, 0.07, 0.92, 0.1)));
+  glass.push(panel(pane(S.windscreen, 0.07, 0.95, 0.09)));
+  glass.push(panel(pane(S.rearScreen, 0.07, 0.92, 0.1)));
   // The rear door windows (the front ones are on the doors), both sides,
   // and behind each front door's window a dark pane (seen through it, and
   // in its place once the door swings open: the cabin's inside).
   const frames = [];
   for (const sx of [-1, 1]) {
-    const pts = REAR_WINDOW.map(([z, y]) => [sx * side(y), y, z]);
+    const pts = S.rearWindow.map(([z, y]) => [sx * side(y), y, z]);
     glass.push(panel(sx > 0 ? pts : pts.reverse()));
-    frames.push(...surround(REAR_WINDOW, (y) => sx * (side(y) + 0.004), colours));
-    const inner = FRONT_WINDOW.map(([z, y]) => [sx * (side(y) - 0.004), y, z]);
+    frames.push(...surround(S.rearWindow, (y) => sx * (side(y) + 0.004), colours, S.frameKey));
+    const inner = S.frontWindow.map(([z, y]) => [sx * (side(y) - 0.004), y, z]);
     glass.push(panel(sx > 0 ? inner.reverse() : inner));
   }
-  const glassParts = glass.map((g) => paint(g, (p) => (p.y > 1.25 ? 'glassTop' : 'glass'), colours));
+  const glassKey = (p) => (p.y > S.glassTop ? 'glassTop' : 'glass');
+  const glassParts = glass.map((g) => paint(g, glassKey, colours));
 
   // Bumpers: black rubber with a chrome strip, wrapping the corners.
+  const B = S.bumpers;
   const bumper = (z, dir) => {
     const g = extrude(
       [
-        [z - 0.08, 0.4],
-        [z + 0.08, 0.4],
-        [z + 0.08, 0.58],
-        [z - 0.08, 0.58],
+        [z - 0.08, B.low],
+        [z + 0.08, B.low],
+        [z + 0.08, B.high],
+        [z - 0.08, B.high],
       ],
-      1.84,
+      B.width,
       0.03,
     );
     reshape(g, (p) => {
-      const wrap = Math.max(0, (Math.abs(p.x) - 0.72) / 0.2);
+      const wrap = Math.max(0, (Math.abs(p.x) - B.wrap) / 0.2);
       p.z -= dir * wrap * wrap * 0.12;
     });
-    return paint(g, (p) => (p.y > 0.52 && p.z * dir > 0 ? 'chrome' : 'rubber'), colours);
+    return paint(g, (p) => (B.chrome !== false && p.y > B.high - 0.06 && p.z * dir > 0 ? 'chrome' : 'rubber'), colours);
   };
-  const trim = [bumper(2.24, 1), bumper(-2.25, -1)];
+  const trim = [bumper(B.front, 1), bumper(B.rear, -1), ...wells(S.arches, r, 1.2, colours)];
   // The grille between the headlamps, and its bars.
-  trim.push(paint(box(0.62, 0.17, 0.03, 0, 0.71, 2.205), 'grille', colours));
-  for (const y of [0.66, 0.71, 0.76]) trim.push(paint(box(0.6, 0.012, 0.02, 0, y, 2.222, 0.004), 'chrome', colours));
-  trim.push(paint(box(0.66, 0.02, 0.03, 0, 0.805, 2.215, 0.005), 'chrome', colours));
+  const G = S.grille;
+  trim.push(paint(box(G.width, 0.17, 0.03, 0, G.y, G.z), 'grille', colours));
+  for (const dy of [-0.05, 0, 0.05]) trim.push(paint(box(G.width - 0.02, 0.012, 0.02, 0, G.y + dy, G.z + 0.017, 0.004), 'chrome', colours));
+  trim.push(paint(box(G.width + 0.04, 0.02, 0.03, 0, G.y + 0.095, G.z + 0.01, 0.005), 'chrome', colours));
   // Number plates.
-  trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.47, 2.33, 0.003), 'plate', colours));
-  trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.72, -2.226, 0.003), 'plate', colours));
+  for (const [y, z] of S.plates) trim.push(paint(box(0.3, 0.15, 0.015, 0, y, z, 0.003), 'plate', colours));
   // Side rubbing strips and door seams on the fixed body (the doors carry their own).
   for (const sx of [-1, 1]) {
-    trim.push(paint(box(0.012, 0.035, 0.8, sx * 0.885, 0.64, -0.82, 0.004), 'rubber', colours));
-    trim.push(paint(box(0.012, 0.035, 0.7, sx * 0.875, 0.64, 1.15, 0.004), 'rubber', colours));
-    for (const z of [-0.44, -1.02]) trim.push(paint(box(0.008, 0.52, 0.012, sx * 0.889, 0.66, z, 0.002), 'seam', colours));
-    trim.push(paint(box(0.012, 0.03, 0.06, sx * 0.892, 0.82, -0.9, 0.004), 'chrome', colours)); // the rear door's handle
+    trim.push(paint(box(0.012, 0.035, 0.8, sx * S.half, S.strip, (S.seams[0] + S.seams[1]) / 2 - 0.09, 0.004), 'rubber', colours));
+    trim.push(paint(box(0.012, 0.035, 0.7, sx * (S.half - 0.01), S.strip, front[0] - 0.2, 0.004), 'rubber', colours));
+    for (const z of S.seams) trim.push(paint(box(0.008, 0.52, 0.012, sx * (S.half + 0.004), 0.66, z, 0.002), 'seam', colours));
+    trim.push(paint(box(0.012, 0.03, 0.06, sx * (S.half + 0.007), 0.82, S.seams[1] + 0.12, 0.004), 'chrome', colours)); // the rear door's handle
   }
-  // A whip aerial on the front wing.
-  trim.push(paint(rod([0.72, 0.88, 1.9], [0.72, 1.6, 1.98], 0.004), 'rubber', colours));
-
-  const body = merge([tub, cabin, ...glassParts, ...frames, ...trim]);
+  // A whip aerial.
+  trim.push(paint(rod(...S.aerial, 0.004), 'rubber', colours));
 
   // ---- the lids, where they sit shut ----
-  const bonnet = extrude(
-    [
-      [2.16, 0.866],
-      [2.16, 0.885],
-      [2.1, 0.905],
-      [0.77, 0.906],
-      [0.77, 0.866],
-    ],
-    1.66,
-    0.03,
-  );
+  const bonnet = extrude(S.bonnet, S.bonnetWidth, 0.03);
+  const bonnetTop = S.bonnet[1][1] - 0.005;
   reshape(bonnet, (p) => {
-    if (p.y > 0.88) p.y += 0.012 * (1 - (p.x / 0.83) ** 2); // a gentle crown
-    const end = Math.max(0, (p.z - 1.75) / 0.41);
-    p.x *= 1 - 0.07 * end * end;
+    if (p.y > bonnetTop) p.y += 0.012 * (1 - (p.x / (S.bonnetWidth / 2)) ** 2); // a gentle crown
+    p.x *= pinch(p);
   });
   paint(bonnet, (p, n) => (n.y < -0.5 ? 'under' : 'body'), colours);
 
-  const boot = extrude(
-    [
-      [-1.52, 0.936],
-      [-1.52, 0.968],
-      [-2.12, 0.968],
-      [-2.17, 0.95],
-      [-2.17, 0.936],
-    ],
-    1.62,
-    0.025,
-  );
+  const boot = extrude(S.boot, S.bootWidth, 0.025);
   reshape(boot, (p) => {
-    const end = Math.max(0, (-p.z - 1.75) / 0.42);
-    p.x *= 1 - 0.07 * end * end;
+    p.x *= pinch(p);
   });
   paint(boot, (p, n) => (n.y < -0.5 ? 'under' : 'body'), colours);
 
   // The driver's door (left: -x): its skin, its window (moves with it), handle, mirror, strip.
+  const [dz0, dz1, dy0, dy1] = S.door;
   const skin = extrude(
     [
-      [0.64, 0.4],
-      [0.64, 0.92],
-      [-0.42, 0.92],
-      [-0.42, 0.4],
+      [dz0, dy0],
+      [dz0, dy1],
+      [dz1, dy1],
+      [dz1, dy0],
     ],
     0.035,
     0.012,
-    -0.873,
+    -(S.half - 0.012),
   );
-  paint(skin, (p, n) => (n.x > 0.5 ? 'under' : 'body'), colours);
-  const winPts = FRONT_WINDOW.map(([z, y]) => [-side(y), y, z]);
-  const doorGlass = paint(panel(winPts), (p) => (p.y > 1.25 ? 'glassTop' : 'glass'), colours);
-  const doorFrame = surround(FRONT_WINDOW, (y) => -(side(y) + 0.004), colours);
-  const doorTrim = [
-    paint(box(0.012, 0.035, 1.0, -0.893, 0.64, 0.11, 0.004), 'rubber', colours),
-    paint(box(0.014, 0.03, 0.07, -0.894, 0.82, -0.3, 0.004), 'chrome', colours),
-    paint(box(0.06, 0.08, 0.12, -0.93, 0.99, 0.5, 0.02), 'rubber', colours), // the mirror
-    paint(box(0.008, 0.52, 0.012, -0.892, 0.66, 0.635, 0.002), 'seam', colours),
+  paint(skin, (p, n) => (n.x > 0.5 ? 'under' : S.doorKey?.(p, n) ?? 'body'), colours);
+  const winPts = S.frontWindow.map(([z, y]) => [-side(y), y, z]);
+  const doorParts = [
+    skin,
+    paint(panel(winPts), glassKey, colours),
+    ...surround(S.frontWindow, (y) => -(side(y) + 0.004), colours, S.frameKey),
+    paint(box(0.012, 0.035, dz0 - dz1 - 0.06, -(S.half + 0.008), S.strip, (dz0 + dz1) / 2, 0.004), 'rubber', colours),
+    paint(box(0.014, 0.03, 0.07, -(S.half + 0.009), 0.82, dz1 + 0.12, 0.004), 'chrome', colours),
+    paint(box(0.06, 0.08, 0.12, -(S.half + 0.045), S.mirror[0], S.mirror[1], 0.02), 'rubber', colours), // the mirror
+    paint(box(0.008, 0.52, 0.012, -(S.half + 0.007), 0.66, dz0 - 0.005, 0.002), 'seam', colours),
   ];
-  const door = merge([skin, doorGlass, ...doorFrame, ...doorTrim]);
-
+  const own = S.extra ? S.extra(colours, side) : { body: [], door: [] };
+  const body = merge([tub, cabin, ...glassParts, ...frames, ...trim, ...own.body]);
+  const door = merge([...doorParts, ...own.door]);
   return { body, lids: { bonnet: merge([bonnet]), boot: merge([boot]), door } };
+}
+
+function sedan(colours) {
+  return fourDoor(colours, SEDAN);
+}
+
+// ---- the police car: a county sheriff's Crown Victoria (Aaron: the sheriff's paint) ------------
+
+// Bigger and rounder than the sedan: a sloping nose, a rounded boot, a
+// softer cabin; painted the county's brown with white front doors, a gold
+// star on each and a gold stripe down the sides; a push bar, a light bar,
+// a spotlight by the driver's mirror, black steel wheels.
+const POLICE = {
+  ...SEDAN,
+  half: 0.9,
+  belt: 0.95,
+  cabinBase: 0.92,
+  cabinHalf: (y) => 0.83 - ((y - 0.92) / 0.54) * 0.13,
+  arches: [
+    [1.42, 0.34],
+    [-1.42, 0.34],
+  ],
+  archRadius: 0.45,
+  pinch: [1.6, 0.7, 0.1],
+  tub: [
+    [2.24, 0.42],
+    [2.3, 0.56],
+    [2.28, 0.74],
+    [2.18, 0.84],
+    [2.0, 0.875],
+    [0.82, 0.885], // under the bonnet
+    [0.72, 0.92], // the cowl
+    [-1.5, 0.95],
+    [-1.56, 0.955], // the boot deck
+    [-2.1, 0.955],
+    [-2.24, 0.91],
+    [-2.3, 0.8],
+    [-2.3, 0.6],
+    [-2.25, 0.44],
+    [-2.12, 0.38],
+    'arches',
+    [2.12, 0.38],
+  ],
+  cabin: [
+    [0.72, 0.92],
+    [0.0, 1.4],
+    [-0.15, 1.46],
+    [-0.9, 1.46],
+    [-1.06, 1.41],
+    [-1.52, 0.95],
+  ],
+  cabinRound: 0.08,
+  windscreen: [
+    [0.72, 0.92],
+    [0.0, 1.4],
+  ],
+  rearScreen: [
+    [-1.06, 1.41],
+    [-1.52, 0.95],
+  ],
+  frontWindow: [
+    [0.6, 0.99],
+    [0.04, 1.39],
+    [-0.42, 1.4],
+    [-0.42, 0.99],
+  ],
+  rearWindow: [
+    [-0.49, 0.99],
+    [-1.06, 0.99],
+    [-0.9, 1.4],
+    [-0.49, 1.4],
+  ],
+  glassTop: 1.28,
+  frameKey: 'rubber', // black window surrounds, not chrome
+  bumpers: { front: 2.33, rear: -2.33, low: 0.38, high: 0.56, width: 1.86, wrap: 0.7, chrome: false },
+  grille: { y: 0.68, width: 0.5, z: 2.29 },
+  plates: [
+    [0.47, 2.42],
+    [0.72, -2.305],
+  ],
+  strip: 0.5, // low: the star sits above it
+  seams: [-0.46, -1.08],
+  bonnet: [
+    [2.2, 0.866],
+    [2.2, 0.878],
+    [2.0, 0.905],
+    [0.8, 0.915],
+    [0.8, 0.886],
+  ],
+  bonnetWidth: 1.7,
+  boot: [
+    [-1.58, 0.956],
+    [-1.58, 0.988],
+    [-2.08, 0.988],
+    [-2.22, 0.958],
+    [-2.22, 0.956],
+  ],
+  bootWidth: 1.66,
+  door: [0.66, -0.44, 0.4, 0.94],
+  mirror: [1.0, 0.52],
+  aerial: [
+    [-0.5, 0.96, -1.95],
+    [-0.5, 1.75, -2.02],
+  ],
+  // The county's two-tone: white front doors (the doors carry them) and
+  // roof, a gold stripe down each side (in extra()).
+  cabinKey: (p) => (p.y > 1.43 ? 'sheriffWhite' : null),
+  doorKey: () => 'sheriffWhite',
+  extra(colours, side) {
+    const body = [];
+    // The push bar: two uprights off the bumper, a crossbar, black.
+    for (const sx of [-0.42, 0.42]) body.push(paint(rod([sx, 0.42, 2.42], [sx, 0.88, 2.42], 0.025), 'rubber', colours));
+    body.push(paint(rod([-0.42, 0.86, 2.42], [0.42, 0.86, 2.42], 0.025), 'rubber', colours));
+    body.push(paint(rod([-0.42, 0.62, 2.45], [0.42, 0.62, 2.45], 0.02), 'rubber', colours));
+    // The light bar on the roof: a base and its feet (the lenses are lamps: they flash).
+    body.push(paint(box(1.18, 0.05, 0.3, 0, 1.485, -0.42, 0.02), 'rubber', colours));
+    for (const sx of [-0.5, 0.5]) body.push(paint(box(0.06, 0.04, 0.08, sx, 1.462, -0.42, 0.01), 'rubber', colours));
+    // A second aerial and the roof's white is the cabin's paint.
+    body.push(paint(rod([0.5, 0.96, -1.95], [0.5, 1.6, -2.0], 0.004), 'rubber', colours));
+    // The spotlight on the driver's A-pillar: its lamp and handle.
+    const sx = -(side(1.1) + 0.06);
+    body.push(paint(rod([sx, 1.1, 0.5], [sx, 1.1, 0.62], 0.05), 'chrome', colours));
+    body.push(paint(rod([sx + 0.06, 1.1, 0.55], [sx, 1.1, 0.55], 0.01), 'chrome', colours));
+    // A gold star on each white door (built on the driver's: mirrored with it).
+    const centre = [-(this.half + 0.008), 0.64, 0.12];
+    const pts = [];
+    for (let i = 0; i <= 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + Math.PI / 2;
+      const rr = i % 2 ? 0.045 : 0.11;
+      pts.push([centre[0], centre[1] + Math.sin(a) * rr, centre[2] + Math.cos(a) * rr]);
+    }
+    const door = [paint(panel([centre, ...pts]), 'gold', colours)];
+    // The gold stripe: along the body ahead of and behind the door, and across it.
+    for (const sx of [-1, 1]) {
+      body.push(paint(box(0.012, 0.035, 0.92, sx * (this.half + 0.004), 0.84, 1.12, 0.004), 'gold', colours));
+      body.push(paint(box(0.012, 0.035, 1.12, sx * (this.half + 0.004), 0.84, -1.0, 0.004), 'gold', colours));
+    }
+    door.push(paint(box(0.012, 0.035, 1.08, -(this.half + 0.01), 0.84, 0.11, 0.004), 'gold', colours));
+    return { body, door };
+  },
+};
+
+function police(colours) {
+  return fourDoor(colours, POLICE);
 }
 
 // ---- the pickup: a 90s full-size, regular cab --------------------------------------------------
@@ -553,7 +728,7 @@ function pickup(colours) {
     });
     return paint(g, (p, n) => (n.y < -0.5 ? 'rubber' : 'chrome'), colours);
   };
-  trim.push(bumper(2.67, 1, 0.73), bumper(-2.66, -1, 0.68));
+  trim.push(bumper(2.67, 1, 0.73), bumper(-2.66, -1, 0.68), ...wells(P.arches, r, 1.26, colours));
   trim.push(paint(box(0.4, 0.04, 0.12, 0, 0.69, -2.71, 0.01), 'rubber', colours)); // the step's tread
   trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.6, 2.775, 0.003), 'plate', colours));
   trim.push(paint(box(0.3, 0.15, 0.015, 0, 0.6, -2.765, 0.003), 'plate', colours));
@@ -634,7 +809,7 @@ function pickup(colours) {
   return { body, lids: { bonnet: merge([bonnet]), boot: merge([gate, gateHandle]), door }, extras: { toolbox, rack } };
 }
 
-export const VEHICLE_MODELS = { sedan, pickup };
+export const VEHICLE_MODELS = { sedan, pickup, police };
 
 // A lid mirrored across the vehicle (the passenger door from the driver's).
 export function mirrorGeometry(g) {
