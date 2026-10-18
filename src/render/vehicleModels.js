@@ -809,7 +809,207 @@ function pickup(colours) {
   return { body, lids: { bonnet: merge([bonnet]), boot: merge([gate, gateHandle]), door }, extras: { toolbox, rack } };
 }
 
-export const VEHICLE_MODELS = { sedan, pickup, police };
+// ---- the army truck: an M35 'deuce-and-a-half' ------------------------------------------------
+
+// A flat-nosed cab behind a narrow hood, flat steel fenders over the front
+// wheels, a grille guard, a heavy bumper; a cargo bed with low sides under
+// a canvas cover on bows, tandem rear axles. The canvas flap at the back is
+// its 'boot' (it lifts on its top edge), the tailgate below it stays shut.
+const ARMY = {
+  cabHalf: 1.0,
+  cab: [1.15, 2.15], // back, front (z)
+  floor: 0.95,
+  belt: 1.6,
+  roof: 2.42,
+  bed: [-3.18, 1.05], // back, front (z)
+  bedHalf: 1.1,
+  bedFloor: 1.15,
+  door: [2.05, 1.25], // front z (the hinge), back z
+};
+const ARMY_WINDOW = [
+  [2.0, 1.66],
+  [2.0, 2.28],
+  [1.32, 2.28],
+  [1.32, 1.66],
+];
+
+function armyTruck(colours) {
+  const A = ARMY;
+  const parts = [];
+  const add = (g, key) => parts.push(paint(g, key, colours));
+  // The chassis: two rails the length of it, dark.
+  for (const sx of [-0.42, 0.42]) add(box(0.12, 0.22, 6.2, sx, 0.84, 0, 0.01), 'under');
+  // The heavy front bumper, its tow hooks and stencils; the rear crossmember.
+  add(box(2.3, 0.26, 0.2, 0, 0.78, 3.12, 0.02), 'body');
+  for (const sx of [-0.55, 0.55]) add(box(0.06, 0.16, 0.12, sx, 0.7, 3.25, 0.01), 'rubber');
+  for (const sx of [-0.85, -0.7, 0.7, 0.85]) add(box(0.1, 0.07, 0.01, sx, 0.8, 3.222, 0.002), 'stencil');
+  add(box(2.2, 0.2, 0.16, 0, 0.84, -3.14, 0.02), 'body');
+  add(box(0.3, 0.15, 0.015, 0, 0.82, -3.225, 0.003), 'plate');
+  // The hood: narrow, its sides sloping in to the top; the radiator and its grille guard.
+  const hood = extrude(
+    [
+      [3.02, 0.92],
+      [3.02, 1.535],
+      [2.15, 1.535],
+      [2.15, 0.92],
+    ],
+    1.16,
+    0.03,
+  );
+  reshape(hood, (p) => {
+    p.x *= 1 - 0.1 * Math.max(0, (p.y - 1.2) / 0.34);
+  });
+  add(hood, 'body');
+  add(box(0.92, 0.5, 0.03, 0, 1.22, 3.035, 0.01), 'grille');
+  for (const x of [-0.44, -0.29, -0.15, 0, 0.15, 0.29, 0.44]) parts.push(paint(rod([x, 0.95, 3.1], [x, 1.5, 3.1], 0.014), 'body', colours));
+  parts.push(paint(rod([-0.47, 1.5, 3.1], [0.47, 1.5, 3.1], 0.016), 'body', colours), paint(rod([-0.47, 0.95, 3.1], [0.47, 0.95, 3.1], 0.016), 'body', colours));
+  // The front fenders: flat-topped plates over the front wheels, their fronts sloping down.
+  for (const sx of [-1, 1]) {
+    const fender = extrude(
+      [
+        [3.04, 0.98],
+        [2.9, 1.12],
+        [1.85, 1.12],
+        [1.85, 1.07],
+        [2.88, 1.07],
+        [3.0, 0.96],
+      ],
+      0.52,
+      0.012,
+      sx * 0.83,
+    );
+    add(fender, 'body');
+    add(box(0.5, 0.36, 0.03, sx * 0.83, 0.92, 1.86, 0.01), 'body'); // its back, to the cab step
+    add(box(0.08, 0.06, 0.05, sx * 0.92, 1.16, 2.8, 0.01), 'rubber'); // a blackout lamp
+  }
+  // The cab: its lower body, the windscreen's frame and a canvas roof.
+  const [cb, cf] = A.cab;
+  add(
+    extrude(
+      [
+        [cf, A.floor],
+        [cf, A.belt],
+        [cb, A.belt],
+        [cb, A.floor],
+      ],
+      A.cabHalf * 2,
+      0.03,
+    ),
+    'body',
+  );
+  const top = extrude(
+    [
+      [cf, A.belt],
+      [cf - 0.05, A.roof - 0.06],
+      [cf - 0.1, A.roof],
+      [cb, A.roof],
+      [cb, A.belt],
+    ],
+    A.cabHalf * 2 - 0.04,
+    0.04,
+  );
+  paint(top, (p) => (p.y > A.roof - 0.07 ? 'canvas' : 'body'), colours);
+  parts.push(top);
+  const side = (y) => A.cabHalf - 0.02 + 0.007 + 0 * y;
+  // The split windscreen: two flat panes either side of a bar.
+  for (const [x0, x1] of [
+    [-0.88, -0.05],
+    [0.05, 0.88],
+  ]) {
+    const zAt = (y) => cf + 0.008 - ((y - A.belt) / (A.roof - 0.06 - A.belt)) * 0.05;
+    parts.push(
+      paint(
+        panel([
+          [x0, 1.68, zAt(1.68)],
+          [x1, 1.68, zAt(1.68)],
+          [x1, 2.3, zAt(2.3)],
+          [x0, 2.3, zAt(2.3)],
+        ]),
+        (p) => (p.y > 2.1 ? 'glassTop' : 'glass'),
+        colours,
+      ),
+    );
+  }
+  // The cab's small back window, and behind each door's window a dark pane.
+  parts.push(
+    paint(
+      panel([
+        [0.4, 1.75, cb - 0.008],
+        [-0.4, 1.75, cb - 0.008],
+        [-0.4, 2.15, cb - 0.008],
+        [0.4, 2.15, cb - 0.008],
+      ]),
+      'glass',
+      colours,
+    ),
+  );
+  for (const sx of [-1, 1]) {
+    const inner = ARMY_WINDOW.map(([z, y]) => [sx * (side(y) - 0.004), y, z]);
+    parts.push(paint(panel(sx > 0 ? inner.reverse() : inner), 'glass', colours));
+    // The step under the door, and the mirror on its arm.
+    add(box(0.25, 0.04, 0.7, sx * 1.02, 0.72, 1.65, 0.01), 'body');
+    parts.push(paint(rod([sx * 1.0, 2.2, 2.12], [sx * 1.22, 2.1, 2.15], 0.012), 'rubber', colours));
+    add(box(0.04, 0.3, 0.2, sx * 1.24, 2.0, 2.15, 0.01), 'rubber');
+  }
+  // The exhaust stack behind the cab, up past the roof.
+  parts.push(paint(rod([0.92, 1.0, 1.08], [0.92, 2.62, 1.08], 0.045), 'rubber', colours));
+  // The bed: floor, low sides, the front wall, the tailgate (shut), mudflaps.
+  const [bb, bf] = A.bed;
+  const bedLen = bf - bb;
+  const bedMid = (bf + bb) / 2;
+  add(box(A.bedHalf * 2, 0.16, bedLen, 0, A.bedFloor - 0.08, bedMid, 0.02), 'body');
+  for (const sx of [-1, 1]) {
+    add(box(0.06, 0.45, bedLen, sx * (A.bedHalf - 0.03), A.bedFloor + 0.225, bedMid, 0.015), 'body');
+    for (const z of [-2.6, -1.6, -0.6, 0.4]) add(box(0.07, 0.45, 0.06, sx * (A.bedHalf - 0.02), A.bedFloor + 0.225, z, 0.01), 'under'); // the side's stakes
+    add(box(0.5, 0.02, 0.45, sx * 0.95, 1.0, -1.6, 0.005), 'under'); // the tandem's cover plate
+    add(box(0.42, 0.45, 0.02, sx * 0.9, 0.6, -2.85, 0.005), 'rubber'); // a mudflap
+    add(box(0.4, 0.3, 0.7, sx * 0.72, 0.8, 0.35, 0.03), 'under'); // the fuel tank / toolbox
+  }
+  add(box(A.bedHalf * 2, 0.45, 0.06, 0, A.bedFloor + 0.225, bf, 0.015), 'body');
+  add(box(A.bedHalf * 2 - 0.04, 0.45, 0.06, 0, A.bedFloor + 0.225, bb + 0.03, 0.015), 'body');
+  // The canvas cover on its bows: rounded on top, sagging a touch between the bows.
+  const coverTop = 2.72;
+  const cover = box(A.bedHalf * 2 - 0.02, coverTop - (A.bedFloor + 0.4), bedLen - 0.18, 0, (coverTop + A.bedFloor + 0.4) / 2, bedMid + 0.06, 0.16);
+  reshape(cover, (p) => {
+    if (p.y > coverTop - 0.2) p.y -= 0.025 * Math.abs(Math.sin(((p.z - bedMid) / 0.9) * Math.PI));
+    p.x *= 1 - 0.04 * Math.max(0, (p.y - 2.3) / 0.4);
+  });
+  paint(cover, (p) => (Math.abs(Math.sin(((p.z - bedMid) / 0.9) * Math.PI)) < 0.12 ? 'canvasDark' : 'canvas'), colours);
+  parts.push(cover);
+  const body = merge(parts);
+
+  // ---- the lids ----
+  // The hood's top: a flat panel.
+  const bonnet = merge([paint(box(1.1, 0.03, 0.88, 0, 1.55, 2.585, 0.01), 'body', colours)]);
+  // The canvas flap over the bed's back, rolled at its top.
+  const flap = merge([
+    paint(box(2.1, 1.12, 0.03, 0, 2.08, bb + 0.02, 0.01), 'canvas', colours),
+    paint(rod([-1.04, 2.62, bb + 0.03], [1.04, 2.62, bb + 0.03], 0.04), 'canvasDark', colours),
+  ]);
+  // The driver's door: skin, window, handle.
+  const [dz0, dz1] = A.door;
+  const skin = extrude(
+    [
+      [dz0, A.floor + 0.05],
+      [dz0, A.belt],
+      [dz1, A.belt],
+      [dz1, A.floor + 0.05],
+    ],
+    0.035,
+    0.012,
+    -(A.cabHalf - 0.005),
+  );
+  paint(skin, (p, n) => (n.x > 0.5 ? 'under' : 'body'), colours);
+  const door = merge([
+    skin,
+    paint(panel(ARMY_WINDOW.map(([z, y]) => [-side(y), y, z])), (p) => (p.y > 2.1 ? 'glassTop' : 'glass'), colours),
+    ...surround(ARMY_WINDOW, (y) => -(side(y) + 0.004), colours, 'body'),
+    paint(box(0.02, 0.04, 0.12, -(A.cabHalf + 0.02), 1.45, dz1 + 0.15, 0.008), 'rubber', colours),
+  ]);
+  return { body, lids: { bonnet, boot: flap, door } };
+}
+
+export const VEHICLE_MODELS = { sedan, pickup, police, army: armyTruck };
 
 // A lid mirrored across the vehicle (the passenger door from the driver's).
 export function mirrorGeometry(g) {
