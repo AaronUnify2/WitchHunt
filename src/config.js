@@ -1159,6 +1159,7 @@ export const config = {
       citizen: { health: 1 },
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
       army: { health: 1.6 }, // fatigues and helmet: tougher
+      mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
     // One spawn of 7-15 slow zombies in a tight cluster that wanders as a pack.
     horde: { countMin: 7, countMax: 15, speedMin: 0.35, speedMax: 0.5, radius: 4 },
@@ -1241,8 +1242,8 @@ export const config = {
       // One block of 8 facing rows per variant and hairstyle, in this
       // order (the shader picks the block). A hairstyle changes the
       // outline, so each gets its own block; colours are free.
-      variantOrder: ['citizen', 'police', 'army'],
-      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail'], police: ['short'], army: ['short'] },
+      variantOrder: ['citizen', 'police', 'army', 'mib'],
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail'], police: ['short'], army: ['short'], mib: ['short'] },
       // The palettes (Appalachia, 2003), shared unless a variant has its own.
       palettes: {
         shirt: [
@@ -1298,6 +1299,21 @@ export const config = {
         police: { shirt: [0x161c2c, 0x1a2234], trousers: [0x12141c], longSleeves: 0.4, plaid: 0, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
         // Session 13: camouflage, webbing, and a bare-headed block for when its helmet's gone.
         army: { shirt: [0x34402a, 0x3a4430], trousers: [0x2e3824, 0x343c28], longSleeves: 1, plaid: 0, camo: 1, webbing: 0x22241a, bare: true, hat: 'helmet', hatColor: 0x2a3222 },
+        // Session 13: a dead Man in Black. The shirt is its white shirt (so
+        // the blood shows), under a torn black suit (jacket: open down the
+        // front, a rip across the back), a black tie, the body armour's
+        // plate in the jacket's gap, sunglasses. Neat dark or grey hair.
+        mib: {
+          shirt: [0x66665e, 0x605c54],
+          trousers: [0x0e0e12, 0x121216],
+          hair: [0x0e0c0a, 0x1e140c, 0x2e1e12, 0x4a4a46],
+          longSleeves: 1,
+          plaid: 0,
+          jacket: 0x111115,
+          tie: 0x060608,
+          plate: 0x24262a,
+          shades: 0x040405,
+        },
       },
       plaid: { every: 6, line: 2, dark: 0.55 }, // atlas pixels between the lines, their width, how dark they are
       camo: { cell: 7, dark: 0.5, light: 1.5 }, // atlas pixels per blotch; the dark (brown) and light (khaki) tones
@@ -2422,7 +2438,7 @@ export const config = {
     witch: { plantSeconds: 6, hexSeconds: 1.4, swipeUpSeconds: 1, swipeDownSeconds: 0.6, summonSeconds: 2.4, riseSeconds: 3 },
     familyGap: 0.75, // metres between them side by side
     // The zombie's crowd variant: a size x size grid of mixed looks.
-    crowd: { size: 5, spacing: 1.3, turn: 1.2, distance: 9, mix: { citizen: 0.7, police: 0.15, army: 0.15 } },
+    crowd: { size: 5, spacing: 1.3, turn: 1.2, distance: 9, mix: { citizen: 0.6, police: 0.14, army: 0.14, mib: 0.12 } },
   },
 
   // Input

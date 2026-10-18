@@ -427,6 +427,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 | Citizen | Everyday clothes | Mostly ammo, sometimes scrap, rarely first aid |
 | Police | Uniform and bulletproof vest; tougher | Vest (+40 ballistic), pistol ammo |
 | Army | Fatigues and helmet; tougher. The helmet blocks the headshot bonus, so they eat extra bullets. It comes off with enough damage, or a powerful enough round (the hunting rifle) punches straight through it; once the helmet is gone, headshots land normally (Aaron, Oct 16). First met on the military outpost approach | Helmet (+20 ballistic), rifle ammo (the main rifle ammo source) |
+| Men in Black | A dead agent: torn black suit over a white shirt, tie, sunglasses, body armour; as tough as the army (Session 13). Found where the agents fell (the government base, Ground Zero) | Body armour (+40 ballistic, the vest pickup), pistol ammo |
 | Miner (mineshaft only) | Helmet and headlamp | Scrap, lamp batteries |
 
 **Daytime:** most zombies thin out at dawn; a few stragglers wander the pathways by day.

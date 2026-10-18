@@ -26,6 +26,10 @@
       { "item": "rifleAmmo", "chance": 0.2, "min": 1, "max": 2 },
       { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 }
     ],
+    "mib": [
+      { "item": "vest", "chance": 0.35 },
+      { "item": "pistolAmmo", "chance": 0.3, "min": 2, "max": 5 }
+    ],
     "mutant": [
       { "item": "rifleAmmo", "chance": 1, "min": 2, "max": 4 },
       { "item": "shotgunAmmo", "chance": 0.6, "min": 2, "max": 3 },

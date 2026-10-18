@@ -131,6 +131,19 @@ describe('zombie looks', () => {
     }
   });
 
+  it('dresses the dead Men in Black alike: a plain white shirt, long sleeves, its own palettes, no hat to lose', () => {
+    const own = table.offsets.mib;
+    for (let seed = 1; seed < 200; seed++) {
+      const m = zombieLook('mib', seed, tex, blocks, table);
+      expect(m.pattern).toBe(0);
+      expect(m.sleeves).toBe(1);
+      expect(m.bare).toBe(-1);
+      expect(blocks[m.block].variant).toBe('mib');
+      expect(m.shirt).toBeGreaterThanOrEqual(own.shirt[0]);
+      expect(m.shirt).toBeLessThan(own.shirt[0] + own.shirt[1]);
+    }
+  });
+
   it('hashes evenly into [0, 1)', () => {
     let sum = 0;
     for (let i = 0; i < 5000; i++) {

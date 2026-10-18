@@ -12,7 +12,8 @@
 // (blue) and skin (alpha). The renderer colours each zombie in with its
 // own palette (ZombieRenderer). The forearm is in both the shirt and the
 // skin: long sleeves or short, per zombie. The mouth's blood, the eyes and
-// kit (the police vest and cap, the army helmet) keep their own colours.
+// kit (the police vest and cap, the army helmet, the Men in Black's suit,
+// tie and sunglasses) keep their own colours.
 // The blood on the body is the renderer's, different on each zombie.
 //
 // The figure is drawn five times (the picture, then once per mask
@@ -41,6 +42,11 @@ const PART_CHANNELS = {
 
 function css(hex, alpha = 1) {
   return `rgba(${(hex >> 16) & 255},${(hex >> 8) & 255},${hex & 255},${alpha})`;
+}
+
+// A fixed colour darkened (k < 1), for the arm behind the body.
+function darken(hex, k) {
+  return (Math.round(((hex >> 16) & 255) * k) << 16) | (Math.round(((hex >> 8) & 255) * k) << 8) | Math.round((hex & 255) * k);
 }
 
 function grey(level, alpha = 1) {
@@ -254,6 +260,17 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.beginPath();
       ctx.arc(b.x, b.y, 3 + Math.max(0, front) * 1.2, 0, Math.PI * 2);
       ctx.fill();
+      // Men in Black: the suit's sleeve over it, the white cuff showing at the wrist.
+      if (kit.jacket !== undefined) {
+        ctx.strokeStyle = paint.fixed(behind ? darken(kit.jacket, t.tones.behind) : kit.jacket);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        for (let k = 0.1; k < 0.83; k += 0.1) {
+          const q = quadAt(a, c, b, k);
+          ctx.lineTo(q.x, q.y);
+        }
+        ctx.stroke();
+      }
     }
   };
 
@@ -274,6 +291,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     ctx.fillStyle = paint.part('hem');
     ctx.fillRect(cx - torsoHalf, hipY - 6, torsoHalf * 2, 10);
     ctx.restore();
+    if (kit.jacket !== undefined) suit(top, lean);
     // Army: webbing, two straps down from the shoulders to a belt.
     if (kit.webbing !== undefined) {
       ctx.strokeStyle = paint.fixed(kit.webbing);
@@ -305,6 +323,65 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.fillStyle = paint.fixed(kit.vest, 0.6);
       ctx.fillRect(cx - vHalf * 0.8 + lean * 0.5, (vTop + vBottom) / 2, vHalf * 1.6, 2); // a strap
     }
+  };
+
+  // Men in Black: the black suit jacket over the white shirt (the shirt's
+  // part, so its blood shows), hanging open down the front: the shirt and
+  // tie at the collar, the body armour's plate in the gap below. From
+  // behind, a rip across the back shows the shirt.
+  const suit = (top, lean) => {
+    const bottom = hipY + 4;
+    const centre = (y) => cx + lean * (1 - (y - top) / (bottom - top));
+    const half = (y) => torsoHalf * (1 - 0.25 * ((y - top) / (bottom - top)));
+    ctx.fillStyle = paint.fixed(kit.jacket);
+    ctx.beginPath();
+    ctx.moveTo(cx - torsoHalf + lean, top);
+    ctx.lineTo(cx + torsoHalf + lean, top);
+    ctx.lineTo(cx + torsoHalf * 0.75, bottom);
+    ctx.lineTo(cx - torsoHalf * 0.75, bottom);
+    ctx.closePath();
+    ctx.fill();
+    if (fromBehind) {
+      const rx = centre(top + 13) - 3;
+      const ry = top + 13;
+      ctx.fillStyle = paint.part('shirt');
+      ctx.beginPath();
+      [[-8, -5], [-4, -4], [-1, -2], [3, -1], [7, 2], [8, 4], [4, 3], [1, 2], [-3, 0], [-6, -1], [-9, -3]].forEach(([x, y], i) => (i ? ctx.lineTo(rx + x, ry + y) : ctx.moveTo(rx + x, ry + y)));
+      ctx.closePath();
+      ctx.fill();
+      return;
+    }
+    // The opening: centred down the front, round toward its front edge in profile.
+    const ox = (y) => centre(y) + side * 0.55 * half(y);
+    const vw = 2 + 6 * Math.max(0, front);
+    const vBottom = top + 22;
+    ctx.fillStyle = paint.fixed(kit.plate);
+    ctx.beginPath();
+    ctx.moveTo(ox(top + 12) - vw * 0.7, top + 12);
+    ctx.lineTo(ox(top + 12) + vw * 0.7, top + 12);
+    ctx.lineTo(ox(bottom - 2) + vw * 0.6, bottom - 2);
+    ctx.lineTo(ox(bottom - 2) - vw * 0.6, bottom - 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = paint.part('shirt');
+    ctx.beginPath();
+    ctx.moveTo(ox(top) - vw, top);
+    ctx.lineTo(ox(top) + vw, top);
+    ctx.lineTo(ox(vBottom), vBottom);
+    ctx.closePath();
+    ctx.fill();
+    // The tie: a knot at the collar, then down into the plate.
+    const tx = ox(top) + side * 0.5;
+    ctx.fillStyle = paint.fixed(kit.tie);
+    ctx.fillRect(Math.round(tx - 1.5), top, 3, 3);
+    ctx.beginPath();
+    ctx.moveTo(tx - 1, top + 3);
+    ctx.lineTo(tx + 1, top + 3);
+    ctx.lineTo(ox(top + 17) + 1.6, top + 16);
+    ctx.lineTo(ox(top + 18), top + 18);
+    ctx.lineTo(ox(top + 17) - 1.6, top + 16);
+    ctx.closePath();
+    ctx.fill();
   };
 
   // Hair that hangs behind the head (long hair, a ponytail): behind the
@@ -389,11 +466,23 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     }
     if (!fromBehind) {
       // Pale eyes and a dark open mouth, sliding round with the angle.
-      ctx.fillStyle = paint.fixed(t.eyes);
       const ex = hx + side * 3.5;
       const spread = 3 * Math.max(0, front);
-      ctx.fillRect(Math.round(ex - spread - 1), Math.round(hy - 2), 2, 2);
-      if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1), Math.round(hy - 2), 2, 2);
+      if (kit.shades !== undefined) {
+        // Men in Black: sunglasses, and their arm back to the ear in profile.
+        ctx.fillStyle = paint.fixed(kit.shades);
+        const left = Math.round(ex - spread - 2);
+        const right = Math.round(ex + (spread > 0.5 ? spread + 2 : 1.5));
+        ctx.fillRect(left, Math.round(hy - 3), right - left, 3);
+        if (Math.abs(side) > 0.3) {
+          const ear = hx - side * 3;
+          ctx.fillRect(Math.round(Math.min(ex, ear)), Math.round(hy - 3), Math.round(Math.abs(ex - ear)), 1);
+        }
+      } else {
+        ctx.fillStyle = paint.fixed(t.eyes);
+        ctx.fillRect(Math.round(ex - spread - 1), Math.round(hy - 2), 2, 2);
+        if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1), Math.round(hy - 2), 2, 2);
+      }
       ctx.fillStyle = paint.fixed(t.blood);
       ctx.fillRect(Math.round(ex - 2), Math.round(hy + 3), 4, 2);
     }
