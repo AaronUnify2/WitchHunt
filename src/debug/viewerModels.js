@@ -29,6 +29,7 @@ import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
+import { HutRenderer } from '../render/HutRenderer.js';
 import { Rng } from '../core/Rng.js';
 import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
@@ -209,6 +210,16 @@ export const VIEWER_MODELS = [
       { id: 'alarm', name: 'Alarm (lamps flashing)' },
     ],
     create: vehicleModel,
+  },
+  {
+    id: 'hut',
+    name: "The witch's hut",
+    note: "Session 13 (#146): a taken settler's cabin. Come within the rocking range and the porch's chair rocks by itself.",
+    height: () => 2.2,
+    startDistance: () => 12,
+    variants: () => ['Intact', 'Destroyed (burning)'],
+    poses: [{ id: 'still', name: 'As it stands' }],
+    create: hutModel,
   },
   {
     id: 'standIns',
@@ -724,6 +735,26 @@ function vehicleModel(ctx) {
     },
     setThermal() {}, // cold metal: nothing to show
     dispose: () => renderer?.dispose(),
+  };
+}
+
+// ---- the witch's hut --------------------------------------------------------------------------
+
+function hutModel(ctx) {
+  const renderer = new HutRenderer(ctx.cfg.hut);
+  renderer.init(ctx.scene, { x: 0, y: 0, z: 0, facing: 0 });
+  return {
+    objects: [renderer.group],
+    update(dt, s) {
+      renderer.group.position.set(s.x, s.y, s.z);
+      renderer.group.rotation.y = s.facing;
+      const wrecked = s.variant === 1;
+      renderer.intact.visible = !wrecked;
+      renderer.wreckGroup.visible = wrecked;
+      renderer.update(dt, s.camera.position, Infinity);
+    },
+    setThermal() {}, // cold wood and stone
+    dispose: () => renderer.dispose(),
   };
 }
 

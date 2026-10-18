@@ -1681,6 +1681,7 @@ export const config = {
 
   // The witch's hut (M7 step 4): a placeholder crooked shack in the middle
   // of the hut clearing (world/Hut.js, render/HutRenderer.js).
+  // Session 13 (#146): the real hut, a taken settler's log cabin (Aaron).
   hut: {
     width: 5, // metres
     depth: 4,
@@ -1688,7 +1689,30 @@ export const config = {
     colliderRadius: 2.9, // one circle round the walls
     wreckRadius: 2.2,
     doorStep: 1.6, // metres out from the front wall where she comes and goes
-    look: { wood: 0x2a221a, plank: 0x1a1510, stone: 0x3a3832, roof: 0x22261a, bone: 0x8a8470, glow: 0x7aff48, charred: 0x141210, ember: 0xff7a28 },
+    lean: 0.06, // metres it leans out of true per metre up
+    roofSag: 0.28, // metres the roof's ridge sags in the middle
+    rockRange: 11, // metres: the porch's rocking chair rocks by itself when you're this near (Aaron)
+    totemRing: 5.5, // metres: the ring of stick totems round the yard
+    firePit: [3.1, 4.3], // the fire pit, in the hut's frame (x across, z out of its door)
+    fireLight: { color: 0xff7a30, intensity: 30, distance: 16, decay: 1.6 }, // the burning wreck's light
+    look: {
+      log: 0x3a3026,
+      logDark: 0x241c16,
+      stone: 0x3a3832,
+      floor: 0x1e1812,
+      roofBoard: 0x1e1a14,
+      shingle: 0x2a241c,
+      moss: 0x26301e,
+      board: 0x2e261c,
+      ash: 0x5e5a54, // the hand-prints and scratches: pale ash (Aaron; dim, or the torch makes them white gloves)
+      root: 0x14160f,
+      twig: 0x3a2e20,
+      twine: 0x4a3e2a,
+      bone: 0x8a8470,
+      glow: 0x7aff48,
+      charred: 0x141210,
+      ember: 0xff7a28,
+    },
   },
 
   // Explosives (M7 step 4; DESIGN.md "Explosives"). Debug-given until the
