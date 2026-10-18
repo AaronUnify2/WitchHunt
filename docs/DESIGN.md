@@ -727,7 +727,7 @@ It also plants the game's first **"come back later"** promise: a gun safe the pl
 The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the scoped bolt-action). It is not the heat-scope semi-auto, which stays a late-game reward.
 
 1. **The gas station (see it).** The safe is found and the owner's note explains what's inside. A steel safe can't be forced with a shovel or a shotgun, so the locked state reads as real, not as video-game rules.
-2. **The storm shelter (the combination).** The owner fled to his family's storm shelter and took the combination with him. He died at the hatch, and the combination is on his body there.
+2. **The storm shelter (the combination).** The owner, **Earl Pruitt**, fled to his family's storm shelter and took the combination with him. He died at the hatch and came back: he's a zombie there, and the combination is on his body once he's put down (Aaron, Session 13). His look is the zombie variant `earl` (Session 13): sixties, a faded red trucker cap, grey stubble, a tan work shirt, jeans; one fixed look.
 3. **The military outpost (the ammo).** The rifle is empty and its rare rounds are up in the outpost's watchtower.
 
 - **The owner's note** (text to be written) says roughly: the rifle's in the safe, but she's empty; never could find the right rounds. Combination's with me. Gone to the shelter. It explains why a man fleeing for his life left his gun behind (it was useless to him), and why he locked it up (so it wouldn't fall into the wrong hands). It also points the player at the storm shelter.

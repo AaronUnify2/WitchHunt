@@ -144,6 +144,15 @@ describe('zombie looks', () => {
     }
   });
 
+  it('gives Earl Pruitt one look whatever the seed, in his trucker cap', () => {
+    const first = zombieLook('earl', 1, tex, blocks, table);
+    expect(blocks[first.block]).toMatchObject({ variant: 'earl', hair: 'trucker' });
+    for (let seed = 2; seed < 100; seed++) {
+      const e = zombieLook('earl', seed, tex, blocks, table);
+      for (const k of ['block', 'shirt', 'trousers', 'hair', 'skin', 'sleeves', 'pattern']) expect(e[k]).toBe(first[k]);
+    }
+  });
+
   it('hashes evenly into [0, 1)', () => {
     let sum = 0;
     for (let i = 0; i < 5000; i++) {

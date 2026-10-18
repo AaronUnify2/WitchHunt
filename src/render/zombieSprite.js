@@ -291,6 +291,31 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     ctx.fillStyle = paint.part('hem');
     ctx.fillRect(cx - torsoHalf, hipY - 6, torsoHalf * 2, 10);
     ctx.restore();
+    // Earl: a work shirt's two chest pockets (the shirt, darker), its open collar, a belt.
+    if (kit.pockets && !fromBehind) {
+      ctx.fillStyle = paint.part('hem');
+      for (const s of [-1, 1]) {
+        if (s * side > 0.5) continue;
+        const px = cx + lean * 0.75 + s * torsoHalf * 0.45 * Math.max(Math.abs(front), 0.3) + side * 3;
+        ctx.fillRect(Math.round(px - 3), Math.round(top + 8), 6, 1); // the flap
+        ctx.fillRect(Math.round(px - 3), Math.round(top + 8), 1, 6);
+        ctx.fillRect(Math.round(px + 2), Math.round(top + 8), 1, 6);
+        ctx.fillRect(Math.round(px - 3), Math.round(top + 13), 6, 1);
+      }
+      // The open collar, the throat showing.
+      const nx = cx + lean + side * torsoHalf * 0.5;
+      ctx.fillStyle = paint.part('skin');
+      ctx.beginPath();
+      ctx.moveTo(nx - 6 * Math.max(front, 0.3), top);
+      ctx.lineTo(nx + 6 * Math.max(front, 0.3), top);
+      ctx.lineTo(nx, top + 5);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (kit.belt !== undefined) {
+      ctx.fillStyle = paint.fixed(kit.belt);
+      ctx.fillRect(cx - torsoHalf * 0.78, hipY + 1, torsoHalf * 1.56, 3);
+    }
     if (kit.jacket !== undefined) suit(top, lean);
     // Army: webbing, two straps down from the shoulders to a belt.
     if (kit.webbing !== undefined) {
@@ -436,7 +461,17 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     // behind); balding, only round the sides and back.
     ctx.fillStyle = paint.part('hair');
     ctx.beginPath();
-    if (kit.hair === 'balding') {
+    if (kit.hair === 'trucker') {
+      // Under a trucker cap (drawn last): cropped, nothing showing but the
+      // sideburns (Earl's, grey).
+      if (kit.stubble !== undefined && !fromBehind) {
+        ctx.fillStyle = paint.fixed(kit.stubble);
+        for (const s of [-1, 1]) {
+          if (s * side > 0.5) continue;
+          ctx.fillRect(Math.round(hx + s * (5.5 - Math.abs(side) * 2) - side * 2 - 1), Math.round(hy - 4), 2, 5);
+        }
+      }
+    } else if (kit.hair === 'balding') {
       if (fromBehind) ctx.ellipse(hx, hy + 1, 7, 6.5, 0, -0.15, Math.PI + 0.15);
       else {
         for (const s of [-1, 1]) {
@@ -485,6 +520,22 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       }
       ctx.fillStyle = paint.fixed(t.blood);
       ctx.fillRect(Math.round(ex - 2), Math.round(hy + 3), 4, 2);
+      // Earl: grey stubble over the jaw, chin and upper lip (every other
+      // pixel, round the mouth).
+      if (kit.stubble !== undefined) {
+        ctx.fillStyle = paint.fixed(kit.stubble);
+        const rx = 7 - 1.5 * Math.abs(side);
+        for (let y = Math.round(hy + 1); y <= Math.round(hy + 8); y++) {
+          for (let x = Math.round(hx - rx); x <= Math.round(hx + rx); x++) {
+            const u = (x + 0.5 - hx) / rx;
+            const v = (y + 0.5 - hy) / 8;
+            if (u * u + v * v > 0.95 || (x + y) % 2) continue;
+            if (y >= Math.round(hy + 3) && y < Math.round(hy + 5) && Math.abs(x + 0.5 - ex) < 2.5) continue; // the mouth
+            if (side > 0.3 && x + 0.5 < hx - 1) continue; // in profile, the jaw's front half
+            ctx.fillRect(x, y, 1, 1);
+          }
+        }
+      }
     }
     // Police cap or army helmet.
     if (kit.hat === 'cap') {
@@ -500,6 +551,26 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.ellipse(hx - side, hy - 3, 9, 7.5, 0, Math.PI, Math.PI * 2);
       ctx.fill();
       ctx.fillRect(hx - 9.5 - side, hy - 4, 19, 2); // the rim
+    } else if (kit.hair === 'trucker') {
+      // A trucker cap: a tall crown and peak in the hair's colour, the foam
+      // front panel fixed (from behind: the mesh back and its strap gap).
+      ctx.fillStyle = paint.part('hair');
+      ctx.beginPath();
+      ctx.ellipse(hx - side, hy - 3.5, 7.5, 7, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(Math.round(hx - 7.5 - side), Math.round(hy - 4), 15, 2); // the band
+      if (fromBehind) {
+        ctx.fillStyle = paint.part('skin');
+        ctx.fillRect(Math.round(hx - 2), Math.round(hy - 4), 4, 2); // the strap's gap
+      } else {
+        ctx.fillStyle = paint.fixed(t.truckerFront);
+        ctx.beginPath();
+        ctx.ellipse(hx + side * 3.5, hy - 4.5, 5.5 * front + 2.5 * side, 5.5, 0, Math.PI, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = paint.part('hair');
+        ctx.fillRect(Math.round(hx + side * 6 - 5), Math.round(hy - 4), Math.round(10 + Math.abs(side) * 3), 2); // the peak, curved down a touch
+        ctx.fillRect(Math.round(hx + side * 6 - 4), Math.round(hy - 2), Math.round(8 + Math.abs(side) * 4), 1);
+      }
     }
   };
 

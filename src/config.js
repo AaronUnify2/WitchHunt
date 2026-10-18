@@ -1159,6 +1159,7 @@ export const config = {
       citizen: { health: 1 },
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
       army: { health: 1.6 }, // fatigues and helmet: tougher
+      earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
     // One spawn of 7-15 slow zombies in a tight cluster that wanders as a pack.
@@ -1242,8 +1243,11 @@ export const config = {
       // One block of 8 facing rows per variant and hairstyle, in this
       // order (the shader picks the block). A hairstyle changes the
       // outline, so each gets its own block; colours are free.
-      variantOrder: ['citizen', 'police', 'army', 'mib'],
-      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail'], police: ['short'], army: ['short'], mib: ['short'] },
+      variantOrder: ['citizen', 'police', 'army', 'mib', 'earl'],
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'] },
+      // The trucker cap (a hairstyle, Session 13): the crown and peak in
+      // the hair's colour (so the caps vary), the foam front panel fixed.
+      truckerFront: 0x4a4840,
       // The palettes (Appalachia, 2003), shared unless a variant has its own.
       palettes: {
         shirt: [
@@ -1313,6 +1317,22 @@ export const config = {
           tie: 0x060608,
           plate: 0x24262a,
           shades: 0x040405,
+        },
+        // Session 13: Earl Pruitt, the gas station's owner, dead at his
+        // storm shelter's hatch with the safe's combination on him. Sixties:
+        // a faded red trucker cap (his 'hair'), grey stubble and sideburns,
+        // a tan work shirt with chest pockets, a belt, jeans. One look,
+        // whatever the seed (one colour per part).
+        earl: {
+          shirt: [0x3e3220],
+          trousers: [0x1c2638],
+          hair: [0x4a1a14],
+          skin: [0x6a665a],
+          longSleeves: 1,
+          plaid: 0,
+          stubble: 0x3e3e3a, // grey, but darker than his skin so it reads
+          pockets: true,
+          belt: 0x24180e,
         },
       },
       plaid: { every: 6, line: 2, dark: 0.55 }, // atlas pixels between the lines, their width, how dark they are

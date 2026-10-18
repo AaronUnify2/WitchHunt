@@ -32,7 +32,7 @@ import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
 import { loopTime } from './viewerOrbit.js';
 
-const TITLES = { mib: 'Men in Black' };
+const TITLES = { mib: 'Men in Black', earl: 'Earl Pruitt' };
 const title = (s) => TITLES[s] ?? s.charAt(0).toUpperCase() + s.slice(1);
 
 export const VIEWER_MODELS = [
