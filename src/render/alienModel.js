@@ -73,8 +73,12 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
     // only shape it: hips, a narrow ribcage, small shoulders).
     ['hips', null, 0, 0.9, 0, 0.088, 0.07, 0.064, 'skin'],
     ['chest', 'spine', 0, 1.21, 0.004, 0.092, 0.11, 0.066, 'skin'],
-    ['chest', 'shoulderR', -0.12, 1.305, 0, 0.03, 0.028, 0.03, 'skin'],
-    ['chest', 'shoulderL', 0.12, 1.305, 0, 0.03, 0.028, 0.03, 'skin'],
+    // Small shoulders, bridged to the neck by a collarbone's slope (Aaron:
+    // the arms read as floating off the chest).
+    ['chest', 'shoulderR', -0.128, 1.312, 0, 0.034, 0.03, 0.032, 'skin'],
+    ['chest', 'shoulderL', 0.128, 1.312, 0, 0.034, 0.03, 0.032, 'skin'],
+    ['chest', null, -0.07, 1.315, -0.004, 0.072, 0.024, 0.04, 'skin', [0, 0, 0.3]],
+    ['chest', null, 0.07, 1.315, -0.004, 0.072, 0.024, 0.04, 'skin', [0, 0, -0.3]],
     // The head: a huge cranium swept back, the face narrowing to a small chin.
     ['head', null, 0, 1.6, -0.03, 0.155, 0.15, 0.18, 'skin'],
     ['head', null, 0, 1.52, 0.06, 0.1, 0.1, 0.1, 'skin'],

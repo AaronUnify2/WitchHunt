@@ -13,12 +13,23 @@
 // The body every one of them shares (an adult's, 1.7 m; the kit scales it).
 // sh: shoulder width; hip: hip width; bulk: the torso's girth; waist: the
 // waist's width; female (Aaron: Ellen read too masculine): a narrower
-// ribcage and waist, softer shoulders, wider hips and a bust.
-function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'skin', top = 'top' }) {
+// ribcage and waist, softer shoulders, wider hips and a bust. legs:
+// 'loose' (straight-cut trousers over the shoes) or 'fitted' (leggings).
+//
+// Clothes sit loose (Aaron, Session 13: everyone read skin-tight): the
+// sleeves and trouser legs are straight tubes with room in them, not
+// following the arm and leg; the top hangs from the chest rather than
+// pinching in at the waist (EASE), and creases gather at the elbows,
+// knees, ankles and waist (crease()).
+const EASE = { waist: 0.45, girth: 0.008 }; // the waist's pinch kept; metres added round the chest
+
+function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'skin', top = 'top', legs = 'loose' }) {
   const cap = female ? 0.056 : 0.068; // the shoulders' caps
+  const w = 1 - (1 - waist) * EASE.waist; // the waist under a loose top
+  const g = EASE.girth;
   const masses = [
     ['hips', null, 0, 0.95, 0, 0.155 * hip, 0.11, 0.11 * (female ? 1.08 : 1), 'trousers'],
-    ['chest', 'spine', 0, 1.31, 0.005, 0.18 * sh * bulk, 0.13, (female ? 0.1 : 0.115) * bulk, top],
+    ['chest', 'spine', 0, 1.31, 0.005, 0.18 * sh * bulk + g, 0.13, (female ? 0.1 : 0.115) * bulk + g, top],
     ['chest', 'shoulderR', -0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
     ['chest', 'shoulderL', 0.163 * sh, female ? 1.398 : 1.405, 0, cap * bulk, cap * 0.9, cap * bulk, top],
     ['neck', 'chest', 0, 1.475, 0, 0.046, 0.05, 0.046, 'skin'],
@@ -44,18 +55,22 @@ function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'sk
   const limbs = [
     // The trunk: an oval from the hips to the shoulders, so the shapes on it
     // blend, pinched at the waist (the spine joint).
-    ['hips', 'spine', 0.15 * hip, 0.145 * bulk * waist, top, 0, 0.7], // the shirt hangs over the waistband
+    ['hips', 'spine', 0.15 * hip + 0.012, 0.145 * bulk * w + g, top, 0, 0.72], // the shirt hangs over the waistband
     // It narrows into the neck (the chest and the shoulders' caps make the shoulders: no ledge).
-    ['spine', 'neck', 0.145 * bulk * waist, 0.085 * bulk, top, female ? 0.25 : 0.4, 0.75],
-    ['shoulderR', 'elbowR', 0.047 * bulk, 0.04 * bulk, 'sleeve', 0.1],
-    ['elbowR', 'wristR', 0.04 * bulk, 0.03 * bulk, 'forearm', 0.08],
-    ['shoulderL', 'elbowL', 0.047 * bulk, 0.04 * bulk, 'sleeve', 0.1],
-    ['elbowL', 'wristL', 0.04 * bulk, 0.03 * bulk, 'forearm', 0.08],
-    ['hipR', 'kneeR', 0.085 * hip, 0.058, 'trousers', 0.1],
-    ['kneeR', 'ankleR', 0.056, 0.04, 'trousers', 0.14],
-    ['hipL', 'kneeL', 0.085 * hip, 0.058, 'trousers', 0.1],
-    ['kneeL', 'ankleL', 0.056, 0.04, 'trousers', 0.14],
+    ['spine', 'neck', 0.145 * bulk * w + g, 0.085 * bulk, top, female ? 0.25 : 0.4, 0.75],
+    // Sleeves: straight, with room in them, open round the wrist; they
+    // start no wider than the shoulder (wider, and the shoulders puff).
+    ['shoulderR', 'elbowR', 0.047 * bulk, 0.051 * bulk, 'sleeve', 0.07, 1, 0.9],
+    ['elbowR', 'wristR', 0.049 * bulk, 0.043 * bulk, 'forearm', 0.02],
+    ['shoulderL', 'elbowL', 0.047 * bulk, 0.051 * bulk, 'sleeve', 0.07, 1, 0.9],
+    ['elbowL', 'wristL', 0.049 * bulk, 0.043 * bulk, 'forearm', 0.02],
   ];
+  if (legs === 'fitted') {
+    for (const s of ['R', 'L']) limbs.push([`hip${s}`, `knee${s}`, 0.085 * hip, 0.058, 'trousers', 0.1], [`knee${s}`, `ankle${s}`, 0.056, 0.04, 'trousers', 0.14]);
+  } else {
+    // Straight-cut legs, the hems sitting over the shoes.
+    for (const s of ['R', 'L']) limbs.push([`hip${s}`, `knee${s}`, 0.092 * hip, 0.07, 'trousers', 0.03], [`knee${s}`, `ankle${s}`, 0.068, 0.062, 'trousers', 0]);
+  }
   return { masses, limbs, tubes: [], rings: [], deform: female ? bust : null };
 }
 
@@ -140,7 +155,7 @@ const LOOKS = {
   },
   junie() {
     // The hoodie: big on her, the sleeves over her hands, the hood down her back.
-    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.15, hand: 'sleeve' });
+    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.15, hand: 'sleeve', legs: 'fitted' });
     b.masses.push(['chest', null, 0, 1.44, -0.105, 0.11, 0.07, 0.075, 'top']);
     b.masses.push(hairCap(1.63, -0.012));
     // Two braids down her back, tied.
@@ -170,7 +185,32 @@ const LOOKS = {
 // The figure-kit spec for one of them. person: config.family.people[id].
 export function familySpec(id, person) {
   const look = LOOKS[id](person);
-  return { ...look, height: person.height, width: person.width ?? 1, head: person.head ?? 1, colours: person.colours };
+  const paint = (key, q, out, c) => {
+    look.paint?.(key, q, out, c);
+    crease(key, q, out);
+  };
+  return { ...look, paint, height: person.height, width: person.width ?? 1, head: person.head ?? 1, colours: person.colours };
+}
+
+// Creases, shaded into the cloth (the rest pose's built space): folds
+// across the inside of the elbows and behind the knees, the trousers
+// stacking over the shoes, the top gathering where it's tucked or belted.
+function crease(key, q, out) {
+  let fold = 0;
+  if (key === 'sleeve' || key === 'forearm') fold = band(q.y, 1.14, 0.06) * wave(q.y * 160 + q.z * 70);
+  else if (key === 'trousers') fold = Math.max(band(q.y, 0.5, 0.06) * wave(q.y * 150 - q.z * 50), band(q.y, 0.1, 0.07) * wave(q.y * 190 + q.x * 40));
+  else if (key === 'top') fold = band(q.y, 0.97, 0.06) * wave(Math.atan2(q.x, q.z) * 9) * 0.7;
+  if (fold > 0) out.multiplyScalar(1 - 0.16 * fold);
+}
+
+// 1 at y = at, fading to 0 at `half` either side.
+function band(y, at, half) {
+  return Math.max(0, 1 - Math.abs(y - at) / half);
+}
+
+// A fold's shading across its width: soft dark lines (0..1).
+function wave(x) {
+  return Math.max(0, Math.sin(x)) ** 2;
 }
 
 
