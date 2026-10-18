@@ -26,6 +26,7 @@ import { WitchRenderer } from '../render/WitchRenderer.js';
 import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { KIT_STAGES } from '../render/alienModel.js';
+import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -130,6 +131,26 @@ export const VIEWER_MODELS = [
       { id: 'corpse', name: 'Corpse' },
     ],
     create: greyModel,
+  },
+  {
+    id: 'beetle',
+    name: 'Giant beetle',
+    note: "The Mothman's brood (Session 13): one draw call. Its weak spot is the glowing membrane between its mandibles.",
+    height: () => 0.7,
+    startDistance: () => 3,
+    variants: null,
+    poses: [
+      { id: 'idle', name: 'Idle' },
+      { id: 'walk', name: 'Walk (three legs at a time)' },
+      { id: 'charge', name: 'Charge' },
+      { id: 'attack', name: 'Attack (rears, lunges, snaps)' },
+      { id: 'threat', name: 'Threat (wing cases flared)' },
+      { id: 'hit', name: 'Hit in the face (flash, flinch)' },
+      { id: 'emerge', name: 'Emerging (a crate, the ground)' },
+      { id: 'dying', name: 'Dying (flips over)' },
+      { id: 'corpse', name: 'Corpse' },
+    ],
+    create: beetleModel,
   },
   {
     id: 'mib',
@@ -490,6 +511,52 @@ function greyModel(ctx) {
           break;
       }
       renderer.update([a], dt);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- the giant beetle: its own renderer --------------------------------------------------------------
+
+function beetleModel(ctx) {
+  const bc = ctx.cfg.beetles.giant;
+  const vc = ctx.cfg.modelViewer;
+  const renderer = new BeetleRenderer(bc);
+  renderer.init(ctx.scene, 1);
+  const b = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, flash: 0, sink: 0 };
+  return {
+    objects: renderer.meshes,
+    update(dt, s) {
+      Object.assign(b, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, sink: 0, state: s.pose, timer: s.poseTime });
+      const t = s.poseTime;
+      switch (s.pose) {
+        case 'walk':
+        case 'charge':
+          b.walked += dt * vc.zombieWalkSpeed * (s.pose === 'charge' ? 2.5 : 1);
+          break;
+        case 'attack':
+          b.timer = loopTime(t, bc.attackWindup + bc.strikeSeconds + vc.holdSeconds);
+          break;
+        case 'hit': {
+          const k = loopTime(t, vc.hitLoopSeconds);
+          b.flash = Math.max(0, bc.hitFlashSeconds - k);
+          b.state = k < vc.staggerSeconds ? 'flinch' : 'idle';
+          break;
+        }
+        case 'emerge': {
+          const k = loopTime(t, 2 + vc.holdSeconds);
+          b.sink = Math.max(0, 1 - k / 2);
+          if (b.sink === 0) b.state = 'idle';
+          break;
+        }
+        case 'dying':
+          b.timer = Math.min(bc.deathSeconds, loopTime(t, bc.deathSeconds + vc.holdSeconds));
+          break;
+        default:
+          break;
+      }
+      renderer.update([b], dt);
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),

@@ -45,13 +45,15 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // key, turn (optional, as masses')]] (facing +z unturned), paint(key, p, out) (optional: patterns; p in the
 // built space), deform(p, n, bone) (optional: how far to push a vertex out
 // along its normal, in metres: one smooth field moves every surface there
-// together, so shapes reshape without creases) }. Returns { geometry, joints } (joints: { name: { i,
+// together, so shapes reshape without creases), glow: { key: 0..1 }
+// (optional: an aGlow attribute, how much each part glows in its own colour,
+// for the renderer's shader) }. Returns { geometry, joints } (joints: { name: { i,
 // parent, p } }, scaled).
 export function buildFigure(spec) {
   const joints = jointMap(spec.joints ?? HUMAN_JOINTS);
   const colours = Object.fromEntries(Object.entries(spec.colours).map(([k, hex]) => [k, new THREE.Color(hex)]));
   const parts = [];
-  const add = (g, o) => parts.push(finish(g, { ...o, joints, colours, paint: spec.paint }));
+  const add = (g, o) => parts.push(finish(g, { ...o, joints, colours, paint: spec.paint, glow: spec.glow }));
   for (const [bone, other, x, y, z, rx, ry, rz, key, turn] of spec.masses) {
     const g = new THREE.SphereGeometry(1, 16, 12);
     g.scale(rx, ry, rz);
@@ -208,5 +210,6 @@ function finish(g, o) {
   welded.setAttribute('color', new THREE.BufferAttribute(colours, 3));
   welded.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndex, 4));
   welded.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
+  if (o.glow) welded.setAttribute('aGlow', new THREE.BufferAttribute(new Float32Array(count).fill(o.glow[o.key] ?? 0), 1));
   return welded;
 }

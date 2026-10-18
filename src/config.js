@@ -2277,6 +2277,30 @@ export const config = {
     },
   },
 
+  // Beetles (Session 13: the model; their AI is M9.4, the outpost).
+  beetles: {
+    // The giant beetle (render/beetleModel.js, render/BeetleRenderer.js): the Mothman's brood.
+    giant: {
+      poolSize: 8, // most drawn at once
+      albedo: 0.55,
+      specular: 0x6a7a70, // the shell's glint under the torch (green-tinged)
+      shininess: 48,
+      spotGlow: 0.9, // the weak spot's glow, in its own colour (it can be found in the dark)
+      eyeGlow: 1,
+      spotPulse: 0.8, // throbs, per second
+      poseRate: 12,
+      strideRate: 9, // radians of gait per metre walked
+      attackWindup: 0.7, // rearing up (for the AI to match)
+      strikeSeconds: 0.18, // the lunge and snap
+      deathSeconds: 1.2,
+      sinkDepth: 0.7, // metres it's under at sink 1 (emerging)
+      hitFlashSeconds: 0.15,
+      hitFlash: [1.8, 1.6, 0.8], // its colour while flashing
+      thermalGlow: 0.35, // x the heat scope's glow: dim (from the other side)
+      colours: { shell: 0x1e2a24, shellDark: 0x141a16, belly: 0x2e2618, spot: 0xc8c070, eyes: 0xc01810 },
+    },
+  },
+
   // Other people built with the figure kit (Session 13): the cutscenes'.
   // Same shape as config.family.people.
   people: {
