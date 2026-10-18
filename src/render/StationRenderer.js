@@ -13,13 +13,15 @@
 //    figures) wait in the comms room.
 
 import * as THREE from 'three';
+import { FamilyRenderer } from './FamilyRenderer.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export class StationRenderer {
-  constructor(stationConfig, rng) {
+  constructor(stationConfig, rng, family) {
     this.cfg = stationConfig;
     this.look = stationConfig.look;
     this.rng = rng;
+    this.familyOpts = family; // Session 13: { cfg (config.family), ids (config.story.family) }
   }
 
   // floorY: the cabin's floor height.
@@ -559,23 +561,20 @@ export class StationRenderer {
     this.glow = this.merged(parts, this.glowMaterial, false);
   }
 
+  // Session 13 (#148): the real family (render/FamilyRenderer.js). One
+  // mesh each, standing at its spot facing into the comms room, so each
+  // can bob as they talk (story/FamilyTalk.js, M8).
   buildFamily() {
-    const look = this.look.family;
-    const sizes = [1, 0.95, 0.7]; // Ellen, Wyatt, Junie
-    // M8: one mesh each, standing at its spot, so each can bob as they talk
-    // (story/FamilyTalk.js).
-    this.family = this.layout.cabin.family.map((f, i) => {
-      const s = sizes[i];
-      const color = look[i % look.length];
-      const parts = [
-        this.box(0.34 * s, 0.85 * s, 0.22 * s, 0, 0, 0, 0x22252a, 0.4 * i),
-        this.box(0.44 * s, 0.62 * s, 0.26 * s, 0, 0.85 * s, 0, color, 0.4 * i),
-        this.box(0.22 * s, 0.24 * s, 0.22 * s, 0, 1.5 * s, 0, 0x8a6a58, 0.4 * i),
-      ];
-      const mesh = this.merged(parts, this.lambert);
-      mesh.position.set(f.x, this.floorY, f.z);
-      return mesh;
-    });
+    const { cfg, ids } = this.familyOpts;
+    const c = this.layout.cabin.commsCentre;
+    this.familyRenderer = new FamilyRenderer(cfg, ids);
+    this.familyRenderer.init(this.group, this.layout.cabin.family, this.floorY, (s) => Math.atan2(c.x - s.x, c.z - s.z));
+    this.family = this.familyRenderer.meshes;
+  }
+
+  // Through the heat scope the family glow too.
+  setThermal(on, t) {
+    this.familyRenderer.setThermal(on, t);
   }
 
   // ---- each frame -------------------------------------------------------------------------
@@ -618,6 +617,7 @@ export class StationRenderer {
     }
     // Windows and monitors: faint by day, bright at night.
     this.glowMaterial.color.setScalar(0.3 + 0.7 * night);
+    this.familyRenderer.update(dt, cameraPosition);
     // The wires glow while charged, flickering, and flare when a battery goes in.
     this.wirePulse = Math.max(0, this.wirePulse - dt * 0.8);
     if (this.state.powered) {
@@ -629,6 +629,7 @@ export class StationRenderer {
   }
 
   dispose() {
+    this.familyRenderer.dispose();
     for (const d of this.disposables) d.dispose();
     this.group.removeFromParent();
   }

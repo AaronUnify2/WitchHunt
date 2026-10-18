@@ -598,6 +598,7 @@ export class Game {
     this.combat.zombieRenderer.setThermal(on, t);
     this.combat.mutantRenderer.setThermal(on, t);
     this.viewer.setThermal(on, t);
+    this.station.renderer.setThermal(on, t); // Session 13: the family
     if (!on) this.witch.renderer.setThermal(false);
     this.atmosphere.thermal = on;
     const torch = this.flashlight;

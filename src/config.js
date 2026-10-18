@@ -1948,7 +1948,6 @@ export const config = {
       sandbag: 0x5a5040,
       plank: 0x463424,
       spike: 0x22211e, // the spikes glared pale under the torch at 0x3e3c38
-      family: [0x5a6a7a, 0x6a5a48, 0x7a5a6a], // Ellen, Wyatt, Junie (placeholders)
       windowGlow: 0xffb060,
       monitorGlow: 0x7adcb0,
       wireCharged: 0x6ad0ff,
@@ -2198,6 +2197,40 @@ export const config = {
       ellen: { height: 1.7, width: 0.5, legs: 0x22252a, body: 0x5a6a7a, head: 0x8a6a58 },
       wyatt: { height: 1.62, width: 0.48, legs: 0x22252a, body: 0x6a5a48, head: 0x8a6a58 },
       junie: { height: 1.2, width: 0.4, legs: 0x22252a, body: 0x7a5a6a, head: 0x8a6a58 },
+    },
+  },
+
+  // The family's figures (Session 13, #148; render/FamilyRenderer.js,
+  // render/familyLooks.js): Appalachia, 2003. Natural colours, darkened by
+  // albedo (the torch blows out anything light).
+  family: {
+    albedo: 0.62,
+    poseRate: 8, // how fast they blend into a new pose (per second)
+    walkRate: 7, // radians of stride per second (cutscenes)
+    thermalGlow: 1, // x the heat scope's glow
+    // Their heads turn to you when you're this near (metres), up to these angles (radians).
+    look: { range: 5, maxYaw: 1.1, maxPitch: 0.4, rate: 4 },
+    people: {
+      ellen: {
+        height: 1.68,
+        head: 1.08, // a touch big (stylised)
+        idle: 'folded',
+        colours: { skin: 0xc89a7c, top: 0x5a6238, sleeve: 0x5a6238, forearm: 0x5a6238, zip: 0x2a2e1a, under: 0x7a7a76, trousers: 0x262c3a, shoes: 0x4a3422, hair: 0x5a2a18, tie: 0x2a2424, eyes: 0x1a1410, brows: 0x3a1c10, frames: 0x2a2a2a },
+      },
+      wyatt: {
+        height: 1.62,
+        width: 0.94, // lanky
+        head: 1.08,
+        idle: 'pockets',
+        colours: { skin: 0xc8a084, top: 0x7a1e1a, sleeve: 0x7a1e1a, forearm: 0x7a1e1a, tee: 0x1c1c20, print: 0x8a8a7a, trousers: 0x34405a, shoes: 0x5e5e5a, hair: 0x3e2818, eyes: 0x1a1410, brows: 0x2a1a10 },
+      },
+      junie: {
+        height: 1.25,
+        width: 0.95,
+        head: 1.32, // a child's head, big for her height
+        idle: 'hug',
+        colours: { skin: 0xd0a88c, top: 0x5e4a72, sleeve: 0x5e4a72, forearm: 0x5e4a72, trousers: 0x2a2a34, shoes: 0x7a5a6a, hair: 0x7a5434, tie: 0xa04a5a, rabbit: 0x9a9080, eyes: 0x141010, brows: 0x5a3a24 },
+      },
     },
   },
 

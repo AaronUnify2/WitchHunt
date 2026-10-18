@@ -83,9 +83,9 @@ describe('model viewer catalogue', () => {
     for (const id of ['zombie', 'mutant', 'witch', 'family']) expect(ids).toContain(id);
   });
 
-  // The zombie needs a canvas (its atlas) and the family the station, so
-  // they're checked in the browser; the rest build and pose here.
-  for (const id of ['mutant', 'witch', 'standIns']) {
+  // The zombie needs a canvas (its atlas), so it's checked in the
+  // browser; the rest build and pose here.
+  for (const id of ['mutant', 'witch', 'family', 'standIns']) {
     it(`builds the ${id} and plays every pose and variant`, () => {
       const entry = VIEWER_MODELS.find((e) => e.id === id);
       const scene = new THREE.Scene();

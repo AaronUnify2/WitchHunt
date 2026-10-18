@@ -23,6 +23,7 @@ import * as THREE from 'three';
 import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { MutantRenderer } from '../render/MutantRenderer.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
+import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -96,12 +97,15 @@ export const VIEWER_MODELS = [
   {
     id: 'family',
     name: 'The family',
-    note: "The station's placeholder figures. Being replaced (#148).",
+    note: 'Built in code (Session 13, #148): one draw call each. Their heads turn to look at you.',
     height: () => 1.7,
     variants: () => ['Ellen', 'Wyatt', 'Junie', 'All three'],
     poses: [
-      { id: 'stand', name: 'Stand' },
+      { id: 'stand', name: 'Stand (their own idle; they look at you)' },
       { id: 'talk', name: 'Talking (the bob)' },
+      { id: 'walk', name: 'Walk (cutscenes)' },
+      { id: 'kneel', name: 'Kneel (cutscenes)' },
+      { id: 'down', name: 'Down (cutscenes)' },
     ],
     create: familyModel,
   },
@@ -378,20 +382,15 @@ function witchModel(ctx) {
   };
 }
 
-// ---- the family: copies of the station's figures ----------------------------------------------
+// ---- the family: their own copy of the family's figures ------------------------------------
 
 function familyModel(ctx) {
   const fc = ctx.cfg.familyTalk;
-  const source = ctx.station.renderer.family;
   const group = new THREE.Group();
   ctx.scene.add(group);
-  const figures = source.map((mesh, i) => {
-    const copy = mesh.clone(); // shares the station's geometry and material
-    copy.position.set(0, 0, 0);
-    copy.rotation.set(0, -0.4 * i, 0); // the station turns each a little: undo it
-    group.add(copy);
-    return copy;
-  });
+  const renderer = new FamilyRenderer(ctx.cfg.family, ctx.cfg.story.family);
+  renderer.init(group, ctx.cfg.story.family.map(() => ({ x: 0, z: 0 })), 0, 0);
+  const figures = renderer.meshes;
   return {
     objects: [group],
     update(dt, s) {
@@ -399,14 +398,22 @@ function familyModel(ctx) {
       group.rotation.y = s.facing;
       const all = s.variant >= figures.length;
       const gap = ctx.cfg.modelViewer.familyGap;
+      const pose = s.pose === 'talk' ? 'stand' : s.pose;
       figures.forEach((f, i) => {
         f.visible = all || i === s.variant;
         f.position.x = all ? (i - 1) * gap : 0;
         f.position.y = s.pose === 'talk' ? Math.abs(Math.sin(s.poseTime * fc.bobRate)) * fc.bobHeight : 0;
+        renderer.setPose(i, pose);
+        // Their facing, for turning their heads: the group's.
+        renderer.people[i].facing = s.facing;
       });
+      renderer.update(dt, s.camera.position);
     },
-    setThermal() {}, // no heat hook yet (the real models get one)
-    dispose: () => group.removeFromParent(),
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => {
+      renderer.dispose();
+      group.removeFromParent();
+    },
   };
 }
 

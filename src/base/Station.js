@@ -82,7 +82,7 @@ export class Station {
       rng: this.rng.fork('turret'),
     });
     this.turret.init();
-    this.renderer = new StationRenderer(sc, this.rng.fork('station-look'));
+    this.renderer = new StationRenderer(sc, this.rng.fork('station-look'), { cfg: this.cfg.family, ids: this.cfg.story.family });
     this.renderer.init(scene, this.layout, this.ground, this.state, this.floorY);
     this.ledger = new Ledger(this.cfg.ledger, this.bus);
     this.ledger.init(ctx.root, () => this.ledgerPages(), () => this.ledgerSummary());
