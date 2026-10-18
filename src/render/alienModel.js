@@ -8,6 +8,11 @@
 // cast, darker down its back. It carries an Earth pump shotgun (the first,
 // quiet hint of the cowboy drift: Aaron, Session 13).
 //
+// The cowboy drift (DESIGN.md "Aliens"; Aaron, Session 13: see the full
+// gear now): KIT_STAGES, from the plain grey with its shotgun, through a hat
+// and bandana and a gun belt, to the full saloon gunslinger (vest, boots
+// and spurs, two holsters). The ship dresses each by how deep it stands.
+//
 // Built at 1.7 m like every figure-kit spec and scaled to config height.
 // Model space: faces +z, feet at y = 0, its right hand on -x.
 
@@ -52,8 +57,17 @@ function hand(side, bone, wx, wy, wz) {
   return { tubes, masses };
 }
 
-// The figure-kit spec. alien: config.aliens.grey; armed: with its shotgun.
-export function alienSpec(alien, armed = true) {
+// The cowboy drift's stages, each adding to the last.
+export const KIT_STAGES = [
+  { id: 'plain', name: 'Plain, with a shotgun (the crashed plane)', shotgun: true },
+  { id: 'hat', name: 'Hat and bandana', shotgun: true, hat: true, bandana: true },
+  { id: 'belt', name: 'Gun belt and holster', shotgun: true, hat: true, bandana: true, belt: true, holsters: 1 },
+  { id: 'gunslinger', name: 'Full saloon gunslinger', shotgun: true, hat: true, bandana: true, belt: true, holsters: 2, vest: true, boots: true },
+];
+
+// The figure-kit spec. alien: config.aliens.grey; kit: one of KIT_STAGES.
+export function alienSpec(alien, kit = KIT_STAGES[0]) {
+  const armed = kit.shotgun;
   const masses = [
     // The body: one thin, smooth form (the trunk below carries it; these
     // only shape it: hips, a narrow ribcage, small shoulders).
@@ -113,19 +127,55 @@ export function alienSpec(alien, armed = true) {
     masses.push(['wristR', null, x, gy + 0.012, z - 0.04, 0.022, 0.035, 0.06, 'gunMetal']); // the receiver
     masses.push(['wristR', null, x, gy - 0.012, z - 0.16, 0.017, 0.032, 0.11, 'gunWood', [0.2, 0, 0]]); // the stock
   }
+  const rings = [];
+  const flat = [Math.PI / 2, 0, 0]; // a ring lying level
+  if (kit.hat) {
+    // A cowboy hat perched on the huge cranium, tipped back: far too small for it.
+    masses.push(['head', null, 0, 1.745, -0.01, 0.15, 0.01, 0.16, 'hat', [-0.22, 0, 0]]); // the brim
+    masses.push(['head', null, 0, 1.79, -0.02, 0.075, 0.05, 0.085, 'hat', [-0.22, 0, 0]]); // the crown
+    masses.push(['head', null, 0, 1.83, -0.03, 0.03, 0.012, 0.06, 'hatBand', [-0.22, 0, 0]]); // the crease
+    rings.push(['head', 0, 1.765, -0.015, 0.076, 0.009, 'hatBand', [Math.PI / 2 - 0.22, 0, 0]]);
+  }
+  if (kit.bandana) {
+    // A red bandana knotted at the neck, its point hanging down the chest.
+    rings.push(['neck', 0, 1.37, 0.012, 0.038, 0.016, 'bandana', flat]);
+    masses.push(['chest', null, 0, 1.325, 0.05, 0.045, 0.045, 0.012, 'bandana', [0.25, 0, Math.PI / 4]]);
+  }
+  if (kit.belt) {
+    // A gun belt with a buckle, a holstered revolver on each hip it wears one.
+    rings.push(['hips', 0, 0.905, 0, 0.082, 0.016, 'leather', flat]);
+    masses.push(['hips', null, 0, 0.905, 0.082, 0.022, 0.016, 0.007, 'buckle']);
+    for (const side of kit.holsters === 2 ? [-1, 1] : [-1]) {
+      masses.push(['hips', null, side * 0.1, 0.83, 0, 0.022, 0.065, 0.032, 'leather']);
+      masses.push(['hips', null, side * 0.1, 0.9, -0.012, 0.012, 0.03, 0.018, 'gunWood', [-0.4, 0, 0]]); // the revolver's grip
+    }
+  }
+  if (kit.boots) {
+    // Spurs at its heels.
+    for (const side of [-1, 1]) rings.push([side < 0 ? 'ankleR' : 'ankleL', side * 0.08, 0.045, -0.045, 0.02, 0.004, 'spur', [0, Math.PI / 2, 0]]);
+  }
   return {
     joints: ALIEN_JOINTS,
     masses,
     limbs,
     tubes,
-    rings: [],
+    rings,
     height: alien.height,
     width: 1,
     head: 1,
     colours: alien.colours,
-    // Darker down its back; faintly mottled.
+    // Darker down its back; faintly mottled. The gunslinger's vest (open in
+    // a V at the front) and boots are painted on.
     paint(key, q, out, c) {
       if (key !== 'skin') return;
+      if (kit.vest && q.y > 0.93 && q.y < 1.34 && Math.abs(q.x) < 0.115 && !(q.z > 0.03 && Math.abs(q.x) < (1.34 - q.y) * 0.22)) {
+        out.copy(c.vest);
+        return;
+      }
+      if (kit.boots && q.y < 0.3) {
+        out.copy(c.boots);
+        return;
+      }
       if (q.z < -0.02) out.lerp(c.back, Math.min(1, (-0.02 - q.z) * 8));
       const m = Math.sin(q.x * 61 + q.y * 37) * Math.sin(q.y * 53 - q.z * 41);
       out.multiplyScalar(0.93 + 0.07 * m);

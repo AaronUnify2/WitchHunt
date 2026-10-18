@@ -2247,7 +2247,7 @@ export const config = {
     grey: {
       height: 1.4,
       poolSize: 8, // most drawn at once
-      albedo: 0.26, // its colours x this (the torch blows out light ones: at 0.6 it glowed white)
+      albedo: 0.3, // its colours x this: a compromise (the torch blows it white up close; much lower and it's black by day)
       poseRate: 10, // how fast it blends into a new pose (per second)
       walkRate: 8, // radians of stride per metre walked
       ambushSeconds: 1.2, // coiled, springing up, landing
@@ -2256,7 +2256,24 @@ export const config = {
       hitFlashSeconds: 0.15,
       hitFlash: [1.8, 0.7, 1.6], // its colour while flashing (a purplish tinge: not blood red)
       thermalGlow: 0.25, // x the heat scope's glow: faint and cold, not from here (proposed)
-      colours: { skin: 0x6a7476, back: 0x464e52, eyes: 0x050608, shine: 0xd8e0e0, slit: 0x2a3032, gunMetal: 0x2a2c30, gunWood: 0x4a3020 },
+      colours: {
+        skin: 0x8a9496,
+        back: 0x5a6468,
+        eyes: 0x050608,
+        shine: 0xd8e0e0,
+        slit: 0x2a3032,
+        gunMetal: 0x2a2c30,
+        gunWood: 0x4a3020,
+        // The cowboy kit.
+        hat: 0x5a4028,
+        hatBand: 0x2a1a10,
+        bandana: 0x8a1c18,
+        leather: 0x4a2c18,
+        buckle: 0x9a9890,
+        vest: 0x3a2418,
+        boots: 0x3a2214,
+        spur: 0x8a8a84,
+      },
     },
   },
 

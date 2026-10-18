@@ -2,7 +2,7 @@
 // alienModel.js), one skinned mesh and one draw call each, all sharing one
 // body. Ready for the aliens' AI (M10: the crashed plane; M11: the ship),
 // which hands update() its aliens: { active, x, y, z, facing, state,
-// timer, walked, flash }.
+// timer, walked, flash, stage (its cowboy kit: an index into KIT_STAGES) }.
 //
 // States, posed procedurally and blended:
 //  - idle: breathing, its head tilting now and then, curious;
@@ -15,7 +15,7 @@
 
 import * as THREE from 'three';
 import { buildFigure, buildBones } from './figureKit.js';
-import { alienSpec, ALIEN_JOINTS } from './alienModel.js';
+import { alienSpec, ALIEN_JOINTS, KIT_STAGES } from './alienModel.js';
 
 const NAMES = ALIEN_JOINTS.map(([name]) => name);
 const B = Object.fromEntries(NAMES.map((n, i) => [n, i]));
@@ -29,7 +29,9 @@ export class AlienRenderer {
   }
 
   init(scene, poolSize = this.cfg.poolSize) {
-    const { geometry, joints } = buildFigure(alienSpec(this.cfg));
+    // One body per kit stage, built when first needed; all share the skeleton.
+    this.bodies = new Map();
+    const { geometry, joints } = this.bodyOf(0);
     this.geometry = geometry;
     this.joints = joints;
     this.time = 0;
@@ -38,6 +40,12 @@ export class AlienRenderer {
     this.pool = Array.from({ length: poolSize }, () => this.makeOne(scene));
     this.meshes = this.pool.map((o) => o.mesh);
     this.tmp = new Float32Array(POSE_SIZE);
+  }
+
+  bodyOf(stage) {
+    const k = Math.max(0, Math.min(KIT_STAGES.length - 1, stage | 0));
+    if (!this.bodies.has(k)) this.bodies.set(k, buildFigure(alienSpec(this.cfg, KIT_STAGES[k])));
+    return this.bodies.get(k);
   }
 
   makeOne(scene) {
@@ -61,6 +69,8 @@ export class AlienRenderer {
     for (const a of aliens) {
       if (!a.active || n >= this.pool.length) continue;
       const one = this.pool[n++];
+      const body = this.bodyOf(a.stage ?? 0).geometry;
+      if (one.mesh.geometry !== body) one.mesh.geometry = body;
       const t = this.tmp;
       t.fill(0);
       this.targetPose(a, t);
@@ -234,6 +244,6 @@ export class AlienRenderer {
       o.mesh.skeleton.dispose();
       o.material.dispose();
     }
-    this.geometry.dispose();
+    for (const b of this.bodies.values()) b.geometry.dispose();
   }
 }

@@ -25,6 +25,7 @@ import { MutantRenderer } from '../render/MutantRenderer.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
 import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { AlienRenderer } from '../render/AlienRenderer.js';
+import { KIT_STAGES } from '../render/alienModel.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -113,9 +114,9 @@ export const VIEWER_MODELS = [
   {
     id: 'grey',
     name: 'Grey alien',
-    note: 'The crashed plane\'s survivor and every Martian\'s body (Session 13). One draw call. Faint and cold in the heat scope.',
+    note: 'The crashed plane\'s survivor and every Martian\'s body (Session 13). Y: the cowboy drift. One draw call. Faint and cold in the heat scope.',
     height: (cfg) => cfg.aliens.grey.height,
-    variants: null,
+    variants: () => KIT_STAGES.map((k) => k.name), // the cowboy drift
     poses: [
       { id: 'idle', name: 'Idle (head tilting, curious)' },
       { id: 'examine', name: 'Examining (the wreck)' },
@@ -463,7 +464,7 @@ function greyModel(ctx) {
   return {
     objects: renderer.meshes,
     update(dt, s) {
-      Object.assign(a, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, state: s.pose, timer: s.poseTime });
+      Object.assign(a, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, state: s.pose, timer: s.poseTime, stage: s.variant });
       const t = s.poseTime;
       switch (s.pose) {
         case 'walk':

@@ -42,7 +42,7 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // limbs: [[from joint, to joint, r0, r1, key, bulge, flat (depth / width:
 // an oval, for a trunk)]], tubes: [[bone, ax,
 // ay, az, bx, by, bz, r0, r1, key]], rings: [[bone, x, y, z, radius, tube,
-// key]] (facing +z), paint(key, p, out) (optional: patterns; p in the
+// key, turn (optional, as masses')]] (facing +z unturned), paint(key, p, out) (optional: patterns; p in the
 // built space), deform(p, n, bone) (optional: how far to push a vertex out
 // along its normal, in metres: one smooth field moves every surface there
 // together, so shapes reshape without creases) }. Returns { geometry, joints } (joints: { name: { i,
@@ -69,8 +69,10 @@ export function buildFigure(spec) {
   for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key] of spec.tubes ?? []) {
     add(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, 8, 4), { bone, key });
   }
-  for (const [bone, x, y, z, radius, thickness, key] of spec.rings ?? []) {
-    add(new THREE.TorusGeometry(radius, thickness, 4, 12).translate(x, y, z), { bone, key });
+  for (const [bone, x, y, z, radius, thickness, key, turn] of spec.rings ?? []) {
+    const g = new THREE.TorusGeometry(radius, thickness, 6, 20);
+    if (turn) g.rotateX(turn[0]).rotateY(turn[1]).rotateZ(turn[2]);
+    add(g.translate(x, y, z), { bone, key });
   }
   let geometry = mergeGeometries(parts);
   for (const p of parts) p.dispose();
