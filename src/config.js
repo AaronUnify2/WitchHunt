@@ -2297,7 +2297,7 @@ export const config = {
       hitFlashSeconds: 0.15,
       hitFlash: [1.8, 1.6, 0.8], // its colour while flashing
       thermalGlow: 0.35, // x the heat scope's glow: dim (from the other side)
-      colours: { shell: 0x1e2a24, shellDark: 0x141a16, belly: 0x2e2618, spot: 0xc8c070, eyes: 0xc01810 },
+      colours: { shell: 0x24382c, shellDark: 0x18221c, belly: 0x2e2618, spot: 0xc8c070, eyes: 0xc01810 }, // black-green
     },
   },
 

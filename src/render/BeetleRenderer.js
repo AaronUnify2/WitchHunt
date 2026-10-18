@@ -62,7 +62,7 @@ export class BeetleRenderer {
         .replace(
           '#include <emissivemap_fragment>',
           // The heat scope's glow fades up close; the spot and eyes glow in their own colour.
-          '#include <emissivemap_fragment>\ntotalEmissiveRadiance *= mix(uThermalNear.x, 1.0, smoothstep(uThermalNear.y, uThermalNear.z, length(vViewPosition)));\ntotalEmissiveRadiance += vColor * vGlow * uGlow;',
+          '#include <emissivemap_fragment>\ntotalEmissiveRadiance *= mix(uThermalNear.x, 1.0, smoothstep(uThermalNear.y, uThermalNear.z, length(vViewPosition)));\ntotalEmissiveRadiance += vColor.rgb * vGlow * uGlow;',
         );
     };
     material.customProgramCacheKey = () => 'beetle-skinned';

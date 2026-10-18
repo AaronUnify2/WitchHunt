@@ -15,11 +15,12 @@ const SIDES = [
   ['L', 1],
 ];
 // Each leg pair: where it meets the thorax (z), and how its knee and foot
-// reach forward (+) or back (-).
+// reach forward (+) or back (-): the front pair reaching ahead, the back
+// pair swept well back (a beetle's, low and braced: not a spider's stilts).
 const LEGS = [
-  [0.3, 0.14, 0.32],
-  [0.12, 0, 0.02],
-  [-0.06, -0.12, -0.26],
+  [0.3, 0.12, 0.26],
+  [0.12, -0.02, -0.06],
+  [-0.06, -0.2, -0.4],
 ];
 
 function joints() {
@@ -36,8 +37,8 @@ function joints() {
   for (const [n, s] of SIDES) {
     LEGS.forEach(([z, kz, fz], i) => {
       j.push([`hip${n}${i}`, 'thorax', s * 0.16, 0.36, z]);
-      j.push([`knee${n}${i}`, `hip${n}${i}`, s * 0.42, 0.5, z + kz]);
-      j.push([`foot${n}${i}`, `knee${n}${i}`, s * 0.64, 0, z + fz]);
+      j.push([`knee${n}${i}`, `hip${n}${i}`, s * 0.34, 0.38, z + kz]);
+      j.push([`foot${n}${i}`, `knee${n}${i}`, s * 0.46, 0, z + fz]);
     });
   }
   return j;
@@ -54,9 +55,9 @@ export function beetleSpec(beetle) {
     ['head', null, 0, 0.38, 0.48, 0.13, 0.1, 0.11, 'shell'],
     // The abdomen, under the wing cases, and its pale ridged underside.
     ['abdomen', null, 0, 0.4, -0.22, 0.27, 0.15, 0.42, 'belly'],
-    // The wing cases: two halves, closed down its back (they open to threaten).
-    ['elytraR', null, -0.13, 0.5, -0.2, 0.15, 0.1, 0.45, 'shell'],
-    ['elytraL', null, 0.13, 0.5, -0.2, 0.15, 0.1, 0.45, 'shell'],
+    // The wing cases: two domed halves meeting down its back (they open to threaten).
+    ['elytraR', null, -0.1, 0.5, -0.2, 0.17, 0.14, 0.45, 'shell'],
+    ['elytraL', null, 0.1, 0.5, -0.2, 0.17, 0.14, 0.45, 'shell'],
     // The weak spot: a soft membrane between the mandibles.
     ['head', null, 0, 0.33, 0.57, 0.06, 0.05, 0.03, 'spot'],
     // Eyes: a cluster of red glints each side.
@@ -66,9 +67,10 @@ export function beetleSpec(beetle) {
     ['head', null, 0.08, 0.44, 0.55, 0.014, 0.014, 0.014, 'eyes'],
   ];
   const tubes = [
-    // The horn, curving up and forward.
-    ['head', 0, 0.45, 0.5, 0, 0.56, 0.6, 0.04, 0.025, 'shell'],
-    ['head', 0, 0.56, 0.6, 0, 0.64, 0.7, 0.025, 0.005, 'shell'],
+    // The horn, big and curving up and forward (a rhinoceros beetle's).
+    ['head', 0, 0.42, 0.5, 0, 0.56, 0.62, 0.05, 0.035, 'shell'],
+    ['head', 0, 0.56, 0.62, 0, 0.7, 0.68, 0.035, 0.018, 'shell'],
+    ['head', 0, 0.7, 0.68, 0, 0.78, 0.66, 0.018, 0.003, 'shell'],
     // The mandibles, hooked in toward each other.
     ['mandR', -0.07, 0.33, 0.6, -0.05, 0.32, 0.7, 0.026, 0.016, 'shellDark'],
     ['mandR', -0.05, 0.32, 0.7, -0.01, 0.31, 0.76, 0.016, 0.004, 'shellDark'],
@@ -78,8 +80,8 @@ export function beetleSpec(beetle) {
   const limbs = [];
   for (const [n] of SIDES) {
     for (let i = 0; i < LEGS.length; i++) {
-      limbs.push([`hip${n}${i}`, `knee${n}${i}`, 0.04, 0.032, 'shellDark', 0.15]);
-      limbs.push([`knee${n}${i}`, `foot${n}${i}`, 0.03, 0.01, 'shellDark', 0.1]);
+      limbs.push([`hip${n}${i}`, `knee${n}${i}`, 0.05, 0.04, 'shellDark', 0.25]);
+      limbs.push([`knee${n}${i}`, `foot${n}${i}`, 0.038, 0.016, 'shellDark', 0.15]);
     }
   }
   // Spines on the lower legs.
