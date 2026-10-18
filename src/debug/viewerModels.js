@@ -27,6 +27,7 @@ import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
+import { MibRenderer } from '../render/MibRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
@@ -166,6 +167,29 @@ export const VIEWER_MODELS = [
       { id: 'down', name: 'Down' },
     ],
     create: (ctx) => personModel(ctx, 'mib'),
+  },
+  {
+    id: 'agent',
+    name: 'Man in Black, armed',
+    note: 'Session 13: the same man, with his weapon (Y). One draw call; the arms reach for the weapon wherever it is held. AI: M11.',
+    height: (cfg) => cfg.people.mib.height,
+    variants: () => ['Pistol', 'SMG', 'Sniper rifle'],
+    poses: [
+      { id: 'idle', name: 'Unaware, standing his post' },
+      { id: 'patrol', name: 'Unaware, patrolling' },
+      { id: 'alert', name: 'Alert (at the ready)' },
+      { id: 'walk', name: 'Advancing (at the ready)' },
+      { id: 'run', name: 'Running' },
+      { id: 'aim', name: 'Aiming' },
+      { id: 'fire', name: 'Firing' },
+      { id: 'cover', name: 'Crouched at cover' },
+      { id: 'coverAim', name: 'Aiming over cover' },
+      { id: 'coverFire', name: 'Firing over cover' },
+      { id: 'hit', name: 'Hit (flash and flinch)' },
+      { id: 'dying', name: 'Dying' },
+      { id: 'corpse', name: 'Corpse' },
+    ],
+    create: agentModel,
   },
   {
     id: 'standIns',
@@ -587,6 +611,56 @@ function personModel(ctx, id) {
       renderer.dispose();
       group.removeFromParent();
     },
+  };
+}
+
+// ---- the Men in Black, armed ------------------------------------------------------------------
+
+const AGENT_WEAPONS = ['pistol', 'smg', 'sniper'];
+
+function agentModel(ctx) {
+  const ac = ctx.cfg.mibAgents;
+  const vc = ctx.cfg.modelViewer;
+  const renderer = new MibRenderer(ac, ctx.cfg.people.mib);
+  renderer.init(ctx.scene, 1);
+  const a = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, flash: 0, weapon: 'pistol', aimPitch: 0 };
+  return {
+    objects: renderer.meshes,
+    update(dt, s) {
+      Object.assign(a, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, state: s.pose, timer: s.poseTime, weapon: AGENT_WEAPONS[s.variant] ?? 'pistol', firing: false });
+      const t = s.poseTime;
+      switch (s.pose) {
+        case 'patrol':
+        case 'walk':
+          a.walked += dt * vc.zombieWalkSpeed;
+          break;
+        case 'run':
+          a.walked += dt * vc.zombieWalkSpeed * 3;
+          break;
+        case 'fire':
+          a.timer = loopTime(t, a.weapon === 'smg' ? 0.12 : a.weapon === 'sniper' ? 1.6 : 0.6);
+          break;
+        case 'coverFire':
+          a.state = 'coverAim';
+          a.firing = true;
+          a.timer = loopTime(t, a.weapon === 'smg' ? 0.12 : a.weapon === 'sniper' ? 1.6 : 0.6);
+          break;
+        case 'hit': {
+          const k = loopTime(t, vc.hitLoopSeconds);
+          a.flash = Math.max(0, ac.hitFlashSeconds - k);
+          a.state = k < vc.staggerSeconds ? 'flinch' : 'alert';
+          break;
+        }
+        case 'dying':
+          a.timer = Math.min(ac.deathSeconds, loopTime(t, ac.deathSeconds + vc.holdSeconds));
+          break;
+        default:
+          break;
+      }
+      renderer.update([a], dt);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => renderer.dispose(),
   };
 }
 

@@ -2350,6 +2350,27 @@ export const config = {
     },
   },
 
+  // The Men in Black, armed (Session 13; DESIGN.md "Men in Black";
+  // render/MibRenderer.js): config.people.mib with a weapon, for their AI
+  // (M11). Most carry a pistol, some an SMG, some a sniper rifle (Aaron):
+  // weaponMix, the shares a squad is drawn from.
+  mibAgents: {
+    poolSize: 12, // at most this many shown at once
+    albedo: 0.62, // as the family's
+    poseRate: 10, // how fast he blends into a new pose (per second)
+    firePoseRate: 40, // ...while firing (the kick)
+    walkRate: 7, // radians of stride per metre walked
+    runRate: 4.5, // per metre run
+    weaponMix: { pistol: 0.65, smg: 0.25, sniper: 0.1 },
+    recoil: { pistol: 0.22, smg: 0.07, sniper: 0.32 }, // radians the muzzle kicks up a shot
+    recoilDecay: 9, // how fast the kick settles (per second)
+    deathSeconds: 1.3,
+    hitFlashSeconds: 0.15,
+    hitFlash: [1.8, 0.5, 0.5],
+    thermalGlow: 1, // x the heat scope's glow: warm, living
+    colours: { gun: 0x1a1a1c, gunGrip: 0x111112, scope: 0x141416, lens: 0x1a2a3a },
+  },
+
   // Talking to the family face to face (M8): hold interact while looking
   // at one of them in the comms room.
   familyTalk: {
