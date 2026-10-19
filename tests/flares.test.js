@@ -37,7 +37,7 @@ describe('a flare in flight', () => {
     const body = fly({ targets: [zombieAt(12)] }, { x: 0, y: -0.02, z: 1 });
     expect(body.hit.kind).toBe('target');
     expect(body.hit.part).toBe('body');
-    const head = fly({ targets: [zombieAt(12)] }, { x: 0, y: 0.012, z: 1 }); // a touch high: it drops over 12 m
+    const head = fly({ targets: [zombieAt(12)] }, { x: 0, y: 0.025, z: 1 }); // a touch high: it drops over 12 m
     expect(head.hit.kind).toBe('target');
     expect(head.hit.part).toBe('head');
     expect(head.hit.z).toBeLessThan(12);
@@ -56,10 +56,26 @@ describe('a flare in flight', () => {
     expect(hit.z).toBeGreaterThan(8);
   });
 
-  it('burns where it is after maxFlight, fired up into the sky', () => {
-    const { hit, f } = fly({}, { x: 0, y: 0.99, z: 0.14 });
+  it('fired straight up, climbs, arcs over and comes back down smoothly (Aaron)', () => {
+    const f = { x: 0, y: 1.6, z: 0, vx: 0, vy: fc.speed * 0.995, vz: fc.speed * 0.1, age: 0 };
+    let top = 0;
+    let prevY = f.y;
+    let biggestStep = 0;
+    let hit = null;
+    for (let i = 0; i < 2000 && !hit; i++) {
+      hit = stepFlare(f, 1 / 60, fc, { targets: [], blockers: [], ground: flat });
+      if (!hit) {
+        top = Math.max(top, f.y);
+        biggestStep = Math.max(biggestStep, Math.abs(f.y - prevY));
+        prevY = f.y;
+      }
+    }
     expect(hit.kind).toBe('ground');
-    expect(f.age).toBeLessThanOrEqual(fc.maxFlight + 0.02);
+    expect(top).toBeGreaterThan(40);
+    expect(f.age).toBeGreaterThan(4);
+    expect(f.age).toBeLessThan(12);
+    expect(prevY).toBeLessThan(1.5); // its last step in the air was just above the ground: no jump down
+    expect(biggestStep).toBeLessThan(fc.speed / 60 + 0.01);
   });
 });
 

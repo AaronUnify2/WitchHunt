@@ -875,8 +875,9 @@ export const config = {
     // How many you start with and can carry: config.inventory (startFlares, maxFlares).
     fireInterval: 0.8, // seconds between shots
     speed: 55, // metres a second out of the barrel
-    gravity: 6, // metres a second squared: it drops, a little
-    maxFlight: 3, // seconds before a flare that hit nothing burns where it is
+    gravity: 9.8, // metres a second squared
+    drag: 0.35, // air drag (per second): fired straight up it climbs about 60 m, slows, arcs over and comes down in about 7 s (Aaron: no snapping to the ground)
+    maxFlight: 20, // seconds: a safety net only (it always comes down before this)
     muzzleOffset: { right: 0.22, down: 0.18, forward: 0.6 }, // metres from the eye
     hitDamage: 18, // a conk: 3x on the head (headshotMultiplier), so it can drop a citizen
     stagger: 0.9,

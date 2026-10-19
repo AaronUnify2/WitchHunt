@@ -1,10 +1,11 @@
 // A flare in flight (pure; M9.1). Fired from the flare gun like a round,
-// it flies fast and drops a little; each step it's a short ray from where
+// it flies fast, slowed by the air and pulled down, so a shot straight up
+// arcs over and drifts back down (Aaron); each step it's a short ray from where
 // it was to where it's going, tested against the targets (zombies, the
 // witch: rayEnemiesAll), solid things (trunks, rocks, walls) and the ground.
 //  - hits a target: a conk (Aaron); it falls to the ground below the hit;
 //  - hits something solid: it drops there, just short of it;
-//  - hits the ground (or flies maxFlight seconds): it lands and burns.
+//  - hits the ground: it lands and burns (maxFlight is only a safety net).
 
 import { rayEnemiesAll, rayBlockers } from './hitscan.js';
 
@@ -18,10 +19,14 @@ const dir = { x: 0, y: 0, z: 0 };
 // it stopped (on the ground for 'ground'; at the impact for the others).
 export function stepFlare(f, dt, cfg, world) {
   f.age += dt;
-  const nvy = f.vy - cfg.gravity * dt;
-  const mx = f.vx * dt;
+  // Drag slows it all over; gravity pulls it down. Move by the average velocity.
+  const keep = Math.exp(-(cfg.drag ?? 0) * dt);
+  const nvx = f.vx * keep;
+  const nvy = f.vy * keep - cfg.gravity * dt;
+  const nvz = f.vz * keep;
+  const mx = (f.vx + nvx) * 0.5 * dt;
   const my = (f.vy + nvy) * 0.5 * dt;
-  const mz = f.vz * dt;
+  const mz = (f.vz + nvz) * 0.5 * dt;
   const len = Math.hypot(mx, my, mz);
   if (len < 1e-6) return null;
   dir.x = mx / len;
@@ -44,7 +49,9 @@ export function stepFlare(f, dt, cfg, world) {
   f.x += mx;
   f.y += my;
   f.z += mz;
+  f.vx = nvx;
   f.vy = nvy;
+  f.vz = nvz;
   if (f.age >= cfg.maxFlight) return { kind: 'ground', x: f.x, y: world.ground.heightAt(f.x, f.z), z: f.z };
   return null;
 }
