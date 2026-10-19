@@ -76,3 +76,45 @@ describe('the stand-in planter', () => {
     for (const s of sigils) expect(Math.hypot(s.x - player.x, s.z - player.z)).toBeGreaterThanOrEqual(cfg.playerMinDistance);
   });
 });
+
+describe("the witch's cluster rule (M9.1): before the crossing, only inside the opening cluster", () => {
+  const margin = config.witch.clusterPlantMargin;
+  const plantInside = (seed, count) => {
+    const map = makeMap(seed);
+    const ground = makeGround(seed);
+    const within = (x, z) => z < map.cluster.cordonZ - margin;
+    const rng = new Rng(`cluster${seed}`);
+    const sigils = [];
+    const firsts = [];
+    for (let i = 0; i < count; i++) {
+      const spot = chooseSigilSpot(map, ground, sigils, null, cfg, rng, (id) => !sigils.some((s) => s.groundId === id), within);
+      if (!spot) continue;
+      if (i === 0) firsts.push(spot);
+      sigils.push(spot);
+    }
+    return { map, sigils, firsts };
+  };
+
+  it('never plants south of the cordon, and still keeps her other rules', () => {
+    for (const seed of [1, 2, 3, 42]) {
+      const { map, sigils } = plantInside(seed, config.sigils.cap);
+      expect(sigils.length).toBeGreaterThanOrEqual(3); // the cluster holds a few nights' worth
+      const home = map.clearings[map.homeIndex];
+      for (const s of sigils) {
+        expect(s.z).toBeLessThan(map.cluster.cordonZ - margin);
+        expect(Math.hypot(s.x - home.x, s.z - home.z)).toBeGreaterThanOrEqual(cfg.homeMinDistance);
+      }
+    }
+  });
+
+  it("usually goes to the cluster's own sigil ground while it's free", () => {
+    let atGround = 0;
+    const tries = 40;
+    for (let seed = 0; seed < tries; seed++) {
+      const { map, firsts } = plantInside(seed + 100, 1);
+      const ground = map.clearings.find((c) => c.cluster && c.kind === 'sigilGround');
+      if (firsts[0]?.groundId === ground.id) atGround++;
+    }
+    expect(atGround / tries).toBeGreaterThan(cfg.groundChance - 0.2);
+  });
+});

@@ -352,6 +352,12 @@ export class Game {
   initProgress() {
     this.progress = new StoryProgress(this.cfg, this.bus);
     this.progress.init({ world: this.world, player: this.player, enemies: this.combat.enemies });
+    // The witch's cluster rule (Session 11): until Tom crosses the cordon
+    // she plants only inside the opening cluster (still preferring its
+    // sigil ground); then anywhere.
+    const cordonZ = this.world.map.cluster.cordonZ;
+    const margin = this.cfg.witch.clusterPlantMargin;
+    this.director.plantArea = () => (this.progress.has('crossedCordon') ? null : (x, z) => z < cordonZ - margin);
     this.gates = new Gates(this.cfg, this.bus);
     this.gates.init(this.scene, {
       world: this.world,

@@ -215,7 +215,8 @@ export class ZombieDirector {
 
   // ---- planting ------------------------------------------------------------
 
-  // A spot for the witch's next sigil, by her rules (M7). planned: spots
+  // A spot for the witch's next sigil, by her rules (M7; M9.1: plantArea(),
+  // if set, returns where she may plant now, or null for anywhere). planned: spots
   // she's already set out for tonight (kept apart like sigils). Not
   // checked against the player: she walks there, so a player staking out a
   // sigil ground can be waiting for her. Returns a spot or null.
@@ -223,7 +224,7 @@ export class ZombieDirector {
     const w = this.world;
     const taken = planned.length ? [...this.sigils.list, ...planned] : this.sigils.list;
     const plannedGrounds = new Set(planned.map((s) => s.groundId));
-    return chooseSigilSpot(w.map, w.ground, taken, null, this.cfg.planter, this.plantRng, (id) => this.sigils.groundFree(id) && !plannedGrounds.has(id));
+    return chooseSigilSpot(w.map, w.ground, taken, null, this.cfg.planter, this.plantRng, (id) => this.sigils.groundFree(id) && !plannedGrounds.has(id), this.plantArea?.() ?? null);
   }
 
   // Debug: one sigil by her rules, at once (no witch walking there).

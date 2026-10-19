@@ -1640,6 +1640,7 @@ export const config = {
   // The witch (M7, DESIGN.md "The witch"). Every number is a first pass
   // for Aaron's play-tests.
   witch: {
+    clusterPlantMargin: 12, // M9.1: before the crossing she plants at least this far north of the cordon (inside the cluster)
     // Planting (Aaron, M7): she hides in her hut by day and sets out at
     // dusk. Night 1 is safe; from night 2 she plants one sigil a night,
     // and from night 3 sometimes a second if the night allows.

@@ -2,7 +2,8 @@
 // planter, used by the real witch since M7): most plantings go to an empty sigil ground; the rest go
 // a little way off a pathway into the forest. Never near the station,
 // never close to another sigil or to the player, never in an encounter's
-// clearing, home or the hut.
+// clearing, home or the hut. M9.1: `within(x, z)` can limit her to an area
+// (until Tom crosses the cordon, the opening cluster: Session 11).
 
 import { pointSegmentDistance } from '../world/mapGraph.js';
 
@@ -36,10 +37,13 @@ export function nearestClearing(map, x, z) {
 }
 
 // Choose a spot. ground: { clamp(pos), heightAt(x, z) }. sigils: the
-// active sigils. groundFree(id): is that sigil ground empty? Returns
+// active sigils. groundFree(id): is that sigil ground empty? within(x, z):
+// where she may plant (null: anywhere). Returns
 // { x, z, y, groundId, clearingId } or null if nowhere fits.
-export function chooseSigilSpot(map, ground, sigils, player, cfg, rng, groundFree = () => true) {
-  const grounds = map.clearings.filter((c) => c.kind === 'sigilGround' && groundFree(c.id));
+export function chooseSigilSpot(map, ground, sigils, player, cfg, rng, groundFree = () => true, within = null) {
+  const inside = within ?? (() => true);
+  const grounds = map.clearings.filter((c) => c.kind === 'sigilGround' && groundFree(c.id) && inside(c.x, c.z));
+  const paths = within ? map.paths.filter((path) => path.points.some((q) => within(q.x, q.z))) : map.paths;
   const tryGround = () => {
     const open = [];
     for (const c of grounds) {
@@ -60,9 +64,10 @@ export function chooseSigilSpot(map, ground, sigils, player, cfg, rng, groundFre
     if (spot) return spot;
   }
   for (let i = 0; i < cfg.tries; i++) {
-    const p = pathSideSpot(map, cfg, rng);
+    const p = pathSideSpot(paths, cfg, rng);
     if (!p) break;
     ground.clamp(p);
+    if (!inside(p.x, p.z)) continue;
     if (!spotAllowed(p.x, p.z, map, sigils, player, cfg)) continue;
     // Off-path sigils must really be in the forest, not in a clearing.
     if (map.clearings.some((c) => Math.hypot(p.x - c.x, p.z - c.z) < c.radius)) continue;
@@ -81,9 +86,9 @@ function groundSpot(c, cfg, rng) {
 }
 
 // A random point a little way off a random pathway, into the forest.
-function pathSideSpot(map, cfg, rng) {
-  if (map.paths.length === 0) return null;
-  const pts = rng.pick(map.paths).points;
+function pathSideSpot(paths, cfg, rng) {
+  if (paths.length === 0) return null;
+  const pts = rng.pick(paths).points;
   if (pts.length < 2) return null;
   const i = rng.int(0, pts.length - 2);
   const a = pts[i];
