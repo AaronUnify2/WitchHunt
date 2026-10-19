@@ -1,5 +1,25 @@
 # Open questions
 
+## Session 14 (Lead Engineer: M9.1, the cluster on the map)
+
+Agreed with Aaron at the start: **push each step to `main`**; the cluster's layout on my recommendation; **stand-in triggers** for the gates until the story beats exist; the cluster counts toward the 22 clearings. Decided along the way: the road, cordon and gates as proposed (rule 10); **the gates stay soft barriers for now** (Aaron: to revisit later in development); **the flare gun fires like a gun** (a projectile along the crosshair that can conk a zombie), and only the newest flare lights and lures.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 171 | **The cluster's layout and distances.** | Home on the cliff at the middle of the north edge; the campsite about 150 m south-west, the storm shelter about 175 m south-east, the family cemetery beyond it, the gas station south-west of the campsite, the outpost 260 m due south, the cordon 290 m south of home. Home to the outpost by the paths is about 410 m: a minute and a half at a walk. Too close, too far? | `src/data/openingCluster.json` (`dx`, `dz`), `config.map.cluster.cordonSouthOfHome` |
+| 172 | **The family cemetery is the cluster's sigil ground** (proposed: the Pruitts' land). | Always the cemetery; the other north ground is seeded in the north frontier. | `openingCluster.json` (the `sigilGround` entry) |
+| 173 | **A path from the cemetery to the outpost** (added, not in the design). | Without it the cluster's paths were a tree, and the witch and night marches reached the shelter side only through the station. Tom's blocked on it by the outpost's side gate (same flag as the road gate). | `openingCluster.json` `paths`, `gates` (`outpostSide`) |
+| 174 | **The stand-in triggers.** | `day2`: the first dawn after visiting the campsite. `rifleClaimed` and `outpostCall`: both the gas station and the shelter visited. `outpostCleared`: Tom at the outpost and no living zombie within 15 m of its edge. Sessions 15-17 replace these with their beats (`StoryProgress.setFlag()`). | `src/data/progress.json` |
+| 175 | **How the dead cross the cordon.** | They walk the pathways, so nearly all come through the checkpoint (its gate stops only Tom). The torn gaps let through any that are off the paths; a whole panel stops a zombie as it would a wall, so one chasing Tom across the fence slides along it. | `world/cordon.js` |
+| 176 | **The flare's numbers.** | 55 m/s, drops 6 m/s². A conk does 18 (54 to the head) and staggers 0.9 s. Burns 20 s. Lures every zombie within 35 m to mill within 2.5 m of it; one that notices you within 3 m comes for you anyway. The pop alerts zombies within 25 m. Fire every 0.8 s. | `config.flares`, `config.inventory.startFlares` / `maxFlares` |
+| 177 | **Where flares come from.** | 3 at the start (carry 3). Police car boots (35%, 1-2: road flares) and army zombies (5%). The crashed plane and the outpost (DESIGN.md) come with their encounters. | `data/vehicles.json`, `data/loot.json` |
+| 178 | **The witch with nowhere to plant in the cluster.** | Before the crossing, if no spot north of the cordon keeps her rules (70 m from other sigils, 160 m from home), she plants nothing that night. With 5 sigils at most it rarely bites (the tests fill 3-5). | `config.witch.clusterPlantMargin`, `config.planter` |
+| 179 | **Camera numbers.** | Camera six (the storm shelter's, fixed) and five seeded ones in the frontier, numbered 1-5 north to south, so six is the northernmost but numbered last. | `openingCluster.json` `trailCams`, `story/trailCamPlacement.js` |
+| 180 | **The look of the road, cordon and gates** (style pass 2, Session 19). | Placeholder-plus, in code: the asphalt texture, the pipe gate, the oak, the chain-link gates and their signs; the colours dulled where the torch glared. The torn gaps are a panel peeled in, with its coil sagging. | `render/Road.js`, `render/Cordon.js`, `render/GateProps.js`, `config.map.road` / `cordon` / `gates` |
+| 181 | **Old saves.** | The save version went to 2: every seed's map changed, so a version 1 save is discarded cleanly. | `core/saveData.js` `SAVE_VERSION` |
+
+**Resolved here:** #153 (the fixed camera near the storm shelter, built: camera six).
+
 ## Session 13 (Graphics Engineer / Technical Artist: characters and the deferred art)
 
 Agreed with Aaron at the start: **a short written proposal in the chat, then a version pushed to `main` to react to in-game**, a step at a time. Decided along the way: the zombies stay sprites (huge hordes must stay cheap: one draw call); the family talk with the bob, no mouth; the grey alien is the cowboy Martians' species, the cowboyness dialled back (AI in M10); the witch never shows a face and never bends at the hips; the living Men in Black are the cutscenes' 3D model with minimal changes; four vehicle types only, the sheriff's paint; the station lit; the hut a taken settler's cabin.

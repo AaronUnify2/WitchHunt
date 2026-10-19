@@ -99,7 +99,7 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 
 The player starts each run with the **shovel**, the **flare gun** (and a few flares) and the **ranger service rifle** with only a handful of rounds.
 
-- **As built** (Session 11 review): the shotgun is still in the starting kit (M2, so the guns could be compared); it moves to the campsite with the opening cluster (M9). **The flare gun isn't built yet** (it comes with M9, and the Mothman's flare attention with M10).
+- **As built** (Session 11 review): the shotgun is still in the starting kit (M2, so the guns could be compared); it moves to the campsite with the opening cluster (M9). **The flare gun is built** (M9.1, Session 14: see Flares); the Mothman's flare attention comes with M10.
 - Guns that fire the same rounds share one pool (Session 10b): the pistol and SMG, the pump and auto shotgun, the hunting rifle and the heat-scope rifle.
 
 | Weapon | Role | Where it comes from | Damage (placeholder) |
@@ -212,8 +212,8 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 
 **The outpost is the genuine wall.** The M3 rule says off-path undergrowth only slows, never blocks. The home cluster is the deliberate, meaningful exception, and the block is the **military cordon** itself, not random terrain: the military sealed off the south, and the outpost's sandbag walls and checkpoint are the barrier. It's reinforced psychologically with signage, a checkpoint and the clear sense that Tom isn't supposed to go past. Tom's a ranger and this is nominally his forest, but the military have fenced off the south of it and won't say why. The player fights through the overrun checkpoint to open the south.
 
-- *(proposed)* The cordon runs east to west across the map's full width (fence, razor wire and sandbags, cliff edge to cliff edge, or to dense impassable forest at the map's sides), with the outpost as its only gate, so the player can't walk around it.
-- *(proposed)* The gates inside the cluster (campsite path → gas station path → outpost path) are lighter in-world blocks that clear through story beats: a locked ranger gate, a fallen tree Tom cuts, a code Wyatt radios.
+- The cordon runs east to west across the map's full width (chain-link and razor wire, sandbag-and-concrete near the checkpoint, edge to edge of the map), with the outpost's checkpoint as its only gate, so the player can't walk around it (agreed with Aaron, Session 14).
+- The gates inside the cluster are lighter in-world blocks that clear through story beats (agreed, Session 14): a padlocked ranger pipe gate on the shelter spur, a fallen oak on the gas station trail, the outpost's chained gates. **They stay soft for now** (Aaron, Session 14): they block the path and their wings reach into the trees, but Tom can push round through the slow undergrowth. To revisit later in development.
 
 **The cordon blocks Tom, not the dead** (Session 11). The cordon is a wall for the player only. The dead and the witch come through where it's torn: gaps pulled open from the far side, too low, too narrow or too tangled with wire for a man with a pack (a collider that blocks the player and nothing else). It's the story made visible: containment has already failed, and the things it held are getting out. So night marches from the frontier still reach the station, and the witch can reach the cluster.
 
@@ -225,6 +225,14 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 **Call to adventure.** Ellen, who worked on the edge of the portal programme, knows what a quarantine zone means. When the witch's sigils turn up **outside** the military's containment zone, she realises containment has failed and sends Tom to the military checkpoint to report that the witch has escaped it. When Tom reaches the outpost, it's already overrun: the soldiers are dead, the containment has collapsed and nobody is coming. It's just Tom now. This is the big call to adventure and the point where the game lets go of the player's hand. It recasts the push south as Tom defying a failed cordon to find out what the military were hiding, which ties into Ground Zero and the portal backstory.
 
 - *(proposed)* Ellen's realisation lands after the gas station (her line at that dusk or the next dawn), since by then Tom has seen the sigil and the witch herself on this side of the cordon. The outpost path opens with it.
+
+**As built (M9.1, Session 14):**
+- **The cluster is data** (`src/data/openingCluster.json`): the five places plus the family cemetery (the cluster's sigil ground), in metres from home, which sits on the cliff in the middle of the north edge. Its pathways make a loop (station, campsite, gas station, outpost, cemetery, shelter), so the dead and the witch reach the shelter side without walking through the station. Everything north of the cordon (the cliff, hills, trees, rocks, the cluster's pathways and cars) comes from a fixed seed, so the opening looks the same every run. The frontier joins it by one pathway, due south out of the outpost through the checkpoint. The north band runs to southness 0.40 (was 0.34) so the north frontier fits south of the cordon; the cluster's clearings are a "home woods" type (citizens, some police, no army).
+- **The road** (`world/road.js`, `render/Road.js`): in from the dense forest at the west edge, past the gas station's forecourt (about 14 m south of its centre: the station building goes north of it, M9.3), through the outpost and the checkpoint. Worn asphalt, telephone poles, a ROAD CLOSED sign; three fixed wrecks (a sedan on the forecourt, the sheriff's car, a jackknifed M35).
+- **The cordon** (`world/cordon.js`, `render/Cordon.js`): along the line 290 m south of home, just past the outpost. Whole panels stop everyone; the five torn gaps and the shut checkpoint gate stop only Tom (a `playerOnly` collider). Shots pass the wire.
+- **The gates and story progress flags** (`src/data/progress.json`, `story/StoryProgress.js`, `world/Gates.js`): saved flags, each set by a trigger; most are stand-ins until Sessions 15-17's story beats set them. Shelter spur: `night1`. Gas station trail: `day2` (the first dawn after the campsite). The outpost's road and cemetery gates: `outpostCall` (stand-in: the gas station and the shelter both visited, for the rifle and Ellen's call). The checkpoint: `outpostCleared` (stand-in: no zombies left at the outpost once Tom's there). `crossedCordon` is set for real when Tom is south of the line. Lines can name the flags as conditions.
+- **The witch's cluster rule:** until `crossedCordon`, she plants only north of the cordon (config `witch.clusterPlantMargin`), still preferring a free sigil ground.
+- **Camera six** (the Hales' Night 1 camera) is fixed at the storm shelter (#153); the five seeded trail cameras are all in the frontier.
 
 **Plant wants here, pay them off out there.** The home cluster is where the game reliably seeds threads that pay off later. The authored zone hands the player their reasons to explore the unauthored zone.
 
@@ -464,6 +472,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 - **Cost:** too many flares draw the Mothman (above).
 - **Capped:** carry limit 3 (config), few sources.
 - **Flares never attract the witch.** A reliable lure plus explosives would make her too easy to trap.
+- **As built (M9.1, Session 14; Aaron):** the flare gun fires like any gun, along the crosshair: Y (F) sends a fast, glowing flare that drops a little. **A direct hit conks** a zombie or the witch (18 damage, 3x on the head, a stagger). It falls where it hit, or lands, and burns red for 20 s. **Only the newest flare counts:** the last one fired casts the one real light (made at load), and the last one to land is the lure: every zombie within 35 m goes to it and mills about, unless Tom walks right up to one. Older flares just glow out. Carry 3, start with 3; road flares in police car boots, sometimes one off an army zombie. The Mothman's attention meter is counted, unused until M10 (`combat/Flares.js`, `config.flares`).
 
 ## The witch
 
@@ -1140,7 +1149,7 @@ The family run the station's radio and trail-camera network, so they stay part o
 - **CCTV patch-through:** when a camera catches something, they patch the feed to Tom. Most mid-run cutscenes are framed this way.
 - **Witch sightings are limited on purpose:** trail cameras sit at fixed spots (config, 5–6 in the north and middle). They report her only if she passes one, after a delay, and the map marks the camera, not her. A lead, never a tracker.
 - Calls are rate-limited (config): calls of one kind at least `kindGap` apart, any two at least `minGap` apart, urgent ones cut in. A one-off call that has to wait queues for a while; a repeatable one is dropped (M8).
-- **Trail cameras as built (M8):** six seeded posts at clearing edges in the north and middle, numbered north to south, on both maps. She's reported 25-60 s after passing one while she's out; the map marks that camera (red, blinking) for four minutes, and the clip goes on the comms room's monitors. The family's sighting lines are still to be written (a notice stands in). The fixed camera near the storm shelter (#153) comes with M9.1.
+- **Trail cameras as built (M8):** six seeded posts at clearing edges in the north and middle, numbered north to south, on both maps. She's reported 25-60 s after passing one while she's out; the map marks that camera (red, blinking) for four minutes, and the clip goes on the comms room's monitors. The family's sighting lines are still to be written (a notice stands in). M9.1 (Session 14): camera six is fixed at the storm shelter (#153), the same every run, and the five seeded cameras are all in the frontier.
 
 ### Dialogue system
 
@@ -1558,7 +1567,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 11 | Lead Engineer (design review, with the Narrative and Level & Encounter Designer hats) | Folded in Aaron's story and encounter design (the opening cluster); reviewed DESIGN.md against what's built; redid the milestones and this plan. No feature code | — |
 | 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines. **Done** (12a and 12b in one session; the looks are a first pass for Aaron to react to) | M8 |
 | 13 | Graphics Engineer / Technical Artist | Characters and the deferred art, play-test driven. **Done:** a debug model viewer; the zombies' variety (a palette swap), army camo and helmet loss, Men in Black zombies, Earl Pruitt; the mutant, the witch, the family, the grey alien and the cowboy drift, the giant beetle, the armed Men in Black; the cars (four types and their wear), the station's interior, the witch's hut. Frontier creatures still to model: Bigfoot and the Mothman (before M10) | Part of M13 |
-| 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun | M9.1 |
+| 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun. **Done** (and the storm shelter's fixed camera, #153; the gates' and checkpoint's triggers are stand-ins for Sessions 15-17's beats) | M9.1 |
 | 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron | M9.2 |
 | 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines | M9.3 |
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate | M9.4 |
