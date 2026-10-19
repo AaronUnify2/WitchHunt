@@ -438,9 +438,9 @@ export const config = {
       bumpCooldown: 8, // seconds before the same gate tells you again
       pipeGate: { width: 5, wing: 7, height: 1.1, color: 0x3c3a22, post: 0x2c2a20, sign: 'PRIVATE \u2014 PRUITT LAND' },
       fallenTree: { length: 22, radius: 0.55, bark: 0x3a2c20, wood: 0x4e3e2a, branch: 0x2e241a }, // wood: the sawn faces, dull (paler glared)
-      chainGate: { width: 6, wing: 9, height: 2.4, color: 0x3a3d3f, chainLink: 0x4a4f53, sign: 'AUTHORIZED PERSONNEL ONLY' },
-      signColor: 0x8a8370, // dull: pale boards glare under the torch
-      signText: 0x5e1a12,
+      chainGate: { width: 6, wing: 9, height: 2.4, color: 0x26292b, chainLink: 0x2a2d30, sign: 'AUTHORIZED PERSONNEL ONLY' },
+      signColor: 0x4a4438, // dark, like the signposts: pale boards glare under the torch (Aaron)
+      signText: 0x9c8a6c,
     },
     // The military cordon (M9.1; DESIGN.md "Fixed opening cluster"): chain-
     // link and razor wire the full width of the map along the cordon line
@@ -453,9 +453,9 @@ export const config = {
       height: 3, // metres of chain-link
       thickness: 0.15, // metres (collider half-thickness)
       postRadius: 0.05,
-      chainLink: 0x4a4f53,
+      chainLink: 0x2a2d30, // dark: paler wire glared under the torch (Aaron, Session 14)
       chainLinkTexture: 128, // pixels
-      post: 0x2c2e30,
+      post: 0x222426,
       coilHeight: 0.6, // metres: the razor-wire coil along the top
       coilColor: 0x45484a, // dark: lighter wire glared under the torch
       cleared: 6, // metres kept free of trees each side
@@ -470,8 +470,8 @@ export const config = {
       signSize: [1.1, 0.75], // metres
       signTitle: 'RESTRICTED AREA',
       signLines: ['U.S. ARMY QUARANTINE ZONE', 'USE OF DEADLY FORCE AUTHORIZED'],
-      signColor: 0xc9c2ae,
-      signText: 0x8e2418,
+      signColor: 0x4a463c, // dark board, dull lettering (pale ones glared)
+      signText: 0x9c8a6c,
       // Floodlight posts along the fence: dark and broken (decoration, no lights).
       lampSpacing: 120, // metres
       lampHeight: 6,
@@ -480,11 +480,11 @@ export const config = {
       // Concrete barriers lining the fence near the checkpoint (south side).
       barrierReach: 45, // metres either side of the checkpoint
       barrierLength: 3,
-      barrierColor: 0x5a5852,
+      barrierColor: 0x3c3b37,
       // The checkpoint's gate (opens in story order; see the gates).
-      gateColor: 0x3a3d3f,
+      gateColor: 0x26292b,
       armColor: 0x6e6a60, // the barrier arm (striped in the texture); dull, the torch glares on pale paint
-      boothColor: 0x4c5040,
+      boothColor: 0x343a2e,
     },
     // The opening cluster's road (M9.1; DESIGN.md "Fixed opening cluster"):
     // the old county road past the gas station to the checkpoint. Its line
@@ -524,9 +524,9 @@ export const config = {
         side: -5.2, // metres right (+) or left (-) of the centre line
         title: 'ROAD CLOSED',
         lines: ['MILITARY CHECKPOINT AHEAD', 'NO ENTRY BEYOND THIS POINT'],
-        boardColor: 0xd8d2c0,
-        boardGrain: 0xbcb6a4,
-        textColor: 0x9a2a1e,
+        boardColor: 0x4a4438, // dark, like the signposts: pale boards glare under the torch (Aaron, Session 14)
+        boardGrain: 0x3c372d,
+        textColor: 0x9c8a6c,
       },
     },
   },
@@ -2648,7 +2648,7 @@ export const config = {
     cooldown: 90, // seconds before the same camera can report her again
     reportDelay: { min: 25, max: 60 }, // seconds from her passing to the family's call
     leadSeconds: 240, // how long the map marks the camera after a report
-    post: { height: 1.6, color: 0x3a3226, box: 0x2e3a2a, led: 0xff3020 },
+    post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
     map: { color: '#9cdc8c', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 },
   },
 

@@ -24,7 +24,7 @@ export class TrailCams {
     this.bus = bus;
   }
 
-  // ctx: { world, witch, clock, mapUi, player, notify(text), sfx, teleport(x, z, yaw) }.
+  // ctx: { world, witch, clock, mapUi, player, notify(text), sfx, teleport(x, z, yaw), colliders }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.list = placeTrailCams(this.world.map, this.rng, this.tc, clusterData.trailCams ?? []).map((c) => ({
@@ -39,6 +39,9 @@ export class TrailCams {
     this.lastSighting = null;
     this.mapUi.setTrailCams(this.list, this.tc.map, () => this.time);
     this.build(scene);
+    // Session 14 (Aaron: the boxes glared): the torch's glare check sees each
+    // camera, so the beam dims on it up close. Bodies and shots pass.
+    for (const cam of this.list) ctx.colliders?.insert({ x: cam.x, z: cam.z, r: 0.12, vr: 0.3, top: cam.y + this.tc.post.height, noBody: true, glareOnly: true });
   }
 
   // A post with a camera box and its red light, at each spot (placeholder).

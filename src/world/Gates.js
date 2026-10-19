@@ -24,7 +24,11 @@ export class Gates {
     this.list = this.world.gates.map((g) => {
       const collider = g.kind === 'checkpoint' ? this.world.cordon.gateCollider : gateCollider(g, this.gc, (x, z) => ground.heightAt(x, z));
       if (g.kind !== 'checkpoint') ctx.colliders.insert(collider);
-      return { ...g, collider, open: false, told: 0 };
+      // The torch's glare check sees a shut gate's frame and sign (Aaron:
+      // they glared up close); off once it's open and swung aside.
+      const glare = g.kind === 'pipeGate' || g.kind === 'chainGate' ? { x: g.x, z: g.z, r: 0.05, vr: this.gc[g.kind].width / 2, top: ground.heightAt(g.x, g.z) + this.gc[g.kind].height + 0.5, noBody: true, glareOnly: true } : null;
+      if (glare) ctx.colliders.insert(glare);
+      return { ...g, collider, glare, open: false, told: 0 };
     });
     this.props = new GateProps(this.gc, this.cfg.landmarks);
     this.props.init(scene, this.list, ground);
@@ -40,6 +44,7 @@ export class Gates {
       g.open = open;
       g.synced = true;
       g.collider.off = open;
+      if (g.glare) g.glare.off = open;
       if (g.kind === 'checkpoint') this.world.cordon.setCheckpointOpen(open);
       else this.props.setOpen(g.id, open);
     }

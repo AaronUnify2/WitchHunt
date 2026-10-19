@@ -80,6 +80,7 @@ export class Cordon {
     const c = this.cfg;
     this.ground = ground;
     this.layout = cordonLayout(map, c);
+    this.colliders = colliders;
     this.group = new THREE.Group();
     for (const col of cordonColliders(this.layout, c, (x, z) => ground.heightAt(x, z))) colliders.insert(col);
     this.gateCollider = checkpointGateCollider(this.layout, c, (x, z) => ground.heightAt(x, z));
@@ -164,6 +165,8 @@ export class Cordon {
     const signs = this.layout.signs;
     this.signs = new THREE.InstancedMesh(geo, mat, signs.length);
     signs.forEach((s, i) => this.signs.setMatrixAt(i, this.m.makeTranslation(s.x, this.ground.heightAt(s.x, s.z) + 1.5, s.z - c.thickness - 0.03)));
+    // The torch's glare check sees each plate (Aaron: they glared up close).
+    for (const s of signs) this.colliders.insert({ x: s.x, z: s.z - c.thickness, r: 0.05, vr: c.signSize[0] / 2, top: this.ground.heightAt(s.x, s.z) + 2, noBody: true, glareOnly: true });
     this.signs.computeBoundingSphere();
     this.group.add(this.signs);
   }

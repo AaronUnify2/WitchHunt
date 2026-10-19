@@ -314,6 +314,7 @@ export class Game {
     this.trailCams = new TrailCams(this.cfg, this.rng.fork('trailcams'), this.bus);
     this.trailCams.init(this.scene, {
       world: this.world,
+      colliders: this.colliders,
       witch: this.witch,
       clock: this.clock,
       mapUi: this.mapUi,
