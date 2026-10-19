@@ -1985,6 +1985,24 @@ export const config = {
     batteryChance: 0.6, // Aaron: about 60%; the rest are dead or long gone
     alarmChance: 0.25, // of those with a battery: opening a door or the boot sets the alarm off
     hold: { search: 1.25, bonnet: 0.75, battery: 1.5 }, // seconds (Aaron, Session 14: twice as quick as M5's 2.5 / 1.5 / 3)
+    // Session 14 (Aaron): cars blow up. Every round that stops on one (and
+    // a flare, and a blast) damages it. Badly hurt it smokes; past fireAt
+    // it's on fire and burns down the rest itself; at `health` it explodes
+    // (a blast like a charge's, a little smaller), leaving a burnt-out
+    // wreck, its loot and battery gone. A blast sets the cars round it off
+    // in turn, a beat apart.
+    damage: {
+      health: 300, // Aaron: about 300 damage and it goes
+      smokeAt: 0.4, // share of health: smoking from here
+      fireAt: 0.8, // ...on fire from here
+      burnPerSecond: 12, // on fire, it burns down the rest by itself (about 5 s)
+      blast: { radius: 8, damage: 200, playerDamage: 90, edge: 0.25, knockback: 3, shake: 1.2, alert: 140 },
+      vehicleDamage: 260, // to other cars at the blast's centre (falling off like the blast)
+      chainFuse: [0.4, 1.2], // seconds before a car a blast pushed past `health` goes up
+      wreckBurnSeconds: 30, // the wreck burns on this long
+      burnt: 0x1a1714, // the burnt-out paint
+      fx: { pool: 160, flame: 0xff7a24, smoke: 0x24211e, flamesPerSecond: 26, smokePerSecond: 9 },
+    },
     interactRange: 1.6, // metres from a spot (driver's door, boot, bonnet)
     spotOut: 0.75, // metres outside the body where each spot stands (closer, a lifted bonnet filled the screen)
     batteryNoise: 22, // metres: pulling a battery is noisy (Aaron: just a noise)

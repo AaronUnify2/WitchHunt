@@ -195,6 +195,7 @@ export class Game {
       busy: [this.director.hud, this.station.hud, this.vehicles.hud],
     });
     this.combat.promptSources.push(this.explosives.hud);
+    this.vehicles.explosives = this.explosives; // Session 14: cars go up with the same blast
   }
 
   // The final battle (M7 step 5): the hut's destruction starts it.
@@ -801,7 +802,10 @@ export class Game {
     loadStation(this.station.state, d.station);
     this.station.syncColliders();
     loadVehicles(this.vehicles.list, d.vehicles);
-    for (const v of this.vehicles.list) this.vehicles.renderer.refresh(v);
+    for (const v of this.vehicles.list) {
+      if (v.wrecked) this.vehicles.renderer.setBurnt(v, this.cfg.vehicles.damage.burnt); // Session 14
+      this.vehicles.renderer.refresh(v);
+    }
     this.director.removeAll();
     for (const s of d.sigils) {
       const sigil = this.director.plant({ ...s });

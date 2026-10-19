@@ -130,7 +130,7 @@ export function loadStation(state, d) {
 
 // Vehicles by id (their placement rebuilds from the seed).
 export function saveVehicles(list) {
-  return list.map((v) => ({ id: v.id, door: v.searched.door, boot: v.searched.boot, bonnet: v.bonnetUp, battery: v.hasBattery, flat: v.flat, alarm: v.alarmArmed, seen: v.seen }));
+  return list.map((v) => ({ id: v.id, door: v.searched.door, boot: v.searched.boot, bonnet: v.bonnetUp, battery: v.hasBattery, flat: v.flat, alarm: v.alarmArmed, seen: v.seen, hurt: v.hurt ?? 0, wrecked: v.wrecked ?? false }));
 }
 
 export function loadVehicles(list, d) {
@@ -148,6 +148,9 @@ export function loadVehicles(list, d) {
     v.flat = s.flat;
     v.alarmArmed = s.alarm;
     v.seen = s.seen;
+    // Session 14: damage and wrecks (older saves have none). Game redraws wrecks.
+    v.hurt = s.hurt ?? 0;
+    v.wrecked = s.wrecked ?? false;
   }
 }
 

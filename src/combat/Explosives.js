@@ -123,9 +123,9 @@ export class Explosives {
     return charges.length;
   }
 
-  // One blast at (x, y, z).
-  blast(x, y, z) {
-    const e = this.ec;
+  // One blast at (x, y, z). e: its size (config.explosives, or a car's:
+  // config.vehicles.damage.blast). source: what went up (a car), if anything.
+  blast(x, y, z, e = this.ec, source = null) {
     const at = { x, y: y + 1, z };
     const falloff = (d) => Math.max(0, 1 - d / e.radius) * (1 - e.edge) + e.edge;
     // Zombies.
@@ -149,8 +149,8 @@ export class Explosives {
     this.player.shake(e.shake * Math.max(0.15, 1 - dp / (e.radius * 6)));
     enemies.alert(x, z, e.alert);
     this.combat.sfx.play('explosion', { x, z, range: e.alert });
-    this.spawnFx(x, y, z);
-    this.bus.emit('explosion', { x, z, radius: e.radius });
+    this.spawnFx(x, y, z, e.radius / this.ec.radius);
+    this.bus.emit('explosion', { x, z, radius: e.radius, source });
   }
 
   // ---- saving (M7 step 6) -----------------------------------------------------------
@@ -193,7 +193,7 @@ export class Explosives {
     this.time = 0;
   }
 
-  spawnFx(x, y, z) {
+  spawnFx(x, y, z, scale = 1) {
     const look = this.ec.look;
     const make = (color) => {
       const m = new THREE.Mesh(this.fireGeometry, new THREE.MeshBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
@@ -201,7 +201,7 @@ export class Explosives {
       this.scene.add(m);
       return m;
     };
-    this.fireballs.push({ core: make(look.core), fire: make(look.fire), age: 0 });
+    this.fireballs.push({ core: make(look.core), fire: make(look.fire), age: 0, scale });
   }
 
   updateRenderer(dt) {
@@ -224,7 +224,7 @@ export class Explosives {
     for (const f of this.fireballs) {
       f.age += dt;
       const t = Math.min(1, f.age / life);
-      const r = this.ec.radius * (0.3 + 0.7 * Math.sqrt(t));
+      const r = this.ec.radius * f.scale * (0.3 + 0.7 * Math.sqrt(t));
       f.fire.scale.setScalar(r * 0.75);
       f.core.scale.setScalar(r * 0.35 * (1 - t));
       f.fire.material.opacity = (1 - t) * 0.85;

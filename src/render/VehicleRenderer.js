@@ -134,6 +134,12 @@ vec3 vehicleWear( vec3 col ) {
       col = mix( col, vec3( 0.004 ), smoothstep( hole + 0.01, hole - 0.01, r ) );
     }
   }
+  // Session 14: burnt out (vWear2.w 3): charred black and rust, the glass gone.
+  if ( vWear2.w > 2.5 ) {
+    float char = wNoise( p * 3.0 ) * 0.6 + wNoise( p * 11.0 ) * 0.4;
+    col = mix( col * 0.12, uRust * 0.35, smoothstep( 0.45, 0.8, char ) * painted );
+    col = mix( col, vec3( 0.004 ), glass );
+  }
   return col;
 }`;
 
@@ -384,6 +390,25 @@ export class VehicleRenderer {
     this.local.multiply(this.tmp.makeRotationX(rear ? -angle : angle));
     this.local.multiply(this.tmp.makeScale(w, t, length));
     this.solid.setMatrixAt(index, this.out.multiplyMatrices(base, this.local));
+  }
+
+  // Session 14: the car's burnt out: charred paint, the glass gone, its
+  // wheels and boxes (the stand-ins) blackened.
+  setBurnt(v, colour) {
+    const model = this.models[v.type];
+    if (!model) return;
+    const c = new THREE.Color(colour);
+    for (const mesh of Object.values(model.meshes)) {
+      mesh.setColorAt(v.look.model, c);
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    for (const g of Object.values(model.geometries)) {
+      const w = g.attributes.aWear;
+      w.setXYZW(v.look.model, w.getX(v.look.model), 1, 1, 0);
+      g.attributes.aWear2.setXYZW(v.look.model, 0, 0, 0, 3);
+      w.needsUpdate = true;
+      g.attributes.aWear2.needsUpdate = true;
+    }
   }
 
   // Redraw a vehicle's moving parts: lids at their open amounts (with

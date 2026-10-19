@@ -136,17 +136,20 @@ describe('save round trip', () => {
   });
 
   it("keeps vehicles' looted flags, sigils and visited encounters", () => {
-    const fresh = (id) => ({ id, searched: { door: false, boot: false }, opened: { door: false, door2: false, boot: false }, bonnetUp: false, hasBattery: true, flat: false, alarmArmed: true, seen: false });
+    const fresh = (id) => ({ id, searched: { door: false, boot: false }, opened: { door: false, door2: false, boot: false }, bonnetUp: false, hasBattery: true, flat: false, alarmArmed: true, seen: false, hurt: 0, wrecked: false });
     const a = [fresh(1), fresh(2)];
     a[1].searched.boot = true;
     a[1].bonnetUp = true;
     a[1].hasBattery = false;
     a[1].alarmArmed = false;
     a[1].seen = true;
+    a[1].hurt = 120; // Session 14: damage and wrecks
+    a[0].wrecked = true;
+    a[0].hurt = 300;
     const b = [fresh(1), fresh(2)];
     loadVehicles(b, viaJson(saveVehicles(a)));
     expect(b[0]).toEqual(a[0]);
-    expect(b[1]).toMatchObject({ searched: { door: false, boot: true }, opened: { boot: true }, bonnetUp: true, hasBattery: false, alarmArmed: false, seen: true });
+    expect(b[1]).toMatchObject({ searched: { door: false, boot: true }, opened: { boot: true }, bonnetUp: true, hasBattery: false, alarmArmed: false, seen: true, hurt: 120, wrecked: false });
 
     const sigils = viaJson(saveSigils([{ id: 3, x: 1, z: 2, y: 0.5, groundId: 7, clearingId: 7, raised: 9, timer: 4, variants: {} }]));
     expect(sigils).toEqual([{ x: 1, z: 2, y: 0.5, groundId: 7, clearingId: 7, raised: 9 }]);

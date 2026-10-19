@@ -105,6 +105,8 @@ export class Flares {
     const hit = stepFlare(f, dt, this.cfg, { targets: this.weapons.targets(), blockers: this.blockers, ground: this.ground });
     if (!hit) return;
     if (hit.kind === 'target') this.conk(hit);
+    // A flare into something solid: a car takes it (Session 14).
+    if (hit.kind === 'solid') this.bus.emit('weapon:impact', { x: hit.x + (f.vx / Math.hypot(f.vx, f.vy, f.vz)) * 0.35, y: hit.y, z: hit.z + (f.vz / Math.hypot(f.vx, f.vy, f.vz)) * 0.35, damage: this.cfg.hitDamage, id: 'flare' });
     // Down where it stopped: on the ground under a hit.
     f.x = hit.x;
     f.z = hit.z;

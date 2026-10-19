@@ -12,18 +12,25 @@
 // flashes its lamps and draws every zombie in earshot until the battery
 // is pulled (Aaron: "pulling the battery would kill the alarm") or it
 // runs flat. Searched doors and boots are left open a crack.
+// Session 14 (Aaron): cars blow up. Every round that stops on one, a
+// flare, a blast: it all adds up. Badly hurt it smokes; past fireAt it's
+// on fire and burns down the rest by itself; at `health` it explodes (a
+// blast like a charge's: config.vehicles.damage.blast), leaving a burnt-out
+// wreck with nothing left in it. A blast sets the cars round it off in
+// turn, a beat apart.
 // Vehicles block bodies and shots. Once you've been close, a vehicle
 // shows on the minimap and the map screen (dimmed once there's nothing
 // left in it). "Try again" restocks them all.
 //
 // Events: 'vehicle:searched' { vehicle, spot }, 'vehicle:battery' { vehicle },
-// 'vehicle:alarm' { vehicle }.
+// 'vehicle:alarm' { vehicle }, 'vehicle:burning' { vehicle }, 'vehicle:exploded' { vehicle }.
 
 import { placeVehicles, spotsOf } from './vehiclePlacement.js';
 import { segmentCollider } from './collision.js';
 import { rollLoot } from '../combat/loot.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
+import { VehicleFire } from '../render/VehicleFire.js';
 import vehicleData from '../data/vehicles.json';
 import { DEBUG } from '../debug/DebugMenu.js';
 
@@ -66,6 +73,10 @@ export class Vehicles {
     this.buildColliders(ctx.colliders);
     this.renderer = new VehicleRenderer(vc, this.data, this.rng.fork('looks'));
     this.renderer.init(scene, this.list, this.ground);
+    this.fire = new VehicleFire(vc.damage.fx, this.rng.fork('fire'));
+    this.fire.init(scene);
+    this.burning = []; // reused: where smoke and flames come out this frame
+    this.explosives = ctx.explosives ?? null; // set by Game once it has them (the blast)
     this.hold = new HoldAction(this.cfg.station.hold.releaseDrain);
     this.hold.init();
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
@@ -76,6 +87,7 @@ export class Vehicles {
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('player:respawned', () => this.reset()),
       this.bus.on('weapon:impact', (at) => this.onImpact(at)),
+      this.bus.on('explosion', (e) => this.onExplosion(e)),
     ];
   }
 
@@ -93,6 +105,12 @@ export class Vehicles {
       v.open = { door: 0, door2: 0, boot: 0, bonnet: 0 };
       v.seen = v.seen ?? false;
       v.lootRng = this.rng.fork(`loot-${v.id}`);
+      // Session 14: what it's taken. A wreck stays a wreck (even on "try again").
+      v.hurt = v.wrecked ? this.vc.damage.health : 0;
+      v.wrecked = v.wrecked ?? false;
+      v.fuse = -1;
+      v.wreckBurn = v.wreckBurn ?? 0;
+      if (v.wrecked) this.emptyOut(v);
     }
   }
 
@@ -132,11 +150,14 @@ export class Vehicles {
     const p = this.player.position;
     if (playing) {
       this.time += dt;
+      this.burning.length = 0;
       for (const v of this.list) {
         if (!v.seen && Math.hypot(v.x - p.x, v.z - p.z) < this.vc.seenDistance) v.seen = true;
         this.animateLids(v, dt);
         if (v.ringing) this.updateAlarm(v, dt);
+        this.updateDamage(v, dt);
       }
+      this.fire.update(dt, this.burning);
     }
     const blocked = this.busy.some((b) => b.prompt);
     const canInteract = playing && this.combat.alive && !blocked && !this.player.platform;
@@ -227,6 +248,7 @@ export class Vehicles {
   }
 
   offerFor(v, spot, X) {
+    if (v.wrecked) return spot === 'door' ? { key: `${v.id}-wreck`, prompt: 'Burnt out: nothing left', act: null } : null;
     const h = this.vc.hold;
     const words = v.def.spots;
     const loot = LOOT_OF[spot];
@@ -264,10 +286,100 @@ export class Vehicles {
     this.tripAlarm(v);
   }
 
-  // A shot that stops on a vehicle sets its alarm off.
-  onImpact({ x, y, z }) {
+  // A shot that stops on a vehicle sets its alarm off, and hurts it (Session 14).
+  onImpact({ x, y, z, damage = 0 }) {
     const v = this.vehicleAt(x, y, z, 0.25);
-    if (v) this.tripAlarm(v);
+    if (!v) return;
+    this.tripAlarm(v);
+    this.damage(v, damage);
+  }
+
+  // ---- damage and explosions (Session 14, Aaron) -----------------------------------
+
+  damage(v, amount) {
+    const d = this.vc.damage;
+    if (v.wrecked || amount <= 0) return;
+    const was = v.hurt;
+    v.hurt = Math.min(d.health, v.hurt + amount);
+    if (was < d.health * d.fireAt && v.hurt >= d.health * d.fireAt) this.bus.emit('vehicle:burning', { vehicle: v });
+    if (v.hurt >= d.health) this.explode(v);
+  }
+
+  // A blast nearby (a charge, another car): cars in it take damage. One
+  // pushed past its health goes up a beat later, not this instant.
+  onExplosion({ x, z, radius, source }) {
+    const d = this.vc.damage;
+    for (const v of this.list) {
+      if (v === source || v.wrecked || v.fuse >= 0) continue;
+      const dist = Math.hypot(v.x - x, v.z - z);
+      const reach = radius + v.def.size[0] / 2;
+      if (dist > reach) continue;
+      const k = Math.max(0, 1 - dist / reach) * (1 - d.blast.edge) + d.blast.edge;
+      v.hurt = Math.min(d.health, v.hurt + d.vehicleDamage * k);
+      if (v.hurt >= d.health) v.fuse = this.rng.range(d.chainFuse[0], d.chainFuse[1]);
+    }
+  }
+
+  // Each frame: a fuse burning down, a fire eating it, and its smoke and flames.
+  updateDamage(v, dt) {
+    const d = this.vc.damage;
+    if (v.fuse >= 0) {
+      v.fuse -= dt;
+      if (v.fuse < 0) this.explode(v);
+    }
+    if (v.wrecked) {
+      if (v.wreckBurn > 0) {
+        v.wreckBurn = Math.max(0, v.wreckBurn - dt);
+        this.burning.push({ ...this.engineAt(v, 0.6), smoke: 1, fire: Math.min(1, v.wreckBurn / 8) * 0.8 });
+      }
+      return;
+    }
+    const share = v.hurt / d.health;
+    if (share >= d.fireAt) {
+      v.hurt = Math.min(d.health, v.hurt + d.burnPerSecond * dt);
+      if (v.hurt >= d.health) {
+        this.explode(v);
+        return;
+      }
+    }
+    if (share >= d.smokeAt) {
+      const fire = share >= d.fireAt ? 1 : 0;
+      this.burning.push({ ...this.engineAt(v, 0.9), smoke: Math.min(1, (share - d.smokeAt) / (d.fireAt - d.smokeAt) + 0.3), fire });
+    }
+  }
+
+  // Over the engine, `up` of the way up its height: where smoke and fire come out.
+  engineAt(v, up) {
+    const [length, , height] = v.def.size;
+    const fwd = length * 0.32;
+    const y = v.groundY ?? this.ground.heightAt(v.x, v.z);
+    return { x: v.x + Math.sin(v.yaw) * fwd, y: y + height * up, z: v.z + Math.cos(v.yaw) * fwd };
+  }
+
+  // It goes up: a blast, and a burnt-out wreck with nothing left in it.
+  explode(v) {
+    const d = this.vc.damage;
+    if (v.wrecked) return;
+    v.wrecked = true;
+    v.fuse = -1;
+    v.hurt = d.health;
+    v.wreckBurn = d.wreckBurnSeconds;
+    this.emptyOut(v);
+    this.renderer.setLamps(v, false);
+    this.renderer.setBurnt(v, d.burnt);
+    this.renderer.refresh(v);
+    const y = v.groundY ?? this.ground.heightAt(v.x, v.z);
+    this.explosives?.blast(v.x, y, v.z, d.blast, v);
+    this.bus.emit('vehicle:exploded', { vehicle: v });
+  }
+
+  // A wreck has nothing left: no loot, no battery, no alarm.
+  emptyOut(v) {
+    v.searched.door = true;
+    v.searched.boot = true;
+    v.hasBattery = false;
+    v.alarmArmed = false;
+    v.ringing = false;
   }
 
   // The vehicle whose body holds (x, y, z), give or take `pad` metres, or null.
@@ -355,6 +467,19 @@ export class Vehicles {
       },
     );
     station.addItem('Vehicles: restock them all', () => this.reset());
+    // Session 14: blow cars up.
+    station.addItem('Vehicles: set the nearest on fire (it goes up in a few seconds)', () => this.nearestDo((v) => this.damage(v, this.vc.damage.health * this.vc.damage.fireAt - v.hurt + 1)));
+    station.addItem('Vehicles: blow up the nearest now', () => this.nearestDo((v) => this.explode(v)));
+  }
+
+  // Debug: do something to the nearest car still in one piece.
+  nearestDo(fn) {
+    const p = this.player.position;
+    let best = null;
+    for (const v of this.list) if (!v.wrecked && (!best || Math.hypot(v.x - p.x, v.z - p.z) < Math.hypot(best.x - p.x, best.z - p.z))) best = v;
+    if (!best) return this.notify('No car left in one piece');
+    fn(best);
+    this.notify(`${best.def.name}: ${best.wrecked ? 'blown up' : 'on fire'}`);
   }
 
   // which(v): the vehicles to choose from (default: any not yet emptied).
@@ -383,12 +508,15 @@ export class Vehicles {
     const done = this.list.filter((v) => Vehicles.isDone(v)).length;
     const batteries = this.list.filter((v) => v.hasBattery).length;
     const ringing = this.list.filter((v) => v.ringing).length;
+    const wrecked = this.list.filter((v) => v.wrecked).length;
+    const hurt = this.list.filter((v) => !v.wrecked && v.hurt > 0).length;
     const seen = this.list.filter((v) => v.seen).length;
-    return `${n} (seen ${seen}, emptied ${done}, batteries left ${batteries}${ringing ? `, ALARM x${ringing}` : ''})`;
+    return `${n} (seen ${seen}, emptied ${done}, batteries left ${batteries}${ringing ? `, ALARM x${ringing}` : ''}${hurt ? `, damaged ${hurt}` : ''}${wrecked ? `, wrecks ${wrecked}` : ''})`;
   }
 
   dispose() {
     for (const off of this.unsubscribers ?? []) off();
     this.renderer.dispose();
+    this.fire.dispose();
   }
 }

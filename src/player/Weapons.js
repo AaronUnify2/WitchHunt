@@ -10,7 +10,7 @@
 // Targets with `noAssist` don't slow the aim.
 //
 // Events: 'weapon:switched' { id }, 'weapon:fired' { id }, 'weapon:swing',
-// 'weapon:hit' { killed, part, melee }, 'weapon:impact' { x, y, z },
+// 'weapon:hit' { killed, part, melee }, 'weapon:impact' { x, y, z, damage, id },
 // 'weapon:reload' { id }, 'weapon:loaded' { id }, 'weapon:empty'.
 
 import * as THREE from 'three';
@@ -201,7 +201,9 @@ export class Weapons {
       const count = rayEnemiesAll(eye, dir, living, blocked, this.rayHits);
       if (count === 0) {
         if (blocked < check) {
-          this.bus.emit('weapon:impact', { x: eye.x + dir.x * blocked, y: eye.y + dir.y * blocked, z: eye.z + dir.z * blocked });
+          // damage: what the round still carries (Session 14: cars take it).
+          const damage = w.damage * falloff(blocked, w.falloffStart, w.falloffEnd, w.falloffMin);
+          this.bus.emit('weapon:impact', { x: eye.x + dir.x * blocked, y: eye.y + dir.y * blocked, z: eye.z + dir.z * blocked, damage, id: this.id });
         }
         continue;
       }
