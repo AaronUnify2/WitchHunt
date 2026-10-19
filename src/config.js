@@ -864,6 +864,42 @@ export const config = {
     damageOrder: ['ballistic', 'energy', 'nature'], // then health
   },
 
+  // The flare gun (M9.1; DESIGN.md "Flares"): Y fires a flare along the
+  // crosshair like any gun (a fast, glowing projectile that drops a little).
+  // A direct hit conks a zombie (damage and a stagger; Aaron) and the flare
+  // falls where it struck. It burns red where it lands. The newest burning
+  // flare is the one that matters: it lights the ground (one light, made at
+  // load) and every zombie within lureRadius goes to it instead of you for
+  // its burn. Older flares just glow out. Never the witch.
+  flares: {
+    // How many you start with and can carry: config.inventory (startFlares, maxFlares).
+    fireInterval: 0.8, // seconds between shots
+    speed: 55, // metres a second out of the barrel
+    gravity: 6, // metres a second squared: it drops, a little
+    maxFlight: 3, // seconds before a flare that hit nothing burns where it is
+    muzzleOffset: { right: 0.22, down: 0.18, forward: 0.6 }, // metres from the eye
+    hitDamage: 18, // a conk: 3x on the head (headshotMultiplier), so it can drop a citizen
+    stagger: 0.9,
+    knockback: 1.2,
+    burnSeconds: 20,
+    lureRadius: 35, // metres: zombies this close go to the newest flare
+    lureMill: 2.5, // metres: they mill about this close to it
+    lureBreakDistance: 3, // metres: a zombie this close to you that notices you comes for you anyway
+    recoilDegrees: 2,
+    noise: 25, // the pop: zombies this close hear it (the lure takes over once it lands)
+    // Looks (render/FlareRenderer.js)
+    color: 0xff3a24,
+    glowSize: 1.6, // metres: the sprite at the flare
+    groundGlowRadius: 6, // metres: the lit patch of ground round a burning flare
+    trailSize: 0.7, // metres: the glow on a flare in flight
+    flicker: 0.25, // share the glow and light waver
+    light: { intensity: 14, distance: 22, decay: 1.6 }, // the newest flare's light
+    poolSize: 12, // flares drawn at once (oldest burnt-out ones are reused)
+    // The Mothman's attention (DESIGN.md "The Mothman"): counted now, used from M10.
+    attentionPerFlare: 1,
+    attentionDrainPerMinute: 0.5,
+  },
+
   // Light aim assist: controller look slows when the crosshair is on or
   // near a target. No magnetism or snapping. Mouse is never assisted.
   aimAssist: {
@@ -1215,6 +1251,8 @@ export const config = {
     startScrap: 30, // M5: "a little bit of scrap" to patch the torn east fence (Aaron)
     startAmmo: { pistol: 0 },
     startBatteries: 0, // carried batteries (no carry limit and no slowdown: Aaron, M5)
+    startFlares: 3, // M9.1: the flare gun comes with a few (DESIGN.md "Flares")
+    maxFlares: 3, // carry limit
   },
 
   // Zombies (DESIGN.md "Zombies"). M4: levels, variants, hordes, mutants,

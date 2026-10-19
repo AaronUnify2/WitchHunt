@@ -194,11 +194,12 @@ export class Hud {
     if (st.reloading) this.reloadBarEl.style.width = `${Math.round(st.reloadProgress * 100)}%`;
     const pad = s.device === 'gamepad';
     const inv = s.inventory;
-    this.set('kits', `${inv.firstAid}|${pad}|${inv.scrap}|${inv.batteries}|${inv.charges}|${s.chargesPlaced ?? 0}`, () => {
+    this.set('kits', `${inv.firstAid}|${pad}|${inv.scrap}|${inv.batteries}|${inv.charges}|${s.chargesPlaced ?? 0}|${inv.flares}`, () => {
       const battery = inv.batteries > 0 ? `   Battery ×${inv.batteries}` : '';
       const placed = s.chargesPlaced ? ` (${s.chargesPlaced} planted)` : '';
       const charges = inv.charges > 0 || s.chargesPlaced ? `   Charges ×${inv.charges}${placed}` : '';
-      this.kitsEl.textContent = `First aid ×${inv.firstAid}  (${pad ? 'D-pad →' : 'H'})   Scrap ${inv.scrap}${battery}${charges}`;
+      const flares = `   Flares ×${inv.flares} (${pad ? 'Y' : 'F'})`; // M9.1
+      this.kitsEl.textContent = `First aid ×${inv.firstAid}  (${pad ? 'D-pad →' : 'H'})   Scrap ${inv.scrap}${battery}${flares}${charges}`;
     });
 
     let prompt = '';

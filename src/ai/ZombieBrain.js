@@ -15,6 +15,10 @@
 // back to its errand: a marcher marches on, the rest wander.
 // A pack (a horde, or a marching group) moves together: members follow
 // the leader, and when one notices the player the whole pack comes.
+// M9.1, flares: while `lure` ({ x, z, radius, mill, breakDistance }) is
+// set, a zombie within its radius is 'lured': it goes to the flare and
+// mills about it instead of coming for the player, unless the player is
+// right on top of it. When the lure goes, it carries on with its errand.
 
 import { notices } from './detection.js';
 
@@ -32,6 +36,7 @@ export class ZombieBrain {
     this.ground = ground;
     this.rng = rng;
     this.time = 0;
+    this.lure = null;
   }
 
   // Once per frame, before update() for each zombie.
@@ -106,6 +111,9 @@ export class ZombieBrain {
       case 'search':
         if (Math.hypot(z.goalX - z.x, z.goalZ - z.z) < this.wander.waypointReach) z.searchTimer = 0;
         break;
+      case 'lured':
+        this.stepLured(z);
+        break;
       default:
         break;
     }
@@ -117,6 +125,18 @@ export class ZombieBrain {
     if (z.mode === 'held') return;
     const pack = z.horde;
     const sees = notices(z, senses, this.cfg, z.mode === 'chase', this.ground);
+    // A burning flare draws it instead of you (unless you're right there).
+    const lure = this.lure;
+    if (lure && Math.hypot(lure.x - z.x, lure.z - z.z) <= lure.radius) {
+      const close = Math.hypot(senses.x - z.x, senses.z - z.z) <= lure.breakDistance;
+      if (!(sees && close)) {
+        if (z.mode !== 'lured') {
+          this.setMode(z, 'lured');
+          z.hasGoal = false;
+        }
+        return;
+      }
+    }
     if (sees) {
       this.chase(z, senses.x, senses.z, this.cfg.memorySeconds);
       if (pack) {
@@ -197,6 +217,26 @@ export class ZombieBrain {
     z.pace = groupSpeed ? Math.min(1, groupSpeed / Math.max(z.speed, 1e-3)) : 1;
     if (this.marches) this.marches.step(z, this.wander.waypointReach);
     else this.routes.step(z, this.rng, this.wander.waypointReach);
+  }
+
+  // M9.1: mill about the flare, from spot to spot close round it. With
+  // the lure gone (burnt out, or a newer one out of reach) it carries on.
+  stepLured(z) {
+    const lure = this.lure;
+    if (!lure) {
+      this.setMode(z, z.marcher ? 'march' : 'wander');
+      return;
+    }
+    const dx = z.goalX - lure.x;
+    const dz = z.goalZ - lure.z;
+    if (z.hasGoal && Math.hypot(dx, dz) <= lure.mill && Math.hypot(z.goalX - z.x, z.goalZ - z.z) > this.wander.waypointReach) return;
+    const a = this.rng.range(0, Math.PI * 2);
+    const r = lure.mill * (0.4 + 0.6 * this.rng.next());
+    z.goalX = lure.x + Math.sin(a) * r;
+    z.goalZ = lure.z + Math.cos(a) * r;
+    z.hasGoal = true;
+    z.route = null;
+    z.marchLink = null;
   }
 
   // M6: hang about a clearing, strolling from spot to spot inside it.

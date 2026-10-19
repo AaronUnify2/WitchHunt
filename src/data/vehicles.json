@@ -151,7 +151,8 @@
           {"item": "vest", "chance": 0.45},
           {"item": "shotgunAmmo", "chance": 0.4, "min": 3, "max": 6},
           {"item": "firstAid", "chance": 0.35},
-          {"item": "scrap", "chance": 0.4, "min": 1, "max": 3}
+          {"item": "scrap", "chance": 0.4, "min": 1, "max": 3},
+          {"item": "flare", "chance": 0.35, "min": 1, "max": 2}
         ]
       },
       "battery": 1,

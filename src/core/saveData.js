@@ -59,7 +59,7 @@ export function savePlayer(player, combat) {
     yaw: player.yaw,
     health: combat.health.value,
     armour: { ...combat.armour.values },
-    inventory: { firstAid: inv.firstAid, scrap: inv.scrap, batteries: inv.batteries, ammo: { ...inv.ammo } },
+    inventory: { firstAid: inv.firstAid, scrap: inv.scrap, batteries: inv.batteries, flares: inv.flares, ammo: { ...inv.ammo } },
     weapon: w.index,
     weapons,
     kills: combat.kills,
@@ -75,6 +75,7 @@ export function loadPlayer(combat, d) {
   inv.firstAid = d.inventory.firstAid;
   inv.scrap = d.inventory.scrap;
   inv.batteries = d.inventory.batteries;
+  if (d.inventory.flares !== undefined) inv.flares = d.inventory.flares; // M9.1
   inv.ammo = { ...d.inventory.ammo };
   const w = combat.weapons;
   // Session 10b: guns picked up along the way (the hunting rifle) come back

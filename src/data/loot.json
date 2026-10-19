@@ -7,7 +7,8 @@
     "scrap": { "name": "scrap", "inventory": "scrap", "color": "#6e6a5c" },
     "firstAid": { "name": "first aid kit", "firstAid": true, "color": "#a8a294" },
     "vest": { "name": "police vest", "armour": "ballistic", "amount": 40, "color": "#465a78" },
-    "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" }
+    "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" },
+    "flare": { "name": "flare", "inventory": "flares", "color": "#d0402c" }
   },
   "tables": {
     "citizen": [
@@ -24,7 +25,8 @@
     "army": [
       { "item": "helmet", "chance": 0.35 },
       { "item": "rifleAmmo", "chance": 0.2, "min": 1, "max": 2 },
-      { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 }
+      { "item": "scrap", "chance": 0.1, "min": 1, "max": 2 },
+      { "item": "flare", "chance": 0.05 }
     ],
     "earl": [],
     "mib": [

@@ -134,6 +134,21 @@ export class Sfx {
 }
 
 const RECIPES = {
+  // M9.1: the flare gun's hollow pop, the flare catching with a hiss, and
+  // the thunk of one bouncing off a zombie's head.
+  flareGun(s) {
+    const o = s.out();
+    s.tone(o, { seconds: 0.18, freq: 220, endFreq: 90, gain: 0.7 });
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1200, endFreq: 3000, q: 1.2, gain: 0.5, attack: 0.01 });
+  },
+  flareIgnite(s, pos) {
+    s.noiseBurst(s.out(pos?.x, pos?.z, 0.6), { seconds: 0.9, type: 'highpass', freq: 3000, endFreq: 1800, gain: 0.35, attack: 0.05 });
+  },
+  flareConk(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.12, freq: 420, endFreq: 160, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.06, type: 'bandpass', freq: 900, q: 3, gain: 0.6 });
+  },
   rifle(s) {
     const o = s.out();
     s.noiseBurst(o, { seconds: 0.35, freq: 4000, endFreq: 300, gain: 0.9 });

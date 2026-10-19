@@ -14,6 +14,7 @@ import { Health } from '../player/Health.js';
 import { Armour } from '../player/Armour.js';
 import { Inventory } from '../player/Inventory.js';
 import { Weapons } from '../player/Weapons.js';
+import { Flares } from './Flares.js';
 import { ViewModel } from '../player/ViewModel.js';
 import { ScopeOverlay } from '../ui/ScopeOverlay.js';
 import { EnemyManager } from '../ai/EnemyManager.js';
@@ -75,6 +76,10 @@ export class Combat {
     this.pickupRenderer.init(scene, c.pickups.poolSize, this.items);
     this.take = (item, amount) => this.takePickup(item, amount);
 
+    // M9.1: the flare gun (Y), beside whatever's in hand.
+    this.flares = new Flares(c, this.bus);
+    this.flares.init(scene, { player, weapons: this.weapons, enemies: this.enemies, inventory: this.inventory, colliders, ground, sfx: null });
+
     this.fx = new CombatFx(c.feedback, this.rng.fork('fx'));
     this.fx.init(scene, ground);
     this.hud = new Hud(c.hud);
@@ -83,6 +88,7 @@ export class Combat {
     this.scope.init(root);
     this.sfx = new Sfx(c.sfx);
     this.sfx.init();
+    this.flares.sfx = this.sfx;
 
     this.groanRng = this.rng.fork('groans');
     this.groanTimers = new Map();
@@ -243,6 +249,8 @@ export class Combat {
       if (!this.weapons.addAmmo(def.ammo, amount)) this.inventory.addAmmo(def.ammo, amount);
     } else if (def.inventory === 'scrap') {
       this.inventory.addScrap(amount);
+    } else if (def.inventory === 'flares') {
+      if (this.inventory.addFlares(amount) <= 0) return false; // full: it stays where it is
     } else {
       return false;
     }
@@ -279,9 +287,11 @@ export class Combat {
     if (playing) {
       if (this.alive && !locked) {
         this.weapons.update(dt, input, player.camera);
+        this.flares.update(dt, input, true);
         if (input.wasPressed('firstAid') && this.inventory.useFirstAid(this.health)) this.sfx.play('heal');
         this.health.update(dt);
       }
+      else this.flares.update(dt, input, false); // burning on while you're down or locked
       if (this.alive) this.pickups.update(dt, player.position.x, player.position.z, this.take);
       // Permadeath (Aaron, M6): the run-end screen (M7) starts a new run.
       // The debug menu's "try again" keeps the old in-place reset.
@@ -366,6 +376,7 @@ export class Combat {
       (this.cfg.aimAssist.enabled = !this.cfg.aimAssist.enabled),
     );
     player.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
+    player.addItem('Refill flares (M9.1)', () => this.flares.refill());
     // Session 10b: the hunting rifle comes from an encounter later (Aaron).
     player.addItem(`Give the hunting rifle (+${this.cfg.weapons.sniper.debugRounds} rounds)`, () => this.giveWeapon('sniper', this.cfg.weapons.sniper.debugRounds));
     // Session 10b: guns for Aaron to experiment with.
@@ -400,7 +411,7 @@ export class Combat {
     const s = e.senses;
     const sight = Number.isFinite(s.sight) ? s.sight.toFixed(0) : '-';
     const hear = Number.isFinite(s.hearing) ? s.hearing.toFixed(0) : '-';
-    return `L${e.level}  ${e.livingCount} alive / ${e.activeCount} active  citizen ${t.citizen} police ${t.police} army ${t.army} mutant ${t.mutant}  horde ${t.horde}  chase ${t.chase} search ${t.search} wander ${t.wander} rising ${t.rise}  stragglers ${t.stragglers}  seen from ${sight}m heard ${hear}m`;
+    return `L${e.level}  ${e.livingCount} alive / ${e.activeCount} active  citizen ${t.citizen} police ${t.police} army ${t.army} mutant ${t.mutant}  horde ${t.horde}  chase ${t.chase} search ${t.search} wander ${t.wander} lured ${t.lured} rising ${t.rise}  stragglers ${t.stragglers}  seen from ${sight}m heard ${hear}m  ${this.flares.overlayLine()}`;
   }
 
   dispose() {
@@ -410,6 +421,7 @@ export class Combat {
     this.viewModel.dispose();
     this.scope.dispose();
     this.weapons.dispose();
+    this.flares.dispose();
     this.pickupRenderer.dispose();
     this.pickups.dispose();
     this.mutantRenderer.dispose();

@@ -43,7 +43,7 @@ import { levelStats, clampLevel, speedRoll, speedFromRoll, pickVariant, planSpaw
 import { tierFor, capActive, nearbyStepDue } from './simTiers.js';
 import { resolveCircles } from '../world/collision.js';
 
-const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger', 'held'];
+const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger', 'held', 'lured'];
 
 export class EnemyManager {
   // cfg: the whole config (zombies, mutant, detection). world: { map,
@@ -78,7 +78,7 @@ export class EnemyManager {
     this.stationSimulated = this.cfg.lod.stationKeepsSimulated; // M6: false while the player is away (NightWatch)
     this.routeOut = { active: false, x: 0, z: 0, barrier: null };
     this.senses = {};
-    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, held: 0, march: 0, linger: 0, rise: 0, stragglers: 0 };
+    this.counts = { citizen: 0, police: 0, army: 0, mutant: 0, horde: 0, chase: 0, search: 0, wander: 0, siege: 0, held: 0, march: 0, linger: 0, lured: 0, rise: 0, stragglers: 0 };
     const map = this.world.map;
     this.routes = new PathRoutes(map);
     this.marches = new MarchRoutes(map, Math.max(0, map.clearings.findIndex((c) => c.kind === 'home')));
@@ -561,6 +561,11 @@ export class EnemyManager {
         b.z += nz * push * (1 - share);
       }
     }
+  }
+
+  // M9.1: a burning flare's pull ({ x, z, radius, mill, breakDistance }), or null.
+  setLure(lure) {
+    this.brain.lure = lure;
   }
 
   // ---- noise and dawn ----------------------------------------------------------

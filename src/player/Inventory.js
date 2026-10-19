@@ -2,8 +2,8 @@
 // for weapons the player isn't carrying yet (pistol rounds from police
 // zombies wait for the pistol). Ammo for carried guns lives with each
 // weapon. M5: batteries (for the fence box; no carry limit and no
-// slowdown, Aaron) and spending scrap at the station. Charges, flares and
-// lore items arrive with the systems that use them.
+// slowdown, Aaron) and spending scrap at the station. Charges (M7) and
+// flares (M9.1, a carry limit) arrive with the systems that use them.
 
 export class Inventory {
   constructor(inventoryConfig) {
@@ -16,6 +16,15 @@ export class Inventory {
     this.ammo = { ...(this.cfg.startAmmo ?? {}) };
     this.batteries = this.cfg.startBatteries ?? 0;
     this.charges = 0; // M7: explosive charges in hand (combat/Explosives.js)
+    this.maxFlares = this.cfg.maxFlares ?? 3; // M9.1: the flare gun's (combat/Flares.js)
+    this.flares = Math.min(this.maxFlares, this.cfg.startFlares ?? 0);
+  }
+
+  // Flares up to the carry limit; returns how many fitted.
+  addFlares(count) {
+    const before = this.flares;
+    this.flares = Math.min(this.maxFlares, this.flares + count);
+    return this.flares - before;
   }
 
   update() {}
