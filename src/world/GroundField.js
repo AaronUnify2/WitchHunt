@@ -48,6 +48,13 @@ export class GroundField {
       const p = this.mapCfg.paths;
       this.rasterPath(this.map.road.points, { ...p, width: r.width + r.shoulder * 2, clearance: r.clearance, edgeNoise: p.edgeNoise * 0.5 });
     }
+    // The cordon (M9.1): a bare track along the fence, trees cleared each side.
+    if (this.map.cluster && this.mapCfg.cordon) {
+      const k = this.mapCfg.cordon;
+      const z = this.map.cluster.cordonZ;
+      const line = [{ x: this.geo.xMin, z }, { x: this.geo.xMax, z }];
+      this.rasterPath(line, { ...this.mapCfg.paths, width: k.track, clearance: k.cleared - k.track / 2, edgeNoise: 0.6 });
+    }
   }
 
   // Visit every mask point within `reach` of a box, calling fn(index, x, z).

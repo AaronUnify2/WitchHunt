@@ -15,10 +15,11 @@ export const FLAT_GROUND = {
 // half-thickness t (their x, z, r are a bounding circle for the grid).
 // Any collider with `off` set (an open door, a broken fence) is skipped,
 // and so is one marked `noBody` (glare-only shapes: the torch sees them,
-// bodies walk through).
-export function resolveCircles(pos, radius, circles) {
+// bodies walk through). M9.1: one marked `playerOnly` (the cordon's torn
+// gaps and closed gates) only stops the player: pass isPlayer = true.
+export function resolveCircles(pos, radius, circles, isPlayer = false) {
   for (const c of circles) {
-    if (c.off || c.noBody) continue;
+    if (c.off || c.noBody || (c.playerOnly && !isPlayer)) continue;
     if (c.seg) {
       resolveSegment(pos, radius, c);
       continue;

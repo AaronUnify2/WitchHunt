@@ -11,6 +11,7 @@ import { Cliff } from '../render/Cliff.js';
 import { Forest } from '../render/Forest.js';
 import { Landmarks } from '../render/Landmarks.js';
 import { Road } from '../render/Road.js';
+import { Cordon } from '../render/Cordon.js';
 import { roadProps } from './road.js';
 import encountersData from '../data/encounters.json';
 import sigilGroundsData from '../data/sigilGrounds.json';
@@ -55,6 +56,9 @@ export class World {
     this.road = new Road(cfg.map.road, cfg.landmarks, cfg.map.cluster.seed);
     this.road.init(scene, colliders, this.map.road, this.ground);
     this.roadProps = roadProps(this.map.road, cfg.map.road);
+    // M9.1: the military cordon across the map, south of the outpost.
+    this.cordon = new Cordon(cfg.map.cordon, cfg.landmarks);
+    this.cordon.init(scene, colliders, this.map, this.ground);
     this.buildMs = performance.now() - t0;
   }
 
@@ -127,6 +131,7 @@ export class World {
   dispose() {
     this.landmarks.dispose();
     this.road.dispose();
+    this.cordon.dispose();
     this.forest.dispose();
     this.cliff.dispose();
     this.terrain.dispose();

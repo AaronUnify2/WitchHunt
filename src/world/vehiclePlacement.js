@@ -110,6 +110,8 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     if (v.x < geo.xMin + length || v.x > geo.xMax - length || v.z > geo.zMax - length) return false;
     if (v.z - length / 2 < ground.cliffZ(v.x) + geo.cliff.walkMargin + pc.cliffMargin) return false;
     for (const a of avoid) if (Math.hypot(v.x - a.x, v.z - a.z) < a.r + length / 2) return false;
+    // Clear of the cordon's fence (M9.1).
+    if (map.cluster && Math.abs(v.z - map.cluster.cordonZ) < length / 2 + pc.minGap) return false;
     for (const s of signs) if (Math.hypot(v.x - s.x, v.z - s.z) < pc.signClearance + length / 2) return false;
     if (place !== 'path' && place !== 'road') {
       for (const c of map.clearings) if (Math.hypot(v.x - c.x, v.z - c.z) < pc.centreClearance + length / 2) return false;

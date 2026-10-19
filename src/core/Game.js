@@ -529,6 +529,16 @@ export class Game {
     });
     teleport.addItem('Teleport: home', () => this.teleportTo(this.world.home));
     teleport.addItem("Teleport: witch's hut", () => this.teleportTo(this.world.hut));
+    // M9.1: the cordon's checkpoint, from the cluster's side, facing it.
+    teleport.addItem('Teleport: the checkpoint (cordon)', () => {
+      const cp = this.world.cordon.layout.checkpoint;
+      this.player.teleport(cp.x, cp.z - 8, Math.PI);
+      this.toast.show('At the checkpoint');
+    });
+    run.addItem(
+      () => `Checkpoint: ${this.world.cordon.checkpointOpen ? 'open (shut it)' : 'shut (open it)'}`,
+      () => this.world.cordon.setCheckpointOpen(!this.world.cordon.checkpointOpen),
+    );
     run.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
     run.addItem('Restart this map (same seed, deletes the save)', () => {
       this.saves.clear();

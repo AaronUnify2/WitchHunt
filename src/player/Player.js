@@ -185,7 +185,7 @@ export class Player {
       p.z = Math.max(pl.z - lim, Math.min(pl.z + lim, p.z));
       return;
     }
-    resolveCircles(p, c.radius, this.colliders.query(p.x, p.z, c.radius, this.nearby));
+    resolveCircles(p, c.radius, this.colliders.query(p.x, p.z, c.radius, this.nearby), true);
     this.ground.clamp(p);
   }
 

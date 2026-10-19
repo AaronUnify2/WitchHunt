@@ -428,6 +428,50 @@ export const config = {
       max: 5,
     },
     maskCell: 2, // metres per cell of the ground mask (dirt, open ground)
+    // The military cordon (M9.1; DESIGN.md "Fixed opening cluster"): chain-
+    // link and razor wire the full width of the map along the cordon line
+    // (config.map.cluster.cordonSouthOfHome). It stops Tom; the dead and the
+    // witch come through the torn gaps (they walk the pathways, so mostly
+    // through the checkpoint). Intact panels stop everyone; the gaps and the
+    // checkpoint's gate stop only the player. Shots go through the wire.
+    cordon: {
+      panelLength: 3, // metres between posts
+      height: 3, // metres of chain-link
+      thickness: 0.15, // metres (collider half-thickness)
+      postRadius: 0.05,
+      chainLink: 0x4a4f53,
+      chainLinkTexture: 128, // pixels
+      post: 0x2c2e30,
+      coilHeight: 0.6, // metres: the razor-wire coil along the top
+      coilColor: 0x45484a, // dark: lighter wire glared under the torch
+      cleared: 6, // metres kept free of trees each side
+      track: 2.2, // metres of bare dirt along the foot of the fence
+      // The torn gaps (x metres from home's centre): peeled in from the far
+      // side, too low and too tangled for a man with a pack.
+      gaps: [-370, -210, -90, 140, 330],
+      gapPeel: 1.0, // radians the torn panel is peeled in (north)
+      checkpointHalf: 5.5, // metres either side of the road left for the checkpoint's gate
+      // Signs on the fence, facing the cluster.
+      signSpacing: 60, // metres
+      signSize: [1.1, 0.75], // metres
+      signTitle: 'RESTRICTED AREA',
+      signLines: ['U.S. ARMY QUARANTINE ZONE', 'USE OF DEADLY FORCE AUTHORIZED'],
+      signColor: 0xc9c2ae,
+      signText: 0x8e2418,
+      // Floodlight posts along the fence: dark and broken (decoration, no lights).
+      lampSpacing: 120, // metres
+      lampHeight: 6,
+      lampColor: 0x2a2b2c,
+      lampGlass: 0x1c2224,
+      // Concrete barriers lining the fence near the checkpoint (south side).
+      barrierReach: 45, // metres either side of the checkpoint
+      barrierLength: 3,
+      barrierColor: 0x5a5852,
+      // The checkpoint's gate (opens in story order; see the gates).
+      gateColor: 0x3a3d3f,
+      armColor: 0x6e6a60, // the barrier arm (striped in the texture); dull, the torch glares on pale paint
+      boothColor: 0x4c5040,
+    },
     // The opening cluster's road (M9.1; DESIGN.md "Fixed opening cluster"):
     // the old county road past the gas station to the checkpoint. Its line
     // is in data/openingCluster.json.

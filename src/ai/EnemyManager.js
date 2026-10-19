@@ -463,6 +463,7 @@ export class EnemyManager {
       let best = null;
       let bestD = Infinity;
       for (const c of this.colliders.query(z.x, z.z, u.lookRadius, this.nearby)) {
+        if (c.playerOnly) continue;
         const d = Math.hypot(c.x - z.x, c.z - z.z);
         if (d < bestD) {
           bestD = d;
