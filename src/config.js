@@ -333,10 +333,12 @@ export const config = {
     clearingCount: 22, // home, the hut, one per encounter and sigil ground, the rest plain clearings
     maxAttempts: 40, // generation retries (each from a forked seed) until every rule holds
     // Bands by southness (0 at the cliff, 1 at the southern edge)
+    // Session 14: north widened (0.34 -> 0.40) so the north frontier
+    // still fits between the cordon and the middle band.
     bands: {
-      north: [0, 0.34],
-      middle: [0.34, 0.67],
-      south: [0.67, 1],
+      north: [0, 0.4],
+      middle: [0.4, 0.7],
+      south: [0.7, 1],
     },
     bandPadding: 0.02, // clearings keep this far (southness) inside their band's edges
     // How often a non-guaranteed encounter appears (encounters.json "appears")
@@ -367,12 +369,19 @@ export const config = {
     home: {
       radius: 42, // the compound (fence, station, tower; M5): 38 -> 42 so there's cleared ground outside the fence too
       offsetFromCliff: 32, // centre this far south of the cliff line
-      xSpread: 0.3, // fraction of the walkable width either side of the centre line it can sit
     },
-    campsite: {
-      distanceMin: 95, // centre to centre from home
-      distanceMax: 150,
-      arcDegrees: 150, // placed within this arc, centred on south
+    // The fixed opening cluster (DESIGN.md "Fixed opening cluster", M9.1):
+    // home, the campsite, storm shelter, gas station, outpost and one sigil
+    // ground, laid out in data/openingCluster.json and identical every run.
+    // Everything north of the cordon (the cliff, the hills, the trees, the
+    // cluster's pathways) comes from the fixed seed below, not the run's.
+    cluster: {
+      seed: 'opening-cluster',
+      homeX: 0, // the station sits on the cliff in the middle of the north edge
+      cordonSouthOfHome: 290, // metres from home's centre south to the cordon line (just past the outpost)
+      fade: 60, // metres south of the cordon over which the fixed land blends into the run's
+      frontierGap: 40, // frontier clearings keep this far south of the cordon (beyond their radius)
+      checkpointExit: 30, // metres the frontier's first pathway runs due south from the outpost through the checkpoint
     },
     hut: {
       southnessMin: 0.9, // deep in the south
@@ -390,7 +399,7 @@ export const config = {
       extraMaxLength: 480, // metres; longer shortcuts aren't added
       extraKeepChance: 0.8, // each candidate (shortest first) is taken with this chance, for variety
       detourRatio: 1.8, // a shortcut is only added if the pathways between its ends are at least this many times longer
-      maxNorthDetour: 2.5, // rule: from home, every north clearing is at most this many times its straight-line distance away by pathway
+      maxNorthDetour: 2.5, // rule: from the outpost (the frontier's way in), every north frontier clearing is at most this many times its straight-line distance away by pathway
       minAngleDegrees: 30, // two pathways leaving a clearing are at least this far apart
       clearance: 8, // metres a pathway keeps from clearings it doesn't join (beyond their radius)
     },

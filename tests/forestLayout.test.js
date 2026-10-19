@@ -15,7 +15,18 @@ describe('layoutForest', () => {
     const again = layoutForest(f, ground, new Rng('trees'));
     expect(again.length).toBe(trees.length);
     expect(again[1000]).toEqual(trees[1000]);
-    expect(layoutForest(f, ground, new Rng('other'))[1000]).not.toEqual(trees[1000]);
+    // South of the cordon the run's seed decides (north of it, see below).
+    const south = (list) => list.filter((t) => !ground.isFixed(t.z + f.cellSize * 2));
+    expect(south(layoutForest(f, ground, new Rng('other')))[1000]).not.toEqual(south(trees)[1000]);
+  });
+
+  it('grows the same trees north of the cordon whatever the seed (the opening cluster, M9.1)', () => {
+    const north = (list) => list.filter((t) => ground.isFixed(t.z + f.cellSize * 2)).map((t) => [t.x, t.z, t.height, t.variant]);
+    const other = makeGround(77);
+    const mine = north(trees);
+    expect(mine.length).toBeGreaterThan(1000);
+    // Heights differ only through the ground under them; positions and kinds match.
+    expect(north(layoutForest(f, other, new Rng('another'))).map((t) => [t[0], t[1], t[3]])).toEqual(mine.map((t) => [t[0], t[1], t[3]]));
   });
 
   it('fills the map with tens of thousands of trees', () => {

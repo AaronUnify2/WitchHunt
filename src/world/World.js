@@ -13,11 +13,13 @@ import { Landmarks } from '../render/Landmarks.js';
 import encountersData from '../data/encounters.json';
 import sigilGroundsData from '../data/sigilGrounds.json';
 import clearingTypesData from '../data/clearingTypes.json';
+import openingClusterData from '../data/openingCluster.json';
 
 export const MAP_DATA = {
   encounters: encountersData.encounters,
   sigilGrounds: sigilGroundsData.grounds,
   clearingTypes: clearingTypesData.types,
+  cluster: openingClusterData,
 };
 
 // Clearings without a type (home, the hut) raise ordinary citizens.

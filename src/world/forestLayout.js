@@ -8,21 +8,40 @@
 // ground: a GroundField (or anything with geo, openAt, heightAt, densityAt).
 
 import { cliffZ } from './mapGeometry.js';
+import { Rng } from '../core/Rng.js';
 
 // Visit every cell of a jittered grid over the map. The same number of
 // random draws is made per cell, so the layout depends only on the seed.
-function jitteredGrid(geo, cellSize, jitter, rng, draws, visit) {
+// Where the ground is fixed (north of the cordon, M9.1) the draws come
+// from `fixedRng` instead, so the opening cluster's trees are the same
+// every run; both streams advance every cell so neither depends on where
+// the line falls.
+function jitteredGrid(geo, cellSize, jitter, rng, fixedRng, isFixed, draws, visit) {
   const cols = Math.floor((geo.xMax - geo.xMin) / cellSize);
   const rows = Math.floor((geo.zMax - geo.zMin) / cellSize);
   const r = new Array(draws);
+  const f = new Array(draws + 2);
   for (let j = 0; j < rows; j++) {
+    const z0 = geo.zMin + (j + 0.5) * cellSize;
+    const fixedRow = fixedRng && isFixed(z0 + cellSize);
     for (let i = 0; i < cols; i++) {
-      const jx = rng.range(-0.5, 0.5) * jitter * cellSize;
-      const jz = rng.range(-0.5, 0.5) * jitter * cellSize;
+      let jx = rng.range(-0.5, 0.5);
+      let jz = rng.range(-0.5, 0.5);
       for (let k = 0; k < draws; k++) r[k] = rng.next();
-      visit(geo.xMin + (i + 0.5) * cellSize + jx, geo.zMin + (j + 0.5) * cellSize + jz, r);
+      if (fixedRow) {
+        for (let k = 0; k < draws + 2; k++) f[k] = fixedRng.next();
+        jx = f[draws] - 0.5;
+        jz = f[draws + 1] - 0.5;
+        for (let k = 0; k < draws; k++) r[k] = f[k];
+      }
+      visit(geo.xMin + (i + 0.5) * cellSize + jx * jitter * cellSize, z0 + jz * jitter * cellSize, r);
     }
   }
+}
+
+// The fixed stream for a layout, if the ground has a fixed region.
+function fixedStream(ground, label) {
+  return ground.fixedSeed !== undefined ? new Rng(`${ground.fixedSeed}:${label}`) : null;
 }
 
 // Not inside the cliff wall or the ramp behind it.
@@ -47,7 +66,7 @@ export function pickTreeKind(kinds, r) {
 export function layoutForest(cfg, ground, rng) {
   const geo = ground.geo;
   const trees = [];
-  jitteredGrid(geo, cfg.cellSize, cfg.jitter, rng, 4, (x, z, r) => {
+  jitteredGrid(geo, cfg.cellSize, cfg.jitter, rng, fixedStream(ground, 'trees'), (z) => ground.isFixed(z), 4, (x, z, r) => {
     const keep = cfg.densityMin + (1 - cfg.densityMin) * ground.densityAt(x, z, cfg.densityScale);
     if (r[0] >= keep) return;
     if (ground.openAt(x, z) > cfg.maxOpen) return;
@@ -67,7 +86,7 @@ export function layoutForest(cfg, ground, rng) {
 export function layoutUndergrowth(cfg, ground, rng, densityScale) {
   const geo = ground.geo;
   const bushes = [];
-  jitteredGrid(geo, cfg.cellSize, 1, rng, 3, (x, z, r) => {
+  jitteredGrid(geo, cfg.cellSize, 1, rng, fixedStream(ground, 'undergrowth'), (z) => ground.isFixed(z), 3, (x, z, r) => {
     const keep = cfg.densityMin + (1 - cfg.densityMin) * ground.densityAt(x, z, densityScale);
     if (r[0] >= keep) return;
     if (ground.openAt(x, z) > cfg.maxOpen) return;

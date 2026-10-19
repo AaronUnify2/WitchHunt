@@ -15,6 +15,7 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeLitterTexture, makeMossTexture, makePathTexture } from '../render/groundTextures.js';
 import { makeNoiseTexture } from '../render/noiseTexture.js';
 import { ChunkCuller } from '../render/ChunkCuller.js';
+import { Rng } from '../core/Rng.js';
 
 // World position for the mask and noise lookups.
 const GROUND_VERTEX_COMMON = /* glsl */ `
@@ -214,29 +215,40 @@ export class Terrain {
   // ---- rocks ---------------------------------------------------------------
 
   // Where rocks go: a few round each clearing's edge, and a sparse scatter
-  // through the forest, never on a pathway.
+  // through the forest, never on a pathway. The opening cluster's clearings
+  // and the forest north of the cordon draw from fixed streams, so their
+  // rocks are the same every run (M9.1).
   rockSpots(rng) {
     const r = this.cfg.rocks;
     const g = this.ground;
     const spots = [];
     for (const c of this.map.clearings) {
-      const n = rng.int(r.perClearingMin, r.perClearingMax);
+      const own = c.cluster ? new Rng(`${g.fixedSeed}:rocks:${c.key}`) : rng;
+      const n = own.int(r.perClearingMin, r.perClearingMax);
       for (let k = 0; k < n; k++) {
-        const angle = rng.range(0, Math.PI * 2);
-        const dist = c.radius * rng.range(0.55, 1.05);
+        const angle = own.range(0, Math.PI * 2);
+        const dist = c.radius * own.range(0.55, 1.05);
         const x = c.x + Math.cos(angle) * dist;
         const z = c.z + Math.sin(angle) * dist;
-        const size = rng.range(r.sizeMin, r.sizeMax);
+        const size = own.range(r.sizeMin, r.sizeMax);
         if (!nearPath(this.map, x, z, size + this.cfg.rocks.pathClearance)) spots.push({ x, z, size });
       }
     }
     const geo = g.geo;
+    const fixed = new Rng(`${g.fixedSeed}:rocks:forest`);
     for (let z = geo.zMin; z < geo.zMax; z += r.forestCell) {
+      const fixedRow = g.isFixed(z + r.forestCell);
       for (let x = geo.xMin; x < geo.xMax; x += r.forestCell) {
-        const keep = rng.chance(r.forestChance);
-        const px = x + rng.range(0, r.forestCell);
-        const pz = z + rng.range(0, r.forestCell);
-        const size = rng.range(r.sizeMin, r.sizeMax);
+        let keep = rng.chance(r.forestChance);
+        let px = x + rng.range(0, r.forestCell);
+        let pz = z + rng.range(0, r.forestCell);
+        let size = rng.range(r.sizeMin, r.sizeMax);
+        if (fixedRow) {
+          keep = fixed.chance(r.forestChance);
+          px = x + fixed.range(0, r.forestCell);
+          pz = z + fixed.range(0, r.forestCell);
+          size = fixed.range(r.sizeMin, r.sizeMax);
+        }
         if (keep && g.openAt(px, pz) <= r.maxOpen) spots.push({ x: px, z: pz, size });
       }
     }

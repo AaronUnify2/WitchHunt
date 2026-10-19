@@ -6,11 +6,13 @@
 //    round them). Off the open ground the undergrowth slows you down.
 // Heights are rolling noise, levelled in clearings, smoothed along
 // pathways, and lifted onto the plateau behind the northern cliff.
+// North of the cordon every noise field comes from the opening cluster's
+// fixed seed, so the cluster's land is the same on every run (M9.1).
 // Height lookups interpolate exactly like the ground mesh's triangles, so
 // feet, trees and rocks sit on the drawn surface.
 
-import { signedNoise, valueNoise, noiseSeed, smoothstep } from './noise.js';
-import { cliffZ, cliffHeight, clampToWalkable } from './mapGeometry.js';
+import { noiseSeed, smoothstep } from './noise.js';
+import { cliffZ, cliffHeight, clampToWalkable, blendedNoise, fixedWeight } from './mapGeometry.js';
 import { pointSegmentDistance } from './mapGraph.js';
 
 export class GroundField {
@@ -21,6 +23,7 @@ export class GroundField {
     this.mapCfg = mapCfg;
     this.cfg = terrainCfg;
     this.seed = map.seed;
+    this.fixedSeed = this.geo.cluster.seed;
     this.buildMasks();
     this.buildHeights();
   }
@@ -36,6 +39,7 @@ export class GroundField {
     this.dirt = new Float32Array(this.maskNx * this.maskNz);
     this.open = new Float32Array(this.maskNx * this.maskNz);
     this.edgeSeed = noiseSeed(this.seed, 'edges');
+    this.fixedEdgeSeed = noiseSeed(this.fixedSeed, 'edges');
     for (const c of this.map.clearings) this.rasterClearing(c);
     for (const p of this.map.paths) this.rasterPath(p.points);
   }
@@ -56,7 +60,7 @@ export class GroundField {
 
   // The outline wobble at a point, in metres.
   edgeWobble(x, z, scale, amount) {
-    return signedNoise(x / scale, z / scale, this.edgeSeed) * amount;
+    return blendedNoise(this.geo, z, x / scale, z / scale, this.edgeSeed, this.fixedEdgeSeed) * amount;
   }
 
   rasterClearing(c) {
@@ -142,6 +146,7 @@ export class GroundField {
     this.nx = Math.round((g.xMax - g.xMin) / t.heightCell) + 1;
     this.nz = Math.round((g.zMax - g.zMin) / t.heightCell) + 1;
     this.octaveSeeds = t.octaves.map((_, i) => noiseSeed(this.seed, `height${i}`));
+    this.fixedOctaveSeeds = t.octaves.map((_, i) => noiseSeed(this.fixedSeed, `height${i}`));
     // Each clearing is levelled toward the height at its centre.
     this.levels = this.map.clearings.map((c) => this.rawHeight(c.x, c.z, 1));
     this.heights = new Float32Array(this.nx * this.nz);
@@ -166,7 +171,7 @@ export class GroundField {
     for (let i = 0; i < octaves.length; i++) {
       const o = octaves[i];
       const scale = o.smoothOnPaths ? 1 - open : 1;
-      if (scale > 0) h += o.amplitude * scale * signedNoise(x / o.wavelength, z / o.wavelength, this.octaveSeeds[i]);
+      if (scale > 0) h += o.amplitude * scale * blendedNoise(this.geo, z, x / o.wavelength, z / o.wavelength, this.octaveSeeds[i], this.fixedOctaveSeeds[i]);
     }
     return h;
   }
@@ -249,6 +254,12 @@ export class GroundField {
     return cliffZ(this.geo, x);
   }
 
+  // True where the land comes wholly from the cluster's fixed seed (north
+  // of the cordon), so seeded placement there should use a fixed seed too.
+  isFixed(z) {
+    return fixedWeight(this.geo, z) >= 1;
+  }
+
   // Keep a position inside the walkable area. Mutates and returns pos.
   clamp(pos) {
     return clampToWalkable(this.geo, pos);
@@ -276,12 +287,13 @@ export class GroundField {
 
   buildDensity(scale) {
     const seed = noiseSeed(this.seed, 'density');
+    const fixed = noiseSeed(this.fixedSeed, 'density');
     this.densityScale = scale;
     this.density = new Float32Array(this.nx * this.nz);
     for (let j = 0; j < this.nz; j++) {
       const z = this.geo.zMin + j * this.heightCell;
       for (let i = 0; i < this.nx; i++) {
-        this.density[j * this.nx + i] = valueNoise((this.geo.xMin + i * this.heightCell) / scale, z / scale, seed);
+        this.density[j * this.nx + i] = (blendedNoise(this.geo, z, (this.geo.xMin + i * this.heightCell) / scale, z / scale, seed, fixed) + 1) / 2;
       }
     }
   }

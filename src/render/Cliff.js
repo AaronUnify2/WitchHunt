@@ -23,7 +23,7 @@ export class Cliff {
     const c = this.cfg;
     this.ground = ground;
     this.geo = ground.geo;
-    this.seed = noiseSeed(ground.seed, 'cliff-face');
+    this.seed = noiseSeed(ground.fixedSeed, 'cliff-face'); // the cliff is wholly in the fixed north (M9.1)
     this.texture = makeCliffTexture(this.terrainCfg, this.rng.fork('texture'));
     this.material = new THREE.MeshLambertMaterial({ map: this.texture });
     this.group = new THREE.Group();

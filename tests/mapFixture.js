@@ -8,11 +8,13 @@ import { GroundField } from '../src/world/GroundField.js';
 import encounters from '../src/data/encounters.json';
 import sigilGrounds from '../src/data/sigilGrounds.json';
 import clearingTypes from '../src/data/clearingTypes.json';
+import openingCluster from '../src/data/openingCluster.json';
 
 export const MAP_DATA = {
   encounters: encounters.encounters,
   sigilGrounds: sigilGrounds.grounds,
   clearingTypes: clearingTypes.types,
+  cluster: openingCluster,
 };
 
 export function makeMap(seed) {

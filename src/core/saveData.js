@@ -12,8 +12,10 @@
 // M7 added the witch. M8: the lines heard and milestones (Dialogue), the
 // lore carried and handed in and the monitors' clips (Lore); both optional,
 // so older saves still load. Prizes and the rest come later.
+// Version 2 (M9.1): the opening cluster changed every seed's map, so a
+// version 1 save would wake up somewhere else; it's discarded cleanly.
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 // ---- bytes <-> text (the fog of war is a byte per cell, 0 or 1) -------------
 

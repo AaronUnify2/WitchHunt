@@ -5,6 +5,7 @@
     { "id": "graveyard", "name": "Graveyard", "weight": 1, "feel": "Old stones, mounds", "variants": { "citizen": 0.7, "police": 0.15, "army": 0.15 }, "mapColor": "#9a9480" },
     { "id": "roadside", "name": "Roadside", "weight": 1, "feel": "Abandoned cars, roadblock", "variants": { "citizen": 0.25, "police": 0.6, "army": 0.15 }, "mapColor": "#a08c6a" },
     { "id": "checkpoint", "name": "Checkpoint", "weight": 1, "feel": "Sandbags, wrecked jeeps", "variants": { "citizen": 0.2, "police": 0.2, "army": 0.6 }, "mapColor": "#8a8a64" },
+    { "id": "homeWoods", "name": "Home woods", "weight": 0, "feel": "The opening cluster's own: plain woods, never picked at random", "variants": { "citizen": 0.85, "police": 0.15, "army": 0 }, "mapColor": "#8a9470" },
     { "id": "standingStones", "name": "Standing stones", "weight": 1, "feel": "Open, ritual feel", "variants": { "citizen": 0.34, "police": 0.33, "army": 0.33 }, "mapColor": "#a49a84" }
   ]
 }

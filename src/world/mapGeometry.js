@@ -1,17 +1,24 @@
 // The map's fixed geometry (pure): its bounds, the walkable area, the
-// wandering line of the northern cliff and the north-south "southness"
-// scale that bands and danger are measured on. North is -z.
+// wandering line of the northern cliff, the north-south "southness"
+// scale that bands and danger are measured on, and the opening cluster's
+// home and cordon line. North is -z.
+//
+// The cliff runs wholly north of the cordon, so it comes from the
+// cluster's fixed seed and is the same on every run (M9.1). Other seeded
+// land (hills, trees, outlines) blends from the fixed seed north of the
+// cordon to the run's seed south of it: see fixedWeight().
 
 import { signedNoise, noiseSeed } from './noise.js';
 
-// Build the geometry for a map seed from config.map.
-export function makeGeometry(mapCfg, seed) {
+// Build the geometry from config.map (the same for every seed).
+export function makeGeometry(mapCfg) {
   const halfW = mapCfg.width / 2;
   const halfD = mapCfg.depth / 2;
   const c = mapCfg.cliff;
   const zMin = -halfD;
   const cliffBaseZ = zMin + c.plateauDepth;
-  return {
+  const k = mapCfg.cluster;
+  const geo = {
     xMin: -halfW,
     xMax: halfW,
     zMin,
@@ -19,7 +26,7 @@ export function makeGeometry(mapCfg, seed) {
     // Walkable area (the cliff closes the north side; see cliffZ)
     walk: { xMin: -halfW + mapCfg.edgeMargin, xMax: halfW - mapCfg.edgeMargin, zMax: halfD - mapCfg.edgeMargin },
     cliff: {
-      seed: noiseSeed(seed, 'cliff'),
+      seed: noiseSeed(k.seed, 'cliff'),
       baseZ: cliffBaseZ,
       amplitude: c.amplitude,
       wavelength: c.wavelength,
@@ -32,6 +39,28 @@ export function makeGeometry(mapCfg, seed) {
     southTop: cliffBaseZ,
     southBottom: halfD - mapCfg.edgeMargin,
   };
+  const home = { x: k.homeX, z: cliffZ(geo, k.homeX) + mapCfg.home.offsetFromCliff };
+  geo.cluster = { seed: k.seed, home, cordonZ: home.z + k.cordonSouthOfHome, fade: k.fade };
+  return geo;
+}
+
+// How much of the land at z comes from the cluster's fixed seed: 1 north
+// of the cordon, fading to 0 over `fade` metres south of it.
+export function fixedWeight(geo, z) {
+  const c = geo.cluster;
+  if (z <= c.cordonZ) return 1;
+  if (z >= c.cordonZ + c.fade) return 0;
+  const t = (z - c.cordonZ) / c.fade;
+  return 1 - t * t * (3 - 2 * t);
+}
+
+// Signed noise at noise coordinates (nx, nz), blended between the run's
+// field and the fixed one by the weight at world z.
+export function blendedNoise(geo, z, nx, nz, runSeed, fixedSeed) {
+  const w = fixedWeight(geo, z);
+  if (w >= 1) return signedNoise(nx, nz, fixedSeed);
+  if (w <= 0) return signedNoise(nx, nz, runSeed);
+  return signedNoise(nx, nz, runSeed) * (1 - w) + signedNoise(nx, nz, fixedSeed) * w;
 }
 
 // z of the cliff face at x.

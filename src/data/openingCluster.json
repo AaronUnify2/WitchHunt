@@ -1,0 +1,19 @@
+{
+  "_note": "The fixed opening cluster (DESIGN.md \"Fixed opening cluster\", M9.1): placed first and identical on every seed. Positions are metres from home's centre (dx east, dz south); home sits on the cliff at config.map.cluster.homeX. key: an encounter id from encounters.json, or a sigil ground id from sigilGrounds.json with kind \"sigilGround\". clearingType: homeWoods keeps checkpoint and roadside mixes out of the cluster, so its sigils raise citizens (Session 11). paths: the cluster's pathways (the only ones north of the cordon); the frontier joins at the outpost alone, through the checkpoint. They make a loop, so the dead and the witch reach the shelter side without walking through the station.",
+  "clearings": [
+    { "key": "home", "dx": 0, "dz": 0 },
+    { "key": "campsite", "dx": -130, "dz": 70, "radius": 20, "clearingType": "homeWoods" },
+    { "key": "stormShelter", "dx": 150, "dz": 90, "radius": 20, "clearingType": "homeWoods" },
+    { "key": "familyCemetery", "kind": "sigilGround", "dx": 220, "dz": 200, "radius": 18, "clearingType": "homeWoods" },
+    { "key": "gasStation", "dx": -100, "dz": 200, "radius": 24, "clearingType": "homeWoods" },
+    { "key": "outpost", "dx": 10, "dz": 260, "radius": 28, "clearingType": "homeWoods" }
+  ],
+  "paths": [
+    { "a": "home", "b": "campsite" },
+    { "a": "home", "b": "stormShelter" },
+    { "a": "stormShelter", "b": "familyCemetery" },
+    { "a": "campsite", "b": "gasStation" },
+    { "a": "gasStation", "b": "outpost" },
+    { "a": "familyCemetery", "b": "outpost" }
+  ]
+}
