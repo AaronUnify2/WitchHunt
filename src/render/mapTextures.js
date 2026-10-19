@@ -25,6 +25,11 @@ export function makeForestAtlas(cfg, rng) {
   for (let v = 0; v < n; v++) {
     ctx.save();
     ctx.translate(v * w, 0);
+    // Each tree stays in its own cell (a branch past the edge showed up
+    // floating beside the next tree: Aaron, Session 14).
+    ctx.beginPath();
+    ctx.rect(0, 0, w, h);
+    ctx.clip();
     drawTree(ctx, cfg.kinds[v], w, h, cfg, rng.fork(`tree-${v}`));
     ctx.restore();
     rects.push([(v * w) / W, 0, w / W, 1]);

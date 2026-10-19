@@ -246,7 +246,10 @@ function drawWhitePine(ctx, kind, w, h, cfg, rng) {
     const y = h * 0.06 + (trunkTop - h * 0.1) * t;
     for (const side of [-1, 1]) {
       if (rng.chance(c.skipChance) && i > 0) continue; // gaps: you can see through a white pine
-      const reach = w * (0.12 + 0.34 * Math.pow(t, 0.6)) * (side === lean ? 1.15 : 0.75) * rng.range(0.7, 1);
+      // Capped so its outermost tuft stays inside the sprite (Aaron, Session 14:
+      // the long low branches spilled into the next tree's cell in the atlas,
+      // and floated beside that tree in the game).
+      const reach = Math.min(w * 0.38, w * (0.12 + 0.34 * Math.pow(t, 0.6)) * (side === lean ? 1.15 : 0.75) * rng.range(0.7, 1));
       const ex = cx + side * reach;
       const ey = y - h * rng.range(0.01, 0.04); // branches rise a little to their tips
       ctx.strokeStyle = css(cfg.trunkColor);
