@@ -1,0 +1,15 @@
+{
+  "_note": "Story progress flags (M9.1; DESIGN.md \"Fixed opening cluster\": the soft-gated path order). Each flag, once set, stays set, and is saved. The gates on the cluster's paths open on them (openingCluster.json \"gates\"), and dialogue lines can name them as conditions. trigger: what sets it. standIn: true = a stand-in until the real story beat (named in \"about\") sets it instead; those sessions should replace the trigger with their own setFlag() call. Trigger kinds: dusk (the first dusk on day `day`), dawn (any dawn once `after` are set), visit (Tom walks into the clearing `clearing`), all (as soon as `after` are set), cleared (Tom is in the clearing `clearing` and no living zombie is within `margin` metres of its edge), south (Tom is south of the cordon line). after: flags that must be set first.",
+  "flags": [
+    { "id": "night1", "about": "Night 1 has begun: the family's \"go dig it up\" (M9.2). Opens the storm shelter's spur.", "standIn": true, "trigger": { "on": "dusk", "day": 1 } },
+    { "id": "campsiteVisited", "about": "Tom has been to the campsite (M9.2 sets it with Day 1's campsite beats).", "standIn": true, "trigger": { "on": "visit", "clearing": "campsite" } },
+    { "id": "day2", "about": "Day 2, after the campsite (M9.2). Opens the trail to the gas station.", "standIn": true, "trigger": { "on": "dawn", "after": ["campsiteVisited"] } },
+    { "id": "gasStationVisited", "about": "Tom has been to the gas station (M9.3).", "standIn": true, "trigger": { "on": "visit", "clearing": "gasStation" } },
+    { "id": "shelterVisited", "about": "Tom has been to the storm shelter (M9.3).", "standIn": true, "trigger": { "on": "visit", "clearing": "stormShelter" } },
+    { "id": "rifleClaimed", "about": "The hunting rifle claimed: the gas station's safe opened with the combination from the shelter (M9.3).", "standIn": true, "trigger": { "on": "all", "after": ["gasStationVisited", "shelterVisited"] } },
+    { "id": "outpostCall", "about": "Ellen's call to adventure: report to the checkpoint (M9.4). Opens the outpost's gates.", "standIn": true, "trigger": { "on": "all", "after": ["rifleClaimed"] } },
+    { "id": "outpostEntered", "about": "Tom has reached the outpost (M9.4).", "standIn": true, "trigger": { "on": "visit", "clearing": "outpost" } },
+    { "id": "outpostCleared", "about": "Tom has fought through the outpost (M9.4). Opens the checkpoint.", "standIn": true, "trigger": { "on": "cleared", "clearing": "outpost", "margin": 15, "after": ["outpostEntered"] } },
+    { "id": "crossedCordon", "about": "Tom has crossed the cordon: the frontier is open, and the witch plants anywhere from now on.", "standIn": false, "trigger": { "on": "south", "after": ["outpostCleared"] } }
+  ]
+}

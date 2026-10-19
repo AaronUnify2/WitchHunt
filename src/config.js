@@ -428,6 +428,20 @@ export const config = {
       max: 5,
     },
     maskCell: 2, // metres per cell of the ground mask (dirt, open ground)
+    // The gates on the cluster's paths (M9.1; data/openingCluster.json
+    // "gates"): light, in-world blocks that stop Tom only (the dead clamber
+    // over), each opening on a story progress flag (data/progress.json).
+    // The off-path forest still only slows, so they're a soft funnel: their
+    // wings run into the trees to make going round a long, slow detour.
+    gates: {
+      bumpDistance: 1.6, // metres: walking this close to a shut gate tells you why it's shut
+      bumpCooldown: 8, // seconds before the same gate tells you again
+      pipeGate: { width: 5, wing: 7, height: 1.1, color: 0x3c3a22, post: 0x2c2a20, sign: 'PRIVATE \u2014 PRUITT LAND' },
+      fallenTree: { length: 22, radius: 0.55, bark: 0x3a2c20, wood: 0x4e3e2a, branch: 0x2e241a }, // wood: the sawn faces, dull (paler glared)
+      chainGate: { width: 6, wing: 9, height: 2.4, color: 0x3a3d3f, chainLink: 0x4a4f53, sign: 'AUTHORIZED PERSONNEL ONLY' },
+      signColor: 0x8a8370, // dull: pale boards glare under the torch
+      signText: 0x5e1a12,
+    },
     // The military cordon (M9.1; DESIGN.md "Fixed opening cluster"): chain-
     // link and razor wire the full width of the map along the cordon line
     // (config.map.cluster.cordonSouthOfHome). It stops Tom; the dead and the

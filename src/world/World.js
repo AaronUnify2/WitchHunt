@@ -13,6 +13,7 @@ import { Landmarks } from '../render/Landmarks.js';
 import { Road } from '../render/Road.js';
 import { Cordon } from '../render/Cordon.js';
 import { roadProps } from './road.js';
+import { gateLayout } from './gates.js';
 import encountersData from '../data/encounters.json';
 import sigilGroundsData from '../data/sigilGrounds.json';
 import clearingTypesData from '../data/clearingTypes.json';
@@ -59,6 +60,8 @@ export class World {
     // M9.1: the military cordon across the map, south of the outpost.
     this.cordon = new Cordon(cfg.map.cordon, cfg.landmarks);
     this.cordon.init(scene, colliders, this.map, this.ground);
+    // M9.1: where the cluster's gates stand (built and run by Gates, in Game).
+    this.gates = gateLayout(this.map, MAP_DATA.cluster.gates, cfg.map.gates);
     this.buildMs = performance.now() - t0;
   }
 

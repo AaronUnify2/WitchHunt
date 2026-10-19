@@ -47,6 +47,8 @@ import { ModelViewer } from '../debug/ModelViewer.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
 import { MapUi } from '../ui/MapUi.js';
+import { StoryProgress } from '../story/StoryProgress.js';
+import { Gates } from '../world/Gates.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -106,6 +108,7 @@ export class Game {
     this.initExplosives();
     this.initFinalBattle(root);
     this.initStory(root);
+    this.initProgress();
     this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
@@ -345,6 +348,20 @@ export class Game {
     this.station.pageSources.push(() => [this.lore.ledgerPage()]);
   }
 
+  // M9.1: story progress flags, and the cluster's gates that open on them.
+  initProgress() {
+    this.progress = new StoryProgress(this.cfg, this.bus);
+    this.progress.init({ world: this.world, player: this.player, enemies: this.combat.enemies });
+    this.gates = new Gates(this.cfg, this.bus);
+    this.gates.init(this.scene, {
+      world: this.world,
+      colliders: this.colliders,
+      player: this.player,
+      progress: this.progress,
+      notify: (text) => this.toast.show(text),
+    });
+  }
+
   // Session 13: the debug model viewer (the Models category).
   initViewer(root) {
     this.viewer = new ModelViewer(this.cfg, this.bus);
@@ -368,7 +385,7 @@ export class Game {
   // M8: flags about the world now, for lines' conditions (DESIGN.md
   // "Dialogue system": base damaged, zombie level 4+).
   storyFlags() {
-    const flags = [];
+    const flags = [...(this.progress?.flags.list() ?? [])]; // M9.1: story progress, by name
     if (this.director.effectiveLevel >= 4) flags.push('zombieLevel4');
     for (const b of this.station.state.barriers()) {
       if (b.kind !== 'barricade' && b.health < b.max) {
@@ -427,6 +444,7 @@ export class Game {
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
+    this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -535,10 +553,8 @@ export class Game {
       this.player.teleport(cp.x, cp.z - 8, Math.PI);
       this.toast.show('At the checkpoint');
     });
-    run.addItem(
-      () => `Checkpoint: ${this.world.cordon.checkpointOpen ? 'open (shut it)' : 'shut (open it)'}`,
-      () => this.world.cordon.setCheckpointOpen(!this.world.cordon.checkpointOpen),
-    );
+    // M9.1: every story progress flag (the gates open and shut with them).
+    this.progress.addDebugItems(menu.category(DEBUG.progress));
     run.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
     run.addItem('Restart this map (same seed, deletes the save)', () => {
       this.saves.clear();
@@ -756,6 +772,7 @@ export class Game {
       stats: { ...this.stats }, // M7: for the run summary
       story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
       lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
+      progress: this.progress.saveState(), // M9.1: story progress flags (the gates follow them)
     };
   }
 
@@ -786,6 +803,7 @@ export class Game {
     this.stats = loadStats(d.stats);
     this.dialogue.loadState(d.story);
     this.lore.loadState(d.lore);
+    this.progress.loadState(d.progress);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -923,6 +941,8 @@ export class Game {
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
     this.nightWatch.update(dt, this.clock.phase, playing);
+    this.progress.update(dt, playing && first);
+    this.gates.update(dt, playing && first && !locked);
   }
 
   get phase() {
@@ -941,6 +961,8 @@ export class Game {
     this.mapUi.dispose();
     this.nightWatch.dispose();
     this.lore.dispose();
+    this.gates.dispose();
+    this.progress.dispose();
     this.viewer.dispose();
     this.cutscenes.dispose();
     this.trailCams.dispose();

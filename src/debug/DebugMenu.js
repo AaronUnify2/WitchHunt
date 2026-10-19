@@ -20,6 +20,7 @@ export const DEBUG = {
   player: 'Player',
   station: 'Station & vehicles',
   story: 'Story, radio & trail cams',
+  progress: 'Story flags & gates',
   day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',
