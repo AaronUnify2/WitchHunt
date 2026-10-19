@@ -18,7 +18,11 @@ Agreed with Aaron at the start: **push each step to `main`**; the cluster's layo
 | 180 | **The look of the road, cordon and gates** (style pass 2, Session 19). | Placeholder-plus, in code: the asphalt texture, the pipe gate, the oak, the chain-link gates and their signs; the colours dulled where the torch glared. The torn gaps are a panel peeled in, with its coil sagging. | `render/Road.js`, `render/Cordon.js`, `render/GateProps.js`, `config.map.road` / `cordon` / `gates` |
 | 181 | **Old saves.** | The save version went to 2: every seed's map changed, so a version 1 save is discarded cleanly. | `core/saveData.js` `SAVE_VERSION` |
 
-**Resolved here:** #153 (the fixed camera near the storm shelter, built: camera six).
+| 182 | **The flare's conk** (Aaron: 5 body hits or 2 to the head to kill; realistic?). | 18 a hit, 3x to the head. A real flare round at close range is a heavy, burning blow, so dropping a zombie with two to the head is fair; flares are scarce (carry 3), so it rarely matters. Lower `hitDamage` if it should be a lure first and a weapon barely at all. | `config.flares.hitDamage` |
+| 183 | **The witch's leash** (Aaron: she was relentless). | She gives up 50 m from where the fight started before the crossing, 140 m after, then leaves you be 40 s unless you hit her. Too easy, too hard? | `config.witch.pursuit` |
+| 184 | **Exploding cars' numbers** (Aaron asked for about 300). | 300 to blow; smoke from 120, fire from 240 (then about 5 s to go up by itself); the blast 8 m, 200 to zombies, 90 to you at the centre; the wreck burns 30 s; cars a blast pushes past 300 go up 0.4-1.2 s later. A rifle round does 25, a shotgun blast up to 48, a flare 18. | `config.vehicles.damage` |
+
+**Resolved here:** #153 (the fixed camera near the storm shelter, built: camera six). After the play-test: the props' glare, the flare's arc, running from the witch, cutscene actors walking backwards, quicker car looting, exploding cars, the floating foliage.
 
 ## Session 13 (Graphics Engineer / Technical Artist: characters and the deferred art)
 

@@ -27,6 +27,8 @@ Seven steps. Details are in `STATUS.md` (Session 14). The open points are in `OP
 6. **The flare gun:** Y / F fires a flare like a round, and a direct hit conks. Only the newest flare lights and lures; the witch is never lured. You start with 3 and carry 3.
 7. **Camera six** is fixed at the storm shelter (#153). The seeded trail cameras are all in the frontier.
 
+**After Aaron's play-test** (all pushed): the new props toned down under the torch; a flare fired up arcs over and drifts down; you can run from the witch early on (`config.witch.pursuit`); cutscene actors walk forwards; cars twice as quick to loot; **cars blow up** (`config.vehicles.damage`); no foliage floating beside the trees.
+
 **Decided with Aaron (also in OPEN_QUESTIONS, Session 14):**
 - Push each step to `main`.
 - The cluster's layout follows my recommendation, and the cluster counts toward the 22 clearings.
@@ -82,6 +84,7 @@ Workshop first (rule 10): the campsite's layout and beats, the opening, the towe
 - **Gate wings reach 7-11 m into the trees.** Don't place props or encounter content right across a gated path, or the gate will fight it.
 - **The road passes the gas station about 14 m south of its centre.** Its building should stand north of the road (Session 16, M9.3). The telephone poles run on the north side, so one may need moving when the building goes in (`config.map.road.poles`).
 - **The lure:** while a flare burns, zombies within 35 m are in `lured` mode. Scripted waves (the shotgun wave) should expect that if the player fires one.
+- **Cars blow up:** a blast near the campsite's sure car (or any scripted wave next to cars) can chain. `vehicles.damage()` / `explode()`; wrecks are saved.
 - **Lights:** still never add or remove them mid-play. The flares share one light made at load.
 - **Saves** are version 2. Add new state to `collectSave()` / `applySave()` as optional fields, so a save from earlier in the session still loads.
 - **Headless renders** (for checking a scene): drive the game with Playwright (`window.game` in dev). Start the run with `game.onStartChoice('start')` and hide `.start-screen`, then teleport with `game.player.teleport(x, z, yaw)`. With that yaw, `yaw = atan2(-dx, -dz)` faces the direction (dx, dz): 0 faces north. Judge frame rates only on Aaron's tablet.
@@ -89,7 +92,7 @@ Workshop first (rule 10): the campsite's layout and beats, the opening, the towe
 
 ### Open questions for Aaron
 
-- **#171-181 (Session 14):**
+- **#171-184 (Session 14; #182-184 after the play-test: the flare's conk, the witch's leash, exploding cars' numbers):**
   - the cluster's distances;
   - the cemetery as its sigil ground;
   - the cemetery-outpost path;

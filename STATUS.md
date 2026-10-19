@@ -59,7 +59,16 @@ Seven steps, each pushed to `main` for Aaron to play-test:
 6. **The flare gun** (`combat/Flares.js`, `combat/flareFlight.js`, `render/FlareRenderer.js`, `config.flares`): Y / F fires a flare along the crosshair, a fast projectile that drops a little. **A direct hit conks** a zombie or the witch (18, 3x to the head, a stagger; Aaron). It burns red for 20 s where it lands. The last fired holds **the one light** (made at load); the last landed is **the lure** (`EnemyManager.setLure`, the brain's `lured` mode: every zombie within 35 m mills about it, unless the player is right on top of it). Older flares only glow. Never the witch. Carry 3 (`config.inventory`); road flares in police car boots, sometimes one off an army zombie; the HUD shows the count; saved. Placeholder sounds (`flareGun`, `flareIgnite`, `flareConk`). The Mothman's attention is counted (M10).
 7. **The storm shelter's fixed camera** (#153; `openingCluster.json` `trailCams`, `story/trailCamPlacement.js`): camera six at the shelter's clearing, the same every run; the five seeded cameras are all in the frontier. Cutscenes anchor to a camera by number (`trailCam:6`); the Night 1 clip uses it.
 
-**Debug menu:** *Story flags & gates* (toggle any flag; gates follow), *Teleport: the checkpoint (cordon)*, *Player: Refill flares*. The overlay has a `progress` line (flags, gates) and the zombies line shows lured zombies and the flares.
+**After Aaron's play-test** (each pushed to `main`):
+- **No more glare** on the new props: the cordon's and gates' chain-link and frames, the ROAD CLOSED sign, the fence plates, the Pruitt sign and the trail cameras are much darker, and the torch's glare check sees the cameras, plates and shut gates.
+- **A flare fired up arcs over and drifts down** (air drag; the 3 s flight limit that snapped it to the ground is now a 20 s safety net).
+- **You can run from the witch** (`config.witch.pursuit`): she gives up a fight 50 m from where it started before the crossing (140 m after; never in the final battle), then leaves you be for 40 s unless you hit her.
+- **Cutscene actors walk forwards** (they faced where they came from; the Night 1 witch walked backwards).
+- **Cars are twice as quick to loot** (search 1.25 s, bonnet 0.75 s, battery 1.5 s).
+- **Cars blow up** (`config.vehicles.damage`, `render/VehicleFire.js`): rounds, flares and blasts damage them; smoking at 40%, on fire at 80% (it burns down the rest itself), exploding at 300 (the charges' blast, a little smaller), leaving a burnt-out, empty wreck that burns on. Blasts chain to close-parked cars. Saved.
+- **No foliage floating beside the trees:** the white pine's branches spilled into the next cell of the forest atlas; capped, and every tree is clipped to its cell.
+
+**Debug menu:** *Station & vehicles: set the nearest car on fire / blow it up now*; *Story flags & gates* (toggle any flag; gates follow), *Teleport: the checkpoint (cordon)*, *Player: Refill flares*. The overlay has a `progress` line (flags, gates) and the zombies line shows lured zombies and the flares.
 
 **Stubbed / not yet:** the real story beats behind the stand-in flags (M9.2-9.4); cutting the oak with a tool (M9.2 may give one); the encounters' own layouts in the cluster (the gas station building north of the road, the hatch, the outpost); the Mothman's flare attention (M10); the cordon's and road's final look (style pass 2, Session 19).
 
