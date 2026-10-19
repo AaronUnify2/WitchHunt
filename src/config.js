@@ -1716,6 +1716,12 @@ export const config = {
     hutRadius: 250,
     rethinkSeconds: 1, // how often she reconsiders mid-fight
     loseSeconds: 6, // out of sight this long: she gives up the fight or the chase
+    // Session 14 (Aaron: she was relentless; in the early game you must be
+    // able to run from her): she gives up a fight once you're `leash`
+    // metres from where it started (leashEarly until Tom crosses the
+    // cordon, leashLate after; never in the final battle), then leaves you
+    // be for calmSeconds unless you hit her.
+    pursuit: { leashEarly: 50, leashLate: 140, calmSeconds: 40 },
     // Aaron (Session 9): her fight has three modes.
     //  - Retreat: she backs off, weaving, until she's standoff metres away
     //    (or maxSeconds have passed: a tree can stop her). In the final

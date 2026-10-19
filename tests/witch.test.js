@@ -282,6 +282,36 @@ describe('the witch out for a night', () => {
     expect(env.planted.length).toBe(0);
   });
 
+  it('early on you can run from her: past the leash she lets you go, and leaves you be until you hit her (Aaron, Session 14)', () => {
+    const env = atRitual(11);
+    const w = env.witch;
+    w.pursuitLeash = () => config.witch.pursuit.leashEarly;
+    standBefore(env, 25);
+    w.tier = 'active';
+    hit(w, 10);
+    expect(w.state).toBe('attacking');
+    // Run: put the player well past the leash from where the fight started.
+    const away = config.witch.pursuit.leashEarly + 15;
+    env.player.position.x = w.fightX + away;
+    env.syncSenses();
+    for (let i = 0; i < 5; i++) w.update(0.1, true, null);
+    expect(w.state).not.toBe('attacking');
+    // Seen again within her calm: she lets it go.
+    standBefore(env, 15);
+    for (let i = 0; i < 20; i++) {
+      standBefore(env, 15);
+      w.update(0.1, true, null);
+    }
+    expect(w.state).not.toBe('attacking');
+    // A hit ends the truce.
+    hit(w, 10);
+    expect(w.state).toBe('attacking');
+  });
+
+  it('the leash is long after the crossing, and there is none in the final battle', () => {
+    expect(config.witch.pursuit.leashLate).toBeGreaterThan(config.witch.pursuit.leashEarly * 2);
+  });
+
   it("in the ritual's trance she only notices you close up", () => {
     const env = atRitual(3);
     standBefore(env, 20); // in the open at night, torch on: a zombie would see you at this range

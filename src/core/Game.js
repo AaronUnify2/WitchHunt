@@ -359,6 +359,9 @@ export class Game {
     const cordonZ = this.world.map.cluster.cordonZ;
     const margin = this.cfg.witch.clusterPlantMargin;
     this.director.plantArea = () => (this.progress.has('crossedCordon') ? null : (x, z) => z < cordonZ - margin);
+    // Running from her (Aaron): a short leash in the early game.
+    const pursuit = this.cfg.witch.pursuit;
+    this.witch.pursuitLeash = () => (this.progress.has('crossedCordon') ? pursuit.leashLate : pursuit.leashEarly);
     this.gates = new Gates(this.cfg, this.bus);
     this.gates.init(this.scene, {
       world: this.world,

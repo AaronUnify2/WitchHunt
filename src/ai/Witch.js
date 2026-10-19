@@ -32,6 +32,10 @@
 //    sends her rushing in to swipe again and again; a shotgun hit, or
 //    enough damage, drives her back out. She summons a few
 //    zombies whenever she can (once a minute at most).
+//  - Running from her (Aaron, Session 14): she gives up a fight once you're
+//    pursuitLeash() metres from where it started (short before the
+//    crossing, longer after), then leaves you be for a while unless you
+//    hit her.
 //  - Fleeing: home along the pathways, faster than your sprint, weaving.
 //    Once she's lost you she goes back to planting, or home if she's badly hurt.
 //  - Wounds last: she heals a share each day in the hut. Wounded, she
@@ -169,6 +173,7 @@ export class Witch {
   // Forget the fight.
   endFight() {
     this.lastSeen = Infinity; // seconds since she last saw the player
+    this.calm = 0; // seconds she'll leave you be after giving up a fight (Session 14)
     this.lastX = 0; // where she last knew them to be
     this.lastZ = 0;
     this.rethink = 0;
@@ -362,6 +367,7 @@ export class Witch {
       this.flinch = Math.max(0, this.flinch - dt);
       this.bossTimer = Math.max(0, this.bossTimer - dt);
       this.summonCooldown = Math.max(0, this.summonCooldown - dt);
+      this.calm = Math.max(0, this.calm - dt);
       if (this.state !== 'resting' && this.state !== 'dead' && this.state !== 'rising') this.look(dt);
       switch (this.state) {
         case 'roaming':
@@ -420,13 +426,13 @@ export class Witch {
     this.lastSeen = 0;
     this.lastX = s.x;
     this.lastZ = s.z;
-    if (!engaged && first) this.react();
+    if (!engaged && first && this.calm <= 0) this.react();
   }
 
   // A shot she hears (any shot within its noise x her hearing; in the
   // ritual only within ritualHearing): she knows where you are.
   heard(noise) {
-    if (this.state === 'resting' || this.state === 'dead' || this.tier === 'abstract') return;
+    if (this.state === 'resting' || this.state === 'dead' || this.tier === 'abstract' || this.calm > 0) return;
     const p = this.player.position;
     const range = this.state === 'planting' ? Math.min(noise * this.wc.notice, this.wc.ritualHearing) : noise * this.wc.notice;
     if (this.distance > range) return;
@@ -444,7 +450,7 @@ export class Witch {
 
   // A loud noise at (x, z) she can hear within `range`: she comes.
   heardAt(x, z, range) {
-    if (this.state === 'resting' || this.state === 'dead') return;
+    if (this.state === 'resting' || this.state === 'dead' || this.calm > 0) return;
     if (Math.hypot(this.x - x, this.z - z) > range) return;
     this.lastSeen = 0;
     this.lastX = x;
@@ -477,6 +483,8 @@ export class Witch {
   startAttack() {
     if (this.state === 'attacking') return;
     this.state = 'attacking';
+    this.fightX = this.player.position.x; // where it started: run far enough from here and she lets you go
+    this.fightZ = this.player.position.z;
     this.goal = null;
     this.action = null;
     this.rethink = this.wc.rethinkSeconds;
@@ -534,6 +542,13 @@ export class Witch {
     // her from far off: she comes, then looks).
     if (!this.combat.alive || (this.lastSeen > this.wc.loseSeconds && dist <= a.hex.maxRange)) {
       this.disengage();
+      return;
+    }
+    // You got away (Aaron, Session 14): far enough from where it started.
+    const leash = this.final ? Infinity : (this.pursuitLeash?.() ?? this.wc.pursuit.leashLate);
+    if (Math.hypot(p.x - this.fightX, p.z - this.fightZ) > leash) {
+      this.disengage();
+      this.calm = this.wc.pursuit.calmSeconds; // after disengage(): endFight() clears it
       return;
     }
     this.hexTimer -= dt;
@@ -799,6 +814,7 @@ export class Witch {
       return true;
     }
     this.combat.sfx.play('witchShriek', { x: this.x, z: this.z, range: this.wc.songRange });
+    this.calm = 0; // a hit ends any truce
     this.lastSeen = 0;
     this.lastX = from?.x ?? this.player.position.x;
     this.lastZ = from?.z ?? this.player.position.z;
