@@ -1,5 +1,5 @@
 {
-  "_note": "Every cutscene (M8; DESIGN.md 'Cutscenes'), in one timeline format: story/cutsceneTimeline.js explains positions (in an anchor's frame: x right, y up, z ahead), camera keys and events. Anchors: player, home, homeDoor, hut, witch, trailCam (the camera that saw her, else camera 1), nearestClearing, clearing:<encounter id>. style: cctv | firstPerson | sweep | black. look: config.postFX.looks. hour: the grade and sky while it plays (else the clock's). light: the camera's light on the actors (else config.cutscenes.actorLight for its look). fps: a CCTV feed's frame rate. world: 'run' keeps the world going (else it holds still). Events: line (dialogue.json id; radio true/false), text, move, pose (stand/kneel/down), show, hide, flare, glitch, fade, emit, lookAt, shake, osd (cut to another camera: look, hour, osd), sfx. rewatch: once played it goes on the comms room's monitors. 'placeholder': the shot is a stand-in until its encounter session makes it properly. Every cutscene is in the debug menu's Cutscenes category (Aaron, Session 11).",
+  "_note": "Every cutscene (M8; DESIGN.md 'Cutscenes'), in one timeline format: story/cutsceneTimeline.js explains positions (in an anchor's frame: x right, y up, z ahead), camera keys and events. Anchors: player, home, homeDoor, hut, witch, trailCam (the camera that saw her, else camera 1), trailCam:<number> (that camera: clip.night1 is the storm shelter's camera six, M9.1), nearestClearing, clearing:<encounter id>. style: cctv | firstPerson | sweep | black. look: config.postFX.looks. hour: the grade and sky while it plays (else the clock's). light: the camera's light on the actors (else config.cutscenes.actorLight for its look). fps: a CCTV feed's frame rate. world: 'run' keeps the world going (else it holds still). Events: line (dialogue.json id; radio true/false), text, move, pose (stand/kneel/down), show, hide, flare, glitch, fade, emit, lookAt, shake, osd (cut to another camera: look, hour, osd), sfx. rewatch: once played it goes on the comms room's monitors. 'placeholder': the shot is a stand-in until its encounter session makes it properly. Every cutscene is in the debug menu's Cutscenes category (Aaron, Session 11).",
   "cutscenes": [
     {
       "id": "opening.coldOpen",
@@ -72,10 +72,10 @@
       "fps": 10,
       "hour": 23.2,
       "osd": { "name": "CAMERA 6", "time": "clock", "rec": true },
-      "camera": [{ "at": 0, "anchor": "trailCam", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 }],
+      "camera": [{ "at": 0, "anchor": "trailCam:6", "pos": [0, 1.5, 0], "look": [0, 1, 10], "fov": 70 }],
       "actors": [
-        { "id": "her", "kind": "figure", "look": "witch", "anchor": "trailCam", "pos": [-11, 0, 9] },
-        { "id": "sigil", "kind": "disc", "anchor": "trailCam", "pos": [-1, 0, 7.2], "size": 0.9, "hidden": true }
+        { "id": "her", "kind": "figure", "look": "witch", "anchor": "trailCam:6", "pos": [-11, 0, 9] },
+        { "id": "sigil", "kind": "disc", "anchor": "trailCam:6", "pos": [-1, 0, 7.2], "size": 0.9, "hidden": true }
       ],
       "tracks": [
         { "at": 0.2, "do": "line", "line": "day1.17" },

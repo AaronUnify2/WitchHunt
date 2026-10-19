@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { placeTrailCams, camSees } from './trailCamPlacement.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import clusterData from '../data/openingCluster.json';
 
 export class TrailCams {
   constructor(cfg, rng, bus) {
@@ -26,7 +27,7 @@ export class TrailCams {
   // ctx: { world, witch, clock, mapUi, player, notify(text), sfx, teleport(x, z, yaw) }.
   init(scene, ctx) {
     Object.assign(this, ctx);
-    this.list = placeTrailCams(this.world.map, this.rng, this.tc).map((c) => ({
+    this.list = placeTrailCams(this.world.map, this.rng, this.tc, clusterData.trailCams ?? []).map((c) => ({
       ...c,
       y: this.world.ground.heightAt(c.x, c.z),
       cooldown: 0,

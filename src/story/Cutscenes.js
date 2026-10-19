@@ -252,6 +252,11 @@ export class Cutscenes {
         return { x: clearing.x, z: clearing.z, yaw: Math.atan2(clearing.x - p.position.x, clearing.z - p.position.z) || 0 };
       }
       default:
+        // M9.1: a camera by its number (trailCam:6, the storm shelter's).
+        if (name.startsWith('trailCam:')) {
+          const cam = this.trailCams.list.find((c) => c.id === Number(name.slice('trailCam:'.length)));
+          if (cam) return { x: cam.x, z: cam.z, yaw: cam.facing };
+        }
         if (name.startsWith('clearing:')) {
           const key = name.slice('clearing:'.length);
           const c = this.world.map.clearings.find((cl) => cl.key === key);
