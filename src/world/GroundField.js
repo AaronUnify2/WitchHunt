@@ -41,7 +41,13 @@ export class GroundField {
     this.edgeSeed = noiseSeed(this.seed, 'edges');
     this.fixedEdgeSeed = noiseSeed(this.fixedSeed, 'edges');
     for (const c of this.map.clearings) this.rasterClearing(c);
-    for (const p of this.map.paths) this.rasterPath(p.points);
+    for (const p of this.map.paths) this.rasterPath(p.points, this.mapCfg.paths);
+    // The road (M9.1): asphalt with gravel shoulders (dirt), trees kept back.
+    if (this.map.road) {
+      const r = this.mapCfg.road;
+      const p = this.mapCfg.paths;
+      this.rasterPath(this.map.road.points, { ...p, width: r.width + r.shoulder * 2, clearance: r.clearance, edgeNoise: p.edgeNoise * 0.5 });
+    }
   }
 
   // Visit every mask point within `reach` of a box, calling fn(index, x, z).
@@ -77,8 +83,8 @@ export class GroundField {
     });
   }
 
-  rasterPath(points) {
-    const p = this.mapCfg.paths;
+  // p: config.map.paths, or the road's own widths.
+  rasterPath(points, p) {
     const half = p.width / 2;
     const openHalf = half + p.clearance;
     const reach = openHalf + p.edgeNoise + p.edgeSoftness;

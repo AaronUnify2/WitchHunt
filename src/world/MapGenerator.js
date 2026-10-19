@@ -13,13 +13,16 @@
 // 3. Pathways: the cluster's own (fixed, from the cluster's seed); the
 //    frontier's from a minimum spanning tree plus extra edges for loops,
 //    each drawn as a gently wandering line; and one pathway joining them,
-//    due south from the outpost through the checkpoint.
+//    due south from the outpost through the checkpoint. The cluster's
+//    road (world/road.js) is on the map too; the gas station's pathway to
+//    the outpost follows it.
 // If a rule can't be met (e.g. the hut too few pathways from home), the
 // whole attempt is retried from a forked seed. The cluster never changes.
 
 import { Rng } from '../core/Rng.js';
 import { makeGeometry, cliffZ, southnessAt, zAtSouthness } from './mapGeometry.js';
 import { minimumSpanningTree, addLoops, hopCounts, isConnected, graphDistance, edgeFits } from './mapGraph.js';
+import { buildRoad, nearestRoadIndex } from './road.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const BANDS = ['north', 'middle', 'south'];
@@ -28,8 +31,9 @@ const BANDS = ['north', 'middle', 'south'];
 // files' contents; cluster is openingCluster.json).
 export function generateMap(mapCfg, data, rng, seed = rng.seed) {
   const geo = makeGeometry(mapCfg);
+  const road = buildRoad(geo.cluster.home, data.cluster.road, mapCfg.road);
   for (let attempt = 0; attempt < mapCfg.maxAttempts; attempt++) {
-    const map = tryGenerate(mapCfg, data, rng.fork(`attempt${attempt}`), geo);
+    const map = tryGenerate(mapCfg, data, rng.fork(`attempt${attempt}`), geo, road);
     if (map) {
       map.seed = seed;
       map.attempts = attempt + 1;
@@ -39,7 +43,7 @@ export function generateMap(mapCfg, data, rng, seed = rng.seed) {
   throw new Error(`Map generation failed after ${mapCfg.maxAttempts} attempts (seed ${seed})`);
 }
 
-function tryGenerate(cfg, data, rng, geo) {
+function tryGenerate(cfg, data, rng, geo, road) {
   const roster = buildRoster(cfg, data, rng.fork('roster'));
   const clearings = placeClearings(cfg, roster.entries, geo, rng.fork('place'));
   if (!clearings) return null;
@@ -86,6 +90,7 @@ function tryGenerate(cfg, data, rng, geo) {
     const ca = clearings[a];
     const cb = clearings[b];
     if (i < clusterCount) {
+      if (data.cluster.paths[i].road) return { a, b, cluster: true, road: true, points: roadPoints(ca, cb, road) };
       // Fixed wander, from the cluster's seed and the pair's keys.
       const fixed = new Rng(`${geo.cluster.seed}:path:${ca.key}-${cb.key}`);
       return { a, b, cluster: true, points: pathPoints(ca, cb, cfg.paths, fixed) };
@@ -100,6 +105,7 @@ function tryGenerate(cfg, data, rng, geo) {
     clearings,
     edges: edges.map(([a, b]) => ({ a, b, length: Math.hypot(clearings[a].x - clearings[b].x, clearings[a].z - clearings[b].z) })),
     paths,
+    road,
     homeIndex: home,
     hutIndex: hut,
     // The opening cluster (M9.1): its cordon line, the checkpoint (where
@@ -393,4 +399,16 @@ function pathPoints(a, b, p, rng) {
 function exitPoints(outpost, gate, target, p, rng) {
   const straight = pathPoints(outpost, gate, { ...p, wiggle: 0 }, rng);
   return [...straight, ...pathPoints(gate, target, p, rng).slice(1)];
+}
+
+// A pathway that follows the road: from a's centre onto the road, along
+// it, and off to b's centre.
+function roadPoints(a, b, road) {
+  const i = nearestRoadIndex(road, a.x, a.z);
+  const j = nearestRoadIndex(road, b.x, b.z);
+  const step = i <= j ? 1 : -1;
+  const pts = [{ x: a.x, z: a.z }];
+  for (let k = i; k !== j + step; k += step) pts.push({ ...road.points[k] });
+  pts.push({ x: b.x, z: b.z });
+  return pts;
 }

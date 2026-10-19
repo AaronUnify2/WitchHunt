@@ -1,5 +1,5 @@
 {
-  "_note": "The fixed opening cluster (DESIGN.md \"Fixed opening cluster\", M9.1): placed first and identical on every seed. Positions are metres from home's centre (dx east, dz south); home sits on the cliff at config.map.cluster.homeX. key: an encounter id from encounters.json, or a sigil ground id from sigilGrounds.json with kind \"sigilGround\". clearingType: homeWoods keeps checkpoint and roadside mixes out of the cluster, so its sigils raise citizens (Session 11). paths: the cluster's pathways (the only ones north of the cordon); the frontier joins at the outpost alone, through the checkpoint. They make a loop, so the dead and the witch reach the shelter side without walking through the station.",
+  "_note": "The fixed opening cluster (DESIGN.md \"Fixed opening cluster\", M9.1): placed first and identical on every seed. Positions are metres from home's centre (dx east, dz south); home sits on the cliff at config.map.cluster.homeX. key: an encounter id from encounters.json, or a sigil ground id from sigilGrounds.json with kind \"sigilGround\". clearingType: homeWoods keeps checkpoint and roadside mixes out of the cluster, so its sigils raise citizens (Session 11). paths: the cluster's pathways (the only ones north of the cordon); the frontier joins at the outpost alone, through the checkpoint. They make a loop, so the dead and the witch reach the shelter side without walking through the station. road: true = this pathway follows the road. road.points: the road's control points (dx, dz from home), west edge to the checkpoint; it passes the gas station's forecourt about 14 m south of the clearing's centre (the station building goes north of it, M9.3) and runs through the outpost and due south through the checkpoint. road.wrecks: the fixed cars on it (along: metres from the west end; side: metres right (+) or left (-) of the centre line; turn: radians off the road's heading; type from vehicles.json). Their batteries and alarms are rolled per run like any car's.",
   "clearings": [
     { "key": "home", "dx": 0, "dz": 0 },
     { "key": "campsite", "dx": -130, "dz": 70, "radius": 20, "clearingType": "homeWoods" },
@@ -13,7 +13,15 @@
     { "a": "home", "b": "stormShelter" },
     { "a": "stormShelter", "b": "familyCemetery" },
     { "a": "campsite", "b": "gasStation" },
-    { "a": "gasStation", "b": "outpost" },
+    { "a": "gasStation", "b": "outpost", "road": true },
     { "a": "familyCemetery", "b": "outpost" }
-  ]
+  ],
+  "road": {
+    "points": [[-495, 190], [-380, 196], [-260, 208], [-160, 214], [-100, 214], [-50, 222], [-5, 240], [10, 262], [10, 290], [10, 302]],
+    "wrecks": [
+      { "type": "sedan", "along": 410, "side": 5.2, "turn": 0.25 },
+      { "type": "police", "along": 345, "side": -4.6, "turn": 2.9 },
+      { "type": "army", "along": 478, "side": 0.8, "turn": 0.85 }
+    ]
+  }
 }

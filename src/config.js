@@ -428,6 +428,49 @@ export const config = {
       max: 5,
     },
     maskCell: 2, // metres per cell of the ground mask (dirt, open ground)
+    // The opening cluster's road (M9.1; DESIGN.md "Fixed opening cluster"):
+    // the old county road past the gas station to the checkpoint. Its line
+    // is in data/openingCluster.json.
+    road: {
+      width: 6.5, // metres of asphalt
+      sample: 2, // metres between points along its centre line
+      shoulder: 1.6, // metres of gravel each side (drawn as dirt in the ground mask)
+      clearance: 3, // metres beyond the shoulder kept free of trees
+      across: 6, // columns of the road mesh across its width (it follows the ground)
+      lift: 0.05, // metres above the ground
+      textureMeters: 16, // the asphalt texture repeats every this many metres along the road
+      textureSize: [256, 1024], // pixels (across, along)
+      color: 0x55534f, // asphalt, faded
+      patchColor: 0x3d3b38, // old tar patches
+      crackColor: 0x24221f,
+      lineColor: 0xb9a35a, // the worn centre line (dashed yellow)
+      edgeLineColor: 0xa9a598, // faded white edge lines
+      lineWear: 0.45, // share of the paint worn away
+      // Telephone poles along the north side, with sagging wires between.
+      poles: {
+        spacing: 38, // metres along the road
+        side: 1, // right of the road's heading (it runs west to east, so north of it)
+        offset: 6.2, // metres from the centre line
+        height: 8.5,
+        radius: 0.14,
+        crossbar: 1.8, // metres wide
+        color: 0x4a3a2a,
+        wireColor: 0x1a1a1a,
+        wireSag: 0.9, // metres the wire droops mid-span
+        wireSegments: 8, // straight pieces per span
+        startAlong: 20, // metres from the west end to the first pole
+      },
+      // The sign before the outpost.
+      sign: {
+        along: 452, // metres from the west end (the outpost's centre is at about 520)
+        side: -5.2, // metres right (+) or left (-) of the centre line
+        title: 'ROAD CLOSED',
+        lines: ['MILITARY CHECKPOINT AHEAD', 'NO ENTRY BEYOND THIS POINT'],
+        boardColor: 0xd8d2c0,
+        boardGrain: 0xbcb6a4,
+        textColor: 0x9a2a1e,
+      },
+    },
   },
 
   // Placeholder signposts naming what each clearing will hold

@@ -9,9 +9,15 @@
 // Every vehicle stands on open ground (no trees or undergrowth under it
 // or at its spots), on gentle slopes, clear of the cliff, the station and
 // the signposts, and a gap away from every other vehicle.
+// M9.1: the road's fixed wrecks (data/openingCluster.json) go first, and
+// the opening cluster's cars stand in the same places every run (a fixed
+// seed); only their batteries and alarms are rolled per run.
 //
 // Yaw is like the zombies': forward is (sin yaw, cos yaw), its right
 // (cos yaw, -sin yaw). North is -z.
+
+import { Rng } from '../core/Rng.js';
+import { roadFrame } from './road.js';
 
 // Weighted pick from { id: weight }.
 export function pickWeighted(weights, rng) {
@@ -105,7 +111,7 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     if (v.z - length / 2 < ground.cliffZ(v.x) + geo.cliff.walkMargin + pc.cliffMargin) return false;
     for (const a of avoid) if (Math.hypot(v.x - a.x, v.z - a.z) < a.r + length / 2) return false;
     for (const s of signs) if (Math.hypot(v.x - s.x, v.z - s.z) < pc.signClearance + length / 2) return false;
-    if (place !== 'path') {
+    if (place !== 'path' && place !== 'road') {
       for (const c of map.clearings) if (Math.hypot(v.x - c.x, v.z - c.z) < pc.centreClearance + length / 2) return false;
     }
     const corners = footprint(v, length, width, 0.3);
@@ -139,34 +145,47 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     return true;
   };
 
+  // The cluster's placements come from a fixed seed (where the ground has one).
+  const fixedRoot = ground.fixedSeed !== undefined ? new Rng(`${ground.fixedSeed}:vehicles`) : null;
+
+  // ---- the road's wrecks (M9.1) ----
+  if (map.road) {
+    map.road.wrecks.forEach((w, i) => {
+      const f = roadFrame(map.road, w.along);
+      const v = { type: w.type, x: f.x + f.rx * w.side, z: f.z + f.rz * w.side, yaw: Math.atan2(f.tx, f.tz) + w.turn };
+      add(v, 'road', rules.path, rng.fork(`wreck-${i}`));
+    });
+  }
+
   // ---- clearings first (the campsite's sure battery among them) ----
   for (const c of map.clearings) {
     const rule = ruleFor(c, rules);
     if (!rule) continue;
-    const r = rng.fork(`clearing-${c.id}`);
+    const r = c.cluster && fixedRoot ? fixedRoot.fork(`clearing-${c.key}`) : rng.fork(`clearing-${c.id}`);
+    const loot = c.cluster && fixedRoot ? rng.fork(`clearing-loot-${c.key}`) : r;
     if (!r.chance(rule.chance ?? 1)) continue;
     const [lo, hi] = rule.count ?? [1, 1];
     const count = r.int(lo, hi);
     if (count <= 0) continue;
     const place = c.kind === 'wild' ? (c.clearingType ?? 'clearing') : c.key;
-    if (rule.row) placeRow(c, rule, count, r, place);
-    else for (let k = 0; k < count; k++) placeScattered(c, rule, r, place);
+    if (rule.row) placeRow(c, rule, count, r, place, loot);
+    else for (let k = 0; k < count; k++) placeScattered(c, rule, r, place, loot);
   }
 
-  function placeScattered(c, rule, r, place) {
+  function placeScattered(c, rule, r, place, loot) {
     for (let t = 0; t < pc.tries; t++) {
       const type = pickWeighted(rule.weights, r);
       if (!type) return;
       const a = r.range(0, Math.PI * 2);
       const d = c.radius * r.range(pc.clearingInner, pc.clearingOuter);
       const v = { type, x: c.x + Math.sin(a) * d, z: c.z + Math.cos(a) * d, yaw: r.range(0, Math.PI * 2) };
-      if (add(v, place, rule, r)) return;
+      if (add(v, place, rule, loot)) return;
     }
   }
 
   // A roadblock: a staggered line across the clearing, cars alternately
   // angled. Several lines are tried; the one that fits the most cars wins.
-  function placeRow(c, rule, count, r, place) {
+  function placeRow(c, rule, count, r, place, loot) {
     let best = [];
     for (let t = 0; t < pc.tries && best.length < count; t++) {
       const theta = r.range(0, Math.PI * 2);
@@ -186,13 +205,15 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
       }
       if (row.length > best.length) best = row;
     }
-    for (const v of best) add(v, place, rule, r);
+    for (const v of best) add(v, place, rule, loot);
   }
 
   // ---- along the pathways ----
   const pathRule = rules.path;
   map.paths.forEach((path, pi) => {
-    const r = rng.fork(`path-${pi}`);
+    const keys = path.cluster ? `${map.clearings[path.a].key}-${map.clearings[path.b].key}` : null;
+    const r = keys && fixedRoot ? fixedRoot.fork(`path-${keys}`) : rng.fork(`path-${pi}`);
+    const loot = keys && fixedRoot ? rng.fork(`path-loot-${keys}`) : r;
     const pts = path.points;
     let next = pc.pathSpacing * r.range(0.3, 1);
     let walked = 0;
@@ -222,7 +243,7 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
         const turn = (forward ? 1 : -1) * side * pc.ditchAngle;
         const tries = r.chance(pc.ditchChance) ? [[pc.vergeOffset + 0.8, turn], [pc.vergeOffset, 0]] : [[pc.vergeOffset, 0]];
         for (const [off, extra] of tries) {
-          if (add({ type, x: px + sx * off, z: pz + sz * off, yaw: yaw0 + extra }, 'path', pathRule, r)) break;
+          if (add({ type, x: px + sx * off, z: pz + sz * off, yaw: yaw0 + extra }, 'path', pathRule, loot)) break;
         }
       }
       walked += seg;

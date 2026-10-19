@@ -10,6 +10,8 @@ import { Terrain } from './Terrain.js';
 import { Cliff } from '../render/Cliff.js';
 import { Forest } from '../render/Forest.js';
 import { Landmarks } from '../render/Landmarks.js';
+import { Road } from '../render/Road.js';
+import { roadProps } from './road.js';
 import encountersData from '../data/encounters.json';
 import sigilGroundsData from '../data/sigilGrounds.json';
 import clearingTypesData from '../data/clearingTypes.json';
@@ -49,6 +51,10 @@ export class World {
     this.forest.init(scene, colliders, this.ground);
     this.landmarks = new Landmarks(cfg.landmarks);
     this.landmarks.init(scene, colliders, this.map, this.ground, this.typeNames);
+    // M9.1: the opening cluster's road, its poles and its sign.
+    this.road = new Road(cfg.map.road, cfg.landmarks, cfg.map.cluster.seed);
+    this.road.init(scene, colliders, this.map.road, this.ground);
+    this.roadProps = roadProps(this.map.road, cfg.map.road);
     this.buildMs = performance.now() - t0;
   }
 
@@ -107,6 +113,7 @@ export class World {
     this.cliff.update(dt, cameraPosition);
     this.forest.update(dt, cameraPosition);
     this.landmarks.update(dt, cameraPosition);
+    this.road.update(dt, cameraPosition);
   }
 
   setDrawDistance(distance) {
@@ -114,10 +121,12 @@ export class World {
     this.cliff.setDrawDistance(distance);
     this.forest.setDrawDistance(distance);
     this.landmarks.setDrawDistance(distance);
+    this.road.setDrawDistance(distance);
   }
 
   dispose() {
     this.landmarks.dispose();
+    this.road.dispose();
     this.forest.dispose();
     this.cliff.dispose();
     this.terrain.dispose();

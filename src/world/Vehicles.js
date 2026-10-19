@@ -53,6 +53,8 @@ export class Vehicles {
     this.busy = ctx.busy ?? [];
     const off = this.cfg.landmarks.offset;
     const signs = this.world.map.clearings.map((c) => ({ x: c.x + off, z: c.z - off }));
+    // The road's poles and sign (M9.1) are kept clear the same way.
+    if (this.world.roadProps) signs.push(...this.world.roadProps.poles, this.world.roadProps.sign);
     const placed = placeVehicles(this.world.map, this.ground, this.data, vc, this.rng.fork('placement'), ctx.avoid ?? [], signs);
     this.list = placed.map((p) => ({ ...p, def: this.data.types[p.type], spots: spotsOf(p, this.data.types[p.type], vc.spotOut) }));
     this.time = 0;
