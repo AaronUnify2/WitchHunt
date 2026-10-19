@@ -591,7 +591,8 @@ export class Cutscenes {
         const { from, to } = a.move;
         a.pos = { x: from.x + (to.x - from.x) * k, y: 0, z: from.z + (to.z - from.z) * k };
         a.pos.y = this.world.ground.heightAt(a.pos.x, a.pos.z) + (to.y - this.world.ground.heightAt(to.x, to.z));
-        if (Math.hypot(to.x - from.x, to.z - from.z) > 0.01) m.rotation.y = Math.atan2(from.x - to.x, from.z - to.z);
+        // Face the way it's going (the models face +z, as in the game; Aaron, Session 14: the witch walked backwards).
+        if (Math.hypot(to.x - from.x, to.z - from.z) > 0.01) m.rotation.y = Math.atan2(to.x - from.x, to.z - from.z);
         a.walk += dt * 9;
         if (k >= 1) a.move = null;
       }
