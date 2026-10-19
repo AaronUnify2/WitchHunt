@@ -1984,7 +1984,7 @@ export const config = {
     },
     batteryChance: 0.6, // Aaron: about 60%; the rest are dead or long gone
     alarmChance: 0.25, // of those with a battery: opening a door or the boot sets the alarm off
-    hold: { search: 2.5, bonnet: 1.5, battery: 3 }, // seconds (Aaron: good)
+    hold: { search: 1.25, bonnet: 0.75, battery: 1.5 }, // seconds (Aaron, Session 14: twice as quick as M5's 2.5 / 1.5 / 3)
     interactRange: 1.6, // metres from a spot (driver's door, boot, bonnet)
     spotOut: 0.75, // metres outside the body where each spot stands (closer, a lifted bonnet filled the screen)
     batteryNoise: 22, // metres: pulling a battery is noisy (Aaron: just a noise)
