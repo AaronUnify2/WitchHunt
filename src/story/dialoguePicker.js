@@ -45,13 +45,14 @@ export function playable(line, facts, heard) {
 // What `speaker` says when you talk to them face to face: the unheard
 // line whose conditions are met, newest milestone first, then highest
 // priority, then the order in the file. Lines that follow another
-// (some line's "next") or play from an event ("on") aren't picked here.
+// (some line's "next"), play from an event ("on") or are cued by a
+// system ("cued": M9.2, e.g. Day 1's nudges) aren't picked here.
 // Then an idle line ("idle": true) if there's one. null if nothing.
 export function pickLine(lines, speaker, facts, heard, followers = followerIds(lines)) {
   let best = null;
   let bestKey = null;
   lines.forEach((line, order) => {
-    if (line.speaker !== speaker || line.channel !== 'face' || line.on || line.idle || followers.has(line.id)) return;
+    if (line.speaker !== speaker || line.channel !== 'face' || line.on || line.cued || line.idle || followers.has(line.id)) return;
     if (!playable(line, facts, heard)) return;
     const key = [recency(line, facts), line.priority ?? 0, -order];
     if (!best || compareKeys(key, bestKey) > 0) {

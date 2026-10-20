@@ -26,18 +26,19 @@ describe('progress flags', () => {
 
   it("every trigger's flags exist, and every gate opens on a real flag", () => {
     const ids = progress.flags.map((d) => d.id);
-    for (const d of progress.flags) for (const a of d.trigger.after ?? []) expect(ids).toContain(a);
+    for (const d of progress.flags) for (const a of d.trigger?.after ?? []) expect(ids).toContain(a);
     for (const g of MAP_DATA.cluster.gates) expect(ids).toContain(g.opensOn);
   });
 
-  it('opens the path order with the stand-ins: shelter at Night 1, gas station on Day 2 after the campsite, outpost after both visits, checkpoint once it is cleared', () => {
+  it('opens the path order: shelter by dawn 1, gas station on Day 2 after the campsite, outpost after both visits (stand-ins), checkpoint once it is cleared', () => {
     const f = flags();
-    // Day 1: walk to the campsite; nothing opens but the visit.
-    expect(runTriggers(f, ctx({ clearing: 'campsite' }))).toEqual(['campsiteVisited']);
-    // Dusk 1: Night 1.
-    expect(runTriggers(f, ctx({ event: 'dusk', day: 1 }))).toEqual(['night1']);
-    // Dawn 2: the gas station trail.
-    expect(runTriggers(f, ctx({ event: 'dawn', day: 2 }))).toEqual(['day2']);
+    // Day 1: the campsite's arrival beat sets its flag (M9.2: Campsite, no trigger).
+    expect(runTriggers(f, ctx({ clearing: 'campsite' }))).toEqual([]);
+    f.set('campsiteVisited');
+    // Dusk 1 opens nothing now: Night 1's clip opens the spur (FirstDay sets night1).
+    expect(runTriggers(f, ctx({ event: 'dusk', day: 1 }))).toEqual([]);
+    // Dawn 1: the spur (if the clip hasn't opened it) and the gas station trail.
+    expect(runTriggers(f, ctx({ event: 'dawn', day: 1 }))).toEqual(['night1', 'day2']);
     expect(runTriggers(f, ctx({ clearing: 'gasStation' }))).toEqual(['gasStationVisited']);
     // The shelter: the rifle (stand-in) and Ellen's call come with it.
     expect(runTriggers(f, ctx({ clearing: 'stormShelter' }))).toEqual(['shelterVisited', 'rifleClaimed', 'outpostCall']);
@@ -49,7 +50,7 @@ describe('progress flags', () => {
 
   it("doesn't open the gas station trail on a dawn before the campsite", () => {
     const f = flags();
-    expect(runTriggers(f, ctx({ event: 'dawn', day: 2 }))).toEqual([]);
+    expect(runTriggers(f, ctx({ event: 'dawn', day: 2 }))).toEqual(['night1']);
     expect(f.has('day2')).toBe(false);
   });
 

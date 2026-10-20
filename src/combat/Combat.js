@@ -156,9 +156,14 @@ export class Combat {
 
   // Damage the player (armour first). shake: x the usual hurt shake.
   // Also used by the witch's swipes and hexes (M7).
+  // M9.2: healthFloor (set by story/FirstDay.js on Day 1, which can't be
+  // failed): the hit can't take health below it.
   hurtPlayer(damage, shake = 1) {
     if (!this.alive || this.godMode) return;
+    const before = this.health.value;
     const { taken } = this.health.takeDamage(damage);
+    const floor = this.healthFloor ?? 0;
+    if (floor > 0 && this.health.value < floor) this.health.value = Math.min(before, floor);
     this.hud.hurt();
     this.player.shake(this.cfg.feedback.hurtShake * shake);
     this.sfx.play('hurt');

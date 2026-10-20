@@ -96,8 +96,11 @@ export function ruleFor(clearing, rules) {
 // map: { clearings, paths }. ground: { openAt, heightAt, cliffZ, geo }.
 // data: data/vehicles.json. cfg: config.vehicles. rng: a forked Rng.
 // avoid: [{ x, z, r }] kept clear (the station). signs: [{ x, z }].
+// fixed: { clearing key: [{ x, z, yaw }] }: authored spots for that
+// clearing's cars (M9.2: the campers' car, data/campsite.json), tried
+// first; if one doesn't fit, that car is scattered as usual.
 // Returns [{ id, type, x, z, yaw, battery, alarm, place }].
-export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = []) {
+export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [], fixed = {}) {
   const pc = cfg.placement;
   const rules = data.placement;
   const placed = [];
@@ -170,8 +173,16 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     const count = r.int(lo, hi);
     if (count <= 0) continue;
     const place = c.kind === 'wild' ? (c.clearingType ?? 'clearing') : c.key;
+    const spots = (c.cluster && fixed[c.key]) || [];
     if (rule.row) placeRow(c, rule, count, r, place, loot);
-    else for (let k = 0; k < count; k++) placeScattered(c, rule, r, place, loot);
+    else {
+      for (let k = 0; k < count; k++) {
+        const spot = spots[k];
+        const type = spot ? pickWeighted(rule.weights, r) : null;
+        if (spot && type && add({ type, x: spot.x, z: spot.z, yaw: spot.yaw }, place, rule, loot)) continue;
+        placeScattered(c, rule, r, place, loot);
+      }
+    }
   }
 
   function placeScattered(c, rule, r, place, loot) {

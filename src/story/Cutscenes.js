@@ -18,6 +18,9 @@
 // (the game's sprites, every one in one draw call). A figure with no model
 // yet (a camper) is a box stand-in.
 //
+// M9.2: "loop": true plays until it's stopped (the main menu's live feed);
+// "startBlack": true starts on a black screen (a fade event brings it up).
+//
 // Events: 'cutscene:started' { id }, 'cutscene:ended' { id, skipped }.
 
 import * as THREE from 'three';
@@ -132,8 +135,8 @@ export class Cutscenes {
       hour: data.hour ?? null,
       shake: 0,
       shakeLeft: 0,
-      fade: 0,
-      fadeTarget: 0,
+      fade: data.startBlack ? 1 : 0, // M9.2: from black (a fade event brings the picture up)
+      fadeTarget: data.startBlack ? 1 : 0,
       fadeRate: 0,
       lookAt: null,
       clockWasPaused: this.clock.paused,
@@ -143,7 +146,7 @@ export class Cutscenes {
     this.postFX.setThermal(false);
     this.setOsd(opts.osd ? { ...data.osd, ...opts.osd } : data.osd);
     this.el.className = `cutscene ${data.style}${data.letterbox ?? data.style !== 'cctv' ? ' letterbox' : ''}`;
-    this.fadeEl.style.opacity = '0';
+    this.fadeEl.style.opacity = String(cur.fade);
     this.skipEl.classList.add('hidden');
     document.body.classList.add('in-cutscene');
     for (const a of data.actors ?? []) cur.actors.set(a.id, this.makeActor(a));
@@ -180,7 +183,7 @@ export class Cutscenes {
   update(dt, input, canSkip = true) {
     const cur = this.current;
     if (!cur) return;
-    if (cur.t > this.cc.skipAfter) this.skipEl.classList.remove('hidden');
+    if (cur.t > this.cc.skipAfter && cur.opts.skippable !== false) this.skipEl.classList.remove('hidden');
     if (canSkip && cur.opts.skippable !== false && cur.t > this.cc.skipAfter && input.wasPressed('menuConfirm')) {
       this.stop(true);
       return;
@@ -198,6 +201,11 @@ export class Cutscenes {
     this.updateCamera(dt);
     this.updateFade(dt);
     this.updateOsd();
+    // M9.2: a looping feed (the main menu's) runs until it's stopped.
+    if (cur.data.loop && cur.t >= cur.length) {
+      cur.t = 0;
+      return;
+    }
     // Ends when its time is up and its lines have been said.
     if (cur.t >= cur.length && (!this.subtitles.busy || cur.t >= cur.length + this.cc.lineGrace)) this.stop(false);
   }
@@ -443,7 +451,7 @@ export class Cutscenes {
 
   // ---- actors (placeholders) ----------------------------------------------------------------------------
 
-  // spec: { id, kind: 'figure' | 'ring' | 'glow' | 'disc' | 'box' | 'eyes',
+  // spec: { id, kind: 'figure' | 'ring' | 'glow' | 'disc' | 'box' | 'eyes' | 'smoke',
   // look (a figure's: config.cutscenes.figures), anchor, pos, yaw (degrees,
   // from the anchor's facing), size, color, hidden }.
   makeActor(spec) {
@@ -718,10 +726,44 @@ export function buildActor(spec, cc) {
       for (const s of [-1, 1]) g.add(box(0.09, 0.06, 0.03, s * 0.14, 0, 0, spec.color ?? 0xff2010, true));
       break;
     }
+    case 'smoke': {
+      // M9.2: a thin wisp rising (size: its height in metres), past the fog.
+      const h = spec.size ?? 20;
+      const mat = new THREE.SpriteMaterial({ map: smokePuff(), color: spec.color ?? 0x9c9c98, transparent: true, opacity: spec.opacity ?? 0.5, depthWrite: false, fog: false });
+      const n = 16;
+      for (let i = 0; i < n; i++) {
+        const k = i / (n - 1);
+        const sprite = new THREE.Sprite(i === 0 ? mat : mat.clone());
+        sprite.material.opacity = (spec.opacity ?? 0.5) * (1 - k * 0.85) * 0.7;
+        sprite.position.set(k * k * h * 0.3 + Math.sin(k * 7) * h * 0.02, k * h, k * h * 0.05);
+        const w = h * (0.12 + k * 0.4);
+        sprite.scale.set(w, w, 1);
+        g.add(sprite);
+      }
+      break;
+    }
     default:
       break;
   }
   return g;
+}
+
+// A soft puff for the smoke actor (made once).
+let puffTexture = null;
+function smokePuff() {
+  if (puffTexture) return puffTexture;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.35)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+  puffTexture = new THREE.CanvasTexture(canvas);
+  puffTexture.colorSpace = THREE.SRGBColorSpace;
+  return puffTexture;
 }
 
 function turnToward(from, to, maxStep) {

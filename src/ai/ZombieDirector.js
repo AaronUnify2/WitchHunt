@@ -19,6 +19,9 @@
 //    quota.
 //  - M6, revisits (Aaron): at night, coming back to an encounter you've
 //    visited before turns up a few zombies hanging about there.
+//  - M9.2: a sigil with `hold` (metres) keeps its dead round it: they
+//    linger there and never march (Night 1's sigil at the storm shelter).
+//    A sigil marked `known` shows on the map (the family saw it go in).
 //
 // Events: 'sigil:planted' { sigil }, 'sigil:dug' { sigil },
 // 'sigil:raised' { sigil, type, count }, 'zombies:levelChanged' { level },
@@ -156,7 +159,12 @@ export class ZombieDirector {
     out.length = 0;
     const opts = { ringMin: sc.spawnRadius[0], ringMax: sc.spawnRadius[1], mix: sigil.variants, rise: true, out };
     let spawned = 0;
-    if (!this.marchRng.chance(marchChance(sc.marchShare, size))) {
+    // M9.2: a sigil that holds its dead (Night 1's at the storm shelter):
+    // they hang about it and never march on the station.
+    if (sigil.hold > 0) {
+      if (plan.type === 'horde') plan = { type: 'single', count: 1 };
+      spawned = this.enemies.spawnPlanned(plan, sigil.x, sigil.z, { ...opts, mode: 'linger', owner: sigil, linger: { x: sigil.x, z: sigil.z, r: sigil.hold } });
+    } else if (!this.marchRng.chance(marchChance(sc.marchShare, size))) {
       if (plan.type === 'horde') plan = { type: 'single', count: 1 }; // a horde always marches
       spawned = this.enemies.spawnPlanned(plan, sigil.x, sigil.z, { ...opts, mode: 'wander', owner: sigil });
     } else {

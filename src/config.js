@@ -916,9 +916,9 @@ export const config = {
   // will read from it too. kind 'melee' swings in an arc; 'hitscan' fires
   // `pellets` instant rays inside a spread cone.
   weapons: {
-    // M2 starts with all three so they can be compared. M9 gives the
-    // shotgun at the campsite instead.
-    startingLoadout: ['shovel', 'rifle', 'shotgun'],
+    // M2 started with all three so they could be compared. M9.2: the
+    // shotgun is the campsite's prize instead (Skip intro gives it).
+    startingLoadout: ['shovel', 'rifle'],
     startingWeapon: 'rifle',
     switchSeconds: 0.35, // lower one weapon and raise the next
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
@@ -1249,7 +1249,9 @@ export const config = {
     firstAidHeal: 30,
     // M4: loot that has no other home yet. Pistol ammo waits for the
     // pistol; scrap waits for building and repairs (M5).
-    startScrap: 30, // M5: "a little bit of scrap" to patch the torn east fence (Aaron)
+    // M5: "a little bit of scrap" to patch the torn east fence (Aaron). M9.2:
+    // most of it is found at the campsite now (line 11: "the scrap you found").
+    startScrap: 8,
     startAmmo: { pistol: 0 },
     startBatteries: 0, // carried batteries (no carry limit and no slowdown: Aaron, M5)
     startFlares: 3, // M9.1: the flare gun comes with a few (DESIGN.md "Flares")
@@ -2447,9 +2449,8 @@ export const config = {
     // The family in the comms room, in the order the station places them.
     family: ['ellen', 'wyatt', 'junie'],
     // Lines with a "script" only play from their triggers while that script
-    // is live. Day 1's real triggers are M9.2's; until then the debug menu
-    // plays them (and can turn the script on to try them in a run).
-    liveScripts: [],
+    // is live. M9.2 wired Day 1's triggers (story/FirstDay.js), so it is.
+    liveScripts: ['day1'],
     // Milestones: the event that sets each flag lines can ask for ("when":
     // { "all": [...] }). Remembered in order (newest first wins) and saved.
     milestones: {
@@ -2465,6 +2466,72 @@ export const config = {
     blipEvery: 2, // a blip every this many letters (spaces don't blip)
     blipSeconds: 0.035,
     blipGain: 0.07,
+  },
+
+  // The first day (M9.2; story/FirstDay.js, DESIGN.md "Opening and first
+  // run", agreed with Aaron in Session 15).
+  firstDay: {
+    // Day 1 can't be failed: Tom's health stops at this share of full.
+    cantFail: true,
+    healthFloor: 0.2,
+    // Day 1's clock stops at this hour until a battery is in the fence box
+    // and the torn fence is patched, so dusk never comes before the
+    // tutorial's done.
+    holdHour: 17,
+    // Waking: in the comms room, this far east of the cabin's centre and
+    // this far in from its back wall, facing Ellen at the radio.
+    wake: { dx: 1.7, fromNorthWall: 2.3 },
+    // The view from the tower: the light to the south, this share of the
+    // draw distance away and this high; where the look at the campsite's
+    // smoke points (metres up); the smoke's wisp drawn at this share of the
+    // draw distance along the line to the campsite (it's past the fog);
+    // Tom steps this far sideways on the platform, clear of its corner posts.
+    tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
+    // Nudges: seconds stuck on a step before a family member says what's next.
+    nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
+    night1: {
+      strayDelay: 40, // seconds into night 1: a few strays set off for the fence
+      strays: 3,
+      strayDistance: 70, // metres out along the campsite path
+      fenceCallDistance: 14, // Wyatt's call when one is this close to the fence
+      plantDelay: 95, // seconds into night 1: the witch plants at the storm shelter
+      plantClearance: 70, // ...unless Tom is this close (she waits)
+      sigilOffset: [1.5, 1], // metres from the shelter clearing's centre (beside the hatch, M9.3)
+      holdRadius: 14, // its dead stay this close to it (they never march on the station)
+    },
+    // Skip intro: what Tom has at Dawn 1.
+    skip: { shotgunShells: 8, scrap: 12, dawnLineDelay: 2.5, unheard: ['day1.21', 'day1.22', 'day1.23'] },
+  },
+
+  // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
+  campsite: {
+    arriveInset: 4, // metres inside the edge that count as arriving (the sweep plays)
+    interactRange: 1.9, // metres to a search point
+    clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
+    look: {
+      tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
+      dome: { radius: 1.25, height: 1.15 },
+      trunkRadius: 0.32,
+      // Dull and dark: pale props glare under the torch (Aaron).
+      colors: {
+        pole: 0x2a2a28,
+        slit: 0x0c0b0a,
+        stone: 0x4a4844,
+        ash: 0x1c1b1a,
+        char: 0x151210,
+        frame: 0x3a3c3e,
+        cloth: 0x2c3a4a,
+        pack: 0x4a3a28,
+        packFlap: 0x3a2c1e,
+        cooler: 0x6a3428,
+        coolerLid: 0x7a7468,
+        blood: 0x2a0806,
+        twine: 0x3a3428,
+        stick: 0x3a2c1e,
+        bark: 0x2e241a,
+        cut: 0x6a5c44,
+      },
+    },
   },
 
   // Subtitles (M8): every line is subtitled, never voiced. A dark strip at
@@ -2692,6 +2759,14 @@ export const config = {
   save: {
     key: 'witchHunt.save',
     autosaveAtDawn: true,
+  },
+
+  // What this device remembers outside any run (M9.2; meta/MetaStore.js):
+  // the opening seen (the menu offers Skip intro). M12 adds achievements
+  // and modifiers. pendingKey: the menu's choice carried across the reload.
+  meta: {
+    key: 'witchHunt.meta',
+    pendingKey: 'witchHunt.pendingStart',
   },
 
   // Debug tools

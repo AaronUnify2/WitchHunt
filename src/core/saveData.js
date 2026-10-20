@@ -155,7 +155,8 @@ export function loadVehicles(list, d) {
 }
 
 export function saveSigils(list) {
-  return list.map((s) => ({ x: s.x, z: s.z, y: s.y, groundId: s.groundId, clearingId: s.clearingId, raised: s.raised }));
+  // M9.2: hold and known (optional: older saves have neither).
+  return list.map((s) => ({ x: s.x, z: s.z, y: s.y, groundId: s.groundId, clearingId: s.clearingId, raised: s.raised, hold: s.hold ?? 0, known: Boolean(s.known), firstSigil: Boolean(s.firstSigil) }));
 }
 
 export function saveRevisits(revisits) {

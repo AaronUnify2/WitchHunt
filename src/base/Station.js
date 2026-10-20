@@ -22,7 +22,7 @@
 //    really fire then (its rounds turn into kills).
 //
 // Events: 'station:breached' { barrier }, 'station:repaired' { barrier },
-// 'station:overrun', 'station:battery' { charge }.
+// 'station:overrun', 'station:battery' { charge }, 'station:climbed' (M9.2).
 
 import { stationLayout, zoneOf, angleOf } from './stationLayout.js';
 import { StationState, passable, TURRET_MODES } from './StationState.js';
@@ -631,6 +631,7 @@ export class Station {
     this.player.setPlatform({ x: t.x, z: t.z, y, half: t.half }, t.x, t.z);
     this.mapUi.fog.reveal(t.x, t.z, t.revealRadius);
     this.combat.sfx.play('climb');
+    this.bus.emit('station:climbed'); // M9.2: Day 1's view from the top
     return 'From the lookout you can see for miles: the map round the station is revealed';
   }
 

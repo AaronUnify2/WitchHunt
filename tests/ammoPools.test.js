@@ -25,6 +25,7 @@ describe('shared ammo pools (Session 10b)', () => {
 
   it('a new gun joins its ammo type\'s pool without wiping it', () => {
     const w = weapons();
+    w.setSlot('shotgun', true); // M9.2: found at the campsite, not in the starting kit
     const shells = w.ammoRounds('shotgun');
     expect(shells).toBe(config.weapons.shotgun.startReserve);
     w.setSlot('autoShotgun', true);

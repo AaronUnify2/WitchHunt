@@ -48,6 +48,7 @@ export class Vehicles {
   }
 
   // ctx: { world, combat, player, colliders, mapUi, notify(text), avoid: [{ x, z, r }],
+  // fixed: { clearing key: [{ x, z, yaw }] } (authored car spots, M9.2),
   // busy: [{ prompt }] (other prompt sources that come first: digging, the station) }.
   init(scene, ctx) {
     const vc = this.vc;
@@ -66,7 +67,7 @@ export class Vehicles {
     for (const g of this.world.gates ?? []) {
       for (let d = -g.half; d <= g.half; d += 2) signs.push({ x: g.x + g.tz * d, z: g.z - g.tx * d });
     }
-    const placed = placeVehicles(this.world.map, this.ground, this.data, vc, this.rng.fork('placement'), ctx.avoid ?? [], signs);
+    const placed = placeVehicles(this.world.map, this.ground, this.data, vc, this.rng.fork('placement'), ctx.avoid ?? [], signs, ctx.fixed ?? {});
     this.list = placed.map((p) => ({ ...p, def: this.data.types[p.type], spots: spotsOf(p, this.data.types[p.type], vc.spotOut) }));
     this.time = 0;
     this.restock();

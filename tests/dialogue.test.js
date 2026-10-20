@@ -106,7 +106,8 @@ describe('the dialogue file', () => {
   });
 
   it('has the 23 Day 1 lines, in order', () => {
-    const day1 = dialogueData.lines.filter((l) => l.script === 'day1');
+    // M9.2: the numbered lines (the nudges are drafts beside them).
+    const day1 = dialogueData.lines.filter((l) => /^day1\.\d+$/.test(l.id));
     expect(day1.length).toBe(23);
     expect(day1[0].text).toMatch(/^Tom\. Wake up\./);
     expect(day1[22].text).toMatch(/She was singing/);

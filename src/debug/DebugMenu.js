@@ -21,6 +21,7 @@ export const DEBUG = {
   station: 'Station & vehicles',
   story: 'Story, radio & trail cams',
   progress: 'Story flags & gates',
+  firstDay: 'First day & campsite', // M9.2
   day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',

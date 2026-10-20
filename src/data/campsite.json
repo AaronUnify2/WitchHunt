@@ -1,0 +1,44 @@
+{
+  "_note": "The abandoned campsite (M9.2; DESIGN.md \"Abandoned campsite\", agreed with Aaron in Session 15). Positions are in the campsite's own frame: from where the path from home enters the clearing, x metres to your right as you walk in, z metres ahead (the clearing's centre is z 0; the entrance is z = -radius). yaw: degrees, turning from facing ahead toward your right. car: the campers' car (vehicles.json types; the campsite's placement gives it a sure battery and no alarm), parked at the edge by the path. tents: kind a (an A-frame) or dome; slashed: torn open from the inside, the slit on its far side (found, not presented). searches: the hold-X search points, in the order a player meets them walking in: guaranteed items (camcorder: the lore item; shotgun: the gun, with `rounds` more shells; or a loot.json item with amount) and a rolled table (loot.json items, each rolled on its own). The camcorder is near the entrance and the shotgun deep in the camp (the order guarantee). props: set dressing (chairs, packs, the fire ring, blood, the stick figures hung in the trees, the ritual marks cut into trunks at the edge). wave: the zombies that burst from the treeline when the shotgun is taken: count, the spread of their arrival (seconds), and where they come from (arcs of the clearing's edge, in degrees in the campsite frame: 0 ahead, 90 to the right, -90 to the left; distance past the edge).",
+  "car": { "x": -8, "z": -12.5, "yaw": 75 },
+  "tents": [
+    { "id": "tent1", "kind": "a", "x": 5.5, "z": -5.5, "yaw": -20, "color": 3818024 },
+    { "id": "tent2", "kind": "dome", "x": -6.5, "z": 3, "yaw": 35, "color": 3360806 },
+    { "id": "tent3", "kind": "a", "x": 4, "z": 9.5, "yaw": 200, "color": 5911100, "slashed": true }
+  ],
+  "searches": [
+    { "id": "cooler", "label": "search the cooler", "x": 3, "z": -7.5, "seconds": 1.4, "gives": [{ "item": "camcorder" }], "loot": [{ "item": "scrap", "chance": 1, "min": 4, "max": 4 }] },
+    { "id": "tent1", "label": "search the tent", "x": 6.3, "z": -3.6, "seconds": 1.8, "gives": [{ "item": "scrap", "amount": 5 }], "loot": [{ "item": "rifleAmmo", "chance": 0.7, "min": 2, "max": 3 }, { "item": "shotgunAmmo", "chance": 0.5, "min": 2, "max": 3 }] },
+    { "id": "pack1", "label": "search the backpack", "x": -2.8, "z": -2.2, "seconds": 1.2, "gives": [{ "item": "shotgunAmmo", "amount": 4 }], "loot": [{ "item": "scrap", "chance": 0.6, "min": 1, "max": 2 }] },
+    { "id": "tent2", "label": "search the tent", "x": -4.8, "z": 5, "seconds": 1.8, "gives": [{ "item": "firstAid", "amount": 1 }, { "item": "scrap", "amount": 6 }], "loot": [{ "item": "rifleAmmo", "chance": 0.5, "min": 1, "max": 3 }] },
+    { "id": "tent3", "label": "search the torn tent", "x": 2.6, "z": 7.6, "seconds": 2.2, "gives": [{ "item": "shotgun", "rounds": 8 }], "loot": [] }
+  ],
+  "props": {
+    "fire": { "x": 0, "z": 1.5, "radius": 0.85 },
+    "chairs": [
+      { "x": -1.6, "z": -0.4, "yaw": 140, "fallen": false },
+      { "x": 1.9, "z": 0.2, "yaw": -120, "fallen": true },
+      { "x": 0.9, "z": 3.6, "yaw": -10, "fallen": false }
+    ],
+    "packs": [{ "x": -2.8, "z": -2.2, "yaw": 30 }, { "x": -8.5, "z": 6.5, "yaw": 100 }],
+    "cooler": { "x": 3, "z": -7.5, "yaw": 15 },
+    "lantern": { "x": -0.6, "z": 5.2 },
+    "blood": [{ "x": 5, "z": 11.6, "r": 0.7 }, { "x": 3.2, "z": 12.4, "r": 0.4 }, { "x": 6.5, "z": 13.5, "r": 0.5 }],
+    "sticks": [
+      { "angle": 15, "out": 1.5, "height": 5.5 },
+      { "angle": 38, "out": 2, "height": 6.4 },
+      { "angle": -24, "out": 1.8, "height": 4.9 },
+      { "angle": 62, "out": 2.4, "height": 5.8 },
+      { "angle": -55, "out": 2.2, "height": 6.8 }
+    ],
+    "marks": [{ "angle": 25, "out": 0.6 }, { "angle": -40, "out": 0.8 }, { "angle": 80, "out": 0.7 }]
+  },
+  "smoke": { "x": 0, "z": 1.5, "height": 34, "puffs": 9, "width": 2.2, "color": 10196376, "opacity": 0.32, "rise": 0.9 },
+  "wave": {
+    "count": 7,
+    "spread": 6,
+    "arcs": [[60, 130], [-130, -60]],
+    "beyondEdge": [4, 9],
+    "speedRange": [0.38, 0.48]
+  }
+}

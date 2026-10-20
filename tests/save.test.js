@@ -152,7 +152,7 @@ describe('save round trip', () => {
     expect(b[1]).toMatchObject({ searched: { door: false, boot: true }, opened: { boot: true }, bonnetUp: true, hasBattery: false, alarmArmed: false, seen: true, hurt: 120, wrecked: false });
 
     const sigils = viaJson(saveSigils([{ id: 3, x: 1, z: 2, y: 0.5, groundId: 7, clearingId: 7, raised: 9, timer: 4, variants: {} }]));
-    expect(sigils).toEqual([{ x: 1, z: 2, y: 0.5, groundId: 7, clearingId: 7, raised: 9 }]);
+    expect(sigils).toEqual([{ x: 1, z: 2, y: 0.5, groundId: 7, clearingId: 7, raised: 9, hold: 0, known: false, firstSigil: false }]);
 
     const clearings = [{ kind: 'encounter', x: 0, z: 0, radius: 10 }, { kind: 'encounter', x: 500, z: 0, radius: 10 }];
     const r1 = new Revisits(config.revisits, clearings);

@@ -49,6 +49,9 @@ import { Toast } from '../ui/Toast.js';
 import { MapUi } from '../ui/MapUi.js';
 import { StoryProgress } from '../story/StoryProgress.js';
 import { Gates } from '../world/Gates.js';
+import { Campsite } from '../encounters/Campsite.js';
+import { FirstDay } from '../story/FirstDay.js';
+import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -85,6 +88,10 @@ export class Game {
     this.bus.init();
     // M6: a saved run is offered if the URL asks for no other map.
     this.saves = new SaveStore(cfg.save);
+    // M9.2: what this device remembers (the opening seen), and a choice
+    // made on the menu before the reload a new map needs.
+    this.meta = new MetaStore(cfg.meta);
+    this.pendingChoice = this.meta.takePendingChoice();
     const saved = this.saves.load();
     const urlSeed = seedFromUrl(cfg.rng);
     this.pendingSave = validSave(saved) && (urlSeed === null || String(urlSeed) === String(saved.seed)) ? saved : null;
@@ -109,6 +116,7 @@ export class Game {
     this.initFinalBattle(root);
     this.initStory(root);
     this.initProgress();
+    this.initFirstDay();
     this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
@@ -118,7 +126,7 @@ export class Game {
     this.noReturn = new NoReturnNotice(cfg.ending, this.bus);
     this.noReturn.init(root);
     this.runEnd.init(root);
-    this.startScreen.show(this.pendingSave ? 'continue' : 'start', this.pendingSave ? saveLabel(this.pendingSave, cfg.clock) : '');
+    this.showMenu();
     this.addOverlayStats();
     this.addDebugMenuItems();
     this.applyQuality(cfg.quality.preset);
@@ -262,6 +270,7 @@ export class Game {
       mapUi: this.mapUi,
       notify: (text) => this.toast.show(text),
       avoid: [{ x: L.centre.x, z: L.centre.z, r: L.radius + this.cfg.vehicles.placement.avoidRadius }],
+      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean) }, // M9.2: the campers' car, by the path in
       busy: [this.director.hud, this.station.hud],
     });
     this.combat.promptSources.push(this.vehicles.hud);
@@ -373,6 +382,60 @@ export class Game {
     });
   }
 
+  // M9.2: the campsite and the first day (the opening, the tower, home,
+  // Night 1's sigil, Dawn 1, Skip intro).
+  initFirstDay() {
+    this.campsite = new Campsite(this.cfg, this.bus);
+    this.campsite.init(this.scene, {
+      world: this.world,
+      combat: this.combat,
+      player: this.player,
+      colliders: this.colliders,
+      vehicles: this.vehicles,
+      lore: this.lore,
+      dialogue: this.dialogue,
+      cutscenes: this.cutscenes,
+      progress: this.progress,
+      notify: (text) => this.toast.show(text),
+    });
+    this.combat.promptSources.push(this.campsite.hud);
+    this.firstDay = new FirstDay(this.cfg, this.bus);
+    this.firstDay.init({
+      world: this.world,
+      player: this.player,
+      combat: this.combat,
+      clock: this.clock,
+      station: this.station,
+      director: this.director,
+      campsite: this.campsite,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      progress: this.progress,
+      lore: this.lore,
+      meta: this.meta,
+      mapUi: this.mapUi,
+      drawDistance: () => this.drawDistance,
+      notify: (text) => this.toast.show(text),
+      save: () => this.autosave(),
+    });
+  }
+
+  // M9.2: the main menu over its live feed, or "Tap to begin" after the
+  // reload a new map needed.
+  showMenu() {
+    this.cutscenes.play('menu.feed', { skippable: false });
+    if (this.pendingChoice && !this.pendingSave) {
+      this.startScreen.show('begin');
+      return;
+    }
+    this.pendingChoice = null;
+    this.startScreen.showMenu({
+      save: this.pendingSave ? saveLabel(this.pendingSave, this.cfg.clock) : '',
+      skipIntro: this.meta.introSeen,
+    });
+  }
+
   // Session 13: the debug model viewer (the Models category).
   initViewer(root) {
     this.viewer = new ModelViewer(this.cfg, this.bus);
@@ -456,6 +519,7 @@ export class Game {
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
+    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -487,6 +551,8 @@ export class Game {
     this.dialogue.addDebugItems(menu);
     this.trailCams.addDebugItems(menu);
     this.lore.addDebugItems(menu);
+    this.firstDay.addDebugItems(menu);
+    this.campsite.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -744,16 +810,30 @@ export class Game {
     return `You died on ${this.clock.phase === 'night' || this.clock.phase === 'dusk' ? 'night' : 'day'} ${this.clock.day}.`;
   }
 
-  // The start screen's choice (M6): continue the saved run (put it back,
-  // then start), or begin a new one (a fresh map).
+  // The menu's choice (M6, M9.2): continue the saved run (put it back,
+  // then start); a New Run (the opening) or Skip intro (Dawn 1) on this
+  // map if it's fresh, else on a fresh map after a reload ("Tap to begin");
+  // 'begin' carries on with the choice from before the reload; 'resume'
+  // is back from leaving fullscreen.
   onStartChoice(choice) {
-    if (choice === 'new') {
-      this.newRun();
+    if (choice === 'new' || choice === 'skip') {
+      if (this.pendingSave) {
+        this.meta.setPendingChoice(choice);
+        this.newRun();
+        return;
+      }
+      this.start(choice);
+      return;
+    }
+    if (choice === 'begin') {
+      this.start(this.pendingChoice ?? 'new');
       return;
     }
     if (choice === 'continue' && this.pendingSave) {
       this.applySave(this.pendingSave);
       this.pendingSave = null;
+      this.start('continue');
+      return;
     }
     this.start();
   }
@@ -784,6 +864,7 @@ export class Game {
       story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
       lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
       progress: this.progress.saveState(), // M9.1: story progress flags (the gates follow them)
+      campsite: this.campsite.saveState(), // M9.2: what's been searched, the wave (optional: older saves have none)
     };
   }
 
@@ -809,7 +890,11 @@ export class Game {
     this.director.removeAll();
     for (const s of d.sigils) {
       const sigil = this.director.plant({ ...s });
-      if (sigil) sigil.raised = s.raised;
+      if (!sigil) continue;
+      sigil.raised = s.raised;
+      sigil.hold = s.hold ?? 0; // M9.2
+      sigil.known = Boolean(s.known);
+      sigil.firstSigil = Boolean(s.firstSigil);
     }
     loadRevisits(this.director.revisits, d.revisits ?? []);
     this.witch.loadState(d.witch);
@@ -818,20 +903,26 @@ export class Game {
     this.dialogue.loadState(d.story);
     this.lore.loadState(d.lore);
     this.progress.loadState(d.progress);
+    this.campsite.loadState(d.campsite);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
   // Called from the start screen's tap: a user gesture, so fullscreen
   // and pointer lock are allowed here. Pointer lock first, because the
   // fullscreen request uses up the gesture.
-  start() {
+  // mode (M9.2): 'new' plays the opening, 'skip' starts at Dawn 1,
+  // 'continue' a saved run; none when resuming.
+  start(mode = null) {
     if (hasFinePointer()) this.input.requestPointerLock();
     this.display.enter();
     this.combat.start();
     this.mapUi.start();
     const firstStart = this.state === 'boot';
     this.state = 'running';
-    if (firstStart) this.bus.emit('game:started', { seed: this.seed });
+    if (!firstStart) return;
+    if (this.cutscenes.current?.id === 'menu.feed') this.cutscenes.stop(false);
+    this.bus.emit('game:started', { seed: this.seed });
+    this.firstDay.begin(mode ?? 'new');
   }
 
   onFullscreenChanged(fullscreen) {
@@ -862,6 +953,7 @@ export class Game {
 
   update(dt) {
     this.input.update(dt);
+    if (this.state !== 'running') this.startScreen.update(this.input); // M9.2: the menu on the controller
     if (this.input.wasPressed('debugOverlay')) this.overlay.toggle();
     if (this.input.wasPressed('debugMenu')) this.debugMenu.toggle();
 
@@ -895,7 +987,9 @@ export class Game {
     } else if (viewer.active) {
       this.flashlight.update(dt, this.lockedInput, viewer.camera, []); // held from the viewer's camera
     }
-    const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : null;
+    // M9.2: the sigils the family have seen go in (Night 1's) are on the map; the debug view shows all.
+    const known = this.director.sigils.list.filter((s) => s.known);
+    const sigilsOnMap = this.director.showOnMap ? this.director.sigils.list : known.length ? known : null;
     const enemies = this.combat.enemies;
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
     const witchOnMap = this.witch.showOnMap ? this.witch : null;
@@ -957,6 +1051,10 @@ export class Game {
     this.nightWatch.update(dt, this.clock.phase, playing);
     this.progress.update(dt, playing && first);
     this.gates.update(dt, playing && first && !locked);
+    // M9.2: the campsite's search points wait while another prompt shows.
+    const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt;
+    this.campsite.update(dt, controls, playing && first, !locked && !busy);
+    if (first) this.firstDay.update(dt, playing);
   }
 
   get phase() {
@@ -975,6 +1073,8 @@ export class Game {
     this.mapUi.dispose();
     this.nightWatch.dispose();
     this.lore.dispose();
+    this.firstDay.dispose();
+    this.campsite.dispose();
     this.gates.dispose();
     this.progress.dispose();
     this.viewer.dispose();
