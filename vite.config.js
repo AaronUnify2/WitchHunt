@@ -20,5 +20,8 @@ export default defineConfig(({ command, isPreview }) => ({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.js'],
+    // Some tests build whole maps (3-5 s each on a busy CI runner): 5 s
+    // timed out the deploys after Session 14.
+    testTimeout: 30000,
   },
 }));
