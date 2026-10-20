@@ -679,6 +679,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 **Performance cost.** Low: one small clearing, 6–8 sprite zombies, no extra point lights (the fire is cold), one short cutscene clip.
 
+**As built (M9.2, Session 15; agreed with Aaron: the proposals above, on my recommendations):** `encounters/Campsite.js`, `data/campsite.json` (laid out from where the path from home walks in). The car by the path in; the camcorder in the cooler by the entrance; the shotgun in the far, slashed tent; a first aid kit in the dome; scrap for the fence across the camp. The wave: 7 level-1 citizens from both flanks over 6 s. Day 1 can't be failed: health stops at 20%. Visited on any day or night, it plays the same; once looted it stays empty. The clip: about 8 s, never a clean frame of her. Open points: OPEN_QUESTIONS #185-197.
+
 **Open questions for the campsite**
 
 - Exact wave size and how forgiving Day 1 should be.
@@ -1299,6 +1301,17 @@ Autosave. The family suggest going after the sigil at the storm shelter. On Day 
 
 After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fence repaired, battery fitted, shotgun in hand).
 
+### As built (M9.2, Session 15)
+
+`story/FirstDay.js`, agreed with Aaron (my recommendations; OPEN_QUESTIONS #185-197):
+- **The menu:** the title over a looping grey CCTV feed from the station gate; New Run, Continue, Skip intro (once the opening's been seen on the device), Modifiers and Settings greyed out until M12 and Session 28; no Quit (a browser tab).
+- **The opening:** the cold open, then Tom wakes in the comms room facing Ellen (from black), lines 1-2.
+- **The tower:** the first climb on Day 1; the light far south is a small red light blinking at the edge of sight; the smoke over the campsite; lines 3-4.
+- **Day 1 can't fail** (a 20% health floor) and **its clock holds at 17:00** until the battery is fitted and the torn fence patched, so dusk never comes early. Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
+- **Night 1:** three strays march on the fence (line 16); the witch's first sigil goes in at the storm shelter about a minute and a half in; camera six's clip (17-19); the sigil marked on the map (20) and the spur open. Its dead stay at the shelter. The real witch stays home: the clip shows her.
+- **Dawn 1:** lines 21 / 22 and 23; the gas station trail opens.
+- **Skip intro:** a fresh map at Dawn 1, the tutorial done, the campsite looted, the camcorder handed in, the Night 1 sigil planted.
+
 ## Modifiers and achievements
 
 **Modifiers** are Halo skulls–style options toggled before a new run. Locked until earned; they can be combined.
@@ -1572,7 +1585,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines. **Done** (12a and 12b in one session; the looks are a first pass for Aaron to react to) | M8 |
 | 13 | Graphics Engineer / Technical Artist | Characters and the deferred art, play-test driven. **Done:** a debug model viewer; the zombies' variety (a palette swap), army camo and helmet loss, Men in Black zombies, Earl Pruitt; the mutant, the witch, the family, the grey alien and the cowboy drift, the giant beetle, the armed Men in Black; the cars (four types and their wear), the station's interior, the witch's hut. Frontier creatures still to model: Bigfoot and the Mothman (before M10) | Part of M13 |
 | 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun. **Done** (and the storm shelter's fixed camera, #153; the gates' and checkpoint's triggers are stand-ins for Sessions 15-17's beats) | M9.1 |
-| 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron | M9.2 |
+| 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron. **Built** (waiting on Aaron's play-test) | M9.2 |
 | 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines | M9.3 |
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate | M9.4 |
 | 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs | QA |
