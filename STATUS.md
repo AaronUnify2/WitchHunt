@@ -72,7 +72,7 @@ Seven steps, each pushed to `main` for Aaron to play-test:
 
 **Stubbed / not yet:** the real story beats behind the stand-in flags (M9.2-9.4); cutting the oak with a tool (M9.2 may give one); the encounters' own layouts in the cluster (the gas station building north of the road, the hatch, the outpost); the Mothman's flare attention (M10); the cordon's and road's final look (style pass 2, Session 19).
 
-**Tests:** 512 pass (the cluster on every seed, its land, trees and pathways; the road and its wrecks; the cordon's colliders; the flags' order and the gates; the witch's cluster rule; flare flight, conks and the lure; camera six).
+**Tests:** 514 pass (the cluster on every seed, its land, trees and pathways; the road and its wrecks; the cordon's colliders; the flags' order and the gates; the witch's cluster rule; flare flight, conks and the lure; camera six; the witch's leash; a flare's arc).
 
 ### Session 13: characters and the deferred art (Graphics Engineer / Technical Artist)
 

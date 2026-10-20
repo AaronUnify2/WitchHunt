@@ -2,7 +2,7 @@
 
 ## Just finished: Session 14, Lead Engineer: the cluster on the map (M9.1)
 
-**Status: done.** Everything is pushed to `main`, which Aaron play-tests from. 512 tests pass and the build is clean.
+**Status: done.** Everything is pushed to `main`, which Aaron play-tests from. 514 tests pass and the build is clean. Aaron play-tested the whole session, and then the fixes from his play-test: all working.
 
 **How we worked (agreed with Aaron at the start):** a plan in the chat, then each step pushed to `main` for him to play-test. Rule 10's workshop for the road, the cordon and the gates was a short proposal he agreed to.
 
