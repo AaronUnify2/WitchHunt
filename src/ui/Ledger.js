@@ -268,19 +268,24 @@ export function planPositions(page) {
 
 // The D-pad on a plan with rings (Session 15b, Aaron): `plan.layers` lists
 // its rings from the outside in; each item has a `ring` and an `order`
-// along it. Left / right walk the ring (stopping at its ends); up steps in
-// a ring (from the innermost, up to the rows above the plan), down steps
-// out, landing on the nearest part of the next ring. Returns the new focus
-// index (rows first, then the plan's items), or -1 to stay put.
+// along it, and some a place on the `spine` (0 at its foot). Up / down on
+// the spine walks it (from its top, up to the rows above the plan); left /
+// right walks a ring (stopping at its ends), or from the spine sideways to
+// the nearest part of the next ring out that way. Off the spine, up steps
+// in a ring (to the spine from the innermost ring), down steps out.
+// Returns the new focus index (rows first, then the plan's items), or -1.
 export function planMove(page, from, dx, dy) {
   const rows = (page.rows ?? []).filter((r) => !r.heading).length;
   const items = page.plan.items;
   const layers = page.plan.layers;
-  const ringOf = (name) => items.map((it, j) => ({ it, j })).filter((e) => e.it.ring === name).sort((a, b) => a.it.order - b.it.order);
-  const nearestIn = (name, x, y) => {
+  const all = items.map((it, j) => ({ it, j }));
+  const ringOf = (name) => all.filter((e) => e.it.ring === name).sort((a, b) => a.it.order - b.it.order);
+  const spine = all.filter((e) => e.it.spine !== undefined).sort((a, b) => a.it.spine - b.it.spine);
+  const nearest = (list, x, y, side = 0) => {
     let best = -1;
     let bestD = Infinity;
-    for (const e of ringOf(name)) {
+    for (const e of list) {
+      if (side && (e.it.x - x) * side <= 0) continue;
       const d = Math.hypot(e.it.x - x, e.it.y - y);
       if (d < bestD) {
         bestD = d;
@@ -293,27 +298,35 @@ export function planMove(page, from, dx, dy) {
     if (dy < 0) return from > 0 ? from - 1 : -1;
     if (dy > 0) {
       if (from < rows - 1) return from + 1;
-      // Down from the last row: into the plan's innermost ring, its top-most part.
+      // Down from the last row: the top of the spine (or the innermost ring's top-most part).
+      if (spine.length) return rows + spine[spine.length - 1].j;
       const inner = ringOf(layers[layers.length - 1]);
-      if (inner.length === 0) return -1;
-      return rows + inner.reduce((a, b) => (b.it.y < a.it.y ? b : a)).j;
+      return inner.length ? rows + inner.reduce((a, b) => (b.it.y < a.it.y ? b : a)).j : -1;
     }
     return -1;
   }
   const cur = items[from - rows];
   if (!cur) return -1;
+  if (dy !== 0 && cur.spine !== undefined) {
+    const k = spine.findIndex((e) => e.j === from - rows);
+    if (dy < 0) return spine[k + 1] ? rows + spine[k + 1].j : rows > 0 ? rows - 1 : -1;
+    return spine[k - 1] ? rows + spine[k - 1].j : -1;
+  }
   const li = layers.indexOf(cur.ring);
   if (dx !== 0) {
+    if (li === layers.length - 1 && li > 0) return nearest(ringOf(layers[li - 1]), cur.x, cur.y, Math.sign(dx)); // off the spine sideways
     const ring = ringOf(cur.ring);
     const k = ring.findIndex((e) => e.j === from - rows);
     const next = ring[k + Math.sign(dx)];
     return next ? rows + next.j : -1;
   }
   if (dy < 0) {
-    if (li >= 0 && li < layers.length - 1) return nearestIn(layers[li + 1], cur.x, cur.y);
+    if (li >= 0 && li < layers.length - 1) {
+      return nearest(ringOf(layers[li + 1]), cur.x, cur.y);
+    }
     return rows > 0 ? rows - 1 : -1;
   }
-  if (dy > 0 && li > 0) return nearestIn(layers[li - 1], cur.x, cur.y);
+  if (dy > 0 && li > 0) return nearest(ringOf(layers[li - 1]), cur.x, cur.y);
   return -1;
 }
 

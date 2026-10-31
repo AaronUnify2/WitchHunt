@@ -94,6 +94,7 @@ export class FirstDay {
     this.notifyFamily = false;
     this.lastStep = '';
     this.gateCall = 0; // seconds until Ellen will call Tom back from the locked gate again
+    this.prompts = null; // Session 15b: which control prompts have been shown this run
   }
 
   isDay1() {
@@ -211,14 +212,50 @@ export class FirstDay {
     // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).
     this.station.towerRifleLocked = this.clock.day === 1 && this.clock.phase === 'day';
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
-    if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen;
+    // (Or once the campsite's wave is down: Ellen's asked for the battery by then, tape or no tape.)
+    if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen && !this.progress.has('campsiteCleared');
     if (!playing) return;
     this.updateSkip(dt);
     this.updateGate(dt);
+    this.updatePrompts(dt);
     if (day1) this.holdTheClock();
     if (day1) this.updateHome(dt);
     if (day1) this.updateNightfall(dt);
     if (this.night) this.updateNight1(dt);
+  }
+
+  // Session 15b (Aaron): the controls the game hasn't shown yet, as they're
+  // needed (the family say it; the button shows on screen):
+  //  - sprint, out on the long walk to the campsite;
+  //  - the torch, stepping outside on Night 1 with it off;
+  //  - the map, as Wyatt says the shelter's on it (plantNight1).
+  updatePrompts(dt) {
+    const p = this.player.position;
+    const zone = zoneOf(this.station.layout, p.x, p.z);
+    const pr = (this.prompts ??= { walk: 0, shown: new Set() });
+    const once = (id, line, pad, key) => {
+      if (pr.shown.has(id)) return;
+      pr.shown.add(id);
+      if (line) this.dialogue.play(line);
+      this.hint?.(pad, key);
+    };
+    const day1 = this.clock.day === 1 && this.clock.phase === 'day';
+    if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.cutscenes.active) {
+      // Walking (not running) a while outside the fence on the way.
+      pr.walk = this.player.sprinting ? 0 : pr.walk + dt * (this.player.speed > 0.5 ? 1 : 0);
+      if (pr.walk > this.fc.prompts.sprintAfter) once('sprint', 'day1.prompt.sprint', 'Click LS: sprint', 'Hold Shift: sprint');
+    }
+    if (this.clock.day === 1 && this.clock.phase === 'night' && zone <= 1 && this.flashlight && !this.flashlight.on && !this.cutscenes.active) {
+      once('torch', 'day1.prompt.torch', 'D-pad left: flashlight', 'L: flashlight');
+    }
+  }
+
+  // The map prompt, with Wyatt's line that the shelter's on it.
+  mapPrompt() {
+    const pr = (this.prompts ??= { walk: 0, shown: new Set() });
+    if (pr.shown.has('map')) return;
+    pr.shown.add('map');
+    this.hint?.('D-pad up: map', 'M: map');
   }
 
   gateLocked() {
@@ -515,6 +552,7 @@ export class FirstDay {
         this.progress.setFlag('night1');
         // Session 15b (Aaron): they talk it over, then the gas station at first light.
         for (const id of this.fc.night1.afterClip) this.dialogue.play(id);
+        this.mapPrompt(); // Session 15b (Aaron): the button for the map, as Wyatt says it's on it
         n.talked = true;
         n.dawnIn = this.fc.night1.dawnAfterTalk;
       },

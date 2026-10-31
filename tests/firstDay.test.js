@@ -71,12 +71,14 @@ describe('the campsite layout', () => {
     expect(Math.hypot(campsite.car.x, campsite.car.z)).toBeLessThan(f.radius);
   });
 
-  it('puts the camcorder near the entrance and the shotgun deep in (the order guarantee)', () => {
+  it('puts the camcorder in the torn tent and the shotgun in a green one (Session 15b, Aaron)', () => {
     const cam = campsite.searches.find((s) => s.gives?.some((g) => g.item === 'camcorder'));
     const gun = campsite.searches.find((s) => s.gives?.some((g) => g.item === 'shotgun'));
-    const fromEntrance = (s) => Math.hypot(s.x, s.z + f.radius);
-    expect(fromEntrance(cam)).toBeLessThan(fromEntrance(gun) - 8);
-    expect(searches.cooler).toBe(cam);
+    const tent = (id) => campsite.tents.find((t) => t.id === id);
+    expect(tent(cam.id).slashed).toBe(true);
+    expect(tent(gun.id).slashed).toBeFalsy();
+    const c = tent(gun.id).color;
+    expect((c >> 8) & 255).toBeGreaterThan((c >> 16) & 255); // green over red
   });
 
   it("guarantees a first aid kit and the scrap to patch the torn fence", () => {

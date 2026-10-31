@@ -712,6 +712,8 @@ export class Station {
     const t = this.layout.tower;
     const y = this.ground.heightAt(t.x, t.z) + t.height;
     this.player.setPlatform({ x: t.x, z: t.z, y, half: t.half }, t.x, t.z);
+    this.player.yaw = Math.PI; // Session 15b (Aaron): up top, Tom faces south, away from the cliff
+    this.player.pitch = 0;
     this.mapUi.fog.reveal(t.x, t.z, t.revealRadius);
     this.combat.sfx.play('climb');
     this.bus.emit('station:climbed'); // M9.2: Day 1's view from the top

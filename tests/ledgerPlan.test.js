@@ -111,7 +111,7 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
     for (const j of seen) expect(at(j).ring).toBe('fence');
   });
 
-  it('walks the barricades the same way, and up goes to the doors and fence box, then the rows', () => {
+  it('walks the barricades the same way; up from them goes to the doors and fence box', () => {
     let i = idx((it) => it.ring === 'barricade');
     const seen = new Set([i]);
     for (let k = 0; k < 30; k++) {
@@ -121,24 +121,30 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
       seen.add(i);
     }
     expect(seen.size).toBe(st.layout.segments.length);
-    const up = planMove(page, i, 0, -1);
-    expect(at(up).ring).toBe('inner');
-    let j = up;
-    for (let k = 0; k < 5; k++) {
-      const n = planMove(page, j, -1, 0);
-      if (n < 0) break;
-      j = n;
-    }
-    expect(planMove(page, j, 0, -1)).toBe(0); // up from the cabin: the "repair all" row
+    expect(at(planMove(page, i, 0, -1)).ring).toBe('inner');
   });
 
-  it('steps out with down: fence box to barricades to the fence', () => {
-    const box = idx((it) => it.cls.startsWith('box'));
-    const bar = planMove(page, box, 0, 1);
-    expect(at(bar).ring).toBe('barricade');
-    const fence = planMove(page, bar, 0, 1);
-    expect(at(fence).ring).toBe('fence');
-    expect(planMove(page, fence, 0, 1)).toBe(-1);
-    expect(at(planMove(page, 0, 0, 1)).ring).toBe('inner'); // down from the row: into the cabin
+  it('has a spine up and down: the gate, the fence box, the front door, the comms door, then the rows (Aaron)', () => {
+    const gate = idx((it) => it.cls.startsWith('gate'));
+    const box = planMove(page, gate, 0, -1);
+    expect(at(box).label).toMatch(/fence box/i);
+    const front = planMove(page, box, 0, -1);
+    expect(at(front).label).toBe('Front door');
+    const comms = planMove(page, front, 0, -1);
+    expect(at(comms).label).toMatch(/comms/i);
+    expect(planMove(page, comms, 0, -1)).toBe(0); // the "repair all" row
+    expect(planMove(page, 0, 0, 1)).toBe(comms); // and back down
+    expect(planMove(page, comms, 0, 1)).toBe(front);
+    expect(planMove(page, box, 0, 1)).toBe(gate);
+    expect(planMove(page, gate, 0, 1)).toBe(-1);
+    // Off the spine sideways: the nearest barricade that way.
+    expect(at(planMove(page, box, 1, 0)).ring).toBe('barricade');
+    // And the gate's left and right still walk the fence.
+    expect(at(planMove(page, gate, 1, 0)).ring).toBe('fence');
+  });
+
+  it('steps down from a barricade to its fence panel', () => {
+    const bar = idx((it) => it.ring === 'barricade');
+    expect(at(planMove(page, bar, 0, 1)).ring).toBe('fence');
   });
 });

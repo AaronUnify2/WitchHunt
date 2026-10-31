@@ -74,6 +74,16 @@ Round 11 (the quad bike, built overnight: see `MORNING.md`):
 - [ ] The witch is faster while you're riding (hard to test: she's out at dusk).
 - [ ] Debug: First day & campsite has "Quad bike: bring it here".
 
+Round 12 (Night 1 notes, round 2):
+- [ ] The torch is off when Tom wakes.
+- [ ] Up the tower, the view starts facing south (the fog and the far light), not the cliff.
+- [ ] Walking to the campsite: Wyatt says to run, with "Click LS: sprint" on screen.
+- [ ] The camcorder's in the torn tent; the shotgun in the green dome tent.
+- [ ] After the wave, Ellen: "...Our fence is electrified to keep the bears out. Bring me their car battery and I'll supercharge it." The car can be searched then.
+- [ ] Ledger plan: up / down goes gate, fence box, front door, comms door, then "Repair the whole fence"; left / right off them goes to the barricades.
+- [ ] Night 1, outside with the torch off: Wyatt says to put it on, with "D-pad left: flashlight".
+- [ ] After camera six, Wyatt's line has "D-pad up: map" on screen.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

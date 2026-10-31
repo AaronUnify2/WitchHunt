@@ -441,6 +441,9 @@ export class Game {
       mapUi: this.mapUi,
       drawDistance: () => this.drawDistance,
       notify: (text) => this.toast.show(text),
+      // Session 15b: a control prompt in the device's own buttons.
+      hint: (pad, key) => this.toast.show(this.input.activeDevice === 'gamepad' ? pad : key),
+      flashlight: this.flashlight,
       save: () => this.autosave(),
     });
   }

@@ -2394,7 +2394,7 @@ export const config = {
 
   // Flashlight: the game's one shadow-casting light
   flashlight: {
-    startOn: true,
+    startOn: false, // Session 15b (Aaron): Tom wakes indoors by day with it off; Night 1 prompts it on
     color: 0xfff1d6,
     intensity: 300, // candela
     distance: 45, // metres; light fades to zero here
@@ -2505,6 +2505,9 @@ export const config = {
     // draw distance along the line to the campsite (it's past the fog);
     // Tom steps this far sideways on the platform, clear of its corner posts.
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
+    // Session 15b (Aaron): control prompts as they're first needed. sprintAfter:
+    // seconds of walking outside the fence on the way to the campsite.
+    prompts: { sprintAfter: 6 },
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,

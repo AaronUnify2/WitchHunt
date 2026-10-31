@@ -52,6 +52,7 @@ export function buildFencePlan(station) {
   };
   L.segments.forEach((seg, i) => fencePart(s.segments[i], seg.a0, seg.a1, cap(seg.name)));
   fencePart(s.gate, L.gate.a0, L.gate.a1, 'Gate');
+  items[items.length - 1].spine = 0; // the foot of the spine (Session 15b: gate, fence box, front door, comms door)
 
   // ---- the barricades (inner ring) ----
   L.segments.forEach((seg, i) => {
@@ -94,7 +95,7 @@ export function buildFencePlan(station) {
   // ---- the cabin and its doors ----
   const cab = L.cabin;
   const cc = rel(cab);
-  const doorItem = (d, at, horizontal) => {
+  const doorItem = (d, at, horizontal, spine) => {
     const p = rel(at);
     const w = Math.max(1.6, d.id === 'front' ? cab.frontDoor.width : cab.commsDoor.width) + 0.6;
     const h = 1.4;
@@ -118,14 +119,15 @@ export function buildFencePlan(station) {
       y: p.y,
       ring: 'inner',
       order: p.x,
+      spine,
       cls: `door ${healthCls(d)}${d.reinforced ? ' reinforced' : ''}`,
       label: cap(d.name),
       value,
       action,
     });
   };
-  doorItem(s.doors.front, cab.frontDoor, true);
-  doorItem(s.doors.comms, cab.commsDoor, true);
+  doorItem(s.doors.front, cab.frontDoor, true, 2);
+  doorItem(s.doors.comms, cab.commsDoor, true, 3);
 
   // ---- the fence box (the power) ----
   const ba = (BOX_AT.angleDeg * Math.PI) / 180;
@@ -141,6 +143,7 @@ export function buildFencePlan(station) {
     y: box.y,
     ring: 'inner',
     order: box.x,
+    spine: 1,
     cls: `box ${s.powered ? 'ok' : 'down'}`,
     label: 'Fence box (power)',
     value: `charge ${charge}/${p.maxCharge}  ·  you carry ${inv.batteries} batter${inv.batteries === 1 ? 'y' : 'ies'}${canFit ? `  ·  A: fit one (+${p.batteryCharge})` : inv.batteries > 0 ? '  ·  full' : '  ·  bring a battery'}  ·  tonight drains about ${tonight}`,
@@ -167,9 +170,10 @@ export function buildFencePlan(station) {
   return {
     viewBox: '-34 -20 68 54',
     // The D-pad (Session 15b, Aaron): left / right along a ring (the fence
-    // and gate west to east, the barricades, the doors and the fence box);
-    // up goes in a ring (fence, barricades, the cabin and fence box, then
-    // the rows above), down goes back out.
+    // and gate west to east, the barricades); up / down along the spine
+    // (the gate, the fence box, the front door, the comms door, then the
+    // rows above); from a fence panel up to its barricade, from a barricade
+    // up to the spine or down to its panel. Items' `spine`: their place on it.
     layers: ['fence', 'barricade', 'inner'],
     back,
     title: 'OR PICK A PART: the fence (outer ring), barricades (inner ring), the doors, the fence box',
