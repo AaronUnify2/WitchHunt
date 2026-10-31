@@ -1335,3 +1335,89 @@ body.in-cutscene .toast {
 body.in-cutscene .subtitles {
   z-index: 6;
 }
+
+/* ---- Session 16 (Aaron): a paper read in close-up (Earl's note, his diary; ui/PaperNote.js) ---- */
+.paper {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.72);
+  touch-action: none;
+}
+.paper.hidden { display: none; }
+.paper-sheet {
+  position: relative;
+  box-sizing: border-box;
+  width: min(86vw, 30rem);
+  max-height: 80vh;
+  overflow: hidden;
+  padding: 1.6rem 1.8rem 1.4rem;
+  color: #2a2620;
+  font-family: 'Segoe Print', 'Bradley Hand', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-size: clamp(15px, 2.3vh, 19px);
+  line-height: 1.55;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(90, 70, 30, 0.25);
+}
+/* A torn notepad sheet: yellowed, a grubby thumbprint, a ragged top edge. */
+.paper-note {
+  background:
+    radial-gradient(circle at 82% 88%, rgba(110, 80, 40, 0.18) 0 1.6rem, transparent 1.7rem),
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.25), transparent 60%),
+    #d9cfae;
+  transform: rotate(-1.6deg);
+  clip-path: polygon(0 1.2%, 6% 0, 13% 1.4%, 21% 0.2%, 30% 1.5%, 38% 0.3%, 47% 1.3%, 55% 0, 64% 1.4%, 72% 0.4%, 81% 1.5%, 90% 0.2%, 100% 1.2%, 100% 100%, 0 100%);
+}
+/* A ruled notebook: blue lines, a red margin. */
+.paper-diary {
+  background:
+    linear-gradient(90deg, transparent 2.6rem, rgba(170, 50, 40, 0.45) 2.6rem, rgba(170, 50, 40, 0.45) calc(2.6rem + 1px), transparent calc(2.6rem + 1px)),
+    repeating-linear-gradient(180deg, transparent 0, transparent calc(1.55em - 1px), rgba(60, 90, 140, 0.28) calc(1.55em - 1px), rgba(60, 90, 140, 0.28) 1.55em),
+    #ddd6c2;
+  background-position: 0 0, 0 0.3rem;
+  padding-left: 3.4rem;
+  min-height: min(70vh, 28rem);
+  display: flex;
+  flex-direction: column;
+  transform: rotate(0.8deg);
+}
+.paper-close {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.5rem;
+  border: 0;
+  background: none;
+  color: #5a5040;
+  font: 1.6rem/1 ui-monospace, monospace;
+  cursor: pointer;
+}
+.paper-head {
+  margin: 0 0 0.8rem;
+  font: 0.62em/1.2 ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  color: #6a2a20;
+  opacity: 0.8;
+}
+.paper-head:empty { display: none; }
+.paper-date { margin: 0 0 0.4rem; text-decoration: underline; }
+.paper-date:empty { display: none; }
+.paper-text p { margin: 0; }
+.paper-text .paper-gap { height: 0.7em; }
+.paper-page {
+  margin: auto 0 0;
+  padding-top: 0.8rem;
+  text-align: right;
+  font: 0.7em ui-monospace, monospace;
+  color: #6a6050;
+}
+.paper-page:empty { display: none; }
+.paper-prompt {
+  margin: 0;
+  font: 0.85rem ui-monospace, monospace;
+  color: #e8e0cc;
+  opacity: 0.8;
+}

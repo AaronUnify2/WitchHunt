@@ -29,6 +29,7 @@ import { Explosives } from '../combat/Explosives.js';
 import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
+import { PaperNote } from '../ui/PaperNote.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
@@ -118,6 +119,9 @@ export class Game {
     this.initFinalBattle(root);
     this.initStory(root);
     this.initProgress();
+    // Session 16 (Aaron): papers read in close-up (Earl's note, his diary).
+    this.paper = new PaperNote(this.bus);
+    this.paper.init(root, this.combat.sfx);
     this.initFirstDay();
     this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
@@ -412,6 +416,7 @@ export class Game {
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,
       progress: this.progress,
+      paper: this.paper,
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.gasStation.hud);
@@ -814,7 +819,7 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };
@@ -1010,7 +1015,10 @@ export class Game {
     const viewing = viewer.active;
     viewer.update(dt, this.input, !this.debugMenu.isOpen);
     const held = viewing || viewer.active;
-    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held);
+    // Session 16: a paper in close-up holds the game too (open at the start of the frame counts).
+    const reading = this.paper.isOpen;
+    this.paper.update(dt, this.input);
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen;
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
@@ -1072,7 +1080,7 @@ export class Game {
   // fast-forward steps have them locked).
   step(dt, running, playing, first) {
     const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !ledgerPause) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const cinematic = this.finalBattle.cinematic || this.cutscenes.locksControls;
@@ -1137,6 +1145,7 @@ export class Game {
     this.station.dispose();
     this.runEnd.dispose();
     this.noReturn.dispose();
+    this.paper.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();
     this.witch.dispose();

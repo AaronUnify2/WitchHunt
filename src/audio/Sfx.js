@@ -484,6 +484,12 @@ const RECIPES = {
     const o = s.out(undefined, undefined, 0.8);
     s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1400, endFreq: 600, q: 1.5, gain: 0.6 });
   },
+  // Session 16: a paper picked up, a page turned: a dry rustle.
+  paper(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 3500, gain: 0.25 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.18, type: 'bandpass', freq: 2400, endFreq: 1600, q: 0.8, gain: 0.22 }), 70);
+  },
   // An alarm charm's bones clattering.
   charmRattle(s, pos) {
     const o = s.out(pos?.x, pos?.z, 1, 60);

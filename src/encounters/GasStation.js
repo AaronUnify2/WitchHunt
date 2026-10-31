@@ -14,7 +14,8 @@
 //     it's down: that wasn't like the others.
 //  4. Looting: hold-X searches (the counter, shelves, coolers, the office's
 //     cabinet, the stockroom's boxes and rack); the phone on the counter
-//     (dead); Earl's note on the office desk (read it); Earl's scanner (a
+//     (dead); Earl's note on the office desk (read in close-up, Session
+//     16); Earl's scanner (a
 //     clipped military broadcast about a quarantine line, and Ellen); the
 //     gun safe (locked until Tom has Earl's combination: the storm
 //     shelter's, Session 16; then the hunting rifle, empty).
@@ -474,6 +475,7 @@ export class GasStation {
   // ---- searches and the things to use ---------------------------------------------------------------
 
   updateInteraction(dt, input) {
+    this.device = input.activeDevice;
     const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
     const best = this.pickPoint();
     const key = best ? best.id : null;
@@ -562,9 +564,17 @@ export class GasStation {
     }
   }
 
-  // Earl's note: its words on the screen (the subtitle strip, as a note).
+  // Earl's note: Session 16 (Aaron), read in close-up (ui/PaperNote.js);
+  // the family speak once it's put down. (Without a screen for it, its
+  // words go in the subtitle strip as before.)
   readNote(first) {
+    const after = () => this.noteRead(first);
+    if (this.paper?.open('earlNote', { onClose: after, device: this.device })) return;
     this.dialogue?.play('gas.note', {}, false); // read on the spot: no radio crackle
+    after();
+  }
+
+  noteRead(first) {
     if (!first) return;
     this.progress?.setFlag('earlNoteRead');
     this.bus.emit('gasStation:note');
