@@ -30,7 +30,7 @@ describe('progress flags', () => {
     for (const g of MAP_DATA.cluster.gates) expect(ids).toContain(g.opensOn);
   });
 
-  it('opens the path order: shelter by dawn 1, gas station on Day 2 after the campsite, outpost after both visits (stand-ins), checkpoint once it is cleared', () => {
+  it('opens the path order: shelter by dawn 1, gas station on Day 2 after the campsite, outpost once the rifle is claimed (stand-in call), checkpoint once it is cleared', () => {
     const f = flags();
     // Day 1: the campsite's arrival beat sets its flag (M9.2: Campsite, no trigger).
     expect(runTriggers(f, ctx({ clearing: 'campsite' }))).toEqual([]);
@@ -40,8 +40,11 @@ describe('progress flags', () => {
     // Dawn 1: the spur (if the clip hasn't opened it) and the gas station trail.
     expect(runTriggers(f, ctx({ event: 'dawn', day: 1 }))).toEqual(['night1', 'day2']);
     expect(runTriggers(f, ctx({ clearing: 'gasStation' }))).toEqual(['gasStationVisited']);
-    // The shelter: the rifle (stand-in) and Ellen's call come with it.
-    expect(runTriggers(f, ctx({ clearing: 'stormShelter' }))).toEqual(['shelterVisited', 'rifleClaimed', 'outpostCall']);
+    // The shelter: just the visit (Session 16: the rifle's stand-in is gone; the safe sets rifleClaimed).
+    expect(runTriggers(f, ctx({ clearing: 'stormShelter' }))).toEqual(['shelterVisited']);
+    // The safe opened with Earl's combination: Ellen's call (still a stand-in) comes with it.
+    f.set('rifleClaimed');
+    expect(runTriggers(f, ctx({}))).toEqual(['outpostCall']);
     // The outpost: entered, then cleared.
     expect(runTriggers(f, ctx({ clearing: 'outpost' }))).toEqual(['outpostEntered']);
     expect(runTriggers(f, ctx({ clearing: 'outpost', cleared: () => true }))).toEqual(['outpostCleared']);

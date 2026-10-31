@@ -30,6 +30,7 @@ import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { PaperNote } from '../ui/PaperNote.js';
+import { StormShelter } from '../encounters/StormShelter.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
@@ -427,6 +428,23 @@ export class Game {
     this.vehicles.busy?.push(this.quad.hud);
     this.explosives.busy?.push?.(this.quad.hud);
     this.station.blockers.push(this.quad.hud);
+    // Session 16 (M9.3): the Pruitts' storm shelter.
+    this.shelter = new StormShelter(this.cfg, this.bus);
+    this.shelter.init(this.scene, {
+      world: this.world,
+      player: this.player,
+      combat: this.combat,
+      director: this.director,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      notify: (text) => this.toast.show(text),
+    });
+    this.combat.promptSources.push(this.shelter.hud);
+    this.vehicles.busy?.push(this.shelter.hud);
+    this.station.blockers.push(this.shelter.hud);
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       world: this.world,
@@ -556,7 +574,7 @@ export class Game {
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
-    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.quad.overlayLine()}`);
+    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -591,6 +609,7 @@ export class Game {
     this.firstDay.addDebugItems(menu);
     this.campsite.addDebugItems(menu);
     this.gasStation.addDebugItems(menu);
+    this.shelter.addDebugItems(menu);
     this.quad.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
@@ -905,6 +924,7 @@ export class Game {
       progress: this.progress.saveState(), // M9.1: story progress flags (the gates follow them)
       campsite: this.campsite.saveState(), // M9.2: what's been searched, the wave (optional: older saves have none)
       gasStation: this.gasStation.saveState(), // Session 15b (M9.3): its beats (optional)
+      shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
     };
   }
@@ -946,6 +966,7 @@ export class Game {
     this.progress.loadState(d.progress);
     this.campsite.loadState(d.campsite);
     this.gasStation.loadState(d.gasStation);
+    this.shelter.loadState(d.shelter);
     this.quad.loadState(d.quad);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
@@ -1030,7 +1051,7 @@ export class Game {
     // Session 15b (Aaron): Tom's gun hides in a cutscene (it floated in the
     // campsite's sweep). After the step, so one starting this frame hides it too.
     this.combat.viewModel.root.visible = !cs.active && !viewer.active && !this.player.riding;
-    this.combat.viewModel.digging = Boolean(this.director.digging?.active); // Session 15b: the dig's animation
+    this.combat.viewModel.digging = Boolean(this.director.digging?.active || this.shelter.digging); // Session 15b: the dig's animation (Session 16: the shelter's hatch too)
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
@@ -1107,9 +1128,10 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.quad.hud.prompt);
-    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt), daylight);
+    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt), daylight);
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
+    this.shelter.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     if (first) this.firstDay.update(dt, playing);
   }
 
@@ -1132,6 +1154,7 @@ export class Game {
     this.firstDay.dispose();
     this.campsite.dispose();
     this.gasStation.dispose();
+    this.shelter.dispose();
     this.quad.dispose();
     this.gates.dispose();
     this.progress.dispose();

@@ -40,6 +40,7 @@
 // (mid-fade: the clock goes to dawn), 'firstDay:wave'
 // { wave, count }, 'firstDay:sigil' { sigil }.
 
+import { StormShelter } from '../encounters/StormShelter.js';
 import { zoneOf, compassName } from '../base/stationLayout.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
@@ -550,10 +551,11 @@ export class FirstDay {
   }
 
   // The first sigil's spot: beside the storm shelter's hatch (the clearing's centre).
+  // Session 16: in the shelter's frame, beside the hatch (data/stormShelter.json).
   shelterSpot() {
     const c = this.world.map.clearings.find((x) => x.cluster && x.key === 'stormShelter');
-    const o = this.fc.night1.sigilOffset;
-    return { x: c.x + o[0], z: c.z + o[1], clearingId: c.id };
+    const at = StormShelter.sigilSpot(this.world.map) ?? { x: c.x, z: c.z };
+    return { x: at.x, z: at.z, clearingId: c.id };
   }
 
   plantNight1() {

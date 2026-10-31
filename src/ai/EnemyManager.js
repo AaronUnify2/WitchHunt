@@ -176,6 +176,7 @@ export class EnemyManager {
     slot.detourSide = 0;
     slot.detourTries = 0;
     slot.clearTime = 0;
+    slot.authored = opts.authored ?? null; // Session 16: an encounter's own (not thinned at dawn); a reused slot starts clear
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }

@@ -17,9 +17,48 @@
       },
       "_note": "M9.2: behind the main menu. A station camera on the gate (south of home: the anchor's ahead is north) looking out into the woods before dawn, panning slowly. Grey CCTV at 05:36: night itself is too dark to read on a feed.",
       "camera": [
-        { "at": 0, "anchor": "home", "pos": [1.5, 5.5, -24], "look": [-10, 2, -60] },
-        { "at": 22, "anchor": "home", "pos": [1.5, 5.5, -24], "look": [16, 2, -60] },
-        { "at": 44, "anchor": "home", "pos": [1.5, 5.5, -24], "look": [-10, 2, -60] }
+        {
+          "at": 0,
+          "anchor": "home",
+          "pos": [
+            1.5,
+            5.5,
+            -24
+          ],
+          "look": [
+            -10,
+            2,
+            -60
+          ]
+        },
+        {
+          "at": 22,
+          "anchor": "home",
+          "pos": [
+            1.5,
+            5.5,
+            -24
+          ],
+          "look": [
+            16,
+            2,
+            -60
+          ]
+        },
+        {
+          "at": 44,
+          "anchor": "home",
+          "pos": [
+            1.5,
+            5.5,
+            -24
+          ],
+          "look": [
+            -10,
+            2,
+            -60
+          ]
+        }
       ],
       "duration": 44
     },
@@ -218,9 +257,23 @@
       "style": "firstPerson",
       "_note": "Session 15b (Aaron): once the fence is patched, the battery's in and Junie's had her word (indoors), the picture fades to black, the clock goes straight to night (the emit; onDone does it too if skipped) and it fades back up on the night. The forecast (it waits for the cutscene) and Ellen's line 15 follow.",
       "tracks": [
-        { "at": 0, "do": "fade", "to": 1, "seconds": 1.6 },
-        { "at": 1.8, "do": "emit", "event": "firstDay:nightfall" },
-        { "at": 2.4, "do": "fade", "to": 0, "seconds": 2 }
+        {
+          "at": 0,
+          "do": "fade",
+          "to": 1,
+          "seconds": 1.6
+        },
+        {
+          "at": 1.8,
+          "do": "emit",
+          "event": "firstDay:nightfall"
+        },
+        {
+          "at": 2.4,
+          "do": "fade",
+          "to": 0,
+          "seconds": 2
+        }
       ],
       "duration": 4.6
     },
@@ -230,9 +283,23 @@
       "style": "firstPerson",
       "_note": "Session 15b (Aaron): after camera six and the family's talk (the Pruitts, the gas station), the picture fades to black, the clock goes to dawn (the emit; onDone does it too if skipped) and it fades back up on Dawn 1: the dawn lines and the autosave follow.",
       "tracks": [
-        { "at": 0, "do": "fade", "to": 1, "seconds": 1.8 },
-        { "at": 2, "do": "emit", "event": "firstDay:dawn" },
-        { "at": 2.8, "do": "fade", "to": 0, "seconds": 2.2 }
+        {
+          "at": 0,
+          "do": "fade",
+          "to": 1,
+          "seconds": 1.8
+        },
+        {
+          "at": 2,
+          "do": "emit",
+          "event": "firstDay:dawn"
+        },
+        {
+          "at": 2.8,
+          "do": "fade",
+          "to": 0,
+          "seconds": 2.2
+        }
       ],
       "duration": 5.2
     },
@@ -242,14 +309,167 @@
       "style": "sweep",
       "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (11.5, 10.4, 6.5 m up). Wyatt: no lights, their truck's gone.",
       "camera": [
-        { "at": 0, "anchor": "gasStation", "pos": [-14, 7, 21], "look": [0, 1.5, -2] },
-        { "at": 3.2, "anchor": "gasStation", "pos": [-2, 3.2, 14], "look": [1, 1, 3] },
-        { "at": 6.4, "anchor": "gasStation", "pos": [5, 2.2, 6.5], "look": [11.5, 7.2, 10.4] }
+        {
+          "at": 0,
+          "anchor": "gasStation",
+          "pos": [
+            -14,
+            7,
+            21
+          ],
+          "look": [
+            0,
+            1.5,
+            -2
+          ]
+        },
+        {
+          "at": 3.2,
+          "anchor": "gasStation",
+          "pos": [
+            -2,
+            3.2,
+            14
+          ],
+          "look": [
+            1,
+            1,
+            3
+          ]
+        },
+        {
+          "at": 6.4,
+          "anchor": "gasStation",
+          "pos": [
+            5,
+            2.2,
+            6.5
+          ],
+          "look": [
+            11.5,
+            7.2,
+            10.4
+          ]
+        }
       ],
       "tracks": [
-        { "at": 3.6, "do": "line", "line": "gas.arrive" }
+        {
+          "at": 3.6,
+          "do": "line",
+          "line": "gas.arrive"
+        }
       ],
       "duration": 7.6
+    },
+    {
+      "id": "sweep.shelter",
+      "name": "Arriving at the storm shelter (establishing sweep)",
+      "style": "sweep",
+      "_note": "Session 16 (M9.3): anchor stormShelter: its frame (walking in from home, x right, z ahead; data/stormShelter.json). From up over the path in, down across the horde to the hatch on its mound. Wyatt: Earl hid it well.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "stormShelter",
+          "pos": [
+            -9,
+            6.5,
+            -24
+          ],
+          "look": [
+            0,
+            1.2,
+            1
+          ]
+        },
+        {
+          "at": 3.0,
+          "anchor": "stormShelter",
+          "pos": [
+            4,
+            3.6,
+            -11
+          ],
+          "look": [
+            0,
+            0.8,
+            1.5
+          ]
+        },
+        {
+          "at": 6.0,
+          "anchor": "stormShelter",
+          "pos": [
+            2.2,
+            2.2,
+            -4.5
+          ],
+          "look": [
+            0,
+            0.3,
+            1.5
+          ]
+        }
+      ],
+      "tracks": [
+        {
+          "at": 2.8,
+          "do": "line",
+          "line": "shelter.arrive"
+        }
+      ],
+      "duration": 7.0
+    },
+    {
+      "id": "shelter.down",
+      "name": "The storm shelter: down the ladder (a fade)",
+      "style": "firstPerson",
+      "_note": "Session 16: a short fade; the emit puts Tom in the room below (StormShelter.goDown; onDone-free: if it's skipped the emit still fires).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "fade",
+          "to": 1,
+          "seconds": 0.6
+        },
+        {
+          "at": 0.7,
+          "do": "emit",
+          "event": "stormShelter:goDown"
+        },
+        {
+          "at": 0.9,
+          "do": "fade",
+          "to": 0,
+          "seconds": 0.8
+        }
+      ],
+      "duration": 1.8
+    },
+    {
+      "id": "shelter.up",
+      "name": "The storm shelter: up the ladder (a fade)",
+      "style": "firstPerson",
+      "_note": "Session 16: a short fade; the emit puts Tom back up beside the hatch (StormShelter.goUp).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "fade",
+          "to": 1,
+          "seconds": 0.6
+        },
+        {
+          "at": 0.7,
+          "do": "emit",
+          "event": "stormShelter:goUp"
+        },
+        {
+          "at": 0.9,
+          "do": "fade",
+          "to": 0,
+          "seconds": 0.8
+        }
+      ],
+      "duration": 1.8
     },
     {
       "id": "gas.mutant",
@@ -258,11 +478,37 @@
       "world": "run",
       "_note": "Session 15b (M9.3): a few steps into the dark shop, the camera turns to the hunched thing at the back of the centre aisle (anchor mutant, from GasStation): it unfolds to its full height (the emit wakes it; the world runs on, so it does), the camera hitches, and it's on its feet. Then Tom has his controls back.",
       "tracks": [
-        { "at": 0, "do": "lookAt", "target": "mutant", "rate": 2.4, "pitch": -0.12 },
-        { "at": 1.0, "do": "emit", "event": "gasStation:wake" },
-        { "at": 1.1, "do": "shake", "amount": 0.7, "seconds": 0.35 },
-        { "at": 1.6, "do": "lookAt", "target": "mutant", "rate": 1.4, "pitch": 0.18 },
-        { "at": 2.4, "do": "shake", "amount": 0.4, "seconds": 0.3 }
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "mutant",
+          "rate": 2.4,
+          "pitch": -0.12
+        },
+        {
+          "at": 1.0,
+          "do": "emit",
+          "event": "gasStation:wake"
+        },
+        {
+          "at": 1.1,
+          "do": "shake",
+          "amount": 0.7,
+          "seconds": 0.35
+        },
+        {
+          "at": 1.6,
+          "do": "lookAt",
+          "target": "mutant",
+          "rate": 1.4,
+          "pitch": 0.18
+        },
+        {
+          "at": 2.4,
+          "do": "shake",
+          "amount": 0.4,
+          "seconds": 0.3
+        }
       ],
       "duration": 3.4
     },
@@ -272,14 +518,54 @@
       "style": "firstPerson",
       "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read).",
       "actors": [
-        { "id": "her", "kind": "figure", "look": "witch", "anchor": "herSpot", "pos": [0, 0, 0], "yaw": 0 }
+        {
+          "id": "her",
+          "kind": "figure",
+          "look": "witch",
+          "anchor": "herSpot",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0
+        }
       ],
       "tracks": [
-        { "at": 0, "do": "lookAt", "target": "herSpot", "rate": 3.2 },
-        { "at": 0.3, "do": "sfx", "sfx": "witchSong" },
-        { "at": 2.8, "do": "move", "actor": "her", "anchor": "herRun", "to": [0, 0, 0], "seconds": 0.9 },
-        { "at": 2.8, "do": "lookAt", "target": "herRun", "rate": 1.6 },
-        { "at": 2.9, "do": "sfx", "sfx": "witchShriek" }
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "herSpot",
+          "rate": 3.2
+        },
+        {
+          "at": 0.3,
+          "do": "sfx",
+          "sfx": "witchSong"
+        },
+        {
+          "at": 2.8,
+          "do": "move",
+          "actor": "her",
+          "anchor": "herRun",
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "seconds": 0.9
+        },
+        {
+          "at": 2.8,
+          "do": "lookAt",
+          "target": "herRun",
+          "rate": 1.6
+        },
+        {
+          "at": 2.9,
+          "do": "sfx",
+          "sfx": "witchShriek"
+        }
       ],
       "duration": 4.6
     },

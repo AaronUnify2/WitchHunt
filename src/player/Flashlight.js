@@ -118,8 +118,9 @@ export class Flashlight {
   platformHit(origin, dir, pl, cfg) {
     if (dir.y === 0) return;
     const roof = dir.y > 0;
-    const y = roof ? pl.y + cfg.roofY : pl.y;
-    const half = roof ? pl.half + cfg.roofOverhang : pl.half;
+    // Session 16: a room's own ceiling (the storm shelter), no overhang.
+    const y = roof ? pl.y + (pl.roofY ?? cfg.roofY) : pl.y;
+    const half = roof ? pl.half + (pl.room ? 0 : cfg.roofOverhang) : pl.half;
     const t = (y - origin.y) / dir.y;
     if (t <= 0 || t >= this.hit.distance) return;
     if (Math.abs(origin.x + dir.x * t - pl.x) > half || Math.abs(origin.z + dir.z * t - pl.z) > half) return;

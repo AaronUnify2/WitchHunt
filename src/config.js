@@ -533,7 +533,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation'], // Session 15b: cluster sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter'], // Session 15b (and 16): cluster sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -2548,7 +2548,6 @@ export const config = {
       afterClip: ['day1.night.after1', 'day1.20', 'day1.night.after3'], // Aaron: three lines
       dawnAfterTalk: 2.5,
       holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
-      sigilOffset: [1.5, 1], // metres from the shelter clearing's centre (beside the hatch, M9.3)
       holdRadius: 14, // its dead stay this close to it (they never march on the station)
     },
     // Skip intro: what Tom has at Dawn 1.
@@ -2630,6 +2629,66 @@ export const config = {
 
   // Earl's quad bike (Session 15b pass 3, Aaron: "too much walking and
   // running"; world/Quad.js). Speeds in m/s: Tom walks 3.6, sprints 7.2.
+  // The Pruitts' storm shelter (Session 16; encounters/StormShelter.js,
+  // data/stormShelter.json). Aaron: small and a bit shabby (Earl dug it).
+  stormShelter: {
+    // The horde holding the hatch (Aaron: 12 citizens), there through the
+    // day: put there as Tom comes within `hordeDistance` of the clearing's
+    // edge, lingering round the hatch; Earl stands among them (variant
+    // 'earl'). While Night 1's sigil is still in the ground, more climb out
+    // of it (one every `riseEvery` seconds while fewer than `count` are
+    // up and Tom's within `riseRange` of it), by day too; dug up, that stops.
+    horde: { count: 12, riseEvery: 6, riseRange: 60, memory: 20 },
+    hordeDistance: 40,
+    arriveInset: 2, // metres inside the edge that count as arriving (the sweep)
+    interactRange: 1.6, // metres to the hatch, the keys or a search point (up top)
+    roomRange: 0.9, // metres to a search point below (the room's small)
+    keysRange: 1.8,
+    hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },
+    look: {
+      colors: {
+        earth: 0x2a2014,
+        earthDark: 0x1a140c,
+        leaves: 0x2c2414,
+        timber: 0x3a2e20,
+        timberDark: 0x261e14,
+        rust: 0x4a2a16,
+        metal: 0x2a2a2a,
+        brass: 0x6a5420,
+        glint: 0xffe8a0,
+        hatch: 0x34281c,
+        hatchRib: 0x3e2e1e,
+        void: 0x020202,
+        lantern: 0x2e3a2a,
+        glass: 0x5a5a4e,
+        duffel: 0x283020,
+        strap: 0x161616,
+        jerrycan: 0x4a1c14,
+        plank: 0x33271a,
+        plankDark: 0x251c12,
+        ceiling: 0x1e1810,
+        mattress: 0x3a3830,
+        blanketA: 0x3a1a16,
+        blanketB: 0x1c2638,
+        pillow: 0x4a4638,
+        jug: 0x3a4248,
+        tinA: 0x4a3418,
+        tinB: 0x2a3a2a,
+        tableTop: 0x3a2c1c,
+        game: 0x3a2a3a,
+        colouring: 0x5a4a28,
+        tv: 0x1e1c1a,
+        screen: 0x0a0e0c,
+        vcr: 0x161616,
+        tapeBox: 0x3a3024,
+        tape: 0x121212,
+        toy: 0x4a3420,
+        cot: 0x2a3020,
+        diary: 0x3a1410,
+      },
+    },
+  },
+
   quad: {
     parked: { x: 7.5, z: -17.6, yaw: 180 }, // in the gas station's frame (gasStation.json): behind the store, by the stockroom's back door, nose to the trail
     maxSpeed: 13, // about 47 km/h on a pathway (nearly twice a sprint)

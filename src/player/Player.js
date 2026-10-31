@@ -65,7 +65,7 @@ export class Player {
     this.lookScale = 1;
     this.fovMultiplier = 1;
     this.scopeLookScale = 1; // Session 10b: set by Weapons while looking through a scope
-    this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower
+    this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower; Session 16: or down in a room ({ room, hx, hz, rx, rz, fx, fz, blocks })
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
     this.riding?.eject?.(); // Session 15b: off the quad bike
     this.riding = null; // Session 15b: the quad bike while Tom's on it (it moves him: world/Quad.js)
@@ -194,6 +194,11 @@ export class Player {
     p.x += this.velocity.x * dt;
     p.z += this.velocity.z * dt;
     const pl = this.platform;
+    if (pl?.room) {
+      // Session 16: down in a room (the storm shelter): its walls keep you in, round its furniture.
+      keepInRoom(p, pl, c.radius);
+      return;
+    }
     if (pl) {
       // Up on the tower: the railing keeps you on the platform.
       const lim = pl.half - c.radius;
@@ -284,6 +289,38 @@ export class Player {
     if (this.sprinting) return 'sprint';
     return this.crouched ? 'crouch' : 'stand';
   }
+}
+
+// Session 16: keep p (radius r) inside a room platform: a box hx by hz
+// round (x, z) in its own frame (right rx, rz; ahead fx, fz), and out of
+// its blocks ([x0, x1, z0, z1] in that frame: the furniture).
+export function keepInRoom(p, pl, r) {
+  const dx = p.x - pl.x;
+  const dz = p.z - pl.z;
+  let lx = dx * pl.rx + dz * pl.rz;
+  let lz = dx * pl.fx + dz * pl.fz;
+  for (const [x0, x1, z0, z1] of pl.blocks ?? []) {
+    const cx = Math.max(x0, Math.min(x1, lx));
+    const cz = Math.max(z0, Math.min(z1, lz));
+    const ex = lx - cx;
+    const ez = lz - cz;
+    const d = Math.hypot(ex, ez);
+    if (d >= r) continue;
+    if (d > 1e-6) {
+      lx = cx + (ex / d) * r;
+      lz = cz + (ez / d) * r;
+    } else {
+      // Inside it: out the nearest side.
+      const outs = [[x0 - r - lx, 0], [x1 + r - lx, 0], [0, z0 - r - lz], [0, z1 + r - lz]];
+      outs.sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1]));
+      lx += outs[0][0];
+      lz += outs[0][1];
+    }
+  }
+  lx = Math.max(-pl.hx + r, Math.min(pl.hx - r, lx));
+  lz = Math.max(-pl.hz + r, Math.min(pl.hz - r, lz));
+  p.x = pl.x + pl.rx * lx + pl.fx * lz;
+  p.z = pl.z + pl.rz * lx + pl.fz * lz;
 }
 
 function clampDelta(delta, max) {
