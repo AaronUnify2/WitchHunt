@@ -88,6 +88,11 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
    - **Camera six once they're down** (4 s after; not while Tom's within 70 m of the shelter). The night holds 20 s short of dawn until she's planted.
    - **Line 20** (Wyatt): "It's on your map, out on Pruitt land. Dad, the Pruitts run the gas station. Somebody needs to check on them at first light." **Line 21** (Ellen, dawn): "We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right." Line 22 (dug up anyway) is unchanged.
    - Debug: **Nightfall: fade to dusk now**, **Night 1: send the next wave now**; the overlay shows the wave.
+13. **The station ledger reworked** (Aaron):
+   - **Tabs:** Fence, Turret 🔒 (padlocked until the turret's found), Upgrades, Security, then Forecast and Monitors as before. Doors and Power are gone (folded into Fence).
+   - **Fence:** "Repair the whole fence and gate" at the top under its own heading; then a **plan of the compound** (`base/fencePlan.js`, drawn as SVG in the book): the 12 panels and the gate (outer ring), the 12 barricade slots (inner ring), the cabin with its two doors, the fence box, plus the tower, turret pad and cliff to find your way. Tap a part to do it (repair / build / reinforce / fit a battery), or D-pad round the plan (to the nearest thing that way) and press A. A line under the plan says what the part is and what A does.
+   - **Upgrades:** "Floodlights (all 4)" for 100 scrap; spike traps by side: west (3) 60, south-west (2) 40, south (2) 40, south-east (2) 40, east (3) 60 (`Station.buildAllFloodlights()`, `buildSpikeGroup()`, sides from the panels' names).
+   - **Taps and clicks** work across the book (tabs, rows, the plan, a × to close): on release, as the book redraws itself. LB / RB turn the page (`tabPrev` / `tabNext`; Q / R or Page Up / Down on a keyboard), since the D-pad moves round the plan. The mouse is freed while the book's open, and a click on the canvas doesn't re-lock it then.
 
 ### Session 14: M9.1, the cluster on the map (Lead Engineer)
 

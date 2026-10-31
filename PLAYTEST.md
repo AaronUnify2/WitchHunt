@@ -32,6 +32,12 @@ Round 4 (Night 1, the first defence):
 - [ ] **Camera six once all nine are down:** "That's all of them. The fence held, Dad." Then the clip (17-19), then Wyatt sends you to the gas station at first light (line 20).
 - [ ] **Dawn:** Ellen's line 21 sends you to the gas station too (if you didn't dig the sigil up).
 
+Round 5 (the station ledger):
+- [ ] **Tabs:** Fence, Turret 🔒, Upgrades, Security, Forecast, Monitors. No Doors or Power.
+- [ ] **Fence tab:** "Repair the whole fence and gate" sits on its own at the top. Below it is a plan of the compound: the fence (outer ring), barricades (inner ring, dotted where none is built), the cabin with its two doors, and the fence box. Tap any part to repair, build, reinforce or fit a battery. With the controller, the D-pad moves round the plan and A does it; LB / RB change tabs. The line under the plan says what's selected and what A will do.
+- [ ] **Upgrades:** "Floodlights (all 4)" for 100 scrap; spike traps by side (west 60, south-west 40, south 40, south-east 40, east 60).
+- [ ] Tapping tabs and rows works on the tablet, and the × closes the book.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

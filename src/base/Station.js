@@ -34,6 +34,7 @@ import { segmentCollider } from '../world/collision.js';
 import { StationRenderer } from '../render/StationRenderer.js';
 import { Ledger } from '../ui/Ledger.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { buildFencePlan } from './fencePlan.js';
 
 const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells' };
 
@@ -615,6 +616,47 @@ export class Station {
     return `Spike trap set outside the ${this.layout.segments[i].name} (-${spent} scrap)`;
   }
 
+  // Session 15b (Aaron): every floodlight up in one go, or none.
+  buildAllFloodlights() {
+    const inv = this.combat.inventory;
+    const todo = this.state.floods.map((f, i) => (f.built ? -1 : i)).filter((i) => i >= 0);
+    if (todo.length === 0) return 'The floodlights are all up';
+    const cost = todo.length * this.sc.costs.floodlight;
+    if (inv.scrap < cost) return this.denied(`The floodlights cost ${cost} scrap`);
+    let spent = 0;
+    for (const i of todo) spent += this.state.buildFloodlight(i, inv.scrap - spent);
+    inv.spendScrap(spent);
+    this.combat.sfx.play('hammer');
+    return `Floodlights put up round the fence (-${spent} scrap)`;
+  }
+
+  // The fence's sides, for spike traps a side at a time (Session 15b):
+  // [{ name: 'west', segments: [0, 1, 2] }, ...], west to east.
+  spikeGroups() {
+    const groups = [];
+    this.layout.segments.forEach((seg, i) => {
+      const name = seg.name.replace(/ fence( \d+)?$/, '');
+      const g = groups.find((x) => x.name === name);
+      if (g) g.segments.push(i);
+      else groups.push({ name, segments: [i] });
+    });
+    return groups;
+  }
+
+  // A side's spike traps, set (or rebuilt) all at once.
+  buildSpikeGroup(g) {
+    const inv = this.combat.inventory;
+    const s = this.state;
+    const cost = g.segments.reduce((sum, i) => sum + s.spikeCost(i), 0);
+    if (cost <= 0) return `The ${g.name} spike traps are all set`;
+    if (inv.scrap < cost) return this.denied(`The ${g.name} spike traps cost ${cost} scrap`);
+    let spent = 0;
+    for (const i of g.segments) spent += s.buildSpike(i, inv.scrap - spent);
+    inv.spendScrap(spent);
+    this.combat.sfx.play('hammer');
+    return `Spike traps set outside the ${g.name} fence (-${spent} scrap)`;
+  }
+
   buildFloodlight(i) {
     const inv = this.combat.inventory;
     const spent = this.state.buildFloodlight(i, inv.scrap);
@@ -695,41 +737,28 @@ export class Station {
     return `Scrap ${this.combat.inventory.scrap}   ·   Security ${sec.total.toFixed(0)}   ·   Fence charge ${Math.round(s.charge)}/${this.sc.power.maxCharge}   ·   Batteries carried ${this.combat.inventory.batteries}`;
   }
 
-  // Tabs (Fence, Doors, Turret, Power, Upgrades), each a list of rows:
-  // { label, value, action (returns a message) or null }.
+  // Tabs (Session 15b, Aaron): Fence (the whole-fence repair, then the
+  // plan of the compound: fence, barricades, doors, the fence box), Turret
+  // (padlocked until the turret's found), Upgrades (the floodlights in one
+  // go, spike traps by side), Security; then the forecast and the monitors.
+  // Each is a list of rows: { label, value, action (returns a message) or
+  // null } or { heading }.
   ledgerPages() {
     const s = this.state;
     const sc = this.sc;
     const L = this.layout;
     const k = sc.costs;
-    const hp = (b) => `${Math.ceil(b.health)}/${b.max}`;
-    const repairRow = (b, label) => {
-      const cost = s.repairCost(b);
-      return { label, value: cost > 0 ? `${hp(b)}  ·  repair ${cost} scrap` : `${hp(b)}  ·  sound`, action: cost > 0 ? () => this.repair(b) : null };
-    };
 
-    const fence = [];
     const fenceCost = [...s.segments, s.gate].reduce((sum, b) => sum + s.repairCost(b), 0);
-    fence.push({ label: 'Repair the whole fence and gate', value: fenceCost > 0 ? `${fenceCost} scrap` : 'all sound', action: fenceCost > 0 ? () => this.repairAllFence() : null });
-    fence.push(repairRow(s.gate, 'Gate (south)'));
-    s.segments.forEach((seg, i) => {
-      const name = capitalise(L.segments[i].name);
-      fence.push(repairRow(seg, name));
-      const bar = seg.barricade;
-      if (!bar.built) fence.push({ label: `   Barricade behind it`, value: `build ${k.barricade} scrap`, action: () => this.buildBarricade(i) });
-      else fence.push(repairRow(bar, `   Barricade behind it`));
-    });
-
-    const doors = [];
-    for (const d of [s.doors.front, s.doors.comms]) {
-      doors.push(repairRow(d, capitalise(d.name)));
-      doors.push(d.reinforced ? { label: '   Reinforced', value: `security ${sc.security.reinforcedDoor}`, action: null } : { label: '   Reinforce it', value: `${k.reinforceDoor} scrap  ·  ${sc.doors.health} -> ${sc.doors.reinforcedHealth}, security ${sc.security.door} -> ${sc.security.reinforcedDoor}`, action: () => this.reinforceDoor(d.id) });
-    }
+    const fence = [
+      { heading: 'ALL AT ONCE' },
+      { label: 'Repair the whole fence and gate', value: fenceCost > 0 ? `${fenceCost} scrap` : 'all sound', action: fenceCost > 0 ? () => this.repairAllFence() : null },
+    ];
 
     const turret = [];
     const t = s.turret;
     if (!t.available) {
-      turret.push({ label: 'No turret', value: 'the game\'s one turret is at the Car Armory', action: null });
+      turret.push({ label: 'Locked', value: "you'll find the turret later in the run", action: null });
     } else if (!t.installed) {
       turret.push({ label: 'Install the turret on its pad', value: 'by the front door', action: () => this.installTurret() });
     } else {
@@ -758,37 +787,36 @@ export class Station {
       }
     }
 
-    const p = sc.power;
-    const inv = this.combat.inventory;
-    const power = [
-      { label: 'Fence charge', value: `${Math.round(s.charge)} / ${p.maxCharge}  ·  full security from ${p.fullSecurityCharge}`, action: null },
-      { label: 'Fit a battery', value: `you carry ${inv.batteries}  ·  +${p.batteryCharge} charge each`, action: inv.batteries > 0 && !s.chargeFull ? () => this.fitBattery() : null },
-      { label: 'Drain', value: `${p.nightDrain} a night, +${p.floodlightNightDrain} per floodlight; ${p.zapCost} per zap; ${p.turretShotCost} per turret shot`, action: null },
-      { label: 'Tonight', value: `drains about ${(s.nightDrainPerSecond(this.nightSeconds) * this.nightSeconds).toFixed(0)} before zaps and turret`, action: null },
-    ];
-
-    const upgrades = [];
-    s.floods.forEach((f, i) => {
-      const name = capitalise(L.segments[f.segment].name);
-      upgrades.push(f.built ? { label: `Floodlight, ${name.toLowerCase()}`, value: `up  ·  security ${sc.security.floodlight}`, action: null } : { label: `Floodlight, ${name.toLowerCase()}`, value: `${k.floodlight} scrap`, action: () => this.buildFloodlight(i) });
-    });
-    s.segments.forEach((seg, i) => {
-      const trap = seg.spike;
-      const name = L.segments[i].name;
-      const cost = s.spikeCost(i);
-      const state = !trap.built ? `${k.spikeTrap} scrap` : trap.durability > 0 ? `${trap.durability}/${sc.spikes.durability} bites left${cost > 0 ? `  ·  rebuild ${cost} scrap` : ''}` : `worn out  ·  rebuild ${cost} scrap`;
-      upgrades.push({ label: `Spike trap outside the ${name}`, value: state, action: cost > 0 ? () => this.buildSpike(i) : null });
-    });
+    // Upgrades (Session 15b, Aaron): the floodlights all in one go; spike
+    // traps a side at a time (west, south-west, south, south-east, east).
+    const upgrades = [{ heading: 'LIGHTS' }];
+    const unlit = s.floods.filter((f) => !f.built).length;
+    upgrades.push(
+      unlit === 0
+        ? { label: `Floodlights (all ${s.floods.length})`, value: `up  ·  security ${sc.security.floodlight} each`, action: null }
+        : { label: `Floodlights (all ${s.floods.length})`, value: `${unlit * k.floodlight} scrap${unlit < s.floods.length ? `  ·  ${unlit} still to put up` : ''}`, action: () => this.buildAllFloodlights() },
+    );
+    upgrades.push({ heading: 'SPIKE TRAPS (outside the fence)' });
+    for (const g of this.spikeGroups()) {
+      const cost = g.segments.reduce((sum, i) => sum + s.spikeCost(i), 0);
+      const traps = g.segments.map((i) => s.segments[i].spike);
+      const built = traps.filter((t) => t.built).length;
+      const worst = Math.min(...traps.map((t) => (t.built ? t.durability : 0)));
+      const label = `Spike traps, ${g.name} (${g.segments.length})`;
+      let value;
+      if (built === 0) value = `${cost} scrap`;
+      else if (cost > 0) value = `${built}/${g.segments.length} set, the most worn ${worst}/${sc.spikes.durability} bites  ·  rebuild ${cost} scrap`;
+      else value = `set  ·  the most worn ${worst}/${sc.spikes.durability} bites left`;
+      upgrades.push({ label, value, action: cost > 0 ? () => this.buildSpikeGroup(g) : null });
+    }
 
     const sec = s.security(this.nightSeconds);
     const security = sec.parts.map((part) => ({ label: part.label, value: `${part.value.toFixed(1)} / ${part.max}`, action: null }));
     security.push({ label: 'Total', value: sec.total.toFixed(1), action: null });
 
     return [
-      { id: 'fence', title: 'Fence', rows: fence },
-      { id: 'doors', title: 'Doors', rows: doors },
-      { id: 'turret', title: 'Turret', rows: turret },
-      { id: 'power', title: 'Power', rows: power },
+      { id: 'fence', title: 'Fence', rows: fence, plan: buildFencePlan(this) },
+      { id: 'turret', title: t.available ? 'Turret' : 'Turret \u{1F512}', rows: turret },
       { id: 'upgrades', title: 'Upgrades', rows: upgrades },
       { id: 'security', title: 'Security', rows: security },
       ...this.pageSources.flatMap((pages) => pages()), // M6: NightWatch's forecast; M8: the comms room's monitors

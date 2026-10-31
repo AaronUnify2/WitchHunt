@@ -285,6 +285,11 @@ A ledger book on the comms room desk is the one place to manage the whole statio
 - Paid for with scrap; deposits come straight from the inventory.
 - Everything can also be done directly in the world (hold interact on the fence, the turret, the fence box).
 - A full-screen book with pixel-font pages and tabs (Fence, Doors, Turret, Power, Upgrades), controller-driven. Doesn't pause the clock (config).
+- **Reworked (Aaron, Session 15b):** tabs **Fence, Turret 🔒, Upgrades, Security**, then the forecast and the monitors. Doors and Power are folded into the Fence tab.
+  - **Fence:** "Repair the whole fence and gate" on its own at the top (the default). Under it, a **plan of the compound** (`base/fencePlan.js`) to tap, or D-pad round and press A: the fence's panels and the gate (the outer ring: repair), the barricade slots (the inner ring: build or repair), the cabin's two doors (repair, then reinforce) and the fence box (fit a battery). Coloured by state: sound, hurt, down, not built.
+  - **Turret:** padlocked until the turret's found; then the turret page as before.
+  - **Upgrades:** the floodlights all in one go (100 scrap: 4 × 25); spike traps a side at a time: west 60, south-west 40, south 40, south-east 40, east 60 (20 a trap, as before). A worn side rebuilds for its traps' rebuild cost.
+  - Tap a tab, a row or a part of the plan to do it; × closes. LB / RB turn the page (Q / R, Page Up / Down on a keyboard); the mouse is freed while the book is open.
 
 ### Security rating
 

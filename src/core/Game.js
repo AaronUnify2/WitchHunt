@@ -781,7 +781,7 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };

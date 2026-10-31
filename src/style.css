@@ -659,6 +659,201 @@ body.in-viewer .final-battle {
   color: #8a7858;
 }
 
+/* Session 15b (Aaron): the book takes taps and clicks; section headings;
+   the fence tab's plan of the compound. */
+.ledger-book {
+  position: relative;
+  pointer-events: auto;
+}
+
+.ledger-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.7rem;
+  background: none;
+  border: 1px solid #5a4630;
+  color: #c8b890;
+  font: inherit;
+  font-size: 1.2em;
+  line-height: 1;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+}
+
+.ledger-tabs span,
+.ledger li.can,
+.plan-item.can {
+  cursor: pointer;
+}
+
+.ledger-scroll {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.ledger-scroll ul {
+  overflow: visible;
+}
+
+.ledger li.heading {
+  padding: 0.5rem 0.5rem 0.15rem;
+  font-size: 0.75em;
+  letter-spacing: 0.2em;
+  color: #f0c870;
+}
+
+.ledger-plan-title {
+  padding: 0.6rem 0.5rem 0.2rem;
+  font-size: 0.75em;
+  letter-spacing: 0.1em;
+  color: #f0c870;
+}
+
+.ledger-plan {
+  display: block;
+  width: 100%;
+  max-height: 46vh;
+}
+
+.ledger-plan .cliff {
+  fill: #1a130c;
+}
+
+.ledger-plan .lbl {
+  fill: #8a7858;
+  font-size: 2px;
+  text-anchor: middle;
+  letter-spacing: 0.15px;
+}
+
+.ledger-plan .lbl.small {
+  font-size: 1.5px;
+}
+
+.ledger-plan .cabin {
+  fill: #3a2c1e;
+  stroke: #6a5640;
+  stroke-width: 0.3;
+}
+
+.ledger-plan .cabin-wall {
+  stroke: #6a5640;
+  stroke-width: 0.25;
+}
+
+.ledger-plan .tower {
+  fill: none;
+  stroke: #6a5640;
+  stroke-width: 0.3;
+}
+
+.ledger-plan .pad {
+  fill: none;
+  stroke: #5a4630;
+  stroke-width: 0.25;
+  stroke-dasharray: 0.5 0.4;
+}
+
+.ledger-plan .hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 4;
+  pointer-events: all;
+}
+
+.ledger-plan .shape.fence {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: butt;
+}
+
+.ledger-plan .shape.barricade {
+  fill: none;
+  stroke-width: 1.1;
+}
+
+.ledger-plan .ok .shape {
+  stroke: #7a9a58;
+}
+
+.ledger-plan .hurt .shape {
+  stroke: #d8a040;
+}
+
+.ledger-plan .down .shape {
+  stroke: #c04030;
+  stroke-dasharray: 0.8 0.6;
+}
+
+.ledger-plan .gate .shape.fence {
+  stroke-width: 2.2;
+}
+
+.ledger-plan .barricade.empty .shape {
+  stroke: #6a5640;
+  stroke-width: 0.5;
+  stroke-dasharray: 0.4 0.5;
+}
+
+.ledger-plan .door .shape {
+  stroke-width: 0.3;
+}
+
+.ledger-plan .door.ok .shape {
+  fill: #7a9a58;
+}
+
+.ledger-plan .door.hurt .shape {
+  fill: #d8a040;
+}
+
+.ledger-plan .door.down .shape {
+  fill: #c04030;
+}
+
+.ledger-plan .door.reinforced .shape {
+  stroke: #c8ccd0;
+  stroke-width: 0.45;
+}
+
+.ledger-plan .box .shape {
+  fill: #2a2016;
+  stroke-width: 0.35;
+}
+
+.ledger-plan .box .charge {
+  fill: #6ab0e8;
+}
+
+.ledger-plan .box .glyph {
+  fill: #f0c870;
+  font-size: 2.2px;
+  text-anchor: middle;
+}
+
+.ledger-plan .plan-item.selected .shape {
+  stroke: #fff2d0;
+  filter: drop-shadow(0 0 0.6px #e8c070);
+}
+
+.ledger-plan .plan-item.selected.barricade.empty .shape {
+  stroke-width: 0.9;
+}
+
+.ledger-plan-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0.5rem;
+  border-top: 1px solid #5a4630;
+  color: #c8b890;
+}
+
+.ledger-plan-info.can {
+  color: #fff2d0;
+}
+
 /* M5: the station strip under the minimap */
 .hud-station {
   position: absolute;

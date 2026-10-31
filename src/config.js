@@ -2908,6 +2908,8 @@ export const config = {
       menuBack: ['B'],
       menuLeft: ['DpadLeft', 'LB'], // M5: ledger tabs
       menuRight: ['DpadRight', 'RB'],
+      tabPrev: ['LB'], // Session 15b: the ledger's tabs even on a page with a plan (the D-pad moves round it)
+      tabNext: ['RB'],
     },
     // Action -> KeyboardEvent.code values.
     keyBindings: {
@@ -2941,6 +2943,8 @@ export const config = {
       menuBack: ['Escape', 'Backspace'],
       menuLeft: ['ArrowLeft', 'KeyQ'], // M5: ledger tabs
       menuRight: ['ArrowRight'],
+      tabPrev: ['KeyQ', 'PageUp'], // Session 15b: the ledger's tabs on a page with a plan
+      tabNext: ['KeyR', 'PageDown'],
       debugOverlay: ['F3'],
       debugMenu: ['Backquote'],
     },
