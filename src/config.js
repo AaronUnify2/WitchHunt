@@ -2503,7 +2503,7 @@ export const config = {
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,
-    // and Junie's had her word (13-14), the day fades to dusk. afterTalk:
+    // and Junie's had her word (13-14, indoors), the day fades straight to night. afterTalk:
     // seconds after her talk; timeout: seconds after the work's done if Tom
     // never goes in to her.
     nightfall: { afterTalk: 2.5, timeout: 60 },
@@ -2516,9 +2516,15 @@ export const config = {
       // degrees off due south for the side waves) and march on the fence.
       waves: { count: 3, size: 3, firstDelay: 12, gap: 10, distance: 60, pathDistance: 70, sideAngle: 70, timeout: 150 },
       fenceCallDistance: 14, // line 16 when wave 1 is this close to the fence
+      firstCallAfter: 20, // ...or this many seconds after it rises, or once one of it's down (Session 15b)
       tacticsDelay: 3, // seconds after line 16: Ellen's tower line, then Wyatt's shotgun line
       plantAfter: 4, // seconds after the last wave's down: the witch plants at the storm shelter
       plantClearance: 70, // ...unless Tom is this close (she waits)
+      feedDelay: 3.5, // seconds from Ellen's "a trail cam's live" to camera six (Session 15b)
+      // After the clip, in order (Session 15b): the family talk it over, then
+      // the night fades to dawn this many seconds after the last line.
+      afterClip: ['day1.night.after1', 'day1.night.after2', 'day1.20', 'day1.night.after3'],
+      dawnAfterTalk: 2.5,
       holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
       sigilOffset: [1.5, 1], // metres from the shelter clearing's centre (beside the hatch, M9.3)
       holdRadius: 14, // its dead stay this close to it (they never march on the station)

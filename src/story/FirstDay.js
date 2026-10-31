@@ -15,16 +15,18 @@
 //    Day 1 until a battery is fitted and the torn fence patched, so dusk
 //    never comes before the tutorial's done (it never shows as a rule).
 //  - Nightfall (Session 15b, Aaron): with the fence patched, the battery in
-//    and Junie's word had (13-14), the day fades to dusk.
-//  - Dusk 1: Ellen's forecast line (15, from the forecast).
+//    and Junie's word had (13-14, indoors), the day fades straight to night
+//    (no dusk to stand about in). The forecast comes up once the fade's
+//    done, with Ellen's line 15.
 //  - Night 1, the first defence (Session 15b, Aaron): 9 dead in waves of 3,
 //    each from a new side (16, then the family on the tower and the
-//    shotgun). Once they're down the witch plants her first sigil at the
-//    storm shelter (the one exception to "night 1 is safe"): camera six's
-//    clip (17-19), the sigil goes on the map and line 20 sends Tom to the
-//    gas station at first light; the shelter spur opens (night1). The
-//    sigil's dead hold the shelter (sigil.hold). The night holds short of
-//    dawn until she's planted.
+//    shotgun). Once they're down Ellen says a trail cam's live, and the
+//    witch plants her first sigil at the storm shelter (the one exception
+//    to "night 1 is safe"): camera six's clip (17-19). The sigil goes on
+//    the map, the shelter spur opens (night1), and the family talk it
+//    over: the Pruitts, line 20, and the gas station (supplies, a phone).
+//    Then the night fades to dawn. The sigil's dead hold the shelter
+//    (sigil.hold). The night holds short of dawn until she's planted.
 //  - Dawn 1: lines 21 / 22 and 23 (the dialogue's own dawn triggers), the
 //    autosave (Game), and day2 opens the gas station trail.
 //  - Skip intro: a fresh run that starts at Dawn 1 with all of that done.
@@ -33,7 +35,8 @@
 // so it's saved with them.
 //
 // Events: 'firstDay:opening' (the opening's over), 'firstDay:tower',
-// 'firstDay:nightfall' (mid-fade: the clock goes to dusk), 'firstDay:wave'
+// 'firstDay:nightfall' (mid-fade: the clock goes to night), 'firstDay:dawn'
+// (mid-fade: the clock goes to dawn), 'firstDay:wave'
 // { wave, count }, 'firstDay:sigil' { sigil }.
 
 import { zoneOf, compassName } from '../base/stationLayout.js';
@@ -71,7 +74,8 @@ export class FirstDay {
       }),
       this.bus.on('phase:dawn', () => (this.night = null)),
       // Session 15b: the nightfall cutscene's mid-fade.
-      this.bus.on('firstDay:nightfall', () => this.fallToDusk()),
+      this.bus.on('firstDay:nightfall', () => this.fallToNight()),
+      this.bus.on('firstDay:dawn', () => this.riseToDawn()),
       // Night 1's waves: off the list as they fall (a pool slot can come back as another).
       this.bus.on('enemy:killed', ({ zombie }) => {
         const w = this.night?.wave;
@@ -249,7 +253,7 @@ export class FirstDay {
 
   // Session 15b (Aaron): the work done (the fence patched, the battery in)
   // and Junie's had her word (13-14), or Tom's left her waiting: the day
-  // fades to dusk.
+  // fades straight to night.
   updateNightfall(dt) {
     if (this.nightfallDone || this.cutscenes.active) return;
     if (!(this.progress.has('day1Battery') && this.fenceWhole())) {
@@ -266,14 +270,28 @@ export class FirstDay {
 
   startNightfall() {
     this.nightfallDone = true;
-    if (!this.cutscenes.play('day1.nightfall', { onDone: () => this.fallToDusk() })) this.fallToDusk();
+    if (!this.cutscenes.play('day1.nightfall', { onDone: () => this.fallToNight() })) this.fallToNight();
   }
 
-  // The clock to dusk (once): the forecast and Ellen's line 15 follow from it.
-  fallToDusk() {
+  // The clock to night (once), through dusk in the same moment (its events
+  // still fire: the forecast, which waits for the fade, and Ellen's line 15).
+  fallToNight() {
     this.nightfallDone = true;
     const c = this.clock;
-    if (c.day !== 1 || c.phase !== 'day') return;
+    if (c.day !== 1) return;
+    if (c.phase === 'day') c.skipPhase();
+    if (c.phase === 'dusk') c.skipPhase();
+  }
+
+  // Session 15b (Aaron): after camera six and the talk, the night fades to dawn.
+  startDawn() {
+    if (this.night) this.night.dawnStarted = true;
+    if (!this.cutscenes.play('day1.dawn', { onDone: () => this.riseToDawn() })) this.riseToDawn();
+  }
+
+  riseToDawn() {
+    const c = this.clock;
+    if (c.day !== 1 || c.phase !== 'night') return;
     c.skipPhase();
   }
 
@@ -352,7 +370,7 @@ export class FirstDay {
 
   startNight1() {
     if (this.night || this.progress.has('night1Planted')) return;
-    this.night = { time: 0, waves: 0, wave: [], waveTime: 0, nextIn: this.fc.night1.waves.firstDelay, firstCall: false, tactics: -1, clearIn: -1, planted: false };
+    this.night = { time: 0, waves: 0, wave: [], waveTime: 0, nextIn: this.fc.night1.waves.firstDelay, firstCall: false, tactics: -1, clearIn: -1, feedIn: -1, planted: false, talked: false, dawnIn: -1, dawnStarted: false };
   }
 
   updateNight1(dt) {
@@ -379,9 +397,12 @@ export class FirstDay {
       this.dialogue.play('day1.night.clear');
     }
     // Line 16 as the first wave nears the fence, then the family's two ways to fight.
-    if (n.waves === 1 && !n.firstCall) {
+    // (Or a while after it rose, or once one's down: shot from the tower before they reach the fence.)
+    if (n.waves >= 1 && !n.firstCall) {
       const L = this.station.layout;
-      if (n.wave.some((z) => Math.hypot(z.x - L.centre.x, z.z - L.centre.z) < L.radius + fc.fenceCallDistance)) {
+      const near = n.wave.some((z) => Math.hypot(z.x - L.centre.x, z.z - L.centre.z) < L.radius + fc.fenceCallDistance);
+      const late = n.waves > 1 || n.waveTime > fc.firstCallAfter || n.wave.length < fc.waves.size;
+      if (near || late) {
         n.firstCall = true;
         n.tactics = fc.tacticsDelay;
         this.dialogue.play('day1.16', { where: n.where });
@@ -394,12 +415,26 @@ export class FirstDay {
         this.dialogue.play('day1.night.shotgun');
       }
     }
-    if (n.clearIn >= 0 && !n.planted) {
+    if (n.clearIn >= 0 && !n.planted && n.feedIn < 0) {
       n.clearIn = Math.max(0, n.clearIn - dt);
       // Not while Tom's right there: she waits till he's gone.
       const s = this.shelterSpot();
       const p = this.player.position;
-      if (n.clearIn <= 0 && Math.hypot(p.x - s.x, p.z - s.z) > fc.plantClearance && !this.cutscenes.active) this.plantNight1();
+      if (n.clearIn <= 0 && Math.hypot(p.x - s.x, p.z - s.z) > fc.plantClearance && !this.cutscenes.active) {
+        // Session 15b (Aaron): a warning first: Ellen's got a trail cam live.
+        n.feedIn = fc.feedDelay;
+        this.dialogue.play('day1.night.feed');
+      }
+    }
+    if (n.feedIn >= 0 && !n.planted) {
+      n.feedIn -= dt;
+      if (n.feedIn < 0 && !this.cutscenes.active) this.plantNight1();
+      else if (n.feedIn < 0) n.feedIn = 0;
+    }
+    // After the clip and the talk: the night fades to dawn.
+    if (n.talked && !n.dawnStarted && !this.cutscenes.active) {
+      if (this.subtitles?.busy) n.dawnIn = fc.dawnAfterTalk;
+      else if ((n.dawnIn -= dt) < 0) this.startDawn();
     }
   }
 
@@ -476,7 +511,10 @@ export class FirstDay {
       onDone: () => {
         sigil.known = true; // on the map now
         this.progress.setFlag('night1');
-        this.dialogue.play('day1.20');
+        // Session 15b (Aaron): they talk it over, then the gas station at first light.
+        for (const id of this.fc.night1.afterClip) this.dialogue.play(id);
+        n.talked = true;
+        n.dawnIn = this.fc.night1.dawnAfterTalk;
       },
     });
   }

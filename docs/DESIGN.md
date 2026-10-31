@@ -1247,10 +1247,14 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 16c | The second wave *(Session 15b, draft)* | Wyatt (radio) | More of them, Dad. Coming at the {where} fence. |
 | 16d | The third wave *(Session 15b, draft)* | Ellen (radio) | Three more, from the {where}. That looks like the last of them. |
 | 16e | All nine down, before the clip *(Session 15b, draft)* | Wyatt (radio) | That's all of them. The fence held, Dad. |
+| 16f | A few seconds before the clip *(Session 15b, draft)* | Ellen (radio) | Tom, one of the trail cams just tripped. It's live. Hold on, I'm putting it through. |
 | 17 | Trail-cam clip starts | Ellen (radio) | Tom, camera six. Look at this. |
 | 18 | During the clip | Ellen (radio) | She's burying something. The transmissions talked about marks like that, wherever the dead started rising. |
 | 19 | Clip ends | Junie (radio) | The ground's still glowing where she was. Like it's warm. |
-| 20 | Sigil marked on the map | Wyatt (radio) | It's on your map, out on Pruitt land. Dad, the Pruitts run the gas station. Somebody needs to check on them at first light. *(Session 15b, Aaron: the next beat is the gas station, not digging; my draft)* |
+| 19a | After the clip *(Session 15b, draft)* | Wyatt (radio) | That's the Pruitts' storm shelter. She was right there on their land. |
+| 19b | After 19a *(Session 15b, draft)* | Ellen (radio) | Earl built that shelter for his family. If they went out there tonight... |
+| 20 | Sigil marked on the map | Wyatt (radio) | It's on your map now. Somebody needs to check on the Pruitts at first light, Dad. *(Session 15b, Aaron: the next beat is the gas station, not digging; my draft)* |
+| 20a | After 20, then the night fades to dawn *(Session 15b, draft)* | Ellen (radio) | Start at their gas station. There'll be supplies, and if Earl's phone or his radio still works, we can reach someone outside. We need help, Tom. |
 | 21 | Dawn 1, sigil not dug up | Ellen | We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right. *(Session 15b; my draft)* |
 | 22 | Dawn 1, sigil dug up | Ellen | You got it. The night went quiet after you dug it up. That has to mean something. |
 | 23 | Dawn 1, either way | Junie | She was singing. On the camera. Did you hear it? |
@@ -1298,11 +1302,11 @@ Ellen explains the first forecast.
 
 ### Night 1 (the first defence; the first sigil)
 
-- **The first defence** (Aaron, Session 15b; replaces "only a few strays"): once the fence is patched, the battery's in and Junie's had her word (13-14), the day fades to dusk. At night 9 zombies come at the compound in waves of 3, each from a new side (up the campsite path, then the south, then the east), the next once the last is down. The family suggest the two ways to fight: the tower with the rifle, or the shotgun at the fence. It shows the charged fence doing its job and gives the guns some practice. No health floor: Night 1 is real.
+- **The first defence** (Aaron, Session 15b; replaces "only a few strays"): once the fence is patched, the battery's in and Junie's had her word (13-14, indoors), the day fades straight to night (no dusk to wait out); the forecast and Ellen's line 15 come up as the picture returns. At night 9 zombies come at the compound in waves of 3, each from a new side (up the campsite path, then the south, then the east), the next once the last is down. The family suggest the two ways to fight: the tower with the rifle, or the shotgun at the fence. It shows the charged fence doing its job and gives the guns some practice. No health floor: Night 1 is real.
 - The night's one sigil is far enough off that it raises nothing that reaches home before dawn.
 - **The first sigil is scripted** (Session 11): the real witch comes out on Night 1 on a fixed route and plants at the storm shelter, the one exception to "night 1 is safe, planting from night 2" (`config.witch.firstNight`). The owner's family die there that night (see Storm shelter). From Night 2 her normal rules take over (inside the cluster until the cordon is crossed).
 - The family patch through the trail-cam clip of the witch planting her first sigil at the storm shelter; it's marked on the map. *(proposed)* One of the trail cameras is fixed near the shelter, so the clip is always possible.
-- **The clip comes once the 9 are down** (Session 15b). Line 20 then sends Tom to the gas station at first light, to check on the Pruitts (it's their land the sigil's on), not to dig. Digging it up in the dark is still possible (optional and scary), but nobody asks for it.
+- **The clip comes once the 9 are down** (Session 15b), after Ellen's warning that a trail cam's live. Then the family talk it over: it's the Pruitts' shelter; line 20, someone needs to check on them at first light; and Ellen: start at their gas station, for supplies and a phone or radio to reach the outside. Then the night fades to dawn (no waiting it out), so the sigil isn't dug up on Night 1.
 
 ### Dawn 1
 
@@ -1319,7 +1323,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 - **The opening:** the cold open, then Tom wakes in the comms room facing Ellen (from black), lines 1-2.
 - **The tower:** the first climb on Day 1; the light far south is a small red light blinking at the edge of sight; the smoke over the campsite; lines 3-4.
 - **Day 1 can't fail** (a 20% health floor, the day only) and **its clock holds at 17:00** until nightfall: Session 15b, once the battery's fitted, the torn fence patched and Junie's had her word (or 60 s), the day fades to dusk (`day1.nightfall`). Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
-- **Night 1** (Session 15b): 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map, line 20 pointing Tom to the gas station, and the spur open. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
+- **Night 1** (Session 15b): straight in from the day (no dusk); 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map and the spur open; the family's talk (19a-20a: the Pruitts, the gas station); then a fade to dawn. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
 - **Dawn 1:** lines 21 / 22 and 23; the gas station trail opens.
 - **Skip intro:** a fresh map at Dawn 1, the tutorial done, the campsite looted, the camcorder handed in, the Night 1 sigil planted.
 

@@ -248,9 +248,19 @@ describe('Night 1, the first defence (Session 15b)', () => {
     for (const id of ['day1.16', 'day1.night.wave2', 'day1.night.wave3']) expect(by[id].text).toContain('{where}');
   });
   it('sends Tom to the gas station after camera six and at dawn, not to dig', () => {
-    expect(by['day1.20'].text).toMatch(/gas station/i);
+    const after = config.firstDay.night1.afterClip;
+    expect(after).toContain('day1.20');
+    for (const id of after) expect(by[id]).toBeTruthy();
+    expect(after.map((id) => by[id].text).join(' ')).toMatch(/gas station/i);
+    expect(by['day1.20'].text).toMatch(/Pruitts/);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
     expect(by['day1.21'].text).toMatch(/gas station/i);
+    expect(by['day1.night.feed'].text).toMatch(/live/i);
+  });
+
+  it('fades the night to dawn after the talk', () => {
+    const d = cutsceneData.cutscenes.find((c) => c.id === 'day1.dawn');
+    expect(d.tracks.some((t) => t.do === 'emit' && t.event === 'firstDay:dawn')).toBe(true);
   });
   it('fades the day to dusk with a cutscene that moves the clock', () => {
     const nf = cutsceneData.cutscenes.find((c) => c.id === 'day1.nightfall');

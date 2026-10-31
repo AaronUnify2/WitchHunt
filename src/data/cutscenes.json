@@ -214,15 +214,27 @@
     },
     {
       "id": "day1.nightfall",
-      "name": "Day 1: nightfall (the day fades to dusk)",
+      "name": "Day 1: nightfall (the day fades to night)",
       "style": "firstPerson",
-      "_note": "Session 15b (Aaron): once the fence is patched, the battery's in and Junie's had her word, the picture fades to black, the clock goes to dusk (the emit; onDone does it too if skipped) and it fades back up on dusk. The forecast and Ellen's line 15 follow.",
+      "_note": "Session 15b (Aaron): once the fence is patched, the battery's in and Junie's had her word (indoors), the picture fades to black, the clock goes straight to night (the emit; onDone does it too if skipped) and it fades back up on the night. The forecast (it waits for the cutscene) and Ellen's line 15 follow.",
       "tracks": [
         { "at": 0, "do": "fade", "to": 1, "seconds": 1.6 },
         { "at": 1.8, "do": "emit", "event": "firstDay:nightfall" },
         { "at": 2.4, "do": "fade", "to": 0, "seconds": 2 }
       ],
       "duration": 4.6
+    },
+    {
+      "id": "day1.dawn",
+      "name": "Night 1: the night fades to dawn",
+      "style": "firstPerson",
+      "_note": "Session 15b (Aaron): after camera six and the family's talk (the Pruitts, the gas station), the picture fades to black, the clock goes to dawn (the emit; onDone does it too if skipped) and it fades back up on Dawn 1: the dawn lines and the autosave follow.",
+      "tracks": [
+        { "at": 0, "do": "fade", "to": 1, "seconds": 1.8 },
+        { "at": 2, "do": "emit", "event": "firstDay:dawn" },
+        { "at": 2.8, "do": "fade", "to": 0, "seconds": 2.2 }
+      ],
+      "duration": 5.2
     },
     {
       "id": "day1.tower",

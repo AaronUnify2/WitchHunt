@@ -38,6 +38,13 @@ Round 5 (the station ledger):
 - [ ] **Upgrades:** "Floodlights (all 4)" for 100 scrap; spike traps by side (west 60, south-west 40, south 40, south-east 40, east 60).
 - [ ] Tapping tabs and rows works on the tablet, and the × closes the book.
 
+Round 6 (Night 1's flow):
+- [ ] **Straight to night:** after Junie and Ellen's talk inside, the fade goes straight to night (no dusk). The forecast comes up as the picture returns, with Ellen's "This is how we stay alive..." while it's on screen.
+- [ ] **Line 16 and the tower/shotgun suggestions** play even if you shoot wave 1 from the tower before it reaches the fence.
+- [ ] **The warning:** once all nine are down, Ellen says a trail cam's live and she's putting it through; the clip starts a few seconds later.
+- [ ] **The talk afterwards:** Wyatt and Ellen on the Pruitts' shelter, line 20 (check on the Pruitts at first light), then Ellen on the gas station (supplies, a phone or radio to reach the outside, help). It's four lines, about 45 s in all. Too long?
+- [ ] **Then a fade to dawn:** Dawn 1's lines play and the game saves. You don't wait out the night.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

@@ -100,6 +100,10 @@ export class NightWatch {
         this.duskSecurity = null;
       }),
       bus.on('player:respawned', () => this.reset()),
+      // Session 15b (Aaron): the forecast waits for a cutscene to end (it came up
+      // hidden under Day 1's nightfall fade, with Ellen's line about it already playing).
+      bus.on('cutscene:started', () => (this.inCutscene = true)),
+      bus.on('cutscene:ended', () => (this.inCutscene = false)),
     ];
   }
 
@@ -237,7 +241,7 @@ export class NightWatch {
       this.reportReturn();
     }
 
-    if (this.forecastDue) {
+    if (this.forecastDue && !this.inCutscene) {
       this.forecastDue = false;
       this.showForecast();
     }
