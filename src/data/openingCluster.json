@@ -20,7 +20,7 @@
     { "id": 6, "near": "stormShelter", "dx": -11, "dz": -10 }
   ],
   "gates": [
-    { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "night1", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
+    { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
     { "id": "gasStationTrail", "kind": "fallenTree", "path": ["campsite", "gasStation"], "t": 0.5, "opensOn": "day2", "locked": "A fallen oak blocks the trail. Too big to climb with a pack." },
     { "id": "outpostRoad", "kind": "chainGate", "road": 463, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
     { "id": "outpostSide", "kind": "chainGate", "path": ["familyCemetery", "outpost"], "t": 0.72, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },

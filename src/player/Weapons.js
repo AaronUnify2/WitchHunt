@@ -158,6 +158,7 @@ export class Weapons {
     }
     const w = this.weapon;
     const s = this.state;
+    if (w.kind === 'none') return; // Session 15b: empty-handed
     // Session 10b: automatic guns keep firing while the trigger is held.
     const wants = w.kind === 'melee' || w.auto ? input.isDown('attack') : input.wasPressed('attack');
     if (!wants) return;

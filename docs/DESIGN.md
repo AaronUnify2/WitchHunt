@@ -1236,7 +1236,7 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 8 | Shotgun picked up, wave starts | Wyatt (radio) | Dad, behind you! In the trees! |
 | 9 | Wave cleared | Wyatt (radio) | They didn't stop when you hit them. They just kept coming until they couldn't. |
 | 10 | After line 9 | Ellen (radio) | The dead aren't supposed to get up, Tom. Our fence is electrified to keep the bears out. Bring me their car battery and I'll supercharge it. *(Session 15b, Aaron's wording)* |
-| 11 | Entering the compound | Wyatt (radio) | East fence is torn up. The ledger's on the desk in the comms room. Patch it with the scrap you found. |
+| 11 | The torn fence patched by hand at the fence *(Session 15b, Aaron: it came on walking in, right at the fence box)* | Wyatt (radio) | Nice work, Dad. You can patch the fence from the ledger too. It's on the desk in the comms room. |
 | 12 | Fence repaired | Wyatt | That battery goes in the fence box by the gate. It'll put charge back in the wire. |
 | 13 | Battery fitted; marker appears | Junie | Are they going to come here? |
 | 14 | After line 13 | Ellen | They'll come. But the fence is live again, and we'll be ready for them. *(Session 15b, Aaron: they're coming, so she can't say they won't)* |
@@ -1251,9 +1251,9 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 17 | Trail-cam clip starts | Ellen (radio) | Tom, camera six. Look at this. |
 | 18 | During the clip | Ellen (radio) | She's burying something. The transmissions talked about marks like that, wherever the dead started rising. |
 | 19 | Clip ends | Junie (radio) | The ground's still glowing where she was. Like it's warm. |
-| 19a | After the clip *(Session 15b, draft; the map button shows on screen with it)* | Wyatt (radio) | That's the Pruitts' storm shelter, Dad. It's on your map now. Have a look. |
-| 20 | After 19a *(Session 15b: Ellen's now; Aaron: the next beat is the gas station, not digging; my draft)* | Ellen (radio) | Earl built that shelter for his family. If they went out there tonight... Somebody needs to check on them at first light. |
-| 20a | After 20, then the night fades to dawn *(Session 15b, draft)* | Wyatt (radio) | Start at their gas station, Dad. There'll be supplies, and if Earl's phone or radio still works, we can reach someone outside. |
+| 19a | After the clip *(Session 15b, draft; the map button shows on screen with it)* | Wyatt (radio) | She buried something out on Pruitt land, Dad. It's on your map. Have a look. |
+| 20 | After 19a *(Session 15b: Ellen's now; Aaron: stay away from her place, the gas station first; my draft)* | Ellen (radio) | Then we stay well away from it. At first light, go to the gas station, just south of the campground. See if the Pruitts are all right. |
+| 20a | After 20, then the night fades to dawn *(Session 15b, draft)* | Wyatt (radio) | And if their phone's still working, we can call for help. |
 | 21 | Dawn 1, sigil not dug up | Ellen | We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right. *(Session 15b; my draft)* |
 | 22 | Dawn 1, sigil dug up | Ellen | You got it. The night went quiet after you dug it up. That has to mean something. |
 | 23 | Dawn 1, either way | Junie | She was singing. On the camera. Did you hear it? |

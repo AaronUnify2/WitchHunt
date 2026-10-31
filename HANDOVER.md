@@ -105,6 +105,11 @@ Details are in `STATUS.md` (Session 15's "After Aaron's play-test" list, items 1
 - **The quad:**
   - The Player hands movement to `player.riding` (`drive()`). A teleport or reset ejects him.
   - Game locks firing, charges and digging while riding, and sets `witch.speedScale`.
+- **Playtest round 3 changed the road to the shelter (STATUS item 22):**
+  - The shelter's spur opens on `shelterCall` (the gas station's witch and Earl's note both done; back-up: the dawn after the gas station), not `night1`.
+  - Digging needs the shovel. It leans by the cabin's front door; Tom starts empty-handed.
+  - The family send Tom for it as he leaves the gas station.
+  - Earl's note now says "come straight there", "don't go to the checkpoint" and "she's been burying things for weeks".
 - **Placeholder signposts** are skipped for built sets (`config.landmarks.built`). Add the shelter's key there when it's built.
 - **Headless checks:**
   - Step the game by hand (`game.update(0.1)`).

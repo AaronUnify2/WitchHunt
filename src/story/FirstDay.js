@@ -58,8 +58,11 @@ export class FirstDay {
     const flag = (id) => this.progress.has(id);
     this.unsubscribers = [
       this.bus.on('station:climbed', () => this.onTower()),
-      this.bus.on('station:repaired', ({ barrier }) => {
-        if (this.isDay1() && barrier.kind === 'fence' && !flag('day1Battery')) this.dialogue.say('day1.12');
+      this.bus.on('station:repaired', ({ barrier, via }) => {
+        if (!this.isDay1() || barrier.kind !== 'fence') return;
+        // Session 15b (Aaron): patched by hand at the fence: Wyatt says the ledger can do it too (line 11).
+        if (via === 'world') this.dialogue.say('day1.11');
+        if (!flag('day1Battery')) this.dialogue.say('day1.12');
       }),
       this.bus.on('station:battery', () => {
         if (this.clock.day !== 1 || flag('day1Battery')) return;
@@ -341,8 +344,7 @@ export class FirstDay {
     const has = (id) => this.progress.has(id);
     const back = has('campsiteBattery') || has('campsiteCleared');
     if (back && zone >= 1 && !has('day1Home')) {
-      this.progress.setFlag('day1Home');
-      if (!has('day1Battery')) this.dialogue.say('day1.11');
+      this.progress.setFlag('day1Home'); // Session 15b: line 11 waits for a fence patched by hand (it came as Tom was at the fence box)
     }
     if (this.notifyFamily && zone >= 1) {
       this.notifyFamily = false;

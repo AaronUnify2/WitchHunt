@@ -103,6 +103,13 @@ export class GasStation {
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       this.bus.on('gasStation:wake', () => this.wakeMutant()),
       this.bus.on('quad:mounted', () => (this.quadTold = true)),
+      // Session 15b (Aaron): the shovel picked up on the way out to the shelter: it's a weapon too.
+      this.bus.on('station:shovel', () => {
+        if (this.progress?.has('shelterCall') && !this.weaponTold) {
+          this.weaponTold = true;
+          this.dialogue?.play('shovel.weapon');
+        }
+      }),
     ];
   }
 
@@ -121,6 +128,8 @@ export class GasStation {
     this.safeOpen = false;
     this.backDoor = 0; // 0 shut .. 1 open
     this.quadTold = false; // the family have said to take Earl's quad
+    this.shelterTalk = false; // Session 15b: due: the family's word about the shelter and the shovel, as Tom leaves
+    this.weaponTold = false; // ...and Wyatt's, that the shovel's a weapon too
   }
 
   // The store sits level on its highest corner (like the station's cabin).
@@ -280,6 +289,7 @@ export class GasStation {
     if (this.mutantState === 'awake') this.updateAwake();
     this.updateWitch(dt, l);
     this.updateBackDoor(dt, l);
+    this.updateShelterTalk(l);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -451,6 +461,7 @@ export class GasStation {
         this.quadTold = true;
         this.dialogue?.play('gas.quad');
       }
+      this.checkShelterCall();
     };
     const played = this.cutscenes?.play('gas.witch', {
       anchors: { gasStation: frameAnchor(this.frame), herSpot: at(w.x, w.z), herRun: at(w.runTo.x, w.runTo.z) },
@@ -560,6 +571,28 @@ export class GasStation {
       this.junieDue = false;
       this.dialogue?.play('gas.witch.junie');
     }
+    this.checkShelterCall();
+  }
+
+  // Session 15b (Aaron): with the witch seen and Earl's note read, the
+  // family send Tom out to the Pruitts' shelter (its spur opens), and say
+  // more as he leaves: the shovel by the cabin's door, and that it's a weapon.
+  checkShelterCall() {
+    if (!this.witchSeen || !this.done.has('note') || this.progress?.has('shelterCall')) return;
+    this.progress?.setFlag('shelterCall');
+    this.shelterTalk = true;
+  }
+
+  updateShelterTalk(l) {
+    if (!this.shelterTalk || this.cutscenes?.active) return;
+    if (Math.hypot(l.x, l.z) < this.frame.radius + this.gc.shelterTalkDistance) return;
+    this.shelterTalk = false;
+    const shovel = this.combat?.weapons.order.includes('shovel');
+    this.dialogue?.play(shovel ? 'gas.shovel.have' : 'gas.shovel');
+    if (shovel && !this.weaponTold) {
+      this.weaponTold = true;
+      this.dialogue?.play('shovel.weapon');
+    }
   }
 
   // The gun safe: locked until Tom has Earl's combination (the storm
@@ -600,6 +633,9 @@ export class GasStation {
       witch: this.witchSeen,
       junie: this.junieDue,
       safe: this.safeOpen,
+      shelterTalk: this.shelterTalk,
+      weaponTold: this.weaponTold,
+      quadTold: this.quadTold,
     };
   }
 
@@ -617,6 +653,9 @@ export class GasStation {
     this.witchSeen = Boolean(d.witch);
     this.junieDue = Boolean(d.junie);
     this.safeOpen = Boolean(d.safe);
+    this.shelterTalk = Boolean(d.shelterTalk);
+    this.weaponTold = Boolean(d.weaponTold);
+    this.quadTold = Boolean(d.quadTold);
     // Back to the forecourt with the pack gone (it was dealt with, or it will be again).
     if (d.pack) this.packSent = this.mutantState === 'down';
   }

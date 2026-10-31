@@ -263,6 +263,28 @@ export class Station {
     return Boolean(r) && !this.combat.weapons.order.includes(r.weapon);
   }
 
+  // Session 15b (Aaron): the shovel by the cabin's front door, while Tom hasn't got one.
+  get shovelAtDoor() {
+    const s = this.sc.shovelByDoor;
+    return Boolean(s) && !this.combat.weapons.order.includes(s.weapon);
+  }
+
+  // Where it leans: { x, z } (outside the front wall, east of the door).
+  shovelSpot() {
+    const d = this.layout.cabin.frontDoor;
+    const a = this.sc.shovelByDoor.at;
+    return { x: d.x + a[0], z: d.z + a[1] };
+  }
+
+  takeShovel() {
+    const id = this.sc.shovelByDoor.weapon;
+    this.combat.giveWeapon(id);
+    this.combat.hud.pickup(`${this.cfg.weapons[id].name}: dig up sigils, or fight with it`);
+    this.combat.sfx.play('pickup');
+    this.bus.emit('station:shovel');
+    return null;
+  }
+
   takeTowerRifle() {
     const id = this.sc.towerRifle.weapon;
     this.combat.giveWeapon(id);
@@ -446,6 +468,7 @@ export class Station {
     }
     this.ledger.update(dt, input, playing);
     this.renderer.towerRifleVisible = this.rifleOnTower;
+    this.renderer.shovelVisible = this.shovelAtDoor;
     this.renderer.gateLocked = this.gateLocked;
     this.renderer.update(dt, cameraPosition, daylight, this.turret);
   }
@@ -491,6 +514,7 @@ export class Station {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
 
     const c = L.cabin;
+    if (this.shovelAtDoor) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 
@@ -555,12 +579,13 @@ export class Station {
     const hp = `${Math.ceil(b.health)}/${b.max}`;
     if (scrap <= 0) return { key: `info-${b.id}`, prompt: `${capitalise(b.name)} ${hp}: you need scrap to repair it`, act: null };
     const partial = scrap < cost ? ` (${scrap} of ${cost} scrap: part of it)` : ` (${cost} scrap)`;
-    return { key: `repair-${b.id}`, prompt: `Hold ${X}: repair the ${b.name} ${hp}${partial}`, busy: 'Repairing…', seconds: this.sc.hold.repair, act: () => this.repair(b) };
+    return { key: `repair-${b.id}`, prompt: `Hold ${X}: repair the ${b.name} ${hp}${partial}`, busy: 'Repairing…', seconds: this.sc.hold.repair, act: () => this.repair(b, 'world') };
   }
 
   // ---- actions (from the world or the ledger); each returns a message ----------------
 
-  repair(b) {
+  // via: 'world' (at the barrier itself) or 'ledger' (Session 15b: Day 1's line 11 tells them apart).
+  repair(b, via = 'ledger') {
     const inv = this.combat.inventory;
     const cost = this.state.repairCost(b);
     if (cost <= 0) return `The ${b.name} doesn't need repairing`;
@@ -569,7 +594,7 @@ export class Station {
     inv.spendScrap(spent);
     this.syncColliders();
     this.combat.sfx.play('hammer');
-    this.bus.emit('station:repaired', { barrier: b });
+    this.bus.emit('station:repaired', { barrier: b, via });
     return spent < cost ? `${capitalise(b.name)} partly repaired (-${spent} scrap)` : `${capitalise(b.name)} repaired (-${spent} scrap)`;
   }
 

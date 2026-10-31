@@ -2,6 +2,8 @@
 // guarantee, the campers' car, the device's memory, cued lines, the
 // cutscenes and the starting kit.
 import { describe, it, expect } from 'vitest';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 import { clearingFrame, frameToWorld, frameYaw, frameAnchor, frameEdge } from '../src/world/clearingFrame.js';
 import { localToWorld, validateCutscenes } from '../src/story/cutsceneTimeline.js';
 import { placeVehicles } from '../src/world/vehiclePlacement.js';
@@ -255,7 +257,8 @@ describe('Night 1, the first defence (Session 15b)', () => {
     for (const id of after) expect(by[id]).toBeTruthy();
     expect(after.map((id) => by[id].text).join(' ')).toMatch(/gas station/i);
     expect(after.length).toBe(3); // Aaron: three lines
-    expect(by['day1.night.after1'].text).toMatch(/Pruitts/);
+    expect(by['day1.night.after1'].text).toMatch(/Pruitt land/);
+    expect(by['day1.20'].text).toMatch(/stay well away/i);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
     expect(by['day1.21'].text).toMatch(/gas station/i);
     expect(by['day1.night.feed'].text).toMatch(/live/i);
@@ -268,6 +271,22 @@ describe('Night 1, the first defence (Session 15b)', () => {
   it('fades the day to dusk with a cutscene that moves the clock', () => {
     const nf = cutsceneData.cutscenes.find((c) => c.id === 'day1.nightfall');
     expect(nf.tracks.some((t) => t.do === 'emit' && t.event === 'firstDay:nightfall')).toBe(true);
+  });
+});
+
+describe('Pruitt land waits for the gas station (Session 15b, Aaron)', () => {
+  const progress = require('../src/data/progress.json');
+  const cluster = require('../src/data/openingCluster.json');
+  it("opens the shelter's spur on shelterCall (after the gas station), not on Night 1's clip", () => {
+    const gate = cluster.gates.find((g) => g.id === 'shelterSpur');
+    expect(gate.opensOn).toBe('shelterCall');
+    const flag = progress.flags.find((f) => f.id === 'shelterCall');
+    expect(flag.trigger.after).toContain('gasStationVisited');
+  });
+  it('has Tom start empty-handed: the shovel leans by the front door', () => {
+    expect(config.weapons.startingLoadout).not.toContain('shovel');
+    expect(config.weapons[config.weapons.startingWeapon].kind).toBe('none');
+    expect(config.station.shovelByDoor.weapon).toBe('shovel');
   });
 });
 

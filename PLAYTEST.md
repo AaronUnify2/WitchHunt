@@ -92,6 +92,16 @@ Round 13 (gas station notes):
 - [ ] The stockroom's back door opens as you walk to it, out onto the quad.
 - [ ] After the witch, Wyatt tells you to take Earl's quad.
 
+Round 14 (playtest round 3):
+- [ ] Tom wakes empty-handed. The shovel leans by the cabin's front door (hold X to take it).
+- [ ] Patch the torn fence by hand at the fence: Wyatt says the ledger can do it too. (Nothing on walking back in.)
+- [ ] After camera six: she buried something on Pruitt land; stay away; the gas station first, and maybe a phone.
+- [ ] The shelter's gate stays shut until you've seen the witch and read Earl's note at the gas station.
+- [ ] The mutant takes a bit more killing.
+- [ ] Earl's new note.
+- [ ] Leaving the gas station: Ellen sends you for the shovel; once you have it, Wyatt says it's a weapon too.
+- [ ] A sigil can't be dug up without the shovel.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

@@ -209,6 +209,8 @@ export class Combat {
     if (stored > 0) delete this.inventory.ammo[type];
     w.addAmmo(type, rounds + stored);
     w.select(w.order.indexOf(id));
+    // Session 15b: empty hands are gone once there's something to hold.
+    if (id !== 'hands' && w.order.includes('hands')) w.setSlot('hands', false);
   }
 
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.

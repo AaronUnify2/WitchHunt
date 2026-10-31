@@ -921,11 +921,16 @@ export const config = {
     // shotgun is the campsite's prize instead (Skip intro gives it).
     // Session 15b (Aaron): the service rifle waits at the top of the lookout
     // tower (config.station.towerRifle); Tom wakes with the shovel.
-    startingLoadout: ['shovel'],
-    startingWeapon: 'shovel',
+    // Session 15b (Aaron): not even the shovel in the comms room with the
+    // family: it leans by the cabin's front door (config.station.shovelByDoor).
+    // 'hands' is nothing in hand; it goes once Tom has a weapon.
+    startingLoadout: ['hands'],
+    startingWeapon: 'hands',
     switchSeconds: 0.35, // lower one weapon and raise the next
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
+    // Session 15b: empty-handed (no model, no attack).
+    hands: { name: '', kind: 'none', magSize: 0, fireInterval: 1, recoilDegrees: 0, noise: 0 },
     shovel: {
       name: 'Shovel',
       kind: 'melee',
@@ -2161,6 +2166,9 @@ export const config = {
     // Night 1's beat, when Ellen sends Tom up for it.
     // at: metres from the platform's centre (x east, z south; the ladder's
     // on the south side). lean: radians off upright, into the rail.
+    // Session 15b (Aaron): the shovel leans on the cabin's front wall beside
+    // the door (at: metres east of the door, out from the wall), there until Tom takes it.
+    shovelByDoor: { weapon: 'shovel', at: [1.15, 0.3], lean: 0.3, handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
     // Session 15b (Aaron): on Day 1 the gate stays shut and locked until
     // Tom's been up the tower (story/FirstDay.js). Ellen calls him back if
@@ -2553,9 +2561,10 @@ export const config = {
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
-    mutant: { health: 180, lookHeight: 0.4, memory: 30 },
+    mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
     witch: { delay: 1.2, lookHeight: 1.5 }, // seconds after Tom's back on the forecourt; where the camera looks on her
     scannerLines: ['gas.scanner.1', 'gas.scanner.2'],
+    shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad
     safe: { weapon: 'sniper' }, // the hunting rifle, empty
 

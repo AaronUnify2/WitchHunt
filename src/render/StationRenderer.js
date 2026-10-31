@@ -60,6 +60,7 @@ export class StationRenderer {
     this.buildGlow();
     this.buildFamily();
     this.buildTowerRifle();
+    this.buildShovel();
     // Instanced meshes measure their bounds once, on the first frame: built
     // later (barricades, spikes, floodlights) they'd stay culled forever.
     // The whole compound is hidden by distance instead (update()).
@@ -347,6 +348,29 @@ export class StationRenderer {
     mesh.rotation.set(-r.lean, 0, 0); // tipped north, into the rail
     mesh.visible = false;
     this.towerRifle = mesh;
+    this.group.add(mesh);
+  }
+
+  // Session 15b (Aaron): the shovel leaning on the cabin's front wall by the
+  // door (config.station.shovelByDoor), until Tom takes it.
+  buildShovel() {
+    const s = this.cfg.shovelByDoor;
+    if (!s) return;
+    const d = this.layout.cabin.frontDoor;
+    const x = d.x + s.at[0];
+    const z = d.z + s.at[1];
+    const parts = [
+      this.box(0.06, 1.05, 0.06, 0, 0.28, 0, s.handle), // the shaft
+      this.box(0.2, 0.06, 0.06, 0, 1.3, 0, s.handle), // the D-grip
+      this.box(0.26, 0.32, 0.03, 0, 0, 0, s.blade), // the blade
+    ];
+    const mesh = new THREE.Mesh(this.keep(mergeGeometries(parts)), this.lambert);
+    parts.forEach((g) => g.dispose());
+    mesh.castShadow = true;
+    mesh.position.set(x, this.ground.heightAt(x, z), z);
+    mesh.rotation.set(-s.lean, 0.3, 0, 'YXZ'); // blade on the ground, the grip against the wall (north)
+    mesh.visible = false;
+    this.shovelMesh = mesh;
     this.group.add(mesh);
   }
 
@@ -666,6 +690,7 @@ export class StationRenderer {
     this.refresh();
     this.updateGateAndDoors();
     if (this.towerRifle) this.towerRifle.visible = Boolean(this.towerRifleVisible);
+    if (this.shovelMesh) this.shovelMesh.visible = Boolean(this.shovelVisible);
     if (this.gateChain) this.gateChain.visible = Boolean(this.gateLocked) && this.state.gate.health > 0;
     this.updateTurret(turret);
     const night = 1 - daylight;

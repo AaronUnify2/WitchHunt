@@ -268,7 +268,9 @@ export class ZombieDirector {
   updateDigging(dt, input) {
     const p = this.player.position;
     const target = this.combat.alive ? this.sigils.nearest(p.x, p.z, this.cfg.digging.range) : null;
-    const done = this.digging.update(dt, target, input.isDown('interact'));
+    // Session 15b (Aaron): digging takes the shovel (it waits by the cabin's front door).
+    const shovel = this.combat.weapons.order.includes('shovel');
+    const done = this.digging.update(dt, shovel ? target : null, shovel && input.isDown('interact'));
     if (this.digging.active) {
       this.scrapeTimer -= dt;
       if (this.scrapeTimer <= 0) {
@@ -280,7 +282,7 @@ export class ZombieDirector {
     }
     if (done) this.dig(done);
     const pad = input.activeDevice === 'gamepad';
-    this.hud.prompt = target ? (this.digging.active ? 'Digging up the sigil…' : `Hold ${pad ? 'X' : 'E'}: dig up the sigil`) : '';
+    this.hud.prompt = target ? (!shovel ? 'A sigil. You need a shovel to dig it up' : this.digging.active ? 'Digging up the sigil…' : `Hold ${pad ? 'X' : 'E'}: dig up the sigil`) : '';
     this.hud.progress = this.digging.target ? this.digging.progress : 0;
   }
 

@@ -253,6 +253,7 @@ export class ViewModel {
       autoShotgun: this.buildAutoShotgun(),
       shovel: this.buildShovel(),
       detonator: this.buildDetonator(),
+      hands: { group: new THREE.Group() }, // Session 15b: nothing in hand
     };
     for (const m of Object.values(this.models)) {
       m.group.visible = false;
