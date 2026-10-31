@@ -173,6 +173,7 @@ export class FirstDay {
         smoke,
         tower: { x: t.x, z: t.z, yaw: yawTo(light) },
       },
+      onDone: () => this.mapPrompt('campsite'), // Session 15b (Aaron): the campsite's on the map now: the map's button
     });
   }
 
@@ -214,6 +215,8 @@ export class FirstDay {
     this.station.gateLocked = this.gateLocked();
     // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).
     this.station.towerRifleLocked = this.clock.day === 1 && this.clock.phase === 'day';
+    // Session 15b (Aaron): the shovel by the door, once the witch has been seen burying something.
+    this.station.shovelLocked = !this.progress.has('night1');
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
     // (Or once the campsite's wave is down: Ellen's asked for the battery by then, tape or no tape.)
     if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen && !this.progress.has('campsiteCleared');
@@ -247,17 +250,27 @@ export class FirstDay {
       // Walking (not running) a while outside the fence on the way.
       pr.walk = this.player.sprinting ? 0 : pr.walk + dt * (this.player.speed > 0.5 ? 1 : 0);
       if (pr.walk > this.fc.prompts.sprintAfter) once('sprint', 'day1.prompt.sprint', 'Click LS: sprint', 'Hold Shift: sprint');
+      // Session 15b (Aaron): the wrecked car on the trail out: the first sign something's wrong.
+      if (!pr.shown.has('wreck') && this.vehicles?.list) {
+        const near = this.vehicles.list.some((v) => v !== this.campsite.car && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance);
+        if (near) {
+          pr.shown.add('wreck');
+          this.dialogue.play('day1.wreck.wyatt');
+          this.dialogue.play('day1.wreck.ellen');
+        }
+      }
     }
     if (this.clock.day === 1 && this.clock.phase === 'night' && zone <= 1 && this.flashlight && !this.flashlight.on && !this.cutscenes.active) {
       once('torch', 'day1.prompt.torch', 'D-pad left: flashlight', 'L: flashlight');
     }
   }
 
-  // The map prompt, with Wyatt's line that the shelter's on it.
-  mapPrompt() {
+  // The map prompt, each time something's first marked on it (the campsite
+  // after the tower; the shelter's sigil, with Wyatt's line).
+  mapPrompt(what = 'map') {
     const pr = (this.prompts ??= { walk: 0, shown: new Set() });
-    if (pr.shown.has('map')) return;
-    pr.shown.add('map');
+    if (pr.shown.has(`map:${what}`)) return;
+    pr.shown.add(`map:${what}`);
     this.hint?.('D-pad up: map', 'M: map');
   }
 
@@ -554,7 +567,7 @@ export class FirstDay {
         this.progress.setFlag('night1');
         // Session 15b (Aaron): they talk it over, then the gas station at first light.
         for (const id of this.fc.night1.afterClip) this.dialogue.play(id);
-        this.mapPrompt(); // Session 15b (Aaron): the button for the map, as Wyatt says it's on it
+        this.mapPrompt('sigil'); // Session 15b (Aaron): the button for the map, as Wyatt says it's on it
         n.talked = true;
         n.dawnIn = this.fc.night1.dawnAfterTalk;
       },

@@ -442,7 +442,7 @@ export class Game {
       drawDistance: () => this.drawDistance,
       notify: (text) => this.toast.show(text),
       // Session 15b: a control prompt in the device's own buttons.
-      hint: (pad, key) => this.toast.show(this.input.activeDevice === 'gamepad' ? pad : key),
+      hint: (pad, key) => this.hints.show(this.input.activeDevice === 'gamepad' ? pad : key, this.cfg.ui.hintSeconds),
       flashlight: this.flashlight,
       save: () => this.autosave(),
     });
@@ -503,6 +503,11 @@ export class Game {
     this.mapUi.init(root);
     this.toast = new Toast(cfg.ui);
     this.toast.init(root);
+    // Session 15b (Aaron): control prompts in their own slot under the toast
+    // (a later toast replaced them); their time doesn't run in a cutscene.
+    this.hints = new Toast(cfg.ui);
+    this.hints.init(root);
+    this.hints.el.className = 'toast hint hidden';
     this.overlay = new DebugOverlay(cfg.debug, this);
     this.overlay.init(root);
     this.debugMenu = new DebugMenu(cfg.debug.menu, this.input, this.bus);
@@ -1017,6 +1022,7 @@ export class Game {
     // Session 15b (Aaron): Tom's gun hides in a cutscene (it floated in the
     // campsite's sweep). After the step, so one starting this frame hides it too.
     this.combat.viewModel.root.visible = !cs.active && !viewer.active && !this.player.riding;
+    this.combat.viewModel.digging = Boolean(this.director.digging?.active); // Session 15b: the dig's animation
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
@@ -1058,6 +1064,7 @@ export class Game {
     this.debugMenu.update(dt);
     this.subtitles.update(dt);
     this.toast.update(dt);
+    if (!this.cutscenes.active) this.hints.update(dt);
     this.overlay.update(dt);
   }
 

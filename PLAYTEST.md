@@ -102,6 +102,13 @@ Round 14 (playtest round 3):
 - [ ] Leaving the gas station: Ellen sends you for the shovel; once you have it, Wyatt says it's a weapon too.
 - [ ] A sigil can't be dug up without the shovel.
 
+Round 15 (playtest round 4):
+- [ ] Control prompts show in their own slot under the top message: sprint on the walk out, "D-pad up: map" after the tower's view and after camera six, the torch on Night 1.
+- [ ] The wrecked car on the trail: Wyatt and Ellen comment on it.
+- [ ] The shovel by the door can't be taken until after camera six.
+- [ ] Digging a sigil shows the shovel digging.
+- [ ] The gas station mutant doesn't wake through the wall: only once you're inside.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

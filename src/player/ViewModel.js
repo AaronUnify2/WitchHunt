@@ -605,6 +605,16 @@ export class ViewModel {
   update(dt, weapons, player) {
     const c = this.cfg;
     this.updateLighting(dt, weapons);
+    // Session 15b (Aaron): digging up a sigil: the shovel, driven in and levered, whatever's in hand.
+    if (this.digging) {
+      this.updateDig(dt);
+      return;
+    }
+    if (this.dugLast) {
+      this.dugLast = false;
+      this.models.shovel.group.visible = false;
+      this.current = null; // show what's in hand again
+    }
     const id = weapons.id;
     if (this.current !== id) {
       if (this.current) this.models[this.current].group.visible = false;
@@ -660,6 +670,28 @@ export class ViewModel {
       const scale = 0.8 + Math.random() * 0.6; // cosmetic only
       this.flash.scale.setScalar(scale);
     }
+  }
+
+  // Session 15b: the dig. Blade down in front; each stroke drives it in
+  // (with a push), levers the handle back, then lifts it out.
+  updateDig(dt) {
+    const d = this.cfg.dig;
+    if (!this.dugLast) {
+      for (const m of Object.values(this.models)) m.group.visible = false;
+      this.digTime = 0;
+      this.dugLast = true;
+      this.current = null;
+    }
+    this.flash.visible = false;
+    this.slash.visible = false;
+    const g = this.models.shovel.group;
+    g.visible = true;
+    this.digTime += dt;
+    const t = (this.digTime / d.stroke) % 1;
+    const thrust = t < 0.35 ? smooth(t / 0.35) : t < 0.6 ? 1 : 1 - smooth((t - 0.6) / 0.4);
+    const lever = t > 0.4 && t < 0.85 ? Math.sin(((t - 0.4) / 0.45) * Math.PI) : 0;
+    g.position.set(d.x, d.y - thrust * d.thrust, d.z - thrust * d.reach);
+    g.rotation.set(d.pitch + lever * d.lever, d.yaw, d.roll);
   }
 
   // Session 10b (Aaron: "a Fruit Ninja style slice"): a quick wind-up, a

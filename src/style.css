@@ -153,6 +153,13 @@ body {
   text-align: center;
 }
 
+/* Session 15b: control prompts, under the toast */
+.toast.hint {
+  top: calc(var(--safe) + 2.8rem);
+  border-left: 3px solid #e8c070;
+  color: #fff2d0;
+}
+
 /* Debug overlay */
 .debug-overlay {
   position: absolute;

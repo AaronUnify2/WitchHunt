@@ -364,7 +364,8 @@ export class GasStation {
     const w = this.data.wake;
     const m = this.data.mutant;
     const inAisle = this.inside(l) && l.z < w.z && l.z > this.data.building.partitionZ && l.x > w.x0 && l.x < w.x1;
-    const near = Math.hypot(l.x - m.x, l.z - m.z) < w.near;
+    // (Inside only: it woke through the wall from the forecourt; Aaron.)
+    const near = this.inside(l) && l.z > this.data.building.partitionZ && Math.hypot(l.x - m.x, l.z - m.z) < w.near;
     if (!(inAisle || near) || this.cutscenes?.active) return;
     const anchor = { x: z.x, z: z.z, yaw: 0, dy: this.gc.mutant.lookHeight };
     if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor } })) this.wakeMutant();

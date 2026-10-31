@@ -66,6 +66,7 @@ export class Station {
     this.overrunDone = false;
     this.gateLocked = false; // Session 15b: Day 1, until the tower (set by FirstDay each frame)
     this.towerRifleLocked = false; // Session 15b: Day 1's daytime (set by FirstDay): it's Night 1's beat
+    this.shovelLocked = false; // Session 15b: until Night 1's clip (set by FirstDay)
     this.clawing = 0; // swipes at the defences in the last second (overlay)
     this.clawCount = 0;
     this.clawTimer = 0;
@@ -514,7 +515,8 @@ export class Station {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
 
     const c = L.cabin;
-    if (this.shovelAtDoor) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
+    // Session 15b (Aaron): it can't be taken until the witch has been seen burying (Night 1's clip).
+    if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 

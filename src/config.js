@@ -1178,6 +1178,10 @@ export const config = {
     hip: { x: 0.2, y: -0.245, z: -0.46 }, // Session 10b (Aaron): a little lower at the hip (was -0.21)
     aim: { x: 0, y: -0.082, z: -0.36 }, // centred under the crosshair (Session 10b: the new models' sights sit lower)
     shovelHip: { x: 0.22, y: -0.3, z: -0.46 },
+    // Session 15b (Aaron): digging up a sigil: the shovel blade-down in front
+    // (pitch: radians, negative tips the blade down), a stroke every `stroke`
+    // seconds: driven `thrust` m down and `reach` m out, then levered back.
+    dig: { x: 0.1, y: -0.19, z: -0.26, pitch: -0.3, yaw: -0.05, roll: -0.08, stroke: 1.0, thrust: 0.14, reach: 0.12, lever: 0.4 },
     // Weapon sway while moving, paced like footsteps (Aaron's M2 play-test:
     // tying it to the head bob made it vibrate at a sprint). One vertical dip
     // per step; side to side once every two steps.
@@ -2456,6 +2460,7 @@ export const config = {
   // UI
   ui: {
     toastSeconds: 3,
+    hintSeconds: 7, // Session 15b: a control prompt ("Click LS: sprint") stays this long, not counting cutscenes
   },
 
   // The story systems (M8; DESIGN.md "Story and lore"). The lines are in
@@ -2515,7 +2520,7 @@ export const config = {
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
     // Session 15b (Aaron): control prompts as they're first needed. sprintAfter:
     // seconds of walking outside the fence on the way to the campsite.
-    prompts: { sprintAfter: 6 },
+    prompts: { sprintAfter: 6, wreckDistance: 9 }, // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,
