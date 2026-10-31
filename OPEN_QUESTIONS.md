@@ -1,5 +1,27 @@
 # Open questions
 
+## Session 15b (Level & Encounter Designer + Narrative: the first day's play-test; overnight, the gas station and the quad bike)
+
+Aaron's play-test notes were taken one at a time; his calls are in STATUS (Session 15b list). The gas station's beats and the quad bike were built overnight on his go-ahead: every call I made is in **`MORNING.md`** (items 1-22), for his review. The ones still open:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 198 | **The gas station mutant's health** (MORNING 1). | 180 (ordinary mutants 300, before the level). In the test it charged on waking and took Tom to 40 health. | `config.gasStation.mutant.health` |
+| 199 | **When the mutant wakes** (MORNING 2-3). | About 1.6 m into the shop, a 3.4 s first-person moment (the world runs on); shooting it asleep wakes it with no moment. The shelves moved to give the door a sight line. | `gasStation.json` `shopZ`, `mutant`, `store.shelves`; `cutscenes.json` `gas.mutant` |
+| 200 | **The forecourt pack** (MORNING 4). | 5 citizens hanging about the pumps, there as Tom nears (no rising). | `config.gasStation.pack`, `gasStation.json` `pack` |
+| 201 | **The witch at the gas station** (MORNING 5). | Straight across the road from the door, about 20 m, framed by the canopy; about 2.8 s, then she runs east. Small on screen. | `gasStation.json` `witch`; `cutscenes.json` `gas.witch` |
+| 202 | **The gas station's draft lines** (MORNING 6): the phone (Wyatt), the scanner's broadcast and Ellen, the safe opened (Wyatt). | All `draft` in `dialogue.json` (`gas.*`). | `src/data/dialogue.json` |
+| 203 | **Earl's note on screen** (MORNING 7). | In the subtitle strip as "EARL'S NOTE", silent; readable again. A paper close-up could come later. | `GasStation.readNote()` |
+| 204 | **`rifleClaimed`'s stand-in** (MORNING 8). | The safe sets it for real now, but the Session 14 stand-in (both places visited) still fires and opens the outpost early. Session 16 should drop the stand-in once the shelter gives `earlCombination`. | `src/data/progress.json` |
+| 205 | **No shooting from the quad** (MORNING 14). | The gun's slung while riding (and no charges or digging): get off to fight. | `Game.step()` (`riding`) |
+| 206 | **The quad's numbers** (MORNING 15-17). | 13 m/s on paths, a third in the brush; rams the dead above 4 m/s; its engine draws the dead within 25-60 m every 1.5 s. | `config.quad` |
+| 207 | **The witch on the quad** (MORNING 18). | 1.6x her speed while Tom rides (roaming, chasing, rushing). | `config.quad.witchSpeedScale` |
+| 208 | **The quad: fuel, damage, headlamp, map icon?** (MORNING 20). | None of them. | `world/Quad.js` |
+| 209 | **The torch on the quad's handlebars** (MORNING 21). | Lights them a pale grey at point blank from the saddle (dark colours already). | `config.quad.look`; the art pass |
+| 210 | **The placeholder signposts** (MORNING 10). | Gone from the built sets (the campsite, the gas station). | `config.landmarks.built` |
+| 211 | **Night 1's talk and the fade to dawn**: there's no digging the sigil up on Night 1 now (the night ends with the talk). | As Aaron asked; noted in case he wants the option back. | `FirstDay` (`night1.afterClip`, `startDawn()`) |
+| 212 | **The fence nearly fights Night 1 alone**: in the headless run the charged fence killed most of each wave in about 30 s. | As is; could bring the waves in faster or weaken the zap on Night 1. | `config.firstDay.night1.waves`; `config.station.power` |
+
 ## Session 15 (Level & Encounter Designer + Narrative: M9.2, the first day)
 
 Agreed with Aaron at the start: **my recommendations on everything** (below), pushed to `main` to play-test. Day 1's clock holds at 17:00 until the tutorial's done; Day 1 can't be failed (a health floor of 20%); the campsite as the doc proposed (camcorder in the cooler by the entrance, shotgun in the far tent, a wave of 7 from both flanks); about 8 s of camcorder footage, never a clean frame of her; Night 1's witch planting at the shelter with its dead holding there; the menu with Modifiers and Settings greyed out and no Quit; Skip intro once the opening's been seen on the device; a few draft nudge lines.

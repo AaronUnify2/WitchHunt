@@ -1,6 +1,6 @@
 # For Aaron in the morning (Session 15b, overnight)
 
-You went to bed and told me to keep building: the gas station's beats (pass 2), then the quad bike (pass 3). Everything below is on `main`. These are the calls I made on my own judgment, for you to check. Each says what I did and where to change it.
+You went to bed and told me to keep building: the gas station's beats (pass 2), then the quad bike (pass 3). Everything below is on `main` (567 tests pass, the build is clean). The open ones are also OPEN_QUESTIONS #198-212, and HANDOVER.md is written for Session 16 (the storm shelter), which starts with your notes on this list. These are the calls I made on my own judgment, for you to check. Each says what I did and where to change it.
 
 ## The gas station's beats (pass 2)
 
