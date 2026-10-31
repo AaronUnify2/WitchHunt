@@ -1,0 +1,58 @@
+{
+  "_note": "The roadside gas station (M9.3; DESIGN.md \"Roadside gas station\"; Session 15b pass 1: the set). Positions are in the gas station's own frame (encounters/GasStation.js): from the clearing's centre, z metres toward the road (the road's centre line is about 14 m ahead, its near edge about 11), x metres to your right as you face the road (west). yaw: degrees, turning from facing the road toward your right. The store stands north of the road, its front to the forecourt; the trail from the campsite comes in behind it. building: the store's shell (x0..x1, z0 the back wall, z1 the front), its height, the front door's gap and the windows either side of it, the back room's partition (z) with its two doorways (office, stockroom) and the wall between them (x), the stockroom's back door (shut). Inside: the counter, shelf runs (one knocked over), drinks coolers, the Bigfoot statue, the photo board, footprint casts; the office (desk, chair, filing cabinet, the gun safe, Earl's scanner, his note); the stockroom (boxes, racks). Outside: the forecourt slab, two pump islands under a sagging canopy, the HOME OF BIGFOOT pole sign by the road, a dumpster out back. cars: the authored spots for the forecourt's cars (vehicles.json placement.gasStation fills them in order).",
+  "building": {
+    "x0": -8, "x1": 8, "z0": -15, "z1": -3, "height": 3.4, "wall": 0.18,
+    "door": { "x": 1.6, "width": 1.9 },
+    "windows": [{ "x0": -7.2, "x1": -0.8 }, { "x0": 3.4, "x1": 7.2 }],
+    "windowSill": 0.9, "windowTop": 2.4,
+    "partitionZ": -10.5,
+    "officeDoor": { "x": -4.6, "width": 1 },
+    "stockDoor": { "x": 4.4, "width": 1.1 },
+    "splitX": 0,
+    "backDoor": { "x": 5.5, "width": 1 }
+  },
+  "store": {
+    "counter": { "x": -5.2, "z": -5.2, "length": 3.6, "depth": 0.7, "height": 1.0, "yaw": 0 },
+    "register": { "x": -4.4, "z": -5.2 },
+    "shelves": [
+      { "x": 2.6, "z": -6.4, "length": 5.2, "yaw": 90 },
+      { "x": 2.6, "z": -8.6, "length": 5.2, "yaw": 90 },
+      { "x": -2.4, "z": -8.4, "length": 3.2, "yaw": 90, "fallen": true }
+    ],
+    "coolers": { "x": 7.45, "z0": -4, "z1": -9.6 },
+    "statue": { "x": -1.6, "z": -4.2, "yaw": 150 },
+    "photoBoard": { "x": -7.85, "z": -8, "width": 2.2 },
+    "casts": [{ "x": 1.2, "z": -6.4 }, { "x": 3.4, "z": -6.4 }, { "x": 4.6, "z": -8.6 }]
+  },
+  "office": {
+    "desk": { "x": -4.2, "z": -13.6, "yaw": 0 },
+    "chair": { "x": -4.0, "z": -12.7, "yaw": 160 },
+    "cabinet": { "x": -7.4, "z": -11.3 },
+    "safe": { "x": -1.0, "z": -14.3 },
+    "scanner": { "x": -4.9, "z": -13.7 },
+    "note": { "x": -3.6, "z": -13.5 }
+  },
+  "stockroom": {
+    "boxes": [
+      { "x": 1.0, "z": -14.2, "w": 1.0, "d": 0.8, "h": 0.8 },
+      { "x": 1.1, "z": -14.1, "w": 0.7, "d": 0.6, "h": 0.6, "on": 0.8 },
+      { "x": 2.3, "z": -14.3, "w": 0.9, "d": 0.7, "h": 0.7 },
+      { "x": 7.2, "z": -11.6, "w": 0.9, "d": 0.9, "h": 0.9 },
+      { "x": 6.6, "z": -12.8, "w": 0.6, "d": 0.6, "h": 0.5, "fallen": true }
+    ],
+    "racks": [{ "x": 7.5, "z": -13.6, "length": 2.4, "yaw": 0 }]
+  },
+  "forecourt": { "x0": -13, "x1": 13, "z0": -3, "z1": 9.2 },
+  "pumps": [
+    { "x": -3.6, "z": 3.8 },
+    { "x": 5.6, "z": 3.8 }
+  ],
+  "canopy": { "x0": -7.6, "x1": 9.6, "z0": 1.2, "z1": 6.4, "height": 4.4, "sag": 0.55 },
+  "sign": { "x": 11.5, "z": 10.4, "height": 6.5 },
+  "dumpster": { "x": -3.5, "z": -17, "yaw": 5 },
+  "cars": [
+    { "x": -10, "z": 4.5, "yaw": 15 },
+    { "x": 1.0, "z": 7.6, "yaw": 95 },
+    { "x": 11, "z": -1.5, "yaw": -10 }
+  ]
+}

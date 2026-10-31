@@ -50,6 +50,7 @@ import { MapUi } from '../ui/MapUi.js';
 import { StoryProgress } from '../story/StoryProgress.js';
 import { Gates } from '../world/Gates.js';
 import { Campsite } from '../encounters/Campsite.js';
+import { GasStation } from '../encounters/GasStation.js';
 import { FirstDay } from '../story/FirstDay.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
@@ -270,7 +271,7 @@ export class Game {
       mapUi: this.mapUi,
       notify: (text) => this.toast.show(text),
       avoid: [{ x: L.centre.x, z: L.centre.z, r: L.radius + this.cfg.vehicles.placement.avoidRadius }],
-      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean) }, // M9.2: the campers' car, by the path in
+      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean), gasStation: GasStation.carSpots(this.world.map) }, // M9.2: the campers' car, by the path in; Session 15b: the forecourt's
       busy: [this.director.hud, this.station.hud],
     });
     this.combat.promptSources.push(this.vehicles.hud);
@@ -399,6 +400,9 @@ export class Game {
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.campsite.hud);
+    // Session 15b (M9.3 pass 1): the gas station's set.
+    this.gasStation = new GasStation(this.cfg, this.bus);
+    this.gasStation.init(this.scene, { world: this.world, player: this.player, colliders: this.colliders, notify: (text) => this.toast.show(text) });
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       world: this.world,
@@ -554,6 +558,7 @@ export class Game {
     this.lore.addDebugItems(menu);
     this.firstDay.addDebugItems(menu);
     this.campsite.addDebugItems(menu);
+    this.gasStation.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1058,6 +1063,7 @@ export class Game {
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt;
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
+    if (first) this.gasStation.update(dt);
     if (first) this.firstDay.update(dt, playing);
   }
 
@@ -1079,6 +1085,7 @@ export class Game {
     this.lore.dispose();
     this.firstDay.dispose();
     this.campsite.dispose();
+    this.gasStation.dispose();
     this.gates.dispose();
     this.progress.dispose();
     this.viewer.dispose();

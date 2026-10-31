@@ -53,6 +53,13 @@ Round 8:
 - [ ] **The campsite sweep** starts as you reach the clearing's edge, not once you're in the camp.
 - [ ] **The rifle on the tower:** you see it on the first climb but can't take it (only "climb down"). On Night 1, Wyatt says to meet them at the fence with the shotgun, then Ellen says to get up the tower and take the rifle. Now it can be taken.
 
+Round 9 (the gas station's set, pass 1: no beats yet):
+- [ ] Walk in from the campsite trail (it opens at Day 2's dawn), or use the debug teleports (First day & campsite). The trail comes in behind the store: walk round to the forecourt.
+- [ ] **Outside:** the forecourt, two pump islands under a sagging canopy, the HOME OF BIGFOOT sign by the road, cars on the forecourt, a dumpster out back. Does it read as a sad roadside gas station?
+- [ ] **Inside:** dark even by day (use the torch). Shelves (one knocked over), the counter, dead coolers, the carved Bigfoot by the door, the photo board, footprint casts.
+- [ ] **The back rooms:** the office behind the counter (desk, the gun safe, Earl's scanner with its aerial, his note) and the stockroom (boxes, the shut back door).
+- [ ] Anything you'd move, resize or add before the beats go in? (Positions are all in `src/data/gasStation.json`.)
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

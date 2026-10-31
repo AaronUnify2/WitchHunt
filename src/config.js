@@ -533,6 +533,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
+    built: ['campsite', 'gasStation'], // Session 15b: cluster sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -2533,6 +2534,64 @@ export const config = {
     },
     // Skip intro: what Tom has at Dawn 1.
     skip: { shotgunShells: 8, scrap: 12, dawnLineDelay: 2.5, unheard: ['day1.21', 'day1.22', 'day1.23'] },
+  },
+
+  // The roadside gas station (M9.3; encounters/GasStation.js,
+  // data/gasStation.json). Session 15b pass 1: the set.
+  gasStation: {
+    floorLift: 0.18, // the store's floor this far above the highest ground under it
+    look: {
+      glassOpacity: 0.82, // grimed: you can barely see in (or out)
+      forecourtLift: 0.04, // metres above the ground
+      island: { length: 3.8, depth: 1.1 }, // a pump island's kerb
+      sign: { width: 3.6, height: 2.25 }, // the HOME OF BIGFOOT board
+      // Dull and dark: pale props glare under the torch (Aaron).
+      colors: {
+        slab: 0x3a3936,
+        floor: 0x2e2c28,
+        wall: 0x5a5448, // weathered pale siding, dirty
+        wallInside: 0x4a443a,
+        trim: 0x4a4c4e,
+        glass: 0x1c2224,
+        roof: 0x2a2826,
+        fascia: 0x3a3630,
+        door: 0x3a2e22,
+        counter: 0x4a3626,
+        counterTop: 0x3a3a36,
+        metal: 0x3e4042,
+        screen: 0x1a221e,
+        wood: 0x4a3622,
+        woodDark: 0x2e2218,
+        shelf: 0x4a4a46,
+        shelfDark: 0x2e2e2c,
+        goods: [0x5a2a22, 0x2a3a52, 0x5a4a22, 0x2a4a2a, 0x4a4a4a, 0x6a5a3a, 0x3a2a3a],
+        coolerBody: 0x3a3c3e,
+        coolerGlass: 0x1a2428,
+        carving: 0x3e2c1c,
+        carvingDark: 0x241a10,
+        plaster: 0x6a6658,
+        cabinet: 0x3a4038,
+        safe: 0x24302a,
+        safeTrim: 0x1a201c,
+        brass: 0x6a5a2a,
+        radio: 0x262626,
+        cardboard: 0x5a4a32,
+        concrete: 0x3e3e3a,
+        stain: 0x22221f,
+        kerb: 0x4a4a46,
+        kerbTop: 0x3a3a36,
+        pump: 0x5a2622, // faded red
+        pumpTop: 0x4a4a46,
+        hose: 0x1a1a1a,
+        bin: 0x3a3a2a,
+        canopy: 0x4a4a46,
+        canopyBand: 0x5a2a22,
+        post: 0x3a3a38,
+        signFrame: 0x2e2a22,
+        dumpster: 0x2a3a2c,
+        bag: 0x1a1c1a,
+      },
+    },
   },
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).

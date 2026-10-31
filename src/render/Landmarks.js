@@ -50,7 +50,8 @@ export class Landmarks {
     const matrix = new THREE.Matrix4();
     clearings.forEach((cl, i) => {
       // M7: the hut clearing has the hut itself instead of a signpost.
-      if (cl.kind === 'hut') {
+      // Session 15b: so do the sets that are built (config.landmarks.built).
+      if (cl.kind === 'hut' || (cl.cluster && (c.built ?? []).includes(cl.key))) {
         matrix.makeScale(0, 0, 0);
         this.posts.setMatrixAt(i, matrix);
         return;
