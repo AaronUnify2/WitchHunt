@@ -1230,7 +1230,7 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 7 | After the clip | Ellen (radio) | That wasn't an animal. I've heard things like that before, on the recordings. Please be careful. |
 | 8 | Shotgun picked up, wave starts | Wyatt (radio) | Dad, behind you! In the trees! |
 | 9 | Wave cleared | Wyatt (radio) | They didn't stop when you hit them. They just kept coming until they couldn't. |
-| 10 | After line 9 | Ellen (radio) | The dead aren't supposed to get up, Tom. Pull the battery from their car and come home. We need it to get the fence running again. *(Session 15b, Aaron: the fence added)* |
+| 10 | After line 9 | Ellen (radio) | The dead aren't supposed to get up, Tom. Pull the battery from their car and come home. We need it to get the fence running again, to keep everyone safe. *(Session 15b, Aaron: the fence added)* |
 | 11 | Entering the compound | Wyatt (radio) | East fence is torn up. The ledger's on the desk in the comms room. Patch it with the scrap you found. |
 | 12 | Fence repaired | Wyatt | That battery goes in the fence box by the gate. It'll put charge back in the wire. |
 | 13 | Battery fitted; marker appears | Junie | Are they going to come here? |

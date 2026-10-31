@@ -76,7 +76,7 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
 4. **Tom's gun hides in cutscenes** (it floated in mid-air in the campsite's sweep): `Game.update` hides the view model while a cutscene (or the model viewer) is up.
 5. **No searching cars on Day 1 until the camcorder's tape has played** (or been skipped): `Vehicles.locked`, set by FirstDay from `Campsite.tapeSeen`. Every car, every spot (doors, boot, bonnet, battery). From Day 2 on it never applies.
 6. **The tents' search reach is 2.8 m** (was 1.9 for everything): a search point can carry its own `range` in `campsite.json`; the cooler and backpack keep 1.9.
-7. **Line 10 now names the fence:** "...Pull the battery from their car and come home. We need it to get the fence running again." (DESIGN.md updated.)
+7. **Line 10 now names the fence:** "...Pull the battery from their car and come home. We need it to get the fence running again, to keep everyone safe." (DESIGN.md updated.)
 8. **Line 5 rewritten** (the cars wait for the tape, so Wyatt can't send Tom to them): "Their car's still there, Dad. Check the tents. Maybe somebody made it."
 9. **Line 14 rewritten** (the dead are coming): Ellen: "They'll come. But the fence is live again, and we'll be ready for them."
 10. **The camcorder's clip on the monitors is shot at the campsite** (it was played round the cabin: no anchor was given when rewatched). Cutscenes take named anchors from other systems now (`Cutscenes.namedAnchors`); the campsite registers `campsite` (its frame), so the clip plays right from the monitors, the debug menu and Skip intro's handed-in tape alike.
