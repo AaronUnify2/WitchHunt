@@ -408,6 +408,7 @@ export class Game {
       station: this.station,
       director: this.director,
       campsite: this.campsite,
+      vehicles: this.vehicles,
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,
       subtitles: this.subtitles,
@@ -981,6 +982,9 @@ export class Game {
     // first step only. Drawn once.
     const steps = playing ? this.fastForward : 1;
     for (let i = 0; i < steps; i++) this.step(dt, running, playing, i === 0);
+    // Session 15b (Aaron): Tom's gun hides in a cutscene (it floated in the
+    // campsite's sweep). After the step, so one starting this frame hides it too.
+    this.combat.viewModel.root.visible = !cs.active && !viewer.active;
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));

@@ -180,11 +180,12 @@ export class Campsite {
   pickPoint() {
     const p = this.player.position;
     let best = null;
-    let bestD = this.cc.interactRange;
+    let bestD = Infinity;
     for (const pt of this.points) {
       if (this.searched.has(pt.id)) continue;
       const d = Math.hypot(pt.x - p.x, pt.z - p.z);
-      if (d < bestD) {
+      // Session 15b (Aaron): a point can reach further (`range`: the tents, whose centres you can't get near).
+      if (d < (pt.range ?? this.cc.interactRange) && d < bestD) {
         best = pt;
         bestD = d;
       }
@@ -246,6 +247,12 @@ export class Campsite {
     // Ellen: play it. Then the clip, then her line after it.
     this.dialogue.play('day1.06');
     this.pendingClip = this.cc.clipDelay;
+  }
+
+  // Session 15b: has the camcorder's tape played (or been skipped)? The cars
+  // wait for it on Day 1.
+  get tapeSeen() {
+    return this.camcorderFound && this.pendingClip < 0 && this.cutscenes.current?.id !== 'clip.camcorder';
   }
 
   playClip() {

@@ -188,6 +188,8 @@ export class FirstDay {
     this.combat.healthFloor = day1 && this.fc.cantFail ? this.fc.healthFloor * this.combat.health.cfg.max : 0;
     // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
     this.station.gateLocked = this.gateLocked();
+    // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
+    if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen;
     if (!playing) return;
     this.updateSkip(dt);
     this.updateGate(dt);

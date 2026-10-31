@@ -161,7 +161,8 @@ export class Vehicles {
       this.fire.update(dt, this.burning);
     }
     const blocked = this.busy.some((b) => b.prompt);
-    const canInteract = playing && this.combat.alive && !blocked && !this.player.platform;
+    // Session 15b: locked on Day 1 until the campsite's tape has played (FirstDay sets it).
+    const canInteract = playing && this.combat.alive && !blocked && !this.player.platform && !this.locked;
     if (canInteract) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';

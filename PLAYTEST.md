@@ -13,6 +13,12 @@ Round 1:
 - [ ] **The rifle's at the top of the tower:** you wake with only the shovel. The service rifle leans on the tower's north rail; after the view, hold X on the platform to take it. Skip intro still gives it to you.
 - [ ] **The gate's locked until the tower:** the gate stays shut with a chain and padlock on it, and Ellen radios "Not yet, Tom. Get up the tower first..." if you try it (or the torn east panel). Once you've been up the tower it opens as normal. Is the line right?
 
+Round 2:
+- [ ] **No floating gun in cutscenes:** the campsite's arrival sweep (and every other cutscene) shows no gun where Tom stands.
+- [ ] **Cars wait for the tape:** on Day 1, no car (the campers' or any on the way) offers a search, bonnet or battery until you've watched (or skipped) the camcorder clip.
+- [ ] **Tents are easier to search:** the prompt comes up as you reach a tent, without shuffling about.
+- [ ] **Line 10:** Ellen's line after the wave now ends "We need it to get the fence running again.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

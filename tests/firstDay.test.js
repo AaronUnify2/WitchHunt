@@ -206,6 +206,17 @@ describe('the starting kit', () => {
   });
 });
 
+describe('the campsite searches (Session 15b)', () => {
+  it('reach further for the tents, whose centres you can only get so near', () => {
+    const look = config.campsite.look;
+    const tentEdge = Math.max(Math.hypot(look.tent.halfWidth, look.tent.length / 2), look.dome.radius);
+    for (const s of campsite.searches.filter((s) => s.id.startsWith('tent'))) {
+      expect(s.range).toBeGreaterThan(config.campsite.interactRange);
+      expect(s.range).toBeGreaterThan(tentEdge + 1);
+    }
+  });
+});
+
 describe("Day 1's locked gate (Session 15b)", () => {
   it("has Ellen's call back to the tower, cued and repeatable", () => {
     const line = dialogueData.lines.find((l) => l.id === 'day1.gate');

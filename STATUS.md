@@ -73,6 +73,10 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
 1. **Skipping a cutscene no longer jumps** (or fires anything else): the A / Enter press that skips (or picks from the menu) is swallowed until it's let go (`Input.swallowHeld()`, called by `Cutscenes` and `StartScreen`).
 2. **The service rifle waits at the top of the lookout tower**, leaning on the north rail (`config.station.towerRifle`, `StationRenderer.buildTowerRifle()`); hold X on the platform to take it (5 + 10 rounds). Tom wakes with the shovel only (`startingLoadout: ['shovel']`). It's there whenever Tom hasn't got one (a fresh run, "try again"); Skip intro hands it over.
 3. **The gate is shut and locked on Day 1 until Tom's been up the tower** (`FirstDay.gateLocked()` → `Station.gateLocked`): it won't open for him, a chain and padlock hang on it, and the torn east panel stops him too (from inside; the dead still walk through it). At the gate or the gap, Ellen calls over the radio: "Not yet, Tom. Get up the tower first. I need to know what's going on out there." (`day1.gate`, a draft, at most every 20 s; `config.station.gateLock`). Caught outside on an old save, Tom can still come in.
+4. **Tom's gun hides in cutscenes** (it floated in mid-air in the campsite's sweep): `Game.update` hides the view model while a cutscene (or the model viewer) is up.
+5. **No searching cars on Day 1 until the camcorder's tape has played** (or been skipped): `Vehicles.locked`, set by FirstDay from `Campsite.tapeSeen`. Every car, every spot (doors, boot, bonnet, battery). From Day 2 on it never applies.
+6. **The tents' search reach is 2.8 m** (was 1.9 for everything): a search point can carry its own `range` in `campsite.json`; the cooler and backpack keep 1.9.
+7. **Line 10 now names the fence:** "...Pull the battery from their car and come home. We need it to get the fence running again." (DESIGN.md updated.)
 
 ### Session 14: M9.1, the cluster on the map (Lead Engineer)
 

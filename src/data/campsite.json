@@ -8,10 +8,10 @@
   ],
   "searches": [
     { "id": "cooler", "label": "search the cooler", "x": 3, "z": -7.5, "seconds": 1.4, "gives": [{ "item": "camcorder" }], "loot": [{ "item": "scrap", "chance": 1, "min": 4, "max": 4 }] },
-    { "id": "tent1", "label": "search the tent", "x": 6.3, "z": -3.6, "seconds": 1.8, "gives": [{ "item": "scrap", "amount": 5 }], "loot": [{ "item": "rifleAmmo", "chance": 0.7, "min": 2, "max": 3 }, { "item": "shotgunAmmo", "chance": 0.5, "min": 2, "max": 3 }] },
+    { "id": "tent1", "label": "search the tent", "range": 2.8, "x": 6.3, "z": -3.6, "seconds": 1.8, "gives": [{ "item": "scrap", "amount": 5 }], "loot": [{ "item": "rifleAmmo", "chance": 0.7, "min": 2, "max": 3 }, { "item": "shotgunAmmo", "chance": 0.5, "min": 2, "max": 3 }] },
     { "id": "pack1", "label": "search the backpack", "x": -2.8, "z": -2.2, "seconds": 1.2, "gives": [{ "item": "shotgunAmmo", "amount": 4 }], "loot": [{ "item": "scrap", "chance": 0.6, "min": 1, "max": 2 }] },
-    { "id": "tent2", "label": "search the tent", "x": -4.8, "z": 5, "seconds": 1.8, "gives": [{ "item": "firstAid", "amount": 1 }, { "item": "scrap", "amount": 6 }], "loot": [{ "item": "rifleAmmo", "chance": 0.5, "min": 1, "max": 3 }] },
-    { "id": "tent3", "label": "search the torn tent", "x": 2.6, "z": 7.6, "seconds": 2.2, "gives": [{ "item": "shotgun", "rounds": 8 }], "loot": [] }
+    { "id": "tent2", "label": "search the tent", "range": 2.8, "x": -4.8, "z": 5, "seconds": 1.8, "gives": [{ "item": "firstAid", "amount": 1 }, { "item": "scrap", "amount": 6 }], "loot": [{ "item": "rifleAmmo", "chance": 0.5, "min": 1, "max": 3 }] },
+    { "id": "tent3", "label": "search the torn tent", "range": 2.8, "x": 2.6, "z": 7.6, "seconds": 2.2, "gives": [{ "item": "shotgun", "rounds": 8 }], "loot": [] }
   ],
   "props": {
     "fire": { "x": 0, "z": 1.5, "radius": 0.85 },
