@@ -64,6 +64,9 @@ export class Campsite {
     this.frame = Campsite.frame(ctx.world.map);
     this.clearing = ctx.world.map.clearings.find((c) => c.cluster && c.key === 'campsite');
     this.points = this.data.searches.map((s) => ({ ...s, ...frameToWorld(this.frame, s.x, s.z) }));
+    // Session 15b (Aaron): the camcorder's clip rewatched on the monitors was
+    // shot round the cabin (no anchor given): it's named for any cutscene now.
+    this.cutscenes?.namedAnchors?.set('campsite', () => this.frameAnchor());
     this.car = this.findCar();
     this.props = new CampsiteProps(this.cc.look, this.data);
     this.props.init(scene, this.frame, this.ground);

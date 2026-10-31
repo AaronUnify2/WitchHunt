@@ -19,6 +19,11 @@ Round 2:
 - [ ] **Tents are easier to search:** the prompt comes up as you reach a tent, without shuffling about.
 - [ ] **Line 10:** Ellen's line after the wave now ends "We need it to get the fence running again.
 
+Round 3:
+- [ ] **Line 5:** at the campsite sweep Wyatt says "Their car's still there, Dad. Check the tents. Maybe somebody made it."
+- [ ] **Line 14:** after Junie's "Are they going to come here?", Ellen says "They'll come. But the fence is live again, and we'll be ready for them."
+- [ ] **The tape on the monitors:** hand in the camcorder at the ledger and watch it: it's the campsite at night, the same as when it first played.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

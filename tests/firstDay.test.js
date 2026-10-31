@@ -217,6 +217,21 @@ describe('the campsite searches (Session 15b)', () => {
   });
 });
 
+describe("Day 1's lines match the game (Session 15b)", () => {
+  const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+  it("line 5 doesn't send Tom to the cars (they wait for the tape)", () => {
+    expect(by['day1.05'].text).not.toMatch(/car and/i);
+    expect(by['day1.05'].text).toMatch(/tents/i);
+  });
+  it('line 10 sends him for the battery, for the fence', () => {
+    expect(by['day1.10'].text).toMatch(/battery/i);
+    expect(by['day1.10'].text).toMatch(/fence/i);
+  });
+  it("line 14 doesn't promise they won't come", () => {
+    expect(by['day1.14'].text).not.toMatch(/^Not if/);
+  });
+});
+
 describe("Day 1's locked gate (Session 15b)", () => {
   it("has Ellen's call back to the tower, cued and repeatable", () => {
     const line = dialogueData.lines.find((l) => l.id === 'day1.gate');

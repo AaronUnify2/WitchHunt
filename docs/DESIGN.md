@@ -631,7 +631,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 **Beat by beat**
 
 1. **The walk out.** A plain walk down the path from home. Nothing happens.
-2. **Arrival.** Establishing sweep of the clearing, settling on the campers' car. Wyatt (radio, line 5): check the car and the tents for guns.
+2. **Arrival.** Establishing sweep of the clearing, settling on the campers' car. Wyatt (radio, line 5): check the tents, in case anyone made it (Session 15b: the cars wait until the tape has played).
 3. **The search.** The player searches tents, backpacks, the cooler and the car. Each search point teaches a pickup type: shotgun shells, rifle rounds, a first aid kit, a little scrap.
 4. **The camcorder.** Found mid-search, in the same rhythm as everything else, so it feels like the player's own discovery rather than an object on a pedestal. Picking it up plays the clip (line 6 before, line 7 after).
 5. **The clip (the turn).** Shaky handheld camcorder footage, at night, of this same campsite: **the witch running through the camp and attacking the campers.** Fast, violent and physical, but cut and blurred enough that she's never seen clearly. It establishes that she is quick and dangerous, which seeds how she feels to fight later, and tells the player how much action is coming. The clip cuts out mid-attack.
@@ -1225,7 +1225,7 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 2 | Opening, end | Ellen | I need eyes on the woods. Get up the tower and tell me what you see. |
 | 3 | Top of the tower | Wyatt (radio) | Dad, there's a car down at the campground. Those campers checked in two days ago. They never checked out. |
 | 4 | After line 3 | Junie (radio) | Their fire's out. I saw the smoke over the trees last night, from my window. It's gone now. |
-| 5 | Campsite sweep | Wyatt (radio) | If they had any guns, we need them. Check the car and the tents. |
+| 5 | Campsite sweep | Wyatt (radio) | Their car's still there, Dad. Check the tents. Maybe somebody made it. *(Session 15b, Aaron: the cars wait for the tape, so the tents and survivors, not the car and guns)* |
 | 6 | Camcorder picked up | Ellen (radio) | Play it, Tom. Whatever they saw, I need to know. |
 | 7 | After the clip | Ellen (radio) | That wasn't an animal. I've heard things like that before, on the recordings. Please be careful. |
 | 8 | Shotgun picked up, wave starts | Wyatt (radio) | Dad, behind you! In the trees! |
@@ -1234,7 +1234,7 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 11 | Entering the compound | Wyatt (radio) | East fence is torn up. The ledger's on the desk in the comms room. Patch it with the scrap you found. |
 | 12 | Fence repaired | Wyatt | That battery goes in the fence box by the gate. It'll put charge back in the wire. |
 | 13 | Battery fitted; marker appears | Junie | Are they going to come here? |
-| 14 | After line 13 | Ellen | Not if we're ready for them. |
+| 14 | After line 13 | Ellen | They'll come. But the fence is live again, and we'll be ready for them. *(Session 15b, Aaron: they're coming, so she can't say they won't)* |
 | 15 | Dusk 1 forecast | Ellen | This is how we stay alive. Left side is what we've got: fence, doors, charge. Right side is what's coming. Keep the left side bigger. |
 | 16 | Night 1, first zombies at the fence | Wyatt (radio) | Movement on the east fence. Only a few. The wire's holding. |
 | 17 | Trail-cam clip starts | Ellen (radio) | Tom, camera six. Look at this. |

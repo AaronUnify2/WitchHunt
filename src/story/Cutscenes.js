@@ -38,6 +38,9 @@ export class Cutscenes {
     this.cc = cfg.cutscenes;
     this.bus = bus;
     this.list = data.cutscenes;
+    // Session 15b: anchors other systems name (the campsite's frame), so a
+    // clip rewatched on the monitors is shot from the same place.
+    this.namedAnchors = new Map(); // name -> () => { x, z, yaw }
   }
 
   // ctx: { root, scene, renderer, postFX, player, clock, world, station,
@@ -261,6 +264,7 @@ export class Cutscenes {
         return { x: clearing.x, z: clearing.z, yaw: Math.atan2(clearing.x - p.position.x, clearing.z - p.position.z) || 0 };
       }
       default:
+        if (this.namedAnchors.has(name)) return { yaw: 0, ...this.namedAnchors.get(name)() };
         // M9.1: a camera by its number (trailCam:6, the storm shelter's).
         if (name.startsWith('trailCam:')) {
           const cam = this.trailCams.list.find((c) => c.id === Number(name.slice('trailCam:'.length)));
