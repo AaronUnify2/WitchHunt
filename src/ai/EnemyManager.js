@@ -379,7 +379,7 @@ export class EnemyManager {
   // boost: a speed multiplier (the abstract tier's forced march).
   step(z, dt, player, senses, collide, boost = 1) {
     const c = this.cfg;
-    if (z.alive && z.state !== 'rise') {
+    if (z.alive && z.state !== 'rise' && z.state !== 'dormant' && z.state !== 'wake') {
       this.brain.update(z, dt, senses, this.station);
       this.updateFade(z, dt, player);
       this.routeAtStation(z, player);
@@ -588,7 +588,7 @@ export class EnemyManager {
   thinOut(withinSeconds) {
     const d = this.cfg.dawn;
     for (const z of this.living) {
-      if (z.straggler) continue;
+      if (z.straggler || z.authored) continue; // Session 15b: an encounter's own (the gas station's mutant) stays
       if (this.rng.chance(d.stragglers)) z.straggler = true;
       else z.fadeTimer = this.rng.range(0, withinSeconds);
     }

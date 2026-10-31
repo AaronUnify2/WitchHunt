@@ -237,6 +237,53 @@
       "duration": 5.2
     },
     {
+      "id": "sweep.gasStation",
+      "name": "Arriving at the gas station (establishing sweep)",
+      "style": "sweep",
+      "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (11.5, 10.4, 6.5 m up). Wyatt: no lights, their truck's gone.",
+      "camera": [
+        { "at": 0, "anchor": "gasStation", "pos": [-14, 7, 21], "look": [0, 1.5, -2] },
+        { "at": 3.2, "anchor": "gasStation", "pos": [-2, 3.2, 14], "look": [1, 1, 3] },
+        { "at": 6.4, "anchor": "gasStation", "pos": [5, 2.2, 6.5], "look": [11.5, 7.2, 10.4] }
+      ],
+      "tracks": [
+        { "at": 3.6, "do": "line", "line": "gas.arrive" }
+      ],
+      "duration": 7.6
+    },
+    {
+      "id": "gas.mutant",
+      "name": "The gas station: the first mutant wakes (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Session 15b (M9.3): a few steps into the dark shop, the camera turns to the hunched thing at the back of the centre aisle (anchor mutant, from GasStation): it unfolds to its full height (the emit wakes it; the world runs on, so it does), the camera hitches, and it's on its feet. Then Tom has his controls back.",
+      "tracks": [
+        { "at": 0, "do": "lookAt", "target": "mutant", "rate": 2.4, "pitch": -0.12 },
+        { "at": 1.0, "do": "emit", "event": "gasStation:wake" },
+        { "at": 1.1, "do": "shake", "amount": 0.7, "seconds": 0.35 },
+        { "at": 1.6, "do": "lookAt", "target": "mutant", "rate": 1.4, "pitch": 0.18 },
+        { "at": 2.4, "do": "shake", "amount": 0.4, "seconds": 0.3 }
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "gas.witch",
+      "name": "The gas station: the witch at the treeline (first person)",
+      "style": "firstPerson",
+      "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read).",
+      "actors": [
+        { "id": "her", "kind": "figure", "look": "witch", "anchor": "herSpot", "pos": [0, 0, 0], "yaw": 0 }
+      ],
+      "tracks": [
+        { "at": 0, "do": "lookAt", "target": "herSpot", "rate": 3.2 },
+        { "at": 0.3, "do": "sfx", "sfx": "witchSong" },
+        { "at": 2.8, "do": "move", "actor": "her", "anchor": "herRun", "to": [0, 0, 0], "seconds": 0.9 },
+        { "at": 2.8, "do": "lookAt", "target": "herRun", "rate": 1.6 },
+        { "at": 2.9, "do": "sfx", "sfx": "witchShriek" }
+      ],
+      "duration": 4.6
+    },
+    {
       "id": "day1.tower",
       "name": "Day 1: the view from the lookout tower (first person)",
       "style": "firstPerson",

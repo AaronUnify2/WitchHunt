@@ -60,6 +60,13 @@ Round 9 (the gas station's set, pass 1: no beats yet):
 - [ ] **The back rooms:** the office behind the counter (desk, the gun safe, Earl's scanner with its aerial, his note) and the stockroom (boxes, the shut back door).
 - [ ] Anything you'd move, resize or add before the beats go in? (Positions are all in `src/data/gasStation.json`.)
 
+Round 10 (the gas station's beats, built overnight: see `MORNING.md` for my calls):
+- [ ] **Arrival:** the sweep from the road with Wyatt's line; a handful of zombies about the pumps.
+- [ ] **The mutant:** a few steps into the dark shop the camera finds it hunched at the back of the aisle; it unfolds and comes. Too hard? Too easy?
+- [ ] **Looting:** hold X on the counter, shelves, coolers, the office's cabinet, the stockroom's boxes and rack. Try the phone, read Earl's note, turn on the scanner, try the safe.
+- [ ] **The witch:** once the mutant's down, step out onto the forecourt: she's at the treeline across the road, then gone. Ellen, then Junie (once you've read the note).
+- [ ] One of the forecourt cars has a battery.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

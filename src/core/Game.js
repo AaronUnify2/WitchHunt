@@ -402,7 +402,18 @@ export class Game {
     this.combat.promptSources.push(this.campsite.hud);
     // Session 15b (M9.3 pass 1): the gas station's set.
     this.gasStation = new GasStation(this.cfg, this.bus);
-    this.gasStation.init(this.scene, { world: this.world, player: this.player, colliders: this.colliders, notify: (text) => this.toast.show(text) });
+    this.gasStation.init(this.scene, {
+      world: this.world,
+      player: this.player,
+      combat: this.combat,
+      colliders: this.colliders,
+      vehicles: this.vehicles,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      progress: this.progress,
+      notify: (text) => this.toast.show(text),
+    });
+    this.combat.promptSources.push(this.gasStation.hud);
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       world: this.world,
@@ -524,7 +535,7 @@ export class Game {
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
-    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}`);
+    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -871,6 +882,7 @@ export class Game {
       lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
       progress: this.progress.saveState(), // M9.1: story progress flags (the gates follow them)
       campsite: this.campsite.saveState(), // M9.2: what's been searched, the wave (optional: older saves have none)
+      gasStation: this.gasStation.saveState(), // Session 15b (M9.3): its beats (optional)
     };
   }
 
@@ -910,6 +922,7 @@ export class Game {
     this.lore.loadState(d.lore);
     this.progress.loadState(d.progress);
     this.campsite.loadState(d.campsite);
+    this.gasStation.loadState(d.gasStation);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1063,7 +1076,7 @@ export class Game {
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt;
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
-    if (first) this.gasStation.update(dt);
+    this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     if (first) this.firstDay.update(dt, playing);
   }
 

@@ -5,7 +5,9 @@ import { GasStation } from '../src/encounters/GasStation.js';
 import { frameToWorld } from '../src/world/clearingFrame.js';
 import gas from '../src/data/gasStation.json';
 import vehicleData from '../src/data/vehicles.json';
+import { createRequire } from 'node:module';
 import { makeMap, config } from './mapFixture.js';
+const require = createRequire(import.meta.url);
 
 describe('the gas station set', () => {
   const map = makeMap(1234);
@@ -49,5 +51,55 @@ describe('the gas station set', () => {
     }
     expect(b.officeDoor.x).toBeLessThan(b.splitX);
     expect(b.stockDoor.x).toBeGreaterThan(b.splitX);
+  });
+});
+
+describe('the gas station beats (Session 15b pass 2)', () => {
+  const dialogue = require('../src/data/dialogue.json');
+  const progress = require('../src/data/progress.json');
+  const ids = new Set(dialogue.lines.map((l) => l.id));
+
+  it('has every line it plays', () => {
+    for (const id of ['gas.arrive', 'gas.mutant.after', 'gas.phone', 'gas.note', 'gas.witch.ellen', 'gas.witch.junie', 'gas.safe.open', ...config.gasStation.scannerLines]) expect(ids.has(id)).toBe(true);
+  });
+
+  it('has its story flags', () => {
+    const flags = new Set(progress.flags.map((f) => f.id));
+    for (const f of ['gasStationVisited', 'gasMutantKilled', 'earlNoteRead', 'scannerHeard', 'gasWitchSeen', 'earlCombination', 'rifleClaimed']) expect(flags.has(f)).toBe(true);
+  });
+
+  it('can see the witch from the door: no car, pump or post in the way', () => {
+    const from = { x: gas.building.door.x, z: gas.building.z1 + 2 };
+    const to = gas.witch;
+    const distToLine = (p) => {
+      const vx = to.x - from.x;
+      const vz = to.z - from.z;
+      const t = Math.max(0, Math.min(1, ((p.x - from.x) * vx + (p.z - from.z) * vz) / (vx * vx + vz * vz)));
+      return Math.hypot(from.x + vx * t - p.x, from.z + vz * t - p.z);
+    };
+    for (const c of gas.cars) expect(distToLine(c)).toBeGreaterThan(2.6);
+    const isl = config.gasStation.look.island;
+    for (const p of gas.pumps) {
+      expect(distToLine(p)).toBeGreaterThan(isl.length / 2 + 0.5);
+      for (const side of [-1, 1]) expect(distToLine({ x: p.x + side * (isl.length / 2 + 0.25), z: p.z })).toBeGreaterThan(1); // the canopy's posts
+    }
+  });
+
+  it('crouches the mutant at the back of the shop, in sight of the door', () => {
+    const b = gas.building;
+    expect(gas.mutant.z).toBeGreaterThan(b.partitionZ);
+    expect(gas.mutant.z).toBeLessThan(gas.shopZ);
+    expect(Math.abs(gas.mutant.x - b.door.x)).toBeLessThan(1);
+    expect(config.gasStation.mutant.health).toBeLessThan(config.mutant.health);
+  });
+
+  it('puts every search point and thing to use inside the store', () => {
+    const b = gas.building;
+    for (const s of [...gas.searches, ...gas.interactions]) {
+      expect(s.x).toBeGreaterThan(b.x0);
+      expect(s.x).toBeLessThan(b.x1);
+      expect(s.z).toBeGreaterThan(b.z0);
+      expect(s.z).toBeLessThan(b.z1);
+    }
   });
 });

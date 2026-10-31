@@ -2461,6 +2461,8 @@ export const config = {
       junie: { name: 'Junie', color: '#e6a0c4', blipFreq: 760 },
       tom: { name: 'Tom', color: '#c8d0b8', blipFreq: 300 },
       radio: { name: 'Radio', color: '#a8b0a0', blipFreq: 440 },
+      scanner: { name: 'Scanner', color: '#8fb08a', blipFreq: 260 }, // Session 15b: Earl's scanner at the gas station
+      note: { name: "Earl's note", color: '#d8ccaa', blipFreq: 0, silent: true }, // read, not heard
     },
     // The family in the comms room, in the order the station places them.
     family: ['ellen', 'wyatt', 'junie'],
@@ -2540,6 +2542,19 @@ export const config = {
   // data/gasStation.json). Session 15b pass 1: the set.
   gasStation: {
     floorLift: 0.18, // the store's floor this far above the highest ground under it
+    // Pass 2 (Session 15b): the beats.
+    arriveInset: 0, // metres inside the clearing's edge that count as arriving (the sweep)
+    packDistance: 35, // metres outside the edge: the forecourt pack and the mutant are put there
+    interactRange: 1.6, // metres to a search point or a thing to use (inside the store only)
+    pack: { count: 5, centreZ: 3.5, lingerRadius: 8 }, // DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
+    // The first mutant: its own health (DESIGN: beatable close up with the
+    // shotgun and a handful of shells; mutants are 300 before the level's
+    // multiplier). lookHeight: where the camera looks on it, crouched.
+    mutant: { health: 180, lookHeight: 0.4, memory: 30 },
+    witch: { delay: 1.2, lookHeight: 1.5 }, // seconds after Tom's back on the forecourt; where the camera looks on her
+    scannerLines: ['gas.scanner.1', 'gas.scanner.2'],
+    safe: { weapon: 'sniper' }, // the hunting rifle, empty
+
     look: {
       glassOpacity: 0.82, // grimed: you can barely see in (or out)
       forecourtLift: 0.04, // metres above the ground

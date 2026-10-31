@@ -26,7 +26,8 @@ export const ZOMBIE_FRAMES = {
   count: 11,
 };
 
-const ALIVE = new Set(['rise', 'walk', 'attack', 'stagger']);
+// Session 15b: dormant (the gas station's authored mutant, crouched and still) and wake (unfolding).
+const ALIVE = new Set(['rise', 'walk', 'attack', 'stagger', 'dormant', 'wake']);
 
 // Session 13: each zombie spawned gets a fresh look seed, which picks its
 // clothes, hair and build (render/zombieLook.js). Cosmetic: a plain
@@ -161,6 +162,18 @@ export class Zombie {
         this.timer += dt;
         this.sink = Math.max(0, 1 - this.timer / (c.riseSeconds ?? 1.5));
         if (this.sink === 0) {
+          this.state = 'walk';
+          this.timer = 0;
+        }
+        break;
+      case 'dormant':
+        // Crouched, folded over, waiting (the renderer twitches it). Nothing else.
+        this.timer += dt;
+        break;
+      case 'wake':
+        // Unfolding to its full height (the renderer's 'wake', over wakeSeconds); then it comes.
+        this.timer += dt;
+        if (this.timer >= (this.wakeSeconds ?? 2)) {
           this.state = 'walk';
           this.timer = 0;
         }
@@ -306,8 +319,17 @@ export class Zombie {
 
   // Take a hit. from: { x, z } where it came from (for knockback).
   // Returns true if this hit killed it.
+  // Session 15b: wake a dormant one (the gas station's mutant): it unfolds, then comes.
+  wake(seconds) {
+    if (this.state !== 'dormant') return;
+    this.state = 'wake';
+    this.timer = 0;
+    this.wakeSeconds = seconds;
+  }
+
   hit(damage, stagger, knockback, from) {
     if (!this.alive) return false;
+    if (this.state === 'dormant') this.wake(this.wakeSeconds ?? 2); // shot in its sleep: it wakes
     this.health -= damage;
     this.flash = this.cfg.hitFlashSeconds;
     const max = this.cfg.maxKnockback;
@@ -326,7 +348,7 @@ export class Zombie {
     // A hit interrupts a swipe that hasn't landed, and stuns for a moment
     // (not while it's still climbing out of the ground).
     const stun = stagger * this.staggerScale;
-    if (stun > 0 && this.state !== 'rise' && !(this.state === 'attack' && this.struck)) {
+    if (stun > 0 && this.state !== 'rise' && this.state !== 'wake' && !(this.state === 'attack' && this.struck)) {
       const left = this.state === 'stagger' ? this.timer : 0;
       this.state = 'stagger';
       this.attackBarrier = null;

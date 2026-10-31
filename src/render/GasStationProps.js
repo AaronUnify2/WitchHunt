@@ -220,6 +220,11 @@ export class GasStationProps {
     this.box(c.length + 0.1, 0.05, c.depth + 0.1, c.x, c.z, fy + c.height, k.counterTop, c.yaw);
     this.box(0.42, 0.22, 0.38, s.register.x, s.register.z, fy + c.height + 0.05, k.metal);
     this.box(0.3, 0.2, 0.06, s.register.x, s.register.z - 0.12, fy + c.height + 0.27, k.screen, 0, { rotX: -0.4 });
+    // The phone on the counter (Session 15b: dead).
+    if (s.phone) {
+      this.box(0.24, 0.08, 0.2, s.phone.x, s.phone.z, fy + c.height + 0.05, k.radio);
+      this.box(0.22, 0.05, 0.06, s.phone.x, s.phone.z, fy + c.height + 0.13, k.radio, 0, { oz: -0.04 });
+    }
     // A rack of dusty postcards and a jar of keyrings on the counter.
     this.box(0.25, 0.4, 0.25, c.x - 1.2, c.z, fy + c.height + 0.05, k.wood);
     // Shelf runs, the goods on them, one knocked over.

@@ -1,26 +1,50 @@
-// The roadside gas station (M9.3; DESIGN.md "Roadside gas station").
-// Session 15b, pass 1 (agreed with Aaron): the set. The store with its
-// back office and stockroom, the forecourt, the pump islands under a
-// sagging canopy, the HOME OF BIGFOOT sign by the road, and the cars on
-// their authored spots. It's solid (walls, shelves, pumps and the rest
-// block bodies; walls and the safe stop shots) and the same every run.
-// The beats (the arrival sweep, the forecourt pack, the first mutant,
-// Earl's note and safe, the scanner, the witch, the radio) are pass 2.
+// The roadside gas station (M9.3; DESIGN.md "Roadside gas station";
+// Session 15b, agreed with Aaron: pass 1 the set, pass 2 the beats). The
+// guaranteed second outing: Ellen sent Tom to check on the Pruitts at
+// first light (and to find a phone or a radio).
+//  1. The forecourt pack: a handful of citizens hanging about the pumps
+//     and cars (they're there before Tom arrives: risen as he nears).
+//  2. Arrival: the establishing sweep from the road, across the pumps to
+//     the HOME OF BIGFOOT sign; Wyatt: no lights, their truck's gone.
+//     Sets gasStationVisited.
+//  3. The first mutant: crouched and still at the back of the centre aisle
+//     (dormant). A few steps into the dark shop, a first-person moment
+//     takes the camera: the torch finds it, it unfolds to its full height
+//     (wake), then it charges. Its own reduced health (config). Ellen after
+//     it's down: that wasn't like the others.
+//  4. Looting: hold-X searches (the counter, shelves, coolers, the office's
+//     cabinet, the stockroom's boxes and rack); the phone on the counter
+//     (dead); Earl's note on the office desk (read it); Earl's scanner (a
+//     clipped military broadcast about a quarantine line, and Ellen); the
+//     gun safe (locked until Tom has Earl's combination: the storm
+//     shelter's, Session 16; then the hunting rifle, empty).
+//  5. The witch: once the mutant's down, stepping back out onto the
+//     forecourt, a first-person moment: she stands at the clearing's edge
+//     across the road, looking at the store, then turns and runs into the
+//     trees. Ellen: that was her; Junie (once the note's been read): the
+//     Pruitts went to the shelter, where the camera was.
+//  6. The forecourt's cars: one has a sure battery.
+// Each beat happens once; it's saved. The frame (GasStation.frame): from
+// the clearing's centre, z toward the road, x to the right as you face it.
 //
-// The frame (encounters/GasStation.frame): from the clearing's centre,
-// z toward the road (the nearest point of its centre line), x to the right
-// as you face it. data/gasStation.json is laid out in it.
+// Events: 'gasStation:arrived', 'gasStation:mutant' (it wakes),
+// 'gasStation:mutantDown', 'gasStation:note', 'gasStation:scanner',
+// 'gasStation:witch', 'gasStation:searched' { id }.
 
 import gasData from '../data/gasStation.json';
-import { frameToWorld, frameYaw } from '../world/clearingFrame.js';
+import { frameToWorld, frameYaw, frameAnchor } from '../world/clearingFrame.js';
 import { nearestRoadIndex } from '../world/road.js';
 import { segmentCollider } from '../world/collision.js';
+import { rollLoot } from '../combat/loot.js';
+import { HoldAction } from '../player/HoldAction.js';
 import { GasStationProps } from '../render/GasStationProps.js';
+import { Rng } from '../core/Rng.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
 export class GasStation {
   constructor(cfg, bus, data = gasData) {
     this.cfg = cfg;
+    this.gc = cfg.gasStation;
     this.bus = bus;
     this.data = data;
   }
@@ -52,16 +76,48 @@ export class GasStation {
     });
   }
 
-  // ctx: { world, player, colliders, notify(text) }.
+  // ctx: { world, player, combat, colliders, vehicles, cutscenes, dialogue,
+  // progress, notify(text) }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.ground = ctx.world.ground;
     this.frame = GasStation.frame(ctx.world.map);
     if (!this.frame) return;
+    this.enemies = ctx.combat?.enemies;
     this.floorY = this.levelFloor();
-    this.props = new GasStationProps(this.cfg.gasStation.look, this.data);
+    this.props = new GasStationProps(this.gc.look, this.data);
     this.props.init(scene, this.frame, this.ground, this.floorY);
-    this.buildColliders(ctx.colliders);
+    if (ctx.colliders) this.buildColliders(ctx.colliders);
+    const at = (s) => ({ ...s, ...frameToWorld(this.frame, s.x, s.z) });
+    this.points = this.data.searches.map(at);
+    this.spots = this.data.interactions.map(at);
+    this.lootRng = new Rng(`${this.cfg.map.cluster.seed}:gas-loot`);
+    this.hold = new HoldAction(this.cfg.station.hold.releaseDrain);
+    this.hold.init();
+    this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD
+    this.cutscenes?.namedAnchors?.set('gasStation', () => frameAnchor(this.frame));
+    this.reset();
+    this.sureBattery();
+    this.unsubscribers = [
+      this.bus.on('player:hurt', () => this.hold.interrupt()),
+      this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
+      this.bus.on('gasStation:wake', () => this.wakeMutant()),
+    ];
+  }
+
+  reset() {
+    this.searched = new Set();
+    this.done = new Set(); // interactions done: phone, note, scanner, safe
+    this.packSent = false;
+    this.pack = [];
+    this.arrived = false;
+    this.mutant = null; // the authored mutant while it's up
+    this.mutantState = 'waiting'; // waiting -> dormant -> awake -> down
+    this.wasInside = false;
+    this.witchSeen = false;
+    this.witchIn = -1; // seconds until the witch's moment (after the mutant's down, outside)
+    this.junieDue = false; // Junie's line about the note, once both the witch and the note have happened
+    this.safeOpen = false;
   }
 
   // The store sits level on its highest corner (like the station's cabin).
@@ -72,7 +128,27 @@ export class GasStation {
       const w = frameToWorld(this.frame, x, z);
       top = Math.max(top, this.ground.heightAt(w.x, w.z));
     }
-    return top + this.cfg.gasStation.floorLift;
+    return top + this.gc.floorLift;
+  }
+
+  // One car on the forecourt (the first spot's) has a sure battery and no alarm.
+  sureBattery() {
+    if (!this.vehicles?.list || !this.data.cars.length) return;
+    const s = frameToWorld(this.frame, this.data.cars[0].x, this.data.cars[0].z);
+    let best = null;
+    let bestD = 4;
+    for (const v of this.vehicles.list) {
+      const d = Math.hypot(v.x - s.x, v.z - s.z);
+      if (d < bestD) {
+        best = v;
+        bestD = d;
+      }
+    }
+    if (!best) return;
+    best.battery = true;
+    best.hasBattery = true;
+    best.alarm = false;
+    this.sureCar = best;
   }
 
   // ---- what's solid ------------------------------------------------------------------------------
@@ -87,7 +163,6 @@ export class GasStation {
   // A box (w across x, d along z) at (x, z), turned yaw degrees.
   block(grid, x, z, w, d, base, top, blocksShots, yaw = 0) {
     const a = (yaw * Math.PI) / 180;
-    // Its long axis, in the frame (x right, z ahead).
     const long = w >= d;
     const half = Math.max(w, d) / 2 - Math.min(w, d) / 2;
     const ux = long ? Math.cos(a) : Math.sin(a);
@@ -137,7 +212,7 @@ export class GasStation {
     for (const r of this.data.stockroom.racks) this.block(grid, r.x, r.z, r.length, 0.6, low, fy + 2, false, r.yaw);
 
     // Outside: the pump islands, the canopy's posts, the sign's pole, the dumpster.
-    const look = this.cfg.gasStation.look;
+    const look = this.gc.look;
     for (const p of this.data.pumps) {
       const w = frameToWorld(this.frame, p.x, p.z);
       const y = this.ground.heightAt(w.x, w.z);
@@ -159,10 +234,354 @@ export class GasStation {
     this.block(grid, dp.x, dp.z, 1.9, 1.2, dy - 1, dy + 1.3, true, dp.yaw);
   }
 
-  // ---- each frame ----------------------------------------------------------------------------------
+  // ---- where Tom is ----------------------------------------------------------------------------------
 
-  update(dt) {
+  // Tom's position in the frame: { x, z }.
+  local() {
+    const p = this.player.position;
+    const f = this.frame;
+    const dx = p.x - f.x;
+    const dz = p.z - f.z;
+    return { x: dx * f.rx + dz * f.rz, z: dx * f.fx + dz * f.fz };
+  }
+
+  inside(l = this.local()) {
+    const b = this.data.building;
+    return l.x > b.x0 && l.x < b.x1 && l.z > b.z0 && l.z < b.z1;
+  }
+
+  // ---- each frame -----------------------------------------------------------------------------------
+
+  // playing: the world runs. canInteract: the controls are Tom's (no ledger, no other prompt first).
+  update(dt, input, playing, canInteract) {
     this.props?.update(dt);
+    if (!this.frame) return;
+    if (!playing) {
+      this.hud.prompt = '';
+      return;
+    }
+    const l = this.local();
+    const d = Math.hypot(l.x, l.z);
+    const near = d < this.frame.radius + this.gc.packDistance;
+    if (!this.packSent && near) this.sendPack();
+    if (this.mutantState === 'waiting' && near) this.placeMutant();
+    if (!this.arrived && d <= this.frame.radius - this.gc.arriveInset) this.arrive();
+    if (this.mutantState === 'dormant') this.updateDormant(l);
+    if (this.mutantState === 'awake') this.updateAwake();
+    this.updateWitch(dt, l);
+    if (canInteract && input) this.updateInteraction(dt, input);
+    else {
+      this.hud.prompt = '';
+      this.hud.progress = 0;
+      this.hold.update(dt, null, false, 1);
+    }
+  }
+
+  // ---- the forecourt pack and the arrival ----------------------------------------------------------
+
+  // A handful of citizens hanging about the forecourt, there before Tom
+  // gets close enough to see (no rising out of the ground).
+  sendPack() {
+    this.packSent = true;
+    if (!this.enemies) return;
+    const n = this.gc.pack.count;
+    const spots = this.data.pack.slice(0, n);
+    const centre = frameToWorld(this.frame, 0, this.gc.pack.centreZ);
+    for (const s of spots) {
+      const w = frameToWorld(this.frame, s.x, s.z);
+      const out = [];
+      this.enemies.spawnPlanned({ type: 'single', count: 1 }, w.x, w.z, { ringMin: 0, ringMax: 1, mix: this.world.variantMixAt(w.x, w.z), mode: 'linger', linger: { x: centre.x, z: centre.z, r: this.gc.pack.lingerRadius }, rise: false, out });
+      this.pack.push(...out);
+    }
+  }
+
+  arrive() {
+    this.arrived = true;
+    this.progress?.setFlag('gasStationVisited');
+    this.bus.emit('gasStation:arrived');
+    if (!this.packSent) this.sendPack();
+    if (!this.cutscenes?.active) this.cutscenes?.play('sweep.gasStation', { anchors: { gasStation: frameAnchor(this.frame) } });
+    else this.dialogue?.play('gas.arrive');
+  }
+
+  // ---- the first mutant ----------------------------------------------------------------------------
+
+  placeMutant() {
+    if (this.mutantState !== 'waiting' || !this.enemies) return;
+    const m = this.data.mutant;
+    const w = frameToWorld(this.frame, m.x, m.z);
+    // Held (it pays Tom no mind) until it wakes; then it comes for him.
+    const z = this.enemies.spawnZombie(w.x, w.z, { kind: 'mutant', mode: 'held', linger: { x: w.x, z: w.z, r: 0 }, facing: frameYaw(this.frame, m.yaw) });
+    if (!z) return;
+    // Its own tuned health (DESIGN.md: beatable close up with the shotgun).
+    z.maxHealth = this.gc.mutant.health;
+    z.health = z.maxHealth;
+    z.state = 'dormant';
+    z.timer = 0;
+    z.authored = 'gasStation';
+    this.mutant = z;
+    this.mutantState = 'dormant';
+  }
+
+  // A few steps into the shop (and it's in front of him): the moment.
+  updateDormant(l) {
+    const z = this.mutant;
+    if (!z || !z.alive) {
+      // Gone without being put down (a pool slot reused): placed again next time Tom's near.
+      this.mutant = null;
+      this.mutantState = 'waiting';
+      return;
+    }
+    // Shot in its sleep: it's already waking (Zombie.hit).
+    if (z.state !== 'dormant') {
+      this.mutantState = 'awake';
+      this.bus.emit('gasStation:mutant');
+      return;
+    }
+    if (!this.inside(l) || l.z > this.data.shopZ || l.z < this.data.building.partitionZ || this.cutscenes?.active) return;
+    const anchor = { x: z.x, z: z.z, yaw: 0, dy: this.gc.mutant.lookHeight };
+    if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor } })) this.wakeMutant();
+  }
+
+  wakeMutant() {
+    const z = this.mutant;
+    if (!z || this.mutantState !== 'dormant') return;
+    z.wake(this.cfg.mutant.look.wakeSeconds);
+    this.combat?.sfx?.play('mutantGroan', z);
+    this.mutantState = 'awake';
+    this.bus.emit('gasStation:mutant');
+  }
+
+  // Once it's up on its feet it comes for Tom (its charge, as any mutant noticing him).
+  updateAwake() {
+    const z = this.mutant;
+    if (!z || !z.alive) {
+      this.mutantDown();
+      return;
+    }
+    if (z.state !== 'wake' && z.mode !== 'chase') {
+      const p = this.player.position;
+      this.enemies.brain.chase(z, p.x, p.z, this.gc.mutant.memory);
+    }
+  }
+
+  onKilled(zombie) {
+    const i = this.pack.indexOf(zombie);
+    if (i >= 0) this.pack.splice(i, 1);
+    if (zombie === this.mutant) this.mutantDown();
+  }
+
+  mutantDown() {
+    if (this.mutantState === 'down') return;
+    this.mutantState = 'down';
+    this.mutant = null;
+    this.progress?.setFlag('gasMutantKilled');
+    this.bus.emit('gasStation:mutantDown');
+    this.dialogue?.play('gas.mutant.after');
+  }
+
+  // ---- the witch ------------------------------------------------------------------------------------------
+
+  // Once the mutant's down: the first time Tom's back out on the forecourt
+  // after being in the store, a moment later, she's there.
+  updateWitch(dt, l) {
+    const inside = this.inside(l);
+    if (inside) this.wasInside = true;
+    if (this.witchSeen || this.mutantState !== 'down') return;
+    const b = this.data.building;
+    const onForecourt = !inside && l.z > b.z1 && l.z < this.data.forecourt.z1 + 4 && Math.abs(l.x) < this.frame.radius;
+    if (this.witchIn < 0) {
+      if (this.wasInside && onForecourt) this.witchIn = this.gc.witch.delay;
+      return;
+    }
+    this.witchIn -= dt;
+    if (this.witchIn > 0 || this.cutscenes?.active) return;
+    this.showWitch();
+  }
+
+  showWitch() {
+    this.witchSeen = true;
+    this.witchIn = -1;
+    this.progress?.setFlag('gasWitchSeen');
+    this.bus.emit('gasStation:witch');
+    const w = this.data.witch;
+    const store = frameToWorld(this.frame, 0, this.data.building.z1 - 4);
+    const at = (x, z) => {
+      const p = frameToWorld(this.frame, x, z);
+      return { ...p, yaw: Math.atan2(store.x - p.x, store.z - p.z), dy: this.gc.witch.lookHeight }; // she faces the store
+    };
+    const done = () => {
+      this.dialogue?.play('gas.witch.ellen');
+      if (this.done.has('note')) this.dialogue?.play('gas.witch.junie');
+      else this.junieDue = true;
+    };
+    const played = this.cutscenes?.play('gas.witch', {
+      anchors: { gasStation: frameAnchor(this.frame), herSpot: at(w.x, w.z), herRun: at(w.runTo.x, w.runTo.z) },
+      onDone: done,
+    });
+    if (!played) done();
+  }
+
+  // ---- searches and the things to use ---------------------------------------------------------------
+
+  updateInteraction(dt, input) {
+    const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
+    const best = this.pickPoint();
+    const key = best ? best.id : null;
+    const done = this.hold.update(dt, key, input.isDown('interact'), best?.seconds ?? 1);
+    if (done && best) (best.interaction ? this.use(best) : this.search(best));
+    const busy = best?.interaction ? '…' : 'Searching…';
+    this.hud.prompt = best ? (this.hold.active ? busy : `Hold ${X}: ${best.label}`) : '';
+    this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
+  }
+
+  // The nearest thing in reach to search or use, or null.
+  pickPoint() {
+    const p = this.player.position;
+    // Only inside the store (the walls are thin: don't reach through them).
+    if (!this.inside()) return null;
+    const reach = this.gc.interactRange;
+    let best = null;
+    let bestD = reach;
+    for (const pt of this.points) {
+      if (this.searched.has(pt.id)) continue;
+      const d = Math.hypot(pt.x - p.x, pt.z - p.z);
+      if (d < bestD) {
+        best = pt;
+        bestD = d;
+      }
+    }
+    for (const s of this.spots) {
+      if (this.done.has(s.id) && s.id !== 'safe' && s.id !== 'note') continue;
+      if (s.id === 'safe' && this.safeOpen) continue;
+      const d = Math.hypot(s.x - p.x, s.z - p.z);
+      if (d < bestD) {
+        best = { ...s, interaction: true, label: this.labelFor(s) };
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  labelFor(s) {
+    if (s.id === 'note' && this.done.has('note')) return 'read the note again';
+    if (s.id === 'safe' && this.progress?.has('earlCombination')) return "open the safe (Earl's combination)";
+    return s.label;
+  }
+
+  search(pt) {
+    this.searched.add(pt.id);
+    let any = false;
+    for (const g of pt.gives ?? []) any = this.give(g.item, g.amount ?? 1, pt) || any;
+    for (const { item, amount } of rollLoot(pt.loot ?? [], this.lootRng)) any = this.give(item, amount, pt) || any;
+    if (!any) {
+      this.combat?.hud.pickup('Nothing useful');
+      this.combat?.sfx.play('denied');
+    }
+    this.bus.emit('gasStation:searched', { id: pt.id });
+  }
+
+  give(item, amount, pt) {
+    if (this.combat.takePickup(item, amount)) return true;
+    this.combat.pickups.drop(item, amount, pt.x, this.floorY, pt.z, 0);
+    return true;
+  }
+
+  use(s) {
+    const first = !this.done.has(s.id);
+    this.done.add(s.id);
+    switch (s.id) {
+      case 'phone':
+        this.combat?.sfx.play('denied');
+        this.notify?.('Dead. Not even a dial tone.');
+        if (first) this.dialogue?.play('gas.phone');
+        break;
+      case 'note':
+        this.readNote(first);
+        break;
+      case 'scanner':
+        this.combat?.sfx.play('radioStatic');
+        for (const id of this.gc.scannerLines) this.dialogue?.play(id);
+        this.progress?.setFlag('scannerHeard');
+        this.bus.emit('gasStation:scanner');
+        break;
+      case 'safe':
+        this.trySafe();
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Earl's note: its words on the screen (the subtitle strip, as a note).
+  readNote(first) {
+    this.dialogue?.play('gas.note', {}, false); // read on the spot: no radio crackle
+    if (!first) return;
+    this.progress?.setFlag('earlNoteRead');
+    this.bus.emit('gasStation:note');
+    if (this.junieDue) {
+      this.junieDue = false;
+      this.dialogue?.play('gas.witch.junie');
+    }
+  }
+
+  // The gun safe: locked until Tom has Earl's combination (the storm
+  // shelter, Session 16). Then the hunting rifle, empty (its rounds are at
+  // the outpost; any already found load into it).
+  trySafe() {
+    if (!this.progress?.has('earlCombination')) {
+      this.combat?.sfx.play('denied');
+      this.notify?.("Locked. A heavy combination dial. A shovel or a shotgun won't touch it.");
+      return;
+    }
+    this.safeOpen = true;
+    this.combat?.sfx.play('loaded');
+    const id = this.gc.safe.weapon;
+    this.combat.giveWeapon(id, 0);
+    // Empty: no rounds came with it.
+    const w = this.combat.weapons;
+    const st = w.states[id];
+    if (st) {
+      const stored = w.ammoRounds(w.ammoType(id)) ?? 0;
+      st.mag = 0;
+      w.pools[w.ammoType(id)].rounds = Math.max(0, stored - (this.cfg.weapons[id].startReserve ?? 0));
+    }
+    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds)`);
+    this.progress?.setFlag('rifleClaimed');
+    this.dialogue?.play('gas.safe.open');
+  }
+
+  // ---- saving ------------------------------------------------------------------------------------------
+
+  saveState() {
+    return {
+      searched: [...this.searched],
+      done: [...this.done],
+      arrived: this.arrived,
+      pack: this.packSent,
+      mutant: this.mutantState === 'down' ? 'down' : 'waiting',
+      witch: this.witchSeen,
+      junie: this.junieDue,
+      safe: this.safeOpen,
+    };
+  }
+
+  // A save with the mutant still up brings it back crouched where it was
+  // (it's placed again as Tom comes near); the forecourt pack isn't saved.
+  loadState(d) {
+    if (!d) return;
+    this.searched = new Set(d.searched ?? []);
+    this.done = new Set(d.done ?? []);
+    this.arrived = Boolean(d.arrived);
+    this.packSent = false;
+    this.pack = [];
+    this.mutant = null;
+    this.mutantState = d.mutant === 'down' ? 'down' : 'waiting';
+    this.witchSeen = Boolean(d.witch);
+    this.junieDue = Boolean(d.junie);
+    this.safeOpen = Boolean(d.safe);
+    // Back to the forecourt with the pack gone (it was dealt with, or it will be again).
+    if (d.pack) this.packSent = this.mutantState === 'down';
   }
 
   // ---- debug -----------------------------------------------------------------------------------------
@@ -171,25 +590,41 @@ export class GasStation {
     if (!this.frame) return;
     const cat = menu.category(DEBUG.firstDay);
     const f = this.frame;
-    cat.addItem('Gas station: teleport to the forecourt (facing the store)', () => {
-      const w = frameToWorld(f, this.data.door?.x ?? this.data.building.door.x, 8);
-      this.player.teleport(w.x, w.z, Math.atan2(f.fx, f.fz));
-      this.notify('On the gas station forecourt');
+    const b = this.data.building;
+    const tp = (x, z, facing, text) => () => {
+      const w = frameToWorld(f, x, z);
+      this.player.teleport(w.x, w.z, facing);
+      this.notify(text);
+    };
+    cat.addItem('Gas station: teleport to the forecourt (facing the store)', tp(b.door.x, 8, Math.atan2(f.fx, f.fz), 'On the gas station forecourt'));
+    cat.addItem('Gas station: teleport inside the door', tp(b.door.x, b.z1 - 0.8, Math.atan2(f.fx, f.fz), 'Inside the gas station door'));
+    cat.addItem('Gas station: teleport to the office', tp(b.officeDoor.x, b.partitionZ - 1, Math.atan2(f.fx, f.fz), "In Earl's office"));
+    cat.addItem('Gas station: teleport to the trail in from the campsite', tp(0, -f.radius - 4, Math.atan2(-f.fx, -f.fz), 'Behind the gas station, on the trail in'));
+    cat.addItem('Gas station: wake the mutant now', () => {
+      if (this.mutantState === 'waiting') this.placeMutant();
+      this.wakeMutant();
     });
-    cat.addItem('Gas station: teleport inside the store', () => {
-      const b = this.data.building;
-      const w = frameToWorld(f, b.door.x, b.z1 - 1.5);
-      this.player.teleport(w.x, w.z, Math.atan2(f.fx, f.fz));
-      this.notify('Inside the gas station');
+    cat.addItem('Gas station: the witch now', () => {
+      this.mutantState = 'down';
+      this.witchSeen = false;
+      this.showWitch();
     });
-    cat.addItem('Gas station: teleport to the trail in from the campsite', () => {
-      const w = frameToWorld(f, 0, -f.radius - 4);
-      this.player.teleport(w.x, w.z, Math.atan2(-f.fx, -f.fz));
-      this.notify('Behind the gas station, on the trail in');
+    cat.addItem(() => `Gas station: give Earl's combination (${this.progress?.has('earlCombination') ? 'have it' : 'not yet'})`, () => this.progress?.setFlag('earlCombination'));
+    cat.addItem('Gas station: reset it (as Tom first finds it)', () => {
+      for (const z of this.pack) if (z.alive) this.enemies.damage(z, 1e6, 'body', {}, z, z);
+      if (this.mutant?.alive) this.enemies.damage(this.mutant, 1e6, 'body', {}, this.mutant, this.mutant);
+      this.reset();
+      this.notify('The gas station is as Tom first finds it (the cars as they are)');
     });
   }
 
+  overlayLine() {
+    if (!this.frame) return '';
+    return `gas ${this.arrived ? 'visited' : 'unvisited'} pack ${this.pack.filter((z) => z.alive).length} mutant ${this.mutantState} searched ${this.searched.size}/${this.points.length} ${[...this.done].join(',')}${this.witchSeen ? ' witch-seen' : ''}`;
+  }
+
   dispose() {
+    for (const off of this.unsubscribers ?? []) off();
     this.props?.dispose();
   }
 }

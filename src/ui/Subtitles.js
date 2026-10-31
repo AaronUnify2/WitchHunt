@@ -131,7 +131,7 @@ export class Subtitles {
     e.blipCount++;
     if (e.blipCount % this.story.blipEvery !== 1 % this.story.blipEvery) return;
     const s = this.story.speakers[e.speaker];
-    if (!s || !this.sfx) return;
+    if (!s || !this.sfx || s.silent) return; // Session 15b: a note is read, not heard
     const jitter = 1 + (Math.random() * 2 - 1) * this.story.blipJitter; // cosmetic: not gameplay
     this.sfx.blip(s.blipFreq * jitter, this.story.blipSeconds, this.story.blipGain * (e.radio ? 0.7 : 1));
   }

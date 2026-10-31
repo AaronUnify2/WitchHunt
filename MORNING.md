@@ -1,0 +1,25 @@
+# For Aaron in the morning (Session 15b, overnight)
+
+You went to bed and told me to keep building: the gas station's beats (pass 2), then the quad bike (pass 3). Everything below is on `main`. These are the calls I made on my own judgment, for you to check. Each says what I did and where to change it.
+
+## The gas station's beats (pass 2)
+
+1. **The mutant's health: 180** (ordinary mutants are 300 before the zombie level's multiplier). DESIGN says "beatable close up with the shotgun and a handful of shells". In my test it charged as soon as it was up and took Tom from 100 to 40 health before I'd fired. It may be too punishing for a first meeting, or just right. `config.gasStation.mutant.health`.
+2. **When it wakes:** about 1.6 m inside the door (`gasStation.json` `shopZ`), in a 3.4 s first-person moment. The camera finds it hunched at the back of the centre aisle, it unfolds (Session 13's dormant/wake poses), and the camera jolts. The world runs on during the moment, so it's already moving when you get control back. Shooting it in its sleep from the door also wakes it, with no cutscene.
+3. **To give the mutant a clear line from the door, I moved the shelves** into two runs either side of a centre aisle.
+4. **The forecourt pack: 5 citizens hanging about the pumps and cars**, there before you arrive (they don't rise out of the ground). They appear when you're about 35 m from the clearing's edge, so the arrival sweep shows them. `config.gasStation.pack`.
+5. **The witch:** straight across the road from the door, about 20 m out at the clearing's edge, framed by the canopy. She stands about 2.8 s, then runs off east into the trees (with the song, then a shriek). She's small on screen at that distance; I can bring her closer. `gasStation.json` `witch`.
+   - **I moved a forecourt car** (spot 2) east, out of the line from the door to her.
+6. **Draft lines** (all marked `draft` in `dialogue.json`, ids `gas.*`):
+   - Arrival, Wyatt: "No lights on. Dad, their truck's gone. Maybe they got out." (your line)
+   - The mutant down, Ellen: "Tom? Tom, what was that? That wasn't like the others." (DESIGN's)
+   - **The phone, Wyatt (new):** "Their phone's dead too? Then it's not just our line." There's also a toast: "Dead. Not even a dial tone."
+   - **The scanner (new wording):** "...all civilians inside the quarantine line are to remain indoors. Do not approach the checkpoint. Repeat, do not approach the che..." Then Ellen: "Quarantine line? Tom, somebody out there knows what's happening."
+   - The witch, Ellen: "That was her. The one from the tape. Tom, come home." Junie: "The note said they went to the shelter. That's where the camera was." Junie only speaks once the note's been read: right after the witch if you've read it, or as soon as you read it if you haven't.
+   - **The safe opened, Wyatt (new; Session 16 makes this reachable):** "Earl's hunting rifle? Dad, that thing's got a scope. Now we just need rounds for it."
+7. **Earl's note shows in the subtitle strip** as "EARL'S NOTE", silent, with no radio crackle. You can read it again. A proper paper close-up could come later.
+8. **The safe:** "Locked. A heavy combination dial. A shovel or a shotgun won't touch it." It opens with a new story flag, `earlCombination`, which Session 16 sets from Earl's keys at the storm shelter. It gives the hunting rifle empty (no rounds; any already carried load into it) and sets `rifleClaimed`.
+   - **Conflict to resolve:** `rifleClaimed` still has its Session 14 stand-in trigger (both places visited), which opens the outpost early. Session 16 should drop the stand-in. I've left it, since the shelter isn't built yet.
+9. **One forecourt car always has a battery** (the first spot's, with no alarm). The others are rolled as normal.
+10. **I removed the placeholder signposts** ("Encounter: built in M9") from the campsite and the gas station. The gas station's was standing inside the store. `config.landmarks.built`.
+11. **The searches** (hold X, inside the store only): the counter (scrap, maybe ammo), two shelves (one has a sure first aid kit), the coolers, the office's filing cabinet, the stockroom's boxes (shells) and rack.

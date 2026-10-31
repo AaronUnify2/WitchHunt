@@ -361,7 +361,8 @@ export class Cutscenes {
         this.subtitles.show({ speaker: e.speaker ?? 'radio', text: e.text, radio: Boolean(e.radio) });
         break;
       case 'move':
-        if (actor) actor.move = { from: { ...actor.pos }, to: this.at(actor.anchor, e.to), t: 0, seconds: e.seconds ?? 1 };
+        // Session 15b: to a point in another anchor's frame if the event names one.
+        if (actor) actor.move = { from: { ...actor.pos }, to: this.at(e.anchor ?? actor.anchor, e.to), t: 0, seconds: e.seconds ?? 1 };
         break;
       case 'pose':
         if (actor) actor.pose = e.pose;
