@@ -4,6 +4,8 @@
 //  - the barricade slots, the inner ring: build one, or repair it;
 //  - the cabin's two doors: repair, then reinforce;
 //  - the fence box (the power): fit a battery.
+// The D-pad walks a ring left and right, and steps between the rings with
+// up (in) and down (out): see `layers`.
 // The cabin, the tower, the turret pad and the cliff are drawn to find
 // your way. Not to scale: the rings and the fence box sit where they're
 // easy to tap, on the right side of the compound.
@@ -40,6 +42,8 @@ export function buildFencePlan(station) {
       hit: `<polyline class="hit" points="${pts}"/>`,
       x: mid.x,
       y: mid.y,
+      ring: 'fence',
+      order: (a0 + a1) / 2,
       cls: `${b.kind} ${healthCls(b)}`,
       label,
       value: cost > 0 ? `${hp(b)}  ·  A: repair (${cost} scrap)` : `${hp(b)}  ·  sound`,
@@ -63,6 +67,8 @@ export function buildFencePlan(station) {
         hit: `<polyline class="hit" points="${pts}"/>`,
         x: mid.x,
         y: mid.y,
+        ring: 'barricade',
+        order: (a0 + a1) / 2,
         cls: 'barricade empty',
         label,
         value: `not built  ·  A: build (${k.barricade} scrap)`,
@@ -76,6 +82,8 @@ export function buildFencePlan(station) {
       hit: `<polyline class="hit" points="${pts}"/>`,
       x: mid.x,
       y: mid.y,
+      ring: 'barricade',
+      order: (a0 + a1) / 2,
       cls: `barricade ${healthCls(bar)}`,
       label,
       value: cost > 0 ? `${hp(bar)}  ·  A: repair (${cost} scrap)` : `${hp(bar)}  ·  sound`,
@@ -108,6 +116,8 @@ export function buildFencePlan(station) {
       hit: `<rect class="hit" x="${f(p.x - rw / 2 - 1)}" y="${f(p.y - rh / 2 - 1)}" width="${f(rw + 2)}" height="${f(rh + 2)}"/>`,
       x: p.x,
       y: p.y,
+      ring: 'inner',
+      order: p.x,
       cls: `door ${healthCls(d)}${d.reinforced ? ' reinforced' : ''}`,
       label: cap(d.name),
       value,
@@ -129,6 +139,8 @@ export function buildFencePlan(station) {
     hit: `<rect class="hit" x="${f(box.x - 3)}" y="${f(box.y - 2.6)}" width="6" height="5.2"/>`,
     x: box.x,
     y: box.y,
+    ring: 'inner',
+    order: box.x,
     cls: `box ${s.powered ? 'ok' : 'down'}`,
     label: 'Fence box (power)',
     value: `charge ${charge}/${p.maxCharge}  ·  you carry ${inv.batteries} batter${inv.batteries === 1 ? 'y' : 'ies'}${canFit ? `  ·  A: fit one (+${p.batteryCharge})` : inv.batteries > 0 ? '  ·  full' : '  ·  bring a battery'}  ·  tonight drains about ${tonight}`,
@@ -154,6 +166,11 @@ export function buildFencePlan(station) {
 
   return {
     viewBox: '-34 -20 68 54',
+    // The D-pad (Session 15b, Aaron): left / right along a ring (the fence
+    // and gate west to east, the barricades, the doors and the fence box);
+    // up goes in a ring (fence, barricades, the cabin and fence box, then
+    // the rows above), down goes back out.
+    layers: ['fence', 'barricade', 'inner'],
     back,
     title: 'OR PICK A PART: the fence (outer ring), barricades (inner ring), the doors, the fence box',
     hint: 'Tap a part, or D-pad to it and press A',

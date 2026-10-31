@@ -252,7 +252,8 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(after).toContain('day1.20');
     for (const id of after) expect(by[id]).toBeTruthy();
     expect(after.map((id) => by[id].text).join(' ')).toMatch(/gas station/i);
-    expect(by['day1.20'].text).toMatch(/Pruitts/);
+    expect(after.length).toBe(3); // Aaron: three lines
+    expect(by['day1.night.after1'].text).toMatch(/Pruitts/);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
     expect(by['day1.21'].text).toMatch(/gas station/i);
     expect(by['day1.night.feed'].text).toMatch(/live/i);

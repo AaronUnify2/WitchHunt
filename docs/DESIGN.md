@@ -289,7 +289,7 @@ A ledger book on the comms room desk is the one place to manage the whole statio
   - **Fence:** "Repair the whole fence and gate" on its own at the top (the default). Under it, a **plan of the compound** (`base/fencePlan.js`) to tap, or D-pad round and press A: the fence's panels and the gate (the outer ring: repair), the barricade slots (the inner ring: build or repair), the cabin's two doors (repair, then reinforce) and the fence box (fit a battery). Coloured by state: sound, hurt, down, not built.
   - **Turret:** padlocked until the turret's found; then the turret page as before.
   - **Upgrades:** the floodlights all in one go (100 scrap: 4 × 25); spike traps a side at a time: west 60, south-west 40, south 40, south-east 40, east 60 (20 a trap, as before). A worn side rebuilds for its traps' rebuild cost.
-  - Tap a tab, a row or a part of the plan to do it; × closes. LB / RB turn the page (Q / R, Page Up / Down on a keyboard); the mouse is freed while the book is open.
+  - Tap a tab, a row or a part of the plan to do it; × closes. The D-pad walks a ring left and right (the fence and gate, the barricades, the doors and fence box), up steps inward (then to the rows above), down steps out. LB / RB turn the page (Q / R, Page Up / Down on a keyboard); the mouse is freed while the book is open.
 
 ### Security rating
 
@@ -1251,10 +1251,9 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 17 | Trail-cam clip starts | Ellen (radio) | Tom, camera six. Look at this. |
 | 18 | During the clip | Ellen (radio) | She's burying something. The transmissions talked about marks like that, wherever the dead started rising. |
 | 19 | Clip ends | Junie (radio) | The ground's still glowing where she was. Like it's warm. |
-| 19a | After the clip *(Session 15b, draft)* | Wyatt (radio) | That's the Pruitts' storm shelter. She was right there on their land. |
-| 19b | After 19a *(Session 15b, draft)* | Ellen (radio) | Earl built that shelter for his family. If they went out there tonight... |
-| 20 | Sigil marked on the map | Wyatt (radio) | It's on your map now. Somebody needs to check on the Pruitts at first light, Dad. *(Session 15b, Aaron: the next beat is the gas station, not digging; my draft)* |
-| 20a | After 20, then the night fades to dawn *(Session 15b, draft)* | Ellen (radio) | Start at their gas station. There'll be supplies, and if Earl's phone or his radio still works, we can reach someone outside. We need help, Tom. |
+| 19a | After the clip *(Session 15b, draft)* | Wyatt (radio) | That's the Pruitts' storm shelter, Dad. It's on your map now. |
+| 20 | After 19a *(Session 15b: Ellen's now; Aaron: the next beat is the gas station, not digging; my draft)* | Ellen (radio) | Earl built that shelter for his family. If they went out there tonight... Somebody needs to check on them at first light. |
+| 20a | After 20, then the night fades to dawn *(Session 15b, draft)* | Wyatt (radio) | Start at their gas station, Dad. There'll be supplies, and if Earl's phone or radio still works, we can reach someone outside. |
 | 21 | Dawn 1, sigil not dug up | Ellen | We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right. *(Session 15b; my draft)* |
 | 22 | Dawn 1, sigil dug up | Ellen | You got it. The night went quiet after you dug it up. That has to mean something. |
 | 23 | Dawn 1, either way | Junie | She was singing. On the camera. Did you hear it? |
@@ -1323,7 +1322,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 - **The opening:** the cold open, then Tom wakes in the comms room facing Ellen (from black), lines 1-2.
 - **The tower:** the first climb on Day 1; the light far south is a small red light blinking at the edge of sight; the smoke over the campsite; lines 3-4.
 - **Day 1 can't fail** (a 20% health floor, the day only) and **its clock holds at 17:00** until nightfall: Session 15b, once the battery's fitted, the torn fence patched and Junie's had her word (or 60 s), the day fades to dusk (`day1.nightfall`). Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
-- **Night 1** (Session 15b): straight in from the day (no dusk); 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map and the spur open; the family's talk (19a-20a: the Pruitts, the gas station); then a fade to dawn. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
+- **Night 1** (Session 15b): straight in from the day (no dusk); 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map and the spur open; the family's talk (19a, 20, 20a: three lines, the Pruitts, the gas station); then a fade to dawn. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
 - **Dawn 1:** lines 21 / 22 and 23; the gas station trail opens.
 - **Skip intro:** a fresh map at Dawn 1, the tutorial done, the campsite looted, the camcorder handed in, the Night 1 sigil planted.
 

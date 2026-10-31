@@ -2523,7 +2523,7 @@ export const config = {
       feedDelay: 3.5, // seconds from Ellen's "a trail cam's live" to camera six (Session 15b)
       // After the clip, in order (Session 15b): the family talk it over, then
       // the night fades to dawn this many seconds after the last line.
-      afterClip: ['day1.night.after1', 'day1.night.after2', 'day1.20', 'day1.night.after3'],
+      afterClip: ['day1.night.after1', 'day1.20', 'day1.night.after3'], // Aaron: three lines
       dawnAfterTalk: 2.5,
       holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
       sigilOffset: [1.5, 1], // metres from the shelter clearing's centre (beside the hatch, M9.3)

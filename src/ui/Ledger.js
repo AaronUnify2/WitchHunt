@@ -136,13 +136,13 @@ export class Ledger {
     this.render();
   }
 
-  // The D-pad on a plan: to the nearest thing that way (rows sit above the plan).
+  // The D-pad on a plan: along and between its rings if it has them
+  // (planMove), else to the nearest thing that way (rows sit above the plan).
   moveOnPlan(dx, dy, pages) {
     const page = pages[this.tab];
     const list = this.focusables(page);
     if (list.length === 0) return;
-    const pos = planPositions(page);
-    const next = nearestToward(pos, this.row, dx, dy);
+    const next = page.plan.layers ? planMove(page, this.row, dx, dy) : nearestToward(planPositions(page), this.row, dx, dy);
     if (next >= 0) this.row = next;
     this.render();
   }
@@ -264,6 +264,57 @@ export function planPositions(page) {
   const out = rows.map((_, i) => ({ x: vx + vw / 2, y: vy - (rows.length - i) * 6 }));
   for (const it of page.plan?.items ?? []) out.push({ x: it.x, y: it.y });
   return out;
+}
+
+// The D-pad on a plan with rings (Session 15b, Aaron): `plan.layers` lists
+// its rings from the outside in; each item has a `ring` and an `order`
+// along it. Left / right walk the ring (stopping at its ends); up steps in
+// a ring (from the innermost, up to the rows above the plan), down steps
+// out, landing on the nearest part of the next ring. Returns the new focus
+// index (rows first, then the plan's items), or -1 to stay put.
+export function planMove(page, from, dx, dy) {
+  const rows = (page.rows ?? []).filter((r) => !r.heading).length;
+  const items = page.plan.items;
+  const layers = page.plan.layers;
+  const ringOf = (name) => items.map((it, j) => ({ it, j })).filter((e) => e.it.ring === name).sort((a, b) => a.it.order - b.it.order);
+  const nearestIn = (name, x, y) => {
+    let best = -1;
+    let bestD = Infinity;
+    for (const e of ringOf(name)) {
+      const d = Math.hypot(e.it.x - x, e.it.y - y);
+      if (d < bestD) {
+        bestD = d;
+        best = rows + e.j;
+      }
+    }
+    return best;
+  };
+  if (from < rows) {
+    if (dy < 0) return from > 0 ? from - 1 : -1;
+    if (dy > 0) {
+      if (from < rows - 1) return from + 1;
+      // Down from the last row: into the plan's innermost ring, its top-most part.
+      const inner = ringOf(layers[layers.length - 1]);
+      if (inner.length === 0) return -1;
+      return rows + inner.reduce((a, b) => (b.it.y < a.it.y ? b : a)).j;
+    }
+    return -1;
+  }
+  const cur = items[from - rows];
+  if (!cur) return -1;
+  const li = layers.indexOf(cur.ring);
+  if (dx !== 0) {
+    const ring = ringOf(cur.ring);
+    const k = ring.findIndex((e) => e.j === from - rows);
+    const next = ring[k + Math.sign(dx)];
+    return next ? rows + next.j : -1;
+  }
+  if (dy < 0) {
+    if (li >= 0 && li < layers.length - 1) return nearestIn(layers[li + 1], cur.x, cur.y);
+    return rows > 0 ? rows - 1 : -1;
+  }
+  if (dy > 0 && li > 0) return nearestIn(layers[li - 1], cur.x, cur.y);
+  return -1;
 }
 
 // The nearest position from `from` in direction (dx, dy): ahead of it, and

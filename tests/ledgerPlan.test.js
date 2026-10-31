@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { stationLayout } from '../src/base/stationLayout.js';
 import { StationState } from '../src/base/StationState.js';
 import { buildFencePlan } from '../src/base/fencePlan.js';
-import { planPositions, nearestToward } from '../src/ui/Ledger.js';
+import { planPositions, nearestToward, planMove } from '../src/ui/Ledger.js';
 import { makeMap, makeGround, config } from './mapFixture.js';
 
 function station(scrap = 100, batteries = 0) {
@@ -79,5 +79,66 @@ describe('moving round a plan with the D-pad', () => {
     expect(nearestToward(pos, 1, 1, 0)).toBe(2); // left part, right: the right part
     expect(nearestToward(pos, 3, 0, -1)).toBe(0); // middle, up: back to the row
     expect(nearestToward(pos, 2, 1, 0)).toBe(-1); // nothing further right
+  });
+});
+
+describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
+  const st = station();
+  const plan = buildFencePlan(st);
+  const page = { rows: [{ heading: 'ALL AT ONCE' }, { label: 'Repair all', action: () => {} }], plan };
+  const rows = 1;
+  const idx = (pred) => rows + plan.items.findIndex(pred);
+  const at = (i) => plan.items[i - rows];
+
+  it('walks the whole fence, gate included, with left and right', () => {
+    let i = idx((it) => it.cls.startsWith('gate'));
+    const seen = new Set([i]);
+    for (let k = 0; k < 20; k++) {
+      const n = planMove(page, i, -1, 0);
+      if (n < 0) break;
+      i = n;
+      seen.add(i);
+    }
+    expect(at(i).label).toMatch(/west fence 1/i); // the far west end
+    for (let k = 0; k < 30; k++) {
+      const n = planMove(page, i, 1, 0);
+      if (n < 0) break;
+      i = n;
+      seen.add(i);
+    }
+    expect(at(i).label).toMatch(/east fence 3/i); // the far east end
+    expect(seen.size).toBe(st.layout.segments.length + 1); // every panel and the gate
+    for (const j of seen) expect(at(j).ring).toBe('fence');
+  });
+
+  it('walks the barricades the same way, and up goes to the doors and fence box, then the rows', () => {
+    let i = idx((it) => it.ring === 'barricade');
+    const seen = new Set([i]);
+    for (let k = 0; k < 30; k++) {
+      const n = planMove(page, i, 1, 0);
+      if (n < 0) break;
+      i = n;
+      seen.add(i);
+    }
+    expect(seen.size).toBe(st.layout.segments.length);
+    const up = planMove(page, i, 0, -1);
+    expect(at(up).ring).toBe('inner');
+    let j = up;
+    for (let k = 0; k < 5; k++) {
+      const n = planMove(page, j, -1, 0);
+      if (n < 0) break;
+      j = n;
+    }
+    expect(planMove(page, j, 0, -1)).toBe(0); // up from the cabin: the "repair all" row
+  });
+
+  it('steps out with down: fence box to barricades to the fence', () => {
+    const box = idx((it) => it.cls.startsWith('box'));
+    const bar = planMove(page, box, 0, 1);
+    expect(at(bar).ring).toBe('barricade');
+    const fence = planMove(page, bar, 0, 1);
+    expect(at(fence).ring).toBe('fence');
+    expect(planMove(page, fence, 0, 1)).toBe(-1);
+    expect(at(planMove(page, 0, 0, 1)).ring).toBe('inner'); // down from the row: into the cabin
   });
 });
