@@ -51,6 +51,7 @@ import { StoryProgress } from '../story/StoryProgress.js';
 import { Gates } from '../world/Gates.js';
 import { Campsite } from '../encounters/Campsite.js';
 import { GasStation } from '../encounters/GasStation.js';
+import { Quad } from '../world/Quad.js';
 import { FirstDay } from '../story/FirstDay.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
@@ -414,6 +415,13 @@ export class Game {
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.gasStation.hud);
+    // Session 15b (M9.3 pass 3): Earl's quad bike, behind the gas station.
+    this.quad = new Quad(this.cfg, this.bus);
+    this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, notify: (text) => this.toast.show(text) });
+    this.combat.promptSources.push(this.quad.hud);
+    this.vehicles.busy?.push(this.quad.hud);
+    this.explosives.busy?.push?.(this.quad.hud);
+    this.station.blockers.push(this.quad.hud);
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       world: this.world,
@@ -535,7 +543,7 @@ export class Game {
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
-    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}`);
+    this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -570,6 +578,7 @@ export class Game {
     this.firstDay.addDebugItems(menu);
     this.campsite.addDebugItems(menu);
     this.gasStation.addDebugItems(menu);
+    this.quad.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -883,6 +892,7 @@ export class Game {
       progress: this.progress.saveState(), // M9.1: story progress flags (the gates follow them)
       campsite: this.campsite.saveState(), // M9.2: what's been searched, the wave (optional: older saves have none)
       gasStation: this.gasStation.saveState(), // Session 15b (M9.3): its beats (optional)
+      quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
     };
   }
 
@@ -923,6 +933,7 @@ export class Game {
     this.progress.loadState(d.progress);
     this.campsite.loadState(d.campsite);
     this.gasStation.loadState(d.gasStation);
+    this.quad.loadState(d.quad);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1002,7 +1013,7 @@ export class Game {
     for (let i = 0; i < steps; i++) this.step(dt, running, playing, i === 0);
     // Session 15b (Aaron): Tom's gun hides in a cutscene (it floated in the
     // campsite's sweep). After the step, so one starting this frame hides it too.
-    this.combat.viewModel.root.visible = !cs.active && !viewer.active;
+    this.combat.viewModel.root.visible = !cs.active && !viewer.active && !this.player.riding;
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
@@ -1059,10 +1070,13 @@ export class Game {
     const input = first && !cinematic ? this.input : this.lockedInput;
     const controls = locked ? this.lockedInput : this.input;
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
-    this.combat.update(dt, input, playing, daylight, locked);
-    this.director.update(dt, controls, playing, this.clock.phase, this.player.camera.position, daylight);
-    this.witch.update(dt, playing, this.player.camera.position, first ? controls : this.lockedInput);
-    this.explosives.update(dt, first ? controls : this.lockedInput, playing && first && !locked);
+    // Session 15b: on the quad bike the gun's slung (no firing, no charges, no digging), and the witch is faster.
+    const riding = Boolean(this.player.riding);
+    this.combat.update(dt, riding ? this.lockedInput : input, playing, daylight, locked || riding);
+    this.director.update(dt, riding ? this.lockedInput : controls, playing, this.clock.phase, this.player.camera.position, daylight);
+    this.witch.speedScale = riding ? this.cfg.quad.witchSpeedScale : 1;
+    this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
+    this.explosives.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
     // M8: the family (before the station, whose prompts wait while theirs shows).
     if (first) this.familyTalk.update(dt, controls, playing && this.combat.alive && !locked);
@@ -1074,7 +1088,8 @@ export class Game {
     this.progress.update(dt, playing && first);
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
-    const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt;
+    const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.quad.hud.prompt);
+    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt));
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     if (first) this.firstDay.update(dt, playing);
@@ -1099,6 +1114,7 @@ export class Game {
     this.firstDay.dispose();
     this.campsite.dispose();
     this.gasStation.dispose();
+    this.quad.dispose();
     this.gates.dispose();
     this.progress.dispose();
     this.viewer.dispose();

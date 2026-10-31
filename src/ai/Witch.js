@@ -859,7 +859,7 @@ export class Witch {
   move(dt, speed = this.wc.roamSpeed, weave = 0) {
     const wc = this.wc;
     if (this.tier === 'abstract') {
-      const done = advanceAlong(this, speed * wc.abstractScale * dt);
+      const done = advanceAlong(this, speed * (this.speedScale ?? 1) * wc.abstractScale * dt); // Session 15b: faster while Tom's on the quad
       this.y = this.ground.heightAt(this.x, this.z);
       return done;
     }
@@ -892,7 +892,7 @@ export class Witch {
     const d = Math.hypot(dx, dz);
     if (d < 1e-6) return 0;
     if (this.state !== 'attacking') this.facing = turnToward(this.facing, Math.atan2(dx, dz), this.wc.turnRate * dt);
-    const step = Math.min(d, speed * dt);
+    const step = Math.min(d, speed * (this.speedScale ?? 1) * dt); // Session 15b: faster while Tom's on the quad
     const fromX = this.x;
     const fromZ = this.z;
     this.x += (dx / d) * step;

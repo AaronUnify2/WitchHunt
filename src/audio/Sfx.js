@@ -121,6 +121,47 @@ export class Sfx {
     if (recipe) recipe(this, pos);
   }
 
+  // Session 15b: the quad bike's engine, a held note. on: running or not;
+  // speed 0..1 (the pitch climbs with it); throttle 0..1 (a little louder on the gas).
+  engine(on, speed = 0, throttle = 0) {
+    if (!this.ready) return;
+    const ctx = this.ctx;
+    if (!on) {
+      if (this.engineNodes) {
+        const { osc, osc2, gain } = this.engineNodes;
+        gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08);
+        osc.stop(ctx.currentTime + 0.4);
+        osc2.stop(ctx.currentTime + 0.4);
+        this.engineNodes = null;
+      }
+      return;
+    }
+    if (!this.engineNodes) {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'square';
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 420;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      osc.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain).connect(this.master);
+      osc.start();
+      osc2.start();
+      this.engineNodes = { osc, osc2, filter, gain };
+    }
+    const { osc, osc2, filter, gain } = this.engineNodes;
+    const t = ctx.currentTime;
+    const f = 38 + speed * 62 + throttle * 8;
+    osc.frequency.setTargetAtTime(f, t, 0.12);
+    osc2.frequency.setTargetAtTime(f * 0.502, t, 0.12);
+    filter.frequency.setTargetAtTime(380 + speed * 700 + throttle * 200, t, 0.15);
+    gain.gain.setTargetAtTime(0.09 + throttle * 0.05 + speed * 0.04, t, 0.1);
+  }
+
   // M8: a dialogue blip (a short square pip at the speaker's pitch).
   blip(freq, seconds, gain) {
     if (!this.ready) return;

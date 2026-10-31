@@ -67,6 +67,8 @@ export class Player {
     this.scopeLookScale = 1; // Session 10b: set by Weapons while looking through a scope
     this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
+    this.riding?.eject?.(); // Session 15b: off the quad bike
+    this.riding = null; // Session 15b: the quad bike while Tom's on it (it moves him: world/Quad.js)
     this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
     this.shakeAmount = 0;
     this.shakeTime = 0;
@@ -76,6 +78,11 @@ export class Player {
   // Jump straight to (x, z) on the ground, optionally facing yaw (radians).
   teleport(x, z, yaw = this.yaw) {
     this.platform = null;
+    if (this.riding) {
+      // Session 15b: a teleport takes Tom off the quad bike (it stays where it was).
+      this.riding.eject?.();
+      this.riding = null;
+    }
     this.position.set(x, 0, z);
     this.ground.clamp(this.position);
     this.position.y = this.ground.heightAt(this.position.x, this.position.z);
@@ -88,6 +95,15 @@ export class Player {
   }
 
   update(dt, input) {
+    if (this.riding) {
+      // Session 15b: on the quad bike it does the moving; he looks about.
+      this.updateLook(input);
+      this.updateFeedback(dt);
+      this.riding.drive(dt, input, this);
+      this.bobOffset -= this.bobOffset * Math.min(1, this.cfg.headBob.returnSpeed * dt);
+      this.applyCamera();
+      return;
+    }
     this.updateLook(input);
     this.updateFeedback(dt);
     this.updateStance(input);

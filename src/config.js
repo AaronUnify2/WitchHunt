@@ -2609,6 +2609,42 @@ export const config = {
     },
   },
 
+  // Earl's quad bike (Session 15b pass 3, Aaron: "too much walking and
+  // running"; world/Quad.js). Speeds in m/s: Tom walks 3.6, sprints 7.2.
+  quad: {
+    parked: { x: 7.5, z: -17.6, yaw: 180 }, // in the gas station's frame (gasStation.json): behind the store, by the stockroom's back door, nose to the trail
+    maxSpeed: 13, // about 47 km/h on a pathway (nearly twice a sprint)
+    reverseSpeed: 3.5,
+    acceleration: 5, // m/s each second on the gas
+    brake: 12, // stick back while moving
+    coast: 2.5, // off the gas
+    steerRate: 1.9, // radians a second at full lock, once it's rolling
+    steerFullAt: 3, // m/s: below this the steering's weaker (it can't turn on the spot)
+    steerFastLoss: 0.45, // share of the steering lost at top speed
+    undergrowthMultiplier: 0.35, // off the pathways the brush holds it to about a third
+    radius: 0.85, // its body against trunks and walls
+    parkedRadius: 1.0, // solid while it's parked
+    bumpSpeed: 2, // a bump below this is just a nudge
+    bumpKeep: 0.25, // share of the speed kept after hitting something solid
+    bumpShake: 1.2,
+    eyeHeight: 1.6, // Tom's eye above the ground in the saddle
+    seatBack: 0.4, // ...and this far behind the quad's middle (the handlebars show at the bottom of the view)
+    mountRange: 2.2,
+    mountSeconds: 0.6,
+    dismountSeconds: 0.5,
+    dismountSpeed: 1.5, // m/s: slow down to get off
+    stepOff: 1.3, // metres to the side he steps off
+    wheel: { radius: 0.32, width: 0.26 },
+    // Into the dead at speed (scaled by speed: full at maxSpeed). A citizen
+    // has 60 health at level 1: a full-speed hit drops one.
+    ram: { minSpeed: 4, reach: 0.9, damage: 70, mutantScale: 0.4, stagger: 0.8, knockback: 4, keep: 0.75, mutantKeep: 0.15, shake: 0.5 },
+    // The engine carries: every `every` seconds, the dead within idle..full metres (with speed) come.
+    noise: { every: 1.5, idle: 25, full: 60 },
+    witchSpeedScale: 1.6, // Aaron: the witch is faster while Tom's on it
+    // Dark: the torch is right on the handlebars and the tank from the saddle (it glared them white).
+    look: { tyre: 0x121212, hub: 0x262626, frame: 0x1c1c1c, body: 0x2a3018, seat: 0x161412, rack: 0x161616, metal: 0x18191a, grip: 0x0e0e0e, lamp: 0x3a3a30 },
+  },
+
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
   campsite: {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)

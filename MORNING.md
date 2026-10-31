@@ -23,3 +23,17 @@ You went to bed and told me to keep building: the gas station's beats (pass 2), 
 9. **One forecourt car always has a battery** (the first spot's, with no alarm). The others are rolled as normal.
 10. **I removed the placeholder signposts** ("Encounter: built in M9") from the campsite and the gas station. The gas station's was standing inside the store. `config.landmarks.built`.
 11. **The searches** (hold X, inside the store only): the counter (scrap, maybe ammo), two shelves (one has a sure first aid kit), the coolers, the office's filing cabinet, the stockroom's boxes (shells) and rack.
+
+## The quad bike (pass 3)
+
+12. **Where it is:** behind the gas station, by the stockroom's back door, facing the trail from the campsite, so it's the first thing you see arriving. Earl's, it's implied; nothing says so yet. `config.quad.parked`.
+13. **Controls:** hold X by it to get on. Left stick up is the gas, back brakes then reverses, left/right steers. Hold X to get off once it's slowed down. The camera turns with it and you can still look around. A one-time hint shows on mounting.
+14. **No shooting from the saddle.** The gun's slung (hidden) and charges and digging are off while riding; get off to fight. I did this for simplicity and so riding stays a travel tool, not a combat platform. Riding and shooting is possible if you'd rather.
+15. **The numbers:** top speed 13 m/s (about 47 km/h, nearly twice a sprint) on pathways and roads. The undergrowth holds it to about a third of that (4.5 m/s, under a sprint), so it's for the paths. Trunks and walls stop it with a jolt (most of the speed lost). `config.quad`.
+16. **Running the dead over:** above 4 m/s it knocks them down and hurts them (a full-speed hit drops a level-1 citizen) and loses some speed. A mutant takes much less and nearly stops it.
+17. **It's loud:** every 1.5 s while the engine runs, the dead within 25 m (idling) to 60 m (flat out) come for you. There's a new engine sound (a held synth note that climbs with speed).
+18. **The witch is 1.6x faster while you're on it** (your call): her roaming, her chases and her rushes. `config.quad.witchSpeedScale`.
+19. **Saving:** where it's left is saved. You're never saved riding; on loading you're beside it.
+20. **No fuel, no damage, no headlamp, no map icon.** The torch still works. All are easy to add if you want them.
+21. **Looks:** a dark olive placeholder. From the saddle the torch still lights the handlebars a pale grey at point-blank range. The art pass can fix it properly.
+22. **Debug (First day & campsite):** "Quad bike: bring it here" and "back behind the gas station".

@@ -67,6 +67,13 @@ Round 10 (the gas station's beats, built overnight: see `MORNING.md` for my call
 - [ ] **The witch:** once the mutant's down, step out onto the forecourt: she's at the treeline across the road, then gone. Ellen, then Junie (once you've read the note).
 - [ ] One of the forecourt cars has a battery.
 
+Round 11 (the quad bike, built overnight: see `MORNING.md`):
+- [ ] Behind the gas station, by the back door: hold X to ride it. Left stick to drive and steer; hold X once slowed to get off.
+- [ ] Fast on the paths and the road, slow in the brush, a jolt into trees. Does it feel good? Too fast, too slow?
+- [ ] Run a zombie over. Notice how the engine brings them.
+- [ ] The witch is faster while you're riding (hard to test: she's out at dusk).
+- [ ] Debug: First day & campsite has "Quad bike: bring it here".
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
