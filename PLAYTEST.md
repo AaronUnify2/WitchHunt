@@ -45,6 +45,10 @@ Round 6 (Night 1's flow):
 - [ ] **The talk afterwards:** Wyatt and Ellen on the Pruitts' shelter, line 20 (check on the Pruitts at first light), then Ellen on the gas station (supplies, a phone or radio to reach the outside, help). It's four lines, about 45 s in all. Too long?
 - [ ] **Then a fade to dawn:** Dawn 1's lines play and the game saves. You don't wait out the night.
 
+Round 7:
+- [ ] **The talk after camera six is three lines:** Wyatt (the Pruitts' shelter, on your map), Ellen (Earl's family; check on them at first light), Wyatt (start at the gas station: supplies, a phone or radio). Then dawn.
+- [ ] **Ledger plan, D-pad:** from the gate, left and right walk the whole outer fence end to end. On a barricade, left and right walk the barricades. Up from the barricades goes to the doors and fence box (left / right between them), up again to "Repair the whole fence and gate". Down steps back out.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
