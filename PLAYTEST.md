@@ -109,6 +109,13 @@ Round 15 (playtest round 4):
 - [ ] Digging a sigil shows the shovel digging.
 - [ ] The gas station mutant doesn't wake through the wall: only once you're inside.
 
+Round 16 (Session 16: your notes on the overnight work):
+- [ ] **The quad's headlamp:** get on at night: it comes on by itself and lights the path well ahead. D-pad right switches it off and on. Get off: it goes out. By day it's off when you get on (D-pad right still puts it on).
+- [ ] **Riding through dusk into night:** the lamp comes on as it gets dark (unless you'd switched it off yourself).
+- [ ] **A snare under the quad** (debug: Witch, "lay a snare, a totem and a charm ahead of me", then ride over the first): it stops dead with "A snare's wrapped round the front wheel!" Get off (you can walk). By the quad: "Tap X to free the wheel" (about 7 taps). Then ride on.
+- [ ] **Night 1, no digging:** the shelter's sigil can't be dug up on Night 1 (no prompt).
+- [ ] **Night 1's waves overlap:** three come up the campsite path about 12 s in, three more from the south 15 s later, three from the east 15 s after that, whether or not the first lot are down.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

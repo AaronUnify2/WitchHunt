@@ -2,6 +2,8 @@
 //  - Snare: a loop of root and rope on the ground. Step in it and you're
 //    held fast (Player.rooted): mash A (jump) to tear free (Aaron, M7:
 //    about 2 seconds). Looking and shooting still work. Used up once sprung.
+//    Ridden over on the quad it wraps round the front wheel instead, and
+//    Tom gets off to free it (Quad.snareWheel; Session 16, Aaron).
 //  - Hex totem: a bundle of sticks with a glowing rune, in a faint ring.
 //    Standing inside the ring hurts. It stays until it's shot or struck.
 //  - Alarm charm: a stake hung with bones across the path. Walk into it
@@ -168,7 +170,14 @@ export class Traps {
       const d = Math.hypot(t.x - p.x, t.z - p.z);
       t.targetable = t.type !== 'snare' && d <= tc.targetRange;
       if (!combat.alive || player.platform) continue;
-      if (t.type === 'snare' && !this.snare && d <= tc.snare.radius && player.onGround) {
+      if (t.type === 'snare' && !this.snare && d <= tc.snare.radius && player.onGround && player.riding) {
+        // Session 16 (Aaron): ridden over on the quad, it wraps round the wheel, not Tom's leg.
+        if (player.riding.snareWheel?.(t)) {
+          t.active = false;
+          t.targetable = false;
+          this.bus.emit('trap:sprung', { trap: t });
+        }
+      } else if (t.type === 'snare' && !this.snare && d <= tc.snare.radius && player.onGround) {
         t.active = false;
         this.snare = t;
         this.mash = 0;
@@ -196,7 +205,7 @@ export class Traps {
     } else {
       this.burn = 0;
     }
-    this.list = this.list.filter((t) => t.active || t === this.snare);
+    this.list = this.list.filter((t) => t.active || t === this.snare || t.held); // held: round the quad's wheel
     const pad = input.activeDevice === 'gamepad';
     this.hud.prompt = this.snare ? `Snared! Mash ${pad ? 'A' : 'Space'} to tear free` : '';
     this.hud.progress = this.snare ? this.mash : 0;
@@ -222,7 +231,10 @@ export class Traps {
   }
 
   clear(player) {
-    for (const t of this.list) t.active = false;
+    for (const t of this.list) {
+      t.held?.freeWheel?.(false); // off the quad's wheel too
+      t.active = false;
+    }
     this.list.length = 0;
     if (this.snare && player) this.free(player);
   }

@@ -44,6 +44,17 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 16: Aaron's notes on the overnight work, then the storm shelter (Level & Encounter Designer + AI Programmer)
+
+**Aaron's notes on the overnight work** (each pushed to `main`):
+1. **The quad's headlamp** (`Quad.buildHeadlamp()`, `config.quad.headlamp`): a spotlight on the front of the quad (no shadow; always in the scene, dark at intensity 0 when off, so switching it doesn't rebuild shaders), aimed 25 m ahead. On as Tom gets on in the dark (daylight under 0.35), and when night falls while he rides unless he's switched it off by hand that ride; off as he gets off. **D-pad right** (H on a keyboard; the new `headlamp` action) toggles it while riding (first aid's already off in the saddle). The lens glows while it's on. The mount hint names the button.
+2. **A snare ridden over wraps round the front wheel** (`Quad.snareWheel()`; `witchTraps.js` hands it over when `player.riding`): the quad stops dead and won't drive, a toast says so, and the riding prompt reads "Snare round the front wheel! Hold X: get off". Tom's legs stay free (no damage, no rooting). By the quad on foot: "Tap X to free the wheel from the snare" (about 7 taps; `config.quad.snare`, the effort drains like the leg snare's), then it can be ridden again. The snare's drawn pulled tight at the wheel until then; a reset or "clear traps" frees it.
+3. **No digging up a sigil on Night 1** (`ZombieDirector.digLocked`, set by FirstDay on Day 1's night): no prompt at all.
+4. **Night 1's waves overlap** (`FirstDay.updateNight1()`, `config.firstDay.night1.waves.gap` 15): each wave rises 15 s after the last one rose, down or not (they rise at about 12, 27 and 42 s), so there's no waiting about. The clear line still waits for all nine. The fence winning Night 1 on its own is fine (Aaron: the player's still learning).
+5. **Settled as built** (Aaron): no shooting from the saddle, the witch 1.6x faster while Tom rides, and the rest of MORNING's calls. **Quad upgrades** are in DESIGN's Ideas for later.
+
+**Tests:** 574 pass (new: the wheel snare in `witch.test.js`; the headlamp and the wheel in `quad.test.js`; the overlapping waves in `firstDay.test.js`).
+
 ### Session 15: M9.2, the first day (Level & Encounter Designer + Narrative)
 
 Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUESTIONS, Session 15), pushed to `main` to play-test (`PLAYTEST.md`, the running list).

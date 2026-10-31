@@ -2531,11 +2531,12 @@ export const config = {
     night1: {
       // Session 15b (Aaron): Night 1 is the first defence. 9 dead in waves
       // of 3, each from a new side: the campsite path (west), then south
-      // past the gate, then the other side (east). Each comes `gap` seconds
-      // after the last one's down; a wave not down in `timeout` seconds
-      // counts as down. They rise `distance` metres out (`sideAngle`
+      // past the gate, then the other side (east). Session 16 (Aaron): each
+      // comes `gap` seconds after the last one rose, down or not, so they
+      // overlap; the waves not down `timeout` seconds after the last rose
+      // count as down. They rise `distance` metres out (`sideAngle`
       // degrees off due south for the side waves) and march on the fence.
-      waves: { count: 3, size: 3, firstDelay: 12, gap: 10, distance: 60, pathDistance: 70, sideAngle: 70, timeout: 150 },
+      waves: { count: 3, size: 3, firstDelay: 12, gap: 15, distance: 60, pathDistance: 70, sideAngle: 70, timeout: 150 },
       fenceCallDistance: 14, // line 16 when wave 1 is this close to the fence
       firstCallAfter: 20, // ...or this many seconds after it rises, or once one of it's down (Session 15b)
       tacticsDelay: 3, // seconds after line 16: Wyatt's shotgun line, then Ellen's: get the rifle from the tower
@@ -2659,6 +2660,18 @@ export const config = {
     // The engine carries: every `every` seconds, the dead within idle..full metres (with speed) come.
     noise: { every: 1.5, idle: 25, full: 60 },
     witchSpeedScale: 1.6, // Aaron: the witch is faster while Tom's on it
+    // Session 16 (Aaron): a headlamp of its own, to see further ahead
+    // riding. On as Tom gets on in the dark (daylight under `autoBelow`),
+    // and when night falls while he rides (unless he's switched it off this
+    // ride); off as he gets off. The 'headlamp' button toggles it (D-pad
+    // right: the torch is D-pad left; first aid's off in the saddle anyway).
+    // No shadow (the torch keeps the game's one). At (0, y, front) on the
+    // quad, aimed `aimDistance` ahead and `aimDrop` down.
+    headlamp: { autoBelow: 0.35, color: 0xfff4dc, intensity: 900, distance: 80, decay: 1.4, angle: 17, penumbra: 0.5, y: 0.82, front: -1.02, aimDistance: 25, aimDrop: 0.8, lens: 0xfff2c8 },
+    // Session 16 (Aaron): one of the witch's snares ridden over wraps round
+    // the front wheel: it stops dead, Tom gets off (he's free), and taps X
+    // by it `presses` times to free the wheel (the effort drains if he stops).
+    snare: { presses: 6, decay: 0.15, shake: 0.9, range: 2.2 },
     // Dark: the torch is right on the handlebars and the tank from the saddle (it glared them white).
     look: { tyre: 0x121212, hub: 0x262626, frame: 0x1c1c1c, body: 0x2a3018, seat: 0x161412, rack: 0x161616, metal: 0x18191a, grip: 0x0e0e0e, lamp: 0x3a3a30 },
   },
@@ -3035,6 +3048,7 @@ export const config = {
       flare: ['Y'], // swapped with LB (Aaron, M5)
       map: ['DpadUp'],
       flashlight: ['DpadLeft'],
+      headlamp: ['DpadRight'], // Session 16: the quad's headlamp (riding; first aid's off in the saddle)
       radio: ['DpadDown'],
       inventory: ['View'],
       pause: ['Menu'],
@@ -3070,6 +3084,7 @@ export const config = {
       flare: ['KeyF'],
       map: ['KeyM'],
       flashlight: ['KeyL'],
+      headlamp: ['KeyH'], // Session 16: the quad's headlamp (riding; first aid's off in the saddle)
       radio: ['KeyV'],
       inventory: ['Tab'],
       pause: ['Escape'],

@@ -98,7 +98,7 @@ export class TrapRenderer {
     const counts = { snares: 0, totems: 0, charms: 0 };
     const m = this.matrix;
     for (const t of traps) {
-      if (!t.active && t !== held) continue;
+      if (!t.active && t !== held && !t.held) continue; // t.held: round the quad's wheel
       if (cameraPosition && Math.hypot(t.x - cameraPosition.x, t.z - cameraPosition.z) > drawDistance) continue;
       // Each faces its own way (from its id), so they don't all line up.
       this.euler.set(0, t.id * 2.39996, 0);
@@ -106,7 +106,7 @@ export class TrapRenderer {
       this.pos.set(t.x, t.y, t.z);
       if (t.type === 'snare') {
         if (counts.snares >= POOL) continue;
-        const tight = t === held ? 0.6 : 1;
+        const tight = t === held || t.held ? 0.6 : 1;
         m.compose(this.pos, this.quat, this.one.set(tight, 1, tight));
         this.one.set(1, 1, 1);
         this.snares.setMatrixAt(counts.snares++, m);

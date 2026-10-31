@@ -1099,7 +1099,7 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.quad.hud.prompt);
-    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt));
+    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt), daylight);
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     if (first) this.firstDay.update(dt, playing);

@@ -18,7 +18,8 @@
 //    and Junie's word had (13-14, indoors), the day fades straight to night
 //    (no dusk to stand about in). The forecast comes up once the fade's
 //    done, with Ellen's line 15.
-//  - Night 1, the first defence (Session 15b, Aaron): 9 dead in waves of 3,
+//  - Night 1, the first defence (Session 15b, Aaron): 9 dead in waves of 3
+//    (Session 16: each wave 15 s after the last rose, so they overlap),
 //    each from a new side (16, then the family on the tower and the
 //    shotgun). Once they're down Ellen says a trail cam's live, and the
 //    witch plants her first sigil at the storm shelter (the one exception
@@ -217,6 +218,8 @@ export class FirstDay {
     this.station.towerRifleLocked = this.clock.day === 1 && this.clock.phase === 'day';
     // Session 15b (Aaron): the shovel by the door, once the witch has been seen burying something.
     this.station.shovelLocked = !this.progress.has('night1');
+    // Session 16 (Aaron): no digging the shelter's sigil up on Night 1 (the night ends with the talk).
+    this.director.digLocked = this.clock.day === 1 && this.clock.phase === 'night';
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
     // (Or once the campsite's wave is down: Ellen's asked for the battery by then, tape or no tape.)
     if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen && !this.progress.has('campsiteCleared');
@@ -442,11 +445,12 @@ export class FirstDay {
       n.waveTime += dt;
       if (n.waveTime > w.timeout) n.wave.length = 0; // lost in the woods: it counts as down
     }
-    // The next wave, once the last is down.
-    if (n.waves < w.count && n.wave.length === 0) {
+    // The next wave `gap` seconds after the last one rose, down or not
+    // (Session 16, Aaron: they overlap, so there's no waiting about).
+    if (n.waves < w.count) {
       n.nextIn -= dt;
       if (n.nextIn <= 0) this.sendWave();
-    } else if (n.waves >= w.count && n.wave.length === 0 && n.clearIn < 0 && !n.planted) {
+    } else if (n.wave.length === 0 && n.clearIn < 0 && !n.planted) {
       n.clearIn = fc.plantAfter;
       this.dialogue.play('day1.night.clear');
     }
@@ -539,7 +543,7 @@ export class FirstDay {
     n.nextIn = w.gap;
     n.where = start.where;
     if (out.length) enemies.formMarch(out, { leader: null, radius: this.cfg.zombies.horde.radius });
-    n.wave = out;
+    n.wave.push(...out); // every wave still up (they overlap)
     this.bus.emit('firstDay:wave', { wave: n.waves, count: out.length });
     if (n.waves === 2) this.dialogue.play('day1.night.wave2', { where: start.where });
     if (n.waves === 3) this.dialogue.play('day1.night.wave3', { where: start.where });

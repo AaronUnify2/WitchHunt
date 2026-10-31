@@ -2,7 +2,7 @@
 
 ## Session 15b (Level & Encounter Designer + Narrative: the first day's play-test; overnight, the gas station and the quad bike)
 
-Aaron's play-test notes were taken one at a time; his calls are in STATUS (Session 15b list). The gas station's beats and the quad bike were built overnight on his go-ahead: every call I made is in **`MORNING.md`** (items 1-22), for his review. The ones still open:
+Aaron's play-test notes were taken one at a time; his calls are in STATUS (Session 15b list). **Session 16:** Aaron reviewed the overnight work: everything not marked resolved below is accepted as built. The gas station's beats and the quad bike were built overnight on his go-ahead: every call I made is in **`MORNING.md`** (items 1-22), for his review. The ones still open:
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
@@ -13,14 +13,14 @@ Aaron's play-test notes were taken one at a time; his calls are in STATUS (Sessi
 | 202 | **The gas station's draft lines** (MORNING 6): the phone (Wyatt), the scanner's broadcast and Ellen, the safe opened (Wyatt). | All `draft` in `dialogue.json` (`gas.*`). | `src/data/dialogue.json` |
 | 203 | **Earl's note on screen** (MORNING 7). | In the subtitle strip as "EARL'S NOTE", silent; readable again. A paper close-up could come later. | `GasStation.readNote()` |
 | 204 | **`rifleClaimed`'s stand-in** (MORNING 8). | The safe sets it for real now, but the Session 14 stand-in (both places visited) still fires and opens the outpost early. Session 16 should drop the stand-in once the shelter gives `earlCombination`. | `src/data/progress.json` |
-| 205 | **No shooting from the quad** (MORNING 14). | The gun's slung while riding (and no charges or digging): get off to fight. | `Game.step()` (`riding`) |
+| 205 | **No shooting from the quad** (MORNING 14). | **Resolved (Session 16, Aaron): as built** ("otherwise you'd never get off the bike"). An alien ray gun usable from the saddle is an idea for later (DESIGN, Ideas for later: quad upgrades). | `Game.step()` (`riding`) |
 | 206 | **The quad's numbers** (MORNING 15-17). | 13 m/s on paths, a third in the brush; rams the dead above 4 m/s; its engine draws the dead within 25-60 m every 1.5 s. | `config.quad` |
-| 207 | **The witch on the quad** (MORNING 18). | 1.6x her speed while Tom rides (roaming, chasing, rushing). | `config.quad.witchSpeedScale` |
-| 208 | **The quad: fuel, damage, headlamp, map icon?** (MORNING 20). | None of them. | `world/Quad.js` |
+| 207 | **The witch on the quad** (MORNING 18). | **Resolved (Session 16, Aaron): fine as is**, 1.6x. | `config.quad.witchSpeedScale` |
+| 208 | **The quad: fuel, damage, headlamp, map icon?** (MORNING 20). | **Headlamp built (Session 16, Aaron):** on in the dark, D-pad right toggles it. No fuel, damage or map icon. Upgrades (a spiked ram, more) are in DESIGN's Ideas for later. | `world/Quad.js`, `config.quad.headlamp` |
 | 209 | **The torch on the quad's handlebars** (MORNING 21). | Lights them a pale grey at point blank from the saddle (dark colours already). | `config.quad.look`; the art pass |
 | 210 | **The placeholder signposts** (MORNING 10). | Gone from the built sets (the campsite, the gas station). | `config.landmarks.built` |
-| 211 | **Night 1's talk and the fade to dawn**: there's no digging the sigil up on Night 1 now (the night ends with the talk). | As Aaron asked; noted in case he wants the option back. | `FirstDay` (`night1.afterClip`, `startDawn()`) |
-| 212 | **The fence nearly fights Night 1 alone**: in the headless run the charged fence killed most of each wave in about 30 s. | As is; could bring the waves in faster or weaken the zap on Night 1. | `config.firstDay.night1.waves`; `config.station.power` |
+| 211 | **Night 1's talk and the fade to dawn**: there's no digging the sigil up on Night 1 now (the night ends with the talk). | **Resolved (Session 16, Aaron): digging is impossible on Night 1** (`ZombieDirector.digLocked`). | `FirstDay.update()` |
+| 212 | **The fence nearly fights Night 1 alone**: in the headless run the charged fence killed most of each wave in about 30 s. | **Resolved (Session 16, Aaron): fine** (the player's still learning; no game over expected yet). The waves now overlap: each 15 s after the last rose. | `config.firstDay.night1.waves` |
 
 ## Session 15 (Level & Encounter Designer + Narrative: M9.2, the first day)
 

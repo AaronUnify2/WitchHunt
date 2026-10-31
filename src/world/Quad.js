@@ -13,8 +13,16 @@
 //    earshot come; and the witch is faster while Tom's on it (Game sets
 //    her speedScale).
 // Where it's left is saved; Tom is never saved riding.
+//  - Session 16 (Aaron): its own headlamp, to see further ahead. On as Tom
+//    gets on in the dark (and when night falls while he rides, unless he's
+//    switched it off), off as he gets off; the 'headlamp' button (D-pad
+//    right) toggles it while riding.
+//  - Session 16 (Aaron): a witch's snare ridden over wraps round the front
+//    wheel (Witch's Traps hand it here): it stops dead and won't drive. Tom
+//    gets off (his legs are free) and taps X by it to free the wheel.
 //
-// Events: 'quad:mounted', 'quad:dismounted'.
+// Events: 'quad:mounted', 'quad:dismounted', 'quad:wheelSnared',
+// 'trap:freed' (the wheel's snare torn off).
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -39,7 +47,14 @@ export class Quad {
     this.hold.init();
     this.hud = { prompt: '', progress: 0 };
     this.nearby = [];
+    this.daylight = 1;
+    this.device = 'gamepad';
+    this.lampOn = false;
+    this.lampTouched = false; // switched by hand this ride (night falling leaves it alone then)
+    this.wheelSnare = null; // the witch's snare round the front wheel, or null
+    this.mash = 0; // 0..1 toward freeing it
     this.buildMesh();
+    this.buildHeadlamp();
     this.home = this.parkedSpot();
     this.reset();
     this.unsubscribers = [
@@ -59,7 +74,9 @@ export class Quad {
   }
 
   reset() {
+    if (this.wheelSnare) this.freeWheel(false);
     this.riding = false;
+    this.setLamp(false);
     if (this.player?.riding === this) this.player.riding = null;
     this.speed = 0;
     this.place(this.home.x, this.home.z, this.home.heading);
@@ -124,11 +141,31 @@ export class Quad {
     for (const [color, geos] of parts) {
       const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshLambertMaterial({ color }));
       geos.forEach((g) => g.dispose());
+      if (color === k.lamp) this.lampMesh = mesh; // its lens glows while the headlamp's on
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       this.mesh.add(mesh);
     }
     this.scene.add(this.mesh);
+  }
+
+  // The headlamp: a spotlight on the front of the quad, aimed ahead and a
+  // little down. Always in the scene (switching a light's visibility makes
+  // three.js rebuild its shaders: a hitch), dark at intensity 0 when off.
+  buildHeadlamp() {
+    const h = this.qc.headlamp;
+    this.lamp = new THREE.SpotLight(h.color, 0, h.distance, (h.angle * Math.PI) / 180, h.penumbra, h.decay);
+    this.lamp.name = 'quad headlamp';
+    this.lamp.castShadow = false;
+    this.lamp.position.set(0, h.y, h.front);
+    this.lamp.target.position.set(0, h.y - h.aimDrop, h.front - h.aimDistance);
+    this.mesh.add(this.lamp, this.lamp.target);
+  }
+
+  setLamp(on) {
+    this.lampOn = Boolean(on);
+    if (this.lamp) this.lamp.intensity = this.lampOn ? this.qc.headlamp.intensity : 0;
+    this.lampMesh?.material.emissive.setHex(this.lampOn ? this.qc.headlamp.lens : 0x000000);
   }
 
   // Sit it on the ground: pitched and rolled to the slope under its wheels.
@@ -155,7 +192,10 @@ export class Quad {
   // ---- getting on and off ---------------------------------------------------------------------------
 
   // playing: the world runs. canInteract: no other prompt first, no menu.
-  update(dt, input, playing, canInteract) {
+  // daylight: 0 (night) .. 1 (day), for the headlamp.
+  update(dt, input, playing, canInteract, daylight = 1) {
+    this.daylight = daylight;
+    this.device = input.activeDevice;
     if (!playing) {
       this.hud.prompt = '';
       if (!this.riding) this.combat.sfx?.engine?.(false);
@@ -163,17 +203,81 @@ export class Quad {
     }
     const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
     let offer = null;
+    let freeing = false;
     if (this.riding) {
-      if (Math.abs(this.speed) < this.qc.dismountSpeed) offer = { key: 'quad-off', prompt: `Hold ${X}: get off the quad`, seconds: this.qc.dismountSeconds, act: () => this.dismount() };
+      this.updateLamp(input);
+      const off = this.wheelSnare ? `Snare round the front wheel! Hold ${X}: get off` : `Hold ${X}: get off the quad`;
+      if (Math.abs(this.speed) < this.qc.dismountSpeed) offer = { key: 'quad-off', prompt: off, seconds: this.qc.dismountSeconds, act: () => this.dismount() };
     } else if (canInteract && !this.player.platform) {
       const p = this.player.position;
-      if (Math.hypot(p.x - this.x, p.z - this.z) < this.qc.mountRange) offer = { key: 'quad-on', prompt: `Hold ${X}: ride the quad bike`, seconds: this.qc.mountSeconds, act: () => this.mount() };
+      const d = Math.hypot(p.x - this.x, p.z - this.z);
+      if (this.wheelSnare) freeing = d < this.qc.snare.range;
+      else if (d < this.qc.mountRange) offer = { key: 'quad-on', prompt: `Hold ${X}: ride the quad bike`, seconds: this.qc.mountSeconds, act: () => this.mount() };
+    }
+    // The wheel's snare: tap X by it to tear it off; the effort drains if he stops.
+    if (this.wheelSnare && !this.riding) {
+      if (freeing && input.wasPressed('interact')) this.mash += 1 / this.qc.snare.presses;
+      this.mash = Math.max(0, this.mash - this.qc.snare.decay * dt);
+      if (this.mash >= 1) this.freeWheel(true);
     }
     const done = this.hold.update(dt, offer?.key ?? null, input.isDown('interact'), offer?.seconds ?? 1);
     if (done && offer) offer.act();
-    this.hud.prompt = offer ? offer.prompt : '';
-    this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
+    if (freeing && this.wheelSnare) {
+      this.hud.prompt = `Tap ${X} to free the wheel from the snare`;
+      this.hud.progress = this.mash;
+    } else {
+      this.hud.prompt = offer ? offer.prompt : '';
+      this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
+    }
     if (this.riding) this.updateNoise(dt);
+  }
+
+  // Riding: the button toggles the headlamp; night falling puts it on
+  // (unless he's switched it by hand this ride).
+  updateLamp(input) {
+    if (input.wasPressed('headlamp')) {
+      this.lampTouched = true;
+      this.setLamp(!this.lampOn);
+    } else if (!this.lampTouched && !this.lampOn && this.daylight < this.qc.headlamp.autoBelow) {
+      this.setLamp(true);
+    }
+  }
+
+  // ---- the witch's snare round the wheel ------------------------------------------------------------
+
+  // Called by the witch's Traps when the quad rides over a snare. Returns
+  // true if the wheel took it (Tom's legs stay free).
+  snareWheel(trap) {
+    if (!this.riding || this.wheelSnare) return false;
+    this.wheelSnare = trap;
+    this.mash = 0;
+    trap.held = this;
+    // Drawn pulled tight round the front left wheel.
+    const ax = -Math.sin(this.heading);
+    const az = -Math.cos(this.heading);
+    const rx = Math.cos(this.heading);
+    const rz = -Math.sin(this.heading);
+    trap.x = this.x + ax * 0.66 - rx * 0.58;
+    trap.z = this.z + az * 0.66 - rz * 0.58;
+    trap.y = this.ground.heightAt(trap.x, trap.z);
+    this.speed = 0;
+    this.player.shake(this.qc.snare.shake);
+    this.combat.sfx?.play('impact', this);
+    const pad = this.device !== 'keyboardMouse';
+    this.combat.hud?.pickup?.(`A snare's wrapped round the front wheel! Get off and tap ${pad ? 'X' : 'E'} to free it.`);
+    this.bus.emit('quad:wheelSnared', { trap });
+    return true;
+  }
+
+  // The snare's off the wheel. loud: the snap and the event (not on a reset).
+  freeWheel(loud = true) {
+    const trap = this.wheelSnare;
+    this.wheelSnare = null;
+    this.mash = 0;
+    if (!trap) return;
+    trap.held = null;
+    trap.active = false;
+    if (loud) this.bus.emit('trap:freed', { trap, wheel: true });
   }
 
   mount() {
@@ -189,7 +293,11 @@ export class Quad {
     p.position.set(this.x, this.y, this.z);
     this.combat.sfx?.play('carDoor', this);
     this.combat.sfx?.engine?.(true, 0);
-    this.combat.hud?.pickup?.('On the quad: left stick to ride, hold X (slow) to get off. No shooting from the saddle.');
+    // The headlamp: on in the dark, off by day; the button toggles it.
+    this.lampTouched = false;
+    this.setLamp(this.daylight < this.qc.headlamp.autoBelow);
+    const pad = this.device !== 'keyboardMouse';
+    this.combat.hud?.pickup?.(pad ? 'On the quad: left stick to ride, D-pad right: headlamp, hold X (slow) to get off. No shooting from the saddle.' : 'On the quad: WASD to ride, H: headlamp, hold E (slow) to get off. No shooting from the saddle.');
     this.bus.emit('quad:mounted');
   }
 
@@ -215,6 +323,7 @@ export class Quad {
     }
     p.teleport(spot.x, spot.z, p.yaw);
     this.park();
+    this.setLamp(false);
     this.combat.sfx?.engine?.(false);
     this.bus.emit('quad:dismounted');
   }
@@ -225,6 +334,7 @@ export class Quad {
     this.riding = false;
     this.speed = 0;
     this.park();
+    this.setLamp(false);
     this.combat.sfx?.engine?.(false);
   }
 
@@ -234,7 +344,10 @@ export class Quad {
   // the stick drives, the quad moves and carries him.
   drive(dt, input, player) {
     const q = this.qc;
-    const move = player.rooted ? { x: 0, y: 0 } : input.getMove();
+    // Snared round the wheel (or Tom's own legs): it won't go.
+    const stuck = player.rooted || this.wheelSnare;
+    if (this.wheelSnare) this.speed = 0;
+    const move = stuck ? { x: 0, y: 0 } : input.getMove();
     const throttle = move.y;
     const steer = move.x;
     // Undergrowth off the pathways holds it back hard.
@@ -340,12 +453,13 @@ export class Quad {
   }
 
   overlayLine() {
-    return `quad ${this.riding ? `riding ${this.speed.toFixed(1)} m/s` : 'parked'}`;
+    return `quad ${this.riding ? `riding ${this.speed.toFixed(1)} m/s` : 'parked'}${this.lampOn ? ' lamp' : ''}${this.wheelSnare ? ' SNARED' : ''}`;
   }
 
   dispose() {
     for (const off of this.unsubscribers ?? []) off();
     this.combat?.sfx?.engine?.(false);
+    this.lamp?.dispose();
     this.mesh?.removeFromParent();
     this.mesh?.traverse((o) => {
       o.geometry?.dispose();

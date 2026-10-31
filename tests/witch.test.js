@@ -565,6 +565,26 @@ describe('her traps', async () => {
     return { bus, traps, player, hurt, alerts, combat, input, press };
   };
 
+  it('a snare ridden over on the quad takes the wheel, not Tom (Session 16, Aaron)', () => {
+    const { traps, player, hurt, combat, input, bus } = makeEnv();
+    const freed = [];
+    bus.on('trap:freed', (e) => freed.push(e));
+    const wheel = [];
+    player.riding = { snareWheel: (t) => (wheel.push(t), (t.held = player.riding), true), freeWheel: () => wheel.push('freed') };
+    const t = traps.add('snare', 0.2, 0, flat);
+    traps.update(0.1, player, input, combat);
+    expect(wheel).toEqual([t]);
+    expect(player.rooted).toBe(false);
+    expect(traps.snare).toBe(null);
+    expect(hurt.length).toBe(0);
+    expect(traps.hud.prompt).toBe('');
+    // Kept (drawn round the wheel) while it's held, though no longer live.
+    expect(t.active).toBe(false);
+    expect(traps.list).toContain(t);
+    traps.clear(player);
+    expect(wheel).toContain('freed');
+  });
+
   for (const seed of [3, 11, 1234]) {
     it(`seed ${seed}: the hut approach is laid with traps, thicker near the hut`, () => {
       const map = makeMap(seed);

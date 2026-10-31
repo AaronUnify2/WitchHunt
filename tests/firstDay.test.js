@@ -243,6 +243,9 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(w.count * w.size).toBe(9);
     expect(w.count).toBe(3);
   });
+  it('overlaps the waves: each 15 s after the last rose (Session 16, Aaron)', () => {
+    expect(config.firstDay.night1.waves.gap).toBe(15);
+  });
   it("has the family's lines for it, drafts for Aaron, with the side they come from", () => {
     for (const id of ['day1.night.tower', 'day1.night.shotgun', 'day1.night.wave2', 'day1.night.wave3', 'day1.night.clear']) {
       expect(by[id].cued && by[id].draft).toBe(true);

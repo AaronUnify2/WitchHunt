@@ -32,4 +32,19 @@ describe('the quad bike', () => {
   it('knocks a level-1 citizen down when it hits one at full speed', () => {
     expect(q.ram.damage).toBeGreaterThanOrEqual(config.zombies.health);
   });
+
+  it('has its own headlamp, on in the dark, toggled on D-pad right (Session 16, Aaron)', () => {
+    const h = q.headlamp;
+    expect(h.intensity).toBeGreaterThan(config.flashlight.intensity);
+    expect(h.distance).toBeGreaterThan(config.flashlight.distance);
+    expect(h.autoBelow).toBeGreaterThan(0);
+    expect(h.autoBelow).toBeLessThan(1);
+    expect(config.input.gamepadBindings.headlamp).toEqual(['DpadRight']);
+    expect(config.input.keyBindings.headlamp.length).toBeGreaterThan(0);
+  });
+
+  it('frees a snared wheel with a few taps, from beside it (Session 16, Aaron)', () => {
+    expect(q.snare.presses).toBeGreaterThanOrEqual(3);
+    expect(q.snare.range).toBeGreaterThanOrEqual(q.mountRange);
+  });
 });

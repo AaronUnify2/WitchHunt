@@ -267,7 +267,8 @@ export class ZombieDirector {
 
   updateDigging(dt, input) {
     const p = this.player.position;
-    const target = this.combat.alive ? this.sigils.nearest(p.x, p.z, this.cfg.digging.range) : null;
+    // Session 16 (Aaron): FirstDay locks digging on Night 1 (no prompt at all).
+    const target = this.combat.alive && !this.digLocked ? this.sigils.nearest(p.x, p.z, this.cfg.digging.range) : null;
     // Session 15b (Aaron): digging takes the shovel (it waits by the cabin's front door).
     const shovel = this.combat.weapons.order.includes('shovel');
     const done = this.digging.update(dt, shovel ? target : null, shovel && input.isDown('interact'));
