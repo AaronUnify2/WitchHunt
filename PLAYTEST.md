@@ -84,6 +84,14 @@ Round 12 (Night 1 notes, round 2):
 - [ ] Night 1, outside with the torch off: Wyatt says to put it on, with "D-pad left: flashlight".
 - [ ] After camera six, Wyatt's line has "D-pad up: map" on screen.
 
+Round 13 (gas station notes):
+- [ ] No car in the store's east wall (the forecourt has three cars on their spots).
+- [ ] The mutant isn't on the minimap before it wakes.
+- [ ] The mutant's crouched at the far end of the west aisle (the right-hand shelf runs); it wakes as you reach that aisle in the centre aisle.
+- [ ] The shelves, counter and phone don't glare under the torch.
+- [ ] The stockroom's back door opens as you walk to it, out onto the quad.
+- [ ] After the witch, Wyatt tells you to take Earl's quad.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

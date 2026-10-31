@@ -88,8 +88,12 @@ describe('the gas station beats (Session 15b pass 2)', () => {
   it('crouches the mutant at the back of the shop, in sight of the door', () => {
     const b = gas.building;
     expect(gas.mutant.z).toBeGreaterThan(b.partitionZ);
-    expect(gas.mutant.z).toBeLessThan(gas.shopZ);
-    expect(Math.abs(gas.mutant.x - b.door.x)).toBeLessThan(1);
+    // Down the west aisle (Aaron): between the two west shelf runs, and woken from the centre aisle's mouth.
+    const west = gas.store.shelves.filter((sh) => sh.x > b.splitX && !sh.fallen).map((sh) => sh.z).sort((p, q) => q - p);
+    expect(gas.mutant.z).toBeLessThan(west[0]);
+    expect(gas.mutant.z).toBeGreaterThan(west[1]);
+    expect(gas.mutant.x).toBeGreaterThan(b.door.x);
+    expect(gas.wake.z).toBeGreaterThan(gas.mutant.z - 1);
     expect(config.gasStation.mutant.health).toBeLessThan(config.mutant.health);
   });
 

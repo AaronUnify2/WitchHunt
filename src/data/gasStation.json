@@ -1,5 +1,5 @@
 {
-  "_note": "The roadside gas station (M9.3; DESIGN.md \"Roadside gas station\"; Session 15b pass 1: the set). Positions are in the gas station's own frame (encounters/GasStation.js): from the clearing's centre, z metres toward the road (the road's centre line is about 14 m ahead, its near edge about 11), x metres to your right as you face the road (west). yaw: degrees, turning from facing the road toward your right. The store stands north of the road, its front to the forecourt; the trail from the campsite comes in behind it. building: the store's shell (x0..x1, z0 the back wall, z1 the front), its height, the front door's gap and the windows either side of it, the back room's partition (z) with its two doorways (office, stockroom) and the wall between them (x), the stockroom's back door (shut). Inside: the counter, shelf runs (one knocked over), drinks coolers, the Bigfoot statue, the photo board, footprint casts; the office (desk, chair, filing cabinet, the gun safe, Earl's scanner, his note); the stockroom (boxes, racks). Outside: the forecourt slab, two pump islands under a sagging canopy, the HOME OF BIGFOOT pole sign by the road, a dumpster out back. cars: the authored spots for the forecourt's cars (vehicles.json placement.gasStation fills them in order). Pass 2 (Session 15b): searches: the hold-X search points (gives: guaranteed; loot: rolled, as the campsite's); interactions: the phone, Earl's note, the scanner and the safe (hold X); mutant: where the authored first mutant crouches, dormant (the back of the centre aisle, seen from the door), and where it faces; pack: where the forecourt's citizens stand about; witch: where she stands at the clearing's edge across the road (looking at the store) and where she runs to; shopZ: Tom is properly in the shop past this (the mutant wakes).",
+  "_note": "The roadside gas station (M9.3; DESIGN.md \"Roadside gas station\"; Session 15b pass 1: the set). Positions are in the gas station's own frame (encounters/GasStation.js): from the clearing's centre, z metres toward the road (the road's centre line is about 14 m ahead, its near edge about 11), x metres to your right as you face the road (west). yaw: degrees, turning from facing the road toward your right. The store stands north of the road, its front to the forecourt; the trail from the campsite comes in behind it. building: the store's shell (x0..x1, z0 the back wall, z1 the front), its height, the front door's gap and the windows either side of it, the back room's partition (z) with its two doorways (office, stockroom) and the wall between them (x), the stockroom's back door (shut). Inside: the counter, shelf runs (one knocked over), drinks coolers, the Bigfoot statue, the photo board, footprint casts; the office (desk, chair, filing cabinet, the gun safe, Earl's scanner, his note); the stockroom (boxes, racks). Outside: the forecourt slab, two pump islands under a sagging canopy, the HOME OF BIGFOOT pole sign by the road, a dumpster out back. cars: the authored spots for the forecourt's cars (vehicles.json placement.gasStation fills them in order). Pass 2 (Session 15b): searches: the hold-X search points (gives: guaranteed; loot: rolled, as the campsite's); interactions: the phone, Earl's note, the scanner and the safe (hold X); mutant: where the authored first mutant crouches, dormant, and where it faces (Session 15b, Aaron: at the far end of the west aisle, between the two shelf runs on the right); wake: where it wakes: Tom in the centre aisle (x0..x1) as far back as the west aisle's mouth (z), or within `near` metres of it; pack: where the forecourt's citizens stand about; witch: where she stands at the clearing's edge across the road (looking at the store) and where she runs to;",
   "building": {
     "x0": -8,
     "x1": 8,
@@ -225,9 +225,9 @@
   },
   "cars": [
     {
-      "x": -10,
-      "z": 4.5,
-      "yaw": 15
+      "x": -9.5,
+      "z": 1.5,
+      "yaw": 20
     },
     {
       "x": 9,
@@ -240,11 +240,10 @@
       "yaw": -10
     }
   ],
-  "shopZ": -4.6,
   "mutant": {
-    "x": 1.7,
-    "z": -9.7,
-    "yaw": 0
+    "x": 6.2,
+    "z": -7.5,
+    "yaw": -90
   },
   "pack": [
     {
@@ -458,5 +457,11 @@
       "z": -13.4,
       "seconds": 0.8
     }
-  ]
+  ],
+  "wake": {
+    "z": -6.9,
+    "x0": 0.3,
+    "x1": 3.5,
+    "near": 3.2
+  }
 }

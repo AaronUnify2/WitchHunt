@@ -124,6 +124,13 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
    - **The camcorder is in the torn tent, the shotgun in the green dome tent** (the first aid kit moved to the near tent; the scrap is the same 15).
    - **Line 10 (Ellen):** "The dead aren't supposed to get up, Tom. Our fence is electrified to keep the bears out. Bring me their car battery and I'll supercharge it." The cars unlock once the wave's down too (tape or no tape).
    - **The ledger's spine:** up / down walks the gate, the fence box, the front door and the comms door (then the "repair all" row); left / right off it goes to the nearest barricade that way; the fence and barricade rings walk left / right as before.
+21. **Gas station notes** (Aaron, his first play of it):
+   - **The car in the east wall is gone:** an authored spot that didn't fit (too near the road's wreck) was scattered by the placement code, which doesn't know the store; now such a spot is left empty (`vehiclePlacement.js`), and that spot moved clear of the wreck.
+   - **The dormant mutant isn't on the minimap** (it gave the moment away).
+   - **The mutant crouches down the west aisle** (between the two right-hand shelf runs, at the coolers' end). The moment comes as Tom reaches that aisle's mouth in the centre aisle, or gets within 3 m of it any other way (`gasStation.json` `wake`).
+   - **Less glare:** every gas station collider dims the torch up close now (shelves, counter, pumps didn't: they don't stop shots), and the inside's colours are darker.
+   - **The stockroom's back door opens** as Tom comes to it (either side), out onto Earl's quad, and shuts behind him (`config.gasStation.backDoor`).
+   - **Wyatt after the witch:** "Dad, Earl keeps a quad bike out back. Take it. It's a long way to the Pruitts' gate on foot." (unless Tom's already been on it).
 13. **The station ledger reworked** (Aaron):
    - **Tabs:** Fence, Turret 🔒 (padlocked until the turret's found), Upgrades, Security, then Forecast and Monitors as before. Doors and Power are gone (folded into Fence).
    - **Fence:** "Repair the whole fence and gate" at the top under its own heading; then a **plan of the compound** (`base/fencePlan.js`, drawn as SVG in the book): the 12 panels and the gate (outer ring), the 12 barricade slots (inner ring), the cabin with its two doors, the fence box, plus the tower, turret pad and cliff to find your way. Tap a part to do it (repair / build / reinforce / fit a battery), or D-pad round the plan (to the nearest thing that way) and press A. A line under the plan says what the part is and what A does.

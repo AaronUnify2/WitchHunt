@@ -122,6 +122,7 @@ export class Minimap {
     ctx.fillStyle = MAP_COLORS.enemy;
     const dot = this.cfg.enemyDotPixels * (size / 200);
     for (const e of enemies) {
+      if (e.state === 'dormant' && !tierColors) continue; // Session 15b: the gas station's mutant gives itself away otherwise
       if (!tierColors && !this.fog.isRevealed(e.x, e.z)) continue;
       const [sx, sy] = toScreen(e.x, e.z);
       if (tierColors) ctx.fillStyle = tierColors[e.tier ?? 'active'];

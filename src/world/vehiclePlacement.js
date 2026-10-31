@@ -180,6 +180,9 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
         const spot = spots[k];
         const type = spot ? pickWeighted(rule.weights, r) : null;
         if (spot && type && add({ type, x: spot.x, z: spot.z, yaw: spot.yaw }, place, rule, loot)) continue;
+        // Session 15b: an authored set's spot that won't take a car is left empty (scattered, one
+        // stood in the gas station's wall: placement doesn't know the buildings).
+        if (spots.length) continue;
         placeScattered(c, rule, r, place, loot);
       }
     }

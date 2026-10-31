@@ -135,8 +135,13 @@ export class GasStationProps {
     this.span(b.x0 - 0.3, b.x1 + 0.3, b.z0 - 0.3, b.z1 + 0.5, low - 0.5, fy - (low - 0.5), k.slab);
     // The floor (lino, scuffed dark).
     this.span(b.x0, b.x1, b.z0, b.z1, fy, 0.02, k.floor);
-    // Back and side walls.
-    this.span(b.x0, b.x1, b.z0 - t / 2, b.z0 + t / 2, fy, H, k.wall);
+    // Back and side walls (the back one with the stockroom's door in it).
+    const bdw = b.backDoor;
+    const bd0 = bdw.x - bdw.width / 2;
+    const bd1 = bdw.x + bdw.width / 2;
+    this.span(b.x0, bd0, b.z0 - t / 2, b.z0 + t / 2, fy, H, k.wall);
+    this.span(bd1, b.x1, b.z0 - t / 2, b.z0 + t / 2, fy, H, k.wall);
+    this.span(bd0, bd1, b.z0 - t / 2, b.z0 + t / 2, fy + 2.1, H - 2.1, k.wall);
     this.span(b.x0 - t / 2, b.x0 + t / 2, b.z0, b.z1, fy, H, k.wall);
     this.span(b.x1 - t / 2, b.x1 + t / 2, b.z0, b.z1, fy, H, k.wall);
     // The front: wall below the sills and above the window tops; solid
@@ -199,9 +204,17 @@ export class GasStationProps {
     }
     this.span(x, b.x1, b.partitionZ - t / 2, b.partitionZ + t / 2, fy, H, k.wallInside);
     this.span(b.splitX - t / 2, b.splitX + t / 2, b.z0, b.partitionZ, fy, H, k.wallInside);
-    // The stockroom's back door, shut (and a dented step outside it).
+    // The stockroom's back door (Session 15b: it swings out as Tom comes to
+    // it: setBackDoor), hinged at its east edge; and a dented step outside it.
     const bd = b.backDoor;
-    this.span(bd.x - bd.width / 2, bd.x + bd.width / 2, b.z0 - t / 2 - 0.03, b.z0 + t / 2 + 0.03, fy, 2.1, k.door);
+    const hinge = frameToWorld(this.frame, bd.x - bd.width / 2, b.z0);
+    this.backDoorMesh = new THREE.Group();
+    const backLeaf = new THREE.Mesh(this.hold(new THREE.BoxGeometry(bd.width, 2.08, 0.06).translate(-bd.width / 2, 1.04, 0)), this.hold(new THREE.MeshLambertMaterial({ color: k.door })));
+    backLeaf.castShadow = true;
+    this.backDoorMesh.add(backLeaf);
+    this.backDoorMesh.position.set(hinge.x, fy, hinge.z);
+    this.backDoorMesh.rotation.y = this.frame.yaw;
+    this.group.add(this.backDoorMesh);
     this.span(bd.x - 0.6, bd.x + 0.6, b.z0 - 0.9, b.z0 - t / 2, fy - 0.35, 0.3, k.slab);
     // A front step down to the forecourt where the ground falls away.
     const front = this.groundAt(b.door.x, b.z1 + 1);
@@ -456,6 +469,11 @@ export class GasStationProps {
   }
 
   update() {}
+
+  // The back door: 0 shut .. 1 swung out (about 100 degrees).
+  setBackDoor(amount) {
+    if (this.backDoorMesh) this.backDoorMesh.rotation.y = this.frame.yaw - amount * 1.75;
+  }
 
   dispose() {
     this.group?.removeFromParent();

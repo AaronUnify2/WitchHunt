@@ -37,3 +37,9 @@ You went to bed and told me to keep building: the gas station's beats (pass 2), 
 20. **No fuel, no damage, no headlamp, no map icon.** The torch still works. All are easy to add if you want them.
 21. **Looks:** a dark olive placeholder. From the saddle the torch still lights the handlebars a pale grey at point-blank range. The art pass can fix it properly.
 22. **Debug (First day & campsite):** "Quad bike: bring it here" and "back behind the gas station".
+
+## Since then (Aaron's gas station notes, settled)
+
+- 2-3: the mutant is now down the west aisle, waking as you reach its mouth; it's off the minimap until it wakes.
+- 9: the car in the east wall is fixed (a spot that doesn't fit is left empty now).
+- 12: the back door opens onto the quad, and Wyatt tells you to take it after the witch.

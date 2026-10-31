@@ -102,6 +102,7 @@ export class GasStation {
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       this.bus.on('gasStation:wake', () => this.wakeMutant()),
+      this.bus.on('quad:mounted', () => (this.quadTold = true)),
     ];
   }
 
@@ -118,6 +119,8 @@ export class GasStation {
     this.witchIn = -1; // seconds until the witch's moment (after the mutant's down, outside)
     this.junieDue = false; // Junie's line about the note, once both the witch and the note have happened
     this.safeOpen = false;
+    this.backDoor = 0; // 0 shut .. 1 open
+    this.quadTold = false; // the family have said to take Earl's quad
   }
 
   // The store sits level on its highest corner (like the station's cabin).
@@ -157,7 +160,10 @@ export class GasStation {
   line(grid, ax, az, bx, bz, t, base, top, blocksShots) {
     const a = frameToWorld(this.frame, ax, az);
     const b = frameToWorld(this.frame, bx, bz);
-    grid.insert(segmentCollider(a.x, a.z, b.x, b.z, t, base, top, blocksShots));
+    const col = segmentCollider(a.x, a.z, b.x, b.z, t, base, top, blocksShots);
+    col.glare = true; // Session 15b (Aaron): the torch dims up close on everything here (shelves glared)
+    grid.insert(col);
+    return col;
   }
 
   // A box (w across x, d along z) at (x, z), turned yaw degrees.
@@ -177,7 +183,11 @@ export class GasStation {
     const low = fy - 1.5;
     const top = fy + b.height;
     // The shell: back, sides, and the front either side of the door (the windows are glass: solid).
-    this.line(grid, b.x0, b.z0, b.x1, b.z0, t, low, top, true);
+    // The back wall, with the stockroom's back door (Session 15b: it opens for Tom).
+    const bd = b.backDoor;
+    this.line(grid, b.x0, b.z0, bd.x - bd.width / 2, b.z0, t, low, top, true);
+    this.line(grid, bd.x + bd.width / 2, b.z0, b.x1, b.z0, t, low, top, true);
+    this.backDoorCol = this.line(grid, bd.x - bd.width / 2, b.z0, bd.x + bd.width / 2, b.z0, t, low, top, true);
     this.line(grid, b.x0, b.z0, b.x0, b.z1, t, low, top, true);
     this.line(grid, b.x1, b.z0, b.x1, b.z1, t, low, top, true);
     const d0 = b.door.x - b.door.width / 2;
@@ -269,6 +279,7 @@ export class GasStation {
     if (this.mutantState === 'dormant') this.updateDormant(l);
     if (this.mutantState === 'awake') this.updateAwake();
     this.updateWitch(dt, l);
+    this.updateBackDoor(dt, l);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -338,7 +349,13 @@ export class GasStation {
       this.bus.emit('gasStation:mutant');
       return;
     }
-    if (!this.inside(l) || l.z > this.data.shopZ || l.z < this.data.building.partitionZ || this.cutscenes?.active) return;
+    // Session 15b (Aaron): it's down the west aisle; the moment comes as Tom reaches the aisle's
+    // mouth in the centre aisle (it's in plain view down it then), or gets close any other way.
+    const w = this.data.wake;
+    const m = this.data.mutant;
+    const inAisle = this.inside(l) && l.z < w.z && l.z > this.data.building.partitionZ && l.x > w.x0 && l.x < w.x1;
+    const near = Math.hypot(l.x - m.x, l.z - m.z) < w.near;
+    if (!(inAisle || near) || this.cutscenes?.active) return;
     const anchor = { x: z.x, z: z.z, yaw: 0, dy: this.gc.mutant.lookHeight };
     if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor } })) this.wakeMutant();
   }
@@ -380,6 +397,21 @@ export class GasStation {
     this.dialogue?.play('gas.mutant.after');
   }
 
+  // ---- the back door -------------------------------------------------------------------------------------
+
+  // Session 15b (Aaron): the stockroom's back door swings open as Tom comes
+  // to it (either side), out onto Earl's quad, and shuts behind him.
+  updateBackDoor(dt, l) {
+    const b = this.data.building;
+    const bd = b.backDoor;
+    const near = Math.hypot(l.x - bd.x, l.z - b.z0) < this.gc.backDoor.openDistance;
+    const before = this.backDoor;
+    this.backDoor = Math.max(0, Math.min(1, this.backDoor + ((near ? 1 : -1) * dt) / this.gc.backDoor.swingSeconds));
+    if ((before === 0 && this.backDoor > 0) || (before === 1 && this.backDoor < 1)) this.combat?.sfx?.play('door', this.player.position);
+    if (this.backDoorCol) this.backDoorCol.off = this.backDoor > 0.4;
+    this.props?.setBackDoor(this.backDoor);
+  }
+
   // ---- the witch ------------------------------------------------------------------------------------------
 
   // Once the mutant's down: the first time Tom's back out on the forecourt
@@ -414,6 +446,11 @@ export class GasStation {
       this.dialogue?.play('gas.witch.ellen');
       if (this.done.has('note')) this.dialogue?.play('gas.witch.junie');
       else this.junieDue = true;
+      // Session 15b (Aaron): it's a long way to the Pruitts' gate: take Earl's quad.
+      if (!this.quadTold) {
+        this.quadTold = true;
+        this.dialogue?.play('gas.quad');
+      }
     };
     const played = this.cutscenes?.play('gas.witch', {
       anchors: { gasStation: frameAnchor(this.frame), herSpot: at(w.x, w.z), herRun: at(w.runTo.x, w.runTo.z) },
