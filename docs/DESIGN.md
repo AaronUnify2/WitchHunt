@@ -1242,8 +1242,8 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 14 | After line 13 | Ellen | They'll come. But the fence is live again, and we'll be ready for them. *(Session 15b, Aaron: they're coming, so she can't say they won't)* |
 | 15 | Dusk 1 forecast | Ellen | This is how we stay alive. Left side is what we've got: fence, doors, charge. Right side is what's coming. Keep the left side bigger. |
 | 16 | Night 1, the first wave near the fence | Wyatt (radio) | Movement on the {where} fence. Only a few. The wire's holding. *(Session 15b: {where} is the side they come from)* |
-| 16a | After line 16 *(Session 15b, draft)* | Ellen (radio) | Get up the tower with the rifle, Tom. You'll see them coming from up there. |
-| 16b | After 16a *(Session 15b, draft)* | Wyatt (radio) | Or meet them at the fence with the shotgun, Dad. Up close. The wire holds them still for you. |
+| 16a | After line 16 *(Session 15b, draft)* | Wyatt (radio) | Meet them at the fence with the shotgun, Dad. Up close. The wire holds them still for you. |
+| 16b | After 16a *(Session 15b, draft; Aaron: the rifle on the tower is Night 1's beat, it can't be taken on Day 1)* | Ellen (radio) | Or get up the tower and take the rifle, Tom. You can pick them off from up there. |
 | 16c | The second wave *(Session 15b, draft)* | Wyatt (radio) | More of them, Dad. Coming at the {where} fence. |
 | 16d | The third wave *(Session 15b, draft)* | Ellen (radio) | Three more, from the {where}. That looks like the last of them. |
 | 16e | All nine down, before the clip *(Session 15b, draft)* | Wyatt (radio) | That's all of them. The fence held, Dad. |

@@ -208,6 +208,8 @@ export class FirstDay {
     this.combat.healthFloor = day1 && this.fc.cantFail ? this.fc.healthFloor * this.combat.health.cfg.max : 0;
     // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
     this.station.gateLocked = this.gateLocked();
+    // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).
+    this.station.towerRifleLocked = this.clock.day === 1 && this.clock.phase === 'day';
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
     if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen;
     if (!playing) return;
@@ -411,8 +413,8 @@ export class FirstDay {
     if (n.tactics >= 0) {
       n.tactics -= dt;
       if (n.tactics < 0) {
-        this.dialogue.play('day1.night.tower');
         this.dialogue.play('day1.night.shotgun');
+        this.dialogue.play('day1.night.tower');
       }
     }
     if (n.clearIn >= 0 && !n.planted && n.feedIn < 0) {

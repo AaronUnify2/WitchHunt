@@ -2156,6 +2156,8 @@ export const config = {
     // Session 15b (Aaron): the service rifle leans on the lookout tower's
     // north rail until Tom takes it (it's out of the starting kit). It's
     // there whenever Tom hasn't got one: a fresh run, or "try again".
+    // On Day 1's daytime it can't be taken (FirstDay locks it): it's
+    // Night 1's beat, when Ellen sends Tom up for it.
     // at: metres from the platform's centre (x east, z south; the ladder's
     // on the south side). lean: radians off upright, into the rail.
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
@@ -2517,7 +2519,7 @@ export const config = {
       waves: { count: 3, size: 3, firstDelay: 12, gap: 10, distance: 60, pathDistance: 70, sideAngle: 70, timeout: 150 },
       fenceCallDistance: 14, // line 16 when wave 1 is this close to the fence
       firstCallAfter: 20, // ...or this many seconds after it rises, or once one of it's down (Session 15b)
-      tacticsDelay: 3, // seconds after line 16: Ellen's tower line, then Wyatt's shotgun line
+      tacticsDelay: 3, // seconds after line 16: Wyatt's shotgun line, then Ellen's: get the rifle from the tower
       plantAfter: 4, // seconds after the last wave's down: the witch plants at the storm shelter
       plantClearance: 70, // ...unless Tom is this close (she waits)
       feedDelay: 3.5, // seconds from Ellen's "a trail cam's live" to camera six (Session 15b)
@@ -2535,7 +2537,7 @@ export const config = {
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
   campsite: {
-    arriveInset: 4, // metres inside the edge that count as arriving (the sweep plays)
+    arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
     look: {

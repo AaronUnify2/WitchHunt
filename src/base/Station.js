@@ -65,6 +65,7 @@ export class Station {
     this.abstract = false; // M6: set by NightWatch while the player is away
     this.overrunDone = false;
     this.gateLocked = false; // Session 15b: Day 1, until the tower (set by FirstDay each frame)
+    this.towerRifleLocked = false; // Session 15b: Day 1's daytime (set by FirstDay): it's Night 1's beat
     this.clawing = 0; // swipes at the defences in the last second (overlay)
     this.clawCount = 0;
     this.clawTimer = 0;
@@ -474,7 +475,7 @@ export class Station {
     const inv = this.combat.inventory;
     const range = sc.interactRange;
     if (this.player.platform) {
-      if (this.rifleOnTower) {
+      if (this.rifleOnTower && !this.towerRifleLocked) {
         const name = this.cfg.weapons[sc.towerRifle.weapon].name.toLowerCase();
         return { key: 'tower-rifle', prompt: `Hold ${X}: take the ${name}`, seconds: h.takeRifle, act: () => this.takeTowerRifle() };
       }

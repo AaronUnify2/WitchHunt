@@ -49,6 +49,10 @@ Round 7:
 - [ ] **The talk after camera six is three lines:** Wyatt (the Pruitts' shelter, on your map), Ellen (Earl's family; check on them at first light), Wyatt (start at the gas station: supplies, a phone or radio). Then dawn.
 - [ ] **Ledger plan, D-pad:** from the gate, left and right walk the whole outer fence end to end. On a barricade, left and right walk the barricades. Up from the barricades goes to the doors and fence box (left / right between them), up again to "Repair the whole fence and gate". Down steps back out.
 
+Round 8:
+- [ ] **The campsite sweep** starts as you reach the clearing's edge, not once you're in the camp.
+- [ ] **The rifle on the tower:** you see it on the first climb but can't take it (only "climb down"). On Night 1, Wyatt says to meet them at the fence with the shotgun, then Ellen says to get up the tower and take the rifle. Now it can be taken.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
