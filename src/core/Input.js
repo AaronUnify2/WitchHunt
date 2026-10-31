@@ -35,6 +35,7 @@ export class Input {
     this.move = { x: 0, y: 0 }; // x right, y forward, length <= 1
     this.look = { x: 0, y: 0 }; // radians this frame: x turn right, y look up
     this.rawPad = null;
+    this.swallowed = new Set(); // actions held through a skip: ignored until released
     this.comboState = {};
     for (const name of Object.keys(this.cfg.combos)) {
       this.comboState[name] = { held: 0, fired: false };
@@ -55,6 +56,7 @@ export class Input {
     } else {
       this.resetCombos();
     }
+    this.applySwallowed();
 
     this.move = this.computeMove(kb, pad);
     this.look = this.computeLook(kb, pad, dt);
@@ -64,6 +66,21 @@ export class Input {
   dispose() {
     this.kbm?.dispose();
     this.pad?.dispose();
+  }
+
+  // Session 15b (Aaron): the press that skips a cutscene (A / Enter) must
+  // not also jump, or reach anything else. Everything held now is ignored
+  // until it's let go.
+  swallowHeld() {
+    for (const a of this.down) this.swallowed.add(a);
+    this.applySwallowed();
+  }
+
+  applySwallowed() {
+    for (const a of this.swallowed) {
+      if (this.down.has(a)) this.down.delete(a);
+      else this.swallowed.delete(a);
+    }
   }
 
   // ---- queries ---------------------------------------------------------

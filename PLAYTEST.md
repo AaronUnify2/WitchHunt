@@ -6,6 +6,13 @@ A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/
 
 Before you start: if you have a saved run from Session 14, the menu offers **Continue** and **New Run**. Take **New Run**. It reloads on a fresh map and asks you to **tap to begin**, because fullscreen needs a tap.
 
+## Fixes to try (Session 15b)
+
+Round 1:
+- [ ] **Skip with A doesn't jump:** skip the cold open, the waking (Ellen's lines) and the tower view with A. Tom shouldn't jump afterwards. Picking New Run with A shouldn't either.
+- [ ] **The rifle's at the top of the tower:** you wake with only the shovel. The service rifle leans on the tower's north rail; after the view, hold X on the platform to take it. Skip intro still gives it to you.
+- [ ] **The gate's locked until the tower:** the gate stays shut with a chain and padlock on it, and Ellen radios "Not yet, Tom. Get up the tower first..." if you try it (or the torn east panel). Once you've been up the tower it opens as normal. Is the line right?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

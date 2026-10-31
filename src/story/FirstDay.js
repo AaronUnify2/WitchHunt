@@ -73,6 +73,7 @@ export class FirstDay {
     this.nudged = new Set();
     this.notifyFamily = false;
     this.lastStep = '';
+    this.gateCall = 0; // seconds until Ellen will call Tom back from the locked gate again
   }
 
   isDay1() {
@@ -185,11 +186,32 @@ export class FirstDay {
     const day1 = this.clock.day === 1 && this.clock.phase === 'day';
     // Day 1 can't be failed (config.firstDay.healthFloor: a share of full health).
     this.combat.healthFloor = day1 && this.fc.cantFail ? this.fc.healthFloor * this.combat.health.cfg.max : 0;
+    // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
+    this.station.gateLocked = this.gateLocked();
     if (!playing) return;
     this.updateSkip(dt);
+    this.updateGate(dt);
     if (day1) this.holdTheClock();
     if (day1) this.updateHome(dt);
     if (this.night) this.updateNight1(dt);
+  }
+
+  gateLocked() {
+    return this.clock.day === 1 && !this.progress.has('towerClimbed');
+  }
+
+  // Tom at the locked gate (or a panel that's down): Ellen calls him back to the tower.
+  updateGate(dt) {
+    this.gateCall = Math.max(0, this.gateCall - dt);
+    if (!this.station.penned() || this.gateCall > 0 || this.cutscenes.active) return;
+    const L = this.station.layout;
+    const gl = this.cfg.station.gateLock;
+    const p = this.player.position;
+    const near = (q) => Math.hypot(p.x - q.x, p.z - q.z) < gl.callDistance;
+    const atGap = this.station.state.segments.some((seg, i) => seg.health <= 0 && L.segments[i].pieces.some((q) => near({ x: q.ax, z: q.az }) || near({ x: q.bx, z: q.bz }) || near({ x: (q.ax + q.bx) / 2, z: (q.az + q.bz) / 2 })));
+    if (!near(L.gate.mid) && !atGap) return;
+    this.gateCall = gl.callEvery;
+    this.dialogue.play('day1.gate');
   }
 
   // Dusk waits for the tutorial: the clock stops at holdHour on Day 1 until
@@ -371,6 +393,7 @@ export class FirstDay {
     for (const s of st.state.segments) s.health = s.max;
     st.state.fitBattery();
     st.syncColliders();
+    if (this.station.rifleOnTower) this.combat.giveWeapon(this.cfg.station.towerRifle.weapon); // Session 15b: it's on the tower otherwise
     this.combat.giveWeapon('shotgun', this.fc.skip.shotgunShells);
     this.combat.inventory.scrap = this.fc.skip.scrap;
     this.campsite.completeAll();

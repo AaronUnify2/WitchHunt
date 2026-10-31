@@ -193,4 +193,24 @@ describe('the starting kit', () => {
     expect(config.weapons.startingLoadout).not.toContain('shotgun');
     expect(campsite.searches.some((s) => s.gives?.some((g) => g.item === 'shotgun'))).toBe(true);
   });
+
+  it("has no service rifle either: it waits at the top of the tower (Session 15b)", () => {
+    const r = config.station.towerRifle;
+    expect(config.weapons.startingLoadout).not.toContain(r.weapon);
+    expect(config.weapons.startingLoadout).toContain(config.weapons.startingWeapon);
+    expect(config.weapons[r.weapon]).toBeTruthy();
+    // On the platform, against the north rail (inside it).
+    const half = config.station.layout.tower.platformHalf;
+    expect(Math.abs(r.at[0])).toBeLessThan(half);
+    expect(Math.abs(r.at[1])).toBeLessThan(half);
+  });
+});
+
+describe("Day 1's locked gate (Session 15b)", () => {
+  it("has Ellen's call back to the tower, cued and repeatable", () => {
+    const line = dialogueData.lines.find((l) => l.id === 'day1.gate');
+    expect(line.speaker).toBe('ellen');
+    expect(line.cued && line.repeatable).toBe(true);
+    expect(line.text).toMatch(/tower/i);
+  });
 });

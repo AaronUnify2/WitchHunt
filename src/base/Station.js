@@ -63,6 +63,7 @@ export class Station {
     this.overrunEnabled = sc.siege.overrun;
     this.abstract = false; // M6: set by NightWatch while the player is away
     this.overrunDone = false;
+    this.gateLocked = false; // Session 15b: Day 1, until the tower (set by FirstDay each frame)
     this.clawing = 0; // swipes at the defences in the last second (overlay)
     this.clawCount = 0;
     this.clawTimer = 0;
@@ -230,14 +231,45 @@ export class Station {
     this.syncColliders();
   }
 
-  // Broken, unbuilt or open barriers let bodies through.
+  // Broken, unbuilt or open barriers let bodies through. Session 15b:
+  // while the gate's locked on Day 1, a fence panel that's down still
+  // stops Tom (from inside; the dead walk through as ever).
   syncColliders() {
+    const penned = this.penned();
     for (const b of this.state.barriers()) {
       const list = this.barrierColliders.get(b.id);
       if (!list) continue;
       const off = passable(b);
-      for (const col of list) col.off = off;
+      const pen = off && penned && (b.kind === 'fence' || b.kind === 'gate');
+      for (const col of list) {
+        col.off = off && !pen;
+        col.playerOnly = pen;
+      }
     }
+  }
+
+  // Session 15b: is Tom shut in (the gate locked, and he's inside the fence)?
+  // Caught outside (an old save), he can still come in.
+  penned() {
+    if (!this.gateLocked || !this.player) return false;
+    return zoneOf(this.layout, this.player.position.x, this.player.position.z) >= 1;
+  }
+
+  // Session 15b (Aaron): the service rifle on the tower, while Tom hasn't got one.
+  get rifleOnTower() {
+    const r = this.sc.towerRifle;
+    return Boolean(r) && !this.combat.weapons.order.includes(r.weapon);
+  }
+
+  takeTowerRifle() {
+    const id = this.sc.towerRifle.weapon;
+    this.combat.giveWeapon(id);
+    const w = this.combat.weapons;
+    const rounds = (w.states[id]?.mag ?? 0) + (w.ammoRounds(w.ammoType(id)) ?? 0);
+    this.combat.hud.pickup(`${this.cfg.weapons[id].name} (${rounds} rounds)`);
+    this.combat.sfx.play('loaded');
+    this.bus.emit('station:rifle');
+    return null;
   }
 
   // ---- siege ------------------------------------------------------------------
@@ -360,13 +392,15 @@ export class Station {
     const f = this.sc.fence;
     const d = this.sc.doors;
     const onTower = this.player.platform !== null;
+    const penned = this.penned();
     const doors = [
       [s.gate, L.gate.mid, f.gateOpenDistance, f.gateSlideSeconds, 'gate'],
       [s.doors.front, L.cabin.frontDoor, d.openDistance, d.swingSeconds, 'door'],
       [s.doors.comms, L.cabin.commsDoor, d.openDistance, d.swingSeconds, 'door'],
     ];
     for (const [b, at, dist, seconds, sound] of doors) {
-      const near = !onTower && this.combat.alive && b.health > 0 && Math.hypot(p.x - at.x, p.z - at.z) < dist;
+      const shut = penned && b === s.gate; // Session 15b: locked on Day 1 until the tower
+      const near = !onTower && !shut && this.combat.alive && b.health > 0 && Math.hypot(p.x - at.x, p.z - at.z) < dist;
       const before = b.openAmount;
       b.openAmount = Math.max(0, Math.min(1, b.openAmount + (near ? 1 : -1) * (dt / seconds)));
       if ((before === 0 && b.openAmount > 0) || (before === 1 && b.openAmount < 1)) this.combat.sfx.play(sound, at);
@@ -409,6 +443,8 @@ export class Station {
       this.hold.update(dt, null, false, 1);
     }
     this.ledger.update(dt, input, playing);
+    this.renderer.towerRifleVisible = this.rifleOnTower;
+    this.renderer.gateLocked = this.gateLocked;
     this.renderer.update(dt, cameraPosition, daylight, this.turret);
   }
 
@@ -437,6 +473,10 @@ export class Station {
     const inv = this.combat.inventory;
     const range = sc.interactRange;
     if (this.player.platform) {
+      if (this.rifleOnTower) {
+        const name = this.cfg.weapons[sc.towerRifle.weapon].name.toLowerCase();
+        return { key: 'tower-rifle', prompt: `Hold ${X}: take the ${name}`, seconds: h.takeRifle, act: () => this.takeTowerRifle() };
+      }
       return { key: 'tower-down', prompt: `Hold ${X}: climb down`, busy: 'Climbing down…', seconds: h.climb, act: () => this.climbDown() };
     }
     // Spots (the desk, ladder, fence box, turret, doors) come first; the

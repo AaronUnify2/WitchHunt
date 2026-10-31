@@ -69,6 +69,11 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
 
 **Tests:** 532 pass (new: `tests/firstDay.test.js`: the campsite frame and its handedness, the layout and the order guarantee, the guaranteed kit and scrap, the car's fixed spot, the device's memory, cued lines and Junie's marker, the new cutscenes, the kit).
 
+**After Aaron's play-test (Session 15b):**
+1. **Skipping a cutscene no longer jumps** (or fires anything else): the A / Enter press that skips (or picks from the menu) is swallowed until it's let go (`Input.swallowHeld()`, called by `Cutscenes` and `StartScreen`).
+2. **The service rifle waits at the top of the lookout tower**, leaning on the north rail (`config.station.towerRifle`, `StationRenderer.buildTowerRifle()`); hold X on the platform to take it (5 + 10 rounds). Tom wakes with the shovel only (`startingLoadout: ['shovel']`). It's there whenever Tom hasn't got one (a fresh run, "try again"); Skip intro hands it over.
+3. **The gate is shut and locked on Day 1 until Tom's been up the tower** (`FirstDay.gateLocked()` → `Station.gateLocked`): it won't open for him, a chain and padlock hang on it, and the torn east panel stops him too (from inside; the dead still walk through it). At the gate or the gap, Ellen calls over the radio: "Not yet, Tom. Get up the tower first. I need to know what's going on out there." (`day1.gate`, a draft, at most every 20 s; `config.station.gateLock`). Caught outside on an old save, Tom can still come in.
+
 ### Session 14: M9.1, the cluster on the map (Lead Engineer)
 
 Seven steps, each pushed to `main` for Aaron to play-test:

@@ -78,12 +78,18 @@ export class StartScreen {
   update(input) {
     if (!this.visible || input.activeDevice !== 'gamepad') return;
     if (this.mode !== 'menu') {
-      if (input.wasPressed('menuConfirm')) this.activate(this.mode);
+      if (input.wasPressed('menuConfirm')) {
+        input.swallowHeld?.(); // Session 15b: the press that starts the game doesn't also jump
+        this.activate(this.mode);
+      }
       return;
     }
     if (input.wasPressed('menuUp')) this.move(-1);
     if (input.wasPressed('menuDown')) this.move(1);
-    if (input.wasPressed('menuConfirm')) this.activate(this.items[this.focus]?.choice);
+    if (input.wasPressed('menuConfirm')) {
+      input.swallowHeld?.();
+      this.activate(this.items[this.focus]?.choice);
+    }
   }
 
   dispose() {

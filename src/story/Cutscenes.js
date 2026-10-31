@@ -185,6 +185,7 @@ export class Cutscenes {
     if (!cur) return;
     if (cur.t > this.cc.skipAfter && cur.opts.skippable !== false) this.skipEl.classList.remove('hidden');
     if (canSkip && cur.opts.skippable !== false && cur.t > this.cc.skipAfter && input.wasPressed('menuConfirm')) {
+      input.swallowHeld?.(); // Session 15b: the skip press doesn't also jump
       this.stop(true);
       return;
     }

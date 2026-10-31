@@ -59,6 +59,7 @@ export class StationRenderer {
     this.buildTurret();
     this.buildGlow();
     this.buildFamily();
+    this.buildTowerRifle();
     // Instanced meshes measure their bounds once, on the first frame: built
     // later (barricades, spikes, floodlights) they'd stay culled forever.
     // The whole compound is hidden by distance instead (update()).
@@ -306,9 +307,47 @@ export class StationRenderer {
     const panel = new THREE.Mesh(this.keep(new THREE.PlaneGeometry(len, H).translate(len / 2, H / 2 + 0.1, 0)), this.chainMaterial);
     frameMesh.castShadow = true;
     this.gate.add(frameMesh, panel);
+    // Session 15b: Day 1's chain and padlock round the gate's closing post
+    // (shown while it's locked).
+    const gl = this.cfg.gateLock;
+    if (gl) {
+      const y = 1.05;
+      const links = [];
+      for (let i = 0; i < 4; i++) links.push(this.box(0.2, 0.035, 0.035, len - 0.02, y + i * 0.07, 0, gl.chain, 0.5 * (i % 2 ? 1 : -1)));
+      links.push(this.box(0.07, 0.09, 0.035, len - 0.02, y - 0.12, 0.07, gl.padlock));
+      this.gateChain = new THREE.Mesh(this.keep(mergeGeometries(links)), this.lambert);
+      links.forEach((g) => g.dispose());
+      this.gateChain.visible = false;
+      this.gate.add(this.gateChain);
+    }
     this.gatePiece = p;
     this.gateLen = len;
     this.group.add(this.gate);
+  }
+
+  // Session 15b (Aaron): the service rifle leaning on the tower's north
+  // rail until Tom takes it (config.station.towerRifle).
+  buildTowerRifle() {
+    const r = this.cfg.towerRifle;
+    if (!r) return;
+    const t = this.layout.tower;
+    const top = this.ground.heightAt(t.x, t.z) + t.height;
+    // Upright, butt on the planks: the stock, the receiver, the barrel.
+    const parts = [
+      this.box(0.045, 0.66, 0.1, 0, 0, 0, r.stock),
+      this.box(0.04, 0.12, 0.05, 0, 0.05, 0.035, r.stock), // the pistol grip
+      this.box(0.035, 0.2, 0.04, 0, 0.6, -0.01, r.steel), // the receiver
+      this.box(0.02, 0.42, 0.02, 0, 0.78, -0.01, r.steel), // the barrel
+      this.box(0.012, 0.08, 0.012, 0.02, 0.66, 0.02, r.steel), // the bolt handle
+    ];
+    const mesh = new THREE.Mesh(this.keep(mergeGeometries(parts)), this.lambert);
+    parts.forEach((g) => g.dispose());
+    mesh.castShadow = true;
+    mesh.position.set(t.x + r.at[0], top, t.z + r.at[1]);
+    mesh.rotation.set(-r.lean, 0, 0); // tipped north, into the rail
+    mesh.visible = false;
+    this.towerRifle = mesh;
+    this.group.add(mesh);
   }
 
   buildDoors() {
@@ -626,6 +665,8 @@ export class StationRenderer {
     if (!near) return;
     this.refresh();
     this.updateGateAndDoors();
+    if (this.towerRifle) this.towerRifle.visible = Boolean(this.towerRifleVisible);
+    if (this.gateChain) this.gateChain.visible = Boolean(this.gateLocked) && this.state.gate.health > 0;
     this.updateTurret(turret);
     const night = 1 - daylight;
     const lit = night > 0.35 && this.state.powered;

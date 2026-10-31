@@ -918,8 +918,10 @@ export const config = {
   weapons: {
     // M2 started with all three so they could be compared. M9.2: the
     // shotgun is the campsite's prize instead (Skip intro gives it).
-    startingLoadout: ['shovel', 'rifle'],
-    startingWeapon: 'rifle',
+    // Session 15b (Aaron): the service rifle waits at the top of the lookout
+    // tower (config.station.towerRifle); Tom wakes with the shovel.
+    startingLoadout: ['shovel'],
+    startingWeapon: 'shovel',
     switchSeconds: 0.35, // lower one weapon and raise the next
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
@@ -2149,8 +2151,19 @@ export const config = {
       floodlight: 25,
     },
     // Hold interact this long (seconds).
-    hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5, releaseDrain: 2 }, // releaseDrain: let go and the bar empties this many times faster than it fills (Aaron)
+    hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5, takeRifle: 0.6, releaseDrain: 2 }, // releaseDrain: let go and the bar empties this many times faster than it fills (Aaron)
     interactRange: 2.2,
+    // Session 15b (Aaron): the service rifle leans on the lookout tower's
+    // north rail until Tom takes it (it's out of the starting kit). It's
+    // there whenever Tom hasn't got one: a fresh run, or "try again".
+    // at: metres from the platform's centre (x east, z south; the ladder's
+    // on the south side). lean: radians off upright, into the rail.
+    towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
+    // Session 15b (Aaron): on Day 1 the gate stays shut and locked until
+    // Tom's been up the tower (story/FirstDay.js). Ellen calls him back if
+    // he tries it, at most every callEvery seconds, within callDistance of
+    // the gate (or of a fence panel that's down).
+    gateLock: { callDistance: 3.5, callEvery: 20, chain: 0x3a3a38, padlock: 0x5a4a22 },
     spikes: { radius: 1.2, damage: 12, interval: 0.8, slow: 0.4, durability: 15 },
     // poolOpacity / coneOpacity are tiny: on a black sky the screen's gamma lifts a few % of white to a bright grey.
     // litEdge: zombies are lit out to this many pool radii.
