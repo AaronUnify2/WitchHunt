@@ -3,7 +3,7 @@
   "items": [
     { "id": "camcorder", "name": "The campers' camcorder", "from": "campsite", "kind": "tape", "clip": "clip.camcorder" },
     { "id": "pruittDiary", "name": "Earl Pruitt's diary", "from": "stormShelter", "kind": "item" },
-    { "id": "pruittTapes", "name": "Earl Pruitt's trail-cam tapes", "from": "stormShelter", "kind": "tape" },
+    { "id": "pruittTapes", "name": "Earl Pruitt's trail-cam tapes", "from": "stormShelter", "kind": "tape", "clip": "clip.pruittTape" },
     { "id": "pilotLog", "name": "The pilot's log", "from": "crashedPlane", "kind": "item" },
     { "id": "foremanLog", "name": "The foreman's logbook", "from": "mineshaft", "kind": "item" },
     { "id": "fieldReport", "name": "The field report", "from": "outpost", "kind": "document" },

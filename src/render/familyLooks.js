@@ -180,6 +180,28 @@ const LOOKS = {
       },
     };
   },
+  // Session 16: the Pruitts on Earl's trail-cam tape (camera four), alive:
+  // Earl as his zombie looks (Session 13: sixties, a faded red trucker cap,
+  // a tan work shirt, jeans), and his two kids. Seen only in grainy night
+  // vision, so plain.
+  earlPruitt() {
+    const b = body({ sh: 1.02, hip: 1.04, bulk: 1.1 });
+    b.masses.push(hairCap(1.63, -0.02, [0.096, 0.094, 0.104]));
+    // The trucker cap: a crown and a peak.
+    b.masses.push(['head', null, 0, 1.675, -0.005, 0.104, 0.05, 0.11, 'cap'], ['head', null, 0, 1.652, 0.105, 0.075, 0.012, 0.062, 'cap']);
+    return b;
+  },
+  pruittBoy() {
+    const b = body({ sh: 0.94, hip: 0.95, bulk: 1.02 });
+    b.masses.push(hairCap(1.635, -0.01, [0.1, 0.1, 0.106]));
+    return b;
+  },
+  pruittGirl() {
+    const b = body({ sh: 0.9, hip: 0.95, bulk: 1.05, legs: 'fitted' });
+    b.masses.push(hairCap(1.632, -0.012));
+    b.tubes.push(['head', 0, 1.63, -0.09, 0, 1.47, -0.12, 0.024, 0.015, 'hair']); // a ponytail
+    return b;
+  },
 };
 
 // The figure-kit spec for one of them. person: config.family.people[id].

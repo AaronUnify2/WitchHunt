@@ -26,6 +26,8 @@
 //     where his kids are; Ellen: maybe they got away (Aaron: nothing says
 //     the children died).
 //  7. Climb back up the ladder.
+//  8. At home: the tapes handed in at the comms room play there and then
+//     (clip.pruittTape: camera four, Night 1; then on the monitors).
 // The frame (StormShelter.frame): walking in from home, x right, z ahead.
 // Each beat happens once; it's saved.
 //
@@ -111,6 +113,10 @@ export class StormShelter {
       }),
       this.bus.on('stormShelter:goDown', () => this.goDown()),
       this.bus.on('stormShelter:goUp', () => this.goUp()),
+      // Earl's tapes handed in at the comms room: they play there and then (camera four, Night 1).
+      this.bus.on('lore:handedIn', ({ id }) => {
+        if (id === 'pruittTapes') this.playTapes();
+      }),
     ];
   }
 
@@ -488,6 +494,12 @@ export class StormShelter {
     if (this.combat.takePickup(item, amount)) return true;
     this.combat.pickups?.drop(item, amount, pt.x, this.floorY, pt.z, 0);
     return true;
+  }
+
+  // The tapes at home: the ledger closes and the family watch camera four (the clip has their lines).
+  playTapes() {
+    this.lore?.ledger?.close?.();
+    this.cutscenes?.play('clip.pruittTape');
   }
 
   // ---- saving ------------------------------------------------------------------------------------------

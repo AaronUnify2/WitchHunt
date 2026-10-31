@@ -116,6 +116,18 @@ Round 16 (Session 16: your notes on the overnight work):
 - [ ] **Night 1, no digging:** the shelter's sigil can't be dug up on Night 1 (no prompt).
 - [ ] **Night 1's waves overlap:** three come up the campsite path about 12 s in, three more from the south 15 s later, three from the east 15 s after that, whether or not the first lot are down.
 
+Round 17 (Session 16: Earl's note in close-up, and the storm shelter):
+- [ ] **Earl's note** at the gas station opens as a paper over the screen (the game waits). B or X puts it down; the family speak after.
+- [ ] **Getting there:** after the gas station (the witch seen and the note read) the shelter's gate opens. Take the shovel. (Debug: First day & campsite, "Storm shelter: teleport to the path in".)
+- [ ] **The arrival:** the sweep down onto the hatch, a dozen dead standing on it and Earl (red cap) among them. Wyatt: Earl hid it well.
+- [ ] **The rising:** kill a few: more climb out of the glowing sigil, even by day. Ellen says so. Too many? Too slow?
+- [ ] **Dig the sigil up:** no more rise. Wyatt and Ellen work out the sigils are raising the dead.
+- [ ] **Earl's keys:** where he fell, a glint. Hold X: the safe's combination. Then back at the gas station, the safe opens (the hunting rifle, empty).
+- [ ] **The hatch:** hold X with the shovel to dig it clear, then haul it open, then climb down.
+- [ ] **Below:** small, shabby, dark (use the torch). Junie and Ellen on Earl's kids. Pick up the diary (it opens: turn the pages; the last one's blank), take the tapes, search the shelves (a first aid kit and a battery for sure), the radio, the photos. Climb the ladder back up.
+- [ ] **At home:** hand the tapes in at the ledger (Monitors): camera four plays straight away, with the family's lines. Then it's on the monitors.
+- [ ] Anything to move or resize? (Positions are in `src/data/stormShelter.json`.)
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

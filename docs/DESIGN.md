@@ -819,6 +819,8 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
 
+**Built (Session 16; Aaron's calls).** Earl dug it himself, so it's **small and a bit shabby**. **12 citizens** hold the hatch through the day, Earl among them as a zombie (Session 13's call); while the sigil's in the ground more climb out of it, and once it's dug up they stop, and the family work out that **the sigils are raising the dead**. **Nothing indicates the children died:** the room is empty of them, Ellen says maybe they got away, and on the tape the kids run into the trees while she goes after Earl. The diary is read in a **paper close-up** (Earl's note at the gas station too). The room below is part of the main map (a platform under the hatch, no loading). See STATUS (Session 16) and OPEN_QUESTIONS #213-221.
+
 **Purpose.** Part of the fixed opening cluster, doing three jobs:
 
 1. **The Night 1 sigil and the sigil tutorial.** The witch plants her first sigil here. The player learns what a sigil is, that digging it up quiets the night, and that sigils are why people die.

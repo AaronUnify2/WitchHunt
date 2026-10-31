@@ -1093,6 +1093,267 @@
       "_note": "M9.2: played by FirstDay on Night 1 as the witch plants at the storm shelter (camera six). Lines 17-19 are in it; line 20 follows it. Still a placeholder shot (the style pass: Session 19)."
     },
     {
+      "id": "clip.pruittTape",
+      "rewatch": true,
+      "name": "Earl Pruitt's tape: camera four, Night 1 (trail cam)",
+      "style": "cctv",
+      "look": "trailcam",
+      "fps": 10,
+      "hour": 23.1,
+      "osd": {
+        "name": "CAMERA 4",
+        "time": "clock",
+        "rec": true
+      },
+      "_note": "Session 16 (M9.3; DESIGN 'Storm shelter', 'The trail-cam tapes'): Earl's tape, handed in at the comms room (StormShelter plays it as the tapes are handed in; then it's on the monitors). Camera four at the shelter clearing's edge (anchor stormShelter: walking in from home, x right, z ahead), Night 1. The witch is already there, low over the ground beside the hatch (the first sigil going in). Earl and his two kids hurry in from the trees and pull up short. A still beat. She turns, far too fast; they scatter out of frame, the kids one way into the trees and Earl the other, and she goes after him. The kill is never shown. The clearing empties; the last seconds are the hatch alone and the sigil's faint glow. The family watch it in the comms room: Wyatt first, Ellen explains, Junie catches the kids running off (Aaron: maybe they got away), Wyatt ties the glow to the sigil Tom dug up.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "stormShelter",
+          "pos": [
+            -7,
+            1.8,
+            7.5
+          ],
+          "look": [
+            3.5,
+            0.7,
+            0.6
+          ],
+          "fov": 62
+        }
+      ],
+      "actors": [
+        {
+          "id": "her",
+          "kind": "figure",
+          "look": "witch",
+          "anchor": "stormShelter",
+          "pos": [
+            1.2,
+            0,
+            2.4
+          ],
+          "yaw": 120
+        },
+        {
+          "id": "earl",
+          "kind": "figure",
+          "look": "earlPruitt",
+          "anchor": "stormShelter",
+          "pos": [
+            13,
+            0,
+            -5
+          ],
+          "yaw": -110
+        },
+        {
+          "id": "boy",
+          "kind": "figure",
+          "look": "pruittBoy",
+          "anchor": "stormShelter",
+          "pos": [
+            14,
+            0,
+            -3.6
+          ],
+          "yaw": -110
+        },
+        {
+          "id": "girl",
+          "kind": "figure",
+          "look": "pruittGirl",
+          "anchor": "stormShelter",
+          "pos": [
+            13.6,
+            0,
+            -2.6
+          ],
+          "yaw": -110
+        },
+        {
+          "id": "sigil",
+          "kind": "disc",
+          "anchor": "stormShelter",
+          "pos": [
+            2.0,
+            0,
+            2.9
+          ],
+          "size": 0.9,
+          "hidden": true
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "pose",
+          "actor": "her",
+          "pose": "kneel"
+        },
+        {
+          "at": 1.6,
+          "do": "move",
+          "actor": "earl",
+          "to": [
+            5.2,
+            0,
+            -0.6
+          ],
+          "seconds": 3.6
+        },
+        {
+          "at": 1.7,
+          "do": "move",
+          "actor": "boy",
+          "to": [
+            6.0,
+            0,
+            0.4
+          ],
+          "seconds": 3.6
+        },
+        {
+          "at": 1.8,
+          "do": "move",
+          "actor": "girl",
+          "to": [
+            5.8,
+            0,
+            1.2
+          ],
+          "seconds": 3.6
+        },
+        {
+          "at": 3.2,
+          "do": "line",
+          "line": "tape.wyatt",
+          "radio": false
+        },
+        {
+          "at": 4.0,
+          "do": "show",
+          "actor": "sigil"
+        },
+        {
+          "at": 4.0,
+          "do": "flare",
+          "actor": "sigil",
+          "amount": 0.45,
+          "seconds": 2,
+          "hold": true
+        },
+        {
+          "at": 7.4,
+          "do": "pose",
+          "actor": "her",
+          "pose": "stand"
+        },
+        {
+          "at": 7.5,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            2.6,
+            0,
+            1.6
+          ],
+          "seconds": 0.3
+        },
+        {
+          "at": 7.6,
+          "do": "glitch",
+          "amount": 0.4,
+          "seconds": 0.3,
+          "sound": false
+        },
+        {
+          "at": 7.8,
+          "do": "move",
+          "actor": "boy",
+          "to": [
+            13,
+            0,
+            7
+          ],
+          "seconds": 1.3
+        },
+        {
+          "at": 7.8,
+          "do": "move",
+          "actor": "girl",
+          "to": [
+            12,
+            0,
+            8.5
+          ],
+          "seconds": 1.5
+        },
+        {
+          "at": 7.9,
+          "do": "move",
+          "actor": "earl",
+          "to": [
+            15,
+            0,
+            -9
+          ],
+          "seconds": 1.2
+        },
+        {
+          "at": 8.2,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            17,
+            0,
+            -8
+          ],
+          "seconds": 0.7
+        },
+        {
+          "at": 9.0,
+          "do": "hide",
+          "actor": "her"
+        },
+        {
+          "at": 9.2,
+          "do": "hide",
+          "actor": "earl"
+        },
+        {
+          "at": 9.4,
+          "do": "hide",
+          "actor": "boy"
+        },
+        {
+          "at": 9.6,
+          "do": "hide",
+          "actor": "girl"
+        },
+        {
+          "at": 10.4,
+          "do": "line",
+          "line": "tape.ellen",
+          "radio": false
+        },
+        {
+          "at": 15.6,
+          "do": "line",
+          "line": "tape.junie",
+          "radio": false
+        },
+        {
+          "at": 19.6,
+          "do": "line",
+          "line": "tape.wyatt2",
+          "radio": false
+        }
+      ],
+      "duration": 24
+    },
+    {
       "id": "clip.sighting",
       "name": "A trail cam sighting (trail cam)",
       "style": "cctv",

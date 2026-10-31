@@ -2918,6 +2918,26 @@ export const config = {
   // Other people built with the figure kit (Session 13): the cutscenes'.
   // Same shape as config.family.people.
   people: {
+    // Session 16: the Pruitts, alive, on Earl's tape (clip.pruittTape; render/familyLooks.js).
+    earlPruitt: {
+      height: 1.78,
+      head: 1.04,
+      idle: 'pockets',
+      colours: { skin: 0xc09078, top: 0x7a6a48, sleeve: 0x7a6a48, forearm: 0x7a6a48, trousers: 0x2c3648, shoes: 0x3a2a1a, hair: 0x8a8680, cap: 0x7a2a22, eyes: 0x1a1410, brows: 0x6a6660 },
+    },
+    pruittBoy: {
+      height: 1.45,
+      head: 1.18,
+      idle: 'pockets',
+      colours: { skin: 0xc8a084, top: 0x2a4a3a, sleeve: 0x2a4a3a, forearm: 0x2a4a3a, trousers: 0x2c3648, shoes: 0x5a5a56, hair: 0x5a3a20, eyes: 0x1a1410, brows: 0x3a2414 },
+    },
+    pruittGirl: {
+      height: 1.2,
+      width: 0.95,
+      head: 1.3,
+      idle: 'hug',
+      colours: { skin: 0xd0a88c, top: 0x6a3a4a, sleeve: 0x6a3a4a, forearm: 0x6a3a4a, trousers: 0x2a2a34, shoes: 0x6a5a5a, hair: 0x8a6034, eyes: 0x141010, brows: 0x5a3a24 },
+    },
     mib: {
       height: 1.86,
       head: 1.04,

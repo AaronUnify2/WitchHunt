@@ -1,5 +1,21 @@
 # Open questions
 
+## Session 16 (Level & Encounter Designer + AI Programmer: Aaron's notes on the overnight work; the storm shelter)
+
+Aaron's shelter calls: small and a bit shabby (Earl dug it himself); 12 citizens; digging the sigil stops the rising and the family work out the sigils cause the zombies; nothing indicates the children died (maybe they escaped); the diary in a paper close-up, and Earl's note too. The calls I made building it:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 213 | **Earl: a zombie at the hatch, or a body?** I asked "Earl alone at the hatch?" and DESIGN's beat list says a body face down; Session 13's call (Aaron) was a zombie with the combination on him. | A zombie (variant `earl`) among the horde; put down, his keys lie where he fell (a glint; hold X). Ellen knows him by his cap. | `StormShelter.placeEarl()`, `earlFell()`; `data/stormShelter.json` `earl` |
+| 214 | **How fast the sigil raises more by day.** | One every 6 s while fewer than 12 are up and Tom's within 60 m of it, until it's dug up (no cap on the total). | `config.stormShelter.horde` |
+| 215 | **The room below:** a platform under the hatch (no loading, no separate interior). | Tom walks its floor; the dead can't hurt him down there (they mill about above). The world isn't muffled yet (an audio-pass note). | `StormShelter.platform()`, `Player.keepInRoom()` |
+| 216 | **Reading pauses the game** (the paper close-up). | The world and the clock wait while a paper's open, like the point-of-no-return pop-up. | `Game.update()` (`paper`) |
+| 217 | **The diary's dates.** | June 14 1987, April 2 1989, Oct 9 2002, Sept 30 2003, then a blank page (DESIGN's proposed years). Entry 4 now says "Dug that hole myself years ago" (Aaron: he built it). | `src/data/papers.json` |
+| 218 | **The tape:** Earl and the two kids only (his note was left for Marcy, so she wasn't with them). The kids run into the trees one way, Earl the other, and she goes after him (so they may have got away). | As described; Junie spots it. | `cutscenes.json` `clip.pruittTape` |
+| 219 | **The shelter's and the tape's draft lines** (`shelter.*`, `tape.*`). | All `draft` in `dialogue.json`. | `src/data/dialogue.json` |
+| 220 | **The diary can't be read again** once picked up (it's carried home and handed in like any lore). | Read once in the shelter. A "read it again" from the ledger could come later. | `StormShelter.search()`; `story/Lore.js` |
+| 221 | **The horde isn't saved:** on a reload it's back (12 and Earl, if he wasn't put down) while the sigil's in the ground; once it's dug, none. | As described. | `StormShelter.loadState()` |
+
 ## Session 15b (Level & Encounter Designer + Narrative: the first day's play-test; overnight, the gas station and the quad bike)
 
 Aaron's play-test notes were taken one at a time; his calls are in STATUS (Session 15b list). **Session 16:** Aaron reviewed the overnight work: everything not marked resolved below is accepted as built. The gas station's beats and the quad bike were built overnight on his go-ahead: every call I made is in **`MORNING.md`** (items 1-22), for his review. The ones still open:
