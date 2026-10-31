@@ -232,6 +232,32 @@ describe("Day 1's lines match the game (Session 15b)", () => {
   });
 });
 
+describe('Night 1, the first defence (Session 15b)', () => {
+  const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+  it('comes in 3 waves of 3', () => {
+    const w = config.firstDay.night1.waves;
+    expect(w.count * w.size).toBe(9);
+    expect(w.count).toBe(3);
+  });
+  it("has the family's lines for it, drafts for Aaron, with the side they come from", () => {
+    for (const id of ['day1.night.tower', 'day1.night.shotgun', 'day1.night.wave2', 'day1.night.wave3', 'day1.night.clear']) {
+      expect(by[id].cued && by[id].draft).toBe(true);
+    }
+    expect(by['day1.night.tower'].text).toMatch(/tower/i);
+    expect(by['day1.night.shotgun'].text).toMatch(/shotgun/i);
+    for (const id of ['day1.16', 'day1.night.wave2', 'day1.night.wave3']) expect(by[id].text).toContain('{where}');
+  });
+  it('sends Tom to the gas station after camera six and at dawn, not to dig', () => {
+    expect(by['day1.20'].text).toMatch(/gas station/i);
+    expect(by['day1.20'].text).not.toMatch(/dig/i);
+    expect(by['day1.21'].text).toMatch(/gas station/i);
+  });
+  it('fades the day to dusk with a cutscene that moves the clock', () => {
+    const nf = cutsceneData.cutscenes.find((c) => c.id === 'day1.nightfall');
+    expect(nf.tracks.some((t) => t.do === 'emit' && t.event === 'firstDay:nightfall')).toBe(true);
+  });
+});
+
 describe("Day 1's locked gate (Session 15b)", () => {
   it("has Ellen's call back to the tower, cued and repeatable", () => {
     const line = dialogueData.lines.find((l) => l.id === 'day1.gate');

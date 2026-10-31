@@ -1236,12 +1236,17 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 | 13 | Battery fitted; marker appears | Junie | Are they going to come here? |
 | 14 | After line 13 | Ellen | They'll come. But the fence is live again, and we'll be ready for them. *(Session 15b, Aaron: they're coming, so she can't say they won't)* |
 | 15 | Dusk 1 forecast | Ellen | This is how we stay alive. Left side is what we've got: fence, doors, charge. Right side is what's coming. Keep the left side bigger. |
-| 16 | Night 1, first zombies at the fence | Wyatt (radio) | Movement on the east fence. Only a few. The wire's holding. |
+| 16 | Night 1, the first wave near the fence | Wyatt (radio) | Movement on the {where} fence. Only a few. The wire's holding. *(Session 15b: {where} is the side they come from)* |
+| 16a | After line 16 *(Session 15b, draft)* | Ellen (radio) | Get up the tower with the rifle, Tom. You'll see them coming from up there. |
+| 16b | After 16a *(Session 15b, draft)* | Wyatt (radio) | Or meet them at the fence with the shotgun, Dad. Up close. The wire holds them still for you. |
+| 16c | The second wave *(Session 15b, draft)* | Wyatt (radio) | More of them, Dad. Coming at the {where} fence. |
+| 16d | The third wave *(Session 15b, draft)* | Ellen (radio) | Three more, from the {where}. That looks like the last of them. |
+| 16e | All nine down, before the clip *(Session 15b, draft)* | Wyatt (radio) | That's all of them. The fence held, Dad. |
 | 17 | Trail-cam clip starts | Ellen (radio) | Tom, camera six. Look at this. |
 | 18 | During the clip | Ellen (radio) | She's burying something. The transmissions talked about marks like that, wherever the dead started rising. |
 | 19 | Clip ends | Junie (radio) | The ground's still glowing where she was. Like it's warm. |
-| 20 | Sigil marked on the map | Wyatt (radio) | It's on your map. You could dig it up now, or wait for light. Your call, Dad. |
-| 21 | Dawn 1, sigil not dug up | Ellen | We made it through. Whatever she buried is still out there. If we dig it up, maybe they stop coming. |
+| 20 | Sigil marked on the map | Wyatt (radio) | It's on your map, out on Pruitt land. Dad, the Pruitts run the gas station. Somebody needs to check on them at first light. *(Session 15b, Aaron: the next beat is the gas station, not digging; my draft)* |
+| 21 | Dawn 1, sigil not dug up | Ellen | We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right. *(Session 15b; my draft)* |
 | 22 | Dawn 1, sigil dug up | Ellen | You got it. The night went quiet after you dug it up. That has to mean something. |
 | 23 | Dawn 1, either way | Junie | She was singing. On the camera. Did you hear it? |
 
@@ -1286,16 +1291,17 @@ The first 20 minutes teach through the radio and the world, not pop-ups. Only co
 
 Ellen explains the first forecast.
 
-### Night 1 (safe at the station; the first sigil)
+### Night 1 (the first defence; the first sigil)
 
-- **Safe at the station:** only a few stray zombies test the fence. The night's one sigil is far enough off that it raises nothing that reaches home before dawn.
+- **The first defence** (Aaron, Session 15b; replaces "only a few strays"): once the fence is patched, the battery's in and Junie's had her word (13-14), the day fades to dusk. At night 9 zombies come at the compound in waves of 3, each from a new side (up the campsite path, then the south, then the east), the next once the last is down. The family suggest the two ways to fight: the tower with the rifle, or the shotgun at the fence. It shows the charged fence doing its job and gives the guns some practice. No health floor: Night 1 is real.
+- The night's one sigil is far enough off that it raises nothing that reaches home before dawn.
 - **The first sigil is scripted** (Session 11): the real witch comes out on Night 1 on a fixed route and plants at the storm shelter, the one exception to "night 1 is safe, planting from night 2" (`config.witch.firstNight`). The owner's family die there that night (see Storm shelter). From Night 2 her normal rules take over (inside the cluster until the cordon is crossed).
 - The family patch through the trail-cam clip of the witch planting her first sigil at the storm shelter; it's marked on the map. *(proposed)* One of the trail cameras is fixed near the shelter, so the clip is always possible.
-- The player chooses: dig it up in the dark (optional and scary) or hold the station until dawn.
+- **The clip comes once the 9 are down** (Session 15b). Line 20 then sends Tom to the gas station at first light, to check on the Pruitts (it's their land the sigil's on), not to dig. Digging it up in the dark is still possible (optional and scary), but nobody asks for it.
 
 ### Dawn 1
 
-Autosave. The family suggest going after the sigil at the storm shelter. On Day 2 the path to the gas station opens (the guaranteed second outing). After it, Ellen's call to adventure sends Tom to the military checkpoint, which he finds overrun; fighting through it opens the frontier (see Map: Fixed opening cluster).
+Autosave. Ellen sends Tom to the gas station to check on the Pruitts (Session 15b: not to the sigil). On Day 2 the path to the gas station opens (the guaranteed second outing). After it, Ellen's call to adventure sends Tom to the military checkpoint, which he finds overrun; fighting through it opens the frontier (see Map: Fixed opening cluster).
 
 ### Repeat runs
 
@@ -1307,8 +1313,8 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 - **The menu:** the title over a looping grey CCTV feed from the station gate; New Run, Continue, Skip intro (once the opening's been seen on the device), Modifiers and Settings greyed out until M12 and Session 28; no Quit (a browser tab).
 - **The opening:** the cold open, then Tom wakes in the comms room facing Ellen (from black), lines 1-2.
 - **The tower:** the first climb on Day 1; the light far south is a small red light blinking at the edge of sight; the smoke over the campsite; lines 3-4.
-- **Day 1 can't fail** (a 20% health floor) and **its clock holds at 17:00** until the battery is fitted and the torn fence patched, so dusk never comes early. Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
-- **Night 1:** three strays march on the fence (line 16); the witch's first sigil goes in at the storm shelter about a minute and a half in; camera six's clip (17-19); the sigil marked on the map (20) and the spur open. Its dead stay at the shelter. The real witch stays home: the clip shows her.
+- **Day 1 can't fail** (a 20% health floor, the day only) and **its clock holds at 17:00** until nightfall: Session 15b, once the battery's fitted, the torn fence patched and Junie's had her word (or 60 s), the day fades to dusk (`day1.nightfall`). Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
+- **Night 1** (Session 15b): 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map, line 20 pointing Tom to the gas station, and the spur open. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
 - **Dawn 1:** lines 21 / 22 and 23; the gas station trail opens.
 - **Skip intro:** a fresh map at Dawn 1, the tutorial done, the campsite looted, the camcorder handed in, the Night 1 sigil planted.
 

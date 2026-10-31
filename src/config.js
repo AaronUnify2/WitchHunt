@@ -2502,13 +2502,24 @@ export const config = {
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
+    // Session 15b (Aaron): once the fence is patched and the battery's in,
+    // and Junie's had her word (13-14), the day fades to dusk. afterTalk:
+    // seconds after her talk; timeout: seconds after the work's done if Tom
+    // never goes in to her.
+    nightfall: { afterTalk: 2.5, timeout: 60 },
     night1: {
-      strayDelay: 40, // seconds into night 1: a few strays set off for the fence
-      strays: 3,
-      strayDistance: 70, // metres out along the campsite path
-      fenceCallDistance: 14, // Wyatt's call when one is this close to the fence
-      plantDelay: 95, // seconds into night 1: the witch plants at the storm shelter
+      // Session 15b (Aaron): Night 1 is the first defence. 9 dead in waves
+      // of 3, each from a new side: the campsite path (west), then south
+      // past the gate, then the other side (east). Each comes `gap` seconds
+      // after the last one's down; a wave not down in `timeout` seconds
+      // counts as down. They rise `distance` metres out (`sideAngle`
+      // degrees off due south for the side waves) and march on the fence.
+      waves: { count: 3, size: 3, firstDelay: 12, gap: 10, distance: 60, pathDistance: 70, sideAngle: 70, timeout: 150 },
+      fenceCallDistance: 14, // line 16 when wave 1 is this close to the fence
+      tacticsDelay: 3, // seconds after line 16: Ellen's tower line, then Wyatt's shotgun line
+      plantAfter: 4, // seconds after the last wave's down: the witch plants at the storm shelter
       plantClearance: 70, // ...unless Tom is this close (she waits)
+      holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
       sigilOffset: [1.5, 1], // metres from the shelter clearing's centre (beside the hatch, M9.3)
       holdRadius: 14, // its dead stay this close to it (they never march on the station)
     },

@@ -24,6 +24,14 @@ Round 3:
 - [ ] **Line 14:** after Junie's "Are they going to come here?", Ellen says "They'll come. But the fence is live again, and we'll be ready for them."
 - [ ] **The tape on the monitors:** hand in the camcorder at the ledger and watch it: it's the campsite at night, the same as when it first played.
 
+Round 4 (Night 1, the first defence):
+- [ ] **Line 10** ends "...to get the fence running again, to keep everyone safe."
+- [ ] **Nightfall:** patch the fence and fit the battery, then go in to Junie. When she and Ellen finish (13-14), the picture fades to black and comes back up at dusk. If you don't go in, it happens about a minute later anyway. Ellen's forecast line follows.
+- [ ] **The waves:** about 12 s into the night, three zombies come up the campsite path (south-west). Wyatt: "Movement on the south-west fence...", then Ellen suggests the tower and the rifle, and Wyatt the shotgun at the fence. Once they're down, three more from the south, then three from the east, each with a line. Try both ways of fighting. Does the fence look like it's doing its job? (It kills a lot of them on its own.)
+- [ ] **You can die at night** (no health floor after Day 1's daytime).
+- [ ] **Camera six once all nine are down:** "That's all of them. The fence held, Dad." Then the clip (17-19), then Wyatt sends you to the gas station at first light (line 20).
+- [ ] **Dawn:** Ellen's line 21 sends you to the gas station too (if you didn't dig the sigil up).
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
@@ -77,8 +85,7 @@ Round 3:
 ## 6. Dusk 1 and Night 1
 
 - [ ] At dusk the forecast shows and Ellen explains it (line 15).
-- [ ] About 40 s into the night, **three strays come up the campsite path to the fence**. Wyatt's line 16 plays when they get close. Does the charged wire hold them?
-- [ ] About a minute and a half into the night, the family patch through **camera six**: the witch plants at the storm shelter (lines 17–19).
+- [ ] Night 1 is the first defence now: see round 4 above.
 - [ ] Then Wyatt's line 20: **the sigil is on your map** (map and minimap).
 - [ ] The shelter spur's pipe gate is open now.
 - [ ] Optional and scary: go to the shelter in the dark. About five dead hang round the sigil and stay there; they never march on the station. Dig it up.

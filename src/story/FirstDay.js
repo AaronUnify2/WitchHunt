@@ -14,12 +14,17 @@
 //    (config.firstDay.healthFloor), and the clock stops at about 17:00 on
 //    Day 1 until a battery is fitted and the torn fence patched, so dusk
 //    never comes before the tutorial's done (it never shows as a rule).
+//  - Nightfall (Session 15b, Aaron): with the fence patched, the battery in
+//    and Junie's word had (13-14), the day fades to dusk.
 //  - Dusk 1: Ellen's forecast line (15, from the forecast).
-//  - Night 1: a few strays test the fence (16); later the witch plants
-//    her first sigil at the storm shelter (the one exception to "night 1
-//    is safe"): camera six's clip (17-19), the sigil goes on the map
-//    (20) and the shelter spur opens (night1). The sigil's dead hold the
-//    shelter (sigil.hold), so nothing reaches home before dawn.
+//  - Night 1, the first defence (Session 15b, Aaron): 9 dead in waves of 3,
+//    each from a new side (16, then the family on the tower and the
+//    shotgun). Once they're down the witch plants her first sigil at the
+//    storm shelter (the one exception to "night 1 is safe"): camera six's
+//    clip (17-19), the sigil goes on the map and line 20 sends Tom to the
+//    gas station at first light; the shelter spur opens (night1). The
+//    sigil's dead hold the shelter (sigil.hold). The night holds short of
+//    dawn until she's planted.
 //  - Dawn 1: lines 21 / 22 and 23 (the dialogue's own dawn triggers), the
 //    autosave (Game), and day2 opens the gas station trail.
 //  - Skip intro: a fresh run that starts at Dawn 1 with all of that done.
@@ -28,9 +33,10 @@
 // so it's saved with them.
 //
 // Events: 'firstDay:opening' (the opening's over), 'firstDay:tower',
-// 'firstDay:sigil' { sigil }.
+// 'firstDay:nightfall' (mid-fade: the clock goes to dusk), 'firstDay:wave'
+// { wave, count }, 'firstDay:sigil' { sigil }.
 
-import { zoneOf } from '../base/stationLayout.js';
+import { zoneOf, compassName } from '../base/stationLayout.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
 export class FirstDay {
@@ -64,11 +70,21 @@ export class FirstDay {
         if (day === 1) this.startNight1();
       }),
       this.bus.on('phase:dawn', () => (this.night = null)),
+      // Session 15b: the nightfall cutscene's mid-fade.
+      this.bus.on('firstDay:nightfall', () => this.fallToDusk()),
+      // Night 1's waves: off the list as they fall (a pool slot can come back as another).
+      this.bus.on('enemy:killed', ({ zombie }) => {
+        const w = this.night?.wave;
+        const i = w ? w.indexOf(zombie) : -1;
+        if (i >= 0) w.splice(i, 1);
+      }),
     ];
   }
 
   reset() {
-    this.night = null; // Night 1's script: { time, strays, strayCall, planted, clip }
+    this.night = null; // Night 1's script (startNight1)
+    this.nightfall = null; // Session 15b: { done (s since the work was done), talked (s since Junie's talk) }
+    this.nightfallDone = false;
     this.idle = 0; // seconds since the last step forward (for the nudges)
     this.nudged = new Set();
     this.notifyFamily = false;
@@ -195,6 +211,7 @@ export class FirstDay {
     this.updateGate(dt);
     if (day1) this.holdTheClock();
     if (day1) this.updateHome(dt);
+    if (day1) this.updateNightfall(dt);
     if (this.night) this.updateNight1(dt);
   }
 
@@ -219,14 +236,45 @@ export class FirstDay {
   // Dusk waits for the tutorial: the clock stops at holdHour on Day 1 until
   // a battery is fitted and the torn fence is patched (Night 1's strays
   // would walk straight through a broken panel).
+  // Session 15b: it holds until nightfall now (the fade to dusk after Junie's talk).
   holdTheClock() {
-    if (this.progress.has('day1Battery') && this.fenceWhole()) return;
+    if (this.nightfallDone) return;
     const c = this.clock;
     const phase = c.currentPhase;
     const next = this.cfg.clock.phases[(c.phaseIndex + 1) % this.cfg.clock.phases.length];
     const span = (next.startHour - phase.startHour + this.cfg.clock.hoursPerDay) % this.cfg.clock.hoursPerDay;
     const at = ((this.fc.holdHour - phase.startHour) / span) * phase.seconds;
     if (c.phaseElapsed > at) c.phaseElapsed = at;
+  }
+
+  // Session 15b (Aaron): the work done (the fence patched, the battery in)
+  // and Junie's had her word (13-14), or Tom's left her waiting: the day
+  // fades to dusk.
+  updateNightfall(dt) {
+    if (this.nightfallDone || this.cutscenes.active) return;
+    if (!(this.progress.has('day1Battery') && this.fenceWhole())) {
+      this.nightfall = null;
+      return;
+    }
+    const nf = (this.nightfall ??= { done: 0, talked: -1 });
+    const f = this.fc.nightfall;
+    nf.done += dt;
+    const heard = this.dialogue.heard.has('day1.14');
+    if (heard && !this.subtitles?.busy) nf.talked = nf.talked < 0 ? 0 : nf.talked + dt;
+    if ((nf.talked >= f.afterTalk) || (!heard && nf.done >= f.timeout && !this.subtitles?.busy)) this.startNightfall();
+  }
+
+  startNightfall() {
+    this.nightfallDone = true;
+    if (!this.cutscenes.play('day1.nightfall', { onDone: () => this.fallToDusk() })) this.fallToDusk();
+  }
+
+  // The clock to dusk (once): the forecast and Ellen's line 15 follow from it.
+  fallToDusk() {
+    this.nightfallDone = true;
+    const c = this.clock;
+    if (c.day !== 1 || c.phase !== 'day') return;
+    c.skipPhase();
   }
 
   // Day 1 at home: line 11 coming in with the battery, Junie's marker, the nudges.
@@ -304,48 +352,108 @@ export class FirstDay {
 
   startNight1() {
     if (this.night || this.progress.has('night1Planted')) return;
-    this.night = { time: 0, strays: [], strayCall: false, strayDone: false, planted: false };
+    this.night = { time: 0, waves: 0, wave: [], waveTime: 0, nextIn: this.fc.night1.waves.firstDelay, firstCall: false, tactics: -1, clearIn: -1, planted: false };
   }
 
   updateNight1(dt) {
     const n = this.night;
     const fc = this.fc.night1;
+    const w = fc.waves;
     n.time += dt;
-    if (!n.strayDone && n.time >= fc.strayDelay) this.sendStrays();
-    if (n.strayDone && !n.strayCall) {
+    // The night holds short of dawn until she's planted.
+    if (!n.planted) {
+      const c = this.clock;
+      const hold = c.currentPhase.seconds - fc.holdBeforeDawn;
+      if (c.phase === 'night' && c.phaseElapsed > hold) c.phaseElapsed = hold;
+    }
+    if (n.waves > 0 && n.wave.length > 0) {
+      n.waveTime += dt;
+      if (n.waveTime > w.timeout) n.wave.length = 0; // lost in the woods: it counts as down
+    }
+    // The next wave, once the last is down.
+    if (n.waves < w.count && n.wave.length === 0) {
+      n.nextIn -= dt;
+      if (n.nextIn <= 0) this.sendWave();
+    } else if (n.waves >= w.count && n.wave.length === 0 && n.clearIn < 0 && !n.planted) {
+      n.clearIn = fc.plantAfter;
+      this.dialogue.play('day1.night.clear');
+    }
+    // Line 16 as the first wave nears the fence, then the family's two ways to fight.
+    if (n.waves === 1 && !n.firstCall) {
       const L = this.station.layout;
-      for (const z of n.strays) {
-        if (z.alive && Math.hypot(z.x - L.centre.x, z.z - L.centre.z) < L.radius + fc.fenceCallDistance) {
-          n.strayCall = true;
-          this.dialogue.say('day1.16');
-          break;
-        }
+      if (n.wave.some((z) => Math.hypot(z.x - L.centre.x, z.z - L.centre.z) < L.radius + fc.fenceCallDistance)) {
+        n.firstCall = true;
+        n.tactics = fc.tacticsDelay;
+        this.dialogue.play('day1.16', { where: n.where });
       }
     }
-    if (!n.planted && n.time >= fc.plantDelay) {
+    if (n.tactics >= 0) {
+      n.tactics -= dt;
+      if (n.tactics < 0) {
+        this.dialogue.play('day1.night.tower');
+        this.dialogue.play('day1.night.shotgun');
+      }
+    }
+    if (n.clearIn >= 0 && !n.planted) {
+      n.clearIn = Math.max(0, n.clearIn - dt);
       // Not while Tom's right there: she waits till he's gone.
       const s = this.shelterSpot();
       const p = this.player.position;
-      if (Math.hypot(p.x - s.x, p.z - s.z) > fc.plantClearance && !this.cutscenes.active) this.plantNight1();
+      if (n.clearIn <= 0 && Math.hypot(p.x - s.x, p.z - s.z) > fc.plantClearance && !this.cutscenes.active) this.plantNight1();
     }
   }
 
-  // A few strays along the path from the campsite, marching on the fence.
-  sendStrays() {
-    const n = this.night;
-    const fc = this.fc.night1;
-    n.strayDone = true;
+  // Where wave i rises: wave 0 out along the campsite path, then due south,
+  // then the far side from the path. { x, z, where } (where: "west" etc.).
+  // turn: degrees to swing a side wave back toward due south (when its
+  // first spot was no good: the cliff runs close on the east).
+  waveStart(i, turn = 0) {
+    const w = this.fc.night1.waves;
+    const L = this.station.layout;
+    const c = L.centre;
+    const path = this.campsitePathPoint(w.pathDistance);
+    const pathAngle = Math.atan2(path.x - c.x, path.z - c.z);
+    let at = path;
+    if (i > 0) {
+      const side = pathAngle < 0 ? 1 : -1; // the other side from the path
+      const a = i === 1 ? 0 : (side * Math.max(0, w.sideAngle - turn) * Math.PI) / 180;
+      at = this.world.ground.clamp({ x: c.x + Math.sin(a) * w.distance, z: c.z + Math.cos(a) * w.distance });
+    }
+    const where = compassName(Math.atan2(at.x - c.x, at.z - c.z));
+    return { x: at.x, z: at.z, where };
+  }
+
+  campsitePathPoint(distance) {
     const home = this.world.home;
     const path = this.world.map.paths.find((p) => p.cluster && (this.world.map.clearings[p.a].key === 'campsite' || this.world.map.clearings[p.b].key === 'campsite') && (p.a === home.id || p.b === home.id));
     const pts = path?.points ?? [];
-    const start = pts.find((q) => Math.hypot(q.x - home.x, q.z - home.z) >= fc.strayDistance) ?? { x: home.x - fc.strayDistance, z: home.z + 20 };
+    return pts.find((q) => Math.hypot(q.x - home.x, q.z - home.z) >= distance) ?? { x: home.x - distance, z: home.z + 20 };
+  }
+
+  // A wave of the dead, risen out in the woods and marching on the fence.
+  sendWave() {
+    const n = this.night;
+    const w = this.fc.night1.waves;
     const enemies = this.combat.enemies;
     const out = [];
-    for (let i = 0; i < fc.strays; i++) {
-      enemies.spawnPlanned({ type: 'single', count: 1 }, start.x, start.z, { ringMin: 0, ringMax: 4, mix: this.world.variantMixAt(start.x, start.z), mode: 'march', rise: true, out });
+    let start = null;
+    // If nowhere near the spot will take them (rock, the cliff), swing toward due south.
+    for (let turn = 0; turn <= w.sideAngle && out.length === 0; turn += 10) {
+      start = this.waveStart(n.waves, turn);
+      for (let i = 0; i < w.size; i++) {
+        enemies.spawnPlanned({ type: 'single', count: 1 }, start.x, start.z, { ringMin: 0, ringMax: 4, mix: this.world.variantMixAt(start.x, start.z), mode: 'march', rise: true, out });
+      }
+      if (n.waves === 0) break; // the path's spot: no swinging
     }
+    n.waves += 1;
+    n.waveTime = 0;
+    n.nextIn = w.gap;
+    n.where = start.where;
     if (out.length) enemies.formMarch(out, { leader: null, radius: this.cfg.zombies.horde.radius });
-    n.strays = out;
+    n.wave = out;
+    this.bus.emit('firstDay:wave', { wave: n.waves, count: out.length });
+    if (n.waves === 2) this.dialogue.play('day1.night.wave2', { where: start.where });
+    if (n.waves === 3) this.dialogue.play('day1.night.wave3', { where: start.where });
   }
 
   // The first sigil's spot: beside the storm shelter's hatch (the clearing's centre).
@@ -433,20 +541,26 @@ export class FirstDay {
       this.progress.setFlag('towerClimbed', false);
       this.onTower();
     });
-    day1.addItem(() => `Night 1: plant the shelter sigil and play camera six (${this.progress.has('night1Planted') ? 'planted' : 'not yet'})`, () => {
-      this.night ??= { time: 0, strays: [], strayCall: true, strayDone: true, planted: false };
-      this.plantNight1();
+    day1.addItem('Nightfall: fade to dusk now', () => {
+      if (this.clock.day === 1 && this.clock.phase === 'day') this.startNightfall();
     });
-    day1.addItem('Night 1: send the strays at the fence now', () => {
-      this.night ??= { time: 0, strays: [], strayCall: false, strayDone: false, planted: true };
-      this.sendStrays();
+    day1.addItem(() => `Night 1: plant the shelter sigil and play camera six (${this.progress.has('night1Planted') ? 'planted' : 'not yet'})`, () => {
+      if (!this.night) this.startNight1();
+      if (this.night) {
+        this.night.waves = this.fc.night1.waves.count;
+        this.plantNight1();
+      }
+    });
+    day1.addItem(() => `Night 1: send the next wave now (${this.night ? `${this.night.waves}/${this.fc.night1.waves.count} sent, ${this.night.wave.length} up` : 'not night 1'})`, () => {
+      if (!this.night) this.startNight1();
+      if (this.night && this.night.waves < this.fc.night1.waves.count) this.sendWave();
     });
     day1.addItem(() => `Day 1 step: ${this.currentStep()} (idle ${Math.round(this.idle)}s)`, () => {});
   }
 
   overlayLine() {
     const n = this.night;
-    return `day1 ${this.currentStep()}${n ? ` night1 t${Math.round(n.time)} ${n.planted ? 'planted' : 'waiting'}` : ''}${this.combat.healthFloor ? ' cant-fail' : ''}`;
+    return `day1 ${this.currentStep()}${n ? ` night1 t${Math.round(n.time)} wave ${n.waves}/${this.fc.night1.waves.count} (${n.wave.length} up) ${n.planted ? 'planted' : 'waiting'}` : ''}${this.combat.healthFloor ? ' cant-fail' : ''}`;
   }
 
   dispose() {

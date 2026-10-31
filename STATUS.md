@@ -80,6 +80,14 @@ Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUE
 8. **Line 5 rewritten** (the cars wait for the tape, so Wyatt can't send Tom to them): "Their car's still there, Dad. Check the tents. Maybe somebody made it."
 9. **Line 14 rewritten** (the dead are coming): Ellen: "They'll come. But the fence is live again, and we'll be ready for them."
 10. **The camcorder's clip on the monitors is shot at the campsite** (it was played round the cabin: no anchor was given when rewatched). Cutscenes take named anchors from other systems now (`Cutscenes.namedAnchors`); the campsite registers `campsite` (its frame), so the clip plays right from the monitors, the debug menu and Skip intro's handed-in tape alike.
+11. **Line 10 adds "to keep everyone safe".**
+12. **Night 1 is the first defence** (Aaron; his calls: after Junie's talk, a new side each wave, no health floor at night, my drafts for 20-21):
+   - **Nightfall:** once the fence is patched and the battery's in, Junie's 13-14 end (or 60 s pass without them) and the day fades to dusk (`day1.nightfall`, a first-person fade; `config.firstDay.nightfall`). Day 1's clock holds at 17:00 until then.
+   - **The waves:** 9 zombies in 3 waves of 3, risen 60-70 m out and marching on the fence: south-west up the campsite path, then south past the gate, then east (a side wave swings toward the south if its spot won't take them). The next comes 10 s after the last is down (a wave not down in 150 s counts as down). `FirstDay.sendWave()`, `config.firstDay.night1.waves`. In the headless run the charged fence killed most of each wave on its own in about 30 s.
+   - **The lines** (drafts, `day1.night.*`): line 16 now names the side ("Movement on the {where} fence..."), then Ellen's tower-and-rifle line and Wyatt's shotgun-at-the-fence line, a line per later wave, and "That's all of them. The fence held, Dad."
+   - **Camera six once they're down** (4 s after; not while Tom's within 70 m of the shelter). The night holds 20 s short of dawn until she's planted.
+   - **Line 20** (Wyatt): "It's on your map, out on Pruitt land. Dad, the Pruitts run the gas station. Somebody needs to check on them at first light." **Line 21** (Ellen, dawn): "We made it through. Whatever she buried can wait. Go to the gas station, Tom. See if the Pruitts are all right." Line 22 (dug up anyway) is unchanged.
+   - Debug: **Nightfall: fade to dusk now**, **Night 1: send the next wave now**; the overlay shows the wave.
 
 ### Session 14: M9.1, the cluster on the map (Lead Engineer)
 
