@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -33,6 +33,7 @@ export class Minimap {
     this.timer = 0;
     this.trailCams = null; // set by MapUi.setTrailCams (M8)
     this.vehicles = null; // set by MapUi.setVehicles (M5 part 2)
+    this.objective = null; // Session 16: { text, at } (set by MapUi)
   }
 
   show(visible) {
@@ -141,6 +142,20 @@ export class Minimap {
     }
     ctx.restore();
 
+    // Session 16 (Aaron): the objective, or on the rim the way to it when it's off the map.
+    if (this.objective?.at) {
+      let [ox, oy] = toScreen(this.objective.at.x, this.objective.at.z);
+      const m = size * 0.04;
+      const dx = ox - half;
+      const dy = oy - half;
+      const d = Math.hypot(dx, dy);
+      const rim = half - m * 1.5;
+      if (d > rim) {
+        ox = half + (dx / d) * rim;
+        oy = half + (dy / d) * rim;
+      }
+      drawObjectiveMarker(ctx, ox, oy, m, d > rim ? 1 : 1 + 0.12 * Math.sin(performance.now() * 0.006));
+    }
     drawPlayerArrow(ctx, half, half, 0, size * 0.045);
     ctx.strokeStyle = 'rgba(240, 232, 208, 0.6)';
     ctx.lineWidth = Math.max(1, size * 0.012);

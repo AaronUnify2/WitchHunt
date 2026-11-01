@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -29,7 +29,11 @@ export class MapScreen {
     this.canvas = document.createElement('canvas');
     this.legend = document.createElement('div');
     this.legend.className = 'map-screen-legend';
-    this.el.append(this.canvas, this.legend);
+    // Session 16 (Aaron): what to do next, one sentence, over the map.
+    this.objectiveEl = document.createElement('div');
+    this.objectiveEl.className = 'map-screen-objective';
+    this.el.append(this.objectiveEl, this.canvas, this.legend);
+    this.objective = null; // { text, at } (set by MapUi)
     root.appendChild(this.el);
     this.ctx = this.canvas.getContext('2d');
     this.timer = 0;
@@ -61,9 +65,12 @@ export class MapScreen {
     this.timer = 1 / this.cfg.refreshPerSecond;
     this.resize();
     this.draw(player, enemies, sigils, tierColors, witch);
+    const o = this.objective;
+    this.objectiveEl.textContent = o?.text ? `NEXT: ${o.text}` : '';
+    this.objectiveEl.classList.toggle('hidden', !o?.text);
     const sigilKey = (sigils ? '   ◆ (green) Sigil (debug)' : '') + (witch ? '   ✕ (violet) The witch (debug)' : '');
     const vehicleKey = (this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '') + (this.trailCams ? '   ▪ Trail cam (red: saw something)' : '');
-    this.legend.textContent = `■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
+    this.legend.textContent = `${this.objective?.at ? '★ Where to go   ' : ''}■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
 
   resize() {
@@ -155,6 +162,11 @@ export class MapScreen {
     if (witch && this.witchMarker) {
       const [sx, sy] = toScreen(witch.x, witch.z);
       drawWitchMarker(ctx, sx, sy, this.witchMarker.screenPixels * Math.max(1, Math.min(W, H) / 700), this.witchMarker.color);
+    }
+
+    if (this.objective?.at) {
+      const [qx, qy] = toScreen(this.objective.at.x, this.objective.at.z);
+      drawObjectiveMarker(ctx, qx, qy, marker * 1.6, 1 + 0.12 * Math.sin(performance.now() * 0.006));
     }
 
     const [px, py] = toScreen(player.position.x, player.position.z);

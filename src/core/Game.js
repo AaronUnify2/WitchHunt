@@ -31,6 +31,7 @@ import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { PaperNote } from '../ui/PaperNote.js';
 import { WatchQueue } from '../story/WatchQueue.js';
+import { Objectives } from '../story/Objectives.js';
 import { StormShelter } from '../encounters/StormShelter.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
@@ -128,6 +129,9 @@ export class Game {
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
     this.initFirstDay();
+    // Session 16 (Aaron): what to do next, on the map and the minimap.
+    this.objectives = new Objectives(cfg, this.bus);
+    this.objectives.init(this);
     this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
     this.stats = createStats();
@@ -1100,6 +1104,10 @@ export class Game {
     this.subtitles.update(dt);
     this.toast.update(dt);
     if (!this.cutscenes.active) this.hints.update(dt);
+    if (this.state === 'running') {
+      this.objectives.update(dt);
+      this.mapUi.setObjective(this.objectives.current);
+    }
     this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.overlay.update(dt);
   }

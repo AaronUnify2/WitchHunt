@@ -54,6 +54,12 @@ export class MapUi {
     }
   }
 
+  // Session 16: what to do next ({ text, at } or null), on both maps.
+  setObjective(o) {
+    this.minimap.objective = o;
+    this.screen.objective = o;
+  }
+
   get isOpen() {
     return this.screen.isOpen;
   }

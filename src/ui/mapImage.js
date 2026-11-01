@@ -260,3 +260,27 @@ export function vehicleColor(v, style) {
   const done = v.searched.door && v.searched.boot && v.bonnetUp && !v.hasBattery;
   return done ? style.doneColor : style.color;
 }
+
+// Session 16 (Aaron): the objective's marker: a gold star in a dark ring
+// (the map screen and the minimap; on the minimap's rim when it's off it).
+export function drawObjectiveMarker(ctx, x, y, size, pulse = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  ctx.arc(0, 0, size * 1.25 * pulse, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(10, 8, 4, 0.75)';
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, size * 0.22);
+  ctx.strokeStyle = '#f0c040';
+  ctx.stroke();
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? size * 0.42 : size;
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+    ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#f0c040';
+  ctx.fill();
+  ctx.restore();
+}

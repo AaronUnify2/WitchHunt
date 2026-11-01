@@ -1428,3 +1428,17 @@ body.in-cutscene .subtitles {
   color: #e8e0cc;
   opacity: 0.8;
 }
+
+/* Session 16 (Aaron): the objective over the map screen (ui/MapScreen.js). */
+.map-screen-objective {
+  align-self: center;
+  max-width: 80vw;
+  padding: 0.45rem 1rem;
+  background: rgba(10, 8, 4, 0.82);
+  border-left: 3px solid #f0c040;
+  border-radius: 4px;
+  color: #fff2d0;
+  font: 1rem/1.35 ui-monospace, monospace;
+  text-align: center;
+}
+.map-screen-objective.hidden { display: none; }
