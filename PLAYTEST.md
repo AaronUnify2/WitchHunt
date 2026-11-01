@@ -142,6 +142,16 @@ Round 18 (your playthrough notes, round 1):
 - [ ] The diary has the 1996 page about the big fella.
 - [ ] The quad's a bit quieter.
 
+Round 19 (your notes, round 2):
+- [ ] New run: no first aid kits, no flares. The first aid box in the comms room: hold X, 2 kits.
+- [ ] The minimap's star sits on the rim when the place is beyond it.
+- [ ] Home with the battery: a hint about the torn fence and the ledger. After the gas station: a hint to fetch the shovel.
+- [ ] The station's fence isn't shiny up close. The quad's headlamp doesn't flare white on trees, cars and rocks up close. The torch is a touch dimmer right up against things.
+- [ ] The diary's 2002 page starts with the big fella caught twice in a blur.
+- [ ] Trail cams are blue on the map; the quad's an orange icon.
+- [ ] Ellen's hints that she worked at the facility (opening, the red light, the scanner).
+- [ ] Debug, Player: "Jetpack": hold A in the air.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

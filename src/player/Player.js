@@ -66,6 +66,8 @@ export class Player {
     this.fovMultiplier = 1;
     this.scopeLookScale = 1; // Session 10b: set by Weapons while looking through a scope
     this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower; Session 16: or down in a room ({ room, hx, hz, rx, rz, fx, fz, blocks })
+    this.jetpack = false; // Session 16: the debug jetpack (hold jump in the air)
+    this.jetFuel = 0;
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
     this.riding?.eject?.(); // Session 15b: off the quad bike
     this.riding = null; // Session 15b: the quad bike while Tom's on it (it moves him: world/Quad.js)
@@ -236,11 +238,18 @@ export class Player {
     const floor = this.platform ? this.platform.y : this.ground.heightAt(this.position.x, this.position.z);
     if (!this.onGround) {
       this.verticalSpeed -= c.gravity * dt;
+      // Session 16 (debug): the jetpack: holding jump in the air climbs while there's fuel.
+      const jp = c.jetpack;
+      if (this.jetpack && jp && !this.platform && input.isDown('jump') && this.jetFuel > 0) {
+        this.verticalSpeed = Math.min(jp.maxRise, this.verticalSpeed + jp.thrust * dt);
+        this.jetFuel = Math.max(0, this.jetFuel - dt);
+      }
       this.position.y += this.verticalSpeed * dt;
       if (this.position.y <= floor) {
         this.position.y = floor;
         this.verticalSpeed = 0;
         this.onGround = true;
+        if (this.jetpack) this.jetFuel = c.jetpack.seconds; // refilled on landing
       }
     } else {
       this.position.y = floor; // walk over the hills

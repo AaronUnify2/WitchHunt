@@ -60,6 +60,12 @@ export class MapUi {
     this.screen.objective = o;
   }
 
+  // Session 16: the quad bike on both maps (its x, z, heading, riding).
+  setQuad(quad) {
+    this.minimap.quad = quad;
+    this.screen.quad = quad;
+  }
+
   get isOpen() {
     return this.screen.isOpen;
   }

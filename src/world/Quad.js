@@ -26,7 +26,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { resolveCircles } from './collision.js';
+import { resolveCircles, nearestHit } from './collision.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { frameToWorld, frameYaw } from './clearingFrame.js';
 import { DEBUG } from '../debug/DebugMenu.js';
@@ -164,7 +164,7 @@ export class Quad {
 
   setLamp(on) {
     this.lampOn = Boolean(on);
-    if (this.lamp) this.lamp.intensity = this.lampOn ? this.qc.headlamp.intensity : 0;
+    if (this.lamp) this.lamp.intensity = this.lampOn ? this.qc.headlamp.intensity * (this.glare ?? 1) : 0;
     this.lampMesh?.material.emissive.setHex(this.lampOn ? this.qc.headlamp.lens : 0x000000);
   }
 
@@ -206,6 +206,7 @@ export class Quad {
     let freeing = false;
     if (this.riding) {
       this.updateLamp(input);
+      if (this.lampOn) this.updateLampGlare(dt);
       const off = this.wheelSnare ? `Snare round the front wheel! Hold ${X}: get off` : `Hold ${X}: get off the quad`;
       if (Math.abs(this.speed) < this.qc.dismountSpeed) offer = { key: 'quad-off', prompt: off, seconds: this.qc.dismountSeconds, act: () => this.dismount() };
     } else if (canInteract && !this.player.platform) {
@@ -230,6 +231,44 @@ export class Quad {
       this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
     }
     if (this.riding) this.updateNoise(dt);
+  }
+
+  // Session 16 (Aaron): the headlamp glared off trees, cars and rocks close
+  // up. As the torch does (player/Flashlight.updateGlare), a few rays from
+  // the lamp find the nearest surfaces it's hitting; brighter than a
+  // head-on surface at glare.fullDistance, it's dimmed to that.
+  updateLampGlare(dt) {
+    const h = this.qc.headlamp;
+    const g = h.glare;
+    const ax = -Math.sin(this.heading);
+    const az = -Math.cos(this.heading);
+    const o = (this.glareOrigin ??= { x: 0, y: 0, z: 0 });
+    o.x = this.x + ax * -h.front;
+    o.z = this.z + az * -h.front;
+    o.y = this.y + h.y;
+    const drop = -h.aimDrop / h.aimDistance;
+    const near = this.colliders.query(o.x, o.z, g.fullDistance + 2, this.nearby);
+    const hit = (this.glareHit ??= { distance: 0, facing: 0 });
+    const dir = (this.glareDir ??= { x: 0, y: 0, z: 0 });
+    const rx = Math.cos(this.heading);
+    const rz = -Math.sin(this.heading);
+    let strongest = 0;
+    for (const [side, up] of [[0, 0], [-g.spread, 0], [g.spread, 0], [0, g.spread], [0, -g.spread]]) {
+      dir.x = ax + rx * side;
+      dir.z = az + rz * side;
+      dir.y = drop + up;
+      const len = Math.hypot(dir.x, dir.y, dir.z);
+      dir.x /= len;
+      dir.y /= len;
+      dir.z /= len;
+      nearestHit(o, dir, near, g.fullDistance, hit, this.ground, 0.5);
+      const strength = hit.facing / Math.pow(Math.max(hit.distance, 0.3), h.decay);
+      if (strength > strongest) strongest = strength;
+    }
+    const limit = 1 / Math.pow(g.fullDistance, h.decay);
+    const target = strongest > limit ? Math.max(g.minFactor, limit / strongest) : 1;
+    this.glare = (this.glare ?? 1) + (target - (this.glare ?? 1)) * (1 - Math.exp(-g.response * dt));
+    if (this.lamp) this.lamp.intensity = h.intensity * this.glare;
   }
 
   // Riding: the button toggles the headlamp; night falling puts it on

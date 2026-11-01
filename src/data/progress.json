@@ -3,6 +3,7 @@
   "flags": [
     {"id": "night1", "about": "Night 1's sigil is on the map: camera six caught the witch planting it at the storm shelter (M9.2: story/FirstDay.js sets it as the clip ends, line 20). Session 15b: no longer opens the shelter's spur (shelterCall does, after the gas station). By dawn 1 it's set whatever happened (the trigger).", "standIn": false, "trigger": {"on": "dawn"}},
     {"id": "campsiteVisited", "about": "Tom has walked into the campsite (M9.2: encounters/Campsite.js sets it on arrival).", "standIn": false},
+    {"id": "aidBoxTaken", "about": "The comms room's first aid box searched: 2 first aid kits (Session 16, Station)."},
     {"id": "towerClimbed", "about": "Day 1: Tom has climbed the lookout tower and seen the campsite's smoke (M9.2, FirstDay)."},
     {"id": "shotgunFound", "about": "The shotgun taken from the campsite's torn tent (M9.2, Campsite)."},
     {"id": "campsiteCleared", "about": "The campsite's shotgun wave is cleared (M9.2, Campsite)."},

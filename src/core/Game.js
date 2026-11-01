@@ -378,6 +378,7 @@ export class Game {
   initProgress() {
     this.progress = new StoryProgress(this.cfg, this.bus);
     this.progress.init({ world: this.world, player: this.player, enemies: this.combat.enemies });
+    this.station.progress = this.progress; // Session 16: the comms room's first aid box (taken once, a flag)
     // The witch's cluster rule (Session 11): until Tom crosses the cordon
     // she plants only inside the opening cluster (still preferring its
     // sigil ground); then anywhere.
@@ -434,6 +435,7 @@ export class Game {
     this.quad = new Quad(this.cfg, this.bus);
     this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, notify: (text) => this.toast.show(text) });
     this.combat.promptSources.push(this.quad.hud);
+    this.mapUi.setQuad(this.quad); // Session 16 (Aaron): on the maps, in case Tom loses it
     this.vehicles.busy?.push(this.quad.hud);
     this.explosives.busy?.push?.(this.quad.hud);
     this.station.blockers.push(this.quad.hud);

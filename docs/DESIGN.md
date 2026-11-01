@@ -1228,7 +1228,7 @@ Roughly 155–175 lines in total (the opening cluster added about 25, Session 11
 
 | # | Trigger | Speaker | Line |
 | --- | --- | --- | --- |
-| 1 | Opening, Tom wakes | Ellen | Tom. Wake up. Something's happened at the facility. Every channel's static except the emergency band. |
+| 1 | Opening, Tom wakes | Ellen | Tom. Wake up. Something's happened at the facility. I tried my old lab line, nothing. Every channel's static except the emergency band. (Session 16, Aaron: hints she worked there) |
 | 2 | Opening, end | Ellen | I need eyes on the woods. Get up the tower and tell me what you see. |
 | 3 | Top of the tower | Wyatt (radio) | Dad, there's a car down at the campground. Those campers checked in two days ago. They never checked out. |
 | 4 | After line 3 | Junie (radio) | Their fire's out. I saw the smoke over the trees last night, from my window. It's gone now. |

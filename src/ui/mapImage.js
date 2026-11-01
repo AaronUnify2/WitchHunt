@@ -284,3 +284,18 @@ export function drawObjectiveMarker(ctx, x, y, size, pulse = 1) {
   ctx.fill();
   ctx.restore();
 }
+
+// Session 16 (Aaron): the quad bike, in case Tom gets separated from it:
+// an orange body with four dark wheels, turned the way it's parked.
+export function drawQuadMarker(ctx, x, y, angle, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(-size * 0.55, -size * 0.7, size * 1.1, size * 1.4);
+  ctx.fillStyle = '#e8902a';
+  ctx.fillRect(-size * 0.32, -size * 0.6, size * 0.64, size * 1.2);
+  ctx.fillStyle = '#1a1a1a';
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) ctx.fillRect(sx * size * 0.42 - size * 0.12, sy * size * 0.4 - size * 0.16, size * 0.24, size * 0.32);
+  ctx.restore();
+}

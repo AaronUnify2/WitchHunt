@@ -831,6 +831,9 @@ export const config = {
     sprintMinMove: 0.5, // stick deflection needed to start or keep sprinting
     jumpSpeed: 4.8, // m/s upward
     gravity: 14, // m/s^2
+    // Session 16 (Aaron, a try-out from the debug menu): a jetpack. Hold A
+    // (jump) in the air to climb; `seconds` of fuel, refilled on landing.
+    jetpack: { seconds: 10, thrust: 22, maxRise: 8 },
     pitchLimit: 85, // degrees up/down
     startYaw: 180, // degrees; 180 faces south (the map's start is home, on the northern cliff)
     // Off the pathways the undergrowth slows you (Aaron, M3: a real hassle
@@ -1256,7 +1259,7 @@ export const config = {
   // First aid kits (DESIGN.md "Healing"): kept in the inventory, used with
   // D-pad right (H), no animation.
   inventory: {
-    startFirstAid: 2,
+    startFirstAid: 0, // Session 16 (Aaron): none; the comms room's first aid box has 2 (config.station.aidBox)
     maxFirstAid: 9,
     firstAidHeal: 30,
     // M4: loot that has no other home yet. Pistol ammo waits for the
@@ -1266,7 +1269,7 @@ export const config = {
     startScrap: 8,
     startAmmo: { pistol: 0 },
     startBatteries: 0, // carried batteries (no carry limit and no slowdown: Aaron, M5)
-    startFlares: 3, // M9.1: the flare gun comes with a few (DESIGN.md "Flares")
+    startFlares: 0, // Session 16 (Aaron): none at the start (they're found)
     maxFlares: 3, // carry limit
   },
 
@@ -2172,6 +2175,7 @@ export const config = {
     // on the south side). lean: radians off upright, into the rail.
     // Session 15b (Aaron): the shovel leans on the cabin's front wall beside
     // the door (at: metres east of the door, out from the wall), there until Tom takes it.
+    aidBox: { kits: 2 }, // Session 16 (Aaron): the first aid box on the comms room wall, searched once
     shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright
       handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
@@ -2226,7 +2230,7 @@ export const config = {
       floor: 0x3a2c20,
       metal: 0x262829, // dark: the torch blows out light metal up close (Aaron, M5: turret, gate, fence box glared)
       metalDark: 0x17181a,
-      chainLink: 0x4e5357,
+      chainLink: 0x2c3034, // Session 16 (Aaron): darker, it shone close up under the torch (was 0x4e5357)
       hazard: 0x4a3808, // the fence box's stripe
       concrete: 0x302f2b, // the turret pad
       ammoCan: 0x20271a,
@@ -2445,7 +2449,7 @@ export const config = {
     glare: {
       fullDistance: 8, // metres; a head-on surface this far away sets the brightness cap
       minDistance: 0.3, // metres; closer than this counts as this close
-      minFactor: 0.05, // floor on the dimming, right up against something
+      minFactor: 0.03, // floor on the dimming, right up against something (Session 16: lower, Aaron: still bright close up)
       response: 10, // how quickly the dimming follows (higher = snappier)
       queryMargin: 4, // metres added to the search radius to catch wide canopies
       ringRays: 6, // extra rays round the beam (besides its centre) to find close surfaces
@@ -2730,7 +2734,8 @@ export const config = {
     // right: the torch is D-pad left; first aid's off in the saddle anyway).
     // No shadow (the torch keeps the game's one). At (0, y, front) on the
     // quad, aimed `aimDistance` ahead and `aimDrop` down.
-    headlamp: { autoBelow: 0.35, color: 0xfff4dc, intensity: 900, distance: 80, decay: 1.4, angle: 17, penumbra: 0.5, y: 0.82, front: -1.02, aimDistance: 25, aimDrop: 0.8, lens: 0xfff2c8 },
+    headlamp: { autoBelow: 0.35, color: 0xfff4dc, intensity: 900, distance: 80, decay: 1.4, angle: 17, penumbra: 0.5, y: 0.82, front: -1.02, aimDistance: 25, aimDrop: 0.8, lens: 0xfff2c8,
+      glare: { fullDistance: 9, minFactor: 0.04, response: 10, spread: 0.18 } }, // Session 16 (Aaron): dims up close on trees, cars, rocks (as the torch)
     // Session 16 (Aaron): one of the witch's snares ridden over wraps round
     // the front wheel: it stops dead, Tom gets off (he's free), and taps X
     // by it `presses` times to free the wheel (the effort drains if he stops).
@@ -2997,7 +3002,7 @@ export const config = {
     reportDelay: { min: 25, max: 60 }, // seconds from her passing to the family's call
     leadSeconds: 240, // how long the map marks the camera after a report
     post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
-    map: { color: '#9cdc8c', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 },
+    map: { color: '#8cc4ec', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 }, // Session 16 (Aaron): blue (green read as the witch's)
   },
 
   // The station's ledger (M5): a full-screen book in the comms room.

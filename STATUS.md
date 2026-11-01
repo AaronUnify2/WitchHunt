@@ -86,6 +86,16 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 25. **Earl's diary** has a 1996 entry between the store and the cameras: he's stopped wanting to prove anything; the big fella sits across the creek with him; no danger to anyone.
 26. **The quad's engine is 20% quieter.**
 
+**Aaron's playthrough (round 2):**
+27. **The comms room's first aid box** (by its door) can be searched once: 2 first aid kits (`Station.takeAidBox()`, `config.station.aidBox`, flag `aidBoxTaken`). **Tom starts with no first aid kits and no flares** (`config.inventory`). Skip intro gives the box's 2.
+28. **The minimap's star sits right on the rim** when the objective's off it.
+29. **On-screen hints** as well as the family's lines: the torn fence (hold X at it, or the ledger in the comms room) when Tom's home with the battery; the shovel by the cabin door once the shelter's been called for.
+30. **Less glare up close:** the station's fence is darker and dims the torch (its colliders are `glare`); the torch dims further right up against things (`minFactor` 0.03); **the quad's headlamp dims up close** on trees, cars and rocks, as the torch does (`Quad.updateLampGlare()`, `config.quad.headlamp.glare`).
+31. **Earl's diary, Oct 9 2002:** "Thirteen years of trail cams, and I've caught the big fella maybe twice, both times a blur. Suits us both fine. But this year I'm getting something else."
+32. **The trail cams are blue on the maps** (green read as the witch's). **The quad bike has an orange icon** on both maps where it was left.
+33. **Ellen worked at the facility** (hints, Aaron): line 1 ("I tried my old lab line, nothing"), the red light ("I worked there long enough to know better"), the scanner ("I sat in briefings at the facility where they used those words").
+34. **A debug jetpack** (Player menu): hold A (jump) in the air to climb, 10 s of fuel, refilled on landing (`config.player.jetpack`).
+
 **Tests:** 590 pass (new: `tests/trailWreck.test.js`).
 
 ### Session 15: M9.2, the first day (Level & Encounter Designer + Narrative)

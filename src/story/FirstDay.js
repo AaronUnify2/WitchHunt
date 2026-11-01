@@ -256,6 +256,15 @@ export class FirstDay {
       this.hint?.(pad, key);
     };
     const day1 = this.clock.day === 1 && this.clock.phase === 'day';
+    // Session 16 (Aaron): the torn fence and the shovel on screen too (the family's lines are easy to miss).
+    const calm = !this.cutscenes.active && !this.subtitles?.busy;
+    const step = day1 ? this.currentStep() : null;
+    if ((step === 'fit' || step === 'repair') && zone >= 1 && !this.fenceWhole() && calm) {
+      once('fence', null, 'The torn fence: hold X at it, or repair it from the ledger in the comms room', 'The torn fence: hold E at it, or repair it from the ledger in the comms room');
+    }
+    if (this.progress.has('shelterCall') && !this.combat.weapons.order.includes('shovel') && calm) {
+      once('shovel', null, 'Fetch the shovel from beside the cabin door: it digs up what she buries', 'Fetch the shovel from beside the cabin door: it digs up what she buries');
+    }
     if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.cutscenes.active) {
       // Walking (not running) a while outside the fence on the way.
       pr.walk = this.player.sprinting ? 0 : pr.walk + dt * (this.player.speed > 0.5 ? 1 : 0);
@@ -623,6 +632,9 @@ export class FirstDay {
     if (this.station.rifleOnTower) this.combat.giveWeapon(this.cfg.station.towerRifle.weapon); // Session 15b: it's on the tower otherwise
     this.combat.giveWeapon('shotgun', this.fc.skip.shotgunShells);
     this.combat.inventory.scrap = this.fc.skip.scrap;
+    // Session 16: the comms room's first aid box, already searched.
+    this.combat.inventory.addFirstAid(this.cfg.station.aidBox.kits);
+    this.progress.setFlag('aidBoxTaken');
     this.campsite.completeAll();
     if (this.lore.give('camcorder')) this.lore.handIn('camcorder');
     this.mapUi.fog.reveal(st.layout.tower.x, st.layout.tower.z, st.layout.tower.revealRadius);

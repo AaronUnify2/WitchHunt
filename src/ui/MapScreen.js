@@ -4,7 +4,7 @@
 // every clearing and pathway regardless of the fog. Placeholder look;
 // the final map screen is Session 19.
 
-import { drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { drawQuadMarker, drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class MapScreen {
   constructor(mapScreenConfig) {
@@ -69,8 +69,8 @@ export class MapScreen {
     this.objectiveEl.textContent = o?.text ? `NEXT: ${o.text}` : '';
     this.objectiveEl.classList.toggle('hidden', !o?.text);
     const sigilKey = (sigils ? '   ◆ (green) Sigil (debug)' : '') + (witch ? '   ✕ (violet) The witch (debug)' : '');
-    const vehicleKey = (this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '') + (this.trailCams ? '   ▪ Trail cam (red: saw something)' : '');
-    this.legend.textContent = `${this.objective?.at ? '★ Where to go   ' : ''}■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
+    const vehicleKey = (this.vehicles ? '   ▮ Vehicle (grey: emptied)' : '') + (this.trailCams ? '   ▪ Trail cam, blue (red: saw something)' : '');
+    this.legend.textContent = `${this.objective?.at ? '★ Where to go   ' : ''}${this.quad ? '▣ (orange) Quad bike   ' : ''}■ Home   ▲ Witch's hut   ◆ Encounter   ● Sigil ground   ○ Clearing${vehicleKey}${sigilKey}   ${footer}   D-pad up / M / B: close`;
   }
 
   resize() {
@@ -164,6 +164,11 @@ export class MapScreen {
       drawWitchMarker(ctx, sx, sy, this.witchMarker.screenPixels * Math.max(1, Math.min(W, H) / 700), this.witchMarker.color);
     }
 
+    // Session 16: the quad bike, where it was left (not while Tom's on it).
+    if (this.quad && !this.quad.riding) {
+      const [bx, by] = toScreen(this.quad.x, this.quad.z);
+      drawQuadMarker(ctx, bx, by, -this.quad.heading, marker * 2.2);
+    }
     if (this.objective?.at) {
       const [qx, qy] = toScreen(this.objective.at.x, this.objective.at.z);
       drawObjectiveMarker(ctx, qx, qy, marker * 1.6, 1 + 0.12 * Math.sin(performance.now() * 0.006));

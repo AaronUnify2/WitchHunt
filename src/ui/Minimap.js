@@ -4,7 +4,7 @@
 // zombies in revealed areas show as red dots. Placeholder look; the
 // final HUD is Session 19.
 
-import { drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
+import { drawQuadMarker, drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
 export class Minimap {
   constructor(minimapConfig) {
@@ -129,6 +129,11 @@ export class Minimap {
       if (tierColors) ctx.fillStyle = tierColors[e.tier ?? 'active'];
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
     }
+    // Session 16: the quad bike, where it was left.
+    if (this.quad && !this.quad.riding) {
+      const [bx, by] = toScreen(this.quad.x, this.quad.z);
+      if (Math.hypot(bx - half, by - half) < half) drawQuadMarker(ctx, bx, by, player.yaw - this.quad.heading, size * 0.045);
+    }
     if (sigils && this.sigilMarker) {
       const m = this.sigilMarker;
       for (const s of sigils) {
@@ -149,7 +154,7 @@ export class Minimap {
       const dx = ox - half;
       const dy = oy - half;
       const d = Math.hypot(dx, dy);
-      const rim = half - m * 1.5;
+      const rim = half - m * 0.8; // Session 16 (Aaron): right on the rim, so it reads as "beyond what you can see"
       if (d > rim) {
         ox = half + (dx / d) * rim;
         oy = half + (dy / d) * rim;

@@ -151,6 +151,7 @@ export class Station {
       for (const p of pieces) {
         for (const q of split(p, L.panelLength)) {
           const col = segmentCollider(q.ax, q.az, q.bx, q.bz, t, base, top, blocksShots);
+          col.glare = true; // Session 16 (Aaron): the torch dims up close on the fence too (shots still go through it)
           grid.insert(col);
           list.push(col);
         }
@@ -268,6 +269,25 @@ export class Station {
   get shovelAtDoor() {
     const s = this.sc.shovelByDoor;
     return Boolean(s) && !this.combat.weapons.order.includes(s.weapon);
+  }
+
+  // Session 16 (Aaron): the first aid box on the comms room's wall, by its
+  // door (render/stationInterior.js draws it): searched once, 2 first aid kits.
+  aidBoxSpot() {
+    const c = this.layout.cabin;
+    return { x: c.commsDoor.x - c.commsDoor.width / 2 - 0.45, z: c.commsDoor.z - 0.6 }; // in front of it, in the comms room
+  }
+
+  takeAidBox() {
+    const n = this.sc.aidBox.kits;
+    const inv = this.combat.inventory;
+    const room = this.cfg.inventory.maxFirstAid - inv.firstAid;
+    if (room <= 0) return 'Your first aid kits are full';
+    const got = inv.addFirstAid(Math.min(n, room));
+    this.progress?.setFlag('aidBoxTaken');
+    this.combat.hud.pickup(`+${got} first aid kit${got === 1 ? '' : 's'} (D-pad right to use)`);
+    this.combat.sfx.play('pickup');
+    return null;
   }
 
   // Where it leans: { x, z } (outside the front wall, east of the door).
@@ -518,6 +538,7 @@ export class Station {
     const c = L.cabin;
     // Session 15b (Aaron): it can't be taken until the witch has been seen burying (Night 1's clip).
     if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
+    if (this.progress && !this.progress.has('aidBoxTaken')) offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: `Hold ${X}: search the first aid box`, busy: 'Searching…', seconds: h.ledger, act: () => this.takeAidBox() });
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 

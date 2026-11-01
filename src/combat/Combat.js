@@ -370,6 +370,14 @@ export class Combat {
       this.enemies.spawnAround(this.player.position),
     );
     zombies.addItem('Kill all zombies', () => this.enemies.clear());
+    // Session 16 (Aaron): try a jetpack: hold A (jump) in the air to climb, 10 s of fuel, refilled on landing.
+    player.addItem(
+      () => `Jetpack: ${this.player.jetpack ? `on (fuel ${this.player.jetFuel.toFixed(1)} s)` : 'off'} (hold A in the air to climb)`,
+      () => {
+        this.player.jetpack = !this.player.jetpack;
+        this.player.jetFuel = this.player.jetpack ? this.cfg.player.jetpack.seconds : 0;
+      },
+    );
     menu.category(DEBUG.run).addItem('Try again here (after a death: same map, same night)', () => {
       if (!this.alive) this.respawn();
     });
