@@ -1603,7 +1603,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun. **Done** (and the storm shelter's fixed camera, #153; the gates' and checkpoint's triggers are stand-ins for Sessions 15-17's beats) | M9.1 |
 | 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron. **Built** | M9.2 |
 | 15b | Level & Encounter Designer (+ Narrative) | Aaron's play-test of the first day and its tweaks | M9.2 |
-| 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines | M9.3 |
+| 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines. **Built** (and two playthroughs of the opening: objectives, D-pad down to watch, papers in close-up) | M9.3 |
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate | M9.4 |
 | 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs | QA |
 | 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks | Part of M13 |
