@@ -47,6 +47,35 @@ export class Campsite {
     return clearingFrame(map, 'campsite', 'home');
   }
 
+  // Session 16 (Aaron): the wrecked car on the trail out from home, every
+  // run: candidate spots about halfway along the path, on its verge, nosed
+  // into the ditch (the first that fits is used: vehiclePlacement).
+  static trailWreckSpots(map) {
+    const ci = map.clearings.findIndex((c) => c.cluster && c.key === 'campsite');
+    const hi = map.clearings.findIndex((c) => c.cluster && c.key === 'home');
+    const path = map.paths.find((p) => (p.a === ci && p.b === hi) || (p.a === hi && p.b === ci));
+    const pts = path?.points;
+    if (!pts || pts.length < 2) return [];
+    const lens = [0];
+    for (let i = 1; i < pts.length; i++) lens.push(lens[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
+    const total = lens[lens.length - 1];
+    const out = [];
+    for (const [t, side] of [[0.5, 1], [0.5, -1], [0.44, 1], [0.56, -1], [0.38, 1], [0.62, -1], [0.32, -1], [0.68, 1]]) {
+      const d = total * t;
+      let i = 1;
+      while (i < pts.length - 1 && lens[i] < d) i++;
+      const a = pts[i - 1];
+      const b = pts[i];
+      const seg = lens[i] - lens[i - 1] || 1;
+      const k = (d - lens[i - 1]) / seg;
+      const tx = (b.x - a.x) / seg;
+      const tz = (b.z - a.z) / seg;
+      const off = 2.9;
+      out.push({ type: 'sedan', x: a.x + (b.x - a.x) * k + tz * side * off, z: a.z + (b.z - a.z) * k - tx * side * off, yaw: Math.atan2(tx, tz) + side * 0.5 });
+    }
+    return out;
+  }
+
   // Where the campers' car is parked: { x, z, yaw } in the world.
   static carSpot(map, data = campsiteData) {
     const f = Campsite.frame(map);

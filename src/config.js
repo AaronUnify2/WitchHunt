@@ -2172,7 +2172,8 @@ export const config = {
     // on the south side). lean: radians off upright, into the rail.
     // Session 15b (Aaron): the shovel leans on the cabin's front wall beside
     // the door (at: metres east of the door, out from the wall), there until Tom takes it.
-    shovelByDoor: { weapon: 'shovel', at: [1.15, 0.3], lean: 0.3, handle: 0x5a3e24, blade: 0x3a3c3e },
+    shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright
+      handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
     // Session 15b (Aaron): on Day 1 the gate stays shut and locked until
     // Tom's been up the tower (story/FirstDay.js). Ellen calls him back if

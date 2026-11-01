@@ -44,7 +44,7 @@ export class CampsiteProps {
     this.cooler(d.props.cooler, c);
     this.lantern(d.props.lantern, c);
     for (const b of d.props.blood) this.blood(b, c);
-    for (const s of d.props.sticks) this.stickFigure(s, c);
+    for (const s of d.props.sticks ?? []) this.stickFigure(s, c); // Session 16 (Aaron): none now
     for (const m of d.props.marks) this.markedTrunk(m, c);
     for (const [color, geos] of this.parts) {
       const geo = this.hold(mergeGeometries(geos));

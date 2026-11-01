@@ -142,6 +142,8 @@ export class FirstDay {
   }
 
   openingDone() {
+    // Session 16 (Aaron): Ellen's instruction plays as the cutscene ends, skipped or not.
+    this.dialogue.play('day1.02', {}, false);
     this.meta.set('introSeen', true);
     this.idle = 0;
     this.bus.emit('firstDay:opening');
@@ -175,7 +177,11 @@ export class FirstDay {
         smoke,
         tower: { x: t.x, z: t.z, yaw: yawTo(light) },
       },
-      onDone: () => this.mapPrompt('campsite'), // Session 15b (Aaron): the campsite's on the map now: the map's button
+      onDone: (skipped) => {
+        // Session 16 (Aaron): skipped, the campsite's lines still play (where to go next).
+        if (skipped && !this.dialogue.heard?.has('day1.03')) this.dialogue.play('day1.03');
+        this.mapPrompt('campsite'); // Session 15b (Aaron): the campsite's on the map now: the map's button
+      },
     });
   }
 
@@ -256,7 +262,9 @@ export class FirstDay {
       if (pr.walk > this.fc.prompts.sprintAfter) once('sprint', 'day1.prompt.sprint', 'Click LS: sprint', 'Hold Shift: sprint');
       // Session 15b (Aaron): the wrecked car on the trail out: the first sign something's wrong.
       if (!pr.shown.has('wreck') && this.vehicles?.list) {
-        const near = this.vehicles.list.some((v) => v !== this.campsite.car && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance);
+        // Session 16: the bloody wreck that's always there (or any car, if it didn't fit).
+        const wreck = this.vehicles.list.some((v) => v.bloody);
+        const near = this.vehicles.list.some((v) => (wreck ? v.bloody : v !== this.campsite.car) && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance);
         if (near) {
           pr.shown.add('wreck');
           this.dialogue.play('day1.wreck.wyatt');

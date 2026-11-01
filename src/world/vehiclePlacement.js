@@ -162,6 +162,16 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     });
   }
 
+  // ---- Session 16 (Aaron): the wrecked car on the trail to the campsite, every run ----
+  // fixed.trail: candidate spots [{ type, x, z, yaw }], the first that fits
+  // is used; it's marked bloody (the renderer gives it blood and a smashed window).
+  for (const s of fixed.trail ?? []) {
+    if (add(s, 'path', rules.path, rng.fork('trail-wreck'))) {
+      placed[placed.length - 1].bloody = true;
+      break;
+    }
+  }
+
   // ---- clearings first (the campsite's sure battery among them) ----
   for (const c of map.clearings) {
     const rule = ruleFor(c, rules);

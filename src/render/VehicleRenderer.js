@@ -270,7 +270,7 @@ export class VehicleRenderer {
         // Its extras (a toolbox, a rack), each by its chance.
         for (const name of model.extras) model.meshes[name].setMatrixAt(look.model, this.rng.chance(t.extras?.[name] ?? 0) ? base : this.hidden);
         // Its wear.
-        const w = this.rollWear(t, model.windows);
+        const w = this.rollWear(t, model.windows, v);
         for (const g of Object.values(model.geometries)) {
           g.attributes.aWear.setXYZW(look.model, ...w.wear);
           g.attributes.aWear2.setXYZW(look.model, ...w.wear2);
@@ -349,15 +349,16 @@ export class VehicleRenderer {
 
   // One vehicle's wear, from the looks' rng: { wear: [seed, rust, dirt,
   // blood], wear2: [x, y, z, 0 none | 1 cracked | 2 smashed] }.
-  rollWear(type, windows) {
+  // v.bloody (Session 16, Aaron: the wreck on the trail to the campsite): always blood and a smashed window.
+  rollWear(type, windows, v = {}) {
     const c = this.cfg.looks.wear;
     const rng = this.rng;
     const rust = Math.pow(rng.range(0, 1), c.rustSkew) * c.rust * (type.rust ?? 1);
     const dirt = rng.range(c.dirt[0], c.dirt[1]);
-    const blood = rng.chance(c.bloodChance) ? 1 : 0;
+    const blood = rng.chance(c.bloodChance) || v.bloody ? 1 : 0;
     const seed = rng.range(0, 97);
     let wear2 = [0, 0, 0, 0];
-    if (windows.length && rng.chance(c.crackChance)) wear2 = [...rng.pick(windows), rng.chance(c.smashedShare) ? 2 : 1];
+    if (windows.length && (v.bloody || rng.chance(c.crackChance))) wear2 = [...rng.pick(windows), v.bloody || rng.chance(c.smashedShare) ? 2 : 1];
     return { wear: [seed, rust, dirt, blood], wear2 };
   }
 

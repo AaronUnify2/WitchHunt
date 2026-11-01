@@ -277,7 +277,7 @@ export class Game {
       mapUi: this.mapUi,
       notify: (text) => this.toast.show(text),
       avoid: [{ x: L.centre.x, z: L.centre.z, r: L.radius + this.cfg.vehicles.placement.avoidRadius }],
-      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean), gasStation: GasStation.carSpots(this.world.map) }, // M9.2: the campers' car, by the path in; Session 15b: the forecourt's
+      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean), gasStation: GasStation.carSpots(this.world.map), trail: Campsite.trailWreckSpots(this.world.map) }, // M9.2: the campers' car, by the path in; Session 15b: the forecourt's; Session 16: the bloody wreck on the trail out
       busy: [this.director.hud, this.station.hud],
     });
     this.combat.promptSources.push(this.vehicles.hud);

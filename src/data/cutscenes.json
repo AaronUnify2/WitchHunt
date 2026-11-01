@@ -573,7 +573,7 @@
       "id": "day1.tower",
       "name": "Day 1: the view from the lookout tower (first person)",
       "style": "firstPerson",
-      "_note": "M9.2: the first climb on Day 1 (FirstDay). Anchors from FirstDay: southLight (a small red light blinking far to the south, toward Ground Zero, at the edge of sight: he can't make it out, and it's never explained), campsite / smoke (the thin wisp over the campsite's trees, drawn along the line to it at the edge of the fog). Tom steps clear of the platform's corner posts first. The view lingers on the fog and the far light, then turns to the smoke: Wyatt spots the campers' car and Junie the smoke (lines 3-4).",
+      "_note": "M9.2: the first climb on Day 1 (FirstDay). Anchors from FirstDay: southLight (a small red light blinking far to the south, toward Ground Zero, at the edge of sight: Session 16 (Aaron), Wyatt asks and Ellen says it's the military, a training exercise, so they've been told; it isn't), campsite / smoke (the thin wisp over the campsite's trees, drawn along the line to it at the edge of the fog). Tom steps clear of the platform's corner posts first. The view lingers on the fog and the far light, then turns to the smoke: Wyatt spots the campers' car and Junie the smoke (lines 3-4).",
       "actors": [
         {
           "id": "light",
@@ -614,6 +614,11 @@
           "actor": "light"
         },
         {
+          "at": 1.4,
+          "do": "line",
+          "line": "tower.light.wyatt"
+        },
+        {
           "at": 1.45,
           "do": "show",
           "actor": "light"
@@ -637,6 +642,11 @@
           "at": 4.25,
           "do": "show",
           "actor": "light"
+        },
+        {
+          "at": 4.6,
+          "do": "line",
+          "line": "tower.light.ellen"
         },
         {
           "at": 5.1,
@@ -669,18 +679,38 @@
           "actor": "light"
         },
         {
-          "at": 5.6,
+          "at": 9.3,
+          "do": "hide",
+          "actor": "light"
+        },
+        {
+          "at": 9.85,
+          "do": "show",
+          "actor": "light"
+        },
+        {
+          "at": 10.4,
           "do": "lookAt",
           "target": "campsite",
           "rate": 0.8
         },
         {
-          "at": 6.8,
+          "at": 10.7,
+          "do": "hide",
+          "actor": "light"
+        },
+        {
+          "at": 11.25,
+          "do": "show",
+          "actor": "light"
+        },
+        {
+          "at": 11.6,
           "do": "line",
           "line": "day1.03"
         }
       ],
-      "duration": 9.5
+      "duration": 14.5
     },
     {
       "id": "clip.camcorder",
