@@ -545,7 +545,11 @@ export class GasStation {
       case 'phone':
         this.combat?.sfx.play('denied');
         this.notify?.('Dead. Not even a dial tone.');
-        if (first) this.dialogue?.play('gas.phone');
+        if (first) {
+          this.dialogue?.play('gas.phone');
+          // Session 16 (Aaron): then Earl's radio in the office (unless it's already been tried).
+          if (!this.done.has('scanner')) this.dialogue?.play('gas.phone.radio');
+        }
         break;
       case 'note':
         this.readNote(first);

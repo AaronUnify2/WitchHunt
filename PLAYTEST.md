@@ -128,6 +128,20 @@ Round 17 (Session 16: Earl's note in close-up, and the storm shelter):
 - [ ] **At home:** hand the tapes in at the ledger (Monitors): camera four plays straight away, with the family's lines. Then it's on the monitors.
 - [ ] Anything to move or resize? (Positions are in `src/data/stormShelter.json`.)
 
+Round 18 (your playthrough notes, round 1):
+- [ ] Skip the opening with A: Ellen still says to go outside and climb the tower.
+- [ ] Up the tower: Wyatt asks about the red light; Ellen says it's the military, a training exercise.
+- [ ] The wrecked car on the trail is bloody with a smashed window, every new run.
+- [ ] The dome tent searches from any side. No stick figures at the campground.
+- [ ] The camcorder: "D-pad down: play the camcorder" waits on screen until you press it.
+- [ ] The map (D-pad up): "NEXT: ..." at the top and a gold star where to go; the minimap's star sits on its rim pointing the way. Check it at each step (the fence box after the battery, Junie, the gas station at dawn...).
+- [ ] Night 1: after the waves, "D-pad down: watch Ellen's trail cam feed".
+- [ ] The shovel by the door doesn't go into the wall.
+- [ ] Gas station: after the witch, Ellen says to try the phone; then Earl's radio in the office. The note says "That witch".
+- [ ] Storm shelter: the sweep comes well up the path (on the quad: time to get going and plough in). The hatch is away from the sigil. "Dig the hatch clear" from further out. Below, only the diary and the tapes. The photos don't glare.
+- [ ] The diary has the 1996 page about the big fella.
+- [ ] The quad's a bit quieter.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

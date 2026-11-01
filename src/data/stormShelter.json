@@ -1,37 +1,173 @@
 {
-  "_note": "The Pruitts' storm shelter (Session 16; DESIGN.md 'Storm shelter'; encounters/StormShelter.js, render/StormShelterProps.js). Aaron: Earl dug it himself, so it's small and a bit shabby. Positions are metres in the shelter's frame (world/clearingFrame.js: walking in from home, x to your right, z ahead, the clearing's centre at 0, 0). yaw: degrees from ahead toward the right. hatch: the steel hatch in its timber collar on a low mound (w across, d along; the hinge is on its far side). sigil: Night 1's, beside the hatch (FirstDay plants it there). earl: where Earl stands (the zombie variant 'earl'; Aaron, Session 13). horde: where the twelve stand, round the hatch. room: the room below, under the hatch: its centre (x, z), half sizes (hx across, hz along), depth (its floor this far under the hatch's ground), height; ladder: where it comes down (room-local x, z). Everything in it is room-local (x across, z along from the room's centre). searches: hold-X spots, up top or below ('below': true). photos: the corkboard of trail-cam photos (look only).",
-  "hatch": { "x": 0, "z": 1.5, "w": 1.1, "d": 1.1, "mound": 1.9 },
-  "sigil": { "x": 2.0, "z": 2.9 },
-  "earl": { "x": -0.4, "z": 0.2, "yaw": 180 },
+  "_note": "The Pruitts' storm shelter (Session 16; DESIGN.md 'Storm shelter'; encounters/StormShelter.js, render/StormShelterProps.js). Aaron: Earl dug it himself, so it's small and a bit shabby. Positions are metres in the shelter's frame (world/clearingFrame.js: walking in from home, x to your right, z ahead, the clearing's centre at 0, 0). yaw: degrees from ahead toward the right. hatch: the steel hatch in its timber collar on a low mound (w across, d along; the hinge is on its far side). sigil: Night 1's, beside the hatch (FirstDay plants it there). earl: where Earl stands (the zombie variant 'earl'; Aaron, Session 13). horde: where the twelve stand, round the hatch. room: the room below, under the hatch: its centre (x, z), half sizes (hx across, hz along), depth (its floor this far under the hatch's ground), height; ladder: where it comes down (room-local x, z). Everything in it is room-local (x across, z along from the room's centre). searches: hold-X spots, up top or below ('below': true). photos: the corkboard of trail-cam photos (look only). Session 16 (Aaron's play-test): the hatch moved off the sigil (about 5.5 m apart); the room holds only the story (the diary and the tapes): no loot, no photos to look at.",
+  "hatch": {
+    "x": -2.2,
+    "z": 0.8,
+    "w": 1.1,
+    "d": 1.1,
+    "mound": 1.9
+  },
+  "sigil": {
+    "x": 2.6,
+    "z": 3.2
+  },
+  "earl": {
+    "x": -2.6,
+    "z": -0.5,
+    "yaw": 180
+  },
   "horde": [
-    [-3.2, 0.6], [3.4, 1.0], [-1.6, 4.2], [2.0, 4.6], [-4.6, 3.0], [4.4, 3.6],
-    [0.4, -2.6], [-2.8, -1.8], [3.0, -1.4], [-0.6, 6.4], [5.6, 0.0], [-5.4, -0.4]
+    [
+      -3.2,
+      0.6
+    ],
+    [
+      3.4,
+      1.0
+    ],
+    [
+      -1.6,
+      4.2
+    ],
+    [
+      2.0,
+      4.6
+    ],
+    [
+      -4.6,
+      3.0
+    ],
+    [
+      4.4,
+      3.6
+    ],
+    [
+      0.4,
+      -2.6
+    ],
+    [
+      -2.8,
+      -1.8
+    ],
+    [
+      3.0,
+      -1.4
+    ],
+    [
+      -0.6,
+      6.4
+    ],
+    [
+      5.6,
+      0.0
+    ],
+    [
+      -5.4,
+      -0.4
+    ]
   ],
   "lingerRadius": 6,
-  "vent": { "x": 1.3, "z": 4.6 },
+  "vent": {
+    "x": -1.0,
+    "z": 3.4
+  },
   "litter": [
-    { "kind": "lantern", "x": 0.9, "z": 0.1, "yaw": 70 },
-    { "kind": "duffel", "x": -1.5, "z": 0.9, "yaw": 25 },
-    { "kind": "jerrycan", "x": 1.4, "z": -0.6, "yaw": -30 }
+    {
+      "kind": "lantern",
+      "x": -1.2,
+      "z": -0.6,
+      "yaw": 70
+    },
+    {
+      "kind": "duffel",
+      "x": -3.8,
+      "z": 0.3,
+      "yaw": 25
+    },
+    {
+      "kind": "jerrycan",
+      "x": -0.6,
+      "z": -1.2,
+      "yaw": -30
+    }
   ],
   "room": {
-    "x": 0, "z": 2.75, "hx": 1.55, "hz": 1.3, "depth": 3.1, "height": 2.05,
-    "ladder": { "x": 0, "z": -1.05 },
-    "bunk": { "x": -1.15, "z": 0.25, "length": 1.9, "width": 0.78 },
-    "shelves": { "x": 1.33, "z": 0.1, "length": 2.1, "depth": 0.42, "levels": [0.35, 0.85, 1.35, 1.75] },
-    "table": { "x": 0.15, "z": 0.85, "w": 0.9, "d": 0.6, "h": 0.72 },
-    "stool": { "x": 0.2, "z": 0.25 },
-    "tv": { "x": 1.3, "z": 0.9, "y": 1.37 },
-    "corkboard": { "x": 0.0, "z": 1.27, "y": 1.45, "w": 1.0, "h": 0.6 },
-    "toy": { "x": -1.0, "z": 0.9 },
-    "cot": { "x": -0.75, "z": -0.9 }
+    "x": -2.2,
+    "z": 2.05,
+    "hx": 1.55,
+    "hz": 1.3,
+    "depth": 3.1,
+    "height": 2.05,
+    "ladder": {
+      "x": 0,
+      "z": -1.05
+    },
+    "bunk": {
+      "x": -1.15,
+      "z": 0.25,
+      "length": 1.9,
+      "width": 0.78
+    },
+    "shelves": {
+      "x": 1.33,
+      "z": 0.1,
+      "length": 2.1,
+      "depth": 0.42,
+      "levels": [
+        0.35,
+        0.85,
+        1.35,
+        1.75
+      ]
+    },
+    "table": {
+      "x": 0.15,
+      "z": 0.85,
+      "w": 0.9,
+      "d": 0.6,
+      "h": 0.72
+    },
+    "stool": {
+      "x": 0.2,
+      "z": 0.25
+    },
+    "tv": {
+      "x": 1.3,
+      "z": 0.9,
+      "y": 1.37
+    },
+    "corkboard": {
+      "x": 0.0,
+      "z": 1.27,
+      "y": 1.45,
+      "w": 1.0,
+      "h": 0.6
+    },
+    "toy": {
+      "x": -1.0,
+      "z": 0.9
+    },
+    "cot": {
+      "x": -0.75,
+      "z": -0.9
+    }
   },
   "searches": [
-    { "id": "diary", "below": true, "x": 0.15, "z": 0.75, "label": "pick up the diary", "seconds": 0.6 },
-    { "id": "tapes", "below": true, "x": 1.0, "z": 0.9, "label": "take the tapes by the VCR", "seconds": 0.8 },
-    { "id": "shelfTop", "below": true, "x": 1.0, "z": -0.4, "label": "search the shelves", "seconds": 1.2, "gives": [{ "item": "firstAid", "amount": 1 }, { "item": "battery", "amount": 1 }] },
-    { "id": "shelfLow", "below": true, "x": 1.0, "z": 0.3, "label": "search the low shelves", "seconds": 1.2, "loot": [{ "item": "shotgunAmmo", "chance": 0.85, "min": 4, "max": 8 }, { "item": "pistolAmmo", "chance": 0.6, "min": 6, "max": 12 }, { "item": "scrap", "chance": 0.7, "min": 3, "max": 6 }] },
-    { "id": "radio", "below": true, "x": 0.95, "z": -0.85, "label": "try the radio", "seconds": 0.6 },
-    { "id": "photos", "below": true, "x": 0.0, "z": 0.95, "label": "look at the photos", "seconds": 0.4 }
+    {
+      "id": "diary",
+      "below": true,
+      "x": 0.15,
+      "z": 0.75,
+      "label": "pick up the diary",
+      "seconds": 0.6
+    },
+    {
+      "id": "tapes",
+      "below": true,
+      "x": 1.0,
+      "z": 0.9,
+      "label": "take the tapes by the VCR",
+      "seconds": 0.8
+    }
   ]
 }

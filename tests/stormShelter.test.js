@@ -29,12 +29,12 @@ describe('the storm shelter', () => {
     expect(Math.hypot(shelter.earl.x - shelter.hatch.x, shelter.earl.z - shelter.hatch.z)).toBeLessThan(2.5);
   });
 
-  it("puts the sigil beside the hatch, but far enough off that the hatch's prompt isn't swallowed by the dig", () => {
+  it("puts the sigil near the hatch (Session 16, Aaron: not too close), clear of the hatch's prompt and the dig's", () => {
     const d = Math.hypot(shelter.sigil.x - shelter.hatch.x, shelter.sigil.z - shelter.hatch.z);
-    expect(d).toBeLessThan(4);
-    expect(d).toBeGreaterThan(config.digging.range);
+    expect(d).toBeLessThan(7);
+    expect(d).toBeGreaterThan(config.digging.range + config.stormShelter.interactRange);
     const w = StormShelter.sigilSpot(map);
-    expect(Math.hypot(w.x - f.x, w.z - f.z)).toBeLessThan(5);
+    expect(Math.hypot(w.x - f.x, w.z - f.z)).toBeLessThan(6);
   });
 
   it('digs the room under the ground everywhere over it, with the ladder under the hatch', () => {
@@ -52,7 +52,7 @@ describe('the storm shelter', () => {
     expect(Math.abs(lz - shelter.hatch.z)).toBeLessThan(shelter.hatch.d / 2);
   });
 
-  it('has its things below inside the room, the diary and tapes among them, a sure first aid kit and battery', () => {
+  it('has only the story below (Aaron): the diary and the tapes, inside the room, no loot', () => {
     const r = shelter.room;
     for (const s of shelter.searches.filter((x) => x.below)) {
       expect(Math.abs(s.x)).toBeLessThan(r.hx);
@@ -60,9 +60,8 @@ describe('the storm shelter', () => {
     }
     const ids = shelter.searches.map((s) => s.id);
     for (const id of ['diary', 'tapes']) expect(ids).toContain(id);
-    const gives = shelter.searches.flatMap((s) => s.gives ?? []).map((g) => g.item);
-    expect(gives).toContain('firstAid');
-    expect(gives).toContain('battery');
+    expect(ids.sort()).toEqual(['diary', 'tapes']);
+    expect(shelter.searches.some((s) => s.gives || s.loot)).toBe(false);
     const lore = new Set(loreData.items.map((i) => i.id));
     expect(lore.has('pruittDiary') && lore.has('pruittTapes')).toBe(true);
   });

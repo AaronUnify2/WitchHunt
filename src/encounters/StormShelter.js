@@ -19,10 +19,9 @@
 //  5. The hatch: buried under leaf litter and earth (dig it clear with the
 //     shovel), then haul it open, then climb down.
 //  6. The room below (Tom's platform while he's down there; the dead can't
-//     reach him): the diary (read in close-up, then carried home), the
-//     tapes (carried home: the cutscene at the comms room), the shelves
-//     (a sure first aid kit and battery, rolled ammo and scrap), the radio
-//     (static), the trail-cam photos. The first time down, Junie asks
+//     reach him): the diary (read in close-up, then carried home) and the
+//     tapes (carried home: the cutscene at the comms room). Session 16
+//     (Aaron): only the story down there, no loot, nothing else to use. The first time down, Junie asks
 //     where his kids are; Ellen: maybe they got away (Aaron: nothing says
 //     the children died).
 //  7. Climb back up the ladder.
@@ -191,7 +190,7 @@ export class StormShelter {
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
     if (!this.hordeSent && d < this.frame.radius + this.sc.hordeDistance) this.sendHorde();
-    if (!this.arrived && d <= this.frame.radius - this.sc.arriveInset && !this.below) this.arrive();
+    if (!this.arrived && d <= this.frame.radius + this.sc.sweepDistance && !this.below && this.onPathIn(l)) this.arrive();
     this.updateRising(dt);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
@@ -288,6 +287,12 @@ export class StormShelter {
   }
 
   // ---- the arrival --------------------------------------------------------------------------------------
+
+  // Coming in from home's side (the spur's in front of the clearing), or
+  // already at the clearing's edge from anywhere.
+  onPathIn(l) {
+    return l.z < 0 || Math.hypot(l.x, l.z) <= this.frame.radius;
+  }
 
   arrive() {
     this.arrived = true;
@@ -441,8 +446,7 @@ export class StormShelter {
   }
 
   search(pt) {
-    const repeatable = pt.id === 'photos' || pt.id === 'radio';
-    if (!repeatable) this.searched.add(pt.id);
+    this.searched.add(pt.id);
     switch (pt.id) {
       case 'diary':
         this.props?.setTaken('diary', true);
@@ -453,17 +457,6 @@ export class StormShelter {
         this.props?.setTaken('tapes', true);
         this.lore?.give('pruittTapes');
         this.dialogue?.play('shelter.tapes');
-        break;
-      case 'radio':
-        this.combat?.sfx?.play('radioStatic');
-        this.notify?.('A battery radio. Static on every channel.');
-        break;
-      case 'photos':
-        this.notify?.('Trail-cam photos. Empty woods, night after night. In one, a pale smear low to the ground, too fast to make out.');
-        if (!this.searched.has('photosSeen')) {
-          this.searched.add('photosSeen');
-          this.dialogue?.play('shelter.photos');
-        }
         break;
       default:
         this.loot(pt);

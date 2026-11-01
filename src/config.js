@@ -2640,9 +2640,12 @@ export const config = {
     // of it (one every `riseEvery` seconds while fewer than `count` are
     // up and Tom's within `riseRange` of it), by day too; dug up, that stops.
     horde: { count: 12, riseEvery: 6, riseRange: 60, memory: 20 },
-    hordeDistance: 40,
-    arriveInset: 2, // metres inside the edge that count as arriving (the sweep)
-    interactRange: 1.6, // metres to the hatch, the keys or a search point (up top)
+    hordeDistance: 70,
+    // Session 16 (Aaron, on the quad): the sweep comes this far up the path
+    // from the clearing's edge, so there's time to see the horde, get back
+    // on the bike and plough into them.
+    sweepDistance: 32,
+    interactRange: 2.8, // metres to the hatch (Session 16, Aaron: from further out, it's on a mound) or the keys
     roomRange: 0.9, // metres to a search point below (the room's small)
     keysRange: 1.8,
     hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },

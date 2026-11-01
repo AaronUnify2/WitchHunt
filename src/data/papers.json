@@ -6,7 +6,9 @@
       "kind": "note",
       "head": "PRUITT'S · GAS · GIFTS · BAIT — HOME OF BIGFOOT",
       "pages": [
-        { "text": "Marcy,\n\nI've taken the kids to the shelter. If you find this, come straight there.\n\nDo *NOT* go to the military checkpoint, they don't know what they're dealing with.\n\nThat woman's been burying things in the woods for weeks.\n\nRifle's in the safe, but she's empty, never found the right rounds. Combination's on my keys.\n\nE." }
+        {
+          "text": "Marcy,\n\nI've taken the kids to the shelter. If you find this, come straight there.\n\nDo *NOT* go to the military checkpoint, they don't know what they're dealing with.\n\nThat witch has been burying things in the woods for weeks.\n\nRifle's in the safe, but she's empty, never found the right rounds. Combination's on my keys.\n\nE."
+        }
       ]
     },
     {
@@ -14,11 +16,29 @@
       "kind": "diary",
       "head": "E. PRUITT",
       "pages": [
-        { "date": "June 14, 1987", "text": "Saw it again today, up the north ridge. Taller than any man, and it just watched me, calm as you like, then walked off into the trees without a sound. Sheriff laughed me out of the office. Marcy believes me though. That's enough." },
-        { "date": "April 2, 1989", "text": "Opened the store. Everyone thinks it's a gag, the signs, the casts, the photos. Let them. Keeps the lights on, and it keeps me out here, where I can watch.\n\nPut trail cams up along the old logging trails this spring. If he's out there, I'll get him on film, and then they'll all stop laughing." },
-        { "date": "Oct 9, 2002", "text": "Cameras for a year and not one clear frame of him. But I'm getting something else. Something fast.\n\nCamera four, three nights running now, a shape going through the trees quicker than anything should move. Low to the ground, wrong somehow.\n\nIt isn't him. He's gentle. This thing isn't." },
-        { "date": "Sept 30, 2003", "text": "The lights started a few weeks back, out past the government land. Then the animals went quiet.\n\nCamera four's got that fast shape every night now, closer to the road each time.\n\nChecked the shelter today, restocked it, oiled the hatch. Dug that hole myself years ago, half as a joke. Hope to God I never need it." },
-        { "text": "" }
+        {
+          "date": "June 14, 1987",
+          "text": "Saw it again today, up the north ridge. Taller than any man, and it just watched me, calm as you like, then walked off into the trees without a sound. Sheriff laughed me out of the office. Marcy believes me though. That's enough."
+        },
+        {
+          "date": "April 2, 1989",
+          "text": "Opened the store. Everyone thinks it's a gag, the signs, the casts, the photos. Let them. Keeps the lights on, and it keeps me out here, where I can watch.\n\nPut trail cams up along the old logging trails this spring. If he's out there, I'll get him on film, and then they'll all stop laughing."
+        },
+        {
+          "date": "Aug 21, 1996",
+          "text": "Seven years of watching, and I've stopped wanting to prove anything to anybody.\n\nHe came down to the creek at dusk again, near enough I could hear him breathing. Just sat there across the water with me a while, then went on his way.\n\nWhatever he is, he's no danger to anyone. I've gotten fond of the big fella. I think he's been out here alone a long time."
+        },
+        {
+          "date": "Oct 9, 2002",
+          "text": "Cameras for a year and not one clear frame of him. But I'm getting something else. Something fast.\n\nCamera four, three nights running now, a shape going through the trees quicker than anything should move. Low to the ground, wrong somehow.\n\nIt isn't him. He's gentle. This thing isn't."
+        },
+        {
+          "date": "Sept 30, 2003",
+          "text": "The lights started a few weeks back, out past the government land. Then the animals went quiet.\n\nCamera four's got that fast shape every night now, closer to the road each time.\n\nChecked the shelter today, restocked it, oiled the hatch. Dug that hole myself years ago, half as a joke. Hope to God I never need it."
+        },
+        {
+          "text": ""
+        }
       ]
     }
   ]

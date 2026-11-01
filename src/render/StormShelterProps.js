@@ -428,7 +428,8 @@ export class StormShelterProps {
     const c = this.data.room.corkboard;
     const w = frameToWorld(this.frame, this.rx(c.x), this.rz(c.z) - 0.01);
     const tex = toTexture(corkTexture());
-    const mat = this.hold(new THREE.MeshLambertMaterial({ map: this.hold(tex) }));
+    // Session 16 (Aaron): the photos glared under the torch: dimmed right down.
+    const mat = this.hold(new THREE.MeshLambertMaterial({ map: this.hold(tex), color: 0x5a5a5a }));
     const mesh = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(c.w, c.h)), mat);
     mesh.position.set(w.x, this.floorY + c.y, w.z);
     // Facing back into the room (toward -z in the frame).
@@ -463,7 +464,7 @@ function corkTexture() {
     ctx.save();
     ctx.translate(x + 24, y + 20);
     ctx.rotate((((i * 37) % 11) - 5) * 0.025);
-    ctx.fillStyle = '#c8c2b0';
+    ctx.fillStyle = '#6e6a5e'; // the prints' borders: dull (they glared)
     ctx.fillRect(-26, -22, 52, 44);
     const g = ctx.createLinearGradient(0, -18, 0, 18);
     g.addColorStop(0, '#0e1a10');

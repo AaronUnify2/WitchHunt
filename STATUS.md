@@ -74,6 +74,20 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 **Tests:** 586 pass (new: `tests/papers.test.js`, `tests/stormShelter.test.js`; `progress.test.js` follows the rifle chain).
 
+**Aaron's playthrough from the start (round 1):**
+17. **The opening's instruction can't be missed:** Ellen's "Go outside and climb the tower, Tom" (line 2) plays as the waking cutscene ends, skipped or not. A skipped tower view still plays the campsite lines (3-4).
+18. **The red light, addressed** (in `day1.tower`): Wyatt asks; Ellen: "That'll be the military... A training exercise, they told everyone." (drafts `tower.light.*`; it isn't one).
+19. **The wreck on the trail to the campsite is there every run, bloody, a window smashed** (`Campsite.trailWreckSpots()`, `fixed.trail` in `vehiclePlacement`, `v.bloody` in `VehicleRenderer.rollWear()`); the family's wreck lines fire on it.
+20. **The dome tent** searches from its centre (3 m, any side). **The campsite's stick figures are gone.** **The shovel by the door** stands further out and more upright (its grip went into the wall).
+21. **Tapes and feeds wait for D-pad down** (`story/WatchQueue.js`; the unused `radio` binding is now `watch`; V on a keyboard): a prompt waits under the hint slot ("D-pad down: play the camcorder", "D-pad down: watch Ellen's trail cam feed") and the clip plays when pressed. The campers' camcorder and Night 1's camera six use it; Ellen's feed line says to watch it when he can. Saved: an unwatched camcorder tape is offered again.
+22. **Objectives** (`story/Objectives.js`): the first story step not done, worked out from the state (Day 1: tower, campground, tents, wave, the car's battery, the fence box, the torn fence, Junie; Night 1; the gas station: inside, the phone, Earl's radio, his note; the shovel; the shelter: the sigil, Earl's keys, the hatch, the room; the tapes home; the safe). The map screen shows "NEXT: ..." over the map and a gold star; the minimap shows the star, on its rim in the right direction when it's off the edge.
+23. **The gas station after the witch:** Ellen no longer says "come home": "try the phone on their counter. If it works, we can call for help." The phone dead, Ellen: "Earl keeps a radio in his office, Tom. A scanner." (unless it's been tried; `gas.phone.radio`). Earl's note says "That witch" (not "that woman").
+24. **The storm shelter:** the sweep starts 32 m up the path (time to see them and plough in on the quad; the horde is put there 70 m out); the hatch moved off the sigil (about 5.5 m apart; the room moved with it); the hatch's prompt reaches 2.8 m; the room is only the story now (the diary and the tapes: no loot, no radio, no photos to use); the corkboard's photos are dimmed (they glared).
+25. **Earl's diary** has a 1996 entry between the store and the cameras: he's stopped wanting to prove anything; the big fella sits across the creek with him; no danger to anyone.
+26. **The quad's engine is 20% quieter.**
+
+**Tests:** 590 pass (new: `tests/trailWreck.test.js`).
+
 ### Session 15: M9.2, the first day (Level & Encounter Designer + Narrative)
 
 Agreed with Aaron at the start: my recommendations on every open point (OPEN_QUESTIONS, Session 15), pushed to `main` to play-test (`PLAYTEST.md`, the running list).

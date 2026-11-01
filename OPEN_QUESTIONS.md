@@ -16,6 +16,14 @@ Aaron's shelter calls: small and a bit shabby (Earl dug it himself); 12 citizens
 | 220 | **The diary can't be read again** once picked up (it's carried home and handed in like any lore). | Read once in the shelter. A "read it again" from the ledger could come later. | `StormShelter.search()`; `story/Lore.js` |
 | 221 | **The horde isn't saved:** on a reload it's back (12 and Earl, if he wasn't put down) while the sigil's in the ground; once it's dug, none. | As described. | `StormShelter.loadState()` |
 
+After Aaron's first playthrough (round 1), the calls I made:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 222 | **The map's star over unexplored ground:** it shows through the fog of war. | Always shown. | `MapScreen.draw()` |
+| 223 | **The objectives' wording** (one sentence each). | My drafts. | `story/Objectives.js` |
+| 224 | **Watching is never forced:** the camcorder and camera six wait for D-pad down however long (Night 1 holds short of dawn until camera six is watched). | No fallback timer. | `story/WatchQueue.js`; `FirstDay.updateNight1()` |
+
 ## Session 15b (Level & Encounter Designer + Narrative: the first day's play-test; overnight, the gas station and the quad bike)
 
 Aaron's play-test notes were taken one at a time; his calls are in STATUS (Session 15b list). **Session 16:** Aaron reviewed the overnight work: everything not marked resolved below is accepted as built. The gas station's beats and the quad bike were built overnight on his go-ahead: every call I made is in **`MORNING.md`** (items 1-22), for his review. The ones still open:

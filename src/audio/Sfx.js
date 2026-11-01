@@ -159,7 +159,7 @@ export class Sfx {
     osc.frequency.setTargetAtTime(f, t, 0.12);
     osc2.frequency.setTargetAtTime(f * 0.502, t, 0.12);
     filter.frequency.setTargetAtTime(380 + speed * 700 + throttle * 200, t, 0.15);
-    gain.gain.setTargetAtTime(0.09 + throttle * 0.05 + speed * 0.04, t, 0.1);
+    gain.gain.setTargetAtTime((0.09 + throttle * 0.05 + speed * 0.04) * 0.8, t, 0.1); // Session 16 (Aaron): 20% quieter
   }
 
   // M8: a dialogue blip (a short square pip at the speaker's pitch).
