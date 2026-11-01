@@ -482,7 +482,7 @@ export class FirstDay {
         this.dialogue.play('day1.night.tower');
       }
     }
-    if (n.clearIn >= 0 && !n.planted && n.feedIn < 0) {
+    if (n.clearIn >= 0 && !n.planted && n.feedIn < 0 && !n.offered) {
       n.clearIn = Math.max(0, n.clearIn - dt);
       // Not while Tom's right there: she waits till he's gone.
       const s = this.shelterSpot();
@@ -495,8 +495,17 @@ export class FirstDay {
     }
     if (n.feedIn >= 0 && !n.planted) {
       n.feedIn -= dt;
-      if (n.feedIn < 0 && !this.cutscenes.active) this.plantNight1();
-      else if (n.feedIn < 0) n.feedIn = 0;
+      if (n.feedIn < 0) {
+        // Session 16 (Aaron): the feed waits for D-pad down (on Tom's own time).
+        n.feedIn = -1;
+        n.offered = true;
+        const play = () => {
+          if (this.night && !this.night.planted) this.plantNight1();
+        };
+        if (!this.watch?.offer({ id: 'camera6', pad: "D-pad down: watch Ellen's trail cam feed", key: "V: watch Ellen's trail cam feed", play })) {
+          if (!this.watch) play();
+        }
+      }
     }
     // After the clip and the talk: the night fades to dawn.
     if (n.talked && !n.dawnStarted && !this.cutscenes.active) {
@@ -569,6 +578,7 @@ export class FirstDay {
   plantNight1() {
     const n = this.night;
     n.planted = true;
+    this.watch?.cancel('camera6');
     const sigil = this.plantShelterSigil();
     this.progress.setFlag('night1Planted');
     if (!sigil) return;

@@ -160,6 +160,13 @@ body {
   color: #fff2d0;
 }
 
+/* Session 16 (Aaron): a tape or a feed waiting for D-pad down (story/WatchQueue.js): under the hint slot. */
+.toast.hint.watch {
+  top: calc(var(--safe) + 5.6rem);
+  border-left-color: #70c0e8;
+  color: #d8f0ff;
+}
+
 /* Debug overlay */
 .debug-overlay {
   position: absolute;

@@ -3129,7 +3129,7 @@ export const config = {
       map: ['DpadUp'],
       flashlight: ['DpadLeft'],
       headlamp: ['DpadRight'], // Session 16: the quad's headlamp (riding; first aid's off in the saddle)
-      radio: ['DpadDown'],
+      watch: ['DpadDown'], // Session 16 (Aaron): play a tape or a feed that's waiting (it was 'radio', unused)
       inventory: ['View'],
       pause: ['Menu'],
       menuUp: ['DpadUp'],
@@ -3165,7 +3165,7 @@ export const config = {
       map: ['KeyM'],
       flashlight: ['KeyL'],
       headlamp: ['KeyH'], // Session 16: the quad's headlamp (riding; first aid's off in the saddle)
-      radio: ['KeyV'],
+      watch: ['KeyV'], // Session 16: play a tape or a feed that's waiting
       inventory: ['Tab'],
       pause: ['Escape'],
       menuUp: ['ArrowUp'],

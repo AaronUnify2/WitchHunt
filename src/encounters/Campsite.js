@@ -7,7 +7,7 @@
 //  2. The search: hold-X search points (data/campsite.json): the cooler
 //     by the entrance, the tents, a backpack. Each teaches a pickup.
 //  3. The camcorder (in the cooler, near the entrance): Ellen's line 6,
-//     then the clip (clip.camcorder), then her line 7.
+//     then the clip (clip.camcorder; Session 16: it waits for D-pad down), then her line 7.
 //  4. The shotgun (in the torn tent, deep in the camp): the instant it's
 //     taken the wave bursts from the treeline (line 8): 7 level-1 citizens
 //     from both flanks, a few seconds apart, coming straight for Tom.
@@ -134,7 +134,8 @@ export class Campsite {
     this.wave = []; // the wave's zombies
     this.queue = []; // { at (seconds), x, z } still to burst out
     this.waveTime = 0;
-    this.pendingClip = -1; // seconds until the camcorder's clip plays
+    this.pendingClip = -1; // (unused since Session 16: the clip waits for D-pad down)
+    this.tapeWatched = false; // Session 16: the camcorder's clip has been started
     this.props?.setSmoke(true);
   }
 
@@ -276,19 +277,29 @@ export class Campsite {
     this.camcorderFound = true;
     this.lore.give('camcorder');
     this.bus.emit('campsite:camcorder');
-    // Ellen: play it. Then the clip, then her line after it.
+    // Ellen: play it. Session 16 (Aaron): the clip waits for D-pad down (on
+    // Tom's own time, not over the family's talk); then her line after it.
     this.dialogue.play('day1.06');
-    this.pendingClip = this.cc.clipDelay;
+    this.offerTape();
+  }
+
+  offerTape() {
+    if (this.tapeWatched) return;
+    if (!this.watch?.offer({ id: 'camcorder', pad: 'D-pad down: play the camcorder', key: 'V: play the camcorder', play: () => this.playClip() })) {
+      if (!this.watch) this.playClip();
+    }
   }
 
   // Session 15b: has the camcorder's tape played (or been skipped)? The cars
   // wait for it on Day 1.
   get tapeSeen() {
-    return this.camcorderFound && this.pendingClip < 0 && this.cutscenes.current?.id !== 'clip.camcorder';
+    return this.camcorderFound && this.tapeWatched && this.cutscenes.current?.id !== 'clip.camcorder';
   }
 
   playClip() {
     this.pendingClip = -1;
+    this.tapeWatched = true;
+    this.watch?.cancel('camcorder');
     this.cutscenes.play('clip.camcorder', {
       anchors: { campsite: this.frameAnchor() },
       onDone: () => this.dialogue.play('day1.07'),
@@ -354,6 +365,8 @@ export class Campsite {
     for (const pt of this.points) this.searched.add(pt.id);
     this.arrived = true;
     this.camcorderFound = true;
+    this.tapeWatched = true;
+    this.watch?.cancel('camcorder');
     this.shotgunFound = true;
     this.waveStarted = true;
     this.waveCleared = true;
@@ -374,6 +387,7 @@ export class Campsite {
       searched: [...this.searched],
       arrived: this.arrived,
       camcorder: this.camcorderFound,
+      tape: this.tapeWatched,
       shotgun: this.shotgunFound,
       wave: this.waveStarted,
       cleared: this.waveCleared,
@@ -387,6 +401,8 @@ export class Campsite {
     this.searched = new Set(d.searched ?? []);
     this.arrived = Boolean(d.arrived);
     this.camcorderFound = Boolean(d.camcorder);
+    this.tapeWatched = d.tape ?? this.camcorderFound; // (older saves: as good as watched)
+    if (this.camcorderFound && !this.tapeWatched) this.offerTape();
     this.shotgunFound = Boolean(d.shotgun);
     this.waveStarted = Boolean(d.wave);
     this.waveCleared = Boolean(d.cleared) || this.waveStarted;

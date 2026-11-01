@@ -30,6 +30,7 @@ import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { PaperNote } from '../ui/PaperNote.js';
+import { WatchQueue } from '../story/WatchQueue.js';
 import { StormShelter } from '../encounters/StormShelter.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
@@ -123,6 +124,9 @@ export class Game {
     // Session 16 (Aaron): papers read in close-up (Earl's note, his diary).
     this.paper = new PaperNote(this.bus);
     this.paper.init(root, this.combat.sfx);
+    // Session 16 (Aaron): tapes and feeds wait for D-pad down.
+    this.watch = new WatchQueue(this.bus);
+    this.watch.init(root);
     this.initFirstDay();
     this.initViewer(root);
     // M7 step 6: the run's stats and its end (victory or defeat).
@@ -394,6 +398,7 @@ export class Game {
   initFirstDay() {
     this.campsite = new Campsite(this.cfg, this.bus);
     this.campsite.init(this.scene, {
+      watch: this.watch,
       world: this.world,
       combat: this.combat,
       player: this.player,
@@ -447,6 +452,7 @@ export class Game {
     this.station.blockers.push(this.shelter.hud);
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
+      watch: this.watch,
       world: this.world,
       player: this.player,
       combat: this.combat,
@@ -1094,6 +1100,7 @@ export class Game {
     this.subtitles.update(dt);
     this.toast.update(dt);
     if (!this.cutscenes.active) this.hints.update(dt);
+    this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.overlay.update(dt);
   }
 
@@ -1169,6 +1176,7 @@ export class Game {
     this.runEnd.dispose();
     this.noReturn.dispose();
     this.paper.dispose();
+    this.watch.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();
     this.witch.dispose();
