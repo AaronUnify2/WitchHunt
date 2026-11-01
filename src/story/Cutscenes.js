@@ -31,6 +31,7 @@ import { WitchRenderer } from '../render/WitchRenderer.js';
 import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
+import { buildSkyActor, flightAt, SkyFx } from './cutsceneFlight.js';
 
 export class Cutscenes {
   constructor(cfg, bus, data = cutsceneData) {
@@ -170,6 +171,7 @@ export class Cutscenes {
       a.mesh.removeFromParent();
       a.dispose();
     }
+    cur.fx?.dispose();
     this.zombieList.length = 0;
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
     if (skipped) this.subtitles.clear();
@@ -298,7 +300,20 @@ export class Cutscenes {
     const c = cameraAt(cur.data.camera, cur.t, { fov: this.cc.fov, shake: 0 });
     if (!c) return;
     const pos = this.at(c.anchor, c.pos);
-    const look = this.at(c.anchor, c.look);
+    let look = this.at(c.anchor, c.look);
+    // Session 17: a key can follow actors (the dogfight): the look eases onto them.
+    if (c.track) {
+      const ids = Array.isArray(c.track) ? c.track : [c.track];
+      const ms = ids.map((id) => cur.actors.get(id)?.mesh).filter((m) => m?.visible);
+      if (ms.length) {
+        const want = { x: 0, y: 0, z: 0 };
+        for (const m of ms) for (const k of ['x', 'y', 'z']) want[k] += m.position[k] / ms.length;
+        const prev = cur.trackLook;
+        const f = prev ? 1 - Math.exp(-(c.trackRate ?? 3) * dt) : 1;
+        cur.trackLook = prev ? { x: prev.x + (want.x - prev.x) * f, y: prev.y + (want.y - prev.y) * f, z: prev.z + (want.z - prev.z) * f } : want;
+        look = { ...cur.trackLook };
+      } else if (cur.trackLook) look = { ...cur.trackLook };
+    }
     const cam = this.camera;
     cam.position.set(pos.x, pos.y, pos.z);
     // Handheld shake: a slow wander and a quick jitter.
@@ -310,10 +325,13 @@ export class Cutscenes {
       look.z += Math.cos(t * 1.9) * 0.5 * s;
     }
     cam.lookAt(look.x, look.y, look.z);
-    const far = this.drawDistance() + this.cfg.render.farMargin;
-    if (cam.fov !== c.fov || cam.far !== far) {
+    const far = cur.data.far ?? this.drawDistance() + this.cfg.render.farMargin; // Session 17: a far shot (the dogfight) sets its own
+    // Session 17: a scope shot sees past what's close (the trees round the outpost, the tower): its own near plane.
+    const near = cur.data.near ?? 0.1;
+    if (cam.fov !== c.fov || cam.far !== far || cam.near !== near) {
       cam.fov = c.fov;
       cam.far = far;
+      cam.near = near;
       cam.updateProjectionMatrix();
     }
   }
@@ -392,6 +410,24 @@ export class Cutscenes {
         cur.shake = e.amount ?? 1;
         cur.shakeLeft = e.seconds ?? 0.5;
         break;
+      // Session 17: things in the sky (story/cutsceneFlight.js).
+      case 'fly':
+        // Along timed keys, each in its own anchor's frame (else the actor's): a path can end on a place on the map.
+        if (actor) actor.fly = { keys: (e.path ?? []).map((k) => ({ at: k.at, v: this.at(k.anchor ?? actor.anchor, k.p) })), t: 0, out: { pos: { x: 0, y: 0, z: 0 }, dir: { x: 0, y: 0, z: 1 } } };
+        break;
+      case 'beam':
+        cur.fx ??= new SkyFx(this.scene);
+        cur.fx.beam(e.from, e.to, { kind: e.kind, seconds: e.seconds, color: e.color, miss: e.miss });
+        break;
+      case 'trail':
+        if (actor) actor.trail = e.on === false ? null : { color: e.color, size: e.size };
+        break;
+      case 'explode': {
+        cur.fx ??= new SkyFx(this.scene);
+        const at = actor ? actor.mesh.position : this.at(e.anchor ?? 'player', e.pos ?? [0, 0, 0]);
+        cur.fx.blast({ x: at.x, y: at.y, z: at.z }, { size: e.size, color: e.color, over: Boolean(e.over) });
+        break;
+      }
       case 'osd':
         // A cut to another camera: its look, name and hour.
         if (e.look !== undefined) this.setLook(e.look, e.light);
@@ -462,7 +498,7 @@ export class Cutscenes {
   // from the anchor's facing), size, color, hidden }.
   makeActor(spec) {
     const model = spec.kind === 'figure' ? this.makeModel(spec) : null; // Session 13
-    const mesh = model ? model.mesh : buildActor(spec, this.cc);
+    const mesh = model ? model.mesh : (buildSkyActor(spec) ?? buildActor(spec, this.cc)); // Session 17: the plane and the craft
     const pos = this.at(spec.anchor, spec.pos ?? [0, 0, 0]);
     const anchor = this.anchor(spec.anchor);
     mesh.position.set(pos.x, pos.y, pos.z);
@@ -479,6 +515,7 @@ export class Cutscenes {
       pos,
       baseY: pos.y,
       scale: 1,
+      baseScale: mesh.scale.x, // Session 17: a sky actor's size is its scale
       pose: 'stand',
       poseAmount: 0,
       move: null,
@@ -599,6 +636,17 @@ export class Cutscenes {
     this.zombieList.length = 0;
     for (const a of this.current.actors.values()) {
       const m = a.mesh;
+      if (a.fly) {
+        // Session 17: flying (no ground under it), facing the way it's going.
+        a.fly.t += dt;
+        const f = flightAt(a.fly.keys, a.fly.t, a.fly.out);
+        a.pos = { ...f.pos };
+        m.position.set(f.pos.x, f.pos.y, f.pos.z);
+        m.lookAt(f.pos.x + f.dir.x, f.pos.y + f.dir.y, f.pos.z + f.dir.z);
+        if (a.spec.kind === 'ufo') m.rotation.z += Math.sin(a.fly.t * (a.trail ? 9 : 3)) * (a.trail ? 0.22 : 0.06); // it wobbles, worse once it's hit
+        if (a.flare) this.flareStep(a, dt);
+        continue;
+      }
       if (a.move) {
         a.move.t += dt;
         const k = Math.min(1, a.move.t / a.move.seconds);
@@ -622,19 +670,22 @@ export class Cutscenes {
         m.scale.y = 1 - kneel * 0.4;
         m.rotation.x = -down * (Math.PI / 2) * 0.95;
       }
-      if (a.flare) {
-        const f = a.flare;
-        f.t += dt;
-        const k = Math.min(1, f.t / f.seconds);
-        const s = f.hold ? 1 + f.amount * k : 1 + f.amount * Math.sin(k * Math.PI);
-        m.scale.setScalar(s);
-        if (k >= 1 && !f.hold) {
-          a.flare = null;
-          m.scale.setScalar(1);
-        }
-      }
+      if (a.flare) this.flareStep(a, dt);
     }
+    this.current.fx?.update(dt, this.current.actors);
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
+  }
+
+  flareStep(a, dt) {
+    const f = a.flare;
+    f.t += dt;
+    const k = Math.min(1, f.t / f.seconds);
+    const s = f.hold ? 1 + f.amount * k : 1 + f.amount * Math.sin(k * Math.PI);
+    a.mesh.scale.setScalar(s * a.baseScale);
+    if (k >= 1 && !f.hold) {
+      a.flare = null;
+      a.mesh.scale.setScalar(a.baseScale);
+    }
   }
 
   // ---- debug ---------------------------------------------------------------------------------------------

@@ -13,6 +13,9 @@ import cutsceneData from '../src/data/cutscenes.json';
 import lootData from '../src/data/loot.json';
 import vehiclesData from '../src/data/vehicles.json';
 import { makeMap, makeGround, config } from './mapFixture.js';
+import { flightAt } from '../src/story/cutsceneFlight.js';
+import { localToWorld, validateCutscenes } from '../src/story/cutsceneTimeline.js';
+import encountersData from '../src/data/encounters.json';
 
 const map = makeMap(1234);
 const ground = makeGround(1234);
@@ -329,5 +332,82 @@ describe('the military outpost: the beats', () => {
     expect(q.o.roundsTaken).toBe(true);
     expect(q.o.wavesCleared).toBe(2);
     expect(q.o.searched.has('armoury')).toBe(true);
+  });
+});
+
+describe('the dogfight (pass 3)', () => {
+  it('flies through its keys and ends exactly on the last one, facing the way it goes', () => {
+    const keys = [
+      { at: 0, v: { x: 0, y: 100, z: 0 } },
+      { at: 2, v: { x: 100, y: 100, z: 0 } },
+      { at: 4, v: { x: 200, y: 0, z: 50 } },
+    ];
+    expect(flightAt(keys, 2).pos).toEqual({ x: 100, y: 100, z: 0 });
+    expect(flightAt(keys, 9).pos).toEqual({ x: 200, y: 0, z: 50 });
+    const mid = flightAt(keys, 1);
+    expect(mid.pos.x).toBeGreaterThan(0);
+    expect(mid.pos.x).toBeLessThan(100);
+    expect(mid.dir.x).toBeGreaterThan(0.9);
+  });
+
+  it('has the crashed plane on every run (DESIGN, Oct 16): the plane comes down where the map has it', () => {
+    expect(encountersData.encounters.find((e) => e.id === 'crashedPlane').appears).toBe('every');
+    for (const seed of [1, 7, 1234]) {
+      const m = makeMap(seed);
+      expect(m.clearings.some((c) => c.key === 'crashedPlane')).toBe(true);
+      expect(m.clearings.some((c) => c.key === 'crashedUfo')).toBe(true);
+    }
+  });
+
+  it('anchors the fight between Tom and the plane, and the paths end on the two crash sites', () => {
+    const r = rig();
+    const eye = r.o.towerEye();
+    const a = r.o.dogfightAnchors(eye);
+    const { plane, ufo } = r.o.sites;
+    expect(plane.real && ufo.real).toBe(true);
+    const withY = (n) => ({ ...a[n], y: ground.heightAt(a[n].x, a[n].z) + (a[n].dy ?? 0) });
+    // The plane's crash is straight ahead of the eye.
+    const ahead = localToWorld(withY('dogfight'), [0, 0, 100]);
+    const toPlane = Math.hypot(plane.x - eye.x, plane.z - eye.z);
+    expect(Math.hypot(ahead.x - eye.x - ((plane.x - eye.x) / toPlane) * 100, ahead.z - eye.z - ((plane.z - eye.z) / toPlane) * 100)).toBeLessThan(0.01);
+    // The eye is up the tower.
+    expect(withY('dogfight').y).toBeCloseTo(eye.y, 5);
+    // The fight's heights are from the eye's ground.
+    expect(withY('fight').y).toBeCloseTo(ground.heightAt(eye.x, eye.z), 5);
+    const clip = cutsceneData.cutscenes.find((c) => c.id === 'clip.dogfight');
+    for (const id of ['plane', 'ufo']) {
+      const fly = clip.tracks.find((e) => e.do === 'fly' && e.actor === id);
+      const last = fly.path[fly.path.length - 1];
+      expect(last.anchor).toBe(id === 'plane' ? 'planeCrash' : 'ufoCrash');
+      const end = localToWorld(withY(last.anchor), last.p);
+      const site = id === 'plane' ? plane : ufo;
+      expect(Math.hypot(end.x - site.x, end.z - site.z)).toBeLessThan(1);
+    }
+    expect(clip.placeholder).toBeUndefined();
+  });
+
+  it('checks out (its events and actors), with its lines', () => {
+    const lineIds = new Set(dialogueData.lines.map((l) => l.id));
+    const looks = config.postFX.looks;
+    const clip = cutsceneData.cutscenes.filter((c) => c.id === 'clip.dogfight' || c.id === 'sweep.outpost');
+    expect(validateCutscenes(clip, { looks, lineIds })).toEqual([]);
+    for (const id of ['outpost.dogfight.wyatt', 'outpost.dogfight.down', 'outpost.dogfight.ellen', 'outpost.dogfight.after']) expect(lineIds.has(id)).toBe(true);
+  });
+
+  it('waits for the scope up the tower, and plays once', () => {
+    const r = rig();
+    let played = 0;
+    r.o.cutscenes = { active: false, play: (id, o) => (played++, o.onDone?.(false), true) };
+    r.o.combat.weapons.id = 'sniper';
+    r.o.combat.weapons.scoped = 0;
+    r.o.climbUp();
+    r.step(0.5);
+    expect(played).toBe(0);
+    r.o.combat.weapons.scoped = 1;
+    r.step(0.5);
+    r.step(0.5);
+    expect(played).toBe(1);
+    expect(r.o.dogfightSeen).toBe(true);
+    expect(r.played).toContain('outpost.dogfight.after');
   });
 });

@@ -214,6 +214,25 @@ const RECIPES = {
     s.tone(o, { seconds: 0.18, freq: 160, endFreq: 70, gain: 0.8 });
     s.noiseBurst(o, { seconds: 0.08, freq: 1200, gain: 0.6 });
   },
+  // Session 17: the dogfight, far off through the scope: a jet's roar
+  // swelling and fading, a gun's rattle, the craft's warbling ray, a crash.
+  jetFar(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 7, type: 'lowpass', freq: 500, endFreq: 1400, q: 0.8, gain: 0.5, attack: 2.5 });
+    s.tone(o, { seconds: 7, wave: 'sawtooth', freq: 70, endFreq: 95, gain: 0.08, attack: 2.5 });
+  },
+  gunFar(s) {
+    const o = s.out(undefined, undefined, 0.4);
+    for (let i = 0; i < 9; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 900, q: 1.5, gain: 0.5 }), i * 70);
+  },
+  rayFar(s) {
+    s.tone(s.out(undefined, undefined, 0.4), { seconds: 0.6, wave: 'sine', freq: 1400, endFreq: 500, gain: 0.25, vibrato: 30 });
+  },
+  boomFar(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 2.2, type: 'lowpass', freq: 260, endFreq: 60, gain: 1, attack: 0.02 });
+    s.tone(o, { seconds: 1.6, freq: 50, endFreq: 28, gain: 0.7 });
+  },
   // Session 17: a round off an army helmet (a bright ring), and one knocking it off (a clank and a clatter).
   helmetPing(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.9);

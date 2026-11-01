@@ -162,7 +162,8 @@ describe('placeVehicles', () => {
     let roadside = 0;
     let checkpointArmy = 0;
     let checkpoint = 0;
-    for (const seed of SEEDS) {
+    // Session 17: more seeds (a map has only two or three plain clearings now the crashed plane's on every run).
+    for (const seed of [...SEEDS, 2, 3, 5, 11, 13, 17, 21, 42, 77, 314]) {
       for (const v of place(seed).list) {
         if (v.place === 'roadside') roadside++;
         if (v.place === 'checkpoint') {

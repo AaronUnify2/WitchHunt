@@ -71,6 +71,8 @@ export function cameraAt(keys, t, defaults = { fov: 60, shake: 0 }) {
     anchor: a.anchor ?? null,
     pos,
     look,
+    track: a.track ?? null, // Session 17: follow actors (the look eases onto them)
+    trackRate: a.trackRate ?? null,
     fov: lerp(a.fov ?? defaults.fov, b.fov ?? a.fov ?? defaults.fov, k),
     shake: lerp(a.shake ?? defaults.shake, b.shake ?? a.shake ?? defaults.shake, k),
   };
@@ -91,7 +93,7 @@ export function cutsceneLength(cs) {
 }
 
 const STYLES = ['cctv', 'firstPerson', 'sweep', 'black'];
-const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx'];
+const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode']; // Session 17: the last four, things in the sky
 
 // Checks the cutscenes file: unique ids, known styles, looks and events,
 // lines that exist, actors that exist. Returns a list of problems.
@@ -111,7 +113,8 @@ export function validateCutscenes(list, { looks, lineIds }) {
     for (const e of cs.tracks ?? []) {
       if (!EVENTS.includes(e.do)) problems.push(`${id}: unknown event ${e.do}`);
       if (e.do === 'line' && !lineIds.has(e.line)) problems.push(`${id}: no dialogue line ${e.line}`);
-      if (['move', 'pose', 'show', 'hide', 'flare'].includes(e.do) && !actors.has(e.actor)) problems.push(`${id}: no actor ${e.actor}`);
+      if (['move', 'pose', 'show', 'hide', 'flare', 'fly', 'trail'].includes(e.do) && !actors.has(e.actor)) problems.push(`${id}: no actor ${e.actor}`);
+      if (e.do === 'beam' && !(actors.has(e.from) && actors.has(e.to))) problems.push(`${id}: a beam between actors it hasn't got`);
     }
     for (let i = 1; i < (cs.camera ?? []).length; i++) if (cs.camera[i].at < cs.camera[i - 1].at) problems.push(`${id}: camera keys out of order`);
   }

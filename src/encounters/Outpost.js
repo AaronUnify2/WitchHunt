@@ -15,7 +15,12 @@
 //     waves go back to the last one cleared.
 //  4. The watchtower, on the near side of the barricade: climb it (the
 //     dead can't: they gather at its foot); the snipers' nest has the
-//     hunting rifle's rounds (guaranteed). Pass 3: the scope's dogfight.
+//     hunting rifle's rounds (guaranteed). The first time Tom raises the
+//     rifle's scope up there: the dogfight (clip.dogfight): a patrol plane
+//     and a craft trade fire and both come down, where the map puts the
+//     crashed plane and the crashed UFO (Aaron); smoke stands over both
+//     sites afterwards until Tom gets there. If he never climbs it, it plays
+//     as he crosses the barricade once the peak's down.
 //  5. The barricade's peak: the biggest wave, out of the compound through
 //     the gaps. Once the approach is done and the rounds are taken (and Tom's
 //     off the tower or has seen the dogfight), or Tom's close to the line,
@@ -27,7 +32,7 @@
 //
 // Events: 'outpost:called', 'outpost:approach', 'outpost:wave' { index },
 // 'outpost:waveDown' { index }, 'outpost:peak', 'outpost:cleared',
-// 'outpost:climbed', 'outpost:rounds', 'outpost:searched' { id }.
+// 'outpost:climbed', 'outpost:rounds', 'outpost:dogfight', 'outpost:searched' { id }.
 
 import outpostData from '../data/outpost.json';
 import { frameToWorld, frameYaw, frameAnchor } from '../world/clearingFrame.js';
@@ -91,6 +96,10 @@ export class Outpost {
     this.hud = { prompt: '', progress: 0 };
     this.cutscenes?.namedAnchors?.set('outpost', () => frameAnchor(this.frame));
     this.cutscenes?.namedAnchors?.set('outpostTower', () => ({ ...this.towerAt, yaw: Math.PI, dy: this.towerY - this.ground.heightAt(this.towerAt.x, this.towerAt.z) }));
+    // The dogfight's anchors (from the tower), so it plays the same rewatched on the monitors.
+    for (const name of ['dogfight', 'fight', 'planeCrash', 'ufoCrash']) this.cutscenes?.namedAnchors?.set(name, () => this.dogfightAnchors(this.towerEye())[name]);
+    this.sites = this.crashSites();
+    this.props?.buildCrashSmoke(scene, [this.sites.plane, this.sites.ufo]);
     this.reset();
     this.sureBattery();
     this.unsubscribers = [
@@ -114,6 +123,7 @@ export class Outpost {
     this.towerTold = false;
     this.roundsTaken = false;
     this.dogfightSeen = false;
+    this.sitesReached = new Set(); // the crash sites Tom's been to (their smoke goes)
     this.peakState = 'none'; // none -> running -> done
     this.peak = [];
     this.peakLeft = 0; // still to stand up
@@ -278,6 +288,8 @@ export class Outpost {
       this.updateWaves(dt, d);
       this.updatePeak(dt, l, d);
     }
+    this.updateDogfight(l);
+    this.updateSmoke();
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -509,6 +521,73 @@ export class Outpost {
     this.progress?.setFlag('outpostEntered');
   }
 
+  // ---- the dogfight (pass 3) ------------------------------------------------------------------------------
+
+  // Where the two come down: the map's crashed plane and crashed UFO (Aaron:
+  // in the right spot with the map). A stand-in point if one isn't on the map.
+  crashSites() {
+    const map = this.world.map;
+    const f = this.frame;
+    const find = (key) => map.clearings.find((c) => c.key === key);
+    const site = (c, dx, dz) => (c ? { x: c.x, z: c.z, real: true } : { x: f.x + dx, z: f.z + dz, real: false });
+    return { plane: site(find('crashedPlane'), -200, 380), ufo: site(find('crashedUfo'), -300, 850) };
+  }
+
+  // The tower's top: where the dogfight's seen from.
+  towerEye() {
+    return { x: this.towerAt.x, z: this.towerAt.z, y: this.towerY };
+  }
+
+  // The cutscene's anchors from an eye ({ x, z, y: what it stands on }): dogfight
+  // (the eye, facing the plane's crash), fight (out along that line, its
+  // heights from the eye's ground), planeCrash and ufoCrash (facing away from
+  // the eye). An anchor's ahead is (-sin yaw, -cos yaw).
+  dogfightAnchors(eye) {
+    const { plane, ufo } = this.sites ?? this.crashSites();
+    const g = this.ground;
+    const yawTo = (to) => Math.atan2(-(to.x - eye.x), -(to.z - eye.z));
+    const dp = Math.hypot(plane.x - eye.x, plane.z - eye.z) || 1;
+    const df = Math.max(150, Math.min(340, dp * 0.6));
+    const fight = { x: eye.x + ((plane.x - eye.x) / dp) * df, z: eye.z + ((plane.z - eye.z) / dp) * df };
+    const ground = g.heightAt(eye.x, eye.z);
+    return {
+      dogfight: { x: eye.x, z: eye.z, yaw: yawTo(plane), dy: eye.y - ground },
+      fight: { ...fight, yaw: yawTo(plane), dy: ground - g.heightAt(fight.x, fight.z) },
+      planeCrash: { x: plane.x, z: plane.z, yaw: yawTo(plane) },
+      ufoCrash: { x: ufo.x, z: ufo.z, yaw: yawTo(ufo) },
+    };
+  }
+
+  // The first time the scope's raised up the tower; else crossing the barricade once the peak's down.
+  updateDogfight(l) {
+    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active) return;
+    const w = this.combat?.weapons;
+    if (this.onTower && w?.id === 'sniper' && w.scoped > 0.7) this.playDogfight();
+    else if (!this.onTower && this.peakState === 'done' && this.toLine(l) < -1.5) this.playDogfight();
+  }
+
+  playDogfight() {
+    this.dogfightSeen = true;
+    const p = this.player.position;
+    const eye = this.onTower ? this.towerEye() : { x: p.x, z: p.z, y: this.ground.heightAt(p.x, p.z) };
+    const after = () => {
+      this.dialogue?.play('outpost.dogfight.after');
+      this.bus.emit('outpost:dogfight');
+    };
+    if (!this.cutscenes?.play('clip.dogfight', { anchors: this.dogfightAnchors(eye), onDone: after })) after();
+  }
+
+  // Smoke over each crash site once they've come down, until Tom gets there.
+  updateSmoke() {
+    if (!this.props) return;
+    const p = this.player.position;
+    ['plane', 'ufo'].forEach((key, i) => {
+      const s = this.sites[key];
+      if (this.dogfightSeen && !this.sitesReached.has(key) && Math.hypot(p.x - s.x, p.z - s.z) < 40) this.sitesReached.add(key);
+      this.props.setCrashSmoke(i, this.dogfightSeen && !this.sitesReached.has(key) && !(this.cutscenes?.active && this.cutscenes.current?.id === 'clip.dogfight'));
+    });
+  }
+
   // ---- the watchtower -----------------------------------------------------------------------------------
 
   platform() {
@@ -656,6 +735,7 @@ export class Outpost {
       towerTold: this.towerTold,
       rounds: this.roundsTaken,
       dogfight: this.dogfightSeen,
+      sites: [...this.sitesReached],
       peak: this.peakState === 'done' ? 'done' : 'none',
       entered: this.entered,
       searched: [...this.searched],
@@ -672,6 +752,7 @@ export class Outpost {
     this.towerTold = Boolean(d.towerTold);
     this.roundsTaken = Boolean(d.rounds);
     this.dogfightSeen = Boolean(d.dogfight);
+    this.sitesReached = new Set(d.sites ?? []);
     this.peakState = d.peak === 'done' ? 'done' : 'none';
     this.entered = Boolean(d.entered);
     this.searched = new Set(d.searched ?? []);
@@ -715,6 +796,10 @@ export class Outpost {
     cat.addItem('Outpost: start the barricade peak now', () => {
       this.approachStarted = true;
       if (this.peakState === 'none') this.startPeak();
+    });
+    cat.addItem('Outpost: the dogfight now (from where Tom is)', () => {
+      this.dogfightSeen = false;
+      this.playDogfight();
     });
     cat.addItem('Outpost: put the barricade wave down', () => {
       this.peakLeft = 0;

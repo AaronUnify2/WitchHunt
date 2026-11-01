@@ -108,6 +108,10 @@
     {"id": "outpost.cleared.wyatt", "cued": true, "draft": true, "cue": "After Ellen, the outpost cleared (Outpost)", "speaker": "wyatt", "channel": "radio", "text": "The checkpoint's open, Dad. Everything past it, nobody's ever told us about."},
     {"id": "outpost.report", "cued": true, "draft": true, "cue": "The field report put down, in the comms hut (Outpost)", "speaker": "ellen", "channel": "radio", "text": "Bring that report home, Tom. I want to read every word of it."},
     {"id": "outpost.manifest", "cued": true, "draft": true, "cue": "The manifest read, by the containers (Outpost)", "speaker": "ellen", "channel": "radio", "text": "Specimens. They were shipping specimens through there, Tom. Whatever was in that torn-open one, I don't want to meet it."},
-    {"id": "outpost.charge", "cued": true, "draft": true, "cue": "The armoury's explosive charge taken (Outpost)", "speaker": "wyatt", "channel": "radio", "text": "Is that a bomb? Dad, be careful with that thing."}
+    {"id": "outpost.charge", "cued": true, "draft": true, "cue": "The armoury's explosive charge taken (Outpost)", "speaker": "wyatt", "channel": "radio", "text": "Is that a bomb? Dad, be careful with that thing."},
+    {"id": "outpost.dogfight.wyatt", "cued": true, "draft": true, "cue": "In the dogfight, the plane and the craft trading fire (clip.dogfight)", "speaker": "wyatt", "channel": "radio", "text": "Dad, what is that? There's something up there with the plane!"},
+    {"id": "outpost.dogfight.down", "cued": true, "draft": true, "cue": "In the dogfight, the plane going down (clip.dogfight)", "speaker": "wyatt", "channel": "radio", "text": "It's down! Dad, the plane went down!"},
+    {"id": "outpost.dogfight.ellen", "cued": true, "draft": true, "cue": "In the dogfight, the craft coming down far to the south (clip.dogfight)", "speaker": "ellen", "channel": "radio", "text": "Tom... that other thing wasn't one of ours."},
+    {"id": "outpost.dogfight.after", "cued": true, "draft": true, "cue": "After the dogfight, skipped or not (Outpost; signposts the crash sites)", "speaker": "ellen", "channel": "radio", "text": "They both came down past the cordon, Tom. The plane's not far. If anyone's alive in it... look for the smoke."}
   ]
 }

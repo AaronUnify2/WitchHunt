@@ -383,8 +383,8 @@ export class OutpostProps {
       }
     }
     // Corner posts and a tin roof.
-    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) this.box(0.12, 2.3, 0.12, t.x + dx * (h + 0.02), t.z + dz * (h + 0.02), top, k.timber);
-    this.box(P + 0.5, 0.06, P + 0.5, t.x, t.z, top + 2.3, k.steelDark, 0, { rotX: 0.06 });
+    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) this.box(0.12, 2.6, 0.12, t.x + dx * (h + 0.02), t.z + dz * (h + 0.02), top, k.timber);
+    this.box(P + 0.5, 0.06, P + 0.5, t.x, t.z, top + 2.6, k.steelDark, 0, { rotX: 0.06 }); // as high as the station tower's (config.flashlight's platform roofY)
     // The ladder: two rails and rungs up the north side.
     const lz = t.z - h - 0.35;
     const ly = this.groundAt(t.x, lz);
@@ -790,6 +790,52 @@ export class OutpostProps {
     });
   }
 
+  // ---- the crash sites' smoke (the dogfight's, Session 17) -----------------------------------------
+
+  // A rising column over each site: soft puffs, past the fog (seen from far off), slowly climbing.
+  buildCrashSmoke(scene, sites) {
+    if (!scene) return;
+    const tex = this.hold(puffCanvasTexture());
+    this.smoke = sites.map((s, i) => {
+      const g = new THREE.Group();
+      g.name = `crashSmoke${i}`;
+      const y = this.ground.heightAt(s.x, s.z);
+      g.position.set(s.x, y, s.z);
+      const puffs = [];
+      const H = i === 0 ? 110 : 150; // tall enough to show over the trees from far off
+      for (let k = 0; k < 16; k++) {
+        const mat = this.hold(new THREE.SpriteMaterial({ map: tex, color: i === 0 ? 0x34302c : 0x3a4038, transparent: true, depthWrite: false, fog: false }));
+        const sp = new THREE.Sprite(mat);
+        sp.userData.phase = k / 16;
+        g.add(sp);
+        puffs.push(sp);
+      }
+      g.visible = false;
+      scene.add(g);
+      this.keep.push({ dispose: () => g.removeFromParent() });
+      return { group: g, puffs, H, t: 0 };
+    });
+  }
+
+  setCrashSmoke(i, on) {
+    const s = this.smoke?.[i];
+    if (s) s.group.visible = on;
+  }
+
+  updateSmoke(dt) {
+    for (const s of this.smoke ?? []) {
+      if (!s.group.visible) continue;
+      s.t += dt * 0.05;
+      for (const sp of s.puffs) {
+        const k = (sp.userData.phase + s.t) % 1;
+        sp.position.set(k * k * s.H * 0.35, k * s.H, k * s.H * 0.08);
+        const w = s.H * (0.1 + k * 0.45);
+        sp.scale.set(w, w, 1);
+        sp.material.opacity = 0.55 * Math.min(1, k * 6) * (1 - k);
+      }
+    }
+  }
+
   // ---- state ------------------------------------------------------------------------------------------
 
   setTaken(id, taken) {
@@ -804,7 +850,9 @@ export class OutpostProps {
     c.broken.visible = broken;
   }
 
-  update() {}
+  update(dt = 0) {
+    this.updateSmoke(dt);
+  }
 
   dispose() {
     this.group?.removeFromParent();
@@ -827,6 +875,18 @@ function chainLinkTexture(size, color) {
   const t = toTexture(canvas, { repeat: true });
   t.anisotropy = 4;
   return t;
+}
+
+// A soft round puff (the crash sites' smoke).
+function puffCanvasTexture() {
+  const { canvas, ctx } = makeCanvas(64, 64);
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.35)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+  return toTexture(canvas);
 }
 
 // A painted board: a big first line, smaller lines under it. Dark (the torch-glare rule).
