@@ -1,5 +1,29 @@
 # Open questions
 
+## Session 17 (Level & Encounter Designer + AI Programmer: the military outpost, M9.4)
+
+Aaron's calls: Ellen sends Tom the moment the safe opens, with "come home if it goes bad" (there's nothing to fetch at home); start the waves at 3, 5, 8 and the barricade at 14, tune in play; the dead can't climb the watchtower; the plane and the craft come down roughly where the map has their crash sites; dangerous by day, bigger waves by night; a retreat mid-wave goes back to the last wave cleared. The calls I made building it:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 225 | **The layout.** The outpost's clearing sits right on the cordon, so the barricade runs across it and the compound is between the barricade and the cordon; the checkpoint gate is the compound's south gate. | Clearing 28 m to 30 m. Barricade at 4 m south of the centre; watchtower on the near side, west of the road; compound behind. | `data/outpost.json`; `data/openingCluster.json` |
+| 226 | **A longer approach:** the road's chained gate was only about 15 m outside the clearing. | Moved back 31 m (`road` 463 to 432); the ROAD CLOSED sign beside it (452 to 426). | `openingCluster.json` gates; `config.map.road.sign.along` |
+| 227 | **The first helmet** stands on the road (lingering), so the sweep shows him and he comes when he sees you. | As described. | `data/outpost.json` `firstHelmet`; `Outpost.sendHelmet()` |
+| 228 | **The waves** stand up about 42 m ahead of Tom (toward the barricade gap), 14 m either side, and come at him. | 3, 5, 8; 9 s lulls; x1.5 by night; retreat 170 m. | `config.outpost.approach` |
+| 229 | **When the barricade's peak starts.** | Once the approach is done and the rounds taken, near the line (but up the tower it waits for the dogfight, so you see that first); or the approach done and within 12 m; or anyone within 6 m of the line. 14 (20 by night) in 3 bursts 2.5 s apart. | `config.outpost.peak`; `Outpost.updatePeak()` |
+| 230 | **Before Ellen's call the outpost is quiet** (the gates are soft: you can push round them early). | No waves, no sweep until `outpostCall`. | `Outpost.update()` |
+| 231 | **Helmets.** | Stop the headshot bonus until they've taken 50 damage (two service-rifle rounds to the head); the hunting rifle goes straight through. A helmet hit rings (no blood). No helmet dropped once it's off. | `config.zombies.variants.army.helmet`, `config.weapons.sniper.helmetPierce`; `combat/hitscan.js` |
+| 232 | **The rounds in the nest.** | 10 (two magazines). | `config.outpost.tower.rounds` |
+| 233 | **The dogfight's trigger:** the scope raised up the tower; if he never climbs it, crossing the barricade once the peak's down. Once. Rewatchable on the monitors. | As described. | `Outpost.updateDogfight()` |
+| 234 | **The dogfight's framing.** The trees round the outpost and the tower would fill the scope, so the cutscene's camera sees past everything within 60 m. Both come down on their sites; the crashes flash over the treeline and smoke stands there afterwards until Tom gets within 40 m. The crashed plane is now on every run (DESIGN said so; encounters.json had it uncommon). | As described. About 18 s. | `cutscenes.json` `clip.dogfight`; `story/cutsceneFlight.js` |
+| 235 | **The "jeep" across the barricade** is one of the army trucks (no jeep model yet), with a sure battery. | As described. | `data/outpost.json` `trucks`; `Outpost.sureBattery()` |
+| 236 | **The beetles' numbers.** | Health 150; the shell takes 30%, the face 3x (the hunting rifle kills with one to the face); charge 5.2 m/s; a bite 22. Five crates, one each; one breaks open by itself within 8 m once you're past the barricade; prise one open with X (1.6 s). | `config.beetles.ai`, `config.outpost.crates` |
+| 237 | **The Mothman's container (C-7).** | A 7.4 s sweep the first time you're within 7 m of its torn end (not during the peak): the husk, round the bent side and up the gouges, then down into it. Wyatt and Ellen after; never named. The CCTV placeholder `clip.mothmanContainer` is left as it was. | `cutscenes.json` `sweep.outpostC7`; `Outpost.playC7()` |
+| 238 | **The field report and the manifest** (drafts): Captain R. Hale's report of the breach (the specimen "last seen moving south, low over the treeline"; the dead getting back up); the manifest (C-7 redacted, from "Site 4 (mine workings)"). Neither names the witch or the Mothman. | Typed papers in close-up. The report's carried home as lore. | `src/data/papers.json` |
+| 239 | **The outpost's draft lines** (`outpost.*`). | All `draft` in `dialogue.json`. | `src/data/dialogue.json` |
+| 240 | **The objectives after the barricade:** the armoury, then the field report, then the checkpoint. The beetles aren't an objective. | As described. | `story/Objectives.js` |
+| 241 | **What isn't saved:** a wave or the peak that was out comes again; beetles out of their crates are gone on a reload (their crates stay broken). | As described. | `Outpost.loadState()` |
+
 ## Session 16 (Level & Encounter Designer + AI Programmer: Aaron's notes on the overnight work; the storm shelter)
 
 Aaron's shelter calls: small and a bit shabby (Earl dug it himself); 12 citizens; digging the sigil stops the rising and the family work out the sigils cause the zombies; nothing indicates the children died (maybe they escaped); the diary in a paper close-up, and Earl's note too. The calls I made building it:

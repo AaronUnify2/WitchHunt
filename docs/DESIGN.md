@@ -960,6 +960,8 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
 
+**Built in Session 17 (M9.4), waiting on Aaron's play-test.** Agreed with Aaron at the start: Ellen's call comes the moment the safe opens (with "come home if it goes bad"); waves of 3, 5, 8, then 14 at the barricade, tuned in play; the dead can't climb the watchtower; the plane and the craft come down where the map puts the crashed plane and the crashed UFO; bigger waves by night; a retreat resets to the last wave cleared. How the proposals below were built, and the calls made: STATUS.md (Session 17), OPEN_QUESTIONS #225-241. In short: the outpost's clearing sits on the cordon, so the barricade runs across it and the compound lies between it and the cordon (the checkpoint is the compound's south gate); the "jeep" across the barricade is an army truck for now; the crashed plane is on every run.
+
 **Purpose.** The climax of the authored opening and the threshold between the home cluster and the randomised frontier (see Map: Fixed opening cluster). It's the moment Tom learns the cordon failed and he's on his own, so it has to *feel* like crossing a line. It's also the early game's first big fight.
 
 **What it really was: a transfer point.** Not just a checkpoint on a defensive line. The military were moving captured entities through here, and containment failed in transit. That's why the dead are thickest at the barricade: the soldiers died trying to hold the things that got loose.

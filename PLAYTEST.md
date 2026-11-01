@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; round 20 Session 17 (the outpost)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -151,6 +151,24 @@ Round 19 (your notes, round 2):
 - [ ] Trail cams are blue on the map; the quad's an orange icon.
 - [ ] Ellen's hints that she worked at the facility (opening, the red light, the scanner).
 - [ ] Debug, Player: "Jetpack": hold A in the air.
+
+Round 20 (Session 17: the military outpost, M9.4). Debug: **Military outpost** category (teleports, "Ellen's call now", "skip the approach", "the dogfight now", "break a crate open", "the Mothman's container now"). Or play through: the safe opens the outpost road.
+- [ ] **The call:** open the gas station's safe. Wyatt on the rifle, then Ellen sends you to the checkpoint (the witch is loose outside the quarantine line), Wyatt says the soldiers will have rounds, and Ellen: come home if it goes bad. The map's star moves to the road past the gas station.
+- [ ] **The road gate** is further back now (about 30 m nearer the gas station), with the ROAD CLOSED sign beside it, so the walk in is longer.
+- [ ] **The arrival:** about 100 m out, the sweep down the road: a soldier standing on it, the watchtower, the barricade with a truck across its gap. Then Wyatt: nobody on the gate, and the soldier just standing there.
+- [ ] **The first helmet:** shoot him in the head with the shotgun or the service rifle. The helmet rings and takes it like a body shot. Two rifle rounds to the head knock it off (a clank, his head's bare), then headshots land. Ellen explains after.
+- [ ] **The waves:** 3, then 5, then 8, each about 9 s after the last is down, coming at you from ahead (toward the barricade). The radio talks in the lulls. Too many? Too few? By night they're half as many again.
+- [ ] **Run away mid-wave** (170 m back): that wave comes again when you return.
+- [ ] **The watchtower** (west of the road, before the barricade): hold X at its ladder (north side). The dead can't climb it; they bunch at the bottom. Up top: "take the hunting rifle rounds" (10).
+- [ ] **The dogfight:** up there, raise the hunting rifle's scope (LT). A plane chases a craft of lights; they trade fire; both go down past the cordon. Afterwards, smoke stands over both crash sites until you get there. Do they come down in a believable place for where the map has them (map screen)? Too long? Too short? Try it by day and by night.
+- [ ] **The barricade's peak:** after the dogfight (or as soon as you climb down), 14 come out of the compound through the gaps (the road gap by the truck, the torn fence, the spilled sandbags on the east). 20 by night. Easy from the tower with the hunting rifle? Hard on the ground?
+- [ ] **Down:** Ellen, it's just us now; Wyatt, the checkpoint's open. The cordon gate opens.
+- [ ] **The compound:** the comms hut (the field report: read it, then it's carried home), the armoury lockers (one explosive charge), the tents and footlocker, the clipboard by the containers (the manifest).
+- [ ] **The containers:** C-3 empty (doors blown out), C-4 (a grey body in amber resin: Wyatt and Ellen), C-7 (torn apart from inside: a short sweep up the gouges, then Wyatt and Ellen; it's never named), C-9 sealed (scratching).
+- [ ] **The beetles:** walk toward the crates: one breaks open by itself and a beetle claws out, flares up, hisses, charges and bites. Shots to the shell barely hurt it (Wyatt: go for its face). The glowing face takes full damage. Shoot or prise open the other crates (hold X) for the rest.
+- [ ] **The truck across the barricade's gap** has a battery (lift the bonnet).
+- [ ] **Through:** the checkpoint gate, then the frontier.
+- [ ] **The performance gate (tablet):** turn the overlay on (View + Menu) during the barricade peak at night with the beetles out. What does the fps line say? Headless: 116 draw calls, under 1 ms of simulation for 20 zombies and 5 beetles.
 
 ## 1. The main menu
 
