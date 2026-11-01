@@ -436,7 +436,7 @@ export class Station {
     const s = this.state;
     const f = this.sc.fence;
     const d = this.sc.doors;
-    const onTower = this.player.platform !== null && !this.player.platform.room;
+    const onTower = this.player.platform !== null && !this.player.platform.room && !this.player.platform.outpost; // Session 17: not the outpost's watchtower
     const penned = this.penned();
     const doors = [
       [s.gate, L.gate.mid, f.gateOpenDistance, f.gateSlideSeconds, 'gate'],
@@ -518,7 +518,7 @@ export class Station {
     const h = sc.hold;
     const inv = this.combat.inventory;
     const range = sc.interactRange;
-    if (this.player.platform?.room) return null; // Session 16: down in the storm shelter
+    if (this.player.platform?.room || this.player.platform?.outpost) return null; // Session 16: down in the storm shelter; Session 17: up the outpost's watchtower
     if (this.player.platform) {
       if (this.rifleOnTower && !this.towerRifleLocked) {
         const name = this.cfg.weapons[sc.towerRifle.weapon].name.toLowerCase();

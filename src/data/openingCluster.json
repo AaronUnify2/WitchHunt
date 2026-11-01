@@ -6,7 +6,7 @@
     { "key": "stormShelter", "dx": 150, "dz": 90, "radius": 20, "clearingType": "homeWoods" },
     { "key": "familyCemetery", "kind": "sigilGround", "dx": 220, "dz": 200, "radius": 18, "clearingType": "homeWoods" },
     { "key": "gasStation", "dx": -100, "dz": 200, "radius": 24, "clearingType": "homeWoods" },
-    { "key": "outpost", "dx": 10, "dz": 260, "radius": 28, "clearingType": "homeWoods" }
+    { "key": "outpost", "dx": 10, "dz": 260, "radius": 30, "clearingType": "homeWoods" }
   ],
   "paths": [
     { "a": "home", "b": "campsite" },
@@ -22,7 +22,7 @@
   "gates": [
     { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
     { "id": "gasStationTrail", "kind": "fallenTree", "path": ["campsite", "gasStation"], "t": 0.5, "opensOn": "day2", "locked": "A fallen oak blocks the trail. Too big to climb with a pack." },
-    { "id": "outpostRoad", "kind": "chainGate", "road": 463, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
+    { "id": "outpostRoad", "kind": "chainGate", "road": 432, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
     { "id": "outpostSide", "kind": "chainGate", "path": ["familyCemetery", "outpost"], "t": 0.72, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
     { "id": "checkpoint", "kind": "checkpoint", "opensOn": "outpostCleared", "locked": "The checkpoint's gate is shut. Nobody's answering." }
   ],

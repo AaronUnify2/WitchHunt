@@ -1,0 +1,62 @@
+{
+  "_note": "The overrun military outpost (Session 17, M9.4; DESIGN.md 'Overrun military outpost'; encounters/Outpost.js, render/OutpostProps.js). Positions are metres in the outpost's frame (Outpost.frame: facing the checkpoint from the clearing's centre, so z runs south toward the cordon, x to your right as you face it: west; the clearing's centre at 0, 0, the cordon at z 30). yaw: degrees from ahead (south) toward the right (west). The road comes in from the north-west (the gas station) and runs due south down x 0 from the centre to the checkpoint; the cemetery path comes in from the east (x negative) to the centre. barricade: the sandbag line across the clearing at z, from x0 to x1 in pieces: sandbags (solid to everyone), fence (the station's steel fence reused: solid but for the breach, a torn panel flat on the ground), rubble (spilled bags: open); the road's gap is between pieces, half blocked by the jackknifed truck (trucks[0], a vehicles.json car with a sure battery). lights: dead floodlight poles. firstHelmet: where the first army zombie stands on the road, looking up it. tower: the watchtower on the near side (x, z its centre; height its platform; half the platform's half size; legs the legs' half spread; the ladder on its north side). staging: what the soldiers left on the near side (gunPit: a sandbag ring; halt: the HALT sign; gear: dropped helmets, packs, rifles and ammo cans [x, z, kind, yaw]). compound: beyond the barricade: tents (x, z, w across, d along; the door faces the road), comms (the comms hut: open on its road side), armoury (the locker row, facing the road), containers on their flatbeds (yaw 90: the doors face west, the road; -90: east; kind: empty (doors blown outward), resin (the frozen alien), mothman (torn apart from inside), sealed (beetles scratching)), crates (the beetles' crates, [x, z, yaw]), manifest (the clipboard on its stand). searches: hold-X spots (gives: sure; loot: rolled with data/loot.json's items; the rest are beats in code). peak: where the barricade wave stands up, in the compound.",
+  "barricade": {
+    "z": 4,
+    "height": 1.15,
+    "thickness": 0.9,
+    "pieces": [
+      { "kind": "sandbags", "x0": 37, "x1": 20 },
+      { "kind": "fence", "x0": 20, "x1": 10, "breach": [16.4, 13.2] },
+      { "kind": "sandbags", "x0": 10, "x1": 4.6 },
+      { "kind": "sandbags", "x0": -6.2, "x1": -15 },
+      { "kind": "rubble", "x0": -15, "x1": -18.6 },
+      { "kind": "sandbags", "x0": -18.6, "x1": -37 }
+    ],
+    "lights": [[24, 1.6, 200], [-24, 1.6, 160], [-9, 21, 220]]
+  },
+  "trucks": [
+    { "x": -2.4, "z": 5.4, "yaw": 78 },
+    { "x": -15, "z": -15, "yaw": 160 }
+  ],
+  "firstHelmet": { "x": 40, "z": -31.5, "yaw": 113 },
+  "tower": { "x": 11, "z": -6.5, "height": 7.2, "half": 1.6, "legs": 1.75 },
+  "staging": {
+    "gunPit": { "x": -8.5, "z": -10.5, "r": 1.7 },
+    "halt": { "x": -5.2, "z": -21, "yaw": 180 },
+    "gear": [
+      [-3.6, -6.5, "helmet", 30], [6.4, -12.2, "pack", 70], [-6.2, -14.8, "rifle", 120], [-10.4, -9.2, "can", 0],
+      [-11.2, -11.6, "helmet", 200], [3.5, 1.8, "rifle", 80], [-9.5, 2.2, "helmet", 15], [12.8, 1.6, "pack", 200],
+      [18.5, -4.2, "can", 40], [-20, -6, "pack", 110], [8.6, -3.8, "helmet", 300], [-1.6, -16.5, "can", 20]
+    ]
+  },
+  "compound": {
+    "tents": [
+      { "x": 22, "z": 9.2, "w": 4.2, "d": 5.4 },
+      { "x": 23.6, "z": 16.8, "w": 4.2, "d": 5.4 }
+    ],
+    "comms": { "x": 9.6, "z": 10.2, "w": 3.4, "d": 3.0, "height": 2.5, "mast": [12, 12.4] },
+    "armoury": { "x": 14.6, "z": 9.6 },
+    "containers": [
+      { "id": "c1", "kind": "empty", "x": -21, "z": 10, "yaw": 90 },
+      { "id": "c2", "kind": "resin", "x": -21, "z": 17.2, "yaw": 90 },
+      { "id": "c3", "kind": "mothman", "x": -16.5, "z": 24.6, "yaw": 90 },
+      { "id": "c4", "kind": "sealed", "x": 14, "z": 24.8, "yaw": -90 }
+    ],
+    "crates": [[7.2, 19.2, 10], [10.6, 21.6, -20], [17.4, 19.6, 35], [19.8, 22.8, 5], [6.6, 26.6, -10]],
+    "manifest": { "x": -16.2, "z": 13.6 }
+  },
+  "searches": [
+    { "id": "pack", "label": "search the pack", "x": 6.4, "z": -12.2, "loot": [{ "item": "rifleAmmo", "chance": 0.7, "min": 3, "max": 6 }, { "item": "flare", "chance": 0.3 }] },
+    { "id": "gunPit", "label": "search the gun pit", "x": -8.5, "z": -10.5, "loot": [{ "item": "rifleAmmo", "chance": 0.8, "min": 4, "max": 8 }, { "item": "scrap", "chance": 0.5, "min": 2, "max": 4 }] },
+    { "id": "tentA", "label": "search the tent", "x": 18.7, "z": 9.2, "gives": [{ "item": "firstAid", "amount": 1 }], "loot": [{ "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 }, { "item": "scrap", "chance": 0.6, "min": 2, "max": 5 }] },
+    { "id": "tentB", "label": "search the tent", "x": 20.3, "z": 16.8, "loot": [{ "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 }, { "item": "helmet", "chance": 0.5 }, { "item": "flare", "chance": 0.4 }] },
+    { "id": "footlocker", "label": "search the footlocker", "x": 18.6, "z": 13, "loot": [{ "item": "scrap", "chance": 1, "min": 3, "max": 6 }, { "item": "firstAid", "chance": 0.4 }] },
+    { "id": "armoury", "label": "search the armoury lockers", "x": 13.3, "z": 9.6 },
+    { "id": "report", "label": "read the field report", "x": 10.1, "z": 10.2 },
+    { "id": "manifest", "label": "read the clipboard", "x": -15.4, "z": 13.6 }
+  ],
+  "peak": [
+    [2, 12], [-3, 14], [5, 15], [-6, 11], [0, 18], [-10, 15], [8, 13], [-13, 20], [3, 21], [-6, 19],
+    [11, 16], [-2, 24], [-9, 26], [7, 24], [-15, 16], [14, 13], [1, 27], [-4, 9], [4, 9], [-11, 9]
+  ]
+}

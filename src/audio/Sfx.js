@@ -214,6 +214,17 @@ const RECIPES = {
     s.tone(o, { seconds: 0.18, freq: 160, endFreq: 70, gain: 0.8 });
     s.noiseBurst(o, { seconds: 0.08, freq: 1200, gain: 0.6 });
   },
+  // Session 17: a round off an army helmet (a bright ring), and one knocking it off (a clank and a clatter).
+  helmetPing(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.22, wave: 'triangle', freq: 2600, endFreq: 2100, gain: 0.35 });
+    s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 3200, q: 4, gain: 0.5 });
+  },
+  helmetOff(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.3, wave: 'triangle', freq: 1400, endFreq: 900, gain: 0.4 });
+    s.noiseBurst(o, { seconds: 0.18, type: 'bandpass', freq: 1800, endFreq: 700, q: 2, gain: 0.5 });
+  },
   flesh(s, pos) {
     s.noiseBurst(s.out(pos?.x, pos?.z, 0.8), { seconds: 0.14, freq: 700, endFreq: 200, q: 2, gain: 0.8 });
   },

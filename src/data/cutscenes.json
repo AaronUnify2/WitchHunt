@@ -1656,6 +1656,58 @@
       "duration": 8
     },
     {
+      "id": "sweep.outpost",
+      "name": "Arriving at the military outpost (establishing sweep)",
+      "style": "sweep",
+      "_note": "Session 17 (M9.4): anchor outpost: its frame (facing the checkpoint, x right (west), z toward the cordon; data/outpost.json). From up over the road in: the first helmet standing on the road, then the watchtower, then down to the barricade and the truck across its gap. After it (skipped or not), Outpost plays Wyatt's outpost.arrive (nobody on the gate) and outpost.helmet.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "outpost",
+          "pos": [
+            60,
+            8,
+            -40
+          ],
+          "look": [
+            40,
+            1.4,
+            -31.5
+          ]
+        },
+        {
+          "at": 3.0,
+          "anchor": "outpost",
+          "pos": [
+            46,
+            9,
+            -35.5
+          ],
+          "look": [
+            11,
+            4,
+            -6
+          ]
+        },
+        {
+          "at": 6.5,
+          "anchor": "outpost",
+          "pos": [
+            24,
+            6,
+            -25.5
+          ],
+          "look": [
+            2,
+            1.2,
+            6
+          ]
+        }
+      ],
+      "tracks": [],
+      "duration": 7.0
+    },
+    {
       "id": "clip.dogfight",
       "rewatch": true,
       "name": "The outpost: the dogfight through the hunting rifle's scope",

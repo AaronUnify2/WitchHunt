@@ -233,9 +233,9 @@
       "weights": {"sedan": 0.5, "pickup": 0.4, "police": 0.1}
     },
     "outpost": {
-      "count": [2, 3],
+      "_note": "Session 17: the outpost's two trucks stand on authored spots (data/outpost.json trucks: the one jackknifed across the barricade's road gap, with a sure battery set by Outpost.js, and one parked on the near side).",
+      "count": [2, 2],
       "chance": 1,
-      "row": true,
       "weights": {"army": 1}
     },
     "home": {"count": [0, 0], "chance": 0},

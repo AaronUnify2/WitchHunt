@@ -5,7 +5,8 @@
 // on the minimap's rim when it's off the edge, so Tom knows which way to
 // head). The steps follow the opening cluster's order: Day 1 (the tower,
 // the campsite, the battery, the fence, Junie), Night 1, the gas station,
-// the shovel, the storm shelter, the tapes home, the safe.
+// the shovel, the storm shelter, the tapes home, the safe; Session 17: the
+// outpost (the road, the watchtower, the barricade, the armoury, the report, the checkpoint).
 //
 // current: { id, text, at: { x, z } | null } (at null: nothing to point at).
 //
@@ -107,6 +108,23 @@ export class Objectives {
     if (has('earlCombination') && !has('rifleClaimed') && gas.frame) {
       const s = gas.spots.find((x) => x.id === 'safe');
       return step('safe', "Open the gas station's safe with Earl's combination.", s);
+    }
+    // ---- the military outpost (Session 17, M9.4) ----
+    const op = g.outpost;
+    if (op?.frame && has('outpostCall') && !has('outpostCleared')) {
+      if (!op.approachStarted) return step('outpost', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', frameToWorld(op.frame, 44, -33));
+      if (op.peakState === 'none') {
+        if (!op.approachDone) return step('outpostRoad', 'Fight your way down the road to the checkpoint.', op.gapAt);
+        if (!op.roundsTaken) return step('outpostTower', "Climb the outpost's watchtower. The snipers' rounds will be up there.", op.ladderAt);
+        return step('outpostBarricade', 'Get to the barricade.', op.gapAt);
+      }
+      return step('outpostPeak', 'Hold the barricade.');
+    }
+    if (op?.frame && has('outpostCleared') && !has('crossedCordon')) {
+      const pt = (id) => op.points.find((x) => x.id === id);
+      if (!op.searched.has('armoury')) return step('outpostArmoury', "Search the outpost's armoury lockers.", pt('armoury'));
+      if (!op.searched.has('report')) return step('outpostReport', "Find the field report in the outpost's comms hut.", pt('report'));
+      return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);
     }
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

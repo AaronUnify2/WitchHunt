@@ -25,9 +25,9 @@
     {"id": "shelterOpened", "about": "The shelter's hatch hauled open (Session 16, StormShelter)."},
     {"id": "shelterEntered", "about": "Tom has been down into the shelter's room (Session 16, StormShelter)."},
     {"id": "rifleClaimed", "about": "The hunting rifle claimed: the gas station's safe opened with Earl's combination, from his keys at the shelter (Session 16: GasStation.trySafe() sets it; the Session 14 stand-in trigger is gone).", "standIn": false},
-    {"id": "outpostCall", "about": "Ellen's call to adventure: report to the checkpoint (M9.4). Opens the outpost's gates.", "standIn": true, "trigger": {"on": "all", "after": ["rifleClaimed"]}},
-    {"id": "outpostEntered", "about": "Tom has reached the outpost (M9.4).", "standIn": true, "trigger": {"on": "visit", "clearing": "outpost"}},
-    {"id": "outpostCleared", "about": "Tom has fought through the outpost (M9.4). Opens the checkpoint.", "standIn": true, "trigger": {"on": "cleared", "clearing": "outpost", "margin": 15, "after": ["outpostEntered"]}},
+    {"id": "outpostCall", "about": "Ellen's call to adventure: report to the checkpoint (Session 17, M9.4: encounters/Outpost.js sets it as the gas station's safe opens, Aaron: right away, with come home if it goes bad). Opens the outpost's gates. Back-up: as soon as the rifle's claimed (an older save).", "standIn": false, "trigger": {"on": "all", "after": ["rifleClaimed"]}},
+    {"id": "outpostEntered", "about": "Tom has reached the outpost (Session 17: Outpost sets it a few metres inside the clearing; the visit trigger stays as a back-up).", "standIn": false, "trigger": {"on": "visit", "clearing": "outpost"}},
+    {"id": "outpostCleared", "about": "Tom has fought through the outpost: the barricade's peak is down (Session 17: Outpost.peakDown()). Opens the checkpoint.", "standIn": false},
     {"id": "crossedCordon", "about": "Tom has crossed the cordon: the frontier is open, and the witch plants anywhere from now on.", "standIn": false, "trigger": {"on": "south", "after": ["outpostCleared"]}}
   ]
 }

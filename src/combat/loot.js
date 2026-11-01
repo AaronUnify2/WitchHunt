@@ -16,7 +16,9 @@ export function rollLoot(table, rng, out = []) {
 // their variant's.
 export function lootTableFor(enemy, tables) {
   if (enemy.kind === 'mutant') return tables.mutant;
-  return tables[enemy.variant] ?? tables.citizen;
+  const table = tables[enemy.variant] ?? tables.citizen;
+  // Session 17: an army zombie whose helmet was knocked off has none to drop.
+  return enemy.helmetOff ? table.filter((e) => e.item !== 'helmet') : table;
 }
 
 // A pickup's line in the HUD, e.g. "+4 shotgun shells" or "+ police vest (+40)".

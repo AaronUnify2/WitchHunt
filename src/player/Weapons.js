@@ -16,10 +16,10 @@
 import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
-import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind } from '../combat/hitscan.js';
+import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind, helmetPart } from '../combat/hitscan.js';
 
 // Which part counts when several pellets of one shot land: the best one.
-const PART_RANK = { body: 0, head: 1, weak: 2 };
+const PART_RANK = { body: 0, helmet: 0.5, head: 1, weak: 2 }; // Session 17: 'helmet', a headshot an army helmet stopped
 
 const DEG_TO_RAD = Math.PI / 180;
 const SLOT_ACTIONS = ['weaponSlot1', 'weaponSlot2', 'weaponSlot3', 'weaponSlot4', 'weaponSlot5', 'weaponSlot6', 'weaponSlot7', 'weaponSlot8'];
@@ -214,7 +214,8 @@ export class Weapons {
       let carried = 1;
       for (let k = 0; k < pierce; k++) {
         const hit = this.rayHits[k];
-        const mult = partMultiplier(hit.enemy, hit.part, this.cfg.headshotMultiplier);
+        const part = helmetPart(hit.enemy, hit.part, w); // Session 17: an army helmet stops the headshot bonus
+        const mult = partMultiplier(hit.enemy, part, this.cfg.headshotMultiplier);
         const damage = w.damage * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * mult;
         let entry = this.pelletHits.get(hit.enemy);
         if (!entry) {
@@ -222,7 +223,7 @@ export class Weapons {
           this.pelletHits.set(hit.enemy, entry);
         }
         entry.damage += damage;
-        if (PART_RANK[hit.part] > PART_RANK[entry.part]) entry.part = hit.part;
+        if (PART_RANK[part] > PART_RANK[entry.part]) entry.part = part;
         entry.pellets += 1;
         entry.x = eye.x + dir.x * hit.distance;
         entry.y = eye.y + dir.y * hit.distance;
@@ -233,7 +234,7 @@ export class Weapons {
 
     // One hit per zombie per shot, however many pellets landed.
     for (const [zombie, e] of this.pelletHits) {
-      const scaled = { id: this.id, stagger: w.stagger, knockback: w.knockback * e.pellets }; // id: the witch backs off from the shotgun
+      const scaled = { id: this.id, stagger: w.stagger, knockback: w.knockback * e.pellets, helmetPierce: Boolean(w.helmetPierce) }; // id: the witch backs off from the shotgun
       const killed = this.applyHit(zombie, e.damage, e.part, scaled, e, eye);
       this.bus.emit('weapon:hit', { killed, part: e.part, melee: false });
     }

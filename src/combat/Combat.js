@@ -109,8 +109,10 @@ export class Combat {
       bus.on('enemy:strike', ({ zombie, damage }) => this.onStrike(zombie, damage)),
       bus.on('enemy:hit', ({ x, y, z, part, killed }) => {
         const critical = part === 'head' || part === 'weak';
-        this.fx.blood(x, y, z, critical);
-        this.sfx.play(critical ? 'headshot' : 'flesh', { x, z });
+        // Session 17: a helmet rings (no blood off it).
+        if (part === 'helmet') this.sfx.play('helmetPing', { x, z });
+        else this.fx.blood(x, y, z, critical);
+        if (part !== 'helmet') this.sfx.play(critical ? 'headshot' : 'flesh', { x, z });
         if (killed) this.sfx.play('kill', { x, z });
       }),
       bus.on('enemy:killed', ({ zombie }) => {
@@ -118,6 +120,7 @@ export class Combat {
         this.dropLoot(zombie);
       }),
       bus.on('enemy:charge', ({ zombie }) => this.sfx.play('charge', zombie)),
+      bus.on('enemy:helmetOff', ({ x, z }) => this.sfx.play('helmetOff', { x, z })), // Session 17
       bus.on('weapon:hit', ({ killed, part, melee }) => {
         this.hud.hitMarker(killed, part === 'head' || part === 'weak');
         if (melee) this.sfx.play('shovelHit');

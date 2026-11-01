@@ -35,6 +35,7 @@
 // through the fence and doors and claw whatever's in the way.
 
 import { Zombie } from './Zombie.js';
+import { wearHelmet } from '../combat/hitscan.js';
 import { ZombieBrain } from './ZombieBrain.js';
 import { PathRoutes } from './pathRoutes.js';
 import { MarchRoutes } from './marchRoutes.js';
@@ -177,6 +178,9 @@ export class EnemyManager {
     slot.detourTries = 0;
     slot.clearTime = 0;
     slot.authored = opts.authored ?? null; // Session 16: an encounter's own (not thinned at dawn); a reused slot starts clear
+    // Session 17 (M9.4): an army zombie's helmet (it stops the headshot bonus until it's knocked off).
+    slot.helmet = mutant ? 0 : (c.variants[variant]?.helmet ?? 0);
+    slot.helmetOff = false;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }
@@ -619,6 +623,8 @@ export class EnemyManager {
   // Apply a hit from a weapon. part: 'head' | 'body'. at: { x, y, z } impact
   // point (for blood). from: { x, z } the shooter.
   damage(zombie, amount, part, weapon, at, from) {
+    // Session 17: a helmet takes the hit with it (worn down, or punched off by the hunting rifle).
+    if (wearHelmet(zombie, amount, part)) this.bus.emit('enemy:helmetOff', { x: at.x, y: at.y, z: at.z, zombie });
     const killed = zombie.hit(amount, weapon.stagger ?? 0, weapon.knockback ?? 0, from);
     this.bus.emit('enemy:hit', { x: at.x, y: at.y, z: at.z, part, killed, zombie });
     if (killed) this.bus.emit('enemy:killed', { zombie });

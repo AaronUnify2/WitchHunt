@@ -33,6 +33,7 @@ import { PaperNote } from '../ui/PaperNote.js';
 import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
 import { StormShelter } from '../encounters/StormShelter.js';
+import { Outpost } from '../encounters/Outpost.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
@@ -285,7 +286,7 @@ export class Game {
       mapUi: this.mapUi,
       notify: (text) => this.toast.show(text),
       avoid: [{ x: L.centre.x, z: L.centre.z, r: L.radius + this.cfg.vehicles.placement.avoidRadius }],
-      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean), gasStation: GasStation.carSpots(this.world.map), trail: Campsite.trailWreckSpots(this.world.map) }, // M9.2: the campers' car, by the path in; Session 15b: the forecourt's; Session 16: the bloody wreck on the trail out
+      fixed: { campsite: [Campsite.carSpot(this.world.map)].filter(Boolean), gasStation: GasStation.carSpots(this.world.map), trail: Campsite.trailWreckSpots(this.world.map), outpost: Outpost.truckSpots(this.world.map) }, // M9.2: the campers' car, by the path in; Session 15b: the forecourt's; Session 16: the bloody wreck on the trail out; Session 17: the outpost's trucks
       busy: [this.director.hud, this.station.hud],
     });
     this.combat.promptSources.push(this.vehicles.hud);
@@ -456,6 +457,26 @@ export class Game {
     this.combat.promptSources.push(this.shelter.hud);
     this.vehicles.busy?.push(this.shelter.hud);
     this.station.blockers.push(this.shelter.hud);
+    // Session 17 (M9.4): the overrun military outpost.
+    this.outpost = new Outpost(this.cfg, this.bus);
+    this.outpost.init(this.scene, {
+      world: this.world,
+      player: this.player,
+      combat: this.combat,
+      colliders: this.colliders,
+      vehicles: this.vehicles,
+      explosives: this.explosives,
+      clock: this.clock,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      notify: (text) => this.toast.show(text),
+    });
+    this.combat.promptSources.push(this.outpost.hud);
+    this.vehicles.busy?.push(this.outpost.hud);
+    this.station.blockers.push(this.outpost.hud);
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       watch: this.watch,
@@ -587,6 +608,7 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
+    this.overlay.addStat('outpost', () => this.outpost.overlayLine());
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -622,6 +644,7 @@ export class Game {
     this.campsite.addDebugItems(menu);
     this.gasStation.addDebugItems(menu);
     this.shelter.addDebugItems(menu);
+    this.outpost.addDebugItems(menu);
     this.quad.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
@@ -937,6 +960,7 @@ export class Game {
       campsite: this.campsite.saveState(), // M9.2: what's been searched, the wave (optional: older saves have none)
       gasStation: this.gasStation.saveState(), // Session 15b (M9.3): its beats (optional)
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
+      outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
     };
   }
@@ -979,6 +1003,8 @@ export class Game {
     this.campsite.loadState(d.campsite);
     this.gasStation.loadState(d.gasStation);
     this.shelter.loadState(d.shelter);
+    this.outpost.loadState(d.outpost);
+    this.outpost.checkCall();
     this.quad.loadState(d.quad);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
@@ -1145,10 +1171,11 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.quad.hud.prompt);
-    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt), daylight);
+    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt), daylight);
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     this.shelter.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
+    this.outpost.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     if (first) this.firstDay.update(dt, playing);
   }
 
@@ -1172,6 +1199,7 @@ export class Game {
     this.campsite.dispose();
     this.gasStation.dispose();
     this.shelter.dispose();
+    this.outpost.dispose();
     this.quad.dispose();
     this.gates.dispose();
     this.progress.dispose();

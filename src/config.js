@@ -520,7 +520,7 @@ export const config = {
       },
       // The sign before the outpost.
       sign: {
-        along: 452, // metres from the west end (the outpost's centre is at about 520)
+        along: 426, // metres from the west end (the outpost's centre is at about 520); Session 17: by the outpost's road gate, moved back to 432 for a longer approach
         side: -5.2, // metres right (+) or left (-) of the centre line
         title: 'ROAD CLOSED',
         lines: ['MILITARY CHECKPOINT AHEAD', 'NO ENTRY BEYOND THIS POINT'],
@@ -533,7 +533,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter'], // Session 15b (and 16): cluster sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost'], // Session 15b (and 16, 17): cluster sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -1038,6 +1038,7 @@ export const config = {
       aimFovMultiplier: 0.25, // a 4x scope
       scope: true, // aiming shows the scope view instead of the gun
       scopeLookScale: 0.3, // turning slows this much at full zoom, so 4x isn't twitchy
+      helmetPierce: true, // Session 17 (Aaron, Oct 16): punches straight through an army helmet (the headshot lands)
       shake: 0.3,
       noise: 100, // loud: every zombie this close hears it
       debugRounds: 10, // the debug menu's "give the hunting rifle" comes with these
@@ -1324,7 +1325,7 @@ export const config = {
     variants: {
       citizen: { health: 1 },
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
-      army: { health: 1.6 }, // fatigues and helmet: tougher
+      army: { health: 1.6, helmet: 50 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 50 damage (2 service rifle rounds to the head), or the hunting rifle punches straight through it
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
@@ -2628,6 +2629,92 @@ export const config = {
         signFrame: 0x2e2a22,
         dumpster: 0x2a3a2c,
         bag: 0x1a1c1a,
+      },
+    },
+  },
+
+  // The overrun military outpost (Session 17, M9.4; encounters/Outpost.js,
+  // data/outpost.json, render/OutpostProps.js; DESIGN.md "Overrun military
+  // outpost"). The gateway south: the approach waves, the watchtower and its
+  // rounds, the barricade's peak, the compound, the checkpoint.
+  outpost: {
+    // The approach (Aaron, Session 17: start at 3, 5, 8, then the barricade
+    // at 14; tune in play). It starts once Ellen's sent Tom (outpostCall) and
+    // he's within `start` metres of the outpost's centre: the arrival sweep,
+    // then the first helmet (one army zombie on the road ahead, standing),
+    // then the waves, each `lull` seconds after the last is down (the radio
+    // talks in the lulls). A wave stands up `spawnAhead` metres ahead of Tom
+    // toward the barricade (`spread` either side), and comes at him. By night
+    // each is `nightScale` bigger. Retreat more than `retreat` metres from
+    // the centre mid-wave and the waves go back to the last one cleared
+    // (DESIGN edge case); the ones out are left as strays.
+    approach: {
+      start: 105,
+      firstHelmetAhead: 30, // metres ahead of Tom, on the road
+      waves: [3, 5, 8],
+      lull: 9,
+      spawnAhead: 42,
+      spread: 14,
+      memory: 30, // seconds a wave's zombies keep after Tom once they've lost sight of him
+      nightScale: 1.5,
+      retreat: 170,
+    },
+    // The barricade's peak (DESIGN beat 7): the biggest wave, standing up in
+    // the compound (data/outpost.json peak) and coming through the gaps.
+    // It starts once the approach is done and Tom's within `trigger` metres of
+    // the barricade line, or as soon as he's at the line whatever the
+    // approach. In `bursts` a few seconds apart. Down: outpostCleared (the
+    // checkpoint opens).
+    peak: { count: 14, nightScale: 1.4, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
+    // The watchtower: rounds in the snipers' nest (DESIGN: guaranteed), the climb.
+    tower: { rounds: 10 },
+    sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
+    arriveInset: 6, // metres inside the clearing's edge: outpostEntered
+    interactRange: 1.4,
+    hold: { climb: 0.8, search: 1.0, rounds: 0.8, read: 0.5, crate: 1.6 },
+    look: {
+      colors: {
+        sandbag: 0x3a3424,
+        sandbagDark: 0x2c271a,
+        sandbagTie: 0x22201a,
+        steel: 0x2a2c2a,
+        steelDark: 0x1c1e1c,
+        wire: 0x2a2a28,
+        olive: 0x343a26,
+        oliveDark: 0x262b1c,
+        canvas: 0x30341f,
+        canvasDark: 0x24271a,
+        timber: 0x382c1e,
+        timberDark: 0x261e14,
+        concrete: 0x3a3a36,
+        lamp: 0x1e1e1c,
+        lampGlass: 0x2c2e2a,
+        containerA: 0x34382a, // olive drab
+        containerB: 0x3a2a20, // rust brown
+        containerC: 0x2a3034, // blue-grey
+        containerD: 0x2e2e2a,
+        rust: 0x3e2414,
+        scorch: 0x0c0a08,
+        gouge: 0x0e0c0a,
+        flatbed: 0x1e1e1c,
+        tyre: 0x121212,
+        resin: 0x8a5a14,
+        husk: 0x3a3424,
+        chain: 0x26241e,
+        crate: 0x3a2e1c,
+        crateBand: 0x22201c,
+        crateStencil: 0x5a5440,
+        locker: 0x2e3228,
+        desk: 0x2e2a22,
+        radio: 0x22261e,
+        paper: 0x5a564a,
+        helmet: 0x343a26,
+        pack: 0x30321f,
+        rifle: 0x1a1a18,
+        can: 0x2e3a22,
+        casing: 0x6a5420,
+        blood: 0x1c0806,
+        void: 0x050505,
       },
     },
   },

@@ -22,6 +22,7 @@ export const DEBUG = {
   story: 'Story, radio & trail cams',
   progress: 'Story flags & gates',
   firstDay: 'First day & campsite', // M9.2
+  outpost: 'Military outpost', // Session 17 (M9.4)
   day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',

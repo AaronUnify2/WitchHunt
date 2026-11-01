@@ -30,7 +30,7 @@ describe('progress flags', () => {
     for (const g of MAP_DATA.cluster.gates) expect(ids).toContain(g.opensOn);
   });
 
-  it('opens the path order: shelter by dawn 1, gas station on Day 2 after the campsite, outpost once the rifle is claimed (stand-in call), checkpoint once it is cleared', () => {
+  it('opens the path order: shelter by dawn 1, gas station on Day 2 after the campsite, outpost once the rifle is claimed (the call; its trigger is a back-up), checkpoint once the outpost sets it', () => {
     const f = flags();
     // Day 1: the campsite's arrival beat sets its flag (M9.2: Campsite, no trigger).
     expect(runTriggers(f, ctx({ clearing: 'campsite' }))).toEqual([]);
@@ -42,12 +42,14 @@ describe('progress flags', () => {
     expect(runTriggers(f, ctx({ clearing: 'gasStation' }))).toEqual(['gasStationVisited']);
     // The shelter: just the visit (Session 16: the rifle's stand-in is gone; the safe sets rifleClaimed).
     expect(runTriggers(f, ctx({ clearing: 'stormShelter' }))).toEqual(['shelterVisited']);
-    // The safe opened with Earl's combination: Ellen's call (still a stand-in) comes with it.
+    // The safe opened with Earl's combination: Ellen's call comes with it (Session 17: Outpost makes it; the trigger's a back-up).
     f.set('rifleClaimed');
     expect(runTriggers(f, ctx({}))).toEqual(['outpostCall']);
     // The outpost: entered, then cleared.
     expect(runTriggers(f, ctx({ clearing: 'outpost' }))).toEqual(['outpostEntered']);
-    expect(runTriggers(f, ctx({ clearing: 'outpost', cleared: () => true }))).toEqual(['outpostCleared']);
+    // Session 17: no stand-in: an empty outpost isn't cleared; the barricade's peak going down sets it (Outpost).
+    expect(runTriggers(f, ctx({ clearing: 'outpost', cleared: () => true }))).toEqual([]);
+    f.set('outpostCleared');
     expect(runTriggers(f, ctx({ south: true }))).toEqual(['crossedCordon']);
   });
 

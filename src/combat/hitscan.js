@@ -156,6 +156,26 @@ export function partMultiplier(enemy, part, headshot) {
   return 1;
 }
 
+// Session 17 (M9.4; DESIGN.md "Zombies", Aaron Oct 16): an army zombie's
+// helmet blocks the headshot bonus. A shot to the head of one still wearing
+// it lands as 'helmet' (worth a body shot), unless the round punches straight
+// through (weapon.helmetPierce: the hunting rifle), which lands as 'head'.
+export function helmetPart(enemy, part, weapon) {
+  if (part !== 'head' || !(enemy.helmet > 0) || weapon?.helmetPierce) return part;
+  return 'helmet';
+}
+
+// A hit on a helmet wears it by the hit's damage; a round through it (a
+// 'head' hit while it's still on: helmetPierce) knocks it clean off. Returns
+// true if it came off with this hit (and marks the enemy helmetOff).
+export function wearHelmet(enemy, amount, part) {
+  if (!(enemy.helmet > 0) || (part !== 'helmet' && part !== 'head')) return false;
+  enemy.helmet = part === 'head' ? 0 : Math.max(0, enemy.helmet - amount);
+  if (enemy.helmet > 0) return false;
+  enemy.helmetOff = true;
+  return true;
+}
+
 // Is a swing from `eye` coming from behind `e` (inside its weak spot's
 // meleeBehindDegrees of straight behind)? Then the shovel lands on the spot.
 export function meleeFromBehind(eye, e) {
