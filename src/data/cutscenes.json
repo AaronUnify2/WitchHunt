@@ -1708,6 +1708,64 @@
       "duration": 7.0
     },
     {
+      "id": "sweep.outpostC7",
+      "name": "The outpost: the torn-open container, C-7 (sweep)",
+      "style": "sweep",
+      "_note": "Session 17 (M9.4; DESIGN.md 'Overrun military outpost' beat 8): the first time Tom comes to the Mothman's container (never named). Anchor outpostC7: the container's middle, facing out of its torn-open end (z ahead; its bent-out side is to the left, -x). Low on the shed husk in front of it, round to the bent side and up the claw gouges high inside, then above, down into the box: the peeled roof, scorch, the snapped restraints. After it (skipped or not) Wyatt and Ellen (Outpost.playC7).",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "outpostC7",
+          "pos": [
+            3.2,
+            1.8,
+            10.5
+          ],
+          "look": [
+            0,
+            1.0,
+            2.6
+          ]
+        },
+        {
+          "at": 2.8,
+          "anchor": "outpostC7",
+          "pos": [
+            -5.8,
+            2.5,
+            4.6
+          ],
+          "look": [
+            -0.8,
+            3.2,
+            0
+          ]
+        },
+        {
+          "at": 5.6,
+          "anchor": "outpostC7",
+          "pos": [
+            -2.6,
+            7.6,
+            4.2
+          ],
+          "look": [
+            0,
+            1.2,
+            -0.6
+          ]
+        }
+      ],
+      "tracks": [
+        {
+          "at": 2.6,
+          "do": "sfx",
+          "sfx": "scratch"
+        }
+      ],
+      "duration": 7.4
+    },
+    {
       "id": "clip.dogfight",
       "rewatch": true,
       "name": "The outpost: the dogfight through the hunting rifle's scope",

@@ -1,5 +1,5 @@
 {
-  "_note": "Papers read in close-up (Session 16, Aaron: Earl's note and his diary; ui/PaperNote.js). Each: id, kind (note: a torn notepad sheet; diary: a ruled notebook), head (a small printed line at the top, optional), pages [{ date (optional), text }]. An empty text is a blank page (the diary's last). Words in *stars* are underlined (Earl's emphasis).",
+  "_note": "Papers read in close-up (Session 16, Aaron: Earl's note and his diary; ui/PaperNote.js). Each: id, kind (note: a torn notepad sheet; diary: a ruled notebook), head (a small printed line at the top, optional), pages [{ date (optional), text }]. An empty text is a blank page (the diary's last). Words in *stars* are underlined (Earl's emphasis). Session 17: kind report (a typed field report on a form, a CLASSIFIED stamp) and manifest (a typed list on a clipboard sheet). Runs of █ are redactions.",
   "papers": [
     {
       "id": "earlNote",
@@ -38,6 +38,33 @@
         },
         {
           "text": ""
+        }
+      ]
+    },
+    {
+      "id": "fieldReport",
+      "kind": "report",
+      "head": "FIELD REPORT · CHECKPOINT 7 · ROUTE 9 TRANSFER POINT",
+      "pages": [
+        {
+          "date": "OCT 2003 · 0215",
+          "text": "FROM: OIC, CP-7\nTO: CONTAINMENT CMD (BY RELAY)\nSUBJ: LOSS OF CONTAINMENT, CONVOY 3\n\n1. At 0140 the specimen in C-7 broke its restraints in transit. The container failed from the *inside*. Two men lost at the trailer.\n\n2. Specimen not recovered. Last seen moving south, low over the treeline. Do not engage it in the open."
+        },
+        {
+          "text": "3. Brood cargo (C-9 and crates 1-6) intact. Recommend sealed transfer. No firing near the crates.\n\n4. Since 0200 our casualties are getting back up. Treat all personnel KIA as hostile. Head shots are no good while they've got their helmets on.\n\n5. I have ordered the line held at the barricade. Relay down. Nothing from command since 0150."
+        },
+        {
+          "text": "6. To whoever reads this: the line is gone. Whatever was south of the cordon is north of it now.\n\nCPT R. HALE, OIC\n\n\n(in pencil, under it)\nThey're at the sandbags. Going up the tower with what's left."
+        }
+      ]
+    },
+    {
+      "id": "outpostManifest",
+      "kind": "manifest",
+      "head": "TRANSFER MANIFEST · CONVOY 3 · CP-7",
+      "pages": [
+        {
+          "text": "C-3   BIO SAMPLES (CHILLED)      12 CS\nC-4   SPECIMEN, INTACT, RESIN     1 U\nC-7   ██████████████████     1 U\nC-9   BROOD, LIVE                  6 CRT\n\nORIGIN:  SITE 4 (MINE WORKINGS)\nDEST:    ██████████\n\nHANDLING:\n- NO LIGHT IN C-7.\n- NO NOISE NEAR C-9.\n- C-4 DOES NOT LEAVE THE RESIN.\n\nRECEIVED CP-7: ___________"
         }
       ]
     }

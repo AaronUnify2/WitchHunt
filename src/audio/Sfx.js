@@ -233,6 +233,25 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 2.2, type: 'lowpass', freq: 260, endFreq: 60, gain: 1, attack: 0.02 });
     s.tone(o, { seconds: 1.6, freq: 50, endFreq: 28, gain: 0.7 });
   },
+  // Session 17: the beetles: a hiss (the threat), the mandibles' snap, a
+  // crate splitting, scratching inside a crate or a sealed container.
+  beetleHiss(s, pos) {
+    s.noiseBurst(s.out(pos?.x, pos?.z, 0.8), { seconds: 0.9, type: 'highpass', freq: 2600, endFreq: 1800, gain: 0.45, attack: 0.08 });
+  },
+  beetleSnap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.06, type: 'bandpass', freq: 2400, q: 5, gain: 0.8 });
+    s.tone(o, { seconds: 0.08, wave: 'square', freq: 320, endFreq: 180, gain: 0.25 });
+  },
+  crateBreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.4, type: 'bandpass', freq: 700, endFreq: 300, q: 1.2, gain: 0.9 });
+    s.tone(o, { seconds: 0.25, freq: 120, endFreq: 60, gain: 0.5 });
+  },
+  scratch(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 3000 + i * 300, q: 6, gain: 0.35 }), i * 110);
+  },
   // Session 17: a round off an army helmet (a bright ring), and one knocking it off (a clank and a clatter).
   helmetPing(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.9);

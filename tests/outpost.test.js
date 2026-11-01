@@ -14,6 +14,8 @@ import lootData from '../src/data/loot.json';
 import vehiclesData from '../src/data/vehicles.json';
 import { makeMap, makeGround, config } from './mapFixture.js';
 import { flightAt } from '../src/story/cutsceneFlight.js';
+import { rayEnemies } from '../src/combat/hitscan.js';
+import papersData from '../src/data/papers.json';
 import { localToWorld, validateCutscenes } from '../src/story/cutsceneTimeline.js';
 import encountersData from '../src/data/encounters.json';
 
@@ -59,7 +61,12 @@ function rig({ phase = 'day' } = {}) {
   const ammo = {};
   const combat = {
     enemies,
-    weapons: { addAmmo: (t, n) => ((ammo[t] = (ammo[t] ?? 0) + n), true), order: [] },
+    weapons: { addAmmo: (t, n) => ((ammo[t] = (ammo[t] ?? 0) + n), true), order: [], extraTargets: [] },
+    alive: true,
+    hurt: 0,
+    hurtPlayer(d) {
+      this.hurt += d;
+    },
     inventory: { addAmmo() {} },
     hud: { pickup() {} },
     sfx: { play() {} },
@@ -81,7 +88,7 @@ function rig({ phase = 'day' } = {}) {
     world: { map, ground },
     player,
     combat,
-    colliders: { insert() {} },
+    colliders: { insert() {}, query: () => [] },
     explosives: charges,
     clock: { phase },
     dialogue: { play: (id) => played.push(id) },
@@ -409,5 +416,102 @@ describe('the dogfight (pass 3)', () => {
     expect(played).toBe(1);
     expect(r.o.dogfightSeen).toBe(true);
     expect(r.played).toContain('outpost.dogfight.after');
+  });
+});
+
+describe('the compound (pass 4)', () => {
+  const ai = config.beetles.ai;
+
+  it('breaks a crate shot into, and its beetle claws out, facing Tom', () => {
+    const r = rig();
+    r.at(2, 14);
+    const c = r.o.crateAt[0];
+    r.bus.emit('weapon:impact', { x: c.x + 0.3, y: c.y + 0.6, z: c.z - 0.2 });
+    expect(r.o.crates[0]).toBe('broken');
+    expect(r.o.crateCols[0].off).toBe(true);
+    const b = r.o.beetles.list[0];
+    expect(b.state).toBe('emerge');
+    expect(r.played).toContain('outpost.crate');
+    // Shots far off don't.
+    r.bus.emit('weapon:impact', { x: c.x + 30, y: c.y, z: c.z });
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
+    // The weapons can hit it.
+    expect(r.o.combat.weapons.extraTargets[0].group).toContain(b);
+  });
+
+  it('lets one out on its own the first time Tom comes near (DESIGN: the fight always happens)', () => {
+    const r = rig();
+    r.at(-3, 8);
+    r.step(0.3);
+    expect(r.o.crates.every((x) => x === 'whole')).toBe(true);
+    const [x, z] = outpost.compound.crates[0];
+    r.at(x - 4, z);
+    r.step(0.3);
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
+    expect(r.o.autoBroken).toBe(true);
+  });
+
+  it("shrugs off shots to the shell, not to the face; it's hit by a ray from the front only", () => {
+    const r = rig();
+    const b = r.o.beetles.spawn(0, 0, 0);
+    // Facing +z: a shot from the front at the spot's height hits the weak spot; from behind, the shell.
+    const front = rayEnemies({ x: 0, y: b.y + ai.spotHeight, z: 10 }, { x: 0, y: 0, z: -1 }, [b], 50);
+    expect(front.part).toBe('weak');
+    const back = rayEnemies({ x: 0, y: b.y + ai.spotHeight, z: -10 }, { x: 0, y: 0, z: 1 }, [b], 50);
+    expect(back.part).toBe('body');
+    b.takeHit(50, 'body', {}, null, null);
+    expect(b.health).toBeCloseTo(ai.health - 50 * ai.armour);
+    expect(r.played).toContain('outpost.beetle.hint');
+    b.takeHit(50 * ai.weakMultiplier, 'weak', {}, null, null);
+    expect(b.alive).toBe(false);
+  });
+
+  it('comes out, flares, charges and bites; up the tower it can only mill about below', () => {
+    const r = rig();
+    r.at(2, 14);
+    const p = r.player.position;
+    const b = r.o.beetles.spawn(p.x + 6, p.z, -Math.PI / 2);
+    for (let i = 0; i < 80; i++) r.o.beetles.update(0.05, true);
+    expect(r.o.combat.hurt).toBeGreaterThan(0);
+    const hurt = r.o.combat.hurt;
+    r.o.climbUp();
+    for (let i = 0; i < 80; i++) r.o.beetles.update(0.05, true);
+    expect(r.o.combat.hurt).toBe(hurt);
+    expect(b.alive).toBe(true);
+  });
+
+  it("plays the torn container's sweep once and the resin body's lines once; the papers are there", () => {
+    const r = rig();
+    let played = [];
+    r.o.cutscenes = { active: false, play: (id, o) => (played.push(id), o.onDone?.(false), true) };
+    r.player.position.x = r.o.c7At.x;
+    r.player.position.z = r.o.c7At.z;
+    r.step(0.3);
+    r.step(0.3);
+    expect(played).toEqual(['sweep.outpostC7']);
+    expect(r.played).toContain('outpost.c7.ellen');
+    r.player.position.x = r.o.resinAt.x;
+    r.player.position.z = r.o.resinAt.z;
+    r.step(0.3);
+    expect(r.played.filter((x) => x === 'outpost.resin.wyatt')).toHaveLength(1);
+    const ids = papersData.papers.map((x) => x.id);
+    expect(ids).toContain('fieldReport');
+    expect(ids).toContain('outpostManifest');
+    // The witch isn't here, nor named (DESIGN: what's deliberately absent).
+    const words = papersData.papers.filter((x) => x.id === 'fieldReport' || x.id === 'outpostManifest').flatMap((x) => x.pages.map((g) => g.text)).join(' ');
+    expect(words).not.toMatch(/witch/i);
+    expect(words).not.toMatch(/moth/i);
+    expect(cutsceneData.cutscenes.some((c) => c.id === 'sweep.outpostC7')).toBe(true);
+  });
+
+  it('keeps its broken crates and one-off beats over a save', () => {
+    const r = rig();
+    r.o.breakCrate(2);
+    r.o.told.add('c7');
+    const q = rig();
+    q.o.loadState(JSON.parse(JSON.stringify(r.o.saveState())));
+    expect(q.o.crates[2]).toBe('broken');
+    expect(q.o.crateCols[2].off).toBe(true);
+    expect(q.o.told.has('c7')).toBe(true);
   });
 });

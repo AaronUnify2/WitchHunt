@@ -119,7 +119,7 @@ export class PaperNote {
   render() {
     const p = this.paper;
     const pg = p.pages[this.page];
-    this.headEl.textContent = this.page === 0 || p.kind === 'diary' ? (p.head ?? '') : '';
+    this.headEl.textContent = this.page === 0 || p.kind === 'diary' || p.kind === 'report' ? (p.head ?? '') : ''; // Session 17: a report's form head on every page
     this.dateEl.textContent = pg.date ?? '';
     this.textEl.replaceChildren(...this.lines(pg.text ?? ''));
     const many = p.pages.length > 1;

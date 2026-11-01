@@ -2668,6 +2668,11 @@ export const config = {
     peak: { count: 14, nightScale: 1.4, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
     // The watchtower: rounds in the snipers' nest (DESIGN: guaranteed), the climb.
     tower: { rounds: 10 },
+    // The beetles' crates (pass 4): the first time Tom comes within autoBreak
+    // of one (past the barricade, no fight on) it breaks open by itself.
+    crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10 },
+    c7Distance: 7, // metres from the Mothman's container's torn-open end: its sweep
+    resinDistance: 5, // metres from the resin body's open container: the family's lines
     sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
     arriveInset: 6, // metres inside the clearing's edge: outpostEntered
     interactRange: 1.4,
@@ -2695,7 +2700,7 @@ export const config = {
         containerD: 0x2e2e2a,
         rust: 0x3e2414,
         scorch: 0x0c0a08,
-        gouge: 0x0e0c0a,
+        gouge: 0x6a685e, // Session 17: claw gouges scrape the paint back to bare steel (pale: they show)
         flatbed: 0x1e1e1c,
         tyre: 0x121212,
         resin: 0x8a5a14,
@@ -3008,6 +3013,33 @@ export const config = {
       hitFlash: [1.8, 1.6, 0.8], // its colour while flashing
       thermalGlow: 0.35, // x the heat scope's glow: dim (from the other side)
       colours: { shell: 0x24382c, shellDark: 0x18221c, belly: 0x2e2618, spot: 0xc8c070, eyes: 0xc01810 }, // black-green
+    },
+    // Session 17 (M9.4; ai/Beetles.js): their AI, first met crated at the
+    // outpost. The shell takes `armour` of a hit (DESIGN: body shots do
+    // little); the soft spot on the face takes weakMultiplier x (a service
+    // rifle round there 75, the hunting rifle's 150: one). Speeds in m/s
+    // (Tom walks 3.6, sprints 7.2).
+    ai: {
+      health: 150,
+      armour: 0.3,
+      weakMultiplier: 3,
+      speed: 5.2, // charging
+      walkSpeed: 2.0, // cooling off after a strike, or with Tom out of reach
+      turnRate: 4, // radians a second
+      attackRange: 1.8, // metres: it rears up
+      reach: 2.3, // metres: the snap lands if he's still this close, in front
+      damage: 22,
+      recover: 0.35, // seconds after the snap
+      cooldown: 0.9, // seconds of walking before the next strike
+      emergeSeconds: 1.3,
+      threatSeconds: 0.9,
+      flinchSeconds: 0.4,
+      radius: 0.55, // metres: against the world
+      hitRadius: 0.6, // the body's hit cylinder
+      height: 0.75,
+      spotAhead: 0.62, // the soft spot: metres ahead of its middle, up, across
+      spotHeight: 0.42,
+      spotRadius: 0.2,
     },
   },
 

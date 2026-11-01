@@ -26,13 +26,23 @@
 //     off the tower or has seen the dogfight), or Tom's close to the line,
 //     or right at it whatever. Down: outpostCleared (the checkpoint opens):
 //     nobody's coming.
-//  6. The compound (pass 4): the containers, the beetles, the armoury's
-//     charge, the field report, the manifest.
+//  6. The compound: a crime scene of the failed transfer.
+//     - The beetles' crates (DESIGN beat 9): shot, blown or prised open,
+//       each lets one out (ai/Beetles.js: the shell shrugs off shots, the
+//       face doesn't); the first time Tom comes near one breaks open on its
+//       own, so the fight always happens. Scratching inside the sealed
+//       container and the crates.
+//     - The Mothman's container (C-7, torn apart from inside): a short sweep
+//       up its claw gouges the first time Tom comes to it; never named.
+//     - The body in the resin (C-4); the empty one with its doors blown out.
+//     - The armoury's one charge, the field report (read in close-up, then
+//       carried home), the manifest on its clipboard (one line redacted).
 // Each beat happens once; it's saved (a wave out isn't: it comes again).
 //
 // Events: 'outpost:called', 'outpost:approach', 'outpost:wave' { index },
 // 'outpost:waveDown' { index }, 'outpost:peak', 'outpost:cleared',
-// 'outpost:climbed', 'outpost:rounds', 'outpost:dogfight', 'outpost:searched' { id }.
+// 'outpost:climbed', 'outpost:rounds', 'outpost:dogfight', 'outpost:crate' { index },
+// 'outpost:c7', 'outpost:searched' { id }.
 
 import outpostData from '../data/outpost.json';
 import { frameToWorld, frameYaw, frameAnchor } from '../world/clearingFrame.js';
@@ -42,6 +52,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { OutpostProps, CONTAINER, CRATE } from '../render/OutpostProps.js';
 import { Rng } from '../core/Rng.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { Beetles } from '../ai/Beetles.js';
 
 export class Outpost {
   constructor(cfg, bus, data = outpostData) {
@@ -100,6 +111,26 @@ export class Outpost {
     for (const name of ['dogfight', 'fight', 'planeCrash', 'ufoCrash']) this.cutscenes?.namedAnchors?.set(name, () => this.dogfightAnchors(this.towerEye())[name]);
     this.sites = this.crashSites();
     this.props?.buildCrashSmoke(scene, [this.sites.plane, this.sites.ufo]);
+    // The compound: the crates' beetles, the containers.
+    this.beetles = new Beetles(this.cfg, this.bus);
+    this.beetles.init(scene, { player: this.player, combat: this.combat, colliders: ctx.colliders, ground: this.ground });
+    this.crateAt = this.data.compound.crates.map(([x, z]) => ({ ...frameToWorld(this.frame, x, z), y: this.gy(x, z) }));
+    const container = (kind) => this.data.compound.containers.find((c) => c.kind === kind);
+    this.doorOf = (kind) => {
+      const c = container(kind);
+      const a = (c.yaw * Math.PI) / 180;
+      const h = CONTAINER.length / 2 + 2.5; // just out from its door end
+      return frameToWorld(this.frame, c.x + Math.sin(a) * h, c.z + Math.cos(a) * h);
+    };
+    this.c7At = this.doorOf('mothman');
+    this.resinAt = this.doorOf('resin');
+    this.sealedAt = frameToWorld(this.frame, container('sealed').x, container('sealed').z);
+    const c7 = container('mothman');
+    const c7w = frameToWorld(this.frame, c7.x, c7.z);
+    // The C-7 sweep's anchor: the container's middle, facing out of its door end.
+    const a7 = (c7.yaw * Math.PI) / 180;
+    const out = frameToWorld(this.frame, c7.x + Math.sin(a7), c7.z + Math.cos(a7));
+    this.cutscenes?.namedAnchors?.set('outpostC7', () => ({ x: c7w.x, z: c7w.z, yaw: Math.atan2(-(out.x - c7w.x), -(out.z - c7w.z)) }));
     this.reset();
     this.sureBattery();
     this.unsubscribers = [
@@ -108,6 +139,15 @@ export class Outpost {
       // Session 17 (Aaron): Ellen sends Tom the moment the safe opens.
       this.bus.on('story:flag', ({ id, on }) => {
         if (id === 'rifleClaimed' && on && !this.progress?.has('outpostCall')) this.callIn = 0.6;
+      }),
+      // A round into a crate, or a blast near one, breaks it open.
+      this.bus.on('weapon:impact', ({ x, y, z }) => this.crateShot(x, y, z)),
+      this.bus.on('explosion', ({ x, z, radius }) => this.crateBlast(x, z, radius)),
+      this.bus.on('beetle:hit', ({ part, killed }) => {
+        if (part !== 'weak' && !killed && !this.told.has('beetleHint')) {
+          this.told.add('beetleHint');
+          this.dialogue?.play('outpost.beetle.hint');
+        }
       }),
     ];
   }
@@ -130,6 +170,13 @@ export class Outpost {
     this.burstTimer = 0;
     this.entered = false;
     this.searched = new Set();
+    this.crates = (this.data.compound.crates ?? []).map(() => 'whole');
+    this.autoBroken = false;
+    this.told = new Set(); // one-off lines and beats: beetleHint, beetlesDone, c7, resin
+    this.scratchIn = 2;
+    this.beetles?.clear();
+    for (let i = 0; i < this.crates.length; i++) this.props?.setCrate(i, false);
+    for (const c of this.crateCols ?? []) c.off = false;
     this.climbs = 0;
     this.props?.setTaken('rounds', false);
     this.props?.setTaken('report', false);
@@ -290,6 +337,8 @@ export class Outpost {
     }
     this.updateDogfight(l);
     this.updateSmoke();
+    this.updateCompound(dt, l);
+    this.beetles?.update(dt, true);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -588,6 +637,93 @@ export class Outpost {
     });
   }
 
+  // ---- the compound (pass 4) -----------------------------------------------------------------------------
+
+  updateCompound(dt, l) {
+    const p = this.player.position;
+    const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
+    const busy = this.peakState === 'running' || this.cutscenes?.active;
+    // DESIGN: at least one crate breaks open on its own as Tom passes, so the beetles' fight always happens.
+    if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3) {
+      let near = -1;
+      let nearD = this.oc.crates.autoBreak;
+      this.crateAt.forEach((c, i) => {
+        const d = dist(c);
+        if (this.crates[i] === 'whole' && d < nearD) {
+          near = i;
+          nearD = d;
+        }
+      });
+      if (near >= 0) {
+        this.autoBroken = true;
+        this.breakCrate(near);
+      }
+    }
+    // The Mothman's container (C-7): the first time Tom comes to its torn-open end.
+    if (!this.told.has('c7') && !busy && dist(this.c7At) < this.oc.c7Distance) this.playC7();
+    // The body in the resin (C-4).
+    if (!this.told.has('resin') && !busy && dist(this.resinAt) < this.oc.resinDistance) {
+      this.told.add('resin');
+      this.dialogue?.play('outpost.resin.wyatt');
+      this.dialogue?.play('outpost.resin.ellen');
+    }
+    // Scratching inside the sealed container and the crates still whole.
+    this.scratchIn -= dt;
+    if (this.scratchIn <= 0) {
+      this.scratchIn = 2.4 + Math.random() * 2;
+      const spots = [this.sealedAt, ...this.crateAt.filter((_, i) => this.crates[i] === 'whole')];
+      const s = spots.find((q) => dist(q) < this.oc.crates.hearScratch);
+      if (s) this.combat?.sfx?.play('scratch', s);
+    }
+    // Every beetle let out is down.
+    const out = this.beetles?.list ?? [];
+    if (out.length && !this.told.has('beetlesDone') && out.every((b) => !b.alive)) {
+      this.told.add('beetlesDone');
+      this.dialogue?.play('outpost.beetles.done');
+    }
+  }
+
+  // A round's impact inside a crate's box breaks it.
+  crateShot(x, y, z) {
+    this.crateAt?.forEach((c, i) => {
+      if (this.crates[i] !== 'whole') return;
+      if (Math.hypot(x - c.x, z - c.z) < 0.95 && y < c.y + 1.3) this.breakCrate(i);
+    });
+  }
+
+  crateBlast(x, z, radius = 6) {
+    this.crateAt?.forEach((c, i) => {
+      if (this.crates[i] === 'whole' && Math.hypot(x - c.x, z - c.z) < radius + 0.7) this.breakCrate(i);
+    });
+  }
+
+  // Open: the slats split, and its beetle claws its way out, facing Tom.
+  breakCrate(i) {
+    if (this.crates[i] !== 'whole') return;
+    this.crates[i] = 'broken';
+    this.props?.setCrate(i, true);
+    if (this.crateCols?.[i]) this.crateCols[i].off = true;
+    const c = this.crateAt[i];
+    this.combat?.sfx?.play('crateBreak', c);
+    const p = this.player.position;
+    this.beetles?.spawn(c.x, c.z, Math.atan2(p.x - c.x, p.z - c.z));
+    this.bus.emit('outpost:crate', { index: i });
+    if (!this.told.has('crate')) {
+      this.told.add('crate');
+      this.dialogue?.play('outpost.crate');
+    }
+  }
+
+  playC7() {
+    this.told.add('c7');
+    this.bus.emit('outpost:c7');
+    const lines = () => {
+      this.dialogue?.play('outpost.c7.wyatt');
+      this.dialogue?.play('outpost.c7.ellen');
+    };
+    if (!this.cutscenes?.play('sweep.outpostC7', { onDone: lines })) lines();
+  }
+
   // ---- the watchtower -----------------------------------------------------------------------------------
 
   platform() {
@@ -659,6 +795,10 @@ export class Outpost {
     if (best) {
       const read = best.id === 'report' || best.id === 'manifest';
       return { key: best.id, prompt: `Hold ${X}: ${best.label}`, busy: read ? null : 'Searching…', seconds: read ? h.read : h.search, act: () => this.search(best) };
+    }
+    // A crate still whole: prise it open (something's scratching inside).
+    for (let i = 0; i < (this.crateAt?.length ?? 0); i++) {
+      if (this.crates[i] === 'whole' && dist(this.crateAt[i]) < this.oc.crates.pryRange) return { key: `crate${i}`, prompt: `Hold ${X}: prise the crate open`, busy: 'Prising…', seconds: h.crate, act: () => this.breakCrate(i) };
     }
     return null;
   }
@@ -739,6 +879,9 @@ export class Outpost {
       peak: this.peakState === 'done' ? 'done' : 'none',
       entered: this.entered,
       searched: [...this.searched],
+      crates: this.crates.map((c) => (c === 'broken' ? 1 : 0)),
+      auto: this.autoBroken,
+      told: [...this.told],
     };
   }
 
@@ -759,6 +902,15 @@ export class Outpost {
     this.props?.setTaken('rounds', this.roundsTaken);
     this.props?.setTaken('report', this.searched.has('report'));
     this.props?.setTaken('charge', this.searched.has('armoury'));
+    // Broken crates stay broken (their beetles aren't saved: gone into the woods, or down).
+    (d.crates ?? []).forEach((b, i) => {
+      if (!b || i >= this.crates.length) return;
+      this.crates[i] = 'broken';
+      this.props?.setCrate(i, true);
+      if (this.crateCols?.[i]) this.crateCols[i].off = true;
+    });
+    this.autoBroken = Boolean(d.auto);
+    this.told = new Set(d.told ?? []);
   }
 
   // An older save with the rifle claimed but no call: make the call now.
@@ -801,6 +953,13 @@ export class Outpost {
       this.dogfightSeen = false;
       this.playDogfight();
     });
+    cat.addItem('Outpost: break a crate open (a beetle)', () => {
+      const i = this.crates.indexOf('whole');
+      if (i >= 0) this.breakCrate(i);
+      else this.notify('Every crate is open');
+    });
+    cat.addItem("Outpost: the Mothman's container (C-7) now", () => this.playC7());
+    cat.addItem('Outpost: teleport to the containers', tp(-8, 20, -Math.PI / 2, 'By the containers'));
     cat.addItem('Outpost: put the barricade wave down', () => {
       this.peakLeft = 0;
       for (const z of this.peak) if (z.alive) this.enemies.damage(z, 1e6, 'body', {}, z, z);
@@ -808,6 +967,7 @@ export class Outpost {
     cat.addItem('Outpost: reset it (as Tom first finds it)', () => {
       for (const z of [...this.wave, ...this.peak]) if (z.alive) this.enemies.damage(z, 1e6, 'body', {}, z, z);
       if (this.onTower) this.climbDown();
+      for (const b of this.beetles?.list ?? []) b.active = false;
       this.reset();
       this.notify('The outpost is as Tom first finds it (flags as they are)');
     });
@@ -816,11 +976,13 @@ export class Outpost {
   overlayLine() {
     if (!this.frame) return '';
     const wave = this.waveOut === null ? '-' : `${this.waveOut}:${this.wave.filter((z) => z.alive).length}`;
-    return `outpost ${this.approachStarted ? 'approach' : 'quiet'} helmet ${this.helmetDone ? 'down' : '-'} waves ${this.wavesCleared}/${this.oc.approach.waves.length} out ${wave} lull ${Math.max(0, this.lull).toFixed(0)} rounds ${this.roundsTaken ? 'taken' : '-'} peak ${this.peakState}${this.peakState === 'running' ? ` ${this.peak.length}+${this.peakLeft}` : ''}${this.onTower ? ' TOWER' : ''} searched ${this.searched.size}`;
+    const crates = this.crates.filter((c) => c === 'whole').length;
+    return `${this.beetles?.overlayLine() ?? ''} crates ${crates}/${this.crates.length} outpost ${this.approachStarted ? 'approach' : 'quiet'} helmet ${this.helmetDone ? 'down' : '-'} waves ${this.wavesCleared}/${this.oc.approach.waves.length} out ${wave} lull ${Math.max(0, this.lull).toFixed(0)} rounds ${this.roundsTaken ? 'taken' : '-'} peak ${this.peakState}${this.peakState === 'running' ? ` ${this.peak.length}+${this.peakLeft}` : ''}${this.onTower ? ' TOWER' : ''} searched ${this.searched.size}`;
   }
 
   dispose() {
     for (const off of this.unsubscribers ?? []) off();
+    this.beetles?.dispose();
     this.props?.dispose();
   }
 }

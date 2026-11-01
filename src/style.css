@@ -1392,6 +1392,49 @@ body.in-cutscene .subtitles {
   flex-direction: column;
   transform: rotate(0.8deg);
 }
+/* Session 17: a typed field report on a form: grey-white, a red CLASSIFIED stamp, monospace. */
+.paper-report,
+.paper-manifest {
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: clamp(13px, 2vh, 16px);
+  line-height: 1.45;
+  color: #24221e;
+}
+.paper-report .paper-text p,
+.paper-manifest .paper-text p {
+  white-space: pre-wrap;
+}
+.paper-report {
+  background:
+    linear-gradient(180deg, transparent 2.6rem, rgba(40, 40, 40, 0.35) 2.6rem, rgba(40, 40, 40, 0.35) calc(2.6rem + 1px), transparent calc(2.6rem + 1px)),
+    radial-gradient(ellipse at 70% 80%, rgba(90, 70, 40, 0.16), transparent 60%),
+    #d6d3c8;
+  transform: rotate(-0.6deg);
+  min-height: min(66vh, 26rem);
+  display: flex;
+  flex-direction: column;
+}
+.paper-report::after {
+  content: 'CLASSIFIED';
+  position: absolute;
+  top: 3.4rem;
+  right: 1.2rem;
+  padding: 0.1rem 0.5rem;
+  border: 3px solid rgba(150, 30, 24, 0.55);
+  color: rgba(150, 30, 24, 0.55);
+  font: bold 1.1rem/1.2 'Courier New', monospace;
+  letter-spacing: 0.12em;
+  transform: rotate(-9deg);
+  pointer-events: none;
+}
+/* A typed list on a clipboard sheet. */
+.paper-manifest {
+  background:
+    linear-gradient(180deg, #4a3a26 0, #4a3a26 1.1rem, transparent 1.1rem),
+    #dcd8cc;
+  padding-top: 2rem;
+  transform: rotate(1.1deg);
+}
 .paper-close {
   position: absolute;
   top: 0.3rem;

@@ -578,8 +578,9 @@ export class OutpostProps {
     }
     // Corner posts.
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) this.box(0.14, C.height, 0.14, c.x, c.z, base, k.steelDark, c.yaw, { ox: sx * (hw - 0.05), oz: sz * (hl - 0.05) });
-    // The inside: dark.
-    this.box(C.width - 0.2, C.height - 0.2, C.length - 0.3, c.x, c.z, base + 0.08, k.void, c.yaw, { oz: -0.1 });
+    // The inside: dark (a back wall and the floor, so what's in it shows through the open doors).
+    this.box(C.width - 0.2, C.height - 0.2, 0.04, c.x, c.z, base + 0.08, k.void, c.yaw, { oz: -hl + 0.12 });
+    this.box(C.width - 0.2, 0.02, C.length - 0.3, c.x, c.z, base + 0.08, k.void, c.yaw);
     // The doors.
     const dz = hl;
     if (kind === 'sealed') {
@@ -642,7 +643,7 @@ export class OutpostProps {
     for (const [ox, oz, tilt] of [[-hw + 0.05, -1.2, 0.5], [-hw + 0.05, 0.8, -0.4], [-hw - 0.04, 1.9, 0.6], [-hw - 0.04, -0.4, -0.5]]) {
       for (let i = 0; i < 3; i++) {
         const p = this.local(c, ox, oz + i * 0.16);
-        this.box(0.02, 1.1, 0.04, p.x, p.z, base + 1.3 + i * 0.05, k.gouge, c.yaw, { rotX: tilt });
+        this.box(0.03, 1.5, 0.07, p.x, p.z, base + 1.1 + i * 0.05, k.gouge, c.yaw, { rotX: tilt });
       }
     }
     // Scorch and soot.
@@ -672,8 +673,8 @@ export class OutpostProps {
   // A point in a container's own frame (x across, z along) in the outpost's frame.
   local(c, x, z) {
     const a = (c.yaw * Math.PI) / 180;
-    // yaw turns its +z toward the frame's +x (right).
-    return { x: c.x + z * Math.sin(a) + x * Math.cos(a), z: c.z + z * Math.cos(a) - x * Math.sin(a) };
+    // yaw turns its +z toward the frame's +x (right); its own +x (three.js's) is the frame's left at yaw 0.
+    return { x: c.x + z * Math.sin(a) - x * Math.cos(a), z: c.z + z * Math.cos(a) + x * Math.sin(a) };
   }
 
   // The body in the resin, in the open container: a grey alien set in an amber block, lit faintly.
@@ -774,7 +775,7 @@ export class OutpostProps {
       const tex = stencilTexture(codes[c.kind] ?? 'C-?', c.kind === 'sealed' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV');
       for (const s2 of c.kind === 'mothman' ? [-1] : [-1, 1]) {
         const p = this.local(c, s2 * (CONTAINER.width / 2 + 0.08), 0.6);
-        this.board(tex, 2.0, 0.85, p.x, p.z, y0, c.yaw + s2 * -90 + 180, { transparent: true });
+        this.board(tex, 2.0, 0.85, p.x, p.z, y0, c.yaw + s2 * 90 + 180, { transparent: true });
       }
     }
     // LIVE SPECIMEN on the crates' road-facing sides.
