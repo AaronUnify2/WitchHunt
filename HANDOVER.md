@@ -1,123 +1,118 @@
 # Handover
 
-## Just finished: Session 16, Level & Encounter Designer + AI Programmer: the storm shelter (M9.3 done) and two playthroughs from the start
+## Just finished: Session 17, Level & Encounter Designer + AI Programmer: the military outpost (M9.4 done) and three rounds of Aaron's playthrough notes
 
-**Status: everything is on `main` (live).** 590 tests pass and the build is clean. M9.3 is done: **the hunting rifle is claimable on every seed** (the shelter's in the fixed cluster; Earl's keys open the gas station's safe). Then Aaron played the game from the very beginning twice, and his notes were fixed round by round. Details are in `STATUS.md` (Session 16, items 1-34).
+**Status: everything is on `main` (live).** 635 tests pass and the build is clean. M9.4 is built: the opening runs from waking up to crossing the cordon. Aaron played the outpost from the start of the game three times and called this one of the best sessions. Details: `STATUS.md` (Session 17 and its rounds 2-4), `PLAYTEST.md` rounds 20-23, `OPEN_QUESTIONS.md` #225-256.
 
-**How we worked:** Aaron sends a batch of notes; I fix them in small commits, each pushed to `main` (it deploys in about 40 s) and to the session's branch; design calls asked first (a line or two, with a recommendation), small ones made and logged in OPEN_QUESTIONS. `PLAYTEST.md` is the running checklist (rounds 16-19 at its top are this session's).
+**How we worked:**
+- Aaron answered the design questions up front, then approved four passes in one go ("passes one to four, let's get to it").
+- I built them back to back: small calls made and logged in OPEN_QUESTIONS, each pass checked headless (tests, plus screenshots of each beat).
+- Each pass was pushed to the session branch; main on Aaron's go-ahead ("push it to main so I can play it"). After that, every round of his notes went straight to main.
+- `PLAYTEST.md` is the running checklist: rounds 20-23 at its top are this session's.
 
 ### What was done
 
-- **Aaron's notes on the 15b overnight work:**
-  - The quad's own headlamp (on in the dark, D-pad right toggles it, dims up close).
-  - A snare ridden over wraps round the quad's wheel: get off, tap X to free it.
-  - No digging the sigil up on Night 1.
-  - Night 1's waves overlap (each 15 s after the last rose).
-- **Papers in close-up** (`ui/PaperNote.js`, `data/papers.json`): Earl's note at the gas station and his diary. The world waits while one's open.
-- **The storm shelter** (`encounters/StormShelter.js`, `data/stormShelter.json`, `render/StormShelterProps.js`):
-  - 12 citizens hold the hatch through the day, Earl (zombie variant `earl`) among them.
-  - While Night 1's sigil is in the ground the dead keep climbing out of it, by day too. Dug up, they stop, and the family work out the sigils raise the dead.
-  - Earl's keys (the safe's combination).
-  - The hatch: dig it clear with the shovel, haul it open, climb down.
-  - The room below (a player platform under the hatch): the diary and the tapes only.
-  - The tapes at home: `clip.pruittTape`, camera four, handed in at the ledger. The kids run into the trees: maybe they got away (Aaron: nothing says the children died).
-- **The rifle chain is real:** `rifleClaimed` and `shelterVisited` have no stand-in triggers now.
-- **Playthrough round 1:**
-  - Ellen's tower instruction can't be skipped.
-  - The red light: the family say it's the military, a "training exercise".
-  - The bloody wreck on the campsite trail is there every run.
-  - The dome tent searches from any side; no stick figures; the shovel out of the wall.
-  - **Tapes and feeds wait for D-pad down** (`story/WatchQueue.js`).
-  - **Objectives** (`story/Objectives.js`): "NEXT: ..." on the map screen, a gold star there and on the minimap's rim.
-  - The gas station after the witch points to the phone, then Earl's radio. The note says "That witch".
-  - The shelter's sweep 32 m out; the hatch off the sigil; a 1996 diary page.
-  - The quad 20% quieter.
-- **Playthrough round 2:**
-  - The comms room's first aid box (2 kits); Tom starts with no first aid kits or flares.
-  - Hints for the torn fence and the shovel.
-  - Less glare up close (the fence, the torch, the quad's headlamp).
-  - Blue trail cams and an orange quad icon on the maps.
-  - Ellen's hints that she worked at the facility.
-  - **A debug jetpack** (Player menu).
+- **The outpost** (`encounters/Outpost.js`, `data/outpost.json`, `render/OutpostProps.js`; config `outpost`):
+  - **The set:**
+    - the barricade across the clearing (sandbags, a breached fence, a truck across the road gap, spilled bags);
+    - the watchtower on the near side (a platform the dead can't climb: `platform.outpost`);
+    - the gun pit;
+    - the compound: tents, the comms hut, the armoury lockers, four containers, five beetle crates, the clipboard.
+    - The static props are one vertex-coloured mesh. The clearing is 30 m; the road gate was moved back for a longer approach.
+  - **Ellen's call:** `outpostCall` is set as the gas station's safe opens. Wyatt's rounds line comes 30 s later.
+  - **The approach:**
+    - the arrival sweep, then the first helmet standing on the road;
+    - waves of 2, 4, 6 with the radio in the lulls (×1.5 by night);
+    - the watchtower's 10 rounds;
+    - the barricade's peak: 12, or 15 by night. It sets `outpostCleared`, and the checkpoint opens.
+  - **Helmets** (`combat/hitscan.js` `helmetPart`, `wearHelmet`): a headshot on a helmet lands as a body shot (a ping, no blood) and wears it (25 HP: one rifle round). The hunting rifle punches straight through (`helmetPierce`).
+  - **The dogfight** (`clip.dogfight`; `story/cutsceneFlight.js`):
+    - only from the tower, the first scope raise up there;
+    - a plane and a craft; both paths end exactly on this run's crashed plane and crashed UFO clearings;
+    - smoke stands over both sites until Tom gets there;
+    - the crashed plane is on every run now.
+  - **New cutscene tools:** flying actors on timed paths, tracers, rays, smoke trails, blasts, camera keys that track actors, and a cutscene's own near/far planes.
+  - **The compound:**
+    - **beetles** (`ai/Beetles.js`, their first AI): the shell takes 30%, the glowing face 3×. They come out of crates that are shot, blown or prised open, and one crate breaks by itself as Tom passes.
+    - **C-7**, the Mothman's container, torn open: a short sweep, out of combat only, never named.
+    - **C-4**: shut until Tom hauls its doors open, a reveal of the body in the resin (`outpost.resin`).
+    - **C-9**, the brood's container: busted open.
+    - **the rest:** the armoury's charge ("save it for something big"), the field report, the manifest.
+  - **The gun pit's machine gun** (Aaron's idea): fit a battery and it fires 15 rounds at the dead, overheats and blows up.
+- **Aaron's rounds of notes:**
+  - **Earl's office split:** the safe and the scanner are in the stockroom now.
+  - **Ammo:** a sure 20 shells and 20 rifle rounds behind the gas station counter.
+  - **Escape the witch** (`story/WitchEscape.js`): until the cordon's crossed, ESCAPE THE WITCH shows on screen and the family say to run, or take the quad. The outpost holds its beats while she's on Tom.
+  - **One idea at a time:** `Dialogue.playLater()`.
+  - **Breadcrumbs:** the family's `hint.<step>` lines after a while stuck on a step (`Objectives.breadcrumb()`).
+  - **Tapes on D-pad down** when found; handed in, they go on the monitors (the pattern for every tape).
+  - **No dialogue in cutscenes:** lines play after (`Cutscenes.speaksDuring()`; black screens and the victory still speak), and the radio holds while one plays.
+  - **Everything picked up goes to the ledger:** lore items with a `paper`, read again under THE PAPERS. Earl's note and the manifest are lore now.
+  - **The quad's engine** is muted in cutscenes.
+  - **The outpost fight's doubling bug fixed:** a retreat used to resend the wave.
+  - **Signs** read right from both sides.
+  - **Explosions have a sound** (they never had one).
 
 ### Unfinished
 
-- **Aaron's next playthroughs:** he said he'd keep iterating by playing from the start. Expect more batches of notes like rounds 1-2. Start the next session by asking whether he has any.
-- **Ideas he's floated for later** (DESIGN "Ideas for later"):
-  - quad upgrades (a spiked battering ram; an alien ray gun usable from the saddle);
-  - a jetpack for dungeon-style play (the debug one is the try-out).
-- **Belongs to later sessions:**
-  - the real witch walking to plant on Night 1;
-  - the campers' models;
-  - the final look of the campsite, the gas station and the shelter (style pass 2, Session 19);
-  - muffling the world's sound down in the shelter (audio pass).
-- **Stand-in flags still left:** `outpostCall` (fires once `rifleClaimed` is set), `outpostEntered`, `outpostCleared`.
+- **Aaron's play-test of round 23** (the machine gun) and his next full playthrough: he's doing one now. Start by asking for his notes.
+- **The performance gate on the tablet:** the worst case is the barricade's peak by night with the beetles out. Headless it's 116 draw calls and under 1 ms of simulation, but nobody has read the tablet's fps there yet (overlay: View + Menu).
+- **Not built, belongs to later sessions:**
+  - the crash sites themselves (Session 20: the crashed plane; the UFO is the south's);
+  - the outpost's final look (style pass 2, Session 19);
+  - a jeep model (an army truck stands in);
+  - the CCTV placeholder `clip.mothmanContainer`, untouched;
+  - muffled sound etc. (the audio pass).
+- **Ideas Aaron's floated for later** (DESIGN "Ideas for later"): quad upgrades, a jetpack for dungeon play.
 
-## Next: Session 17, Level & Encounter Designer + AI Programmer: the military outpost (M9.4)
+## Next: Session 18, QA & Balance: full runs through the opening on the tablet
 
-**First:** ask Aaron for any notes from his latest playthrough (PLAYTEST rounds 16-19) and fix those one at a time.
+**First:** ask Aaron for his notes from the playthrough he's doing now, and fix them one at a time, as in this session's rounds 2-4.
 
-**Goal (DESIGN.md "Overrun military outpost", "Build plan" M9.4):**
-- the approach waves;
-- helmets;
-- the watchtower and its rifle rounds (the hunting rifle comes empty from the safe);
-- the scope as binoculars, and the dogfight cutscene seen through it;
-- the barricade peak;
-- the containers, and the Mothman's container;
-- beetles;
-- Ellen's call to adventure (replace `outpostCall`'s stand-in with the real beat);
-- `outpostEntered` and `outpostCleared` set by the encounter;
-- crossing the checkpoint opens the frontier;
-- the **performance gate** on the tablet (the biggest fight so far).
-- **Done when:** the frontier opens, on every seed.
+**Goal (DESIGN.md "Build plan", Session 18):**
+- full runs from New Run to crossing the cordon, on the tablet;
+- pacing, ammo and loot (Aaron ran short at the outpost once; the bulk ammo and smaller waves should fix it: check);
+- the dusk choice;
+- bugs;
+- the performance gate at the outpost (above).
+- Tune from his notes: the outpost's waves and peak, the machine gun, the beetles, the helmets, the breadcrumbs' timing, the escape pattern.
 
 **For that session:**
-- **Follow the newest pattern, `encounters/StormShelter.js`** (and `GasStation.js`):
-  - a frame from `clearingFrame()`;
-  - layout in a data file;
-  - props merged by colour;
-  - authored zombies (`authored` in `spawnZombie` opts: not thinned at dawn; a reused slot starts clear);
-  - hold-X interactions;
-  - first-person and sweep cutscenes with named anchors;
-  - save state;
-  - debug teleports;
-  - an overlay line.
-- **Add its steps to `story/Objectives.js`** (after the safe), so the map always says what's next.
-- **Any tape or feed:** offer it through `WatchQueue` (D-pad down) instead of playing it on the spot.
-- **Any paper** (a field report, orders): add it to `data/papers.json` and open it with `PaperNote`.
+- **Pacing rule (Aaron):** one idea at a time over the radio. Use `dialogue.playLater(id, seconds, when)` for a follow-up on another subject. No lines inside cutscenes: they play after automatically.
+- **Breadcrumbs:** to add a nudge for a step, add a `hint.<step id>` line to `dialogue.json`. `config.objectives.hintAfter` sets the wait.
+- **Tapes and papers:** any new tape is offered through `WatchQueue` (D-pad down) and is a lore item with a `clip`. Any new paper is a lore item with a `paper`, given when read, and readable again from the ledger.
+- **Early-game witch:** `witchEscape.engaged` tells an encounter to hold its beats (see `Outpost.witchOn`).
 
-### Gotchas and decisions from Session 16
+### Gotchas and decisions from Session 17
 
-- **Room platforms:** `player.platform` with `room` set is a room under the ground (the shelter).
-  - `Player.keepInRoom()` keeps Tom in its box and out of its furniture.
-  - Zombie strikes, witch swipes, traps, the sigil dig and the tower's prompts all skip a platform; check `platform.room` if you add a platform-sensitive feature.
-  - `teleport()` clears the platform.
-- **The dead are 2D:** they gather over the shelter while Tom's below, and can't reach him.
-- **`WatchQueue`:** items aren't saved; whoever offers re-offers on load (see `Campsite.offerTape()`). Night 1 holds short of dawn until camera six is watched (no fallback timer, OPEN_QUESTIONS #224).
-- **`Objectives.work()`** reads the story systems directly and is evaluated every 0.4 s. Keep its steps in story order. `null` `at` means no marker.
-- **Cutscenes skipped with A don't fire their `emit` tracks:** use `onDone` as well (as `shelter.down` / `shelter.up` do), and lines inside a skipped cutscene are cleared (the opening's line 2 now plays from `onDone`).
-- **Glare:**
-  - The torch only dims on colliders that block shots or are marked `glare` (the station fence is now).
-  - The quad's lamp does its own rays (`Quad.updateLampGlare()`).
-  - Keep new props dark (the torch-glare rule).
-- **Bindings:** D-pad down is `watch` (it was the unused `radio`). D-pad right is first aid on foot and the headlamp in the saddle.
-- **Vehicles:** `fixed.trail` candidate spots and `v.bloody` (forced blood and a smashed window) are how the campsite trail's wreck is guaranteed; reuse for any authored wreck.
-- **Headless checks:**
-  - Use `window.game` on the dev server; step with `game.update(0.1)`.
-  - Skip intro, then set `clock.day = 2` for day-2 places.
-  - Cutscenes run slowly in swiftshader, so wait or `cutscenes.stop()`.
-  - Don't `pkill` the dev server in the same command as other work (it ends the shell).
+- **The outpost's frame faces the checkpoint:** x is west, z south (`Outpost.frame`). A container's own left/right: use `OutpostProps.local()` (it was mirrored once; fixed).
+- **Platforms:**
+  - The outpost's tower is `platform.outpost`.
+  - `Station` ignores it (it used to offer "climb down" on any platform).
+  - Strikes, swipes, traps and planting already skip any platform.
+- **Cutscenes:**
+  - Lines are deferred unless `style: 'black'` or `linesDuring: true`. A cutscene doesn't wait for subtitles any more.
+  - `subtitles.update` stops while a non-speaking cutscene plays (`body.cs-quiet` hides them).
+  - **Headless:** the first frame after a big scene change often comes out blank (a navy screen) in swiftshader. Shoot again; it isn't a bug. Also, the frames are slow (dt about 0.1), so anything driven by smoothing (the scope's zoom) behaves differently from the tablet. Drive it directly.
+- **Fights:** a wave is never sent twice. A wave out of reach (over 150 m, not chasing) or out over 2 minutes counts as done (`Outpost.dropLost`, `waveTimeout`).
+- **The dogfight's anchors** come from `Outpost.dogfightAnchors(eye)`. Anything that should land on a map place can use a fly key's own `anchor`.
+- **Loot rule (Aaron, M4):** a kill pays back under half a rifle round on average (tests enforce it). Add ammo through searches, not drops.
+- **Dialogue edits:** `dialogue.json` is one JSON object per line. Edit lines in place (a script in this session: set text/cue by id, append entries) rather than re-dumping the file.
+- **The dev server dies** between turns in a long session. Run it as a background task.
 
 ### Open questions for Aaron
 
-- **Session 16:**
-  - #213-221 (the shelter: Earl a zombie, the rising rate, the room as a platform, reading pauses the game, the diary's dates, the tape, the drafts, the diary read once, the horde not saved);
-  - #222-224 (the map star through the fog, the objectives' wording, watching never forced).
-  - #198-212 are settled (MORNING.md).
+- **Session 17:**
+  - #225-241 (the outpost);
+  - #242-246 (round 2);
+  - #247-253 (round 3);
+  - #254-256 (the machine gun).
+  - Most are tuning numbers to settle in play.
 - **From before:**
-  - #185-197 (Session 15);
-  - #171-184 (Session 14);
-  - #161-170 (Session 13);
+  - #213-224 (Session 16);
+  - #185-197;
+  - #171-184;
+  - #161-170;
   - #155-160;
   - #143;
   - #136-137;
@@ -126,8 +121,9 @@
 ## Session kickoff prompt for the next session
 
 ```
-You are the Level & Encounter Designer (with the AI Programmer's hat) on Witch Hunt, Session 17: first any notes from Aaron's latest playthrough of the opening (PLAYTEST rounds 16-19), then the overrun military outpost (M9.4): the approach waves, helmets, the watchtower and its rifle rounds, the scope as binoculars and the dogfight cutscene, the barricade peak, the containers and the Mothman's container, beetles, Ellen's call to adventure, crossing the checkpoint into the frontier, and the performance gate. The storm shelter is built (encounters/StormShelter.js is the pattern to follow; story/Objectives.js, story/WatchQueue.js and ui/PaperNote.js are the new story tools).
-Read HANDOVER.md first, then STATUS.md (Session 16), PLAYTEST.md (rounds 16-19), OPEN_QUESTIONS.md (#213-224) and docs/DESIGN.md ("Overrun military outpost", "Fixed opening cluster", "Build plan" M9.4).
+You are QA & Balance on Witch Hunt, Session 18: full runs through the opening (New Run to crossing the cordon) on Aaron's tablet: pacing, ammo and loot, the dusk choice, bugs, and the performance gate at the outpost (the barricade's peak by night with the beetles out). Start with Aaron's notes from his latest playthrough and fix them one at a time, pushing each to main.
+Read HANDOVER.md first, then STATUS.md (Session 17 and its rounds 2-4), PLAYTEST.md (rounds 20-23), OPEN_QUESTIONS.md (#225-256) and docs/DESIGN.md ("Overrun military outpost", "Fixed opening cluster", "Build plan").
+Keep Aaron's rules: one idea at a time over the radio (Dialogue.playLater), no dialogue in cutscenes, tapes on D-pad down, everything picked up readable again from the ledger, breadcrumbs (hint.<step> lines).
 Then confirm your role and ask Aaron for his notes.
 Follow the handover protocol: when Aaron's happy, update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session, and end with the HANDOVER READY signal.
 ```
