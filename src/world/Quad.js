@@ -476,14 +476,16 @@ export class Quad {
 
   addDebugItems(menu) {
     const cat = menu.category(DEBUG.firstDay);
-    cat.addItem('Quad bike: bring it here', () => {
+    const bring = () => {
       if (this.riding) return;
       const p = this.player;
       const ax = -Math.sin(p.yaw);
       const az = -Math.cos(p.yaw);
       this.place(p.position.x + ax * 3, p.position.z + az * 3, p.yaw);
       this.notify?.('The quad bike is in front of you');
-    });
+    };
+    cat.addItem('Quad bike: bring it here', bring);
+    menu.category(DEBUG.teleport).addItem('Teleport the quad bike to me', bring); // Session 18 (Aaron): easy to find
     cat.addItem('Quad bike: back behind the gas station', () => {
       if (this.riding) this.dismount();
       this.place(this.home.x, this.home.z, this.home.heading);

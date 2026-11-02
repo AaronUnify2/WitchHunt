@@ -3225,7 +3225,7 @@ export const config = {
     witchTeleportBack: 18, // M7: metres from the witch that "teleport to her" lands
     giveScrap: 50, // M5: station debug
     siegeWave: 10,
-    overlayVisibleOnStart: true, // on by default so tablet tests show fps
+    overlayVisibleOnStart: false, // Session 18 (Aaron): off on a new game (View + Menu, or F3, shows it)
     overlayRefreshSeconds: 0.1, // how often the overlay text refreshes
     fpsSampleSeconds: 0.5, // averaging window for fps and frame times
     axisDecimals: 2, // decimals shown for stick values

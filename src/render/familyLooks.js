@@ -23,10 +23,14 @@
 // knees, ankles and waist (crease()).
 const EASE = { waist: 0.45, girth: 0.008 }; // the waist's pinch kept; metres added round the chest
 
-function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'skin', top = 'top', legs = 'loose' }) {
+// loose (Session 18, Aaron: Wyatt and Ellen still read skin-tight): room in the sleeves, the trouser
+// legs and round the chest (1: as before).
+function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'skin', top = 'top', legs = 'loose', loose = 1 }) {
   const cap = female ? 0.056 : 0.068; // the shoulders' caps
-  const w = 1 - (1 - waist) * EASE.waist; // the waist under a loose top
-  const g = EASE.girth;
+  const w = 1 - (1 - waist) * EASE.waist * (loose > 1 ? 0.4 : 1); // the waist under a loose top (barely pinched when loose)
+  const g = EASE.girth * (1 + (loose - 1) * 3);
+  const L = loose;
+  const LL = 1 + (loose - 1) * 0.55; // the legs: straight, roomy, not wide at the hip
   const masses = [
     ['hips', null, 0, 0.95, 0, 0.155 * hip, 0.11, 0.11 * (female ? 1.08 : 1), 'trousers'],
     ['chest', 'spine', 0, 1.31, 0.005, 0.18 * sh * bulk + g, 0.13, (female ? 0.1 : 0.115) * bulk + g, top],
@@ -60,16 +64,16 @@ function body({ sh = 1, hip = 1, bulk = 1, waist = 1, female = false, hand = 'sk
     ['spine', 'neck', 0.145 * bulk * w + g, 0.085 * bulk, top, female ? 0.25 : 0.4, 0.75],
     // Sleeves: straight, with room in them, open round the wrist; they
     // start no wider than the shoulder (wider, and the shoulders puff).
-    ['shoulderR', 'elbowR', 0.047 * bulk, 0.051 * bulk, 'sleeve', 0.07, 1, 0.9],
-    ['elbowR', 'wristR', 0.049 * bulk, 0.043 * bulk, 'forearm', 0.02],
-    ['shoulderL', 'elbowL', 0.047 * bulk, 0.051 * bulk, 'sleeve', 0.07, 1, 0.9],
-    ['elbowL', 'wristL', 0.049 * bulk, 0.043 * bulk, 'forearm', 0.02],
+    ['shoulderR', 'elbowR', 0.047 * bulk * L, 0.051 * bulk * L, 'sleeve', 0.07, 1, 0.9],
+    ['elbowR', 'wristR', 0.049 * bulk * L, 0.043 * bulk * L, 'forearm', 0.02],
+    ['shoulderL', 'elbowL', 0.047 * bulk * L, 0.051 * bulk * L, 'sleeve', 0.07, 1, 0.9],
+    ['elbowL', 'wristL', 0.049 * bulk * L, 0.043 * bulk * L, 'forearm', 0.02],
   ];
   if (legs === 'fitted') {
     for (const s of ['R', 'L']) limbs.push([`hip${s}`, `knee${s}`, 0.085 * hip, 0.058, 'trousers', 0.1], [`knee${s}`, `ankle${s}`, 0.056, 0.04, 'trousers', 0.14]);
   } else {
     // Straight-cut legs, the hems sitting over the shoes.
-    for (const s of ['R', 'L']) limbs.push([`hip${s}`, `knee${s}`, 0.092 * hip, 0.07, 'trousers', 0.03], [`knee${s}`, `ankle${s}`, 0.068, 0.062, 'trousers', 0]);
+    for (const s of ['R', 'L']) limbs.push([`hip${s}`, `knee${s}`, 0.092 * hip * LL, 0.07 * LL, 'trousers', 0.03], [`knee${s}`, `ankle${s}`, 0.068 * LL, 0.062 * LL * LL, 'trousers', 0]);
   }
   return { masses, limbs, tubes: [], rings: [], deform: female ? bust : null };
 }
@@ -93,7 +97,10 @@ function hairCap(y = 1.632, z = -0.016, r = [0.097, 0.1, 0.104]) {
 
 const LOOKS = {
   ellen(p) {
-    const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true });
+    const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22 });
+    // Session 18 (Aaron: skin-tight): the fleece's stand-up collar round her neck, and its hem hanging
+    // loose over the jeans, wider than her hips.
+    b.masses.push(['neck', 'chest', 0, 1.468, 0, 0.064, 0.034, 0.062, 'top'], ['hips', null, 0, 1.0, 0.004, 0.185, 0.055, 0.135, 'top']);
     b.masses.push(hairCap(), ['head', null, 0, 1.57, -0.112, 0.034, 0.07, 0.034, 'hair'], ['head', null, 0, 1.605, -0.1, 0.022, 0.02, 0.022, 'tie']);
     // Thin wire glasses: two rims and a bridge.
     b.rings.push(['head', -0.034, 1.608, 0.104, 0.021, 0.0032, 'frames'], ['head', 0.034, 1.608, 0.104, 0.021, 0.0032, 'frames']);
@@ -109,7 +116,14 @@ const LOOKS = {
     };
   },
   wyatt() {
-    const b = body({ sh: 0.98, hip: 0.95, bulk: 0.92 });
+    const b = body({ sh: 0.98, hip: 0.95, bulk: 0.92, loose: 1.25 });
+    // Session 18 (Aaron: skin-tight): the open flannel hangs off him: its two front panels standing off
+    // the T-shirt down to below the belt, the hem loose round the back, the collar's points.
+    for (const s of [-1, 1]) {
+      b.masses.push(['chest', null, s * 0.088, 1.17, 0.085, 0.06, 0.2, 0.03, 'top', [0, 0, s * 0.06]]);
+      b.masses.push(['chest', null, s * 0.055, 1.455, 0.06, 0.035, 0.022, 0.02, 'top', [0.5, 0, s * 0.5]]);
+    }
+    b.masses.push(['hips', null, 0, 1.0, -0.025, 0.17, 0.06, 0.115, 'top']);
     b.masses.push(hairCap(1.638, -0.008, [0.099, 0.098, 0.108]));
     // Messy tufts.
     for (const [x, y, z, r] of [

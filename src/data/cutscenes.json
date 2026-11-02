@@ -307,38 +307,52 @@
       "id": "sweep.gasStation",
       "name": "Arriving at the gas station (establishing sweep)",
       "style": "sweep",
-      "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (11.5, 10.4, 6.5 m up). Wyatt: no lights, their truck's gone.",
+      "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (11.5, 10.4, 6.5 m up). Wyatt: no lights, their truck's gone. Session 18 (Aaron: Tom comes in from behind the store, on the campsite trail): from up behind the store, round its side, across the pumps to the sign.",
       "camera": [
         {
           "at": 0,
           "anchor": "gasStation",
           "pos": [
-            -14,
+            3,
             7,
-            21
+            -32
+          ],
+          "look": [
+            0,
+            2,
+            -16
+          ]
+        },
+        {
+          "at": 3.0,
+          "anchor": "gasStation",
+          "pos": [
+            -16,
+            6,
+            -14
+          ],
+          "look": [
+            0,
+            2,
+            -9
+          ]
+        },
+        {
+          "at": 6.0,
+          "anchor": "gasStation",
+          "pos": [
+            -12,
+            4.5,
+            10
           ],
           "look": [
             0,
             1.5,
-            -2
+            2
           ]
         },
         {
-          "at": 3.2,
-          "anchor": "gasStation",
-          "pos": [
-            -2,
-            3.2,
-            14
-          ],
-          "look": [
-            1,
-            1,
-            3
-          ]
-        },
-        {
-          "at": 6.4,
+          "at": 8.8,
           "anchor": "gasStation",
           "pos": [
             5,
@@ -354,12 +368,12 @@
       ],
       "tracks": [
         {
-          "at": 3.6,
+          "at": 6.0,
           "do": "line",
           "line": "gas.arrive"
         }
       ],
-      "duration": 7.6
+      "duration": 9.8
     },
     {
       "id": "sweep.shelter",
@@ -1482,7 +1496,7 @@
       "id": "sweep.campsite",
       "name": "Arriving at the campsite (establishing sweep)",
       "style": "sweep",
-      "_note": "M9.2: the sweep round the campsite (anchor campsite: its frame, x right and z ahead from the path in), settling on the campers' car (campsite.json car at -8, -12.5). Wyatt's line 5. Deliberately calm: no music sting.",
+      "_note": "M9.2: the sweep round the campsite (anchor campsite: its frame, x right and z ahead from the path in), settling on the campers' car (campsite.json car at -8, -12.5). Wyatt's line 5. Deliberately calm: no music sting. Session 18 (Aaron: it ended on the car): on past the car to the torn tent where the camcorder is (tent3, 4, 9.5), then up over the whole camp.",
       "camera": [
         {
           "at": 0,
@@ -1525,6 +1539,34 @@
             0.9,
             -12.5
           ]
+        },
+        {
+          "at": 9.0,
+          "anchor": "campsite",
+          "pos": [
+            -5.5,
+            3.2,
+            2.5
+          ],
+          "look": [
+            3.6,
+            0.8,
+            9.2
+          ]
+        },
+        {
+          "at": 11.8,
+          "anchor": "campsite",
+          "pos": [
+            -4,
+            8,
+            -9
+          ],
+          "look": [
+            1,
+            0.3,
+            3
+          ]
         }
       ],
       "tracks": [
@@ -1534,7 +1576,7 @@
           "line": "day1.05"
         }
       ],
-      "duration": 7.4
+      "duration": 12.8
     },
     {
       "id": "clip.fifthSigil",

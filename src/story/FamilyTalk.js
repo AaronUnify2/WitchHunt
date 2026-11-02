@@ -77,7 +77,9 @@ export class FamilyTalk {
     const sub = this.subtitles;
     if (this.talkingTo !== null && !sub.busy) this.talkingTo = null;
     const i = canTalk && this.inRoom() ? this.facing() : -1;
-    const id = i >= 0 ? this.ids[i] : null;
+    // Session 18 (Aaron: the game opened on "talk to Wyatt", and he'd nothing to say): only someone with
+    // something new to say is offered (mid-conversation, whoever's talking).
+    const id = i >= 0 && (this.talkingTo === this.ids[i] || this.dialogue.hasNew(this.ids[i])) ? this.ids[i] : null;
     const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
     const name = id ? this.cfg.story.speakers[id].name : '';
     if (this.talkingTo !== null && id) {

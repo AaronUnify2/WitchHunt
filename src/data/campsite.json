@@ -1,5 +1,5 @@
 {
-  "_note": "The abandoned campsite (M9.2; DESIGN.md \"Abandoned campsite\", agreed with Aaron in Session 15). Positions are in the campsite's own frame: from where the path from home enters the clearing, x metres to your right as you walk in, z metres ahead (the clearing's centre is z 0; the entrance is z = -radius). yaw: degrees, turning from facing ahead toward your right. car: the campers' car (vehicles.json types; the campsite's placement gives it a sure battery and no alarm), parked at the edge by the path. tents: kind a (an A-frame) or dome; slashed: torn open from the inside, the slit on its far side (found, not presented). searches: the hold-X search points, in the order a player meets them walking in: guaranteed items (camcorder: the lore item; shotgun: the gun, with `rounds` more shells; or a loot.json item with amount) and a rolled table (loot.json items, each rolled on its own). Session 16 (Aaron): the stick figures are gone (cluttered, and they floated); the dome tent's search point is its centre, reach 3 m, so any side works. Session 15b (Aaron): the camcorder is in the torn tent (deep in the camp) and the shotgun in the green dome tent; whichever comes first, the wave starts on the shotgun and the tape plays on the camcorder. props: set dressing (chairs, packs, the fire ring, blood, the ritual marks cut into trunks at the edge). wave: the zombies that burst from the treeline when the shotgun is taken: count, the spread of their arrival (seconds), and where they come from (arcs of the clearing's edge, in degrees in the campsite frame: 0 ahead, 90 to the right, -90 to the left; distance past the edge).",
+  "_note": "Session 18 (Aaron: you had to stand on the right side of a tent to search it): the tents' search points are their centres, with a 3.2 m reach, so any side works. The abandoned campsite (M9.2; DESIGN.md \"Abandoned campsite\", agreed with Aaron in Session 15). Positions are in the campsite's own frame: from where the path from home enters the clearing, x metres to your right as you walk in, z metres ahead (the clearing's centre is z 0; the entrance is z = -radius). yaw: degrees, turning from facing ahead toward your right. car: the campers' car (vehicles.json types; the campsite's placement gives it a sure battery and no alarm), parked at the edge by the path. tents: kind a (an A-frame) or dome; slashed: torn open from the inside, the slit on its far side (found, not presented). searches: the hold-X search points, in the order a player meets them walking in: guaranteed items (camcorder: the lore item; shotgun: the gun, with `rounds` more shells; or a loot.json item with amount) and a rolled table (loot.json items, each rolled on its own). Session 16 (Aaron): the stick figures are gone (cluttered, and they floated); the dome tent's search point is its centre, reach 3 m, so any side works. Session 15b (Aaron): the camcorder is in the torn tent (deep in the camp) and the shotgun in the green dome tent; whichever comes first, the wave starts on the shotgun and the tape plays on the camcorder. props: set dressing (chairs, packs, the fire ring, blood, the ritual marks cut into trunks at the edge). wave: the zombies that burst from the treeline when the shotgun is taken: count, the spread of their arrival (seconds), and where they come from (arcs of the clearing's edge, in degrees in the campsite frame: 0 ahead, 90 to the right, -90 to the left; distance past the edge).",
   "car": {
     "x": -8,
     "z": -12.5,
@@ -57,9 +57,9 @@
     {
       "id": "tent1",
       "label": "search the tent",
-      "range": 2.8,
-      "x": 6.3,
-      "z": -3.6,
+      "range": 3.2,
+      "x": 5.5,
+      "z": -5.5,
       "seconds": 1.8,
       "gives": [
         {
@@ -110,7 +110,7 @@
     {
       "id": "tent2",
       "label": "search the tent",
-      "range": 3.0,
+      "range": 3.2,
       "x": -6.5,
       "z": 3,
       "seconds": 1.8,
@@ -125,9 +125,9 @@
     {
       "id": "tent3",
       "label": "search the torn tent",
-      "range": 2.8,
-      "x": 2.6,
-      "z": 7.6,
+      "range": 3.2,
+      "x": 4,
+      "z": 9.5,
       "seconds": 2.2,
       "gives": [
         {

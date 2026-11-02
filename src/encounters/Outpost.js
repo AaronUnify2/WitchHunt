@@ -1162,6 +1162,17 @@ export class Outpost {
 
   addDebugItems(menu) {
     if (!this.frame) return;
+    // Session 18 (Aaron): beetles anywhere, for testing.
+    menu.category(DEBUG.zombies).addItem('Spawn 3 giant beetles near me', () => {
+      const p = this.player.position;
+      for (let i = 0; i < 3; i++) {
+        const a = this.player.yaw + Math.PI + (i - 1) * 0.6;
+        const x = p.x - Math.sin(this.player.yaw) * 8 + Math.cos(a) * 1.5;
+        const z = p.z - Math.cos(this.player.yaw) * 8 - Math.sin(a) * 1.5;
+        this.beetles?.spawn(x, z, Math.atan2(p.x - x, p.z - z));
+      }
+      this.notify?.('Three beetles, ahead of you');
+    });
     const cat = menu.category(DEBUG.outpost);
     const f = this.frame;
     const tp = (x, z, facing, text) => () => {
