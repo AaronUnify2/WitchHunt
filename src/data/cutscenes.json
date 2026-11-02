@@ -1766,6 +1766,34 @@
       "duration": 7.4
     },
     {
+      "id": "outpost.resin",
+      "name": "The outpost: C-4's doors open on the body in the resin (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Session 17 (Aaron: put doors on C-4; opening them is the reveal). Tom hauls the doors; the camera turns onto the grey body in its amber block (anchor outpostResin, from Outpost), a jolt; the doors swing on (the world runs). Wyatt and Ellen after it (Outpost.openResin).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "outpostResin",
+          "rate": 1.6,
+          "pitch": 0.02
+        },
+        {
+          "at": 1.3,
+          "do": "shake",
+          "amount": 0.5,
+          "seconds": 0.3
+        },
+        {
+          "at": 1.1,
+          "do": "sfx",
+          "sfx": "reveal"
+        }
+      ],
+      "duration": 3.6
+    },
+    {
       "id": "clip.dogfight",
       "rewatch": true,
       "name": "The outpost: the dogfight through the hunting rifle's scope",
@@ -2469,6 +2497,7 @@
     },
     {
       "id": "ending.victory",
+      "linesDuring": true,
       "name": "The ending: victory",
       "placeholder": true,
       "style": "cctv",

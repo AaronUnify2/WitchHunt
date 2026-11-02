@@ -145,6 +145,8 @@ export class Objectives {
     }
     if (op?.frame && has('outpostCleared') && !has('crossedCordon')) {
       const pt = (id) => op.points.find((x) => x.id === id);
+      // Session 17 (Aaron): the dogfight's only from the tower.
+      if (!op.dogfightSeen) return step('outpostScope', "Climb the outpost's watchtower and look through the hunting rifle's scope.", op.ladderAt);
       if (!op.searched.has('armoury')) return step('outpostArmoury', "Search the outpost's armoury lockers.", pt('armoury'));
       if (!op.searched.has('report')) return step('outpostReport', "Find the field report in the outpost's comms hut.", pt('report'));
       return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);

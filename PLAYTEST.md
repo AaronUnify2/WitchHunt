@@ -178,6 +178,18 @@ Round 21 (your first outpost playthrough's notes):
 - [ ] **Breadcrumbs:** stay stuck on a step a while (about a minute for Earl's note, under two for most) and one of the family nudges you, once (Junie on Earl's notes for Marcy; Ellen on the stockroom's scanner; Wyatt on the watchtower...).
 - [ ] **Earl's tapes:** taking them in the shelter puts "D-pad down: watch Earl's tapes" on screen: watch them there and then. Handing them in at the ledger later just puts them on the monitors (it doesn't play them). The map's NEXT says to watch them, not to take them home.
 
+Round 22 (your full-playthrough notes):
+- [ ] **No dialogue in cutscenes:** every sweep, clip and tower view plays silent; the family's lines come straight after (skipped or not). The radio holds while a cutscene plays. (Black screens and the endings still speak.)
+- [ ] **Everything to the ledger:** Earl's note (once read), his diary, his tapes, the field report and the outpost's manifest (once read) are all carried. Hand them in at the ledger (Monitors): clips to watch again, and now **THE PAPERS** to read again.
+- [ ] **The quad's engine** goes quiet during a cutscene and comes back after.
+- [ ] **The outpost fight, shorter:** waves of 2, 4, 6, then 12 at the barricade (15 by night). One service rifle round to the head knocks a helmet off. Soldiers drop rifle rounds a little more often. **A bug found:** running far away mid-fight used to reset the wave, so the ones chasing you plus a fresh lot came at you on your return (the doubled fight you felt). Now a wave isn't sent again; one that's lost you far off, or gone on 2 minutes, counts as done.
+- [ ] **The dogfight only from the tower:** never on crossing the barricade. Up the tower without it seen: a hint (LT: look through the scope). After the barricade, Wyatt asks you up there, and the map's NEXT says so.
+- [ ] **C-7's sweep** waits until no zombie or beetle is near you.
+- [ ] **Signs:** the HALT sign and the gates' signs (PRIVATE - PRUITT LAND, the outpost's) read the right way round from both sides.
+- [ ] **The charge:** Wyatt says to save it for something big.
+- [ ] **C-9** (the beetles' brood) is busted open: one door swung back, the other torn off on the ground, smashed crate slats inside.
+- [ ] **C-4's reveal:** its doors are shut. Hold X at them ("haul the container's doors open"): they swing out, the camera turns onto the body in the resin, a sting; then Wyatt and Ellen.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

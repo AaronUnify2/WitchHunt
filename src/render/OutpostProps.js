@@ -17,7 +17,9 @@
 //    blown outward, one open on a grey body set in amber resin, one torn
 //    apart from inside (the Mothman's: its roof peeled back, a side bent
 //    out, claw gouges high up, scorch, a shed husk, snapped chains), one
-//    sealed; the beetles' crates; a clipboard on an upturned crate.
+//    busted open (C-9, the brood: Session 17); the beetles' crates; a
+//    clipboard on an upturned crate. C-4's doors are shut until Tom hauls
+//    them open (Session 17, Aaron: the reveal).
 // Dull, dark colours (the torch-glare rule). Static parts merged by colour;
 // what changes (the rounds, the report, the charge, each crate whole or
 // broken) is its own.
@@ -63,6 +65,7 @@ export class OutpostProps {
     this.flush(this.group);
     this.buildFence();
     this.buildResin();
+    this.buildResinDoors();
     this.buildOwn();
     this.buildCrates();
     this.buildSigns(); // after the crates: their stencils go with them
@@ -555,7 +558,7 @@ export class OutpostProps {
     }
     for (const s of [-0.8, 0.8]) this.box(0.12, C.deck - 0.4, 0.12, c.x, c.z, y, k.steelDark, c.yaw, { ox: s, oz: 2.4 });
     const base = y + C.deck;
-    const paint = { empty: k.containerA, resin: k.containerC, mothman: k.containerB, sealed: k.containerD }[c.kind] ?? k.containerA;
+    const paint = { empty: k.containerA, resin: k.containerC, mothman: k.containerB, brood: k.containerD }[c.kind] ?? k.containerA;
     if (c.kind === 'mothman') this.tornContainer(c, base, paint);
     else this.shell(c, base, paint, c.kind);
   }
@@ -583,12 +586,26 @@ export class OutpostProps {
     this.box(C.width - 0.2, 0.02, C.length - 0.3, c.x, c.z, base + 0.08, k.void, c.yaw);
     // The doors.
     const dz = hl;
-    if (kind === 'sealed') {
-      for (const s of [-1, 1]) this.box(hw, C.height - 0.1, t, c.x, c.z, base + 0.05, paint, c.yaw, { ox: (s * hw) / 2, oz: dz });
-      // Locking bars and a chain and padlock across them.
-      for (const ox of [-0.8, -0.3, 0.3, 0.8]) this.box(0.04, C.height - 0.3, 0.05, c.x, c.z, base + 0.15, k.steelDark, c.yaw, { ox, oz: dz + 0.05 });
-      this.box(1.4, 0.05, 0.04, c.x, c.z, base + 1.3, k.chain, c.yaw, { oz: dz + 0.08 });
-      this.box(0.1, 0.14, 0.06, c.x, c.z, base + 1.2, k.steel, c.yaw, { oz: dz + 0.1 });
+    if (kind === 'brood') {
+      // Session 17 (Aaron): busted open. One door swung back flat against its side, the other torn off its
+      // hinges and lying in front; its locking bars bent; inside, the racks the crates stood in, smashed slats.
+      const p = this.local(c, hw + 0.06, dz);
+      this.box(t, C.height - 0.2, hw, p.x, p.z, base + 0.15, paint, c.yaw, { oz: -hw / 2 });
+      const d = this.local(c, -0.4, dz + 2.0);
+      this.box(hw, 0.06, C.height - 0.3, d.x, d.z, this.groundAt(d.x, d.z) + 0.03, paint, c.yaw + 18, { rotZ: 0.1 });
+      for (const [ox, oz, r] of [[-0.6, 1.2, 40], [0.3, 1.8, -25]]) {
+        const q = this.local(c, ox, dz + oz);
+        this.box(0.04, 0.05, C.height - 0.4, q.x, q.z, this.groundAt(q.x, q.z) + 0.03, k.steelDark, c.yaw + r);
+      }
+      for (const oz of [-2, -0.7, 0.6]) this.box(C.width - 0.3, 0.06, 0.08, c.x, c.z, base + 0.6, k.steelDark, c.yaw, { oz });
+      for (let i = 0; i < 12; i++) {
+        const q = this.local(c, this.range(-hw + 0.2, hw - 0.2), this.range(-hl + 0.3, hl - 0.2));
+        this.box(this.range(0.3, 0.8), 0.04, 0.1, q.x, q.z, base + 0.1, k.crate, c.yaw + this.range(0, 180));
+      }
+      for (let i = 0; i < 4; i++) {
+        const q = this.local(c, this.range(-hw, hw), this.range(-hl, hl));
+        this.box(this.range(0.4, 0.9), 0.02, this.range(0.4, 0.9), q.x, q.z, base + 0.09, k.blood, this.range(0, 180));
+      }
     } else if (kind === 'empty') {
       // Blown outward: both doors flung back past square, buckled; soot round the opening.
       for (const s of [-1, 1]) {
@@ -606,11 +623,7 @@ export class OutpostProps {
         this.box(this.range(0.1, 0.5), 0.04, this.range(0.1, 0.4), p.x, p.z, this.groundAt(p.x, p.z) + 0.01, this.rand() < 0.5 ? k.steelDark : k.scorch, this.range(0, 180));
       }
     } else if (kind === 'resin') {
-      // Open, the doors swung right back flat against the sides.
-      for (const s of [-1, 1]) {
-        const p = this.local(c, s * (hw + 0.06), dz);
-        this.box(t, C.height - 0.2, hw, p.x, p.z, base + 0.15, paint, c.yaw, { oz: -hw / 2 });
-      }
+      // Session 17 (Aaron): its doors are their own (buildResinDoors): shut until Tom hauls them open.
       // Straps over the block, bolted to the floor.
       for (const oz of [hl - 1.6, hl - 0.6]) this.box(1.6, 0.05, 0.08, c.x, c.z, base + 2.05, k.chain, c.yaw, { oz });
     }
@@ -707,6 +720,44 @@ export class OutpostProps {
     this.resin = block;
   }
 
+  // C-4's two doors, each on a pivot at its hinge (Session 17, Aaron: shut, then the reveal): setResinDoors(0..1).
+  buildResinDoors() {
+    const c = this.data.compound.containers.find((x) => x.kind === 'resin');
+    if (!c) return;
+    const k = this.cfg.colors;
+    const C = CONTAINER;
+    const hw = C.width / 2;
+    const base = this.groundAt(c.x, c.z) + C.deck;
+    this.resinDoors = [-1, 1].map((s) => {
+      const hinge = this.local(c, s * hw, C.length / 2 + 0.03);
+      const w = frameToWorld(this.frame, hinge.x, hinge.z);
+      const pivot = new THREE.Group();
+      pivot.position.set(w.x, base + 0.05, w.z);
+      pivot.rotation.y = this.rotY(c.yaw);
+      const mat = this.hold(new THREE.MeshLambertMaterial({ color: k.containerC }));
+      const leaf = new THREE.Mesh(this.hold(new THREE.BoxGeometry(hw, C.height - 0.1, 0.06).translate((-s * hw) / 2, (C.height - 0.1) / 2, 0)), mat);
+      leaf.castShadow = true;
+      pivot.add(leaf);
+      // Its locking bars and handles.
+      const bars = this.hold(new THREE.MeshLambertMaterial({ color: k.steelDark }));
+      for (const f of [0.3, 0.75]) {
+        const bar = new THREE.Mesh(this.hold(new THREE.BoxGeometry(0.04, C.height - 0.3, 0.05)), bars);
+        bar.position.set(-s * hw * f, (C.height - 0.1) / 2, 0.05);
+        pivot.add(bar);
+      }
+      this.group.add(pivot);
+      return { pivot, s };
+    });
+    this.setResinDoors(0);
+  }
+
+  // t: 0 shut .. 1 swung right out (about 110 degrees).
+  setResinDoors(t) {
+    const c = this.data.compound.containers.find((x) => x.kind === 'resin');
+    if (!c) return;
+    for (const d of this.resinDoors ?? []) d.pivot.rotation.y = this.rotY(c.yaw) + d.s * t * 1.95;
+  }
+
   manifest() {
     const m = this.data.compound.manifest;
     const k = this.cfg.colors;
@@ -767,12 +818,18 @@ export class OutpostProps {
   buildSigns() {
     const s = this.data.staging.halt;
     const y = this.groundAt(s.x, s.z);
-    this.board(signTexture(['HALT', 'MILITARY CHECKPOINT', 'NO CIVILIANS BEYOND THIS POINT', 'USE OF DEADLY FORCE AUTHORIZED'], '#5a2018'), 2.0, 1.25, s.x, s.z, y + 1.55, s.yaw, { doubleSided: true });
+    // Session 17 (Aaron: one side read backwards): a face each way, each the right way round.
+    const halt = signTexture(['HALT', 'MILITARY CHECKPOINT', 'NO CIVILIANS BEYOND THIS POINT', 'USE OF DEADLY FORCE AUTHORIZED'], '#5a2018');
+    const a = (s.yaw * Math.PI) / 180;
+    for (const side of [1, -1]) {
+      const off = side * 0.006;
+      this.board(side > 0 ? halt : halt.clone(), 2.0, 1.25, s.x + Math.sin(a) * off, s.z + Math.cos(a) * off, y + 1.55, side > 0 ? s.yaw : s.yaw + 180);
+    }
     // The containers' codes, on both long sides (C-7 is the Mothman's: CONTAINMENT C-7 on the feed).
-    const codes = { empty: 'C-3', resin: 'C-4', mothman: 'C-7', sealed: 'C-9' };
+    const codes = { empty: 'C-3', resin: 'C-4', mothman: 'C-7', brood: 'C-9' };
     for (const c of this.data.compound.containers) {
       const y0 = this.groundAt(c.x, c.z) + CONTAINER.deck + 1.6;
-      const tex = stencilTexture(codes[c.kind] ?? 'C-?', c.kind === 'sealed' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV');
+      const tex = stencilTexture(codes[c.kind] ?? 'C-?', c.kind === 'brood' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV');
       for (const s2 of c.kind === 'mothman' ? [-1] : [-1, 1]) {
         const p = this.local(c, s2 * (CONTAINER.width / 2 + 0.08), 0.6);
         this.board(tex, 2.0, 0.85, p.x, p.z, y0, c.yaw + s2 * 90 + 180, { transparent: true });

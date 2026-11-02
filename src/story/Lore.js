@@ -72,7 +72,7 @@ export class Lore {
     this.dialogue.milestone(`lore.${id}`);
     if (item.clip) this.addClip({ cutscene: item.clip });
     this.bus.emit('lore:handedIn', { id });
-    return `Handed in: ${item.name}${item.clip ? '. It\'s on the monitors' : ''}`;
+    return `Handed in: ${item.name}${item.clip ? ". It's on the monitors" : item.paper ? '. Read it again here any time' : ''}`;
   }
 
   // On the monitors (once each: a sighting is its own clip).
@@ -80,6 +80,13 @@ export class Lore {
     const title = clip.title ?? this.cutscenes.byId.get(clip.cutscene)?.name ?? clip.cutscene;
     if (!clip.anchors && this.clips.some((c) => c.cutscene === clip.cutscene && !c.anchors)) return;
     this.clips.push({ ...clip, title });
+  }
+
+  // Session 17: a paper handed in, read again in close-up.
+  read(item) {
+    this.ledger.close();
+    this.paper?.open(item.paper, {});
+    return '';
   }
 
   watch(clip) {
@@ -101,6 +108,15 @@ export class Lore {
     for (let i = this.clips.length - 1; i >= 0; i--) {
       const clip = this.clips[i];
       rows.push({ label: `   Watch: ${clip.title}`, value: '', action: () => this.watch(clip) });
+    }
+    // Session 17 (Aaron): every paper handed in, to read again.
+    const papers = this.handedIn.map((id) => this.byId.get(id)).filter((it) => it?.paper);
+    if (papers.length) {
+      rows.push({ label: 'THE PAPERS', value: `${papers.length} handed in`, action: null });
+      for (let i = papers.length - 1; i >= 0; i--) {
+        const it = papers[i];
+        rows.push({ label: `   Read: ${it.name}`, value: '', action: () => this.read(it) });
+      }
     }
     return { id: 'monitors', title: 'Monitors', rows };
   }

@@ -1,5 +1,19 @@
 # Open questions
 
+## Session 17, round 3 (Aaron's full playthrough)
+
+Aaron's notes: no dialogue in cutscenes (the family react after); everything picked up goes to the ledger to watch or read again; the quad's engine cut in cutscenes; the outpost fight too long; the dogfight only from the tower, with a prompt after the fight; C-7 only out of combat; signs single-sided (they read backwards); save the charge; C-9 busted open; C-4 shut, with a reveal. The calls I made:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 247 | **Which cutscenes still speak while they play:** black screens (the defeat) and the victory (`linesDuring`), since the run's summary follows them. Every other cutscene's lines come after it. | As described. A gameplay line that comes up during a cutscene waits too. | `Cutscenes.speaksDuring()`; `cutscenes.json` `linesDuring` |
+| 248 | **Signs:** two faces back to back (each reads the right way round) rather than one blank back. | As described. | `GateProps.sign()`; `OutpostProps.buildSigns()` |
+| 249 | **The fight's numbers:** waves 2, 4, 6; barricade 12 (x1.25 by night); helmet 25 (one rifle round); army rifle drops 30% (Aaron's M4 rule, under half a round a kill, holds). | As described. | `config.outpost`, `config.zombies.variants.army.helmet`, `loot.json` |
+| 250 | **A retreat no longer resets a wave** (DESIGN's edge case said it should; it doubled the fight). A wave far off and not chasing, or out over 2 minutes, counts as done. | As described. | `Outpost.updateWaves()`, `dropLost()` |
+| 251 | **"Not in combat" for C-7:** no living zombie or beetle within 30 m. | As described. | `config.outpost.combatRange` |
+| 252 | **C-4's reveal:** a 3.6 s first-person turn onto the body as the doors swing (2.2 s), with a low sting; the lines after. | As described. | `cutscenes.json` `outpost.resin`; `Outpost.openResin()` |
+| 253 | **Earl's note and the manifest are taken when read** (they stay readable where they are, too). | As described. | `GasStation.noteRead()`, `Outpost.manifestRead()`; `lore.json` |
+
 ## Session 17, round 2 (Aaron's first playthrough of the outpost)
 
 Aaron's notes: too much in Earl's office at once (move the scanner and the safe to the stockroom); bulk ammo behind the counter (20 shells, 20 rifle rounds); escape the witch early on (on screen and over the radio; the dogfight fired when he scoped her from the tower); one idea at a time over the radio, and more breadcrumbs; tapes on D-pad down, then on the monitors, for the whole game. The calls I made:

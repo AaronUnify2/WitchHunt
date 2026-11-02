@@ -1351,6 +1351,10 @@ body.in-cutscene .toast {
 body.in-cutscene .subtitles {
   z-index: 6;
 }
+/* Session 17 (Aaron): no dialogue over a cutscene's picture: the radio waits until it's over. */
+body.cs-quiet .subtitles {
+  visibility: hidden;
+}
 
 /* ---- Session 16 (Aaron): a paper read in close-up (Earl's note, his diary; ui/PaperNote.js) ---- */
 .paper {

@@ -127,6 +127,7 @@ export class Game {
     // Session 16 (Aaron): papers read in close-up (Earl's note, his diary).
     this.paper = new PaperNote(this.bus);
     this.paper.init(root, this.combat.sfx);
+    this.lore.paper = this.paper; // Session 17 (Aaron): papers handed in are read again from the ledger
     // Session 16 (Aaron): tapes and feeds wait for D-pad down.
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
@@ -421,6 +422,7 @@ export class Game {
     // Session 15b (M9.3 pass 1): the gas station's set.
     this.gasStation = new GasStation(this.cfg, this.bus);
     this.gasStation.init(this.scene, {
+      lore: this.lore, // Session 17: Earl's note goes to the ledger once read
       world: this.world,
       player: this.player,
       combat: this.combat,
@@ -462,6 +464,7 @@ export class Game {
     // Session 17 (M9.4): the overrun military outpost.
     this.outpost = new Outpost(this.cfg, this.bus);
     this.outpost.init(this.scene, {
+      hint: (pad, key) => this.hints.show(this.input.activeDevice === 'gamepad' ? pad : key, this.cfg.ui.hintSeconds), // Session 17: the scope's hint
       world: this.world,
       player: this.player,
       combat: this.combat,
@@ -1139,7 +1142,15 @@ export class Game {
     }
     this.runEnd.update(dt, this.input);
     this.debugMenu.update(dt);
-    this.subtitles.update(dt);
+    // Session 17 (Aaron): the radio holds while a cutscene plays (it speaks after); a black one or an ending still speaks.
+    const csSpeaks = this.cutscenes.active && this.cutscenes.speaksDuring(this.cutscenes.current.data);
+    if (!this.cutscenes.active || csSpeaks) this.subtitles.update(dt);
+    document.body.classList.toggle('cs-quiet', this.cutscenes.active && !csSpeaks);
+    // Session 17 (Aaron): the quad's engine is cut while a cutscene plays (the quad starts it again after).
+    if (this.combat.sfx) {
+      this.combat.sfx.engineMuted = this.cutscenes.active;
+      if (this.cutscenes.active) this.combat.sfx.engine(false);
+    }
     this.toast.update(dt);
     if (!this.cutscenes.active) this.hints.update(dt);
     this.alert.update(dt);

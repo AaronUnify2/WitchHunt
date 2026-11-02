@@ -1325,7 +1325,7 @@ export const config = {
     variants: {
       citizen: { health: 1 },
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
-      army: { health: 1.6, helmet: 50 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 50 damage (2 service rifle rounds to the head), or the hunting rifle punches straight through it
+      army: { health: 1.6, helmet: 25 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 25 damage (Session 17, Aaron: a long fight: one service rifle round to the head knocks it off), or the hunting rifle punches straight through it
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
@@ -2662,13 +2662,15 @@ export const config = {
     approach: {
       start: 105,
       firstHelmetAhead: 30, // metres ahead of Tom, on the road
-      waves: [3, 5, 8],
+      waves: [2, 4, 6], // Session 17 (Aaron: too many, a long drawn-out fight): was 3, 5, 8
       lull: 9,
       spawnAhead: 42,
       spread: 14,
       memory: 30, // seconds a wave's zombies keep after Tom once they've lost sight of him
       nightScale: 1.5,
-      retreat: 170,
+      retreat: 170, // (Session 17: no longer resets the waves)
+      waveTimeout: 120, // seconds: a wave still out this long counts as down (its stragglers are strays)
+      lostAt: 150, // metres from the outpost: one of a wave out this far, not chasing, has lost him (a stray)
     },
     // The barricade's peak (DESIGN beat 7): the biggest wave, standing up in
     // the compound (data/outpost.json peak) and coming through the gaps.
@@ -2676,16 +2678,18 @@ export const config = {
     // the barricade line, or as soon as he's at the line whatever the
     // approach. In `bursts` a few seconds apart. Down: outpostCleared (the
     // checkpoint opens).
-    peak: { count: 14, nightScale: 1.4, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
+    peak: { count: 12, nightScale: 1.25, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
     // The watchtower: rounds in the snipers' nest (DESIGN: guaranteed), the climb.
     tower: { rounds: 10 },
     // The beetles' crates (pass 4): the first time Tom comes within autoBreak
     // of one (past the barricade, no fight on) it breaks open by itself.
     crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10 },
     c7Distance: 7, // metres from the Mothman's container's torn-open end: its sweep
-    resinDistance: 5, // metres from the resin body's open container: the family's lines
+    resinOpenSeconds: 2.2, // Session 17: C-4's doors swinging open (the reveal)
     sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
     callRoundsAfter: 30, // Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
+    scopeAsk: 8, // seconds after the barricade's down: Wyatt asks Tom up the tower to look through the scope (if he hasn't)
+    combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
     arriveInset: 6, // metres inside the clearing's edge: outpostEntered
     interactRange: 1.4,
     hold: { climb: 0.8, search: 1.0, rounds: 0.8, read: 0.5, crate: 1.6 },

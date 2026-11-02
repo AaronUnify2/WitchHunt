@@ -57,7 +57,17 @@ export class GateProps {
   sign(text, w, h) {
     const l = this.landmarkCfg;
     const tex = this.hold(makeSignTexture({ ...l, boardColor: this.cfg.signColor, boardGrain: this.cfg.signColor, textColor: this.cfg.signText }, text, []));
-    return new THREE.Mesh(this.hold(new THREE.PlaneGeometry(w, h)), this.mat(0xffffff, { map: tex, side: THREE.DoubleSide }));
+    // Session 17 (Aaron: one side read backwards): two faces back to back, each reading right way round.
+    const geo = this.hold(new THREE.PlaneGeometry(w, h));
+    const mat = this.mat(0xffffff, { map: tex });
+    const g = new THREE.Group();
+    const front = new THREE.Mesh(geo, mat);
+    front.position.z = 0.006;
+    const back = new THREE.Mesh(geo, mat);
+    back.rotation.y = Math.PI;
+    back.position.z = -0.006;
+    g.add(front, back);
+    return g;
   }
 
   // gates: from world/gates.js gateLayout() (the checkpoint is skipped: the cordon draws it).

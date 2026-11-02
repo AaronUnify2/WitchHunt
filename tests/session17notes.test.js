@@ -127,3 +127,47 @@ describe('tapes on D-pad down (Aaron: the pattern for the whole game)', () => {
     expect(played).toBe(null);
   });
 });
+
+// ---- Aaron's second round of notes ----
+import { Lore } from '../src/story/Lore.js';
+import { Cutscenes } from '../src/story/Cutscenes.js';
+import loreData from '../src/data/lore.json';
+import papersData from '../src/data/papers.json';
+import cutsceneData from '../src/data/cutscenes.json';
+
+describe('no dialogue in a cutscene (Aaron)', () => {
+  it("speaks only in a black one or an ending: the rest say their lines after they're over", () => {
+    const speaks = (c) => Cutscenes.prototype.speaksDuring.call(null, c);
+    for (const c of cutsceneData.cutscenes) {
+      const lines = (c.tracks ?? []).some((t) => t.do === 'line');
+      if (lines && speaks(c)) expect(c.style === 'black' || c.id.startsWith('ending.')).toBe(true);
+    }
+    expect(speaks({ style: 'cctv' })).toBe(false);
+    expect(speaks({ style: 'black' })).toBe(true);
+  });
+});
+
+describe('everything picked up goes to the ledger (Aaron)', () => {
+  it("has Earl's note, his diary, the field report and the manifest as papers to read again", () => {
+    const papers = new Set(papersData.papers.map((p) => p.id));
+    const by = Object.fromEntries(loreData.items.map((i) => [i.id, i]));
+    for (const [id, paper] of [['earlNote', 'earlNote'], ['pruittDiary', 'earlDiary'], ['fieldReport', 'fieldReport'], ['outpostManifest', 'outpostManifest']]) {
+      expect(by[id].paper).toBe(paper);
+      expect(papers.has(paper)).toBe(true);
+    }
+  });
+
+  it('lists a paper handed in on the ledger, to read again in close-up', () => {
+    const bus = new EventBus();
+    const opened = [];
+    const lore = new Lore(config, bus);
+    lore.init({ dialogue: { milestone() {} }, cutscenes: { byId: new Map() }, ledger: { close() {} }, notify() {} });
+    lore.paper = { open: (id) => opened.push(id) };
+    lore.give('earlNote');
+    lore.handIn('earlNote');
+    const row = lore.ledgerPage().rows.find((r) => r.label.includes("Read: Earl Pruitt's note"));
+    expect(row).toBeTruthy();
+    row.action();
+    expect(opened).toEqual(['earlNote']);
+  });
+});

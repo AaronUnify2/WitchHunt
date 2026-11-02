@@ -143,6 +143,7 @@ export class Cutscenes {
       fadeTarget: data.startBlack ? 1 : 0,
       fadeRate: 0,
       lookAt: null,
+      after: [], // Session 17: its lines, for when it's over
       clockWasPaused: this.clock.paused,
     };
     this.current = cur;
@@ -172,9 +173,10 @@ export class Cutscenes {
       a.dispose();
     }
     cur.fx?.dispose();
+    // Session 17: its lines now (a skipped one's too: they're the family's reaction).
+    for (const [line, vars, radio] of cur.after) this.dialogue.play(line, vars, radio);
     this.zombieList.length = 0;
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
-    if (skipped) this.subtitles.clear();
     this.renderer.setCamera(this.player.camera);
     this.setLook(null);
     this.clock.setPaused(cur.clockWasPaused);
@@ -213,7 +215,13 @@ export class Cutscenes {
       return;
     }
     // Ends when its time is up and its lines have been said.
-    if (cur.t >= cur.length && (!this.subtitles.busy || cur.t >= cur.length + this.cc.lineGrace)) this.stop(false);
+    // Session 17: its lines wait until it's over, so it ends on time (a speaking one waits for its lines, as before).
+    if (cur.t >= cur.length && (!this.speaksDuring(cur.data) || !this.subtitles.busy || cur.t >= cur.length + this.cc.lineGrace)) this.stop(false);
+  }
+
+  // Does it speak while it plays (a black screen, the endings), rather than after?
+  speaksDuring(data) {
+    return data.style === 'black' || Boolean(data.linesDuring);
   }
 
   // A CCTV feed runs at a low frame rate: true on frames that keep the last picture.
@@ -373,7 +381,10 @@ export class Cutscenes {
     switch (e.do) {
       case 'line':
         // radio: true / false (face to face), else the line's own channel.
-        this.dialogue.play(e.line, cur.opts.vars ?? {}, e.radio ?? null);
+        // Session 17 (Aaron): no dialogue in a cutscene: the family's reaction waits until it's over (skipped or
+        // not), so the picture has the player's eyes. Black screens and the endings ("linesDuring") still speak.
+        if (this.speaksDuring(cur.data)) this.dialogue.play(e.line, cur.opts.vars ?? {}, e.radio ?? null);
+        else cur.after.push([e.line, cur.opts.vars ?? {}, e.radio ?? null]);
         break;
       case 'text':
         this.subtitles.show({ speaker: e.speaker ?? 'radio', text: e.text, radio: Boolean(e.radio) });

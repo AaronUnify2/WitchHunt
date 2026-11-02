@@ -579,6 +579,7 @@ export class GasStation {
 
   noteRead(first) {
     if (!first) return;
+    this.lore?.give('earlNote'); // Session 17 (Aaron): taken: hand it in at the ledger to read it again any time
     this.progress?.setFlag('earlNoteRead');
     this.bus.emit('gasStation:note');
     if (this.junieDue) {

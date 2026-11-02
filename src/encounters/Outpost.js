@@ -30,11 +30,13 @@
 //     - The beetles' crates (DESIGN beat 9): shot, blown or prised open,
 //       each lets one out (ai/Beetles.js: the shell shrugs off shots, the
 //       face doesn't); the first time Tom comes near one breaks open on its
-//       own, so the fight always happens. Scratching inside the sealed
-//       container and the crates.
+//       own, so the fight always happens. Scratching inside the crates.
+//       C-9, the brood's container, busted open (Session 17, Aaron).
 //     - The Mothman's container (C-7, torn apart from inside): a short sweep
-//       up its claw gouges the first time Tom comes to it; never named.
-//     - The body in the resin (C-4); the empty one with its doors blown out.
+//       up its claw gouges the first time Tom comes to it, out of a fight;
+//       never named.
+//     - The body in the resin (C-4): its doors shut until Tom hauls them
+//       open, and the camera turns onto it (Session 17, Aaron); the empty one with its doors blown out.
 //     - The armoury's one charge, the field report (read in close-up, then
 //       carried home), the manifest on its clipboard (one line redacted).
 // Each beat happens once; it's saved (a wave out isn't: it comes again).
@@ -124,7 +126,14 @@ export class Outpost {
     };
     this.c7At = this.doorOf('mothman');
     this.resinAt = this.doorOf('resin');
-    this.sealedAt = frameToWorld(this.frame, container('sealed').x, container('sealed').z);
+    // C-4's doors (Session 17, Aaron: shut; hold X to haul them open, the reveal): the spot in front of them,
+    // and the body inside (the camera turns to it).
+    const c4 = container('resin');
+    const a4 = (c4.yaw * Math.PI) / 180;
+    const atC4 = (dz) => frameToWorld(this.frame, c4.x + Math.sin(a4) * dz, c4.z + Math.cos(a4) * dz);
+    this.resinDoorAt = atC4(CONTAINER.length / 2 + 1.0);
+    const body = atC4(CONTAINER.length / 2 - 1.1);
+    this.cutscenes?.namedAnchors?.set('outpostResin', () => ({ ...body, yaw: 0, dy: CONTAINER.deck - 0.7 }));
     const c7 = container('mothman');
     const c7w = frameToWorld(this.frame, c7.x, c7.z);
     // The C-7 sweep's anchor: the container's middle, facing out of its door end.
@@ -159,6 +168,8 @@ export class Outpost {
     this.wavesCleared = 0;
     this.wave = []; // the zombies of the wave that's out (the first helmet's too)
     this.waveOut = null; // 'helmet' | wave index, while one's out
+    this.waveAge = 0;
+    this.scopeHinted = false; // Session 17: the scope's hint up the tower, once a climb
     this.lull = 0;
     this.towerTold = false;
     this.roundsTaken = false;
@@ -172,7 +183,9 @@ export class Outpost {
     this.searched = new Set();
     this.crates = (this.data.compound.crates ?? []).map(() => 'whole');
     this.autoBroken = false;
-    this.told = new Set(); // one-off lines and beats: beetleHint, beetlesDone, c7, resin
+    this.told = new Set(); // one-off lines and beats: beetleHint, beetlesDone, c7, resinOpen
+    this.resinOpen = 0; // C-4's doors: 0 shut .. 1 open
+    this.props?.setResinDoors(0);
     this.scratchIn = 2;
     this.beetles?.clear();
     for (let i = 0; i < this.crates.length; i++) this.props?.setCrate(i, false);
@@ -338,7 +351,7 @@ export class Outpost {
       this.updateWaves(dt, d);
       this.updatePeak(dt, l, d);
     }
-    this.updateDogfight(l);
+    this.updateDogfight();
     this.updateSmoke();
     this.updateCompound(dt, l);
     this.beetles?.update(dt, true);
@@ -386,6 +399,7 @@ export class Outpost {
     const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'army', mode: 'linger', linger: { ...w, r: 1.2 }, facing: frameYaw(this.frame, h.yaw), authored: 'outpost' });
     this.wave = z ? [z] : [];
     this.waveOut = 'helmet';
+    this.waveAge = -1e9; // the first helmet waits for him, however long
     if (!z) this.helmetDone = true;
   }
 
@@ -420,6 +434,7 @@ export class Outpost {
     }
     this.wave = out;
     this.waveOut = index;
+    this.waveAge = 0;
     this.bus.emit('outpost:wave', { index });
     if (!out.length) this.waveDown();
   }
@@ -429,15 +444,14 @@ export class Outpost {
     const a = this.oc.approach;
     if (this.waveOut !== null) {
       this.wave = this.wave.filter((z) => z.alive);
-      // Retreat (DESIGN edge case): back to the last wave cleared; these are strays now.
-      if (d > a.retreat) {
+      // Session 17 (Aaron: the fight dragged on): a retreat no longer sends the wave again on his return
+      // (the ones out followed him: that doubled it). A wave that's lost him, or gone on too long, counts as down.
+      this.waveAge += dt;
+      this.dropLost(this.wave, d);
+      if (!this.wave.length || this.waveAge > a.waveTimeout) {
         for (const z of this.wave) z.authored = null;
-        this.wave = [];
-        this.waveOut = null;
-        this.lull = 0;
-        return;
+        this.waveDown();
       }
-      if (!this.wave.length) this.waveDown();
       return;
     }
     if (this.approachDone) {
@@ -456,6 +470,19 @@ export class Outpost {
     if (this.cutscenes?.active) return;
     if (!this.helmetDone) this.sendHelmet();
     else this.sendWave(this.wavesCleared);
+  }
+
+  // Back near the outpost, the wave's (or the peak's) ones still out far off, having lost him, are strays now.
+  dropLost(list, d) {
+    if (d > this.oc.approach.start) return;
+    const f = this.frame;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const z = list[i];
+      if (Math.hypot(z.x - f.x, z.z - f.z) > this.oc.approach.lostAt && z.mode !== 'chase') {
+        z.authored = null;
+        list.splice(i, 1);
+      }
+    }
   }
 
   waveDown() {
@@ -504,13 +531,8 @@ export class Outpost {
     }
     if (this.peakState !== 'running') return;
     this.peak = this.peak.filter((z) => z.alive);
-    if (d > this.oc.approach.retreat) {
-      // Gone: it'll be there again when he's back.
-      for (const z of this.peak) z.authored = null;
-      this.peak = [];
-      this.peakState = 'none';
-      return;
-    }
+    // Session 17: no reset on a retreat (the ones out follow him; sending them again doubled the fight).
+    this.dropLost(this.peak, d);
     if (this.peakLeft > 0) {
       this.burstTimer -= dt;
       if (this.burstTimer <= 0) this.sendBurst();
@@ -566,6 +588,8 @@ export class Outpost {
     this.bus.emit('outpost:cleared');
     this.dialogue?.play('outpost.cleared.ellen');
     this.dialogue?.play('outpost.cleared.wyatt');
+    // Session 17 (Aaron): the dogfight's only from the tower: if it's not been seen, Wyatt asks him up there.
+    if (!this.dogfightSeen) this.dialogue?.playLater?.('outpost.scope', this.oc.scopeAsk, () => !this.dogfightSeen);
   }
 
   // Tom's inside the outpost's clearing (outpostEntered).
@@ -611,12 +635,23 @@ export class Outpost {
     };
   }
 
-  // The first time the scope's raised up the tower; else crossing the barricade once the peak's down.
-  updateDogfight(l) {
+  // The first time the scope's raised up the tower (Session 17, Aaron: only there; no more crossing the
+  // barricade). Up there without it seen, a hint says how; after the fight, Wyatt asks him to look.
+  updateDogfight() {
     if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn) return;
     const w = this.combat?.weapons;
-    if (this.onTower && w?.id === 'sniper' && w.scoped > 0.7) this.playDogfight();
-    else if (!this.onTower && this.peakState === 'done' && this.toLine(l) < -1.5) this.playDogfight();
+    if (!this.onTower) {
+      this.scopeHinted = false;
+      return;
+    }
+    if (w?.id === 'sniper' && w.scoped > 0.7) {
+      this.playDogfight();
+      return;
+    }
+    if (!this.scopeHinted && this.combat?.weapons?.order?.includes('sniper')) {
+      this.scopeHinted = true;
+      this.hint?.(w?.id === 'sniper' ? 'LT: look through the scope' : 'Y: the hunting rifle, then LT: look through its scope', w?.id === 'sniper' ? 'Right click: look through the scope' : 'Switch to the hunting rifle, then right click: look through its scope');
+    }
   }
 
   playDogfight() {
@@ -664,18 +699,17 @@ export class Outpost {
       }
     }
     // The Mothman's container (C-7): the first time Tom comes to its torn-open end.
-    if (!this.told.has('c7') && !busy && dist(this.c7At) < this.oc.c7Distance) this.playC7();
-    // The body in the resin (C-4).
-    if (!this.told.has('resin') && !busy && dist(this.resinAt) < this.oc.resinDistance) {
-      this.told.add('resin');
-      this.dialogue?.play('outpost.resin.wyatt');
-      this.dialogue?.play('outpost.resin.ellen');
+    if (!this.told.has('c7') && !busy && !this.inCombat() && dist(this.c7At) < this.oc.c7Distance) this.playC7(); // Session 17 (Aaron): not mid-fight
+    // C-4's doors swinging open (the reveal).
+    if (this.resinOpen < 1 && this.told.has('resinOpen')) {
+      this.resinOpen = Math.min(1, this.resinOpen + dt / this.oc.resinOpenSeconds);
+      this.props?.setResinDoors(easeOut(this.resinOpen));
     }
-    // Scratching inside the sealed container and the crates still whole.
+    // Scratching inside the crates still whole.
     this.scratchIn -= dt;
     if (this.scratchIn <= 0) {
       this.scratchIn = 2.4 + Math.random() * 2;
-      const spots = [this.sealedAt, ...this.crateAt.filter((_, i) => this.crates[i] === 'whole')];
+      const spots = this.crateAt.filter((_, i) => this.crates[i] === 'whole');
       const s = spots.find((q) => dist(q) < this.oc.crates.hearScratch);
       if (s) this.combat?.sfx?.play('scratch', s);
     }
@@ -685,6 +719,14 @@ export class Outpost {
       this.told.add('beetlesDone');
       this.dialogue?.play('outpost.beetles.done');
     }
+  }
+
+  // Session 17: is a fight on round Tom (any of the outpost's dead or a beetle close, alive)?
+  inCombat() {
+    const p = this.player.position;
+    const r = this.oc.combatRange;
+    const near = (z) => z.alive && Math.hypot(z.x - p.x, z.z - p.z) < r;
+    return this.enemies?.living?.some(near) || this.beetles?.list.some(near);
   }
 
   // A round's impact inside a crate's box breaks it.
@@ -716,6 +758,20 @@ export class Outpost {
       this.told.add('crate');
       this.dialogue?.play('outpost.crate');
     }
+  }
+
+  // Session 17 (Aaron): haul C-4's doors open: they swing out, and the camera turns onto what's inside.
+  openResin() {
+    if (this.told.has('resinOpen')) return;
+    this.told.add('resinOpen');
+    this.resinOpen = 0;
+    this.combat?.sfx?.play('door', this.resinDoorAt);
+    this.bus.emit('outpost:resin');
+    const lines = () => {
+      this.dialogue?.play('outpost.resin.wyatt');
+      this.dialogue?.play('outpost.resin.ellen');
+    };
+    if (!this.cutscenes?.play('outpost.resin', { onDone: lines })) lines();
   }
 
   playC7() {
@@ -800,6 +856,8 @@ export class Outpost {
       const read = best.id === 'report' || best.id === 'manifest';
       return { key: best.id, prompt: `Hold ${X}: ${best.label}`, busy: read ? null : 'Searching…', seconds: read ? h.read : h.search, act: () => this.search(best) };
     }
+    // C-4's doors, shut (Session 17: the reveal).
+    if (!this.told.has('resinOpen') && dist(this.resinDoorAt) < this.oc.crates.pryRange + 0.4) return { key: 'resin', prompt: `Hold ${X}: haul the container's doors open`, busy: 'Hauling…', seconds: h.crate, act: () => this.openResin() };
     // A crate still whole: prise it open (something's scratching inside).
     for (let i = 0; i < (this.crateAt?.length ?? 0); i++) {
       if (this.crates[i] === 'whole' && dist(this.crateAt[i]) < this.oc.crates.pryRange) return { key: `crate${i}`, prompt: `Hold ${X}: prise the crate open`, busy: 'Prising…', seconds: h.crate, act: () => this.breakCrate(i) };
@@ -833,6 +891,7 @@ export class Outpost {
   manifestRead() {
     if (this.searched.has('manifestRead')) return;
     this.searched.add('manifestRead');
+    this.lore?.give('outpostManifest'); // Session 17 (Aaron): taken: to the ledger, to read again
     this.dialogue?.play('outpost.manifest');
   }
 
@@ -915,6 +974,8 @@ export class Outpost {
     });
     this.autoBroken = Boolean(d.auto);
     this.told = new Set(d.told ?? []);
+    this.resinOpen = this.told.has('resinOpen') ? 1 : 0;
+    this.props?.setResinDoors(this.resinOpen);
   }
 
   // An older save with the rifle claimed but no call: make the call now.
@@ -963,6 +1024,7 @@ export class Outpost {
       else this.notify('Every crate is open');
     });
     cat.addItem("Outpost: the Mothman's container (C-7) now", () => this.playC7());
+    cat.addItem('Outpost: open C-4 (the body in the resin) now', () => this.openResin());
     cat.addItem('Outpost: teleport to the containers', tp(-8, 20, -Math.PI / 2, 'By the containers'));
     cat.addItem('Outpost: put the barricade wave down', () => {
       this.peakLeft = 0;
@@ -989,4 +1051,9 @@ export class Outpost {
     this.beetles?.dispose();
     this.props?.dispose();
   }
+}
+
+// 0..1 eased out (a heavy door, slowing as it swings wide).
+function easeOut(t) {
+  return 1 - (1 - t) * (1 - t) * (1 - t);
 }

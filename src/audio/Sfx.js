@@ -125,6 +125,7 @@ export class Sfx {
   // speed 0..1 (the pitch climbs with it); throttle 0..1 (a little louder on the gas).
   engine(on, speed = 0, throttle = 0) {
     if (!this.ready) return;
+    if (this.engineMuted) on = false; // Session 17 (Aaron): cut while a cutscene plays
     const ctx = this.ctx;
     if (!on) {
       if (this.engineNodes) {
@@ -251,6 +252,12 @@ const RECIPES = {
   scratch(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.5);
     for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 3000 + i * 300, q: 6, gain: 0.35 }), i * 110);
+  },
+  // Session 17: a reveal's sting (C-4's doors open on the body in the resin): a low swell and a high whine.
+  reveal(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 55, endFreq: 48, gain: 0.25, attack: 0.4, vibrato: 3 });
+    s.tone(o, { seconds: 2.0, wave: 'sine', freq: 1900, endFreq: 2300, gain: 0.06, attack: 0.6 });
   },
   // Session 17: a round off an army helmet (a bright ring), and one knocking it off (a clank and a clatter).
   helmetPing(s, pos) {

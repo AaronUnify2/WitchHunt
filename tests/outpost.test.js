@@ -183,10 +183,11 @@ describe('army helmets (Aaron, Oct 16)', () => {
     expect(helmetPart({ helmet: 0 }, 'head', rifle)).toBe('head');
   });
 
-  it('come off with enough damage (two service rifle rounds), or the hunting rifle punches straight through', () => {
+  it('come off with enough damage (Session 17, Aaron: a long fight: one service rifle round), or the hunting rifle punches straight through', () => {
     const z = { helmet: config.zombies.variants.army.helmet };
-    expect(wearHelmet(z, rifle.damage, 'helmet')).toBe(false);
+    expect(wearHelmet(z, rifle.damage * 0.5, 'helmet')).toBe(false);
     expect(wearHelmet(z, rifle.damage, 'helmet')).toBe(true);
+    expect(wearHelmet({ helmet: config.zombies.variants.army.helmet }, rifle.damage, 'helmet')).toBe(true);
     expect(z.helmetOff).toBe(true);
     expect(helmetPart(z, 'head', rifle)).toBe('head');
     const y = { helmet: 50 };
@@ -230,7 +231,7 @@ describe('the military outpost: the beats', () => {
     expect(r.o.approachStarted).toBe(false);
   });
 
-  it('walks out: the first helmet standing on the road, then waves of 3, 5 and 8 army zombies with the radio in the lulls', () => {
+  it('walks out: the first helmet standing on the road, then waves of 2, 4 and 6 army zombies (Session 17, Aaron: was too long) with the radio in the lulls', () => {
     const r = rig();
     r.flags.add('outpostCall');
     r.at(50, -60);
@@ -247,7 +248,8 @@ describe('the military outpost: the beats', () => {
       r.step(oc.approach.lull + 0.5);
       sizes.push(r.spawned.length - before);
     }
-    expect(sizes).toEqual([3, 5, 8, 0]);
+    expect(sizes).toEqual([...oc.approach.waves, 0]);
+    expect(oc.approach.waves).toEqual([2, 4, 6]);
     expect(r.spawned.slice(1).every((z) => z.variant === 'army' && z.mode === 'chase')).toBe(true);
     expect(r.o.approachDone).toBe(true);
     for (const id of ['outpost.helmetDown', 'outpost.lull1', 'outpost.lull2', 'outpost.lull2b', 'outpost.lull3', 'outpost.tower']) expect(r.played).toContain(id);
@@ -260,10 +262,10 @@ describe('the military outpost: the beats', () => {
     r.step(0.2);
     r.killAll();
     r.step(oc.approach.lull + 1);
-    expect(r.spawned.length - 1).toBe(Math.round(3 * oc.approach.nightScale));
+    expect(r.spawned.length - 1).toBe(Math.round(oc.approach.waves[0] * oc.approach.nightScale));
   });
 
-  it('goes back to the last wave cleared if Tom retreats mid-wave (the ones out are strays now)', () => {
+  it("doesn't send a wave again when Tom retreats and comes back (Session 17: that doubled the fight); one that's lost him or gone on too long counts as down", () => {
     const r = rig();
     r.flags.add('outpostCall');
     r.at(50, -60);
@@ -271,16 +273,29 @@ describe('the military outpost: the beats', () => {
     r.killAll();
     r.step(oc.approach.lull + 1);
     const out = r.enemies.living.slice();
-    expect(out).toHaveLength(3);
+    expect(out).toHaveLength(oc.approach.waves[0]);
     r.at(0, -oc.approach.retreat - 20);
     r.step(0.5);
-    expect(r.o.wavesCleared).toBe(0);
-    expect(out.every((z) => z.authored === null)).toBe(true);
-    // Back: the same wave again.
     const before = r.spawned.length;
     r.at(50, -60);
     r.step(0.5);
-    expect(r.spawned.length - before).toBe(3);
+    expect(r.spawned.length).toBe(before);
+    expect(r.o.wavesCleared).toBe(0);
+    // Gone far off, not chasing: strays now, and the wave counts as down.
+    for (const z of out) {
+      const w = frameToWorld(r.o.frame, 0, -oc.approach.lostAt - 30);
+      z.x = w.x;
+      z.z = w.z;
+      z.mode = 'wander';
+    }
+    r.step(0.3);
+    expect(r.o.wavesCleared).toBe(1);
+    expect(out.every((z) => z.authored === null)).toBe(true);
+    // A wave that goes on too long counts as down too.
+    r.step(oc.approach.lull + 1);
+    expect(r.o.waveOut).toBe(1);
+    r.step(oc.approach.waveTimeout + 1);
+    expect(r.o.wavesCleared).toBe(2);
   });
 
   it('keeps the rounds up the watchtower: climb, take them, climb down', () => {
@@ -494,10 +509,21 @@ describe('the compound (pass 4)', () => {
     r.step(0.3);
     expect(played).toEqual(['sweep.outpostC7']);
     expect(r.played).toContain('outpost.c7.ellen');
+    // C-4 (Session 17, Aaron): shut until Tom hauls its doors open: the reveal, then the lines.
     r.player.position.x = r.o.resinAt.x;
     r.player.position.z = r.o.resinAt.z;
     r.step(0.3);
+    expect(r.played).not.toContain('outpost.resin.wyatt');
+    r.player.position.x = r.o.resinDoorAt.x;
+    r.player.position.z = r.o.resinDoorAt.z;
+    const pick = r.o.pick('X');
+    expect(pick.key).toBe('resin');
+    pick.act();
+    expect(played).toContain('outpost.resin');
     expect(r.played.filter((x) => x === 'outpost.resin.wyatt')).toHaveLength(1);
+    r.step(config.outpost.resinOpenSeconds + 0.5);
+    expect(r.o.resinOpen).toBe(1);
+    expect(r.o.pick('X')?.key).not.toBe('resin');
     const ids = papersData.papers.map((x) => x.id);
     expect(ids).toContain('fieldReport');
     expect(ids).toContain('outpostManifest');
@@ -517,5 +543,61 @@ describe('the compound (pass 4)', () => {
     expect(q.o.crates[2]).toBe('broken');
     expect(q.o.crateCols[2].off).toBe(true);
     expect(q.o.told.has('c7')).toBe(true);
+  });
+});
+
+describe("Aaron's second round of notes (the outpost)", () => {
+  it('plays the dogfight only from the tower (not crossing the barricade); up there without it, a hint', () => {
+    const r = rig();
+    let played = 0;
+    const hints = [];
+    r.o.hint = (pad) => hints.push(pad);
+    r.o.cutscenes = { active: false, play: (id, o) => (played++, o.onDone?.(false), true) };
+    r.o.combat.weapons.id = 'sniper';
+    r.o.combat.weapons.order = ['sniper'];
+    r.o.combat.weapons.scoped = 1;
+    r.o.peakState = 'done';
+    r.o.told.add('c7');
+    r.at(2, outpost.barricade.z + 5);
+    r.step(0.5);
+    expect(played).toBe(0);
+    r.o.combat.weapons.scoped = 0;
+    r.o.climbUp();
+    r.step(0.3);
+    expect(hints.length).toBe(1);
+    r.o.combat.weapons.scoped = 1;
+    r.step(0.3);
+    expect(played).toBe(1);
+  });
+
+  it("asks Tom up the tower once the barricade's down if he hasn't seen it, and the map says so", () => {
+    const r = rig();
+    r.o.approachStarted = true;
+    r.o.peakState = 'running';
+    r.o.peakLeft = 0;
+    r.o.peak = [];
+    r.step(0.3);
+    expect(r.later.map((l) => l.id)).toContain('outpost.scope');
+  });
+
+  it("waits out a fight before C-7's sweep", () => {
+    const r = rig();
+    let played = [];
+    r.o.cutscenes = { active: false, play: (id, o) => (played.push(id), o.onDone?.(false), true) };
+    r.player.position.x = r.o.c7At.x;
+    r.player.position.z = r.o.c7At.z;
+    const z = r.enemies.spawnZombie(r.o.c7At.x + 5, r.o.c7At.z, { variant: 'army' });
+    r.step(0.3);
+    expect(played).not.toContain('sweep.outpostC7');
+    r.enemies.damage(z);
+    r.step(0.3);
+    expect(played).toContain('sweep.outpostC7');
+  });
+
+  it('has C-9 busted open now (the brood), and the charge line says to save it', () => {
+    expect(outpost.compound.containers.some((c) => c.kind === 'brood')).toBe(true);
+    expect(outpost.compound.containers.some((c) => c.kind === 'sealed')).toBe(false);
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
+    expect(by['outpost.charge']).toMatch(/save it/i);
   });
 });

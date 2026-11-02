@@ -48,6 +48,18 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 17, round 3: Aaron's full playthrough
+
+Aaron played everything built, start to finish, and enjoyed it (the specimens after the fight especially). Fixed (PLAYTEST round 22; OPEN_QUESTIONS #247-253):
+1. **No dialogue in cutscenes:** a cutscene's lines play when it's over (skipped or not); the subtitles hold while one plays (`Cutscenes.speaksDuring()`, `body.cs-quiet`). Black screens and the victory still speak.
+2. **Everything to the ledger:** lore items can carry a `paper`; handed in, they're listed under THE PAPERS on the Monitors page, to read again (`Lore.read()`). Earl's note and the manifest are lore items now (taken when read); the diary and the field report have their papers.
+3. **The quad's engine** muted in cutscenes (`Sfx.engineMuted`).
+4. **The outpost fight:** a bug: a retreat reset the wave, so it doubled on the way back; now a wave's never sent twice (lost or overlong ones count as done). Smaller numbers (2, 4, 6; 12), helmets off with one rifle round, a few more rifle drops.
+5. **The dogfight only from the tower** (no barricade fallback): a hint up there, Wyatt's ask after the fight, an objective.
+6. **C-7's sweep** out of combat only. **C-9** busted open. **C-4** shut, hauled open for the reveal (`outpost.resin`). The charge: save it for something big.
+7. **Signs** two-faced, reading right from both sides (the HALT sign, the cluster's gates).
+632 tests pass.
+
 ### Session 17, round 2: Aaron's first playthrough of the outpost
 
 Played from the start. Fixed (PLAYTEST round 21; the calls: OPEN_QUESTIONS #242-246):
