@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Session 17 (Level & Encounter Designer + AI Programmer): **the overrun military outpost (M9.4), built in four passes, then three rounds of Aaron's playthrough notes (PLAYTEST rounds 20-23).** Next: Session 18, QA & Balance (see HANDOVER.md). The set (barricade, watchtower, compound, containers); army helmets; Ellen's call as the safe opens; the approach waves; the watchtower's rounds; the dogfight through the scope, coming down where the map has the crashed plane and the crashed UFO; the barricade's peak (it opens the checkpoint); the compound's beetles, the Mothman's torn container, the resin body, the armoury's charge, the field report and the manifest. Open points: OPEN_QUESTIONS #225-241.
+Last updated: Session 18 (QA & Balance): **Aaron's early-game notes and the outpost's pacing (PLAYTEST rounds 25-26), an ammo audit, the performance check at the outpost.** Papers taken with A (and gone from the desk); the gas station's pumps blow when shot; a 2 s dig; a stop at home on the ride back from the shelter; barricades outside the fence; C-7 moved to the road in; the outpost's beats spaced out (`beatGap`); the beetles burst out together; a sure 6 rounds in the gun pit. Open points: OPEN_QUESTIONS #257-271. **Waiting on Aaron's playthroughs**; then Session 19, Graphics Engineer (style pass 2), see HANDOVER.md.
+
+Before that, Session 17 (Level & Encounter Designer + AI Programmer): **the overrun military outpost (M9.4), built in four passes, then three rounds of Aaron's playthrough notes (PLAYTEST rounds 20-23).** The set (barricade, watchtower, compound, containers); army helmets; Ellen's call as the safe opens; the approach waves; the watchtower's rounds; the dogfight through the scope, coming down where the map has the crashed plane and the crashed UFO; the barricade's peak (it opens the checkpoint); the compound's beetles, the Mothman's torn container, the resin body, the armoury's charge, the field report and the manifest. Open points: OPEN_QUESTIONS #225-241.
 
 Before that, Session 16 (Level & Encounter Designer + AI Programmer): **the storm shelter (M9.3 done: the hunting rifle is claimable on every seed) and two playthroughs of the opening from the start.** Aaron's notes on the 15b overnight work (the quad's headlamp, snares round its wheel, Night 1's overlapping waves, no digging on Night 1); papers read in close-up (Earl's note, his diary); the shelter (12 citizens and Earl hold the hatch through the day, the sigil raises more until dug up, Earl's keys and the combination, the hatch, the room below, the tapes at home); then the playthroughs: the opening's instruction unskippable, tapes and feeds on D-pad down, objectives on the map and minimap, the first aid box, hints, less glare, map icons, a debug jetpack.
 
@@ -47,6 +49,26 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 18 (QA & Balance): Aaron's early-game notes, the outpost's pacing
+
+Aaron's notes from a playthrough of the early game, all built and pushed to main (648 tests pass, the build is clean):
+1. **Papers taken with A** (`ui/PaperNote.js` `promptText()`, `open(id, { take: true })`): a paper found in the world says "A: take it" on its last page (A turns a diary's pages before it) and leaves where it lay: Earl's note off the desk (`GasStationProps.setNoteTaken()`; no "read the note again" there now), the diary, the field report, the manifest (its sheet off the clipboard). The shelter's colouring book, the diary's size and colour, lies open now (pale pages, crayons): the likely "diary still on the table" (OPEN_QUESTIONS #258).
+2. **The pumps blow** (`GasStation.pumpShot()`, `updatePumps()`, `blowPump()`; `config.gasStation.pumps`): each island takes shots (90), hisses (`Sfx.gasHiss`) and goes up in a big blast through `Explosives.blast` (chaining to the other island and cars); stumps and a scorch (`GasStationProps.setPumpBlown()`); saved. The islands block shots now.
+3. **A 2 s dig** (`config.digging.seconds`), and a sigil being dug raises nothing (`ZombieDirector`, `StormShelter.updateRising()`).
+4. **A stop at home** (`story/HomeStop.js`; `config.homeStop`; flag `homeStop`; lines `home.stop.*`, `hint.homeStop`; objective step `homeStop`): on the ride back from the shelter, Wyatt calls Tom in; inside the fence Ellen and a hint point to the fence box or the ledger.
+5. **Barricades outside the fence** (`config.station.layout.barricadeOutside`; `siegeRouting.fenceRoute()`: barricade first coming in; `Station` prompts from either side; the ledger's plan: the outer ring, `layers: ['barricade', 'fence', 'inner']`).
+6. **The outpost given time to breathe:** C-7 on the road in (`outpost.json` c3: ~35 m north-east of the tower, by the first helmet; its sweep waits for no fight and no talking; the next wave waits `c7Lull`); `Outpost.beat()` / `quiet()` / `beatGap`: after each beat the next one that comes by itself waits 15 quiet seconds (the beetles' burst, Wyatt's scope ask); the beetles: up to `crates.burst` (4) crates break together, `stagger` 1-2 s apart, nearest first.
+7. **QA:** a sure 6 rifle rounds in the gun pit; the ammo audit (below); headless performance at the outpost's worst case (below); a save round-trip with the new state; tests in `tests/session18notes.test.js` and `tests/outpost.test.js`.
+
+**The ammo audit (Session 18, from the data; main route, by day):**
+- **Arriving at the outpost:** service rifle 15 at the start (5 + 10) + 20 behind the gas station counter + ~4 rolled (campsite, Earl's cabinet) = **~39**, less what's spent on Night 1 and the shelter (mostly shotgun and shovel fights; the fence kills much of Night 1). Shotgun: 8 with it + 4 + 20 behind the counter + 4 in the stockroom + ~3 rolled = **~39**, against the campsite (7), Night 1 (9, the fence helps), the gas station's pack (5) and mutant (~5 shells), the shelter (12 + Earl + risers): it's often near empty by the outpost unless the shovel does its share.
+- **At the outpost:** by day 1 + 2 + 4 + 6 + 12 = **25 army dead** (by night 1 + 3 + 6 + 9 + 15 = **34**). A helmeted soldier takes ~2.5-3 service rounds (the helmet hit, then a 75 headshot on 96 health), ~1 hunting round to the head. Supply there: the tower's 10 hunting rounds (~7-8 kills), the gun pit (6 sure + a roll), the pack by the road (~3), army drops (~0.45 rifle rounds each: ~11 by day), the machine gun (~6-7 kills with a battery).
+- **Verdict:** by day it holds up using the tower or the machine gun; on the ground alone by night it's ~15-20 rounds short, and the shotgun and shovel make up the rest. Only the gun pit's sure rounds were added (#267); the waves are left as Session 17 set them, for Aaron's runs to judge (#268).
+
+**Performance at the outpost (headless, swiftshader):** the barricade's peak by night with 5 beetles out: 109-145 draw calls, ~310k triangles, under 1 ms of simulation a frame (profiled per system: combat and the enemies the most, then the outpost, the station and the beetles). The overlay's "sim" figure in swiftshader reads higher (it shares the CPU with the software renderer). Aaron saw no drop on the tablet; the fps reading is still wanted (#270).
+
+**The dusk choice:** not a real one in the opening yet, by design (#269). Judged again in Session 23.
 
 ### Session 17, round 5: cutscenes talk again
 
@@ -1211,7 +1233,7 @@ Only `three` (runtime), `vite` and `vitest` (dev). Post-processing and geometry 
 ## The gate (Session 9, QA & Balance): where it stands
 
 - **Passed on the witch's side:** Aaron fought her on the pathways (ambushing rituals, making her flee, killing her), played the final battle several times and tried the traps, the hut and the endings. All play well; her fight was reworked to his design (OPEN_QUESTIONS #113, #116, #129).
-- **Still to judge with full runs:** pacing (1.5-2.5 hours, cornering her around nights 6-8), ammo and loot, and whether the dusk choice (defend or hunt) is a real one. Day 1 has little to do until the campsite exists (#135), so these wait for M9's encounters; Aaron kept the session order. Session 18 (QA, after the opening cluster) is the point to look again.
+- **Still to judge with full runs:** pacing (1.5-2.5 hours, cornering her around nights 6-8), ammo and loot, and whether the dusk choice (defend or hunt) is a real one. Day 1 has little to do until the campsite exists (#135), so these wait for M9's encounters; Aaron kept the session order. Session 18 (QA, after the opening cluster) is the point to look again. **Session 18:** ammo audited along the main route (see Session 18 above; one tweak, #267); the dusk choice isn't a real one in the opening (no hunt to weigh it against): judged again in Session 23 (#269); pacing is down to Aaron's playthroughs.
 - **Open:** #136 (a witch-tagging item for an encounter), and #105-134 as tuning in M14.
 
 ## What M7 needed (done)

@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; round 20 Session 17 (the outpost)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-26 Session 18 (QA)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -200,6 +200,24 @@ Round 23 (the gun pit's machine gun):
 
 Round 24 (your notes after the handover):
 - [ ] **Cutscenes talk again** as they used to (the tower's view, the campsite's sweep and the rest). **Only the dogfight** stays silent, with Wyatt's and Ellen's reaction straight after it.
+
+Round 25 (Session 18: your early-game notes):
+- [ ] **Earl's note:** hold X at the desk; under the page it says **A: take it**. Press A: the note's gone from the desk, and there's no prompt to read it there again (it's in the ledger under THE PAPERS once handed in).
+- [ ] **Earl's diary:** A turns its pages ("A: next page"), then **A: take it** on the last. The table has the board game, the lamp and an **open colouring book with pale pages and two crayons**. Is the diary gone from the table now? (If you still see a book where it was, tell me where you stood.)
+- [ ] **The field report and the manifest** are taken the same way (the manifest's sheet leaves its clipboard).
+- [ ] **The pumps:** shoot a pump island at the gas station (two close shotgun blasts, or about four rifle rounds). It hisses for a second, then blows: a big blast that takes the other island and any car near it with it. Stand back! Up to 60 damage at the middle. Afterwards: blackened stumps. Try it with the forecourt pack round the pumps. Debug: First day, "Gas station: set the pumps off (the nearest island)".
+- [ ] **Digging a sigil takes 2 s** (was 4). While the shovel's in it, that sigil raises nothing (at the storm shelter too).
+- [ ] **The stop at home:** with Earl's keys, ride back west past home toward the gas station. About 110 m out Wyatt says to stop in. Go through the gate: Ellen says the fence box (if you've a battery) or the ledger, and a hint on screen says the same. The map's NEXT says to stop at home. Ride past without stopping: once you reach the gas station it drops off the map.
+- [ ] **Barricades outside the fence:** build one (ledger plan: the outer dotted ring, or hold X just outside a panel, from either side). At night the dead claw the barricade first and only reach the fence once it's down. Does the fence still feel like it does its job? (It only zaps what's clawing the fence itself.)
+
+Round 26 (Session 18: the outpost given time to breathe):
+- [ ] **C-7 has moved:** it's on the road in now, about 35 m before the watchtower, beside the soldier standing on the road. Its torn end faces you as you come. Get within about 9 m with no fight on: the sweep, then Wyatt and Ellen. The next wave waits for them. Does the trailer sit right on the ground there?
+- [ ] **After the barricade's down:** Ellen and Wyatt (the all-clear), then quiet for about 15 s before anything else comes by itself. Wyatt's ask to look through the scope waits for that quiet too.
+- [ ] **The beetles:** past the barricade, near the crates, once it's quiet: **four crates burst together**, the nearest first, a second or two apart. The fifth stays shut (shoot it or prise it). Ellen: "Something's breaking out of those crates!"
+- [ ] **C-4 and the scope** are yours to choose when: they don't wait.
+- [ ] **The gun pit:** a sure 6 rifle rounds when you search it (plus maybe a few more).
+- [ ] **Do you still run short of ammo** at the outpost? Day and night. Tell me where.
+- [ ] **The fps line** at the barricade's peak by night with the beetles out (overlay: View + Menu).
 
 ## 1. The main menu
 

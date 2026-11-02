@@ -275,7 +275,7 @@ The player's home and base, set against the northern cliff. The family live here
 - **Station cabin** in the centre, with the **fire lookout tower** beside it. Climbing the tower reveals the map within a large radius (config).
 - **Comms room:** a fortified room inside the station with the radio, the CCTV monitors and the ledger. The family shelter here every night.
 - **Three layers of defence:** fence → station front door → comms room door. Each has its own health and is repaired and upgraded with scrap.
-- **Decided with Aaron in M5:** the fence is **12 segments plus a gate** due south that opens itself for the player. Runs start with the **east fence torn up, a little scrap and no charge**. Spare scrap goes on **barricades** (a second wall behind a segment), **spike traps** (outside a segment) and **floodlights** (four fixed poles), all at fixed slots.
+- **Decided with Aaron in M5:** the fence is **12 segments plus a gate** due south that opens itself for the player. Runs start with the **east fence torn up, a little scrap and no charge**. Spare scrap goes on **barricades** (an outer wall in front of a segment, outside the fence: Session 18, Aaron, so the dead have to get through it before they can pull the fence down), **spike traps** (outside a segment) and **floodlights** (four fixed poles), all at fixed slots.
 
 ### The ledger
 
@@ -1607,7 +1607,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 15b | Level & Encounter Designer (+ Narrative) | Aaron's play-test of the first day and its tweaks | M9.2 |
 | 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines. **Built** (and two playthroughs of the opening: objectives, D-pad down to watch, papers in close-up) | M9.3 |
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate. **Built** (and three rounds of Aaron's playthrough notes: escaping the witch early on, no dialogue in cutscenes, breadcrumbs, everything readable again from the ledger, the gun pit's machine gun). The tablet's frame rate at the outpost is Session 18's | M9.4 |
-| 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs | QA |
+| 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs. **Rounds 1-3 built** (Aaron's early-game notes: papers taken with A, the pumps blow, a 2 s dig, a stop at home, barricades outside the fence; the outpost's beats spaced out, C-7 by the road in, the beetles' burst; an ammo audit and a sure 6 rounds in the gun pit). Waiting on Aaron's playthroughs | QA |
 | 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks | Part of M13 |
 | 20 | Level & Encounter Designer (+ AI) | The north frontier: barn, crashed plane, mineshaft (designs from Aaron's redesign) | M10 (part 1) |
 | 21 | Level & Encounter Designer + AI Programmer | The interior system, Bigfoot cave, the Mothman, Bigfoot | M10 (part 2) |
