@@ -16,7 +16,7 @@ Aaron's notes: no dialogue in cutscenes (the family react after); everything pic
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 247 | **Which cutscenes still speak while they play:** black screens (the defeat) and the victory (`linesDuring`), since the run's summary follows them. Every other cutscene's lines come after it. | As described. A gameplay line that comes up during a cutscene waits too. | `Cutscenes.speaksDuring()`; `cutscenes.json` `linesDuring` |
+| 247 | **Which cutscenes speak while they play.** **Settled (Aaron, after playing it):** all of them again, except the dogfight (`linesAfter`: too crowded), whose lines wait until it's over (the radio holds meanwhile). | As described. | `Cutscenes.speaksDuring()`; `cutscenes.json` `linesAfter` |
 | 248 | **Signs:** two faces back to back (each reads the right way round) rather than one blank back. | As described. | `GateProps.sign()`; `OutpostProps.buildSigns()` |
 | 249 | **The fight's numbers:** waves 2, 4, 6; barricade 12 (x1.25 by night); helmet 25 (one rifle round); army rifle drops 30% (Aaron's M4 rule, under half a round a kill, holds). | As described. | `config.outpost`, `config.zombies.variants.army.helmet`, `loot.json` |
 | 250 | **A retreat no longer resets a wave** (DESIGN's edge case said it should; it doubled the fight). A wave far off and not chasing, or out over 2 minutes, counts as done. | As described. | `Outpost.updateWaves()`, `dropLost()` |

@@ -1142,7 +1142,7 @@ export class Game {
     }
     this.runEnd.update(dt, this.input);
     this.debugMenu.update(dt);
-    // Session 17 (Aaron): the radio holds while a cutscene plays (it speaks after); a black one or an ending still speaks.
+    // Session 17 (Aaron): the radio holds while a linesAfter cutscene plays (the dogfight); the rest talk as they play.
     const csSpeaks = this.cutscenes.active && this.cutscenes.speaksDuring(this.cutscenes.current.data);
     if (!this.cutscenes.active || csSpeaks) this.subtitles.update(dt);
     document.body.classList.toggle('cs-quiet', this.cutscenes.active && !csSpeaks);

@@ -198,6 +198,9 @@ Round 23 (the gun pit's machine gun):
 - [ ] **Explosions have a sound now** (charges and cars going up were silent: the sound was missing).
 - [ ] Debug: Military outpost, "the machine gun: fit a battery (gives one)".
 
+Round 24 (your notes after the handover):
+- [ ] **Cutscenes talk again** as they used to (the tower's view, the campsite's sweep and the rest). **Only the dogfight** stays silent, with Wyatt's and Ellen's reaction straight after it.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

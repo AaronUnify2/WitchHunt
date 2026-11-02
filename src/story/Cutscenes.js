@@ -173,7 +173,9 @@ export class Cutscenes {
       a.dispose();
     }
     cur.fx?.dispose();
-    // Session 17: its lines now (a skipped one's too: they're the family's reaction).
+    // A skipped cutscene's own lines go with it (as before Session 17).
+    if (skipped && this.speaksDuring(cur.data)) this.subtitles.clear();
+    // Session 17: a linesAfter one's lines now (a skipped one's too: they're the family's reaction).
     for (const [line, vars, radio] of cur.after) this.dialogue.play(line, vars, radio);
     this.zombieList.length = 0;
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);
@@ -219,9 +221,9 @@ export class Cutscenes {
     if (cur.t >= cur.length && (!this.speaksDuring(cur.data) || !this.subtitles.busy || cur.t >= cur.length + this.cc.lineGrace)) this.stop(false);
   }
 
-  // Does it speak while it plays (a black screen, the endings), rather than after?
+  // Does it speak while it plays (all but those marked linesAfter), rather than after?
   speaksDuring(data) {
-    return data.style === 'black' || Boolean(data.linesDuring);
+    return !data.linesAfter;
   }
 
   // A CCTV feed runs at a low frame rate: true on frames that keep the last picture.
@@ -381,8 +383,8 @@ export class Cutscenes {
     switch (e.do) {
       case 'line':
         // radio: true / false (face to face), else the line's own channel.
-        // Session 17 (Aaron): no dialogue in a cutscene: the family's reaction waits until it's over (skipped or
-        // not), so the picture has the player's eyes. Black screens and the endings ("linesDuring") still speak.
+        // Session 17 (Aaron, after trying it everywhere): cutscenes talk as they play, except one marked
+        // "linesAfter" (the dogfight: too crowded): its lines, the family's reaction, wait until it's over.
         if (this.speaksDuring(cur.data)) this.dialogue.play(e.line, cur.opts.vars ?? {}, e.radio ?? null);
         else cur.after.push([e.line, cur.opts.vars ?? {}, e.radio ?? null]);
         break;

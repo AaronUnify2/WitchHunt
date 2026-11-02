@@ -135,15 +135,13 @@ import loreData from '../src/data/lore.json';
 import papersData from '../src/data/papers.json';
 import cutsceneData from '../src/data/cutscenes.json';
 
-describe('no dialogue in a cutscene (Aaron)', () => {
-  it("speaks only in a black one or an ending: the rest say their lines after they're over", () => {
+describe('cutscenes talk as they play, but the dogfight (Aaron, after trying none anywhere)', () => {
+  it('holds only the dogfight\'s lines for after', () => {
     const speaks = (c) => Cutscenes.prototype.speaksDuring.call(null, c);
-    for (const c of cutsceneData.cutscenes) {
-      const lines = (c.tracks ?? []).some((t) => t.do === 'line');
-      if (lines && speaks(c)) expect(c.style === 'black' || c.id.startsWith('ending.')).toBe(true);
-    }
-    expect(speaks({ style: 'cctv' })).toBe(false);
-    expect(speaks({ style: 'black' })).toBe(true);
+    const quiet = cutsceneData.cutscenes.filter((c) => !speaks(c)).map((c) => c.id);
+    expect(quiet).toEqual(['clip.dogfight']);
+    expect(speaks(cutsceneData.cutscenes.find((c) => c.id === 'day1.tower'))).toBe(true);
+    expect(speaks(cutsceneData.cutscenes.find((c) => c.id === 'sweep.campsite'))).toBe(true);
   });
 });
 

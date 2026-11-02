@@ -48,6 +48,10 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 17, round 5: cutscenes talk again
+
+Aaron, after a playthrough: silent cutscenes made the tower's view and the campsite's sweep feel empty; only the dogfight was too crowded with lines. Wound back: every cutscene speaks as it plays except the dogfight (`linesAfter`), whose lines come after it (the radio holds meanwhile). OPEN_QUESTIONS #247; PLAYTEST round 24.
+
 ### Session 17, round 4: the gun pit's machine gun (Aaron's idea)
 
 The outpost's gun pit has a machine gun: dead until Tom fits a battery (hold X), then it fires 15 rounds at the nearest of the dead, overheats (an amber light, smoke, Wyatt) and blows up (`Outpost.updateTurret()`, `OutpostProps.buildTurret()`; `config.outpost.turret`). Wyatt points it out the first time Tom's there. Saved (dead, live with its rounds left, spent). Also: explosions had no sound (fixed). PLAYTEST round 23; OPEN_QUESTIONS #254-256. 635 tests pass.

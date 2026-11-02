@@ -1796,6 +1796,7 @@
     {
       "id": "clip.dogfight",
       "rewatch": true,
+      "linesAfter": true,
       "name": "The outpost: the dogfight through the hunting rifle's scope",
       "_note": "Session 17 (M9.4; DESIGN.md 'Overrun military outpost' beat 6): the first time Tom raises the hunting rifle's scope up the outpost's watchtower (or, if he never climbs it, as he crosses the barricade). Through the scope (look scope: a 4x round view), a patrol plane chasing a craft of lights, trading fire; the craft's ray hits the plane, the plane's guns hit the craft; the plane dives in, the craft limps away south and comes down far off. Both come down where the map puts the crashed plane and the crashed UFO (Session 17, Aaron). Anchors (from Outpost.dogfightAnchors): dogfight (Tom's eye, facing the plane's crash site), fight (the fight, along that line), planeCrash and ufoCrash (each facing away from Tom). near 60: the scope sees past the trees round the outpost and the tower itself (they'd fill the view). The plane and the craft are unlit (they read as shapes by day and by their lights at night). Lines inside are cleared if it's skipped; Ellen's after it plays either way (Outpost). The crashes' flashes light the sky over the treeline (over: no depth test), and their smoke stands tall enough to show over it.",
       "style": "cctv",
@@ -2497,7 +2498,6 @@
     },
     {
       "id": "ending.victory",
-      "linesDuring": true,
       "name": "The ending: victory",
       "placeholder": true,
       "style": "cctv",
