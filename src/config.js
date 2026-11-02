@@ -2721,12 +2721,18 @@ export const config = {
     },
     // The beetles' crates (pass 4): the first time Tom comes within autoBreak
     // of one (past the barricade, no fight on) it breaks open by itself.
-    crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10 },
-    c7Distance: 7, // metres from the Mothman's container's torn-open end: its sweep
+    crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10, burst: 4, stagger: [1, 2] }, // Session 18 (Aaron): `burst` crates break together, `stagger` seconds apart (the nearest first)
+    c7Distance: 9, // metres from the Mothman's container's torn-open end: its sweep (Session 18: it's by the road in, 35 m north-east of the tower)
+    // Session 18 (Aaron: after the fight it all "layers on top of each other"): after each of the
+    // compound's beats (the all-clear, the beetles, C-4, C-7, the dogfight) the next one that comes by
+    // itself (the beetles' crates, Wyatt's ask to scope, C-7's sweep) waits this many quiet seconds
+    // (no cutscene, no one talking). What Tom does himself (hauling C-4, raising the scope) never waits.
+    beatGap: 15,
+    c7Lull: 8, // seconds added to the approach's lull after C-7's lines (the next wave waits for them)
     resinOpenSeconds: 2.2, // Session 17: C-4's doors swinging open (the reveal)
     sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
     callRoundsAfter: 30, // Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
-    scopeAsk: 8, // seconds after the barricade's down: Wyatt asks Tom up the tower to look through the scope (if he hasn't)
+    // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
     arriveInset: 6, // metres inside the clearing's edge: outpostEntered
     interactRange: 1.4,

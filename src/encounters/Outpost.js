@@ -192,6 +192,9 @@ export class Outpost {
     this.crates = (this.data.compound.crates ?? []).map(() => 'whole');
     this.autoBroken = false;
     this.told = new Set(); // one-off lines and beats: beetleHint, beetlesDone, c7, resinOpen
+    this.beatGap = 0; // Session 18 (Aaron): quiet seconds still owed before the next beat that comes by itself
+    this.scopeAskDue = false; // Session 18: Wyatt's ask to look through the scope, waiting for a quiet moment
+    this.burst = []; // Session 18 (Aaron): crates still to break in the beetles' burst: [{ index, in }]
     this.resinOpen = 0; // C-4's doors: 0 shut .. 1 open
     this.props?.setResinDoors(0);
     this.scratchIn = 2;
@@ -360,6 +363,8 @@ export class Outpost {
       this.updateWaves(dt, d);
       this.updatePeak(dt, l, d);
     }
+    if (!this.cutscenes?.active && !this.talking()) this.beatGap = Math.max(0, this.beatGap - dt);
+    this.updateScopeAsk();
     this.updateDogfight();
     this.updateSmoke();
     this.updateCompound(dt, l);
@@ -474,7 +479,7 @@ export class Outpost {
     }
     if (d > a.start || this.witchOn) return; // away, or the witch is on him: the next waits
     if (this.lull > 0) {
-      this.lull -= dt;
+      if (!this.cutscenes?.active) this.lull -= dt;
       return;
     }
     if (this.cutscenes?.active) return;
@@ -598,8 +603,40 @@ export class Outpost {
     this.bus.emit('outpost:cleared');
     this.dialogue?.play('outpost.cleared.ellen');
     this.dialogue?.play('outpost.cleared.wyatt');
+    this.beat();
     // Session 17 (Aaron): the dogfight's only from the tower: if it's not been seen, Wyatt asks him up there.
-    if (!this.dogfightSeen) this.dialogue?.playLater?.('outpost.scope', this.oc.scopeAsk, () => !this.dogfightSeen);
+    // Session 18 (Aaron): once it's gone quiet after the all-clear (one beat at a time).
+    if (!this.dogfightSeen) this.scopeAskDue = true;
+  }
+
+  // ---- pacing (Session 18, Aaron: "they're just not getting time to breathe") ---------------------------
+
+  // Someone's talking (a line showing, or one waiting on the radio).
+  talking() {
+    const d = this.dialogue;
+    return Boolean(d?.subtitles?.busy || d?.pending?.length);
+  }
+
+  // A beat's just happened: the next one that comes by itself waits.
+  beat() {
+    this.beatGap = this.oc.beatGap;
+  }
+
+  // Quiet enough for the next beat that comes by itself.
+  quiet() {
+    return this.beatGap <= 0 && !this.cutscenes?.active && !this.talking() && !this.witchOn;
+  }
+
+  updateScopeAsk() {
+    if (!this.scopeAskDue) return;
+    if (this.dogfightSeen) {
+      this.scopeAskDue = false;
+      return;
+    }
+    if (!this.quiet() || this.onTower || this.inCombat()) return;
+    this.scopeAskDue = false;
+    this.dialogue?.play('outpost.scope');
+    this.beat();
   }
 
   // Tom's inside the outpost's clearing (outpostEntered).
@@ -670,6 +707,7 @@ export class Outpost {
     const eye = this.onTower ? this.towerEye() : { x: p.x, z: p.z, y: this.ground.heightAt(p.x, p.z) };
     const after = () => {
       this.dialogue?.play('outpost.dogfight.after');
+      this.beat();
       this.bus.emit('outpost:dogfight');
     };
     if (!this.cutscenes?.play('clip.dogfight', { anchors: this.dogfightAnchors(eye), onDone: after })) after();
@@ -693,23 +731,35 @@ export class Outpost {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
     const busy = this.peakState === 'running' || this.cutscenes?.active || this.witchOn;
     // DESIGN: at least one crate breaks open on its own as Tom passes, so the beetles' fight always happens.
-    if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3) {
-      let near = -1;
-      let nearD = this.oc.crates.autoBreak;
-      this.crateAt.forEach((c, i) => {
-        const d = dist(c);
-        if (this.crates[i] === 'whole' && d < nearD) {
-          near = i;
-          nearD = d;
-        }
-      });
-      if (near >= 0) {
+    // Session 18 (Aaron): not one but all of them (`burst`), a second or two apart, the nearest first,
+    // once it's gone quiet after the last beat.
+    if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3 && this.quiet()) {
+      const cc = this.oc.crates;
+      const near = this.crateAt.some((c, i) => this.crates[i] === 'whole' && dist(c) < cc.autoBreak);
+      if (near) {
         this.autoBroken = true;
-        this.breakCrate(near);
+        const order = this.crateAt
+          .map((c, i) => ({ i, d: dist(c) }))
+          .filter((e) => this.crates[e.i] === 'whole')
+          .sort((a, b) => a.d - b.d)
+          .slice(0, cc.burst ?? 1);
+        let t = 0;
+        this.burst = order.map((e, k) => {
+          if (k > 0) t += cc.stagger[0] + Math.random() * (cc.stagger[1] - cc.stagger[0]);
+          return { index: e.i, in: t };
+        });
+        this.beat();
       }
     }
+    if (this.burst.length) {
+      for (const b of this.burst) b.in -= dt;
+      const due = this.burst.filter((b) => b.in <= 0);
+      this.burst = this.burst.filter((b) => b.in > 0);
+      for (const b of due) this.breakCrate(b.index);
+    }
     // The Mothman's container (C-7): the first time Tom comes to its torn-open end.
-    if (!this.told.has('c7') && !busy && !this.inCombat() && dist(this.c7At) < this.oc.c7Distance) this.playC7(); // Session 17 (Aaron): not mid-fight
+    // Session 17 (Aaron): not mid-fight. Session 18: not over someone talking either (it's by the road in now).
+    if (!this.told.has('c7') && !busy && !this.inCombat() && !this.talking() && dist(this.c7At) < this.oc.c7Distance) this.playC7();
     // C-4's doors swinging open (the reveal).
     if (this.resinOpen < 1 && this.told.has('resinOpen')) {
       this.resinOpen = Math.min(1, this.resinOpen + dt / this.oc.resinOpenSeconds);
@@ -725,9 +775,10 @@ export class Outpost {
     }
     // Every beetle let out is down.
     const out = this.beetles?.list ?? [];
-    if (out.length && !this.told.has('beetlesDone') && out.every((b) => !b.alive)) {
+    if (out.length && !this.burst.length && !this.told.has('beetlesDone') && out.every((b) => !b.alive)) {
       this.told.add('beetlesDone');
       this.dialogue?.play('outpost.beetles.done');
+      this.beat();
     }
   }
 
@@ -780,6 +831,7 @@ export class Outpost {
     const lines = () => {
       this.dialogue?.play('outpost.resin.wyatt');
       this.dialogue?.play('outpost.resin.ellen');
+      this.beat();
     };
     if (!this.cutscenes?.play('outpost.resin', { onDone: lines })) lines();
   }
@@ -790,6 +842,9 @@ export class Outpost {
     const lines = () => {
       this.dialogue?.play('outpost.c7.wyatt');
       this.dialogue?.play('outpost.c7.ellen');
+      this.beat();
+      // Session 18: on the road in, mid-approach: the next wave waits for its lines.
+      if (this.peakState === 'none' && !this.approachDone) this.lull = Math.max(this.lull, this.oc.c7Lull);
     };
     if (!this.cutscenes?.play('sweep.outpostC7', { onDone: lines })) lines();
   }
@@ -1087,6 +1142,7 @@ export class Outpost {
     this.autoBroken = Boolean(d.auto);
     this.told = new Set(d.told ?? []);
     this.resinOpen = this.told.has('resinOpen') ? 1 : 0;
+    this.scopeAskDue = this.peakState === 'done' && !this.dogfightSeen; // Session 18
     const tu = String(d.turret ?? 'dead');
     if (tu === 'spent') this.turret.state = 'spent';
     else if (tu.startsWith('live:')) {

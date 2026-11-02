@@ -130,7 +130,8 @@ describe('the military outpost: the set', () => {
       expect(z).toBeLessThan(29);
       expect(Math.hypot(x, z)).toBeLessThan(f.radius);
     }
-    for (const c of outpost.compound.containers) {
+    // Session 18 (Aaron): C-7 (the Mothman's) lies by the road in, ~35 m north-east of the tower; the rest are in the compound.
+    for (const c of outpost.compound.containers.filter((q) => q.kind !== 'mothman')) {
       expect(c.z).toBeGreaterThan(B.z + 3);
       expect(Math.hypot(Math.abs(c.x) + 3.4, c.z + 1.3)).toBeLessThan(f.radius + 3);
     }
@@ -577,7 +578,11 @@ describe("Aaron's second round of notes (the outpost)", () => {
     r.o.peakLeft = 0;
     r.o.peak = [];
     r.step(0.3);
-    expect(r.later.map((l) => l.id)).toContain('outpost.scope');
+    // Session 18 (Aaron): not straight away: once it's gone quiet after the all-clear.
+    expect(r.played).not.toContain('outpost.scope');
+    r.o.beatGap = 0;
+    r.step(0.3);
+    expect(r.played).toContain('outpost.scope');
   });
 
   it("waits out a fight before C-7's sweep", () => {
@@ -648,5 +653,44 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
     const q = rig();
     q.o.loadState(JSON.parse(JSON.stringify(r.o.saveState())));
     expect(q.o.turret.state).toBe('spent');
+  });
+});
+
+describe("Session 18 (Aaron's notes): the outpost's beats given time to breathe", () => {
+  it('lets the beetles out together, the nearest first, a second or two apart, once it has gone quiet', () => {
+    const r = rig();
+    const cc = config.outpost.crates;
+    const c = r.o.crateAt[0];
+    r.player.position.x = c.x + 2;
+    r.player.position.z = c.z;
+    r.o.beatGap = 5; // a beat's just happened
+    r.step(1);
+    expect(r.o.crates.every((x) => x === 'whole')).toBe(true);
+    r.o.beatGap = 0;
+    r.step(0.2);
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
+    r.step(cc.stagger[1] * (cc.burst - 1) + 0.5);
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(Math.min(cc.burst, r.o.crateAt.length));
+    expect(r.o.beetles.list.length).toBe(Math.min(cc.burst, r.o.crateAt.length));
+    expect(r.played.filter((id) => id === 'outpost.crate')).toHaveLength(1);
+  });
+
+  it('waits a quiet spell after the all-clear before the next beat comes by itself', () => {
+    const r = rig();
+    r.o.approachStarted = true;
+    r.o.peakState = 'running';
+    r.o.peakLeft = 0;
+    r.o.peak = [];
+    r.step(0.3);
+    expect(r.o.beatGap).toBeGreaterThan(config.outpost.beatGap - 1);
+    expect(r.o.quiet()).toBe(false);
+  });
+
+  it("puts C-7 by the road in, 30-40 m from the watchtower, toward the road gate", () => {
+    const c7 = outpost.compound.containers.find((c) => c.kind === 'mothman');
+    const d = Math.hypot(c7.x - outpost.tower.x, c7.z - outpost.tower.z);
+    expect(d).toBeGreaterThan(30);
+    expect(d).toBeLessThan(40);
+    expect(c7.z).toBeLessThan(outpost.tower.z); // north of it
   });
 });
