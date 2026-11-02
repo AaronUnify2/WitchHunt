@@ -1966,7 +1966,7 @@ export const config = {
 
   // Digging a sigil up with the shovel (DESIGN.md "The shovel and digging").
   digging: {
-    seconds: 4,
+    seconds: 2, // Session 18 (Aaron): 4 felt long with the dead still rising round him
     releaseDrain: 2, // let go and the bar empties this many times faster than it fills (Aaron, M5)
     range: 2.2, // metres from the sigil's centre
     scrapeInterval: 0.55, // seconds between shovel sounds
@@ -2094,7 +2094,7 @@ export const config = {
       spikeOutside: 2.6, // spike trap slots: one per segment, this far outside its middle
       floodSegments: [1, 4, 7, 10], // floodlight slots, on poles just inside these segments
       floodInside: 1.2,
-      barricadeInside: 1.1, // a barricade is a second layer this far inside its segment
+      barricadeOutside: 1.2, // Session 18 (Aaron): a barricade is an outer layer this far outside its segment (the dead reach it before the fence)
     },
     // Zombies within baseRadius of the fence's centre lay siege (ZombieBrain).
     siege: {
@@ -2579,6 +2579,17 @@ export const config = {
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad
     safe: { weapon: 'sniper' }, // the hunting rifle, empty
+    // Session 18 (Aaron): shoot the pumps and they go up. Each island takes
+    // `health` of shot damage (a few shotgun blasts, two or three rifle
+    // rounds), then hisses and smokes for `fuse` seconds and blows: a big
+    // blast (cars and the other island in it go up too). Once only.
+    pumps: {
+      health: 90,
+      fuse: 1.1,
+      chainFuse: 0.45, // the other island, caught in the blast
+      hitRadius: 1.4, // metres from a pump unit's centre (frame) that a shot counts on
+      blast: { radius: 8, damage: 320, playerDamage: 60, edge: 0.25, knockback: 3.5, shake: 1.5, alert: 140 },
+    },
 
     look: {
       glassOpacity: 0.82, // grimed: you can barely see in (or out)
@@ -2621,6 +2632,7 @@ export const config = {
         kerb: 0x4a4a46,
         kerbTop: 0x3a3a36,
         pump: 0x5a2622, // faded red
+        scorch: 0x141210, // Session 18: a blown pump's stumps and the scorch round it
         pumpTop: 0x4a4a46,
         hose: 0x1a1a1a,
         bin: 0x3a3a2a,
@@ -2642,6 +2654,14 @@ export const config = {
   // until the cordon's crossed, while she's attacking within `range` metres,
   // ESCAPE THE WITCH on screen and the family say to run (or take the quad,
   // within quadRange); she's gone once she's been off him goneAfter seconds.
+  // Session 18 (Aaron): the stop at home on the ride back from the storm shelter (story/HomeStop.js).
+  homeStop: {
+    callDistance: 110, // metres from the compound's centre: Wyatt's word to stop in
+    insideMargin: 1, // metres inside the fence that count as home
+    hintPad: 'The ledger (comms room): repair and upgrade the fence · a battery tops up the fence box',
+    hintKey: 'The ledger (comms room): repair and upgrade the fence · a battery tops up the fence box',
+    hintSeconds: 9,
+  },
   witchEscape: { text: 'ESCAPE THE WITCH', range: 45, goneAfter: 6, cooldown: 90, quadRange: 70, outpostRange: 180 },
 
   // The overrun military outpost (Session 17, M9.4; encounters/Outpost.js,
@@ -2810,7 +2830,9 @@ export const config = {
         tinB: 0x2a3a2a,
         tableTop: 0x3a2c1c,
         game: 0x3a2a3a,
-        colouring: 0x5a4a28,
+        colouring: 0x8a8070, // Session 18: pale open pages (it read as a second diary in the torch)
+        crayonA: 0x7a2a1a,
+        crayonB: 0x2a4a7a,
         tv: 0x1e1c1a,
         screen: 0x0a0e0c,
         vcr: 0x161616,

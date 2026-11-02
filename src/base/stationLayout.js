@@ -6,7 +6,7 @@
 //  - the station cabin in the middle (front door south, the fortified
 //    comms room along its back), the fire lookout tower beside it, the
 //    turret pad, the fence box by the gate;
-//  - slots for barricades (one per segment, just inside it), spike traps
+//  - slots for barricades (one per segment, just outside it: Session 18), spike traps
 //    (one per segment, outside it) and floodlights (on four segments).
 // Angles round the fence: 0 = due south of its centre, + toward east.
 // A point at angle a and radius r is (cx + r sin a, cz + r cos a).
@@ -52,8 +52,9 @@ export function stationLayout(home, ground, cfg) {
     s.mid = at((s.a0 + s.a1) / 2, R);
     s.pieces = arcChords(at, s.a0, s.a1, R, cfg.panelLength);
     s.barricade = {
-      mid: at((s.a0 + s.a1) / 2, R - cfg.barricadeInside),
-      pieces: arcChords(at, s.a0 + 0.3 / R, s.a1 - 0.3 / R, R - cfg.barricadeInside, cfg.panelLength),
+      // Session 18 (Aaron): outside the fence, so the dead have to get through it before they can pull the fence down.
+      mid: at((s.a0 + s.a1) / 2, R + cfg.barricadeOutside),
+      pieces: arcChords(at, s.a0 + 0.3 / R, s.a1 - 0.3 / R, R + cfg.barricadeOutside, cfg.panelLength),
     };
     s.spike = at((s.a0 + s.a1) / 2, R + cfg.spikeOutside);
   }

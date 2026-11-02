@@ -766,7 +766,6 @@ export class OutpostProps {
     const y = this.groundAt(m.x, m.z);
     this.box(0.7, 0.75, 0.55, m.x, m.z, y, k.crate, 20);
     this.box(0.24, 0.02, 0.32, m.x, m.z, y + 0.75, k.timber, 30);
-    this.box(0.2, 0.01, 0.27, m.x, m.z, y + 0.765, k.paper, 30);
   }
 
   // ---- the gun pit's machine gun (Session 17, Aaron) ---------------------------------------------------
@@ -843,6 +842,10 @@ export class OutpostProps {
     this.box(0.3, 0.18, 0.2, a.x - 0.05, z, this.groundAt(a.x, z) + 0.95, k.oliveDark, -90);
     this.box(0.08, 0.04, 0.04, a.x - 0.2, z + 0.06, this.groundAt(a.x, z) + 1.13, k.blood, -90);
     this.ownGroup('charge');
+    // Session 18 (Aaron): the manifest's sheet comes off its clipboard when Tom takes it.
+    const m = this.data.compound.manifest;
+    this.box(0.2, 0.01, 0.27, m.x, m.z, this.groundAt(m.x, m.z) + 0.765, k.paper, 30);
+    this.ownGroup('manifest');
   }
 
   // Each crate whole, or broken open (its slats split outward).

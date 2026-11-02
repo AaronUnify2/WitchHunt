@@ -1,7 +1,7 @@
 // The ledger's plan of the compound (Session 15b, Aaron): the fence tab's
 // map. Tap (or D-pad to) a part to work on it:
 //  - the fence's 12 panels and the gate, round the outer ring: repair;
-//  - the barricade slots, the inner ring: build one, or repair it;
+//  - the barricade slots, the outer ring (Session 18: they stand outside the fence): build one, or repair it;
 //  - the cabin's two doors: repair, then reinforce;
 //  - the fence box (the power): fit a battery.
 // The D-pad walks a ring left and right, and steps between the rings with
@@ -15,7 +15,7 @@
 // buildFencePlan(station) -> { viewBox, back, title, hint, items } (Ledger.js).
 
 const RING = 28; // the fence (drawn at its real radius)
-const BARRICADE_RING = 23; // the barricades, drawn well inside it so each is easy to tap
+const BARRICADE_RING = 32.5; // Session 18 (Aaron): the barricades, outside the fence, drawn well out so each is easy to tap
 const BOX_AT = { angleDeg: 25, r: 18 }; // the fence box, drawn east of the gate path
 
 export function buildFencePlan(station) {
@@ -31,7 +31,7 @@ export function buildFencePlan(station) {
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const items = [];
 
-  // ---- the fence and the gate (outer ring) ----
+  // ---- the fence and the gate ----
   const fencePart = (b, a0, a1, label) => {
     const gap = 0.012;
     const pts = arcPoints(a0 + gap, a1 - gap, RING);
@@ -54,14 +54,14 @@ export function buildFencePlan(station) {
   fencePart(s.gate, L.gate.a0, L.gate.a1, 'Gate');
   items[items.length - 1].spine = 0; // the foot of the spine (Session 15b: gate, fence box, front door, comms door)
 
-  // ---- the barricades (inner ring) ----
+  // ---- the barricades (the outer ring: Session 18, outside the fence) ----
   L.segments.forEach((seg, i) => {
     const bar = s.segments[i].barricade;
     const a0 = seg.a0 + 0.05;
     const a1 = seg.a1 - 0.05;
     const pts = arcPoints(a0, a1, BARRICADE_RING);
     const mid = arcPoint((a0 + a1) / 2, BARRICADE_RING);
-    const label = `Barricade behind the ${seg.name}`;
+    const label = `Barricade outside the ${seg.name}`;
     if (!bar.built) {
       items.push({
         svg: `<polyline class="shape barricade" points="${pts}"/>`,
@@ -155,7 +155,7 @@ export function buildFencePlan(station) {
   const tp = rel(L.turretPad);
   const gateLabel = arcPoint(0, RING + 3.4);
   const back = [
-    `<rect class="cliff" x="-34" y="-20" width="68" height="${f(-14 - -20)}"/>`,
+    `<rect class="cliff" x="-38" y="-20" width="76" height="${f(-14 - -20)}"/>`,
     `<text class="lbl" x="0" y="-16">CLIFF</text>`,
     `<rect class="cabin" x="${f(cc.x - cab.halfW)}" y="${f(cc.y - cab.halfD)}" width="${f(cab.halfW * 2)}" height="${f(cab.halfD * 2)}"/>`,
     `<line class="cabin-wall" x1="${f(cc.x - cab.halfW)}" y1="${f(cc.y + cab.partZ)}" x2="${f(cc.x + cab.halfW)}" y2="${f(cc.y + cab.partZ)}"/>`,
@@ -168,15 +168,16 @@ export function buildFencePlan(station) {
   ].join('');
 
   return {
-    viewBox: '-34 -20 68 54',
+    viewBox: '-38 -20 76 58', // Session 18: wider, for the barricades' ring outside the fence
     // The D-pad (Session 15b, Aaron): left / right along a ring (the fence
     // and gate west to east, the barricades); up / down along the spine
     // (the gate, the fence box, the front door, the comms door, then the
-    // rows above); from a fence panel up to its barricade, from a barricade
-    // up to the spine or down to its panel. Items' `spine`: their place on it.
-    layers: ['fence', 'barricade', 'inner'],
+    // rows above). Session 18 (Aaron): the barricades are outside the fence
+    // now: from a barricade up to its panel, from a panel up to the spine or
+    // down to its barricade. Items' `spine`: their place on it.
+    layers: ['barricade', 'fence', 'inner'],
     back,
-    title: 'OR PICK A PART: the fence (outer ring), barricades (inner ring), the doors, the fence box',
+    title: 'OR PICK A PART: barricades (outer ring), the fence, the doors, the fence box',
     hint: 'Tap a part, or D-pad to it and press A',
     items,
   };

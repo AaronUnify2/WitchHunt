@@ -1,7 +1,7 @@
 // How a zombie gets through the station's layers (pure). The compound is
 // four zones (stationLayout.zoneOf): 0 outside the fence, 1 the yard,
 // 2 the cabin's main room, 3 the comms room. Three layers lie between
-// them: the fence (12 segments, each maybe with a barricade behind it,
+// them: the fence (12 segments, each maybe with a barricade outside it,
 // plus the gate), the front door and the comms room door.
 //
 // Given where a zombie wants to go (the player, or the family in the comms
@@ -95,12 +95,13 @@ function fenceRoute(layout, state, cfg, x, z, inward, out) {
   }
   // No gap near: claw whatever is in the way, the outer layer first.
   const hit = fenceAt(layout, state, a);
-  const inset = cfg.layout.barricadeInside;
-  const order = inward ? [hit.fence, hit.barricade] : [hit.barricade, hit.fence];
+  // Session 18 (Aaron): the barricade's outside the fence: coming in, it's the first layer.
+  const outside = cfg.layout.barricadeOutside;
+  const order = inward ? [hit.barricade, hit.fence] : [hit.fence, hit.barricade];
   for (const b of order) {
     if (passable(b)) continue;
     // Stand just off the barrier's line on the zombie's side.
-    const line = b.kind === 'barricade' ? R - inset : R;
+    const line = b.kind === 'barricade' ? R + outside : R;
     const p = layout.at(clampInto(a, hit.geo), line + side * sc.stand);
     setGoal(out, p.x, p.z, b);
     return;

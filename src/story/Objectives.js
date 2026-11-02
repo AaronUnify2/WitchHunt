@@ -128,6 +128,10 @@ export class Objectives {
     // ---- home with the tapes; the safe ----
     // Session 17 (Aaron): tapes are watched on D-pad down; handing them in (for the monitors) isn't a step.
     if (watching('pruittTapes')) return step('tapes', "Watch Earl's tapes (D-pad down).");
+    // Session 18 (Aaron): home's on the way back from the shelter: stop in and see to the fence.
+    if (has('earlCombination') && !has('rifleClaimed') && !has('homeStop')) {
+      return step('homeStop', "Stop at home on the way back: spend your scrap on the fence at the ledger, and top up the fence box with a battery.", g.combat.inventory.batteries > 0 ? L.fenceBox : L.cabin.frontDoor);
+    }
     if (has('earlCombination') && !has('rifleClaimed') && gas.frame) {
       const s = gas.spots.find((x) => x.id === 'safe');
       return step('safe', "Open the gas station's safe with Earl's combination.", s);

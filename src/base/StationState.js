@@ -1,5 +1,5 @@
 // The station's state (pure, no rendering): the fence segments and the
-// gate, the barricades behind them, the two doors, the electric fence's
+// gate, the barricades outside them (Session 18), the two doors, the electric fence's
 // charge, spike traps, floodlights and the turret; repairs, building and
 // upgrades paid for in scrap; and the security rating (DESIGN.md
 // "Security rating": the sum of every defence's value, each scaled by its
@@ -42,7 +42,7 @@ export class StationState {
         health: max * start,
         max,
         open: false,
-        barricade: { id: `barricade${i}`, kind: 'barricade', index: i, name: `barricade behind the ${s.name}`, built: false, health: 0, max: f.barricadeHealth, open: false },
+        barricade: { id: `barricade${i}`, kind: 'barricade', index: i, name: `barricade outside the ${s.name}`, built: false, health: 0, max: f.barricadeHealth, open: false },
         spike: { index: i, built: false, durability: 0 },
       };
     });

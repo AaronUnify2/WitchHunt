@@ -6,6 +6,10 @@
 //  - D-pad / LB / RB (arrow keys, Q / R): turn the page.
 //  - A / Enter: the next page (closes on the last).
 //  - B or X (Escape, E): put it down.
+//  Session 18 (Aaron): a paper Tom finds in the world opens with `take`:
+//  the prompt says "A: take it" on the last page (A turns the pages
+//  before it); taking it is the same as putting it down (the finder
+//  hides it and hands it to the ledger in onClose).
 //  - Taps: the left / right half of the page turns it; outside the page,
 //    or the ×, puts it down.
 // The press that closes it is swallowed (it doesn't reach the game).
@@ -14,6 +18,13 @@
 // Events: 'paper:opened' { id }, 'paper:closed' { id }.
 
 import papersData from '../data/papers.json';
+
+// The line under the sheet (exported for the tests).
+export function promptText({ take = false, pad = true, many = false, last = true, turn = '' } = {}) {
+  const a = pad ? 'A' : 'Enter';
+  if (take) return last ? `${turn}${a}: take it` : `${turn}${a}: next page`;
+  return `${turn}${pad ? 'B' : 'Esc'}: put it down`;
+}
 
 export class PaperNote {
   constructor(bus, data = papersData) {
@@ -70,13 +81,14 @@ export class PaperNote {
 
   // Open a paper. onClose: called once it's put down. Returns false if
   // there's no such paper (or no screen to show it on).
-  open(id, { onClose = null, device = 'gamepad' } = {}) {
+  open(id, { onClose = null, device = 'gamepad', take = false } = {}) {
     const paper = this.byId.get(id);
     if (!paper || !this.el) return false;
     this.paper = paper;
     this.page = 0;
     this.onClose = onClose;
     this.device = device;
+    this.take = take;
     this.isOpen = true;
     this.sheet.className = `paper-sheet paper-${paper.kind ?? 'note'}`;
     this.el.classList.remove('hidden');
@@ -126,7 +138,7 @@ export class PaperNote {
     this.pageEl.textContent = many ? `${this.page + 1} / ${p.pages.length}` : '';
     const pad = this.device !== 'keyboardMouse';
     const turn = many ? (pad ? '◀ ▶ turn the page · ' : '← → turn the page · ') : '';
-    this.promptEl.textContent = `${turn}${pad ? 'B' : 'Esc'}: put it down`;
+    this.promptEl.textContent = promptText({ take: this.take, pad, many, last: this.page === p.pages.length - 1, turn });
   }
 
   // The text as paragraphs; *words* underlined.

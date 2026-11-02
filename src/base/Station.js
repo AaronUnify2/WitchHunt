@@ -582,13 +582,14 @@ export class Station {
         offer(Math.abs(r - R), this.repairOffer(b, cost, X), 1);
         continue;
       }
-      if (i === null || r >= R) continue;
+      if (i === null) continue;
+      // Session 18 (Aaron): the barricade's outside the fence (built from either side of it).
       const bar = b.barricade;
-      const dBar = Math.abs(r - (R - sc.layout.barricadeInside));
+      const dBar = Math.abs(r - (R + sc.layout.barricadeOutside));
       if (!bar.built) {
         const price = sc.costs.barricade;
         if (inv.scrap >= price) {
-          offer(dBar, { key: `barricade${i}`, prompt: `Hold ${X}: build a barricade behind the ${g.name} (${price} scrap)`, busy: 'Building…', seconds: h.build, act: () => this.buildBarricade(i) }, 1);
+          offer(dBar, { key: `barricade${i}`, prompt: `Hold ${X}: build a barricade outside the ${g.name} (${price} scrap)`, busy: 'Building…', seconds: h.build, act: () => this.buildBarricade(i) }, 1);
         }
       } else {
         const bc = s.repairCost(bar);
@@ -645,7 +646,7 @@ export class Station {
     inv.spendScrap(spent);
     this.syncColliders();
     this.combat.sfx.play('hammer');
-    return `Barricade built behind the ${this.layout.segments[i].name} (-${spent} scrap)`;
+    return `Barricade built outside the ${this.layout.segments[i].name} (-${spent} scrap)`;
   }
 
   reinforceDoor(id) {

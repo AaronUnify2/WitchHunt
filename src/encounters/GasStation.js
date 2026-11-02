@@ -105,6 +105,9 @@ export class GasStation {
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       this.bus.on('gasStation:wake', () => this.wakeMutant()),
       this.bus.on('quad:mounted', () => (this.quadTold = true)),
+      // Session 18 (Aaron): the pumps go up when they're shot (or caught in a blast).
+      this.bus.on('weapon:impact', (at) => this.pumpShot(at)),
+      this.bus.on('explosion', (e) => this.pumpBlast(e)),
       // Session 15b (Aaron): the shovel picked up on the way out to the shelter: it's a weapon too.
       this.bus.on('station:shovel', () => {
         if (this.progress?.has('shelterCall') && !this.weaponTold) {
@@ -132,6 +135,10 @@ export class GasStation {
     this.quadTold = false; // the family have said to take Earl's quad
     this.shelterTalk = false; // Session 15b: due: the family's word about the shelter and the shovel, as Tom leaves
     this.weaponTold = false; // ...and Wyatt's, that the shovel's a weapon too
+    this.props?.setNoteTaken(false);
+    // Session 18 (Aaron): each pump island: its damage, its fuse (-1: none lit), blown.
+    this.pumps = (this.data.pumps ?? []).map(() => ({ hurt: 0, fuse: -1, blown: false }));
+    this.pumps.forEach((_, i) => this.props?.setPumpBlown(i, false));
   }
 
   // The store sits level on its highest corner (like the station's cabin).
@@ -238,7 +245,7 @@ export class GasStation {
     for (const p of this.data.pumps) {
       const w = frameToWorld(this.frame, p.x, p.z);
       const y = this.ground.heightAt(w.x, w.z);
-      this.block(grid, p.x, p.z, look.island.length, look.island.depth, y - 1, y + 1.8, false);
+      this.block(grid, p.x, p.z, look.island.length, look.island.depth, y - 1, y + 1.8, true); // Session 18: shots stop on the pumps (they go up)
       for (const side of [-1, 1]) {
         const px = p.x + side * (look.island.length / 2 + 0.25);
         const pw = frameToWorld(this.frame, px, p.z);
@@ -282,6 +289,7 @@ export class GasStation {
       this.hud.prompt = '';
       return;
     }
+    this.updatePumps(dt);
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
     const near = d < this.frame.radius + this.gc.packDistance;
@@ -299,6 +307,69 @@ export class GasStation {
       this.hud.progress = 0;
       this.hold.update(dt, null, false, 1);
     }
+  }
+
+  // ---- the pumps (Session 18, Aaron: shoot them and they go up) -------------------------------------
+
+  // Island i's pump units in the world: two, either side of its middle.
+  pumpUnits(i) {
+    const p = this.data.pumps[i];
+    return [-0.95, 0.95].map((side) => frameToWorld(this.frame, p.x + side, p.z));
+  }
+
+  pumpShot({ x, z, damage = 0 } = {}) {
+    if (!this.frame || !this.pumps || damage <= 0) return;
+    const pc = this.gc.pumps;
+    this.pumps.forEach((pump, i) => {
+      if (pump.blown || pump.fuse >= 0) return;
+      if (!this.pumpUnits(i).some((u) => Math.hypot(u.x - x, u.z - z) < pc.hitRadius)) return;
+      pump.hurt += damage;
+      if (pump.hurt >= pc.health) this.lightPump(i, pc.fuse);
+    });
+  }
+
+  // A blast that reaches an island sets it off a beat later (not one of its own).
+  pumpBlast({ x, z, radius = 0, source } = {}) {
+    if (!this.frame || !this.pumps) return;
+    this.pumps.forEach((pump, i) => {
+      if (pump.blown || pump.fuse >= 0 || source === `pumps${i}`) return;
+      const c = frameToWorld(this.frame, this.data.pumps[i].x, this.data.pumps[i].z);
+      if (Math.hypot(c.x - x, c.z - z) < radius + this.gc.look.island.length / 2) this.lightPump(i, this.gc.pumps.chainFuse);
+    });
+  }
+
+  lightPump(i, fuse) {
+    const pump = this.pumps[i];
+    pump.fuse = fuse;
+    const c = this.pumpCentre(i);
+    this.combat?.sfx?.play('gasHiss', c);
+    this.bus.emit('gasStation:pumpLit', { index: i });
+  }
+
+  pumpCentre(i) {
+    const p = this.data.pumps[i];
+    const w = frameToWorld(this.frame, p.x, p.z);
+    return { x: w.x, y: this.ground.heightAt(w.x, w.z), z: w.z };
+  }
+
+  updatePumps(dt) {
+    for (let i = 0; i < (this.pumps?.length ?? 0); i++) {
+      const pump = this.pumps[i];
+      if (pump.blown || pump.fuse < 0) continue;
+      pump.fuse -= dt;
+      if (pump.fuse < 0) this.blowPump(i);
+    }
+  }
+
+  blowPump(i) {
+    const pump = this.pumps[i];
+    pump.blown = true;
+    pump.fuse = -1;
+    this.props?.setPumpBlown(i, true);
+    const c = this.pumpCentre(i);
+    if (this.explosives?.blast) this.explosives.blast(c.x, c.y, c.z, { ...this.cfg.explosives, ...this.gc.pumps.blast }, `pumps${i}`);
+    else this.combat?.sfx?.play('explosion', c);
+    this.bus.emit('gasStation:pumpBlown', { index: i });
   }
 
   // ---- the forecourt pack and the arrival ----------------------------------------------------------
@@ -502,7 +573,7 @@ export class GasStation {
       }
     }
     for (const s of this.spots) {
-      if (this.done.has(s.id) && s.id !== 'safe' && s.id !== 'note') continue;
+      if (this.done.has(s.id) && s.id !== 'safe') continue; // Session 18 (Aaron): the note's taken (read it again from the ledger)
       if (s.id === 'safe' && this.safeOpen) continue;
       const d = Math.hypot(s.x - p.x, s.z - p.z);
       if (d < bestD) {
@@ -514,7 +585,6 @@ export class GasStation {
   }
 
   labelFor(s) {
-    if (s.id === 'note' && this.done.has('note')) return 'read the note again';
     if (s.id === 'safe' && this.progress?.has('earlCombination')) return "open the safe (Earl's combination)";
     return s.label;
   }
@@ -572,7 +642,9 @@ export class GasStation {
   // words go in the subtitle strip as before.)
   readNote(first) {
     const after = () => this.noteRead(first);
-    if (this.paper?.open('earlNote', { onClose: after, device: this.device })) return;
+    // Session 18 (Aaron): A takes it, and it's gone from the desk.
+    this.props?.setNoteTaken(true);
+    if (this.paper?.open('earlNote', { onClose: after, device: this.device, take: true })) return;
     this.dialogue?.play('gas.note', {}, false); // read on the spot: no radio crackle
     after();
   }
@@ -657,6 +729,7 @@ export class GasStation {
       shelterTalk: this.shelterTalk,
       weaponTold: this.weaponTold,
       quadTold: this.quadTold,
+      pumps: this.pumps?.map((p) => (p.blown ? 1 : 0)), // Session 18
     };
   }
 
@@ -666,6 +739,7 @@ export class GasStation {
     if (!d) return;
     this.searched = new Set(d.searched ?? []);
     this.done = new Set(d.done ?? []);
+    this.props?.setNoteTaken(this.done.has('note'));
     this.arrived = Boolean(d.arrived);
     this.packSent = false;
     this.pack = [];
@@ -679,6 +753,9 @@ export class GasStation {
     this.quadTold = Boolean(d.quadTold);
     // Back to the forecourt with the pack gone (it was dealt with, or it will be again).
     if (d.pack) this.packSent = this.mutantState === 'down';
+    // Session 18: blown pumps stay blown (a lit fuse in the save goes up as it loads: counted blown).
+    this.pumps = (this.data.pumps ?? []).map((_, i) => ({ hurt: 0, fuse: -1, blown: Boolean(d.pumps?.[i]) }));
+    this.pumps.forEach((p, i) => this.props?.setPumpBlown(i, p.blown));
   }
 
   // ---- debug -----------------------------------------------------------------------------------------
@@ -694,6 +771,21 @@ export class GasStation {
       this.notify(text);
     };
     cat.addItem('Gas station: teleport to the forecourt (facing the store)', tp(b.door.x, 8, Math.atan2(f.fx, f.fz), 'On the gas station forecourt'));
+    cat.addItem('Gas station: set the pumps off (the nearest island)', () => {
+      const p = this.player.position;
+      let best = -1;
+      let bestD = Infinity;
+      this.pumps.forEach((pump, i) => {
+        const c = this.pumpCentre(i);
+        const d = Math.hypot(c.x - p.x, c.z - p.z);
+        if (!pump.blown && pump.fuse < 0 && d < bestD) {
+          best = i;
+          bestD = d;
+        }
+      });
+      if (best >= 0) this.lightPump(best, this.gc.pumps.fuse);
+      this.notify(best >= 0 ? 'A pump island is lit' : 'No pumps left to blow');
+    });
     cat.addItem('Gas station: teleport inside the door', tp(b.door.x, b.z1 - 0.8, Math.atan2(f.fx, f.fz), 'Inside the gas station door'));
     cat.addItem('Gas station: teleport to the office', tp(b.officeDoor.x, b.partitionZ - 1, Math.atan2(f.fx, f.fz), "In Earl's office"));
     cat.addItem('Gas station: teleport to the trail in from the campsite', tp(0, -f.radius - 4, Math.atan2(-f.fx, -f.fz), 'Behind the gas station, on the trail in'));

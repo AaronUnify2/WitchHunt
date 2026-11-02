@@ -380,7 +380,11 @@ export class StormShelterProps {
     const y = f + t.h;
     this.box(0.36, 0.015, 0.36, x + 0.2, z - 0.05, y, k.game, 12);
     for (let i = 0; i < 4; i++) this.cyl(0.015, 0.03, x + 0.12 + i * 0.05, z - 0.08 + (i % 2) * 0.06, y + 0.015, i % 2 ? k.blanketA : k.tinB, 6);
-    this.box(0.21, 0.01, 0.28, x - 0.08, z + 0.12, y, k.colouring, -18);
+    // Session 18 (Aaron saw "the diary" still on the table once it was taken): the colouring book
+    // lies open, pale pages and two crayons, so it can't be mistaken for the dark diary.
+    this.box(0.3, 0.006, 0.2, x - 0.08, z + 0.12, y, k.colouring, -18);
+    this.box(0.004, 0.008, 0.2, x - 0.08, z + 0.12, y + 0.004, k.timberDark, -18);
+    for (let i = 0; i < 2; i++) this.box(0.012, 0.012, 0.09, x - 0.2 + i * 0.03, z + 0.28, y, i ? k.crayonB : k.crayonA, 25 + i * 30);
     this.cyl(0.05, 0.16, x - 0.33, z + 0.15, y, k.lantern, 8);
     this.cyl(0.035, 0.08, x - 0.33, z + 0.15, y + 0.16, k.glass, 8);
   }

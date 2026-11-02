@@ -34,6 +34,7 @@ import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
 import { StormShelter } from '../encounters/StormShelter.js';
 import { Outpost } from '../encounters/Outpost.js';
+import { HomeStop } from '../story/HomeStop.js';
 import { WitchEscape } from '../story/WitchEscape.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
@@ -428,6 +429,7 @@ export class Game {
       combat: this.combat,
       colliders: this.colliders,
       vehicles: this.vehicles,
+      explosives: this.explosives, // Session 18 (Aaron): the pumps go up
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,
       progress: this.progress,
@@ -486,6 +488,17 @@ export class Game {
     this.witchEscape = new WitchEscape(this.cfg, this.bus);
     this.witchEscape.init({ witch: this.witch, player: this.player, progress: this.progress, dialogue: this.dialogue, alert: this.alert, quad: this.quad, outpost: this.outpost });
     this.outpost.witchBusy = () => this.witchEscape.engaged;
+    // Session 18 (Aaron): a stop at home on the ride back from the storm shelter.
+    this.homeStop = new HomeStop(this.cfg, this.bus);
+    this.homeStop.init({
+      player: this.player,
+      station: this.station,
+      gasStation: this.gasStation,
+      progress: this.progress,
+      dialogue: this.dialogue,
+      combat: this.combat,
+      hint: (pad, key) => this.hints.show(this.input.activeDevice === 'gamepad' ? pad : key, this.cfg.homeStop.hintSeconds),
+    });
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       watch: this.watch,
@@ -621,7 +634,7 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
-    this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}`);
+    this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -975,6 +988,7 @@ export class Game {
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
+      homeStop: this.homeStop.saveState(), // Session 18 (optional)
     };
   }
 
@@ -1019,6 +1033,7 @@ export class Game {
     this.outpost.loadState(d.outpost);
     this.outpost.checkCall();
     this.quad.loadState(d.quad);
+    this.homeStop.loadState(d.homeStop);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1200,6 +1215,7 @@ export class Game {
     this.outpost.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     if (first) this.firstDay.update(dt, playing);
     if (first) this.witchEscape.update(dt, playing && this.combat.alive);
+    if (first) this.homeStop.update(dt, playing && this.combat.alive);
   }
 
   get phase() {

@@ -111,7 +111,7 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
     for (const j of seen) expect(at(j).ring).toBe('fence');
   });
 
-  it('walks the barricades the same way; up from them goes to the doors and fence box', () => {
+  it('walks the barricades the same way; up from them goes to the fence (Session 18: they are outside it)', () => {
     let i = idx((it) => it.ring === 'barricade');
     const seen = new Set([i]);
     for (let k = 0; k < 30; k++) {
@@ -121,7 +121,7 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
       seen.add(i);
     }
     expect(seen.size).toBe(st.layout.segments.length);
-    expect(at(planMove(page, i, 0, -1)).ring).toBe('inner');
+    expect(at(planMove(page, i, 0, -1)).ring).toBe('fence');
   });
 
   it('has a spine up and down: the gate, the fence box, the front door, the comms door, then the rows (Aaron)', () => {
@@ -137,14 +137,16 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
     expect(planMove(page, comms, 0, 1)).toBe(front);
     expect(planMove(page, box, 0, 1)).toBe(gate);
     expect(planMove(page, gate, 0, 1)).toBe(-1);
-    // Off the spine sideways: the nearest barricade that way.
-    expect(at(planMove(page, box, 1, 0)).ring).toBe('barricade');
+    // Off the spine sideways: the nearest fence panel that way (Session 18: the barricades are the outer ring now).
+    expect(at(planMove(page, box, 1, 0)).ring).toBe('fence');
     // And the gate's left and right still walk the fence.
     expect(at(planMove(page, gate, 1, 0)).ring).toBe('fence');
   });
 
-  it('steps down from a barricade to its fence panel', () => {
-    const bar = idx((it) => it.ring === 'barricade');
-    expect(at(planMove(page, bar, 0, 1)).ring).toBe('fence');
+  it('steps down from a fence panel to its barricade, outside it (Session 18)', () => {
+    const panel = idx((it) => it.ring === 'fence' && it.spine === undefined);
+    const bar = planMove(page, panel, 0, 1);
+    expect(at(bar).ring).toBe('barricade');
+    expect(at(planMove(page, bar, 0, -1)).ring).toBe('fence');
   });
 });

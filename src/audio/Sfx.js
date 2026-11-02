@@ -237,6 +237,12 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 1.8, type: 'lowpass', freq: 1400, endFreq: 90, gain: 1.2, attack: 0.005 });
     s.tone(o, { seconds: 1.2, freq: 70, endFreq: 30, gain: 1 });
   },
+  // Session 18 (Aaron): a gas pump holed: fuel hissing out, a spark's tick, just before it goes.
+  gasHiss(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 1.1, type: 'bandpass', freq: 3200, endFreq: 1600, q: 1.5, gain: 0.55, attack: 0.03 });
+    s.tone(o, { seconds: 0.05, wave: 'square', freq: 900, gain: 0.15 });
+  },
   boomFar(s) {
     const o = s.out(undefined, undefined, 0.8);
     s.noiseBurst(o, { seconds: 2.2, type: 'lowpass', freq: 260, endFreq: 60, gain: 1, attack: 0.02 });

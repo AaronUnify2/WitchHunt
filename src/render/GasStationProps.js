@@ -50,6 +50,13 @@ export class GasStationProps {
     this.canopy();
     this.sign();
     this.dumpster();
+    this.flush(this.group);
+    this.buildPumpUnits(); // Session 18 (Aaron): the pumps go up when shot: each island's its own mesh, whole and wrecked
+    scene.add(this.group);
+  }
+
+  // The parts so far, merged by colour into `into`.
+  flush(into) {
     for (const [color, geos] of this.parts) {
       const geo = this.hold(mergeGeometries(geos));
       for (const g of geos) g.dispose();
@@ -57,10 +64,18 @@ export class GasStationProps {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.matrixAutoUpdate = false;
-      this.group.add(mesh);
+      into.add(mesh);
     }
     this.parts.clear();
-    scene.add(this.group);
+  }
+
+  // A group of its own from the parts added since the last flush.
+  ownGroup(name) {
+    const g = new THREE.Group();
+    g.name = name;
+    this.flush(g);
+    this.group.add(g);
+    return g;
   }
 
   hold(x) {
@@ -408,6 +423,17 @@ export class GasStationProps {
       const y = this.groundAt(p.x, p.z) + this.cfg.forecourtLift;
       this.box(isl.length, 0.22, isl.depth, p.x, p.z, y - 0.05, k.kerb);
       this.box(isl.length - 0.2, 0.04, isl.depth - 0.2, p.x, p.z, y + 0.17, k.kerbTop);
+      // A rusted bin and a squeegee bucket at the island's end.
+      this.box(0.4, 0.7, 0.4, p.x - isl.length / 2 + 0.25, p.z, y + 0.17, k.bin);
+    }
+  }
+
+  // Each island's two pumps, whole (pumpsN) and wrecked (pumpsNWreck: blackened stumps, a scorch on the slab).
+  buildPumpUnits() {
+    const k = this.cfg.colors;
+    this.pumpGroups = [];
+    this.data.pumps.forEach((p, i) => {
+      const y = this.groundAt(p.x, p.z) + this.cfg.forecourtLift;
       for (const side of [-0.95, 0.95]) {
         const x = p.x + side;
         this.box(0.62, 1.55, 0.42, x, p.z, y + 0.21, k.pump);
@@ -420,9 +446,25 @@ export class GasStationProps {
         // The hose, slack to the ground.
         this.box(0.04, 0.04, 0.9, x, p.z, y + 0.4, k.hose, 0, { ox: 0.24, oz: 0.5, rotX: 0.7 });
       }
-      // A rusted bin and a squeegee bucket at the island's end.
-      this.box(0.4, 0.7, 0.4, p.x - isl.length / 2 + 0.25, p.z, y + 0.17, k.bin);
-    }
+      const whole = this.ownGroup(`pumps${i}`);
+      for (const side of [-0.95, 0.95]) {
+        const x = p.x + side;
+        this.box(0.66, 0.5, 0.46, x, p.z, y + 0.21, k.scorch, side * 8, { rotZ: side * 0.12 });
+        this.box(0.3, 0.06, 0.5, x + side * 0.4, p.z + 0.6, y + 0.2, k.scorch, 40);
+      }
+      this.box(this.cfg.island.length + 2.4, 0.01, this.cfg.island.depth + 2.6, p.x, p.z, y + 0.012, k.scorch, 7);
+      const wreck = this.ownGroup(`pumps${i}Wreck`);
+      wreck.visible = false;
+      this.pumpGroups.push({ whole, wreck });
+    });
+  }
+
+  // Session 18 (Aaron): an island's pumps blown up (or back, on a reset).
+  setPumpBlown(i, blown) {
+    const g = this.pumpGroups?.[i];
+    if (!g) return;
+    g.whole.visible = !blown;
+    g.wreck.visible = blown;
   }
 
   // The canopy over the pumps, sagging at one corner, on posts at the islands' ends.
@@ -481,6 +523,11 @@ export class GasStationProps {
   }
 
   update() {}
+
+  // Session 18 (Aaron): Earl's note leaves the desk once Tom's taken it.
+  setNoteTaken(taken) {
+    if (this.note) this.note.visible = !taken;
+  }
 
   // The back door: 0 shut .. 1 swung out (about 100 degrees).
   setBackDoor(amount) {

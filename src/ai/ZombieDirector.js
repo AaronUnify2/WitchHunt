@@ -133,7 +133,11 @@ export class ZombieDirector {
       const sc = this.cfg.sigils;
       const raising = sc.spawnPhases.includes(phase);
       const quota = sc.nightQuota[level - 1] ?? Infinity;
-      for (const s of this.sigils.update(dt, raising, (sg) => this.enemies.ownedCount(sg), this.due, quota)) this.raise(s);
+      for (const s of this.sigils.update(dt, raising, (sg) => this.enemies.ownedCount(sg), this.due, quota)) {
+        // Session 18 (Aaron): the sigil Tom's digging up raises nothing more while the shovel's in it.
+        if (this.digging.active && this.digging.target === s) continue;
+        this.raise(s);
+      }
       const p = this.player.position;
       for (const c of this.revisits.update(p.x, p.z, phase === 'night' ? this.night ?? 0 : null)) this.spawnRevisit(c);
       this.updateDigging(dt, input);

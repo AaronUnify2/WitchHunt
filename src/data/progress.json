@@ -24,6 +24,7 @@
     {"id": "shelterSigilDug", "about": "Night 1's sigil at the shelter is dug up: the dead stop climbing out of it, and the family work out what the sigils do (Session 16, StormShelter)."},
     {"id": "shelterOpened", "about": "The shelter's hatch hauled open (Session 16, StormShelter)."},
     {"id": "shelterEntered", "about": "Tom has been down into the shelter's room (Session 16, StormShelter)."},
+    {"id": "homeStop", "about": "Session 18 (Aaron): on the ride back from the storm shelter with Earl's combination, Tom's stopped at home to see to the fence (story/HomeStop.js sets it inside the fence; riding on to the gas station without stopping sets it too).", "standIn": false},
     {"id": "rifleClaimed", "about": "The hunting rifle claimed: the gas station's safe opened with Earl's combination, from his keys at the shelter (Session 16: GasStation.trySafe() sets it; the Session 14 stand-in trigger is gone).", "standIn": false},
     {"id": "outpostCall", "about": "Ellen's call to adventure: report to the checkpoint (Session 17, M9.4: encounters/Outpost.js sets it as the gas station's safe opens, Aaron: right away, with come home if it goes bad). Opens the outpost's gates. Back-up: as soon as the rifle's claimed (an older save).", "standIn": false, "trigger": {"on": "all", "after": ["rifleClaimed"]}},
     {"id": "outpostEntered", "about": "Tom has reached the outpost (Session 17: Outpost sets it a few metres inside the clearing; the visit trigger stays as a back-up).", "standIn": false, "trigger": {"on": "visit", "clearing": "outpost"}},

@@ -201,6 +201,7 @@ export class Outpost {
     this.climbs = 0;
     this.props?.setTaken('rounds', false);
     this.props?.setTaken('report', false);
+    this.props?.setTaken('manifest', false);
     this.props?.setTaken('charge', false);
   }
 
@@ -974,8 +975,8 @@ export class Outpost {
   }
 
   search(pt) {
-    // The clipboard stays where it is (read it again any time); everything else is searched once.
-    if (pt.id !== 'manifest') this.searched.add(pt.id);
+    // Session 18 (Aaron): everything's searched once; the papers are taken (read them again from the ledger).
+    this.searched.add(pt.id);
     switch (pt.id) {
       case 'armoury':
         this.takeCharge();
@@ -984,11 +985,12 @@ export class Outpost {
         this.props?.setTaken('report', true);
         this.lore?.give('fieldReport');
         this.combat?.sfx?.play('paper');
-        if (!this.paper?.open('fieldReport', { device: this.device, onClose: () => this.dialogue?.play('outpost.report') })) this.dialogue?.play('outpost.report');
+        if (!this.paper?.open('fieldReport', { device: this.device, take: true, onClose: () => this.dialogue?.play('outpost.report') })) this.dialogue?.play('outpost.report');
         break;
       case 'manifest':
+        this.props?.setTaken('manifest', true);
         this.combat?.sfx?.play('paper');
-        if (!this.paper?.open('outpostManifest', { device: this.device, onClose: () => this.manifestRead() })) this.manifestRead();
+        if (!this.paper?.open('outpostManifest', { device: this.device, take: true, onClose: () => this.manifestRead() })) this.manifestRead();
         break;
       default:
         this.loot(pt);
@@ -1073,6 +1075,7 @@ export class Outpost {
     this.searched = new Set(d.searched ?? []);
     this.props?.setTaken('rounds', this.roundsTaken);
     this.props?.setTaken('report', this.searched.has('report'));
+    this.props?.setTaken('manifest', this.searched.has('manifest'));
     this.props?.setTaken('charge', this.searched.has('armoury'));
     // Broken crates stay broken (their beetles aren't saved: gone into the woods, or down).
     (d.crates ?? []).forEach((b, i) => {

@@ -244,6 +244,8 @@ export class StormShelter {
       this.riseTimer = 0;
       return;
     }
+    // Session 18 (Aaron): nothing climbs out while Tom has the shovel in it.
+    if (this.director?.digging?.active && this.director.digging.target === s) return;
     this.riseTimer += dt;
     if (this.riseTimer < this.sc.horde.riseEvery) return;
     this.riseTimer = 0;
@@ -452,7 +454,7 @@ export class StormShelter {
       case 'diary':
         this.props?.setTaken('diary', true);
         this.lore?.give('pruittDiary');
-        if (!this.paper?.open('earlDiary', { device: this.device, onClose: () => this.dialogue?.play('shelter.diary') })) this.dialogue?.play('shelter.diary');
+        if (!this.paper?.open('earlDiary', { device: this.device, take: true, onClose: () => this.dialogue?.play('shelter.diary') })) this.dialogue?.play('shelter.diary');
         break;
       case 'tapes':
         this.props?.setTaken('tapes', true);
