@@ -1,5 +1,15 @@
 # Open questions
 
+## Session 17, round 4 (the gun pit's machine gun, Aaron's idea)
+
+Aaron: a turret in the outpost's gun pit; fit a battery and it shoots 15 rounds and explodes; a taste of the turret without overpowering the early game. The calls I made:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 254 | **How strong:** 70 damage a round to the body (a level-1 citizen in one, an army zombie in two), one every 0.42 s, 40 m range, it picks the nearest. Its rounds wait if nothing's in range. | As described. | `config.outpost.turret` |
+| 255 | **The blast:** radius 5 m, 160 to the dead, 35 to Tom at the centre (less further out), 2.6 s after the last round. | Explosives.blast with its own numbers. | `config.outpost.turret.blast`, `overheat` |
+| 256 | **Explosions had no sound** (Explosives played a sound that didn't exist). | A close blast's sound for charges, cars and the gun. | `audio/Sfx.js` `explosion` |
+
 ## Session 17, round 3 (Aaron's full playthrough)
 
 Aaron's notes: no dialogue in cutscenes (the family react after); everything picked up goes to the ledger to watch or read again; the quad's engine cut in cutscenes; the outpost fight too long; the dogfight only from the tower, with a prompt after the fight; C-7 only out of combat; signs single-sided (they read backwards); save the charge; C-9 busted open; C-4 shut, with a reveal. The calls I made:

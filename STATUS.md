@@ -48,6 +48,10 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 17, round 4: the gun pit's machine gun (Aaron's idea)
+
+The outpost's gun pit has a machine gun: dead until Tom fits a battery (hold X), then it fires 15 rounds at the nearest of the dead, overheats (an amber light, smoke, Wyatt) and blows up (`Outpost.updateTurret()`, `OutpostProps.buildTurret()`; `config.outpost.turret`). Wyatt points it out the first time Tom's there. Saved (dead, live with its rounds left, spent). Also: explosions had no sound (fixed). PLAYTEST round 23; OPEN_QUESTIONS #254-256. 635 tests pass.
+
 ### Session 17, round 3: Aaron's full playthrough
 
 Aaron played everything built, start to finish, and enjoyed it (the specimens after the fight especially). Fixed (PLAYTEST round 22; OPEN_QUESTIONS #247-253):

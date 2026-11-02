@@ -68,7 +68,7 @@ function rig({ phase = 'day' } = {}) {
     hurtPlayer(d) {
       this.hurt += d;
     },
-    inventory: { addAmmo() {} },
+    inventory: { addAmmo() {}, batteries: 0, useBattery() { if (this.batteries <= 0) return false; this.batteries--; return true; } },
     hud: { pickup() {} },
     sfx: { play() {} },
     takePickup: () => true,
@@ -83,7 +83,7 @@ function rig({ phase = 'day' } = {}) {
       bus.emit('story:flag', { id: f, on });
     },
   };
-  const charges = { n: 0, give: (k) => ((charges.n += k), k) };
+  const charges = { n: 0, give: (k) => ((charges.n += k), k), blasts: [], blast: (x, y, z, e) => charges.blasts.push({ x, z, e }) };
   const o = new Outpost(config, bus);
   o.init(null, {
     world: { map, ground },
@@ -599,5 +599,54 @@ describe("Aaron's second round of notes (the outpost)", () => {
     expect(outpost.compound.containers.some((c) => c.kind === 'sealed')).toBe(false);
     const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
     expect(by['outpost.charge']).toMatch(/save it/i);
+  });
+});
+
+describe("the gun pit's machine gun (Session 17, Aaron)", () => {
+  const tc = config.outpost.turret;
+
+  it('is dead without a battery; with one, Tom fits it', () => {
+    const r = rig();
+    const g = outpost.staging.gunPit;
+    r.at(g.x + 1.5, g.z);
+    expect(r.o.pick('X').key).toBe('turret-info');
+    r.o.combat.inventory.batteries = 1;
+    const p = r.o.pick('X');
+    expect(p.key).toBe('turret');
+    p.act();
+    expect(r.o.turret.state).toBe('live');
+    expect(r.o.combat.inventory.batteries).toBe(0);
+    expect(r.played).toContain('outpost.turret.on');
+  });
+
+  it('fires its 15 rounds at the dead in range, overheats, and blows up (once)', () => {
+    const r = rig();
+    r.at(0, -30);
+    r.o.combat.inventory.batteries = 1;
+    r.o.fitTurret();
+    const at = r.o.turretAt();
+    // A line of them in range, one beyond.
+    for (let i = 0; i < 20; i++) r.enemies.spawnZombie(at.x + 6 + i * 0.5, at.z + 8, { variant: 'army' });
+    const far = r.enemies.spawnZombie(at.x + tc.range + 10, at.z, { variant: 'army' });
+    r.step(tc.rounds * tc.every + 6);
+    expect(r.o.turret.rounds).toBe(0);
+    expect(r.spawned.filter((z) => !z.alive)).toHaveLength(tc.rounds);
+    expect(far.alive).toBe(true);
+    r.step(tc.overheat + 0.5);
+    expect(r.o.turret.state).toBe('spent');
+    expect(r.charges.blasts).toHaveLength(1);
+    expect(r.charges.blasts[0].e.radius).toBe(tc.blast.radius);
+    expect(r.played).toContain('outpost.turret.hot');
+    r.o.combat.inventory.batteries = 1;
+    r.at(outpost.staging.gunPit.x + 1, outpost.staging.gunPit.z);
+    expect(r.o.pick('X')?.key ?? '').not.toMatch(/turret/);
+  });
+
+  it('keeps it spent over a save', () => {
+    const r = rig();
+    r.o.turret.state = 'spent';
+    const q = rig();
+    q.o.loadState(JSON.parse(JSON.stringify(r.o.saveState())));
+    expect(q.o.turret.state).toBe('spent');
   });
 });

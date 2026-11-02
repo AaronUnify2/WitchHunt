@@ -66,6 +66,7 @@ export class OutpostProps {
     this.buildFence();
     this.buildResin();
     this.buildResinDoors();
+    this.buildTurret();
     this.buildOwn();
     this.buildCrates();
     this.buildSigns(); // after the crates: their stencils go with them
@@ -422,7 +423,8 @@ export class OutpostProps {
     const k = this.cfg.colors;
     const g = s.gunPit;
     this.bagRing(g.x, g.z, g.r, 4, null, 300, 360);
-    this.box(0.12, 0.6, 0.12, g.x, g.z, this.groundAt(g.x, g.z), k.steel); // the gun's mount, the gun long gone
+    this.box(0.16, 0.75, 0.16, g.x, g.z, this.groundAt(g.x, g.z), k.steel); // the gun's mount (Session 17: the gun's on it: buildTurret)
+    for (const a of [0, 120, 240]) this.box(0.06, 0.06, 0.9, g.x, g.z, this.groundAt(g.x, g.z) + 0.05, k.steelDark, a, { oz: 0.35, rotX: 0.5 });
     for (const [x, z, kind, yaw] of s.gear) this.gear(x, z, kind, yaw);
     // Blood trails up the road from the barricade.
     for (let i = 0; i < 10; i++) this.stain(this.range(-6, 6), this.range(-18, 2), this.range(0.5, 1.1), k.blood);
@@ -765,6 +767,62 @@ export class OutpostProps {
     this.box(0.7, 0.75, 0.55, m.x, m.z, y, k.crate, 20);
     this.box(0.24, 0.02, 0.32, m.x, m.z, y + 0.75, k.timber, 30);
     this.box(0.2, 0.01, 0.27, m.x, m.z, y + 0.765, k.paper, 30);
+  }
+
+  // ---- the gun pit's machine gun (Session 17, Aaron) ---------------------------------------------------
+
+  // On its mount, turning on a pivot: the receiver, the barrel, the ammo box, a status light; and its wreck.
+  buildTurret() {
+    const g = this.data.staging.gunPit;
+    const k = this.cfg.colors;
+    const y = this.groundAt(g.x, g.z) + 0.75;
+    const w = frameToWorld(this.frame, g.x, g.z);
+    const pivot = new THREE.Group();
+    pivot.position.set(w.x, y, w.z);
+    const mat = (color) => this.hold(new THREE.MeshLambertMaterial({ color }));
+    const part = (geo, m, x, yy, z) => {
+      const mesh = new THREE.Mesh(this.hold(geo), m);
+      mesh.position.set(x, yy, z);
+      mesh.castShadow = true;
+      pivot.add(mesh);
+      return mesh;
+    };
+    const gun = new THREE.Group();
+    pivot.add(gun);
+    const body = mat(k.rifle);
+    const add = (geo, m, x, yy, z) => {
+      const mesh = new THREE.Mesh(this.hold(geo), m);
+      mesh.position.set(x, yy, z);
+      gun.add(mesh);
+      return mesh;
+    };
+    add(new THREE.BoxGeometry(0.22, 0.2, 0.75), body, 0, 0.12, 0); // the receiver
+    add(new THREE.CylinderGeometry(0.04, 0.05, 0.95, 8).rotateX(Math.PI / 2), body, 0, 0.14, 0.82); // the barrel
+    add(new THREE.CylinderGeometry(0.07, 0.07, 0.4, 8).rotateX(Math.PI / 2), mat(k.steelDark), 0, 0.14, 0.45); // its jacket
+    add(new THREE.BoxGeometry(0.22, 0.2, 0.3), mat(k.can), 0.22, 0.06, 0.05); // the ammo box
+    add(new THREE.BoxGeometry(0.03, 0.18, 0.3), mat(k.steelDark), -0.13, 0.22, -0.2); // the grips' plate
+    this.turretLight = part(new THREE.SphereGeometry(0.04, 8, 6), new THREE.MeshBasicMaterial({ color: 0x401010 }), 0, 0.27, -0.25);
+    this.group.add(pivot);
+    this.turret = { pivot, gun, yawBase: this.rotY(0) };
+    // The wreck: a scorch, the mount bent over, the gun's pieces.
+    for (let i = 0; i < 3; i++) this.stain(g.x + this.range(-0.6, 0.6), g.z + this.range(-0.6, 0.6), 1.6, k.scorch);
+    this.box(0.2, 0.15, 0.7, g.x + 0.5, g.z + 0.3, this.groundAt(g.x, g.z) + 0.02, k.rifle, 35, { rotZ: 0.4 });
+    this.box(0.08, 0.08, 0.8, g.x - 0.4, g.z - 0.5, this.groundAt(g.x, g.z) + 0.04, k.rifle, -60);
+    this.turretWreck = this.ownGroup('turretWreck');
+    this.turretWreck.visible = false;
+  }
+
+  // state: dead | live | hot | spent; yaw: world radians (its barrel's way); kick 0..1 (recoil); blink: the warning on.
+  setTurret(state, yaw = null, kick = 0, blink = false) {
+    const t = this.turret;
+    if (!t) return;
+    t.pivot.visible = state !== 'spent';
+    this.turretWreck.visible = state === 'spent';
+    if (yaw !== null) t.pivot.rotation.y = yaw;
+    t.gun.position.z = -0.06 * kick;
+    t.gun.rotation.x = -0.05 * kick;
+    const c = state === 'live' ? 0x40ff60 : state === 'hot' ? (blink ? 0xffa020 : 0x401808) : 0x401010;
+    this.turretLight.material.color.setHex(c);
   }
 
   // ---- what changes ----------------------------------------------------------------------------------

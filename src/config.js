@@ -2681,6 +2681,24 @@ export const config = {
     peak: { count: 12, nightScale: 1.25, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
     // The watchtower: rounds in the snipers' nest (DESIGN: guaranteed), the climb.
     tower: { rounds: 10 },
+    // The gun pit's machine gun (Session 17, Aaron: a taste of the turret
+    // without overpowering the early game): dead until Tom fits a battery
+    // (hold X with one in his pack); then it swings onto the nearest of the
+    // dead within `range` and fires `rounds`, one every `every` seconds
+    // (`damage` each, to the body), overheats for `overheat` seconds (smoke,
+    // a warning) and blows up (`blast`: Explosives.blast, smaller than a charge).
+    turret: {
+      rounds: 15,
+      every: 0.42,
+      damage: 70,
+      range: 40,
+      turnRate: 3.2, // radians a second
+      aimed: 0.1, // radians off: it fires
+      overheat: 2.6,
+      fitSeconds: 1.2,
+      fitRange: 2.4,
+      blast: { radius: 5, damage: 160, playerDamage: 35, edge: 0.3, knockback: 2.5, shake: 1, alert: 80 },
+    },
     // The beetles' crates (pass 4): the first time Tom comes within autoBreak
     // of one (past the barricade, no fight on) it breaks open by itself.
     crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10 },

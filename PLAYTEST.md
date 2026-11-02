@@ -190,6 +190,14 @@ Round 22 (your full-playthrough notes):
 - [ ] **C-9** (the beetles' brood) is busted open: one door swung back, the other torn off on the ground, smashed crate slats inside.
 - [ ] **C-4's reveal:** its doors are shut. Hold X at them ("haul the container's doors open"): they swing out, the camera turns onto the body in the resin, a sting; then Wyatt and Ellen.
 
+Round 23 (the gun pit's machine gun):
+- [ ] **The gun pit** (the sandbag ring on the near side, east of the road) has a machine gun on its mount. Walk up: Wyatt says a car battery might wake it. Without a battery: "its battery dead". With one in your pack: hold X, "fit a battery to the machine gun".
+- [ ] **It comes alive** (green light, Wyatt): swings onto the nearest of the dead within 40 m and fires, about one body shot a round (a helmeted soldier takes two). 15 rounds; it holds what's left if nothing's in range.
+- [ ] **Then it overheats** (an amber light blinking, smoke, Wyatt: get away from it) and **blows up** about 2.6 s later: a small blast that hurts the dead nearby, and you if you're within 5 m. Once only.
+- [ ] Batteries nearby: the truck across the barricade's gap has a sure one; the gas station's forecourt car too.
+- [ ] **Explosions have a sound now** (charges and cars going up were silent: the sound was missing).
+- [ ] Debug: Military outpost, "the machine gun: fit a battery (gives one)".
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

@@ -26,6 +26,10 @@
 //     off the tower or has seen the dogfight), or Tom's close to the line,
 //     or right at it whatever. Down: outpostCleared (the checkpoint opens):
 //     nobody's coming.
+//  5b. The gun pit's machine gun (Session 17, Aaron: a first taste of the
+//     turret): dead until Tom fits a battery (hold X with one in his pack);
+//     then it swings onto the dead and fires 15 rounds, overheats and blows
+//     up. Once.
 //  6. The compound: a crime scene of the failed transfer.
 //     - The beetles' crates (DESIGN beat 9): shot, blown or prised open,
 //       each lets one out (ai/Beetles.js: the shell shrugs off shots, the
@@ -46,6 +50,7 @@
 // 'outpost:climbed', 'outpost:rounds', 'outpost:dogfight', 'outpost:crate' { index },
 // 'outpost:c7', 'outpost:searched' { id }.
 
+import { Vector3 } from 'three';
 import outpostData from '../data/outpost.json';
 import { frameToWorld, frameYaw, frameAnchor } from '../world/clearingFrame.js';
 import { segmentCollider } from '../world/collision.js';
@@ -170,6 +175,9 @@ export class Outpost {
     this.waveOut = null; // 'helmet' | wave index, while one's out
     this.waveAge = 0;
     this.scopeHinted = false; // Session 17: the scope's hint up the tower, once a climb
+    // The gun pit's machine gun: dead -> live (a battery fitted) -> hot (overheating) -> spent (blown up).
+    this.turret = { state: 'dead', rounds: 0, yaw: Math.PI, timer: 0, kick: 0, target: null };
+    this.props?.setTurret('dead', Math.PI);
     this.lull = 0;
     this.towerTold = false;
     this.roundsTaken = false;
@@ -354,6 +362,7 @@ export class Outpost {
     this.updateDogfight();
     this.updateSmoke();
     this.updateCompound(dt, l);
+    this.updateTurret(dt);
     this.beetles?.update(dt, true);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
@@ -784,6 +793,99 @@ export class Outpost {
     if (!this.cutscenes?.play('sweep.outpostC7', { onDone: lines })) lines();
   }
 
+  // ---- the gun pit's machine gun (Session 17, Aaron) ---------------------------------------------------
+
+  turretAt() {
+    const g = this.data.staging.gunPit;
+    const w = frameToWorld(this.frame, g.x, g.z);
+    return { ...w, y: this.gy(g.x, g.z) + 0.9 };
+  }
+
+  fitTurret() {
+    if (this.turret.state !== 'dead' || !this.combat?.inventory?.useBattery()) return;
+    const tc = this.oc.turret;
+    this.turret.state = 'live';
+    this.turret.rounds = tc.rounds;
+    this.turret.timer = 0.6;
+    this.combat?.sfx?.play('battery');
+    this.combat?.sfx?.play('turretTurn', this.turretAt());
+    this.bus.emit('outpost:turret', { state: 'live' });
+    this.dialogue?.play('outpost.turret.on');
+  }
+
+  updateTurret(dt) {
+    const t = this.turret;
+    const tc = this.oc.turret;
+    // The first time Tom's at the dead gun: Wyatt says what would wake it.
+    if (t.state === 'dead' && !this.told.has('turretHint') && !this.witchOn) {
+      const at = this.turretAt();
+      const p = this.player.position;
+      if (Math.hypot(p.x - at.x, p.z - at.z) < tc.fitRange + 1) {
+        this.told.add('turretHint');
+        this.dialogue?.play('outpost.turret.hint');
+      }
+    }
+    t.kick = Math.max(0, t.kick - dt * 8);
+    if (t.state === 'live') {
+      const at = this.turretAt();
+      // The nearest of the dead in range, held while it lives.
+      if (!t.target?.alive || Math.hypot(t.target.x - at.x, t.target.z - at.z) > tc.range) {
+        t.target = null;
+        let best = tc.range;
+        for (const z of this.enemies?.living ?? []) {
+          const d = Math.hypot(z.x - at.x, z.z - at.z);
+          if (d < best) {
+            best = d;
+            t.target = z;
+          }
+        }
+      }
+      t.timer -= dt;
+      if (t.target) {
+        const want = Math.atan2(t.target.x - at.x, t.target.z - at.z);
+        let d = want - t.yaw;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        t.yaw += Math.max(-tc.turnRate * dt, Math.min(tc.turnRate * dt, d));
+        if (Math.abs(d) < tc.aimed && t.timer <= 0) this.turretFire(at);
+      }
+      if (t.rounds <= 0) {
+        t.state = 'hot';
+        t.timer = tc.overheat;
+        this.bus.emit('outpost:turret', { state: 'hot' });
+        this.dialogue?.play('outpost.turret.hot');
+      }
+    } else if (t.state === 'hot') {
+      t.timer -= dt;
+      if (Math.random() < dt * 6) this.combat?.fx?.dust?.(this.turretAt().x, this.turretAt().y + 0.3, this.turretAt().z);
+      if (t.timer <= 0) this.turretBlow();
+    }
+    this.props?.setTurret(t.state, t.yaw, t.kick, t.state === 'hot' && Math.floor(t.timer * 6) % 2 === 0);
+  }
+
+  turretFire(at) {
+    const t = this.turret;
+    const tc = this.oc.turret;
+    const z = t.target;
+    t.rounds--;
+    t.timer = tc.every;
+    t.kick = 1;
+    const muzzle = { x: at.x + Math.sin(t.yaw) * 1.2, y: at.y + 0.1, z: at.z + Math.cos(t.yaw) * 1.2 };
+    this.combat?.fx?.muzzleFlash?.(new Vector3(muzzle.x, muzzle.y, muzzle.z));
+    this.combat?.sfx?.play('turret', at);
+    const hit = { x: z.x, y: (z.y ?? 0) + 1.1, z: z.z };
+    this.enemies.damage(z, tc.damage, 'body', { id: 'turret', stagger: 0.4, knockback: 0.6 }, hit, at);
+  }
+
+  turretBlow() {
+    const at = this.turretAt();
+    this.turret.state = 'spent';
+    this.turret.target = null;
+    this.bus.emit('outpost:turret', { state: 'spent' });
+    if (this.explosives?.blast) this.explosives.blast(at.x, at.y - 0.9, at.z, { ...this.cfg.explosives, ...this.oc.turret.blast });
+    else this.combat?.sfx?.play('explosion', at);
+  }
+
   // ---- the watchtower -----------------------------------------------------------------------------------
 
   platform() {
@@ -842,6 +944,12 @@ export class Outpost {
     }
     if (this.player.platform) return null;
     if (dist(this.ladderAt) < 1.3) return { key: 'tower-up', prompt: `Hold ${X}: climb the watchtower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() };
+    // The gun pit's machine gun (Session 17).
+    const tu = this.turretAt();
+    if (this.turret.state === 'dead' && dist(tu) < this.oc.turret.fitRange) {
+      if ((this.combat?.inventory?.batteries ?? 0) > 0) return { key: 'turret', prompt: `Hold ${X}: fit a battery to the machine gun`, busy: 'Wiring it in…', seconds: this.oc.turret.fitSeconds, act: () => this.fitTurret() };
+      return { key: 'turret-info', prompt: "A machine gun on its mount, its battery dead. It'd take a car battery", act: null };
+    }
     let best = null;
     let bestD = this.oc.interactRange;
     for (const pt of this.points) {
@@ -945,6 +1053,7 @@ export class Outpost {
       crates: this.crates.map((c) => (c === 'broken' ? 1 : 0)),
       auto: this.autoBroken,
       told: [...this.told],
+      turret: this.turret.state === 'dead' ? 'dead' : this.turret.state === 'spent' || this.turret.state === 'hot' ? 'spent' : `live:${this.turret.rounds}`,
     };
   }
 
@@ -975,6 +1084,13 @@ export class Outpost {
     this.autoBroken = Boolean(d.auto);
     this.told = new Set(d.told ?? []);
     this.resinOpen = this.told.has('resinOpen') ? 1 : 0;
+    const tu = String(d.turret ?? 'dead');
+    if (tu === 'spent') this.turret.state = 'spent';
+    else if (tu.startsWith('live:')) {
+      this.turret.state = 'live';
+      this.turret.rounds = Math.max(1, Number(tu.slice(5)) || 1);
+    }
+    this.props?.setTurret(this.turret.state, this.turret.yaw);
     this.props?.setResinDoors(this.resinOpen);
   }
 
@@ -1025,6 +1141,11 @@ export class Outpost {
     });
     cat.addItem("Outpost: the Mothman's container (C-7) now", () => this.playC7());
     cat.addItem('Outpost: open C-4 (the body in the resin) now', () => this.openResin());
+    cat.addItem('Outpost: the machine gun: fit a battery (gives one)', () => {
+      this.combat?.inventory?.addBattery(1);
+      if (this.turret.state !== 'dead') this.turret = { state: 'dead', rounds: 0, yaw: Math.PI, timer: 0, kick: 0, target: null };
+      this.fitTurret();
+    });
     cat.addItem('Outpost: teleport to the containers', tp(-8, 20, -Math.PI / 2, 'By the containers'));
     cat.addItem('Outpost: put the barricade wave down', () => {
       this.peakLeft = 0;

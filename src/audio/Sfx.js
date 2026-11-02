@@ -229,6 +229,14 @@ const RECIPES = {
   rayFar(s) {
     s.tone(s.out(undefined, undefined, 0.4), { seconds: 0.6, wave: 'sine', freq: 1400, endFreq: 500, gain: 0.25, vibrato: 30 });
   },
+  // Session 17: a blast close by (charges, a car going up, the outpost's machine gun): there was none
+  // (Explosives played 'explosion', which didn't exist). A crack, a roar falling away, a thump.
+  explosion(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1.2, pos?.range);
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 1800, gain: 0.9 });
+    s.noiseBurst(o, { seconds: 1.8, type: 'lowpass', freq: 1400, endFreq: 90, gain: 1.2, attack: 0.005 });
+    s.tone(o, { seconds: 1.2, freq: 70, endFreq: 30, gain: 1 });
+  },
   boomFar(s) {
     const o = s.out(undefined, undefined, 0.8);
     s.noiseBurst(o, { seconds: 2.2, type: 'lowpass', freq: 260, endFreq: 60, gain: 1, attack: 0.02 });
