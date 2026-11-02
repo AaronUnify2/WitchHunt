@@ -170,6 +170,14 @@ Round 20 (Session 17: the military outpost, M9.4). Debug: **Military outpost** c
 - [ ] **Through:** the checkpoint gate, then the frontier.
 - [ ] **The performance gate (tablet):** turn the overlay on (View + Menu) during the barricade peak at night with the beetles out. What does the fps line say? Headless: 116 draw calls, under 1 ms of simulation for 20 zombies and 5 beetles.
 
+Round 21 (your first outpost playthrough's notes):
+- [ ] **Earl's office** has only the desk, the cabinet and his note now. The **safe** is in the stockroom against the back wall by the back door; the **scanner** sits on a crate by the stockroom's east wall. Ellen's hint and the map's NEXT say "the stockroom, out back".
+- [ ] **Behind the counter:** Earl's bulk ammunition: a sure 20 shotgun shells and 20 rifle rounds (with the 4 scrap).
+- [ ] **Escape the witch** (until you've crossed the cordon): whenever she's attacking you close by, ESCAPE THE WITCH stays on screen; Ellen says to get away (at the outpost: get away from the checkpoint, come back once she's gone); Wyatt says to take the quad if it's near and you're not on it. When she gives up, Wyatt says she's gone (at the outpost: go back). While she's on you the outpost waits: no sweep, no dogfight when you scope, no next wave, no peak.
+- [ ] **One idea at a time:** after the gas station's witch, Ellen only says "That was her"; the phone comes on its own about 12 s later (if you haven't tried it); Wyatt's quad line comes on its own once the shelter's call is made. Ellen's call to the outpost is her line and "come home if it goes bad"; Wyatt's word on the soldiers' rounds comes about 30 s later.
+- [ ] **Breadcrumbs:** stay stuck on a step a while (about a minute for Earl's note, under two for most) and one of the family nudges you, once (Junie on Earl's notes for Marcy; Ellen on the stockroom's scanner; Wyatt on the watchtower...).
+- [ ] **Earl's tapes:** taking them in the shelter puts "D-pad down: watch Earl's tapes" on screen: watch them there and then. Handing them in at the ledger later just puts them on the monitors (it doesn't play them). The map's NEXT says to watch them, not to take them home.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

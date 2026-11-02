@@ -160,6 +160,15 @@ body {
   color: #fff2d0;
 }
 
+/* Session 17 (Aaron): ESCAPE THE WITCH (story/WitchEscape.js): under the watch slot, red. */
+.toast.alert {
+  top: calc(var(--safe) + 8.4rem);
+  border-left: 3px solid #c03020;
+  color: #ffd0c8;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+}
+
 /* Session 16 (Aaron): a tape or a feed waiting for D-pad down (story/WatchQueue.js): under the hint slot. */
 .toast.hint.watch {
   top: calc(var(--safe) + 5.6rem);

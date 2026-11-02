@@ -57,7 +57,8 @@ export class Lore {
     const item = this.byId.get(id);
     if (!item || this.carrying.includes(id) || this.handedIn.includes(id)) return false;
     this.carrying.push(id);
-    this.notify?.(`Picked up: ${item.name}. Hand it in at the comms room`);
+    // Session 17 (Aaron): a tape's watched on the spot (D-pad down); handed in, it stays on the monitors.
+    this.notify?.(item.kind === 'tape' ? `Picked up: ${item.name}. Hand it in at the comms room to keep it on the monitors` : `Picked up: ${item.name}. Hand it in at the comms room`);
     this.bus.emit('lore:picked', { id });
     return true;
   }

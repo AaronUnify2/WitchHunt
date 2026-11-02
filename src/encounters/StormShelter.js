@@ -25,8 +25,11 @@
 //     where his kids are; Ellen: maybe they got away (Aaron: nothing says
 //     the children died).
 //  7. Climb back up the ladder.
-//  8. At home: the tapes handed in at the comms room play there and then
-//     (clip.pruittTape: camera four, Night 1; then on the monitors).
+//  8. The tapes (Session 17, Aaron: the same pattern as every tape and
+//     feed, for the whole game): offered on D-pad down the moment they're
+//     taken (clip.pruittTape: camera four, Night 1, with the family's
+//     lines); handed in at the comms room they go on the monitors to
+//     watch again.
 // The frame (StormShelter.frame): walking in from home, x right, z ahead.
 // Each beat happens once; it's saved.
 //
@@ -112,10 +115,7 @@ export class StormShelter {
       }),
       this.bus.on('stormShelter:goDown', () => this.goDown()),
       this.bus.on('stormShelter:goUp', () => this.goUp()),
-      // Earl's tapes handed in at the comms room: they play there and then (camera four, Night 1).
-      this.bus.on('lore:handedIn', ({ id }) => {
-        if (id === 'pruittTapes') this.playTapes();
-      }),
+
     ];
   }
 
@@ -134,6 +134,7 @@ export class StormShelter {
     this.hatchOpen = 0; // 0 shut .. 1 thrown back (animated)
     this.searched = new Set();
     this.beenDown = false;
+    this.tapesWatched = false; // Session 17: watched on D-pad down (they're on the monitors once handed in)
     this.digging = false; // the hatch's dig (Game shows the shovel digging)
     this.scrape = 0;
     this.props?.setHatch('buried', 0);
@@ -457,6 +458,7 @@ export class StormShelter {
         this.props?.setTaken('tapes', true);
         this.lore?.give('pruittTapes');
         this.dialogue?.play('shelter.tapes');
+        this.offerTapes();
         break;
       default:
         this.loot(pt);
@@ -489,9 +491,17 @@ export class StormShelter {
     return true;
   }
 
-  // The tapes at home: the ledger closes and the family watch camera four (the clip has their lines).
+  // Session 17 (Aaron): the tapes wait for D-pad down, wherever Tom is (camera four; the clip has the family's lines).
+  offerTapes() {
+    if (this.tapesWatched) return;
+    if (!this.watch?.offer({ id: 'pruittTapes', pad: "D-pad down: watch Earl's tapes", key: "V: watch Earl's tapes", play: () => this.playTapes() })) {
+      if (!this.watch) this.playTapes();
+    }
+  }
+
   playTapes() {
-    this.lore?.ledger?.close?.();
+    this.tapesWatched = true;
+    this.watch?.cancel('pruittTapes');
     this.cutscenes?.play('clip.pruittTape');
   }
 
@@ -508,6 +518,7 @@ export class StormShelter {
       hatch: this.hatch,
       searched: [...this.searched],
       beenDown: this.beenDown,
+      tapesWatched: this.tapesWatched,
     };
   }
 
@@ -527,6 +538,9 @@ export class StormShelter {
     this.props?.setHatch(this.hatch, this.hatchOpen);
     this.searched = new Set(d.searched ?? []);
     this.beenDown = Boolean(d.beenDown);
+    // An older save handed them in to watch: count those as watched. Else, taken and not watched: offered again.
+    this.tapesWatched = Boolean(d.tapesWatched) || Boolean(this.lore?.handedIn?.includes('pruittTapes'));
+    if (this.searched.has('tapes') && !this.tapesWatched) this.offerTapes();
     this.props?.setTaken('diary', this.searched.has('diary'));
     this.props?.setTaken('tapes', this.searched.has('tapes'));
   }

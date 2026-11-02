@@ -34,6 +34,7 @@ import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
 import { StormShelter } from '../encounters/StormShelter.js';
 import { Outpost } from '../encounters/Outpost.js';
+import { WitchEscape } from '../story/WitchEscape.js';
 import { createStats, loadStats } from './runStats.js';
 import { Station } from '../base/Station.js';
 import { Vehicles } from '../world/Vehicles.js';
@@ -443,6 +444,7 @@ export class Game {
     // Session 16 (M9.3): the Pruitts' storm shelter.
     this.shelter = new StormShelter(this.cfg, this.bus);
     this.shelter.init(this.scene, {
+      watch: this.watch, // Session 17: Earl's tapes wait for D-pad down
       world: this.world,
       player: this.player,
       combat: this.combat,
@@ -477,6 +479,10 @@ export class Game {
     this.combat.promptSources.push(this.outpost.hud);
     this.vehicles.busy?.push(this.outpost.hud);
     this.station.blockers.push(this.outpost.hud);
+    // Session 17 (Aaron): you can't fight the witch yet: escape her (and the outpost waits while she's on you).
+    this.witchEscape = new WitchEscape(this.cfg, this.bus);
+    this.witchEscape.init({ witch: this.witch, player: this.player, progress: this.progress, dialogue: this.dialogue, alert: this.alert, quad: this.quad, outpost: this.outpost });
+    this.outpost.witchBusy = () => this.witchEscape.engaged;
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       watch: this.watch,
@@ -564,6 +570,10 @@ export class Game {
     this.hints = new Toast(cfg.ui);
     this.hints.init(root);
     this.hints.el.className = 'toast hint hidden';
+    // Session 17 (Aaron): ESCAPE THE WITCH, early in the run (story/WitchEscape.js).
+    this.alert = new Toast(cfg.ui);
+    this.alert.init(root);
+    this.alert.el.className = 'toast alert hidden';
     this.overlay = new DebugOverlay(cfg.debug, this);
     this.overlay.init(root);
     this.debugMenu = new DebugMenu(cfg.debug.menu, this.input, this.bus);
@@ -608,7 +618,7 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
-    this.overlay.addStat('outpost', () => this.outpost.overlayLine());
+    this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -1132,8 +1142,9 @@ export class Game {
     this.subtitles.update(dt);
     this.toast.update(dt);
     if (!this.cutscenes.active) this.hints.update(dt);
+    this.alert.update(dt);
     if (this.state === 'running') {
-      this.objectives.update(dt);
+      this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && this.combat.alive);
       this.mapUi.setObjective(this.objectives.current);
     }
     this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.noReturn.isOpen && this.combat.alive);
@@ -1177,6 +1188,7 @@ export class Game {
     this.shelter.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     this.outpost.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     if (first) this.firstDay.update(dt, playing);
+    if (first) this.witchEscape.update(dt, playing && this.combat.alive);
   }
 
   get phase() {

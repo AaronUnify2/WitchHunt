@@ -47,6 +47,7 @@ export class Dialogue {
     this.heard = new Set();
     this.milestones = []; // flags, oldest first
     this.pending = []; // radio calls waiting for the rate limit: { line, vars, expires }
+    this.later = []; // Session 17: lines due a while from now: { id, at, when }
     this.time = 0;
     this.gate.reset();
   }
@@ -166,9 +167,27 @@ export class Dialogue {
     });
   }
 
+  // Session 17 (Aaron: one idea at a time over the radio): a line `seconds`
+  // from now (game time, while playing), once the radio's quiet; when(): a
+  // check at that moment (false drops it). Not saved.
+  playLater(id, seconds, when = null) {
+    if (!this.byId.has(id)) {
+      console.warn(`No dialogue line ${id}`);
+      return;
+    }
+    this.later.push({ id, at: this.time + seconds, when });
+  }
+
   update(dt, playing) {
     if (!playing) return;
     this.time += dt;
+    if (this.later.length && !this.subtitles?.busy) {
+      const i = this.later.findIndex((l) => l.at <= this.time);
+      if (i >= 0) {
+        const [l] = this.later.splice(i, 1);
+        if (!l.when || l.when()) this.play(l.id);
+      }
+    }
     if (this.pending.length === 0) return;
     this.pending = this.pending.filter((p) => p.expires > this.time);
     const next = this.pending[0];

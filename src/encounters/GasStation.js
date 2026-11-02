@@ -12,13 +12,14 @@
 //     takes the camera: the torch finds it, it unfolds to its full height
 //     (wake), then it charges. Its own reduced health (config). Ellen after
 //     it's down: that wasn't like the others.
-//  4. Looting: hold-X searches (the counter, shelves, coolers, the office's
-//     cabinet, the stockroom's boxes and rack); the phone on the counter
-//     (dead); Earl's note on the office desk (read in close-up, Session
-//     16); Earl's scanner (a
-//     clipped military broadcast about a quarantine line, and Ellen); the
-//     gun safe (locked until Tom has Earl's combination: the storm
-//     shelter's, Session 16; then the hunting rifle, empty).
+//  4. Looting: hold-X searches (the counter: Session 17, Aaron, Earl's bulk
+//     ammunition, 20 shells and 20 rifle rounds; shelves, coolers, the
+//     office's cabinet, the stockroom's boxes and rack); the phone on the
+//     counter (dead); Earl's note on the office desk (read in close-up,
+//     Session 16; the office has only that now); in the stockroom, Earl's
+//     scanner (a clipped military broadcast about a quarantine line, and
+//     Ellen) and the gun safe (locked until Tom has Earl's combination:
+//     the storm shelter's, Session 16; then the hunting rifle, empty).
 //  5. The witch: once the mutant's down, stepping back out onto the
 //     forecourt, a first-person moment: she stands at the clearing's edge
 //     across the road, looking at the store, then turns and runs into the
@@ -227,7 +228,8 @@ export class GasStation {
     const o = this.data.office;
     this.block(grid, o.desk.x, o.desk.z, 1.6, 0.8, low, fy + 0.8, false, o.desk.yaw);
     this.block(grid, o.cabinet.x, o.cabinet.z, 0.6, 0.6, low, fy + 1.3, true);
-    this.block(grid, o.safe.x, o.safe.z, 0.95, 0.8, low, fy + 1.5, true);
+    const sf = this.data.stockroom.safe; // Session 17 (Aaron): the safe's in the stockroom now
+    this.block(grid, sf.x, sf.z, 0.95, 0.8, low, fy + 1.5, true);
     for (const bx of this.data.stockroom.boxes) if (!bx.on) this.block(grid, bx.x, bx.z, bx.w, bx.d, low, fy + bx.h, false);
     for (const r of this.data.stockroom.racks) this.block(grid, r.x, r.z, r.length, 0.6, low, fy + 2, false, r.yaw);
 
@@ -458,11 +460,8 @@ export class GasStation {
       this.dialogue?.play('gas.witch.ellen');
       if (this.done.has('note')) this.dialogue?.play('gas.witch.junie');
       else this.junieDue = true;
-      // Session 15b (Aaron): it's a long way to the Pruitts' gate: take Earl's quad.
-      if (!this.quadTold) {
-        this.quadTold = true;
-        this.dialogue?.play('gas.quad');
-      }
+      // Session 17 (Aaron: one idea at a time): the phone a while later, if it's not been tried.
+      this.dialogue?.playLater?.('gas.phone.hint', this.gc.lineGap, () => !this.done.has('phone'));
       this.checkShelterCall();
     };
     const played = this.cutscenes?.play('gas.witch', {
@@ -596,6 +595,12 @@ export class GasStation {
     if (!this.witchSeen || !this.done.has('note') || this.progress?.has('shelterCall')) return;
     this.progress?.setFlag('shelterCall');
     this.shelterTalk = true;
+    // Session 15b (Aaron): it's a long way to the Pruitts' gate: take Earl's quad. Session 17: on its own, a little later.
+    this.dialogue?.playLater?.('gas.quad', this.gc.lineGap, () => {
+      if (this.quadTold) return false;
+      this.quadTold = true;
+      return true;
+    });
   }
 
   updateShelterTalk(l) {

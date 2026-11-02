@@ -2575,6 +2575,7 @@ export const config = {
     mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
     witch: { delay: 1.2, lookHeight: 1.5 }, // seconds after Tom's back on the forecourt; where the camera looks on her
     scannerLines: ['gas.scanner.1', 'gas.scanner.2'],
+    lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad
     safe: { weapon: 'sniper' }, // the hunting rifle, empty
@@ -2633,6 +2634,16 @@ export const config = {
     },
   },
 
+  // Session 17 (Aaron: more breadcrumbs from the family): seconds stuck on a
+  // step (story/Objectives.js) before its hint line (dialogue.json hint.<id>).
+  objectives: { hintAfter: { default: 100, note: 60, scanner: 80, tapes: 60 } },
+
+  // Escaping the witch early in the run (Session 17, Aaron; story/WitchEscape.js):
+  // until the cordon's crossed, while she's attacking within `range` metres,
+  // ESCAPE THE WITCH on screen and the family say to run (or take the quad,
+  // within quadRange); she's gone once she's been off him goneAfter seconds.
+  witchEscape: { text: 'ESCAPE THE WITCH', range: 45, goneAfter: 6, cooldown: 90, quadRange: 70, outpostRange: 180 },
+
   // The overrun military outpost (Session 17, M9.4; encounters/Outpost.js,
   // data/outpost.json, render/OutpostProps.js; DESIGN.md "Overrun military
   // outpost"). The gateway south: the approach waves, the watchtower and its
@@ -2674,6 +2685,7 @@ export const config = {
     c7Distance: 7, // metres from the Mothman's container's torn-open end: its sweep
     resinDistance: 5, // metres from the resin body's open container: the family's lines
     sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
+    callRoundsAfter: 30, // Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     arriveInset: 6, // metres inside the clearing's edge: outpostEntered
     interactRange: 1.4,
     hold: { climb: 0.8, search: 1.0, rounds: 0.8, read: 0.5, crate: 1.6 },

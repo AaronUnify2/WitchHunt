@@ -329,7 +329,10 @@ export class Outpost {
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
     const called = this.progress?.has('outpostCall');
-    if (called && !this.approachStarted && d < this.oc.approach.start) this.startApproach();
+    // Session 17 (Aaron): while the witch is on Tom (story/WitchEscape.js), the outpost waits: no sweeps,
+    // no cutscenes, no next wave or peak (the dogfight fired when he scoped her from the tower).
+    this.witchOn = this.witchBusy?.() ?? false;
+    if (called && !this.approachStarted && d < this.oc.approach.start && !this.witchOn) this.startApproach();
     if (!this.entered && d <= this.frame.radius - this.oc.arriveInset) this.enter();
     if (this.approachStarted) {
       this.updateWaves(dt, d);
@@ -355,8 +358,9 @@ export class Outpost {
     this.progress?.setFlag('outpostCall');
     this.bus.emit('outpost:called');
     this.dialogue?.play('outpost.call.ellen');
-    this.dialogue?.play('outpost.call.wyatt');
     this.dialogue?.play('outpost.call.home');
+    // Session 17 (Aaron: one idea at a time): Wyatt's word on the rounds comes on its own, later.
+    this.dialogue?.playLater?.('outpost.call.wyatt', this.oc.callRoundsAfter, () => !this.roundsTaken);
   }
 
   // ---- the approach -------------------------------------------------------------------------------------
@@ -444,7 +448,7 @@ export class Outpost {
       }
       return;
     }
-    if (d > a.start) return; // away: the next waits for him
+    if (d > a.start || this.witchOn) return; // away, or the witch is on him: the next waits
     if (this.lull > 0) {
       this.lull -= dt;
       return;
@@ -495,7 +499,7 @@ export class Outpost {
       const ready =
         free &&
         ((this.approachDone && this.roundsTaken && near) || (this.approachDone && toLine < pk.trigger * 0.45 && Math.abs(l.x) < 40) || (toLine < pk.rush && Math.abs(l.x) < 40));
-      if (ready && !this.cutscenes?.active) this.startPeak();
+      if (ready && !this.cutscenes?.active && !this.witchOn) this.startPeak();
       return;
     }
     if (this.peakState !== 'running') return;
@@ -609,7 +613,7 @@ export class Outpost {
 
   // The first time the scope's raised up the tower; else crossing the barricade once the peak's down.
   updateDogfight(l) {
-    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active) return;
+    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn) return;
     const w = this.combat?.weapons;
     if (this.onTower && w?.id === 'sniper' && w.scoped > 0.7) this.playDogfight();
     else if (!this.onTower && this.peakState === 'done' && this.toLine(l) < -1.5) this.playDogfight();
@@ -642,7 +646,7 @@ export class Outpost {
   updateCompound(dt, l) {
     const p = this.player.position;
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
-    const busy = this.peakState === 'running' || this.cutscenes?.active;
+    const busy = this.peakState === 'running' || this.cutscenes?.active || this.witchOn;
     // DESIGN: at least one crate breaks open on its own as Tom passes, so the beetles' fight always happens.
     if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3) {
       let near = -1;

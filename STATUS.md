@@ -48,6 +48,17 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 17, round 2: Aaron's first playthrough of the outpost
+
+Played from the start. Fixed (PLAYTEST round 21; the calls: OPEN_QUESTIONS #242-246):
+1. **Earl's office split:** the gun safe and the scanner moved into the stockroom (`gasStation.json` `stockroom.safe`, `stockroom.scanner`); the office has the note to itself.
+2. **Bulk ammunition behind the counter:** a sure 20 shotgun shells and 20 rifle rounds.
+3. **Escaping the witch** (`story/WitchEscape.js`): until the cordon's crossed, while she attacks Tom close by, ESCAPE THE WITCH on screen (a new alert slot), Ellen says to get away (at the outpost: leave the checkpoint and come back), Wyatt says to take the quad if it's near; Wyatt says when she's gone. The outpost holds its sweeps, waves, peak and cutscenes meanwhile.
+4. **One idea at a time:** `Dialogue.playLater()`; the gas station's witch line split from the phone, the quad line on its own, Wyatt's rounds line after Ellen's call.
+5. **Breadcrumbs:** stuck on a step a while, the family's `hint.<step>` line, once (`Objectives.breadcrumb()`).
+6. **Tapes on D-pad down:** Earl's tapes are offered the moment they're taken; handed in, they go on the monitors (no longer played at the ledger). The pattern for every tape from here on.
+Checked headless: the stockroom's safe, the escape alert and Ellen's line, a delayed line firing. 625 tests pass.
+
 ### Session 17: the military outpost, M9.4 (Level & Encounter Designer + AI Programmer)
 
 Aaron's calls at the start: Ellen sends Tom the moment the safe opens (and says to come home if it goes bad); the waves start at 3, 5, 8 and 14 at the barricade, tuned in play; the dead can't climb the watchtower; the crashes land where the map has their sites; bigger waves by night, and a retreat resets to the last wave cleared. Built in four passes, each pushed to the session's branch (Aaron was play-testing the live build meanwhile). The calls: OPEN_QUESTIONS #225-241. The checklist: PLAYTEST round 20.

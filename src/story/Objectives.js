@@ -10,6 +10,10 @@
 //
 // current: { id, text, at: { x, z } | null } (at null: nothing to point at).
 //
+// Session 17 (Aaron: more breadcrumbs from the family): stuck on the same
+// step a while (config.objectives.hintAfter, while playing), the family give
+// a nudge: the line `hint.<step id>` if there is one, once.
+//
 // Events: 'objective:changed' { id, text }.
 
 import { frameToWorld } from '../world/clearingFrame.js';
@@ -21,20 +25,38 @@ export class Objectives {
     this.bus = bus;
     this.current = { id: 'none', text: '', at: null };
     this.timer = 0;
+    this.stuck = 0; // seconds on this step, while playing
   }
 
   init(game) {
     this.g = game;
   }
 
-  update(dt) {
+  // playing: the world's running and Tom can act (the breadcrumbs' clock only runs then).
+  update(dt, playing = true) {
+    if (playing) this.stuck += dt;
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = 0.4;
     const next = this.work() ?? { id: 'none', text: '', at: null };
     const changed = next.id !== this.current.id;
     this.current = next;
-    if (changed) this.bus?.emit('objective:changed', { id: next.id, text: next.text });
+    if (changed) {
+      this.stuck = 0;
+      this.bus?.emit('objective:changed', { id: next.id, text: next.text });
+    }
+    this.breadcrumb(playing);
+  }
+
+  // A nudge from the family, once per step, after a while stuck on it.
+  breadcrumb(playing) {
+    const d = this.g?.dialogue;
+    const id = `hint.${this.current.id}`;
+    if (!playing || !d?.byId?.has(id) || d.heard?.has(id)) return;
+    const h = this.cfg.objectives?.hintAfter ?? {};
+    if (this.stuck < (h[this.current.id] ?? h.default ?? 100)) return;
+    if (this.g.witchEscape?.engaged || this.g.subtitles?.busy) return;
+    d.play(id);
   }
 
   // The first step not done yet: { id, text, at }.
@@ -87,7 +109,7 @@ export class Objectives {
       if (gas.mutantState !== 'down') return step('gasInside', 'Search the gas station for the Pruitts.', door);
       if (!gas.witchSeen) return step('gasLook', 'Look round the gas station.', door);
       if (!gas.done.has('phone')) return step('phone', "Try the phone on the gas station's counter.", at('phone'));
-      if (!gas.done.has('scanner')) return step('scanner', "Try Earl's radio in the back office.", at('scanner'));
+      if (!gas.done.has('scanner')) return step('scanner', "Try Earl's scanner in the stockroom, out back.", at('scanner'));
       if (!gas.done.has('note')) return step('note', "Look round Earl's office. There's a note on the desk.", at('note'));
     }
 
@@ -104,7 +126,8 @@ export class Objectives {
     }
 
     // ---- home with the tapes; the safe ----
-    if (g.lore.carrying.includes('pruittTapes')) return step('tapes', "Take Earl's tapes home and hand them in at the ledger.", L.cabin.desk);
+    // Session 17 (Aaron): tapes are watched on D-pad down; handing them in (for the monitors) isn't a step.
+    if (watching('pruittTapes')) return step('tapes', "Watch Earl's tapes (D-pad down).");
     if (has('earlCombination') && !has('rifleClaimed') && gas.frame) {
       const s = gas.spots.find((x) => x.id === 'safe');
       return step('safe', "Open the gas station's safe with Earl's combination.", s);

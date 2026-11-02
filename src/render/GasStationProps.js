@@ -9,8 +9,9 @@
 //    and register, shelf runs (one knocked over) with goods, drinks
 //    coolers, a crude carved Bigfoot by the door, a board of blurry
 //    sighting photos, plaster footprint casts. The office: desk, chair,
-//    filing cabinet, the gun safe, Earl's scanner and his note. The
-//    stockroom: boxes and a rack.
+//    filing cabinet and Earl's note. The stockroom: boxes and a rack, the
+//    gun safe and Earl's scanner (Session 17, Aaron: the office had too
+//    much in it at once).
 //  - Outside: the forecourt's concrete (it follows the ground), two pump
 //    islands under a canopy that sags at one corner, the HOME OF BIGFOOT
 //    sign on its pole by the road, a dumpster out back.
@@ -323,22 +324,33 @@ export class GasStationProps {
     // The filing cabinet, a drawer pulled out.
     this.box(0.5, 1.3, 0.6, o.cabinet.x, o.cabinet.z, fy, k.cabinet);
     this.box(0.44, 0.25, 0.5, o.cabinet.x + 0.25, o.cabinet.z, fy + 0.85, k.cabinet, 90);
-    // The gun safe: heavy, dark green, a dial and a handle on its face (it faces into the office).
-    const sf = o.safe;
+    // Earl's note on the desk. (Session 17, Aaron: the safe and the scanner are in the stockroom now: the note has the office to itself.)
+    this.note = this.board(noteTexture(this.cfg), 0.22, 0.29, o.note.x, o.note.z, fy + 0.795, 10, { tiltX: -Math.PI / 2 });
+  }
+
+  // Session 17 (Aaron: too much in Earl's office at once): the gun safe against
+  // the stockroom's back wall (it faces into the room), and Earl's scanner on
+  // a crate by the east wall, its aerial up.
+  safeAndScanner() {
+    const k = this.cfg.colors;
+    const fy = this.floorY;
+    const st = this.data.stockroom;
+    const sf = st.safe;
     this.box(0.9, 1.5, 0.75, sf.x, sf.z, fy, k.safe);
     this.box(0.94, 0.05, 0.79, sf.x, sf.z, fy + 1.5, k.safeTrim);
     const dial = new THREE.CylinderGeometry(0.07, 0.07, 0.04, 16).rotateX(Math.PI / 2).translate(0.15, 1.0, 0.39);
     this.put(dial, k.brass, sf.x, sf.z, fy);
     this.box(0.04, 0.3, 0.05, sf.x, sf.z, fy, k.brass, 0, { ox: -0.2, oy: 0.85, oz: 0.4 });
-    // Earl's scanner on the desk (pass 2 tunes it in) and his note.
-    this.box(0.38, 0.12, 0.26, o.scanner.x, o.scanner.z, fy + 0.79, k.radio);
-    this.box(0.02, 0.35, 0.02, o.scanner.x, o.scanner.z, fy + 0.91, k.metal, 0, { ox: 0.15, oz: -0.1 });
-    this.note = this.board(noteTexture(this.cfg), 0.22, 0.29, o.note.x, o.note.z, fy + 0.795, 10, { tiltX: -Math.PI / 2 });
+    const sc = st.scanner;
+    const on = fy + (sc.on ?? 0.79);
+    this.box(0.38, 0.12, 0.26, sc.x, sc.z, on, k.radio);
+    this.box(0.02, 0.35, 0.02, sc.x, sc.z, on + 0.12, k.metal, 0, { ox: 0.15, oz: -0.1 });
   }
 
   // ---- the stockroom -----------------------------------------------------------------------------------
 
   stockroom() {
+    this.safeAndScanner();
     const s = this.data.stockroom;
     const k = this.cfg.colors;
     const fy = this.floorY;

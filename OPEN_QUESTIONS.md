@@ -1,5 +1,17 @@
 # Open questions
 
+## Session 17, round 2 (Aaron's first playthrough of the outpost)
+
+Aaron's notes: too much in Earl's office at once (move the scanner and the safe to the stockroom); bulk ammo behind the counter (20 shells, 20 rifle rounds); escape the witch early on (on screen and over the radio; the dogfight fired when he scoped her from the tower); one idea at a time over the radio, and more breadcrumbs; tapes on D-pad down, then on the monitors, for the whole game. The calls I made:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 242 | **"Early game" for escaping the witch** ends when Tom crosses the cordon (her pursuit is already short until then). | ESCAPE THE WITCH while she's attacking within 45 m; she's gone after 6 s off him; the escape call at most every 90 s. | `config.witchEscape`; `story/WitchEscape.js` |
+| 243 | **What the outpost holds while she's on him:** the arrival sweep, the next wave, the peak, the dogfight, the C-7 sweep, the crate breaking on its own. Waves already out keep coming. | As described. | `Outpost.update()` (`witchOn`) |
+| 244 | **Spacing lines:** a follow-up on a new subject waits 12 s (and for the radio to be quiet); Wyatt's rounds line 30 s after the call. | `Dialogue.playLater()`. | `config.gasStation.lineGap`, `config.outpost.callRoundsAfter` |
+| 245 | **Breadcrumbs:** after 100 s on the same step (60 for Earl's note and the tapes, 80 for the scanner), the step's `hint.<id>` line, once. Draft lines for 17 steps. | As described. | `config.objectives.hintAfter`; `dialogue.json` `hint.*` |
+| 246 | **Tapes:** watched on D-pad down when found; handed in, they go on the monitors without playing. An older save that handed Earl's tapes in counts them as watched. | As described. | `StormShelter.offerTapes()`; `story/Lore.js` |
+
 ## Session 17 (Level & Encounter Designer + AI Programmer: the military outpost, M9.4)
 
 Aaron's calls: Ellen sends Tom the moment the safe opens, with "come home if it goes bad" (there's nothing to fetch at home); start the waves at 3, 5, 8 and the barricade at 14, tune in play; the dead can't climb the watchtower; the plane and the craft come down roughly where the map has their crash sites; dangerous by day, bigger waves by night; a retreat mid-wave goes back to the last wave cleared. The calls I made building it:

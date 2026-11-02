@@ -27,6 +27,7 @@ function rig({ phase = 'day' } = {}) {
   const bus = new EventBus();
   const flags = new Set();
   const played = [];
+  const later = [];
   const spawned = [];
   const enemies = {
     living: [],
@@ -91,7 +92,7 @@ function rig({ phase = 'day' } = {}) {
     colliders: { insert() {}, query: () => [] },
     explosives: charges,
     clock: { phase },
-    dialogue: { play: (id) => played.push(id) },
+    dialogue: { play: (id) => played.push(id), playLater: (id, s, when) => later.push({ id, s, when }) },
     progress,
     lore: { give() {} },
     notify() {},
@@ -107,7 +108,7 @@ function rig({ phase = 'day' } = {}) {
   const killAll = () => {
     for (const zb of [...enemies.living]) enemies.damage(zb);
   };
-  return { o, bus, flags, played, spawned, enemies, player, progress, ammo, charges, at, step, killAll };
+  return { o, bus, flags, played, later, spawned, enemies, player, progress, ammo, charges, at, step, killAll };
 }
 
 describe('the military outpost: the set', () => {
@@ -215,7 +216,10 @@ describe('the military outpost: the beats', () => {
     expect(r.flags.has('outpostCall')).toBe(false); // after Wyatt's line on the safe
     r.step(1);
     expect(r.flags.has('outpostCall')).toBe(true);
-    expect(r.played).toEqual(['outpost.call.ellen', 'outpost.call.wyatt', 'outpost.call.home']);
+    expect(r.played).toEqual(['outpost.call.ellen', 'outpost.call.home']);
+    // Session 17 (Aaron: one idea at a time): Wyatt's word on the rounds comes later, on its own.
+    expect(r.later.map((l) => l.id)).toEqual(['outpost.call.wyatt']);
+    expect(r.later[0].s).toBeGreaterThan(10);
   });
 
   it('stays quiet until the call', () => {

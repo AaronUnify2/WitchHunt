@@ -42,13 +42,27 @@ describe('the gas station set', () => {
     expect(vehicleData.placement.gasStation.count[1]).toBeLessThanOrEqual(gas.cars.length);
   });
 
-  it('has the back office (safe, scanner, note) behind the partition, and doorways into it', () => {
+  it('has the back office (the note alone, Session 17) and the stockroom (the safe and the scanner) behind the partition, and doorways into them', () => {
     const b = gas.building;
     const o = gas.office;
-    for (const k of ['safe', 'scanner', 'note', 'desk']) {
+    for (const k of ['note', 'desk']) {
       expect(o[k].z).toBeLessThan(b.partitionZ);
       expect(o[k].x).toBeLessThan(b.splitX);
     }
+    expect(o.safe).toBeUndefined();
+    expect(o.scanner).toBeUndefined();
+    for (const k of ['safe', 'scanner']) {
+      const s = gas.stockroom[k];
+      expect(s.z).toBeLessThan(b.partitionZ);
+      expect(s.x).toBeGreaterThan(b.splitX);
+      expect(s.x).toBeLessThan(b.x1);
+      const spot = gas.interactions.find((i) => i.id === k);
+      expect(Math.hypot(spot.x - s.x, spot.z - s.z)).toBeLessThan(1.2);
+      expect(spot.x).toBeGreaterThan(b.splitX);
+    }
+    // Aaron: Earl's bulk ammunition behind the counter.
+    const counter = gas.searches.find((x) => x.id === 'counter');
+    expect(counter.gives).toEqual(expect.arrayContaining([{ item: 'shotgunAmmo', amount: 20 }, { item: 'rifleAmmo', amount: 20 }]));
     expect(b.officeDoor.x).toBeLessThan(b.splitX);
     expect(b.stockDoor.x).toBeGreaterThan(b.splitX);
   });
