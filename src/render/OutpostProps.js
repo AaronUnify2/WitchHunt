@@ -828,10 +828,12 @@ export class OutpostProps {
 
   // The nest's ammo box, the field report on the desk, the charge in the forced locker.
   buildOwn() {
-    const t = this.data.tower;
     const k = this.cfg.colors;
-    this.box(0.36, 0.2, 0.2, t.x + 0.6, t.z + t.half - 0.3, this.towerY, k.can, -10);
-    this.box(0.36, 0.02, 0.2, t.x + 0.6, t.z + t.half - 0.3, this.towerY + 0.2, k.casing, -10);
+    // Session 18 (Aaron): the hunting rifle's rounds sit in an ammo box in the gun pit, not up the tower.
+    const gr = this.data.staging.gunPitRounds ?? { x: this.data.staging.gunPit.x + 1, z: this.data.staging.gunPit.z + 0.7 };
+    const gy = this.groundAt(gr.x, gr.z);
+    this.box(0.36, 0.2, 0.2, gr.x, gr.z, gy, k.can, -10);
+    this.box(0.36, 0.02, 0.2, gr.x, gr.z, gy + 0.2, k.casing, -10);
     this.ownGroup('rounds');
     const c = this.data.compound.comms;
     this.box(0.24, 0.02, 0.32, c.x + c.w / 2 - 0.55, c.z + 0.35, this.floorY + 0.765, k.paper, 10);

@@ -88,7 +88,7 @@ describe("the family's breadcrumbs (Aaron)", () => {
   });
 
   it('has a hint for the steps that matter most (the note above all)', () => {
-    for (const id of ['note', 'scanner', 'phone', 'keys', 'hatch', 'safe', 'tapes', 'outpost', 'outpostTower', 'outpostArmoury', 'outpostReport', 'cross']) expect(ids.has(`hint.${id}`)).toBe(true);
+    for (const id of ['note', 'scanner', 'phone', 'keys', 'hatch', 'safe', 'tapes', 'outpost', 'outpostRounds', 'outpostCompound', 'outpostArmoury', 'outpostReport', 'cross']) expect(ids.has(`hint.${id}`)).toBe(true);
   });
 });
 

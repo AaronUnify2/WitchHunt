@@ -326,7 +326,9 @@ export class Station {
     barrier.lastHit = this.time;
     const metal = barrier.kind === 'fence' || barrier.kind === 'gate';
     this.combat.sfx.play(metal ? 'fenceHit' : 'doorHit', at);
-    if (metal && s.powered) this.zap(zombie);
+    // Session 18 (Aaron): the fence zaps through a barricade in front of it (while its panel stands).
+    const throughBarricade = barrier.kind === 'barricade' && (s.segments[barrier.index]?.health ?? 0) > 0;
+    if ((metal || throughBarricade) && s.powered) this.zap(zombie);
     if (s.damage(barrier, damage * this.sc.siege.strikeScale)) this.onBreak(barrier);
   }
 

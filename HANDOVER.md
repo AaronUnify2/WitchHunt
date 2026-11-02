@@ -2,7 +2,7 @@
 
 ## Just finished: Session 18, QA & Balance: Aaron's early-game notes, the outpost's pacing, the QA pass
 
-**Status: everything is on `main` (live).** 648 tests pass and the build is clean. **Session 18 stays open until Aaron has done his playthroughs** of rounds 25-26 (he's doing several detailed ones). Fix his notes one at a time first; only then hand over to Session 19. Details: `STATUS.md` (Session 18), `PLAYTEST.md` rounds 25-26, `OPEN_QUESTIONS.md` #257-271.
+**Status: everything is on `main` (live).** 654 tests pass and the build is clean. **Session 18 stays open until Aaron has done his playthroughs** of rounds 25-26 (he's doing several detailed ones). Fix his notes one at a time first; only then hand over to Session 19. Details: `STATUS.md` (Session 18 and its round 5), `PLAYTEST.md` rounds 25-27, `OPEN_QUESTIONS.md` #257-281.
 
 **How we worked:**
 - Aaron gave his notes from an early-game playthrough and his answers up front, then: "complete the entire session in one big pass", tune freely, flag anything unsure for playtesting, push to main as you go.
@@ -10,6 +10,11 @@
   1. his early-game notes;
   2. the outpost's pacing;
   3. the QA pass.
+- Then round 5 (round 4 was its first half), from his second set of notes:
+  - the outpost reordered: C-7 on the way in, the hunting rifle's rounds in the gun pit, the beetles' burst on the second crate, the dogfight last;
+  - the scanner needs a battery;
+  - the sweeps, looser clothes, polish.
+  See STATUS (Session 18, round 5).
 - The calls I made are OPEN_QUESTIONS #257-271: the doc for him to answer while playing.
 
 ### What was done
@@ -40,7 +45,7 @@
 
 ### Unfinished
 
-- **Aaron's playthroughs of rounds 25-26:**
+- **Aaron's playthroughs of rounds 25-27:**
   - start by asking for his notes;
   - fix them one at a time, pushing each to main.
 - **The tablet's fps** at the barricade's peak by night with the beetles out (#270). He saw no drop.
@@ -57,7 +62,7 @@
 
 ## Next: Session 18 continued (Aaron's notes), then Session 19, Graphics Engineer: style pass 2
 
-**First:** ask Aaron for his notes from rounds 25-26 and fix them as before. Check against OPEN_QUESTIONS #257-271 as he answers them.
+**First:** ask Aaron for his notes from rounds 25-27 and fix them as before. Check against OPEN_QUESTIONS #257-281 as he answers them.
 
 **Session 19's goal (DESIGN.md "Build plan"):**
 - style pass 2 on the opening cluster's places: the campsite, gas station, storm shelter, outpost, the cordon and the road;
@@ -73,6 +78,12 @@ New things to style:
 - **Papers:**
   - Open a found paper with `paper.open(id, { take: true, ... })`, and hide its prop when it's taken. The ledger's re-read opens without `take`.
   - A new paper still needs a lore item with a `paper`.
+- **The outpost's order (round 5):**
+  - `Outpost.dogfightReady` gates the dogfight: cleared and `told.beetlesDone`;
+  - the hunting rifle's rounds: `roundsAt()` (the gun pit);
+  - the beetles: `breakCrate()` starts `startBurst()` on the second crate opened.
+- **The scanner:** `GasStation.useScanner()` uses a battery; `done` has `scannerTried`.
+- **FamilyTalk** offers only someone with something new to say.
 - **Pacing at the outpost:**
   - **Something that should happen by itself:** gate it on `this.quiet()` and call `this.beat()` after its lines.
   - **Something Tom does himself:** never gate it, but call `beat()` after it.
@@ -96,11 +107,10 @@ New things to style:
 
 ### Open questions for Aaron
 
-- **Session 18:** #257-271:
+- **Session 18:** #257-281:
   - most are to check in play;
-  - #263 (does the fence zap through a barricade?);
-  - #266 (four or five beetles);
-  - #268 (ammo).
+  - #263, #266 and #268 are settled (#278, #280, #281);
+  - #276 (the forecourt's battery: the scanner or the machine gun).
 - **From before:**
   - #225-256 (Session 17);
   - #213-224;
@@ -116,8 +126,8 @@ New things to style:
 ## Session kickoff prompt for the next session
 
 ```
-You are QA & Balance on Witch Hunt, Session 18 continued: Aaron has played PLAYTEST rounds 25-26 (the papers taken with A, the pumps, the 2 s dig, the stop at home, barricades outside the fence; the outpost's C-7 on the road in, the beat spacing, the beetles' burst). Start with his notes and fix them one at a time, pushing each to main.
-Read HANDOVER.md first, then STATUS.md (Session 18), PLAYTEST.md (rounds 25-26), OPEN_QUESTIONS.md (#257-271) and docs/DESIGN.md ("Overrun military outpost", "Build plan").
+You are QA & Balance on Witch Hunt, Session 18 continued: Aaron has played PLAYTEST rounds 25-27 (the papers taken with A, the pumps, the 2 s dig, the stop at home, barricades outside the fence; the scanner's battery; the outpost reordered: C-7 on the way in, the rounds in the gun pit, the beetles' burst, the dogfight last). Start with his notes and fix them one at a time, pushing each to main.
+Read HANDOVER.md first, then STATUS.md (Session 18), PLAYTEST.md (rounds 25-27), OPEN_QUESTIONS.md (#257-281) and docs/DESIGN.md ("Overrun military outpost", "Build plan").
 Keep Aaron's rules: one idea at a time over the radio (Dialogue.playLater; at the outpost, Outpost.quiet()/beat()), cutscenes talk except busy ones marked linesAfter (the dogfight), tapes on D-pad down, papers taken with A and readable again from the ledger, breadcrumbs (hint.<step> lines).
 Then confirm your role and ask Aaron for his notes.
 When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for Session 19 (Graphics Engineer, style pass 2), and end with the HANDOVER READY signal.

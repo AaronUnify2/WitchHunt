@@ -2574,7 +2574,7 @@ export const config = {
     // multiplier). lookHeight: where the camera looks on it, crouched.
     mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
     witch: { delay: 1.2, lookHeight: 1.5 }, // seconds after Tom's back on the forecourt; where the camera looks on her
-    scannerLines: ['gas.scanner.1', 'gas.scanner.2'],
+    scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad
@@ -2708,8 +2708,8 @@ export const config = {
     // (`damage` each, to the body), overheats for `overheat` seconds (smoke,
     // a warning) and blows up (`blast`: Explosives.blast, smaller than a charge).
     turret: {
-      rounds: 15,
-      every: 0.42,
+      rounds: 25, // Session 18 (Aaron: underpowered, over too fast): was 15 every 0.42 s
+      every: 0.6,
       damage: 70,
       range: 40,
       turnRate: 3.2, // radians a second
@@ -2717,12 +2717,16 @@ export const config = {
       overheat: 2.6,
       fitSeconds: 1.2,
       fitRange: 2.4,
-      blast: { radius: 5, damage: 160, playerDamage: 35, edge: 0.3, knockback: 2.5, shake: 1, alert: 80 },
+      blast: { radius: 5, damage: 160, playerDamage: 20, edge: 0.3, knockback: 2.5, shake: 1, alert: 80 }, // Session 18: 20 to Tom (was 35; Aaron caught himself in it)
     },
     // The beetles' crates (pass 4): the first time Tom comes within autoBreak
     // of one (past the barricade, no fight on) it breaks open by itself.
-    crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10, burst: 4, stagger: [1, 2] }, // Session 18 (Aaron): `burst` crates break together, `stagger` seconds apart (the nearest first)
+    // Session 18 (Aaron, after playing it): one breaks open by itself as Tom comes near; the second one he
+    // opens sets all the rest off together, `stagger` seconds apart (the nearest first).
+    crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10, stagger: [1, 2] },
     c7Distance: 9, // metres from the Mothman's container's torn-open end: its sweep (Session 18: it's by the road in, 35 m north-east of the tower)
+    c7MaxNear: 2, // Session 18 (Aaron): the sweep plays with at most this many of the dead about (never from the quad)
+    gunPitAskAfter: 6, // Session 18 (Aaron): seconds after the first helmet's down: Wyatt asks if the machine gun's rounds fit Earl's rifle
     // Session 18 (Aaron: after the fight it all "layers on top of each other"): after each of the
     // compound's beats (the all-clear, the beetles, C-4, C-7, the dogfight) the next one that comes by
     // itself (the beetles' crates, Wyatt's ask to scope, C-7's sweep) waits this many quiet seconds

@@ -150,13 +150,14 @@ describe('the military outpost: the set', () => {
     for (const c of outpost.compound.containers) expect(Math.abs(c.x)).toBeGreaterThan(8);
   });
 
-  it('stands its two trucks on authored spots, the first across the road gap', () => {
+  it('stands its two trucks on authored spots (Session 18: the first moved off the road gap into the compound)', () => {
     const spots = Outpost.truckSpots(map);
     expect(spots).toHaveLength(2);
     const rule = vehiclesData.placement.outpost;
     expect(rule.row).toBeFalsy();
     expect(rule.count).toEqual([2, 2]);
-    expect(Math.abs(outpost.trucks[0].z - outpost.barricade.z)).toBeLessThan(2);
+    // Aaron: it blocked the dead coming through the gap. Now clear of the gap (x -6.2..4.6) and past the line.
+    expect(outpost.trucks[0].z).toBeGreaterThan(outpost.barricade.z + 8);
   });
 
   it('has the field report and its lines, the arrival sweep and the outpost flags set for real', () => {
@@ -299,21 +300,25 @@ describe('the military outpost: the beats', () => {
     expect(r.o.wavesCleared).toBe(2);
   });
 
-  it('keeps the rounds up the watchtower: climb, take them, climb down', () => {
+  it('keeps the rounds in the gun pit (Session 18), and the tower is just for climbing', () => {
     const r = rig();
-    r.o.climbUp();
-    expect(r.o.onTower).toBe(true);
-    expect(r.player.platform.y).toBeGreaterThan(ground.heightAt(r.player.position.x, r.player.position.z) + 5);
+    const at = r.o.roundsAt();
+    r.player.position.x = at.x;
+    r.player.position.z = at.z;
     const pick = r.o.pick('X');
     expect(pick.key).toBe('rounds');
     pick.act();
     expect(r.ammo.sniper).toBe(oc.tower.rounds);
+    expect(r.o.pick('X')?.key).not.toBe('rounds');
+    r.o.climbUp();
+    expect(r.o.onTower).toBe(true);
+    expect(r.player.platform.y).toBeGreaterThan(ground.heightAt(r.player.position.x, r.player.position.z) + 5);
     expect(r.o.pick('X').key).toBe('tower-down');
     r.o.climbDown();
     expect(r.o.onTower).toBe(false);
   });
 
-  it("brings the barricade's peak once the approach and the rounds are done; up the tower it waits for the dogfight", () => {
+  it("brings the barricade's peak once the approach and the rounds are done (Session 18: up the tower too)", () => {
     const r = rig();
     r.flags.add('outpostCall');
     r.o.approachStarted = true;
@@ -321,9 +326,6 @@ describe('the military outpost: the beats', () => {
     r.o.wavesCleared = oc.approach.waves.length;
     r.o.climbUp();
     r.o.takeRounds();
-    r.step(2);
-    expect(r.o.peakState).toBe('none');
-    r.o.dogfightSeen = true;
     r.step(0.2);
     expect(r.o.peakState).toBe('running');
     expect(r.played).toContain('outpost.peak');
@@ -421,8 +423,10 @@ describe('the dogfight (pass 3)', () => {
     for (const id of ['outpost.dogfight.wyatt', 'outpost.dogfight.down', 'outpost.dogfight.ellen', 'outpost.dogfight.after']) expect(lineIds.has(id)).toBe(true);
   });
 
-  it('waits for the scope up the tower, and plays once', () => {
+  it('waits for the scope up the tower, and plays once (Session 18: once the compound is seen to)', () => {
     const r = rig();
+    r.o.peakState = 'done';
+    r.o.told.add('beetlesDone');
     let played = 0;
     r.o.cutscenes = { active: false, play: (id, o) => (played++, o.onDone?.(false), true) };
     r.o.combat.weapons.id = 'sniper';
@@ -559,6 +563,7 @@ describe("Aaron's second round of notes (the outpost)", () => {
     r.o.combat.weapons.scoped = 1;
     r.o.peakState = 'done';
     r.o.told.add('c7');
+    r.o.told.add('beetlesDone'); // Session 18: the dogfight's ready once the compound's been seen to
     r.at(2, outpost.barricade.z + 5);
     r.step(0.5);
     expect(played).toBe(0);
@@ -571,8 +576,9 @@ describe("Aaron's second round of notes (the outpost)", () => {
     expect(played).toBe(1);
   });
 
-  it("asks Tom up the tower once the barricade's down if he hasn't seen it, and the map says so", () => {
+  it("asks Tom up the tower once the barricade's down and the compound's seen to, if he hasn't seen it", () => {
     const r = rig();
+    r.o.told.add('beetlesDone'); // Session 18: the beetles down first
     r.o.approachStarted = true;
     r.o.peakState = 'running';
     r.o.peakLeft = 0;
@@ -585,16 +591,21 @@ describe("Aaron's second round of notes (the outpost)", () => {
     expect(r.played).toContain('outpost.scope');
   });
 
-  it("waits out a fight before C-7's sweep", () => {
+  it("waits out a fight before C-7's sweep (Session 18: a couple of the dead about is fine; never from the quad)", () => {
     const r = rig();
     let played = [];
     r.o.cutscenes = { active: false, play: (id, o) => (played.push(id), o.onDone?.(false), true) };
     r.player.position.x = r.o.c7At.x;
     r.player.position.z = r.o.c7At.z;
-    const z = r.enemies.spawnZombie(r.o.c7At.x + 5, r.o.c7At.z, { variant: 'army' });
+    const zs = [];
+    for (let i = 0; i <= config.outpost.c7MaxNear; i++) zs.push(r.enemies.spawnZombie(r.o.c7At.x + 5 + i, r.o.c7At.z, { variant: 'army' }));
     r.step(0.3);
     expect(played).not.toContain('sweep.outpostC7');
-    r.enemies.damage(z);
+    r.enemies.damage(zs[0]);
+    r.player.riding = true;
+    r.step(0.3);
+    expect(played).not.toContain('sweep.outpostC7');
+    r.player.riding = false;
     r.step(0.3);
     expect(played).toContain('sweep.outpostC7');
   });
@@ -613,6 +624,7 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
   it('is dead without a battery; with one, Tom fits it', () => {
     const r = rig();
     const g = outpost.staging.gunPit;
+    r.o.roundsTaken = true; // Session 18: the rifle's rounds are in the pit too; taken first
     r.at(g.x + 1.5, g.z);
     expect(r.o.pick('X').key).toBe('turret-info');
     r.o.combat.inventory.batteries = 1;
@@ -624,14 +636,15 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
     expect(r.played).toContain('outpost.turret.on');
   });
 
-  it('fires its 15 rounds at the dead in range, overheats, and blows up (once)', () => {
+  it('fires its rounds (Session 18: 25) at the dead in range, overheats, and blows up (once)', () => {
     const r = rig();
+    r.o.roundsTaken = true;
     r.at(0, -30);
     r.o.combat.inventory.batteries = 1;
     r.o.fitTurret();
     const at = r.o.turretAt();
     // A line of them in range, one beyond.
-    for (let i = 0; i < 20; i++) r.enemies.spawnZombie(at.x + 6 + i * 0.5, at.z + 8, { variant: 'army' });
+    for (let i = 0; i < tc.rounds + 5; i++) r.enemies.spawnZombie(at.x + 6 + i * 0.3, at.z + 8, { variant: 'army' });
     const far = r.enemies.spawnZombie(at.x + tc.range + 10, at.z, { variant: 'army' });
     r.step(tc.rounds * tc.every + 6);
     expect(r.o.turret.rounds).toBe(0);
@@ -657,21 +670,25 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
 });
 
 describe("Session 18 (Aaron's notes): the outpost's beats given time to breathe", () => {
-  it('lets the beetles out together, the nearest first, a second or two apart, once it has gone quiet', () => {
+  it('lets one beetle out as Tom comes near; the second crate opened sets off all the rest, a second or two apart', () => {
     const r = rig();
     const cc = config.outpost.crates;
+    const n = r.o.crateAt.length;
     const c = r.o.crateAt[0];
     r.player.position.x = c.x + 2;
     r.player.position.z = c.z;
-    r.o.beatGap = 5; // a beat's just happened
+    r.o.beatGap = 5; // Session 18 (Aaron, after playing it): it doesn't wait for a quiet spell
     r.step(1);
-    expect(r.o.crates.every((x) => x === 'whole')).toBe(true);
-    r.o.beatGap = 0;
-    r.step(0.2);
     expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
-    r.step(cc.stagger[1] * (cc.burst - 1) + 0.5);
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(Math.min(cc.burst, r.o.crateAt.length));
-    expect(r.o.beetles.list.length).toBe(Math.min(cc.burst, r.o.crateAt.length));
+    r.step(5);
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1); // the rest wait for him
+    const second = r.o.crates.findIndex((x) => x === 'whole');
+    r.o.breakCrate(second);
+    expect(r.played).toContain('outpost.crates.burst');
+    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(2);
+    r.step(cc.stagger[1] * (n - 1) + 0.5);
+    expect(r.o.crates.every((x) => x === 'broken')).toBe(true);
+    expect(r.o.beetles.list.length).toBe(n);
     expect(r.played.filter((id) => id === 'outpost.crate')).toHaveLength(1);
   });
 

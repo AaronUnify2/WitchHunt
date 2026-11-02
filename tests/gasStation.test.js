@@ -60,9 +60,9 @@ describe('the gas station set', () => {
       expect(Math.hypot(spot.x - s.x, spot.z - s.z)).toBeLessThan(1.2);
       expect(spot.x).toBeGreaterThan(b.splitX);
     }
-    // Aaron: Earl's bulk ammunition behind the counter.
+    // Aaron: Earl's bulk ammunition behind the counter (Session 18: 14 of each; he had heaps by the outpost).
     const counter = gas.searches.find((x) => x.id === 'counter');
-    expect(counter.gives).toEqual(expect.arrayContaining([{ item: 'shotgunAmmo', amount: 20 }, { item: 'rifleAmmo', amount: 20 }]));
+    expect(counter.gives).toEqual(expect.arrayContaining([{ item: 'shotgunAmmo', amount: 14 }, { item: 'rifleAmmo', amount: 14 }]));
     expect(b.officeDoor.x).toBeLessThan(b.splitX);
     expect(b.stockDoor.x).toBeGreaterThan(b.splitX);
   });

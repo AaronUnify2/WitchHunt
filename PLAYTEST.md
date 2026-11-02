@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-26 Session 18 (QA)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -210,7 +210,7 @@ Round 25 (Session 18: your early-game notes):
 - [ ] **The stop at home:** with Earl's keys, ride back west past home toward the gas station. About 110 m out Wyatt says to stop in. Go through the gate: Ellen says the fence box (if you've a battery) or the ledger, and a hint on screen says the same. The map's NEXT says to stop at home. Ride past without stopping: once you reach the gas station it drops off the map.
 - [ ] **Barricades outside the fence:** build one (ledger plan: the outer dotted ring, or hold X just outside a panel, from either side). At night the dead claw the barricade first and only reach the fence once it's down. Does the fence still feel like it does its job? (It only zaps what's clawing the fence itself.)
 
-Round 26 (Session 18: the outpost given time to breathe):
+Round 26 (Session 18: the outpost given time to breathe; **the beetles and the scope's ask are reworked in round 27**):
 - [ ] **C-7 has moved:** it's on the road in now, about 35 m before the watchtower, beside the soldier standing on the road. Its torn end faces you as you come. Get within about 9 m with no fight on: the sweep, then Wyatt and Ellen. The next wave waits for them. Does the trailer sit right on the ground there?
 - [ ] **After the barricade's down:** Ellen and Wyatt (the all-clear), then quiet for about 15 s before anything else comes by itself. Wyatt's ask to look through the scope waits for that quiet too.
 - [ ] **The beetles:** past the barricade, near the crates, once it's quiet: **four crates burst together**, the nearest first, a second or two apart. The fifth stays shut (shoot it or prise it). Ellen: "Something's breaking out of those crates!"
@@ -218,6 +218,21 @@ Round 26 (Session 18: the outpost given time to breathe):
 - [ ] **The gun pit:** a sure 6 rifle rounds when you search it (plus maybe a few more).
 - [ ] **Do you still run short of ammo** at the outpost? Day and night. Tell me where.
 - [ ] **The fps line** at the barricade's peak by night with the beetles out (overlay: View + Menu).
+
+Round 27 (Session 18: your second set of notes):
+- [ ] **New game:** the debug overlay's off (View + Menu brings it back).
+- [ ] **Debug:** Sigils & zombies: "Spawn 3 giant beetles near me"; Teleport & map: "Teleport the quad bike to me".
+- [ ] **The opening:** no "talk to Wyatt" prompt at the start. Anyone with nothing new to say isn't offered.
+- [ ] **Wyatt and Ellen:** looser clothes (Ellen's fleece collar and hem, Wyatt's open flannel). Models: View: The family.
+- [ ] **The tents:** search them from any side.
+- [ ] **The campsite's sweep:** on past the car to the torn tent, then up over the camp.
+- [ ] **The gas station's sweep:** from behind the store (the way you come in), round to the front and the sign.
+- [ ] **After camera six:** Wyatt: "She buried something out on Pruitt land, Dad. Right by their storm shelter." Ellen: stay away for now, go to the gas station.
+- [ ] **Earl's scanner:** dead without a battery (Wyatt: try the cars out front). Fit one: the longer chatter, Ellen, then Wyatt a bit later.
+- [ ] **Earl's bulk ammo** behind the counter: 14 shells and 14 rifle rounds now.
+- [ ] **The outpost, in order:** the arrival sweep shows C-7 by the road; walking up to C-7 on foot plays its sweep (not on the quad, not with more than a couple of the dead about). After the first soldier's down, Wyatt asks about the machine gun nest: the hunting rifle rounds are in its ammo box. The waves; the barricade (the truck's gone from the gap: they come through it). The compound: one crate breaks by itself, open a second and the rest burst out. Once the beetles are down, Wyatt asks you up the tower: look through the scope for the dogfight (it won't play before then).
+- [ ] **The machine gun:** 25 rounds, slower; its blast hurts you less.
+- [ ] **Barricades:** the fence zaps the dead clawing a barricade.
 
 ## 1. The main menu
 

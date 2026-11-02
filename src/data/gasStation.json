@@ -294,11 +294,11 @@
         },
         {
           "item": "shotgunAmmo",
-          "amount": 20
+          "amount": 14
         },
         {
           "item": "rifleAmmo",
-          "amount": 20
+          "amount": 14
         }
       ],
       "loot": []

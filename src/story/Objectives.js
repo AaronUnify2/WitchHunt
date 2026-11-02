@@ -109,7 +109,11 @@ export class Objectives {
       if (gas.mutantState !== 'down') return step('gasInside', 'Search the gas station for the Pruitts.', door);
       if (!gas.witchSeen) return step('gasLook', 'Look round the gas station.', door);
       if (!gas.done.has('phone')) return step('phone', "Try the phone on the gas station's counter.", at('phone'));
-      if (!gas.done.has('scanner')) return step('scanner', "Try Earl's scanner in the stockroom, out back.", at('scanner'));
+      if (!gas.done.has('scanner')) {
+        // Session 18 (Aaron): it runs off a car battery.
+        if (gas.done.has('scannerTried') && g.combat.inventory.batteries <= 0) return step('scannerBattery', "Earl's scanner needs a car battery. Take one from a car on the forecourt.", gas.sureCar ?? at('scanner'));
+        return step('scanner', gas.done.has('scannerTried') ? "Wire the battery into Earl's scanner in the stockroom." : "Try Earl's scanner in the stockroom, out back.", at('scanner'));
+      }
       if (!gas.done.has('note')) return step('note', "Look round Earl's office. There's a note on the desk.", at('note'));
     }
 
@@ -142,17 +146,19 @@ export class Objectives {
       if (!op.approachStarted) return step('outpost', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', frameToWorld(op.frame, 44, -33));
       if (op.peakState === 'none') {
         if (!op.approachDone) return step('outpostRoad', 'Fight your way down the road to the checkpoint.', op.gapAt);
-        if (!op.roundsTaken) return step('outpostTower', "Climb the outpost's watchtower. The snipers' rounds will be up there.", op.ladderAt);
+        if (!op.roundsTaken) return step('outpostRounds', 'Check the machine gun nest by the road for rounds that fit Earl\'s rifle.', op.roundsAt()); // Session 18 (Aaron)
         return step('outpostBarricade', 'Get to the barricade.', op.gapAt);
       }
       return step('outpostPeak', 'Hold the barricade.');
     }
     if (op?.frame && has('outpostCleared') && !has('crossedCordon')) {
       const pt = (id) => op.points.find((x) => x.id === id);
-      // Session 17 (Aaron): the dogfight's only from the tower.
-      if (!op.dogfightSeen) return step('outpostScope', "Climb the outpost's watchtower and look through the hunting rifle's scope.", op.ladderAt);
+      // Session 18 (Aaron): look round the compound first (the crates, the containers, the papers); the
+      // dogfight from the tower is the last beat.
+      if (!op.told.has('beetlesDone')) return step('outpostCompound', "Look round the outpost's compound. Something's scratching in those crates.", op.crateAt?.find((_, i) => op.crates[i] === 'whole') ?? op.crateAt?.[0]);
       if (!op.searched.has('armoury')) return step('outpostArmoury', "Search the outpost's armoury lockers.", pt('armoury'));
       if (!op.searched.has('report')) return step('outpostReport', "Find the field report in the outpost's comms hut.", pt('report'));
+      if (!op.dogfightSeen) return step('outpostScope', "Climb the outpost's watchtower and look through the hunting rifle's scope.", op.ladderAt);
       return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);
     }
     return step('free', 'Keep the station running, and dig up her sigils.');

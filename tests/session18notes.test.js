@@ -10,6 +10,7 @@ import { makeMap, makeGround, config } from './mapFixture.js';
 import outpost from '../src/data/outpost.json';
 import gasStation from '../src/data/gasStation.json';
 import dialogueData from '../src/data/dialogue.json';
+import campsite from '../src/data/campsite.json';
 import progressData from '../src/data/progress.json';
 
 describe('papers found in the world are taken with A (Aaron)', () => {
@@ -130,9 +131,47 @@ describe('barricades outside the fence (Aaron: the dead were pulling the fence d
   });
 });
 
-describe("the outpost's gun pit (Session 18: a sure handful of rounds before the barricade)", () => {
-  it('gives 6 rifle rounds for certain', () => {
+describe("the outpost's gun pit (Session 18, Aaron's second notes: heaps of ammo by the outpost)", () => {
+  it('has no sure rifle rounds again (a roll), and the hunting rifle rounds in its ammo box', () => {
     const pit = outpost.searches.find((s) => s.id === 'gunPit');
-    expect(pit.gives).toEqual([{ item: 'rifleAmmo', amount: 6 }]);
+    expect(pit.gives).toBeUndefined();
+    expect(outpost.staging.gunPitRounds).toBeTruthy();
+  });
+});
+
+describe("Aaron's second notes (Session 18)", () => {
+  const ids = new Set(dialogueData.lines.map((l) => l.id));
+  const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
+
+  it('starts a new game with the debug overlay off', () => {
+    expect(config.debug.overlayVisibleOnStart).toBe(false);
+  });
+
+  it("has Earl's scanner run off a battery, with more chatter as the reward", () => {
+    for (const id of ['gas.scanner.dead', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.wyatt', 'hint.scannerBattery']) expect(ids.has(id)).toBe(true);
+    expect(config.gasStation.scannerLines.length).toBeGreaterThan(2);
+  });
+
+  it("drops Wyatt's 'have a look' after camera six (Ellen says stay away)", () => {
+    expect(by['day1.night.after1']).not.toMatch(/have a look|on your map/i);
+  });
+
+  it('gives the machine gun 25 slower rounds and a smaller bite to Tom', () => {
+    expect(config.outpost.turret.rounds).toBe(25);
+    expect(config.outpost.turret.every).toBeGreaterThan(0.42);
+    expect(config.outpost.turret.blast.playerDamage).toBeLessThan(35);
+  });
+
+  it("has Wyatt ask about the machine gun's rounds, and the beetles' burst line", () => {
+    for (const id of ['outpost.gunPitAsk', 'outpost.crates.burst', 'hint.outpostRounds', 'hint.outpostCompound']) expect(ids.has(id)).toBe(true);
+  });
+
+  it('searches the tents from any side (their centres, a long reach)', () => {
+    const camp = JSON.parse(JSON.stringify(campsite));
+    for (const s of camp.searches.filter((x) => x.id.startsWith('tent'))) {
+      const t = camp.tents.find((q) => q.id === s.id);
+      expect([s.x, s.z]).toEqual([t.x, t.z]);
+      expect(s.range).toBeGreaterThanOrEqual(3);
+    }
   });
 });

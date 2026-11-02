@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Session 18 (QA & Balance): **Aaron's early-game notes and the outpost's pacing (PLAYTEST rounds 25-26), an ammo audit, the performance check at the outpost.** Papers taken with A (and gone from the desk); the gas station's pumps blow when shot; a 2 s dig; a stop at home on the ride back from the shelter; barricades outside the fence; C-7 moved to the road in; the outpost's beats spaced out (`beatGap`); the beetles burst out together; a sure 6 rounds in the gun pit. Open points: OPEN_QUESTIONS #257-271. **Waiting on Aaron's playthroughs**; then Session 19, Graphics Engineer (style pass 2), see HANDOVER.md.
+Last updated: Session 18 (QA & Balance): **Aaron's early-game notes and the outpost's pacing (PLAYTEST rounds 25-26), an ammo audit, the performance check at the outpost.** Papers taken with A (and gone from the desk); the gas station's pumps blow when shot; a 2 s dig; a stop at home on the ride back from the shelter; barricades outside the fence; C-7 moved to the road in; the outpost's beats spaced out (`beatGap`); the beetles burst out together; a sure 6 rounds in the gun pit. Then round 5, his second set of notes (PLAYTEST round 27): the scanner's battery, the outpost reordered (C-7 on the way in, the rounds in the gun pit, the beetles, the dogfight last), the sweeps, looser clothes, polish. Open points: OPEN_QUESTIONS #257-281. **Waiting on Aaron's playthroughs**; then Session 19, Graphics Engineer (style pass 2), see HANDOVER.md.
 
 Before that, Session 17 (Level & Encounter Designer + AI Programmer): **the overrun military outpost (M9.4), built in four passes, then three rounds of Aaron's playthrough notes (PLAYTEST rounds 20-23).** The set (barricade, watchtower, compound, containers); army helmets; Ellen's call as the safe opens; the approach waves; the watchtower's rounds; the dogfight through the scope, coming down where the map has the crashed plane and the crashed UFO; the barricade's peak (it opens the checkpoint); the compound's beetles, the Mothman's torn container, the resin body, the armoury's charge, the field report and the manifest. Open points: OPEN_QUESTIONS #225-241.
 
@@ -49,6 +49,16 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 18, round 5: Aaron's second set of notes
+
+All built and on main (654 tests pass; OPEN_QUESTIONS #272-281; PLAYTEST round 27):
+- **Polish:** the debug overlay's off on a new game. Debug items: three beetles, the quad to Tom. `FamilyTalk` only offers someone with something new to say (no empty prompt at the opening). The tents are searched from their centres with a 3.2 m reach. Looser clothes for Wyatt and Ellen (`familyLooks.body({ loose })`, garment shapes). Wyatt's camera-six line no longer says "have a look".
+- **The sweeps:** the campsite's goes on past the car to the torn tent and up over the camp; the gas station's starts behind the store.
+- **The scanner runs off a battery** (`GasStation.useScanner()`): dead without one (Wyatt: the cars out front); with one, longer chatter; objective step `scannerBattery`.
+- **The outpost reordered** (Aaron): C-7 seen in the arrival sweep and swept on the way in (not from the quad; at most `c7MaxNear` of the dead about); the hunting rifle's rounds in the gun pit's ammo box (`Outpost.roundsAt()`, `staging.gunPitRounds`), Wyatt's `outpost.gunPitAsk` after the first helmet; the truck off the road gap; the peak no longer waits for the dogfight; the beetles: one by itself, the second crate opened starts `startBurst()`; the dogfight only once `dogfightReady` (cleared and the beetles down), then Wyatt's ask. Objective steps: rounds (the gun pit), compound, armoury, report, scope, cross.
+- **The machine gun:** 25 rounds every 0.6 s; its blast 20 to Tom.
+- **The fence zaps through a barricade** (`Station.onStrike`). **Ammo trimmed:** 14/14 behind the counter; the gun pit's sure rounds out.
 
 ### Session 18 (QA & Balance): Aaron's early-game notes, the outpost's pacing
 

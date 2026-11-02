@@ -470,7 +470,7 @@ export class Outpost {
       return;
     }
     if (this.approachDone) {
-      // The radio suggests the tower (DESIGN edge case: the barricade's hard without the rounds).
+      // The radio suggests the gun pit's rounds (DESIGN edge case: the barricade's hard without them).
       if (!this.roundsTaken && !this.towerTold) {
         this.towerTold = true;
         this.dialogue?.play('outpost.tower');
@@ -508,6 +508,8 @@ export class Outpost {
     if (was === 'helmet') {
       this.helmetDone = true;
       this.dialogue?.play('outpost.helmetDown');
+      // Session 18 (Aaron): the rounds are in the gun pit: Wyatt wonders if the machine gun takes Earl's rifle's.
+      this.dialogue?.playLater?.('outpost.gunPitAsk', this.oc.gunPitAskAfter, () => !this.roundsTaken);
       return;
     }
     this.wavesCleared = Math.max(this.wavesCleared, was + 1);
@@ -536,8 +538,8 @@ export class Outpost {
     if (this.peakState === 'none') {
       const toLine = this.toLine(l);
       const near = Math.abs(l.x) < 40 && toLine < pk.trigger;
-      // Up the tower it waits for the scope's dogfight (pass 3), so it's seen first.
-      const free = this.dogfightSeen || !this.onTower;
+      // Session 18 (Aaron): the dogfight comes last now (after the compound), so the peak doesn't wait for it.
+      const free = true;
       const ready =
         free &&
         ((this.approachDone && this.roundsTaken && near) || (this.approachDone && toLine < pk.trigger * 0.45 && Math.abs(l.x) < 40) || (toLine < pk.rush && Math.abs(l.x) < 40));
@@ -604,9 +606,9 @@ export class Outpost {
     this.dialogue?.play('outpost.cleared.ellen');
     this.dialogue?.play('outpost.cleared.wyatt');
     this.beat();
-    // Session 17 (Aaron): the dogfight's only from the tower: if it's not been seen, Wyatt asks him up there.
-    // Session 18 (Aaron): once it's gone quiet after the all-clear (one beat at a time).
-    if (!this.dogfightSeen) this.scopeAskDue = true;
+    // Session 18 (Aaron): the dogfight's the last beat: once the compound's been seen to (its beetles down),
+    // Wyatt asks Tom up the tower to look through the scope, in a quiet moment.
+    if (this.dogfightReady && !this.dogfightSeen) this.scopeAskDue = true;
   }
 
   // ---- pacing (Session 18, Aaron: "they're just not getting time to breathe") ---------------------------
@@ -615,6 +617,12 @@ export class Outpost {
   talking() {
     const d = this.dialogue;
     return Boolean(d?.subtitles?.busy || d?.pending?.length);
+  }
+
+  // Session 18 (Aaron): the dogfight is the outpost's last beat: the barricade down and the compound
+  // seen to (every beetle let out is down).
+  get dogfightReady() {
+    return this.peakState === 'done' && this.told.has('beetlesDone');
   }
 
   // A beat's just happened: the next one that comes by itself waits.
@@ -685,7 +693,7 @@ export class Outpost {
   // The first time the scope's raised up the tower (Session 17, Aaron: only there; no more crossing the
   // barricade). Up there without it seen, a hint says how; after the fight, Wyatt asks him to look.
   updateDogfight() {
-    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn) return;
+    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn || !this.dogfightReady) return;
     const w = this.combat?.weapons;
     if (!this.onTower) {
       this.scopeHinted = false;
@@ -731,35 +739,30 @@ export class Outpost {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
     const busy = this.peakState === 'running' || this.cutscenes?.active || this.witchOn;
     // DESIGN: at least one crate breaks open on its own as Tom passes, so the beetles' fight always happens.
-    // Session 18 (Aaron): not one but all of them (`burst`), a second or two apart, the nearest first,
-    // once it's gone quiet after the last beat.
-    if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3 && this.quiet()) {
-      const cc = this.oc.crates;
-      const near = this.crateAt.some((c, i) => this.crates[i] === 'whole' && dist(c) < cc.autoBreak);
-      if (near) {
-        this.autoBroken = true;
-        const order = this.crateAt
-          .map((c, i) => ({ i, d: dist(c) }))
-          .filter((e) => this.crates[e.i] === 'whole')
-          .sort((a, b) => a.d - b.d)
-          .slice(0, cc.burst ?? 1);
-        let t = 0;
-        this.burst = order.map((e, k) => {
-          if (k > 0) t += cc.stagger[0] + Math.random() * (cc.stagger[1] - cc.stagger[0]);
-          return { index: e.i, in: t };
-        });
-        this.beat();
-      }
+    // Session 18 (Aaron, after playing it): coming near the crates, one breaks open by itself; the second
+    // one Tom opens (shot, blown or prised) sets the rest off together, a second or two apart.
+    if (!this.autoBroken && !busy && !this.onTower && this.toLine(l) < -3) {
+      let near = -1;
+      let nearD = this.oc.crates.autoBreak;
+      this.crateAt.forEach((c, i) => {
+        const d = dist(c);
+        if (this.crates[i] === 'whole' && d < nearD) {
+          near = i;
+          nearD = d;
+        }
+      });
+      if (near >= 0) this.breakCrate(near);
     }
     if (this.burst.length) {
       for (const b of this.burst) b.in -= dt;
       const due = this.burst.filter((b) => b.in <= 0);
       this.burst = this.burst.filter((b) => b.in > 0);
-      for (const b of due) this.breakCrate(b.index);
+      for (const b of due) this.breakCrate(b.index, true);
     }
     // The Mothman's container (C-7): the first time Tom comes to its torn-open end.
     // Session 17 (Aaron): not mid-fight. Session 18: not over someone talking either (it's by the road in now).
-    if (!this.told.has('c7') && !busy && !this.inCombat() && !this.talking() && dist(this.c7At) < this.oc.c7Distance) this.playC7();
+    // Session 18 (Aaron): not from the quad, and not with more than a couple of the dead about.
+    if (!this.told.has('c7') && !busy && !this.player.riding && this.nearCount() <= this.oc.c7MaxNear && !this.talking() && dist(this.c7At) < this.oc.c7Distance) this.playC7();
     // C-4's doors swinging open (the reveal).
     if (this.resinOpen < 1 && this.told.has('resinOpen')) {
       this.resinOpen = Math.min(1, this.resinOpen + dt / this.oc.resinOpenSeconds);
@@ -775,10 +778,12 @@ export class Outpost {
     }
     // Every beetle let out is down.
     const out = this.beetles?.list ?? [];
-    if (out.length && !this.burst.length && !this.told.has('beetlesDone') && out.every((b) => !b.alive)) {
+    // (Session 18: and none still to come out of a crate.)
+    if (out.length && !this.burst.length && !this.crates.includes('whole') && !this.told.has('beetlesDone') && out.every((b) => !b.alive)) {
       this.told.add('beetlesDone');
       this.dialogue?.play('outpost.beetles.done');
       this.beat();
+      if (this.dogfightReady && !this.dogfightSeen) this.scopeAskDue = true; // Session 18: the last beat's next
     }
   }
 
@@ -788,6 +793,14 @@ export class Outpost {
     const r = this.oc.combatRange;
     const near = (z) => z.alive && Math.hypot(z.x - p.x, z.z - p.z) < r;
     return this.enemies?.living?.some(near) || this.beetles?.list.some(near);
+  }
+
+  // Session 18: how many of the dead (or beetles) are alive within combatRange of Tom.
+  nearCount() {
+    const p = this.player.position;
+    const r = this.oc.combatRange;
+    const near = (z) => z.alive && Math.hypot(z.x - p.x, z.z - p.z) < r;
+    return (this.enemies?.living?.filter(near).length ?? 0) + (this.beetles?.list.filter(near).length ?? 0);
   }
 
   // A round's impact inside a crate's box breaks it.
@@ -805,9 +818,12 @@ export class Outpost {
   }
 
   // Open: the slats split, and its beetle claws its way out, facing Tom.
-  breakCrate(i) {
+  breakCrate(i, fromBurst = false) {
     if (this.crates[i] !== 'whole') return;
     this.crates[i] = 'broken';
+    this.autoBroken = true; // one's open: none breaks by itself now
+    // Session 18 (Aaron): the second crate opened sets off all the rest.
+    if (!fromBurst && !this.told.has('beetleBurst') && this.crates.filter((c) => c === 'broken').length >= 2) this.startBurst();
     this.props?.setCrate(i, true);
     if (this.crateCols?.[i]) this.crateCols[i].off = true;
     const c = this.crateAt[i];
@@ -819,6 +835,23 @@ export class Outpost {
       this.told.add('crate');
       this.dialogue?.play('outpost.crate');
     }
+  }
+
+  // Every crate still whole breaks open, nearest first, a second or two apart.
+  startBurst() {
+    this.told.add('beetleBurst');
+    const cc = this.oc.crates;
+    const p = this.player.position;
+    const order = this.crateAt
+      .map((c, i) => ({ i, d: Math.hypot(c.x - p.x, c.z - p.z) }))
+      .filter((e) => this.crates[e.i] === 'whole')
+      .sort((a, b) => a.d - b.d);
+    let t = cc.stagger[0];
+    this.burst = order.map((e, k) => {
+      if (k > 0) t += cc.stagger[0] + Math.random() * (cc.stagger[1] - cc.stagger[0]);
+      return { index: e.i, in: t };
+    });
+    if (this.burst.length) this.dialogue?.play('outpost.crates.burst');
   }
 
   // Session 17 (Aaron): haul C-4's doors open: they swing out, and the camera turns onto what's inside.
@@ -963,6 +996,13 @@ export class Outpost {
     this.combat?.sfx?.play('climb');
   }
 
+  // Session 18: where the hunting rifle's rounds sit, in the gun pit (its ammo box).
+  roundsAt() {
+    const g = this.data.staging.gunPit;
+    const r = this.data.staging.gunPitRounds ?? { x: g.x + 1.0, z: g.z + 0.7 };
+    return frameToWorld(this.frame, r.x, r.z);
+  }
+
   takeRounds() {
     this.roundsTaken = true;
     this.props?.setTaken('rounds', true);
@@ -995,11 +1035,12 @@ export class Outpost {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
     const h = this.oc.hold;
     if (this.onTower) {
-      if (!this.roundsTaken) return { key: 'rounds', prompt: `Hold ${X}: take the hunting rifle rounds`, seconds: h.rounds, act: () => this.takeRounds() };
       return { key: 'tower-down', prompt: `Hold ${X}: climb down`, busy: 'Climbing down…', seconds: h.climb, act: () => this.climbDown() };
     }
     if (this.player.platform) return null;
     if (dist(this.ladderAt) < 1.3) return { key: 'tower-up', prompt: `Hold ${X}: climb the watchtower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() };
+    // Session 18 (Aaron): the hunting rifle's rounds are in the gun pit's ammo box now (not up the tower).
+    if (!this.roundsTaken && dist(this.roundsAt()) < this.oc.interactRange + 0.6) return { key: 'rounds', prompt: `Hold ${X}: take the rounds from the gun's ammo box`, busy: 'Taking…', seconds: h.rounds, act: () => this.takeRounds() };
     // The gun pit's machine gun (Session 17).
     const tu = this.turretAt();
     if (this.turret.state === 'dead' && dist(tu) < this.oc.turret.fitRange) {
@@ -1142,7 +1183,7 @@ export class Outpost {
     this.autoBroken = Boolean(d.auto);
     this.told = new Set(d.told ?? []);
     this.resinOpen = this.told.has('resinOpen') ? 1 : 0;
-    this.scopeAskDue = this.peakState === 'done' && !this.dogfightSeen; // Session 18
+    this.scopeAskDue = this.dogfightReady && !this.dogfightSeen; // Session 18
     const tu = String(d.turret ?? 'dead');
     if (tu === 'spent') this.turret.state = 'spent';
     else if (tu.startsWith('live:')) {

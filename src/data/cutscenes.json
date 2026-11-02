@@ -1701,7 +1701,7 @@
       "id": "sweep.outpost",
       "name": "Arriving at the military outpost (establishing sweep)",
       "style": "sweep",
-      "_note": "Session 17 (M9.4): anchor outpost: its frame (facing the checkpoint, x right (west), z toward the cordon; data/outpost.json). From up over the road in: the first helmet standing on the road, then the watchtower, then down to the barricade and the truck across its gap. After it (skipped or not), Outpost plays Wyatt's outpost.arrive (nobody on the gate) and outpost.helmet.",
+      "_note": "Session 17 (M9.4): anchor outpost: its frame (facing the checkpoint, x right (west), z toward the cordon; data/outpost.json). From up over the road in: the first helmet standing on the road, then the watchtower, then down to the barricade and the truck across its gap. After it (skipped or not), Outpost plays Wyatt's outpost.arrive (nobody on the gate) and outpost.helmet. Session 18 (Aaron): its first look takes in C-7 by the road too, beside the first helmet.",
       "camera": [
         {
           "at": 0,
@@ -1713,8 +1713,8 @@
           ],
           "look": [
             40,
-            1.4,
-            -31.5
+            1.6,
+            -29.2
           ]
         },
         {

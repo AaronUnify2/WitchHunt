@@ -586,6 +586,7 @@ export class GasStation {
 
   labelFor(s) {
     if (s.id === 'safe' && this.progress?.has('earlCombination')) return "open the safe (Earl's combination)";
+    if (s.id === 'scanner' && this.done.has('scannerTried')) return (this.combat?.inventory?.batteries ?? 0) > 0 ? "wire a battery into Earl's scanner" : "try Earl's scanner (it needs a battery)";
     return s.label;
   }
 
@@ -624,10 +625,7 @@ export class GasStation {
         this.readNote(first);
         break;
       case 'scanner':
-        this.combat?.sfx.play('radioStatic');
-        for (const id of this.gc.scannerLines) this.dialogue?.play(id);
-        this.progress?.setFlag('scannerHeard');
-        this.bus.emit('gasStation:scanner');
+        this.useScanner();
         break;
       case 'safe':
         this.trySafe();
@@ -635,6 +633,30 @@ export class GasStation {
       default:
         break;
     }
+  }
+
+  // Session 18 (Aaron: the gas station's beats were crowded): Earl ran his scanner off a car battery,
+  // and it's flat. Without one in Tom's pack: dead, and Wyatt says where to get one (the forecourt's
+  // cars). With one: wired in, and the reward's a longer stretch of the military's chatter.
+  useScanner() {
+    if (!this.combat?.inventory?.useBattery?.()) {
+      this.done.delete('scanner');
+      this.combat?.sfx.play('denied');
+      this.notify?.("Earl's scanner: dead. He ran it off a car battery.");
+      if (!this.done.has('scannerTried')) {
+        this.done.add('scannerTried');
+        this.dialogue?.play('gas.scanner.dead');
+      }
+      return;
+    }
+    this.done.add('scanner');
+    this.combat?.sfx.play('battery');
+    this.combat?.sfx.play('radioStatic');
+    this.combat?.hud?.pickup?.('A battery wired into the scanner');
+    for (const id of this.gc.scannerLines) this.dialogue?.play(id);
+    this.dialogue?.playLater?.('gas.scanner.wyatt', this.gc.lineGap);
+    this.progress?.setFlag('scannerHeard');
+    this.bus.emit('gasStation:scanner');
   }
 
   // Earl's note: Session 16 (Aaron), read in close-up (ui/PaperNote.js);
