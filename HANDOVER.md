@@ -1,131 +1,131 @@
 # Handover
 
-## Just finished: Session 18, QA & Balance: Aaron's notes from two early-game playthroughs, the outpost reordered, the QA pass
+## Just finished: Session 19, Graphics Engineer: style pass 2 (the opening cluster's places and their camera looks)
 
-**Status: everything is on `main` (live).** 654 tests pass and the build is clean. Details: `STATUS.md` (Session 18 and its round 5), `PLAYTEST.md` rounds 25-27, `OPEN_QUESTIONS.md` #257-281.
+**Status: everything is on `main` (live).** 667 tests pass and the build is clean. Details: `STATUS.md` (Session 19), `PLAYTEST.md` round 28, `OPEN_QUESTIONS.md` #282-303.
 
 **How we worked:**
-- Aaron gave his notes from an early-game playthrough and his answers up front, then: "complete the entire session in one big pass", tune freely, flag anything unsure for playtesting, push to main as you go.
-- Five rounds, each pushed to the session branch and to main:
-  1. his first notes;
-  2. the outpost's pacing;
-  3. the QA pass;
-  4. and 5. his second notes (round 4 the small ones, round 5 the scanner and the outpost reordered).
-- The calls I made are in OPEN_QUESTIONS #257-281, for him to check in play.
-- **Rounds 25-27 aren't play-tested yet.** Aaron asked for the handover first.
+- Aaron answered the kickoff questions up front:
+  - no new notes from rounds 25-27;
+  - a 155 draw-call budget to start with (he's never seen the frame rate dip, even with max zombies in one clearing);
+  - textures on big surfaces were my call (I stayed with vertex colours);
+  - no letterbox added to the sweeps;
+  - push to main as I go.
+- Then: "complete the full pass unassisted, save the next lot of questions for the end". Six passes, each pushed to the session branch and to main.
+- **Round 28 isn't play-tested yet.** Aaron plans a thorough playtest next.
 
 ### What was done
 
-- **Papers taken with A** (`ui/PaperNote.js` `promptText()`, `open(id, { take: true })`):
-  - Earl's note, the diary, the field report and the manifest say "A: take it" and leave where they lay;
-  - the shelter's colouring book no longer looks like the diary.
-- **The gas station:**
-  - **the pumps blow when shot** (`GasStation.pumpShot()`; `config.gasStation.pumps`): a hiss, then a blast that chains to the other island and the cars; stumps are left;
-  - **Earl's scanner runs off a car battery** (`GasStation.useScanner()`): dead without one; with one, longer chatter (Checkpoint Two overrun, "do not open the containers");
-  - **the bulk ammo** behind the counter is 14/14 now.
-- **The dig takes 2 s**, and a sigil being dug raises nothing.
-- **A stop at home** on the ride back from the shelter (`story/HomeStop.js`).
-- **Barricades stand outside the fence:**
-  - the dead claw them first;
-  - the fence zaps through them.
-- **The outpost, in Aaron's order:**
-  1. C-7 (the Mothman's torn container) by the road in, seen in the arrival sweep, with its own sweep on foot;
-  2. the hunting rifle's rounds in the gun pit, with Wyatt's ask;
-  3. the waves and the barricade's peak (the truck's moved off the road gap);
-  4. the compound: one crate breaks by itself, the second opened sets off the rest;
-  5. **last**, the dogfight from the tower, once the beetles are down.
-  - Also: `beatGap` spaces the beats that come by themselves, and the machine gun has 25 rounds every 0.6 s.
-- **Polish:**
-  - the debug overlay is off on a new game;
-  - new debug items: beetles, and the quad to Tom;
-  - no empty talk prompt;
-  - tents searchable from any side;
-  - the campsite's and gas station's sweeps reworked;
-  - looser clothes for Wyatt and Ellen;
-  - Wyatt's camera-six line.
-- **QA:**
-  - the ammo audit (Aaron: heaps by the outpost, so trimmed);
-  - performance at the outpost's worst case (headless: under 1 ms of simulation, ~145 draw calls);
-  - the dusk choice isn't a real choice in the opening yet: judged again in Session 23.
+- **The props kit** (`render/propKit.js`, `config.props.weather`):
+  - `bakeParts()` turns a place's colour-sorted geometries into one vertex-coloured mesh, weathered as it's baked: grime from the ground or floor, mottling, per-piece shade, darker undersides, rust on the metal;
+  - the glare rule's ceiling (`maxLuma` 0.45; `keepBright` for the exceptions) is enforced in the bake and tested over every palette;
+  - also `noise3`, `segBox`, `sagStrip`, `pillowGeometry`.
+- **The places dressed:**
+  - **the campsite:** sagging tents, guy lines, the fire, a woodpile, axe, table and stove, clothesline, sleeping bag, litter (`campsite.json` `props.dressing`);
+  - **the gas station:** siding, gutters, roof unit, ceiling grid and tubes, a weathered forecourt with joints, cracks and weeds, detailed pumps and wrecks, the canopy's underside, ice chest, oil rack, propane cage, air pump, tyres, pallet (`gasStation.json` `dressing`, with colliders);
+  - **the storm shelter:** sod, roots, tarp and rivets up top; planks, roots, cobwebs, lamp, coat and calendar below;
+  - **the outpost:** plump sandbags, a camo net, concertina wire, a generator, brass, and **C-7 seated on its slope** (`OutpostProps.containerY()`).
+- **The rest of the cluster:**
+  - the barricades at home (`StationRenderer.buildBarricades()`);
+  - the cordon (leaning posts, proper jersey barriers, a shade each);
+  - the road (potholes, wear and leaves in the vertices, pole hardware);
+  - the gates.
+- **The camera looks** (`PostFX`, `config.postFX.looks` and `treatments`; `config.cutscenes.treatments` and `osd`):
+  - the camcorder: soft, focus hunting, blown highlights, handheld, an amber date stamp and a tape counter;
+  - the trail cams: softer, IR glare, a data strip;
+  - the scope: a mil-dot duplex reticle, a darker rim, a sway;
+  - the sweeps: a grade that eases in and out;
+  - the reveals: a jolt (`cutscenes.json` `"jolt": true`).
+- **Draw calls** (headless):
+  - the worst spot, the trail in behind the gas station, is 203 → 157;
+  - the outpost's barricade peak by night is 119 → 117;
+  - everything else I measured is under 155 (table in STATUS).
 
 ### Unfinished
 
-- **Aaron's play-test of rounds 25-27.** Notes from it come first in the next session (see below).
-- **The tablet's fps** at the outpost's barricade peak by night with the beetles out (#270). He saw no drop.
-- **Ideas, not built** (#271):
-  - a fire left burning on the blown pumps;
-  - a family line when they go up;
-  - the ledger opening by itself at the home stop.
+- **Aaron's play-test of round 28.** Notes from it come first in the next session.
+- **The trail in behind the gas station is 157**, 2 over the 155 start. The rest of it is:
+  - the forest;
+  - the quad's 9 meshes;
+  - outpost pieces drawn up to the far plane.
+
+  Aaron's tablet hasn't dipped, so I left it (#302).
+- **Ideas, not built** (#303):
+  - the quad as one mesh;
+  - a distance cull per place;
+  - grime textures up close;
+  - the propane cage going up like the pumps;
+  - the generator powering the floodlights.
 - **Later sessions':**
-  - the crash sites (Session 20);
+  - the frontier's encounters (Sessions 20-22);
+  - style pass 3 (Session 27);
+  - the audio pass (Session 29);
   - a jeep model;
-  - the CCTV placeholder `clip.mothmanContainer`;
-  - the audio pass (Session 29).
+  - the CCTV placeholder `clip.mothmanContainer`.
 
-## Next: Session 19, Graphics Engineer: style pass 2 (the opening cluster's places and their camera looks)
+## Next: Session 20, Level & Encounter Designer (+ AI Programmer): the north frontier (M10 part 1)
 
-**First:** ask Aaron if he has notes from his playthroughs of PLAYTEST rounds 25-27. Fix any bugs or small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.
+**First:** ask Aaron for his notes from the round 28 playtest (and anything older). Fix the bugs and small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.
 
-**Goal (DESIGN.md "Build plan", Session 19):** style pass 2 on the opening cluster's places, and their camera looks:
-- **the campsite** (`render/CampsiteProps.js`);
-- **the gas station** (`render/GasStationProps.js`: now with blown-pump stumps);
-- **the storm shelter** (`render/StormShelterProps.js`: up top and the room below);
-- **the military outpost** (`render/OutpostProps.js`), with C-7 on the road's shoulder: it's off the levelled clearing, so check its trailer sits right on the slope;
-- **the cordon** (`render/Cordon.js`), the gates (`render/GateProps.js`) and the road (`render/Road.js`);
-- **at home:** the barricades are an outer ring now (`StationRenderer`).
-- **The camera looks** (`config.postFX.looks`; the cutscene styles `cctv | firstPerson | sweep | black`) on the opening's cutscenes:
-  - the sweeps;
-  - the camcorder;
-  - the trail cams;
-  - the dogfight;
-  - the reveals.
+**Goal (DESIGN.md "Build plan", Session 20):** the north frontier's encounters:
+- the old barn (Milo the Clown);
+- the crashed plane (fresh from the dogfight: smoke, the pilot, the lone grey alien, the first alien drops);
+- the abandoned mineshaft (dark, the Mothman's origin, beetles, one charge).
 
-**Rule 10 applies:** propose the build plan (what each place will look like, how it's made, what it costs in draw calls) and workshop it with Aaron before building.
+**DESIGN.md says these wait on Aaron's encounter redesign** ("More to come", Oct 17). Ask him whether the redesign is ready, and take the designs from him before building (rule 10).
 
 **For that session:**
-- **Style pass 1 (Session 10/10b) and Session 13** set the house look:
-  - ground mist, fog nights, a time-of-day grade, the retro pixel filter;
-  - figures built with `render/figureKit.js`;
-  - props as vertex-coloured merged meshes, one per colour per place, with what changes in groups of its own (`ownGroup()` / `own()`).
-- **Dull and dark:** pale props glare under the torch (Aaron, again and again). Keep colours dark.
-- **The worst case for draw calls** is the outpost's barricade peak by night (~145 headless). Watch it as props get richer.
-- **The model viewer** (Models category) shows the figures. Every cutscene plays from the debug menu's Cutscenes category.
+- **Build each place the Session 19 way:**
+  - static props through `render/propKit.js` `bakeParts()` (one vertex-coloured mesh per group, weathered: give it a `baseAt` and the place's `look.weather` with its metal colours in `rust`);
+  - what changes in groups of its own;
+  - signs and papers as textured boards;
+  - merge small textured boards into one mesh (an atlas, as the outpost's container codes) when there are several;
+  - dull, dark colours (the glare test covers each place listed in `tests/session19style.test.js`: add new places to it).
+- **The crash sites** are where the dogfight shows them coming down (`Outpost.sites`; the smoke columns, `OutpostProps.buildCrashSmoke()`).
+- **The interior system** comes in Session 21. The mineshaft is "a short linear tunnel": decide with Aaron whether it waits for that system.
+- **Cutscenes:**
+  - give each place an arrival sweep (they get the sweep grade automatically);
+  - set `"jolt": true` on a first-person reveal;
+  - put a CCTV-style clip's look in `config.postFX.looks`;
+  - every cutscene goes in the debug menu's Cutscenes category.
 
-### Gotchas and decisions from Session 18
+### Gotchas and decisions from Session 19
 
-- **Papers:**
-  - Open a found paper with `paper.open(id, { take: true, ... })`, and hide its prop when it's taken. The ledger's re-read opens without `take`.
-  - A new paper still needs a lore item with a `paper`.
-- **The outpost:**
-  - `Outpost.dogfightReady` gates the dogfight: cleared, and `told.beetlesDone`.
-  - The hunting rifle's rounds: `roundsAt()` (`staging.gunPitRounds`).
-  - `breakCrate()` starts `startBurst()` on the second crate opened.
-  - A beat that should happen by itself: gate it on `quiet()` and call `beat()` after its lines. What Tom does himself is never gated.
-  - C-7's sweep: not from the quad, and at most `c7MaxNear` of the dead about.
-- **The gas station:**
-  - `useScanner()` uses a battery (`done` has `scannerTried`);
-  - the pumps listen for `weapon:impact` and `explosion` (`source: 'pumps<i>'`);
-  - the gas station gets `explosives` in its ctx.
-- **FamilyTalk** offers only someone with something new to say.
-- **Barricades:**
-  - `config.station.layout.barricadeOutside`;
-  - `fenceRoute` goes barricade then fence coming in;
-  - `Station.onStrike` zaps through a barricade while its panel stands;
-  - the ledger plan's layers are `['barricade', 'fence', 'inner']`.
-- **HomeStop:** due with `earlCombination` and not `rifleClaimed`; its flag `homeStop` drops the objective step.
-- **Headless:**
-  - Teleporting near the outpost starts its arrival sweep, which holds the world: stop the cutscene before measuring.
-  - Lines take a long real time in swiftshader.
-  - The dev server stops between long turns: run it as a background task.
-  - My harness: Playwright on `localhost:5173`, `window.game.onStartChoice('skip')`, hide `startScreen`, call debug items by label (`game.debugMenu.categories`). Wait on a cutscene's clock with `game.cutscenes.current.t`.
+- **Props:**
+  - geometries go into `parts` (colour → list, world space, non-indexed, no `uv`);
+  - `flush()` / `ownGroup()` bake them;
+  - a colour in `look.weather.rust` gets rust streaks; one in `keepBright` escapes the luma cap;
+  - big boxes need segments for the weathering to show (`GasStationProps.box()` does it).
+- **Grime runs up from `baseAt(x, y, z)`:**
+  - the store's floor inside it;
+  - the shelter's room floor below ground;
+  - the ground elsewhere.
+- **Containers stand on `OutpostProps.containerY(frame, ground, c)`**, not the ground at their middle. Use it for anything placed on or in one.
+- **Instanced meshes** take a shade per instance with `setColorAt()` (the cordon, the barricades). No draw calls.
+- **The look pass:**
+  - `PostFX.setLook()` for a camera look;
+  - `setTreatment(name, amount)` for a light treatment while no look is on. A look always wins; `setLook(null)` clears both.
+  - The OSD reads `data-look` for its layout (CSS `.cs-osd[data-look=...]`).
+- **The sweeps and first-person cutscenes have always had letterbox bars** (`Cutscenes.play()`: every non-CCTV cutscene). Aaron declined adding them; whether to remove them is #300.
+- **My headless harness:**
+  - Playwright on `localhost:5173?seed=1234`; `game.startScreen.activate('skip')`;
+  - debug items by label (`game.debugMenu.categories`);
+  - the clock set and paused (`clock.phaseIndex`, `phaseElapsed`, `setPaused`);
+  - `game.player.teleport()` in a place's frame (`x: f.x + f.rx*x + f.fx*z`, the same for z);
+  - `game.renderer.stats` for draw calls;
+  - screenshots of the canvas, with the HUD hidden;
+  - cutscenes: `game.cutscenes.play(id)`, then wait on `game.cutscenes.current.t`.
+  - Run the dev server as a background task.
 
 ### Open questions for Aaron
 
-- **Session 18:** #257-281:
-  - most are to check in play;
-  - #263, #266 and #268 are settled (#278, #280, #281);
-  - #276: the forecourt's sure battery now usually goes to the scanner; the outpost's truck still has a sure one for the machine gun.
+- **Session 19:** #282-303 (all to check in play). In particular:
+  - #300: the sweeps' letterbox bars;
+  - #297: the camcorder's date, 13 October;
+  - #290: whether the razor wire should slow the dead;
+  - #302: draw calls.
 - **From before:**
+  - #257-281 (Session 18);
   - #225-256 (Session 17);
   - #213-224;
   - #185-197;
@@ -140,10 +140,10 @@
 ## Session kickoff prompt for the next session
 
 ```
-You are the Graphics Engineer on Witch Hunt, Session 19: style pass 2, the opening cluster's places (the campsite, the gas station, the storm shelter, the military outpost, the cordon, the gates and the road; the barricades at home) and their camera looks (the sweeps, the camcorder, the trail cams, the dogfight, the reveals).
-Read HANDOVER.md first, then STATUS.md (Sessions 18, 17, 16, 15b and the style passes, Sessions 10, 10b and 13), docs/DESIGN.md ("Build plan", "Fixed opening cluster" and each place's section, "Cutscenes", the look and style sections) and OPEN_QUESTIONS.md (#257-281, and #144-148, #161-170 on the art).
-First ask Aaron for any notes from his playthroughs of PLAYTEST rounds 25-27 and fix the small ones, pushing each to main.
-Then, per rule 10, propose a build plan for the style pass (what each place will look like, how, and its cost in draw calls: the outpost's barricade peak by night is the worst case) and workshop it with Aaron before building. Keep his rules: dull and dark props (pale ones glare under the torch), one idea at a time over the radio, cutscenes talk except the dogfight.
+You are the Level & Encounter Designer (+ AI Programmer) on Witch Hunt, Session 20: the north frontier (M10 part 1): the old barn, the crashed plane and the abandoned mineshaft.
+Read HANDOVER.md first, then STATUS.md (Sessions 19, 18, 17), docs/DESIGN.md ("Build plan", "Encounters": the north band's old barn, crashed plane and mineshaft, "Aliens", "Giant beetles", "The Mothman", "Cutscenes") and OPEN_QUESTIONS.md (#282-303, then the older open ones).
+First ask Aaron for his notes from the PLAYTEST round 28 playtest (Session 19's style pass) and fix the small ones, pushing each to main.
+Then ask whether his encounter redesign for the frontier is ready; per rule 10, propose a build plan for each encounter (how it's made, what it looks like, how it plays, its cost in draw calls) and workshop it with him before building. Build the props the Session 19 way (render/propKit.js). Keep his rules: dull and dark props (pale ones glare under the torch), one idea at a time over the radio, cutscenes talk except the dogfight.
 Then confirm your role and ask Aaron for his notes.
 When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session, and end with the HANDOVER READY signal.
 ```

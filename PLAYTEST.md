@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); round 28 Session 19 (style pass 2)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -233,6 +233,24 @@ Round 27 (Session 18: your second set of notes):
 - [ ] **The outpost, in order:** the arrival sweep shows C-7 by the road; walking up to C-7 on foot plays its sweep (not on the quad, not with more than a couple of the dead about). After the first soldier's down, Wyatt asks about the machine gun nest: the hunting rifle rounds are in its ammo box. The waves; the barricade (the truck's gone from the gap: they come through it). The compound: one crate breaks by itself, open a second and the rest burst out. Once the beetles are down, Wyatt asks you up the tower: look through the scope for the dogfight (it won't play before then).
 - [ ] **The machine gun:** 25 rounds, slower; its blast hurts you less.
 - [ ] **Barricades:** the fence zaps the dead clawing a barricade.
+
+Round 28 (Session 19: style pass 2, the opening cluster's look). Mostly look and feel: walk round each place by day, and again by night with the torch. **Anything that glares under the torch, tell me which and where.** The calls are OPEN_QUESTIONS #282-303.
+- [ ] **Everywhere:** props are dirtier toward the ground, mottled, rust streaks on the metal, no two planks or sandbags quite the same colour. Too dirty, or not enough?
+- [ ] **The campsite:** sagging tents with guy lines and pegs, the dome's crossed poles, a scorch, grate and coffee pot at the fire, a woodpile, an axe in a stump, a table with a camp stove, a clothesline (towel, shirt), a sleeping bag dragged out of the torn tent, litter in the grass. You can walk through the small stuff.
+- [ ] **The gas station outside:** lap siding, gutters, an AC unit on the roof; the forecourt oil-dark round the pumps, with joints, cracks and weeds; pumps with hoses looping to their nozzles; the canopy's underside and its peeled band at the low corner; an ice chest, an oil rack by the door, a propane cage, an air pump, tyres and a pallet out back. You bump into the bigger ones.
+- [ ] **Blow the pumps** (debug: First day, "Gas station: set the pumps off"): twisted black stumps, panels lying about, a ragged scorch.
+- [ ] **Inside the store:** the ceiling grid, dead tubes (one hanging by a chain), price strips on the shelves.
+- [ ] **The storm shelter:** sod, grass and roots on the mound, a tarp half off it, rivets on the hatch. Below: rough planks with gaps (one slipped, earth spilling in), roots through the ceiling, cobwebs, a hung lamp, a coat, a calendar.
+- [ ] **The outpost:** the sandbags look like bags; a torn camo net over the gun pit (does it get in the way, from the tower or the gun?); razor wire in front of the barricade; a generator by the comms hut; brass on the ground. **C-7 on its slope:** the landing legs reach the ground, timber stacked under the wheels if they'd float.
+- [ ] **Home:** build a barricade: sandbags, tin and planks, darker than before.
+- [ ] **The cordon and the road:** leaning posts, proper jersey barriers; potholes, dirtier road edges with leaves on them; insulators on the poles. **The gates:** the pipe gate's chain, moss on the fallen oak, barbed wire on the outpost's gate.
+- [ ] **The camcorder tape** (watch it at the campsite or from the debug menu): soft, losing focus now and then, the picture a little unsteady; an amber date stamp bottom right, a tape counter under PLAY.
+- [ ] **The trail cams** (camera six on Night 1, Earl's tape): the data strip along the bottom: camera, moon, temperature, date and time.
+- [ ] **The dogfight's scope:** the new reticle with mil-dots, a slow sway, the rim darker.
+- [ ] **The sweeps:** a gentle grade eases in and out. (They still have the letterbox bars they've always had: say if you want those gone.)
+- [ ] **The reveals:** a jolt (a kick, a dark edge and a colour fringe, gone in under a second) as the mutant wakes, as the witch shows at the treeline, as C-4 opens, as she rises in the final battle.
+- [ ] **The frame rate** anywhere it feels heavy (overlay: View + Menu): the gas station's trail in from the campsite is the busiest spot headless (157 draw calls, was 203).
+- [ ] Every cutscene still plays from the debug menu (Cutscenes).
 
 ## 1. The main menu
 
