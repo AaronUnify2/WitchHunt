@@ -80,6 +80,7 @@ export class OutpostProps {
     this.buildResin();
     this.buildResinDoors();
     this.buildTurret();
+    this.buildFloods();
     this.buildOwn();
     this.buildCrates();
     this.buildSigns(); // after the crates: their stencils go with them
@@ -314,19 +315,117 @@ export class OutpostProps {
     this.flush(this.group);
   }
 
-  // Dead floodlights: a pole on a concrete foot, a lamp head with its glass dark.
+  // Floodlights: a pole on a concrete foot, an arm, two lamp heads. Session 19
+  // (Aaron): they work now. The barricade's three run off the generator
+  // (dark until Tom fits it a battery); the gates' and C-7's have their own
+  // and are on from the start. Their glass is its own mesh (dark or lit),
+  // a soft halo round each lit head, and a small pool of real lights goes
+  // to the lit ones nearest the camera (updateFloods).
   lights() {
+    this.floodSpots = [];
+    const glass = { generator: [], always: [] };
+    // An always-on one's fourth number scales its light (C-7's is gentler).
+    const all = [...this.data.barricade.lights.map(([x, z, yaw]) => [x, z, yaw, 'generator', 1]), ...(this.data.floods?.always ?? []).map(([x, z, yaw, k]) => [x, z, yaw, 'always', k ?? 1])];
+    for (const [x, z, yaw, group, strength] of all) this.floodPole(x, z, yaw, group, glass[group], strength);
+    this.floodGlass = glass;
+  }
+
+  floodPole(x, z, yaw, group, glassList, strength = 1) {
     const k = this.cfg.colors;
-    for (const [x, z, yaw] of this.data.barricade.lights) {
-      const y = this.groundAt(x, z);
-      this.box(0.6, 0.35, 0.6, x, z, y - 0.15, k.concrete);
-      this.cyl(0.09, 6, x, z, y, k.steel, 8);
-      this.box(1.2, 0.1, 0.1, x, z, y + 5.9, k.steel, yaw);
-      for (const s of [-0.4, 0.4]) {
-        this.box(0.36, 0.3, 0.26, x, z, y + 5.75, k.lamp, yaw, { ox: s, oz: 0.12, rotX: 0.25 });
-        this.box(0.3, 0.24, 0.02, x, z, y + 5.78, k.lampGlass, yaw, { ox: s, oz: 0.26, rotX: 0.25 });
-      }
+    const y = this.groundAt(x, z);
+    this.box(0.6, 0.35, 0.6, x, z, y - 0.15, k.concrete);
+    this.cyl(0.09, 6, x, z, y, k.steel, 8);
+    this.box(1.2, 0.1, 0.1, x, z, y + 5.9, k.steel, yaw);
+    const a = (yaw * Math.PI) / 180;
+    for (const s of [-0.4, 0.4]) {
+      this.box(0.36, 0.3, 0.26, x, z, y + 5.75, k.lamp, yaw, { ox: s, oz: 0.12, rotX: 0.25 });
+      // The glass, its own (a plane facing out of the head, tipped down with it).
+      const g = new THREE.BoxGeometry(0.3, 0.24, 0.02).translate(s, 0.12, 0.26);
+      g.rotateX(0.25);
+      const w = frameToWorld(this.frame, x, z);
+      g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(w.x, y + 5.78, w.z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, this.rotY(yaw), 0, 'YXZ')), new THREE.Vector3(1, 1, 1)));
+      glassList.push(g);
     }
+    // Where its light falls from: out ahead of the heads and down a little.
+    const f = this.cfg.floods ?? { ahead: 4, drop: 1.6 };
+    const head = frameToWorld(this.frame, x + Math.sin(a) * 0.3, z + Math.cos(a) * 0.3);
+    const lit = frameToWorld(this.frame, x + Math.sin(a) * f.ahead, z + Math.cos(a) * f.ahead);
+    this.floodSpots.push({ group, strength, head: { x: head.x, y: y + 5.85, z: head.z }, light: { x: lit.x, y: y + 5.8 - f.drop, z: lit.z } });
+  }
+
+  // After the static flush: the glass (dark / lit) and halos per group, and the pool of lights.
+  buildFloods() {
+    const k = this.cfg.colors;
+    const fc = this.cfg.floods;
+    if (!fc) return;
+    const darkMat = this.hold(new THREE.MeshLambertMaterial({ color: k.lampGlass }));
+    const litMat = this.hold(new THREE.MeshBasicMaterial({ color: fc.glass }));
+    const tex = this.hold(haloTexture());
+    this.floodParts = {};
+    for (const group of ['generator', 'always']) {
+      const list = this.floodGlass[group];
+      if (!list.length) continue;
+      const geo = this.hold(mergeGeometries(list));
+      list.forEach((g) => g.dispose());
+      const dark = new THREE.Mesh(geo, darkMat);
+      const lit = new THREE.Mesh(geo, litMat);
+      const pts = [];
+      for (const sp of this.floodSpots) if (sp.group === group) pts.push(sp.head.x, sp.head.y, sp.head.z);
+      const pg = this.hold(new THREE.BufferGeometry());
+      pg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      const pm = this.hold(new THREE.PointsMaterial({ map: tex, color: fc.halo.color, size: fc.halo.size, sizeAttenuation: true, transparent: true, opacity: fc.halo.opacity, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const halo = new THREE.Points(pg, pm);
+      halo.frustumCulled = false;
+      this.group.add(dark, lit, halo);
+      this.floodParts[group] = { dark, lit, halo, mat: pm };
+    }
+    // The pool: a few lights, always in the scene (their intensity goes to 0, so no shader recompiles).
+    this.floodLights = [];
+    for (let i = 0; i < fc.pool; i++) {
+      const l = new THREE.PointLight(fc.color, 0, fc.distance, fc.decay);
+      this.group.add(l);
+      this.floodLights.push(l);
+    }
+    this.setFloodsOn(false);
+  }
+
+  // The generator's floodlights on or off (the gates' and C-7's are always on).
+  setFloodsOn(on) {
+    this.floodsOn = on;
+    const g = this.floodParts?.generator;
+    if (g) {
+      g.dark.visible = !on;
+      g.lit.visible = on;
+      g.halo.visible = on;
+    }
+    const a = this.floodParts?.always;
+    if (a) {
+      a.dark.visible = false;
+      a.lit.visible = true;
+    }
+  }
+
+  // Each frame: the pool's lights to the lit floodlights nearest the camera
+  // (viewer: a position), fading out with distance; dark: 0 by day .. 1 at night.
+  updateFloods(viewer, dark) {
+    const fc = this.cfg.floods;
+    if (!this.floodLights || !viewer) return;
+    for (const part of Object.values(this.floodParts)) part.mat.opacity = fc.halo.opacity * dark;
+    const lit = this.floodSpots.filter((sp) => sp.group === 'always' || this.floodsOn);
+    const near = lit
+      .map((sp) => ({ sp, d: Math.hypot(sp.light.x - viewer.x, sp.light.z - viewer.z) }))
+      .filter((e) => e.d < fc.range)
+      .sort((a, b) => a.d - b.d);
+    this.floodLights.forEach((l, i) => {
+      const e = near[i];
+      if (!e || dark <= 0.01) {
+        l.intensity = 0;
+        return;
+      }
+      l.position.set(e.sp.light.x, e.sp.light.y, e.sp.light.z);
+      const fade = Math.min(1, Math.max(0, (fc.range - e.d) / fc.fade));
+      l.intensity = fc.intensity * e.sp.strength * dark * fade;
+    });
   }
 
   // ---- the watchtower -------------------------------------------------------------------------------
@@ -528,23 +627,28 @@ export class OutpostProps {
   }
 
   // The armoury: a row of steel lockers facing the road, the end one forced open.
+  // Session 19 (Aaron: it stood oddly between the tents and the hut): the
+  // row stands with its back hard against the comms hut's back wall, facing
+  // away from the road (face: +1 its fronts toward frame +x, -1 toward the road).
   armoury() {
     const a = this.data.compound.armoury;
     const k = this.cfg.colors;
+    const f = a.face ?? -1;
+    const yaw = f < 0 ? -90 : 90;
     for (let i = 0; i < 3; i++) {
       const z = a.z + (i - 1) * 0.64;
       const y = this.groundAt(a.x, z);
-      this.box(0.6, 1.9, 0.55, a.x, z, y, k.locker, -90);
+      this.box(0.6, 1.9, 0.55, a.x, z, y, k.locker, yaw);
       if (i === 2) {
         // Forced: the door hanging off one hinge, the inside black.
-        this.box(0.5, 1.7, 0.02, a.x - 0.28, z, y + 0.1, k.void, -90);
-        this.box(0.03, 1.7, 0.56, a.x - 0.5, z - 0.32, y + 0.1, k.locker, -50);
+        this.box(0.5, 1.7, 0.02, a.x + f * 0.28, z, y + 0.1, k.void, yaw);
+        this.box(0.03, 1.7, 0.56, a.x + f * 0.5, z - 0.32, y + 0.1, k.locker, f < 0 ? -50 : 50);
       } else {
-        this.box(0.02, 0.04, 0.12, a.x - 0.29, z + 0.18, y + 1.0, k.steelDark); // the handle
+        this.box(0.02, 0.04, 0.12, a.x + f * 0.29, z + 0.18, y + 1.0, k.steelDark); // the handle
       }
     }
     // A low sandbag wall in front of them.
-    for (let i = 0; i < 3; i++) this.bag(a.x - 1.4, a.z - 0.6 + i * 0.62, this.groundAt(a.x - 1.4, a.z) - 0.04, 0);
+    for (let i = 0; i < 3; i++) this.bag(a.x + f * 1.4, a.z - 0.6 + i * 0.62, this.groundAt(a.x + f * 1.4, a.z) - 0.04, 0);
   }
 
   // ---- Session 19: the dressing ----------------------------------------------------------------------------
@@ -681,38 +785,42 @@ export class OutpostProps {
     }
   }
 
-  // A field generator by the comms hut, its cable snaking to the hut.
+  // The field generator (Session 19, Aaron: out in the open by the
+  // floodlights, a battery lights them): its cables snake off to the
+  // barricade's two near lamps.
   generator(gc) {
     const k = this.cfg.colors;
-    const c = this.data.compound.comms;
-    const x = c.x + gc.x;
-    const z = c.z + gc.z;
+    const at = this.data.floods?.generator;
+    if (!at) return;
+    const x = at.x;
+    const z = at.z;
     const y = this.groundAt(x, z);
-    this.box(1.1, 0.12, 0.7, x, z, y, k.steelDark, gc.yaw); // the skid
-    this.box(1.0, 0.62, 0.62, x, z, y + 0.12, k.olive, gc.yaw); // the body
-    this.box(0.3, 0.3, 0.64, x, z, y + 0.74, k.oliveDark, gc.yaw, { ox: -0.3 }); // the tank
-    this.box(0.04, 0.04, 0.5, x, z, y + 0.5, k.steel, gc.yaw, { ox: 0.5, oy: 0.2 }); // the frame's handle
+    const yaw = at.yaw ?? 0;
+    this.box(1.1, 0.12, 0.7, x, z, y, k.steelDark, yaw); // the skid
+    this.box(1.0, 0.62, 0.62, x, z, y + 0.12, k.generator ?? k.olive, yaw); // the body
+    this.box(0.3, 0.3, 0.64, x, z, y + 0.74, k.oliveDark, yaw, { ox: -0.3 }); // the tank
+    this.box(0.04, 0.04, 0.5, x, z, y + 0.5, k.steel, yaw, { ox: 0.5, oy: 0.2 }); // the frame's handle
     this.cyl(0.035, 0.4, x, z, y + 0.6, k.steelDark, 6, { ox: 0.35 }); // the exhaust stack
-    this.box(0.5, 0.36, 0.02, x, z, y + 0.25, k.oliveDark, gc.yaw, { oz: 0.32 }); // the panel
-    // The cable across the ground to the hut's corner, and up its post.
-    const tx = c.x - c.w / 2;
-    const tz = c.z - c.d / 2;
-    const pts = [];
-    for (let i = 0; i <= 8; i++) {
-      const t = i / 8;
-      const px = x + (tx - x) * t + Math.sin(t * 9) * 0.25;
-      const pz = z + (tz - z) * t + Math.cos(t * 7) * 0.25;
-      const w = frameToWorld(this.frame, px, pz);
-      pts.push(new THREE.Vector3(w.x, this.groundAt(px, pz) + 0.03, w.z));
+    this.box(0.5, 0.36, 0.02, x, z, y + 0.25, k.oliveDark, yaw, { oz: 0.32 }); // the panel
+    this.box(0.36, 0.2, 0.3, x, z, y + 0.12, k.steelDark, yaw, { ox: 0.75 }); // the empty battery tray
+    for (const [lx, lz] of this.data.barricade.lights.slice(0, gc?.cables ?? 2)) {
+      const pts = [];
+      for (let i = 0; i <= 10; i++) {
+        const t = i / 10;
+        const px = x + (lx - x) * t + Math.sin(t * 9 + lx) * 0.35;
+        const pz = z + (lz - z) * t + Math.cos(t * 7 + lz) * 0.35;
+        const w = frameToWorld(this.frame, px, pz);
+        pts.push(new THREE.Vector3(w.x, this.groundAt(px, pz) + 0.03, w.z));
+      }
+      const wl = frameToWorld(this.frame, lx, lz);
+      pts.push(new THREE.Vector3(wl.x, this.groundAt(lx, lz) + 1.0, wl.z));
+      const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 30, 0.02, 4, false);
+      const n2 = tube.toNonIndexed();
+      tube.dispose();
+      n2.deleteAttribute('uv');
+      this.parts.has(k.cable) || this.parts.set(k.cable, []);
+      this.parts.get(k.cable).push(n2);
     }
-    const wt = frameToWorld(this.frame, tx, tz);
-    pts.push(new THREE.Vector3(wt.x, this.groundAt(tx, tz) + 1.2, wt.z));
-    const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 18, 0.02, 4, false);
-    const n2 = tube.toNonIndexed();
-    tube.dispose();
-    n2.deleteAttribute('uv');
-    this.parts.has(k.cable) || this.parts.set(k.cable, []);
-    this.parts.get(k.cable).push(n2);
   }
 
   // ---- the containers -----------------------------------------------------------------------------------
@@ -1051,8 +1159,9 @@ export class OutpostProps {
     this.ownGroup('report');
     const a = this.data.compound.armoury;
     const z = a.z + 0.64;
-    this.box(0.3, 0.18, 0.2, a.x - 0.05, z, this.groundAt(a.x, z) + 0.95, k.oliveDark, -90);
-    this.box(0.08, 0.04, 0.04, a.x - 0.2, z + 0.06, this.groundAt(a.x, z) + 1.13, k.blood, -90);
+    const af = a.face ?? -1;
+    this.box(0.3, 0.18, 0.2, a.x + af * 0.05, z, this.groundAt(a.x, z) + 0.95, k.oliveDark, af < 0 ? -90 : 90);
+    this.box(0.08, 0.04, 0.04, a.x + af * 0.2, z + 0.06, this.groundAt(a.x, z) + 1.13, k.blood, af < 0 ? -90 : 90);
     this.ownGroup('charge');
     // Session 18 (Aaron): the manifest's sheet comes off its clipboard when Tom takes it.
     const m = this.data.compound.manifest;
@@ -1231,6 +1340,18 @@ function chainLinkTexture(size, color) {
 }
 
 // A soft round puff (the crash sites' smoke).
+// Session 19: a floodlight's halo: a soft round glow.
+function haloTexture() {
+  const { canvas, ctx } = makeCanvas(64, 64);
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.45)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  return toTexture(canvas);
+}
+
 function puffCanvasTexture() {
   const { canvas, ctx } = makeCanvas(64, 64);
   const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);

@@ -160,6 +160,7 @@
     {"id": "hint.outpostScope", "cued": true, "draft": true, "cue": "A nudge after a while stuck on this step (story/Objectives.js breadcrumbs; Session 17, Aaron)", "speaker": "wyatt", "channel": "radio", "text": "Up the tower, Dad. Look through the scope."},
     {"id": "outpost.turret.on", "cued": true, "draft": true, "cue": "The gun pit's machine gun comes to life on a battery (Outpost; Session 17, Aaron)", "speaker": "wyatt", "channel": "radio", "text": "It's alive! Dad, the gun's shooting them on its own!"},
     {"id": "outpost.turret.hot", "cued": true, "draft": true, "cue": "The gun pit's machine gun out of rounds, overheating before it blows (Outpost; Session 17)", "speaker": "wyatt", "channel": "radio", "text": "It's smoking, Dad! Get away from it!"},
+    {"id": "outpost.floods.on", "cued": true, "draft": true, "cue": "The outpost's floodlights come on, the generator fitted with a battery (Outpost; Session 19, Aaron)", "speaker": "wyatt", "channel": "radio", "text": "Whoa, the lights are on! Now you'll see them coming, Dad."},
     {"id": "outpost.turret.hint", "cued": true, "draft": true, "cue": "Tom first at the gun pit's dead machine gun (Outpost; Session 17, Aaron: a taste of the turret)", "speaker": "wyatt", "channel": "radio", "text": "Dad, that big gun's just dead, not broken. A car battery might wake it up."}
   ]
 }

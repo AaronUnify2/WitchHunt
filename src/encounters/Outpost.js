@@ -178,6 +178,9 @@ export class Outpost {
     // The gun pit's machine gun: dead -> live (a battery fitted) -> hot (overheating) -> spent (blown up).
     this.turret = { state: 'dead', rounds: 0, yaw: Math.PI, timer: 0, kick: 0, target: null };
     this.props?.setTurret('dead', Math.PI);
+    // Session 19 (Aaron): the barricade's floodlights, dark until the generator has a battery.
+    this.floodsOn = false;
+    this.props?.setFloodsOn(false);
     this.lull = 0;
     this.towerTold = false;
     this.roundsTaken = false;
@@ -277,6 +280,10 @@ export class Outpost {
       }
     }
     for (const [x, z] of B.lights) this.circle(grid, x, z, 0.35, 6);
+    // Session 19: the working floodlights' poles, and the generator.
+    for (const [x, z] of this.data.floods?.always ?? []) this.circle(grid, x, z, 0.35, 6);
+    const gen = this.data.floods?.generator;
+    if (gen) this.block(grid, gen.x, gen.z, 1.1, 0.7, this.gy(gen.x, gen.z) - 1, this.gy(gen.x, gen.z) + 1.0, true, gen.yaw ?? 0);
     // The watchtower's legs.
     const t = this.data.tower;
     for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) this.circle(grid, t.x + dx * t.legs, t.z + dz * t.legs, 0.25, t.height);
@@ -343,6 +350,7 @@ export class Outpost {
   update(dt, input, playing, canInteract) {
     this.props?.update(dt);
     if (!this.frame) return;
+    this.updateFloods();
     if (!playing) {
       this.hud.prompt = '';
       return;
@@ -1016,6 +1024,39 @@ export class Outpost {
     this.dialogue?.play('outpost.rounds');
   }
 
+  // ---- the floodlights (Session 19, Aaron) ----------------------------------------------------------
+
+  generatorAt() {
+    const g = this.data.floods?.generator;
+    return g ? frameToWorld(this.frame, g.x, g.z) : null;
+  }
+
+  // 0 by day .. 1 at night (the cutscene's hour while one plays).
+  darkness() {
+    const n = this.oc.look.floods?.night;
+    if (!n) return 1;
+    const h = this.cutscenes?.hour ?? this.clock?.hourOfDay ?? 0;
+    const ease = (v) => Math.max(0, Math.min(1, v / n.ramp));
+    if (h >= n.on) return ease(h - n.on);
+    if (h < n.off) return ease(n.off - h);
+    return 0;
+  }
+
+  updateFloods() {
+    if (!this.props?.updateFloods) return;
+    const cam = this.cutscenes?.ownCamera ? this.cutscenes.camera.position : this.player?.camera?.position;
+    this.props.updateFloods(cam, this.darkness());
+  }
+
+  fitGenerator() {
+    if (this.floodsOn || !this.combat?.inventory?.useBattery()) return;
+    this.floodsOn = true;
+    this.props?.setFloodsOn(true);
+    this.combat?.sfx?.play('battery');
+    this.bus.emit('outpost:floods', { on: true });
+    this.dialogue?.play('outpost.floods.on');
+  }
+
   // ---- interactions ----------------------------------------------------------------------------------
 
   updateInteraction(dt, input) {
@@ -1046,6 +1087,13 @@ export class Outpost {
     if (this.turret.state === 'dead' && dist(tu) < this.oc.turret.fitRange) {
       if ((this.combat?.inventory?.batteries ?? 0) > 0) return { key: 'turret', prompt: `Hold ${X}: fit a battery to the machine gun`, busy: 'Wiring it in…', seconds: this.oc.turret.fitSeconds, act: () => this.fitTurret() };
       return { key: 'turret-info', prompt: "A machine gun on its mount, its battery dead. It'd take a car battery", act: null };
+    }
+    // Session 19 (Aaron): the generator by the barricade's floodlights.
+    const ga = this.generatorAt();
+    const fl = this.oc.look.floods;
+    if (ga && !this.floodsOn && fl && dist(ga) < fl.fitRange) {
+      if ((this.combat?.inventory?.batteries ?? 0) > 0) return { key: 'generator', prompt: `Hold ${X}: fit a battery to the generator`, busy: 'Wiring it in…', seconds: fl.fitSeconds, act: () => this.fitGenerator() };
+      return { key: 'generator-info', prompt: "A generator for the floodlights, its battery flat. It'd take a car battery", act: null };
     }
     let best = null;
     let bestD = this.oc.interactRange;
@@ -1151,6 +1199,7 @@ export class Outpost {
       crates: this.crates.map((c) => (c === 'broken' ? 1 : 0)),
       auto: this.autoBroken,
       told: [...this.told],
+      floods: this.floodsOn, // Session 19
       turret: this.turret.state === 'dead' ? 'dead' : this.turret.state === 'spent' || this.turret.state === 'hot' ? 'spent' : `live:${this.turret.rounds}`,
     };
   }
@@ -1192,6 +1241,8 @@ export class Outpost {
     }
     this.props?.setTurret(this.turret.state, this.turret.yaw);
     this.props?.setResinDoors(this.resinOpen);
+    this.floodsOn = Boolean(d.floods);
+    this.props?.setFloodsOn(this.floodsOn);
   }
 
   // An older save with the rifle claimed but no call: make the call now.
@@ -1252,6 +1303,19 @@ export class Outpost {
     });
     cat.addItem("Outpost: the Mothman's container (C-7) now", () => this.playC7());
     cat.addItem('Outpost: open C-4 (the body in the resin) now', () => this.openResin());
+    cat.addItem(() => `Outpost: the floodlights' generator: ${this.floodsOn ? 'on (select: off)' : 'off (select: fit a battery, gives one)'}`, () => {
+      if (this.floodsOn) {
+        this.floodsOn = false;
+        this.props?.setFloodsOn(false);
+        return;
+      }
+      this.combat?.inventory?.addBattery(1);
+      this.fitGenerator();
+    });
+    cat.addItem('Outpost: teleport to the generator', () => {
+      const g = this.generatorAt();
+      if (g) this.player.teleport(g.x + 1.6, g.z, Math.atan2(1, 0));
+    });
     cat.addItem('Outpost: the machine gun: fit a battery (gives one)', () => {
       this.combat?.inventory?.addBattery(1);
       if (this.turret.state !== 'dead') this.turret = { state: 'dead', rounds: 0, yaw: Math.PI, timer: 0, kick: 0, target: null };

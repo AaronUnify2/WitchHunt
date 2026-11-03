@@ -52,6 +52,10 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### Session 19, round 2: Aaron's playtest notes
+
+All built and on main (674 tests pass; OPEN_QUESTIONS #304-314; PLAYTEST round 29): the campsite's axe and stump out; the postcard rack off the gas station's counter; Earl's office dressed (`GasStationProps.officeDressing()`, `gasStation.json` `office`); the shelter's and gas station's sweeps run the world (`"world": "run"`) unseen (`"unseen": true`: `Game` sets `combat.unseen`, `detection.playerSenses()` zeroes sight, hearing and touch); the diary's blank page out; the report signed MERCER; the armoury's lockers against the comms hut's back wall (`armoury.face`); **working floodlights at the outpost** (`OutpostProps.lights()`, `buildFloods()`, `updateFloods()`; `config.outpost.look.floods`; `outpost.json` `floods`): the barricade's three on the generator (`Outpost.fitGenerator()`, saved as `floods`), one at each gate and one at C-7 always on, dusk to dawn; their glass lit and a halo, and a pool of three real point lights handed to the lit ones nearest the camera (always in the scene, intensity 0 when unused: no shader recompiles). Tests: `tests/session19notes.test.js`.
+
 ### Session 19 (Graphics Engineer): style pass 2, the opening cluster
 
 Aaron's answers up front (no new notes from rounds 25-27; 155 draw calls to start with, he's never seen a dip; textures my call; no letterbox added; push to main). Built in six passes, each pushed to main (667 tests pass, the build is clean):

@@ -373,7 +373,9 @@
           "line": "gas.arrive"
         }
       ],
-      "duration": 9.8
+      "duration": 9.8,
+      "world": "run",
+      "unseen": true
     },
     {
       "id": "sweep.shelter",
@@ -431,7 +433,9 @@
           "line": "shelter.arrive"
         }
       ],
-      "duration": 7.0
+      "duration": 7.0,
+      "world": "run",
+      "unseen": true
     },
     {
       "id": "shelter.down",

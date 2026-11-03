@@ -1,5 +1,23 @@
 # Open questions
 
+## Session 19, round 2 (Aaron's playtest notes)
+
+Aaron's notes: the axe at the campsite reads as a weapon you should be able to pick up; a brown box beside the phone on the counter muddles it; Earl's office is empty but for the desk; the dead stand frozen in the shelter's arrival sweep; a blank page at the end of Earl's diary; C-7's sweep too dark to make out; the field report signed by a Hale; the armoury's lockers oddly placed; the outpost wants floodlights, a generator out in the open that takes a battery, lights at the gates on from the start. All built. The calls I made:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 304 | **The axe:** gone, and its chopping stump with it (the woodpile stays). | As described. | `campsite.json` `props.dressing` |
+| 305 | **Earl's diary:** the blank last page is gone; the diary just stops at Sept 30, 2003. (DESIGN had "the blank page is the horror": it read as a mistake.) | Five pages. | `papers.json` `earlDiary` |
+| 306 | **The counter's brown box** was the postcard rack: taken off the counter. The phone and the register have it to themselves. | As described. | `GasStationProps.store()` |
+| 307 | **Earl's office:** a bookshelf of binders on the back wall, a coat stand with his jacket and red cap, a wastebasket with paper round it, a space heater, antlers and a framed photo over the desk, a calendar; on the desk a lamp, a mug and a stack of papers clear of the note. Nothing in it to take. | The shelf and the coat stand have colliders. | `gasStation.json` `office`; `GasStationProps.officeDressing()` |
+| 308 | **The sweeps keep the world moving.** The storm shelter's and the gas station's arrival sweeps let the world run on while they play (the dead walk about), but nothing notices Tom until they end. The campsite's and the outpost's still hold the world. Want those running too? | As described. | `cutscenes.json` `"world": "run"`, `"unseen": true`; `detection.playerSenses()` |
+| 309 | **The report's signature:** CPT R. **MERCER**, OIC (was HALE). | As described. | `papers.json` `fieldReport` |
+| 310 | **The armoury's lockers:** turned round and stood with their backs hard against the comms hut's back (west) wall, facing away from the road, the sandbags in front of them. You walk round the hut to search them. | As described. | `outpost.json` `compound.armoury` (`face`), `searches.armoury` |
+| 311 | **The floodlights' generator:** out in the open just behind the barricade, west of the road gap (frame -11, 1.4), its cables running to the two nearest floodlights. Hold X with a battery: the barricade's three floodlights come on (Wyatt: "Whoa, the lights are on!", a draft). They stay on, saved. Without a battery it says it'd take one. **Batteries:** it competes with the machine gun for the truck's sure one. Should it have its own battery nearby? | As described. Debug: Military outpost, "the floodlights' generator" (on/off), "teleport to the generator". | `outpost.json` `floods.generator`; `Outpost.fitGenerator()` |
+| 312 | **Floodlights on from the start:** one inside each of the outpost's two gates (the road's and the cemetery path's), aimed in along the way, and one lighting C-7's torn end (gentler, so its paint doesn't glare). They show from dusk to dawn. | As described. | `outpost.json` `floods.always` (`[x, z, yaw, strength]`); `config.outpost.look.floods` |
+| 313 | **How the lights work (performance):** three real lights in all, given each frame to the lit floodlights nearest the camera; the rest show only their glowing glass and halo. So walking from the gate to the barricade you might see one light fade as another takes over. Brighter or dimmer? | 3 lights, intensity 150, 38 m reach. No new draw calls to speak of. | `config.outpost.look.floods` (`pool`, `intensity`, `distance`) |
+| 314 | **C-7's sweep in the dark:** lit by the always-on floodlight beside it now. | As described. | #312 |
+
 ## Session 19 (Graphics Engineer, style pass 2): the opening cluster's places and their camera looks
 
 Aaron's answers up front: no new notes from rounds 25-27; the draw-call budget at the worst case starts at 155 (he's never seen the frame rate dip, even with max zombies in one clearing); textures on big surfaces my call (I stayed with vertex colours); no letterbox bars added to the sweeps; push to main as I go. Built in one pass, unattended. The calls I made, for the thorough playtest:

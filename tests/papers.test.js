@@ -18,12 +18,11 @@ describe('papers in close-up', () => {
     }
   });
 
-  it("has Earl's diary: five dated entries (Session 16: one in the 1990s, fond of Bigfoot), then a blank page (DESIGN: the blank page is the horror)", () => {
+  it("has Earl's diary: five dated entries (Session 16: one in the 1990s, fond of Bigfoot); Session 19 (Aaron): no blank page after them", () => {
     const d = byId.earlDiary;
     expect(d.kind).toBe('diary');
-    expect(d.pages.length).toBe(6);
-    expect(d.pages.slice(0, 5).every((p) => p.date && p.text.length > 40)).toBe(true);
-    expect(d.pages[5].text).toBe('');
+    expect(d.pages.length).toBe(5);
+    expect(d.pages.every((p) => p.date && p.text.length > 40)).toBe(true);
     expect(d.pages[0].date).toMatch(/1987/);
     expect(d.pages[2].date).toMatch(/199\d/);
     expect(d.pages[4].date).toMatch(/2003/);

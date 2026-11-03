@@ -235,6 +235,8 @@ export class GasStation {
     const o = this.data.office;
     this.block(grid, o.desk.x, o.desk.z, 1.6, 0.8, low, fy + 0.8, false, o.desk.yaw);
     this.block(grid, o.cabinet.x, o.cabinet.z, 0.6, 0.6, low, fy + 1.3, true);
+    if (o.shelf) this.block(grid, o.shelf.x, o.shelf.z, 1.1, 0.36, low, fy + 1.85, true); // Session 19: the office's dressing
+    if (o.coatStand) this.block(grid, o.coatStand.x, o.coatStand.z, 0.4, 0.4, low, fy + 1.8, false);
     const sf = this.data.stockroom.safe; // Session 17 (Aaron): the safe's in the stockroom now
     this.block(grid, sf.x, sf.z, 0.95, 0.8, low, fy + 1.5, true);
     for (const bx of this.data.stockroom.boxes) if (!bx.on) this.block(grid, bx.x, bx.z, bx.w, bx.d, low, fy + bx.h, false);

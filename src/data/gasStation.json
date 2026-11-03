@@ -130,7 +130,15 @@
     "note": {
       "x": -3.6,
       "z": -13.5
-    }
+    },
+    "_dressing": "Session 19 (Aaron: Earl's office was empty but for the desk): a bookshelf of binders on the back wall, a coat stand by the door with his jacket and a cap, a wastebasket and a space heater by the desk, antlers and a photo over it, a calendar on the partition; on the desk a lamp, a mug and a stack of papers (clear of the note)",
+    "shelf": {"x": -6.6, "z": -14.72},
+    "coatStand": {"x": -1.0, "z": -11.1},
+    "bin": {"x": -3.0, "z": -13.95},
+    "heater": {"x": -5.7, "z": -12.9, "yaw": 30},
+    "antlers": {"x": -4.4, "z": -14.86},
+    "photo": {"x": -2.9, "z": -14.88},
+    "calendar": {"x": -6.4, "z": -10.62}
   },
   "stockroom": {
     "boxes": [

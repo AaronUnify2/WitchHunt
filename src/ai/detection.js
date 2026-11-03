@@ -66,6 +66,12 @@ export function playerSenses(player, cfg, notice, out = {}) {
   out.hidden = isHidden(player, cfg);
   out.hearing = hearingDistance(player, cfg, notice);
   out.touch = cfg.touch;
+  // Session 19: while an "unseen" cutscene plays (an arrival sweep with the world running) nothing notices him.
+  if (player.unseen) {
+    out.sight = 0;
+    out.hearing = 0;
+    out.touch = 0;
+  }
   return out;
 }
 

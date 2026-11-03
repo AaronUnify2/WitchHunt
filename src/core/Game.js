@@ -1107,6 +1107,9 @@ export class Game {
     this.paper.update(dt, this.input);
     const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen;
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
+    // Session 19 (Aaron: the dead stood frozen in the shelter's sweep): a cutscene marked "unseen" lets the world
+    // run on while it plays, but nothing notices Tom (detection.playerSenses).
+    this.combat.unseen = Boolean(cs.active && cs.current?.data.unseen);
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
     // Debug fast-forward (M6): the whole world (clock, zombies, marches,

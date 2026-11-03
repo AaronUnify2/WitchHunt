@@ -285,6 +285,7 @@ export class Combat {
     s.sprinting = p.sprinting;
     s.speed = p.speed;
     s.undergrowth = p.undergrowth;
+    s.unseen = Boolean(this.unseen); // Session 19: an "unseen" cutscene playing
     return s;
   }
 

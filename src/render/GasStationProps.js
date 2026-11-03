@@ -353,8 +353,7 @@ export class GasStationProps {
       this.box(0.24, 0.08, 0.2, s.phone.x, s.phone.z, fy + c.height + 0.05, k.radio);
       this.box(0.22, 0.05, 0.06, s.phone.x, s.phone.z, fy + c.height + 0.13, k.radio, 0, { oz: -0.04 });
     }
-    // A rack of dusty postcards and a jar of keyrings on the counter.
-    this.box(0.25, 0.4, 0.25, c.x - 1.2, c.z, fy + c.height + 0.05, k.wood);
+    // Session 19 (Aaron: a brown box beside the phone muddled it): the postcard rack's gone from the counter.
     // Shelf runs, the goods on them, one knocked over.
     for (const sh of s.shelves) this.shelf(sh, k, fy);
     // The drinks coolers along the wall: dark glass fronts, dead.
@@ -457,8 +456,77 @@ export class GasStationProps {
     // The filing cabinet, a drawer pulled out.
     this.box(0.5, 1.3, 0.6, o.cabinet.x, o.cabinet.z, fy, k.cabinet);
     this.box(0.44, 0.25, 0.5, o.cabinet.x + 0.25, o.cabinet.z, fy + 0.85, k.cabinet, 90);
+    this.officeDressing(o, k, fy);
     // Earl's note on the desk. (Session 17, Aaron: the safe and the scanner are in the stockroom now: the note has the office to itself.)
     this.note = this.board(noteTexture(this.cfg), 0.22, 0.29, o.note.x, o.note.z, fy + 0.795, 10, { tiltX: -Math.PI / 2 });
+  }
+
+  // Session 19 (Aaron: the office was abnormally empty): a lived-in room, nothing in it to take.
+  officeDressing(o, k, fy) {
+    const d = o.desk;
+    // On the desk: a lamp, a mug, a stack of papers (the note keeps its own corner).
+    this.cyl(0.08, 0.03, d.x - 0.62, d.z - 0.25, fy + 0.79, k.metal, 8);
+    this.box(0.02, 0.32, 0.02, d.x - 0.62, d.z - 0.25, fy + 0.82, k.metal, 0, { rotZ: 0.25 });
+    this.cyl(0.09, 0.12, d.x - 0.55, d.z - 0.25, fy + 1.1, k.lampShade, 8, { top: 0.05, rotZ: 0.5 });
+    this.cyl(0.04, 0.09, d.x - 0.25, d.z + 0.25, fy + 0.79, k.mug, 8);
+    for (let i = 0; i < 5; i++) this.box(0.22, 0.012, 0.3, d.x - 0.75 + (this.rand() - 0.5) * 0.03, d.z + 0.1, fy + 0.79 + i * 0.013, k.officePaper, 5 + this.rand() * 12);
+    if (o.shelf) {
+      const s = o.shelf;
+      this.box(1.1, 1.85, 0.34, s.x, s.z, fy, k.woodDark);
+      for (const h of [0.08, 0.5, 0.92, 1.34, 1.76]) this.box(1.06, 0.03, 0.32, s.x, s.z, fy + h, k.wood);
+      for (const h of [0.11, 0.53, 0.95, 1.37]) {
+        let x = -0.48;
+        while (x < 0.45) {
+          const w = 0.05 + this.rand() * 0.04;
+          if (this.rand() < 0.85) this.box(w - 0.005, 0.28 + this.rand() * 0.06, 0.26, s.x + x + w / 2, s.z + 0.02, fy + h, k.binders[Math.floor(this.rand() * k.binders.length)], 0, { rotZ: this.rand() < 0.1 ? 0.3 : 0 });
+          x += w;
+        }
+      }
+    }
+    if (o.coatStand) {
+      const c = o.coatStand;
+      this.cyl(0.025, 1.75, c.x, c.z, fy, k.woodDark, 6);
+      for (let i = 0; i < 3; i++) this.box(0.04, 0.03, 0.35, c.x, c.z, fy + 0.02, k.woodDark, i * 60);
+      // Earl's barn jacket on a hook, a cap on the top.
+      this.box(0.44, 0.78, 0.18, c.x, c.z, fy + 0.85, k.jacket, 20, { oz: 0.12 });
+      this.box(0.14, 0.6, 0.12, c.x, c.z, fy + 0.95, k.jacket, 20, { ox: -0.26, oz: 0.12, rotZ: 0.1 });
+      this.box(0.14, 0.6, 0.12, c.x, c.z, fy + 0.95, k.jacket, 20, { ox: 0.26, oz: 0.12, rotZ: -0.1 });
+      this.cyl(0.11, 0.08, c.x, c.z, fy + 1.73, k.cap, 10);
+      this.box(0.16, 0.015, 0.12, c.x, c.z, fy + 1.73, k.cap, 20, { oz: 0.14 });
+    }
+    if (o.bin) {
+      const b = o.bin;
+      this.cyl(0.14, 0.32, b.x, b.z, fy, k.metal, 9, { top: 0.16 });
+      for (let i = 0; i < 4; i++) {
+        const a = this.rand() * Math.PI * 2;
+        const r = i === 0 ? 0 : 0.25 + this.rand() * 0.25;
+        this.put(new THREE.DodecahedronGeometry(0.045, 0), k.officePaper, b.x + Math.cos(a) * r, b.z + Math.sin(a) * r, fy + (i === 0 ? 0.3 : 0.04));
+      }
+    }
+    if (o.heater) {
+      const h = o.heater;
+      this.box(0.5, 0.42, 0.2, h.x, h.z, fy, k.heater, h.yaw ?? 0);
+      this.box(0.4, 0.26, 0.02, h.x, h.z, fy + 0.08, k.heaterGrille, h.yaw ?? 0, { oz: 0.11 });
+    }
+    if (o.antlers) {
+      const a = o.antlers;
+      this.box(0.3, 0.36, 0.04, a.x, a.z, fy + 1.85, k.wood);
+      for (const s of [-1, 1]) {
+        this.bar([a.x, fy + 2.0, a.z + 0.06], [a.x + s * 0.32, fy + 2.4, a.z + 0.12], 0.018, k.antler);
+        this.bar([a.x + s * 0.18, fy + 2.22, a.z + 0.09], [a.x + s * 0.12, fy + 2.48, a.z + 0.12], 0.014, k.antler);
+        this.bar([a.x + s * 0.28, fy + 2.34, a.z + 0.11], [a.x + s * 0.42, fy + 2.52, a.z + 0.13], 0.012, k.antler);
+      }
+    }
+    if (o.photo) {
+      const ph = o.photo;
+      this.box(0.36, 0.28, 0.03, ph.x, ph.z, fy + 1.6, k.woodDark);
+      this.box(0.3, 0.22, 0.01, ph.x, ph.z, fy + 1.63, k.photo, 0, { oz: 0.02 });
+    }
+    if (o.calendar) {
+      const cl = o.calendar;
+      this.box(0.34, 0.46, 0.01, cl.x, cl.z, fy + 1.3, k.officePaper, 180);
+      this.box(0.34, 0.16, 0.012, cl.x, cl.z, fy + 1.6, k.calendarTop, 180);
+    }
   }
 
   // Session 17 (Aaron: too much in Earl's office at once): the gun safe against

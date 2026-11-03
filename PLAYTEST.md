@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); round 28 Session 19 (style pass 2)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-29 Session 19 (style pass 2)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -251,6 +251,17 @@ Round 28 (Session 19: style pass 2, the opening cluster's look). Mostly look and
 - [ ] **The reveals:** a jolt (a kick, a dark edge and a colour fringe, gone in under a second) as the mutant wakes, as the witch shows at the treeline, as C-4 opens, as she rises in the final battle.
 - [ ] **The frame rate** anywhere it feels heavy (overlay: View + Menu): the gas station's trail in from the campsite is the busiest spot headless (157 draw calls, was 203).
 - [ ] Every cutscene still plays from the debug menu (Cutscenes).
+
+Round 29 (Session 19: your playtest notes; OPEN_QUESTIONS #304-314):
+- [ ] **The campsite:** no axe or chopping stump.
+- [ ] **The counter:** the phone on its own beside the register (the brown box is gone).
+- [ ] **Earl's office:** a bookshelf, his coat and cap on a stand, a heater, a bin, antlers and a photo over the desk, a calendar; the note still easy to find on the desk.
+- [ ] **The storm shelter's sweep:** the dead walk about while it plays and don't come for you until it's over. The gas station's too.
+- [ ] **Earl's diary:** ends on the Sept 30 entry, no blank page.
+- [ ] **The field report:** signed CPT R. MERCER.
+- [ ] **The armoury:** the lockers against the back of the comms hut, facing out the far side.
+- [ ] **The outpost by night:** the floodlights at both gates and at C-7 are on as you arrive. C-7's sweep: can you make out the container?
+- [ ] **The generator:** just behind the barricade, west of the road gap. Hold X with a battery: the barricade's floodlights come on. Is it bright enough to fight under? (Debug: Military outpost, "the floodlights' generator".)
 
 ## 1. The main menu
 

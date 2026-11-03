@@ -228,17 +228,12 @@
       }
     ],
     "dressing": {
-      "_note": "Session 19 (style pass 2): set dressing with no colliders (small enough to walk through or step over), in the campsite's frame. scorch: a blackened ring round the fire. grate and pot: on the fire ring. woodpile, stump (an axe in it), table (a camp stove on it), clothesline (two posts, a towel and a shirt), sleepingBag (spilling out of the torn tent's door), litter (tins, bottles, a paper plate).",
+      "_note": "Session 19 (style pass 2): set dressing with no colliders (small enough to walk through or step over), in the campsite's frame. scorch: a blackened ring round the fire. grate and pot: on the fire ring. woodpile, table (a camp stove on it), (Session 19, Aaron: the chopping stump and its axe taken out again: an axe you can't pick up reads as a weapon you should be able to), clothesline (two posts, a towel and a shirt), sleepingBag (spilling out of the torn tent's door), litter (tins, bottles, a paper plate).",
       "scorch": 1.15,
       "woodpile": {
         "x": -3.6,
         "z": 6.2,
         "yaw": 20
-      },
-      "stump": {
-        "x": -4.8,
-        "z": 4.8,
-        "yaw": 60
       },
       "table": {
         "x": 2.9,

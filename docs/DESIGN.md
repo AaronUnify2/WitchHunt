@@ -872,7 +872,7 @@ The owner's diary, written **before** the end. It's a reflective object, so it s
 3. "Cameras for a year and not one clear frame of him. But I'm getting something else. Something fast. Camera four, three nights running now, a shape going through the trees quicker than anything should move. Low to the ground, wrong somehow. It isn't him. He's gentle. This thing isn't."
 4. *(the last written entry)* "The lights started a few weeks back, out past the government land. Then the animals went quiet. Camera four's got that fast shape every night now, closer to the road each time. Checked the shelter today, restocked it, oiled the hatch. Stocked that place years ago, half as a joke. Hope to God I never need it."
 
-Then a **blank page**. The blank page is the horror.
+Then a **blank page**. The blank page is the horror. *(Session 19, Aaron's playtest: the blank page read as an extra, empty page: taken out; the diary just stops. OPEN_QUESTIONS #305.)*
 
 *(proposed)* Entry dates: entry 1 around 1987, entry 2 around 1989, entry 3 around 2002, entry 4 in 2003, a few weeks before the game. That fits Bigfoot predating the portal by at least 15 years (see Ideas for later).
 

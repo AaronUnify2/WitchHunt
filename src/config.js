@@ -2635,6 +2635,18 @@ export const config = {
       // Dull and dark: pale props glare under the torch (Aaron).
       colors: {
         // Session 19 (style pass 2).
+        // Earl's office (Session 19, Aaron's playtest).
+        lampShade: 0x2a3424,
+        mug: 0x3a2a22,
+        officePaper: 0x4a463c,
+        binders: [0x1e2a3a, 0x3a1e1a, 0x2a2a22, 0x22301e, 0x3a3420],
+        jacket: 0x3a3020,
+        cap: 0x4a1a14,
+        heater: 0x34302a,
+        heaterGrille: 0x1e1a16,
+        antler: 0x4a4234,
+        photo: 0x2e2a24,
+        calendarTop: 0x3a1c16,
         wallLap: 0x4c463c,
         gutter: 0x2c2a26,
         acUnit: 0x3a3c3a,
@@ -2809,10 +2821,34 @@ export const config = {
       // bags, runs `run` m with `gap` m breaks, its radius and pitch, the
       // share trampled flat). generator: by the comms hut (from its middle).
       // brass: spent casings on the ground.
+      // Session 19 (Aaron): working floodlights. pool: real point lights,
+      // always in the scene, given to the lit floodlights nearest the camera
+      // (within range m, fading over the last fade m); their colour,
+      // intensity, reach and decay; each light sits `ahead` m out in front of
+      // its lamp heads and `drop` m below them. glass: a lit head's colour;
+      // halo: the soft glow round it (night only). night: the hours they
+      // show (on from `on`, off at `off`, easing over `ramp` hours).
+      // fitRange / fitSeconds: fitting the generator its battery.
+      floods: {
+        pool: 3,
+        color: 0xe4ecff,
+        intensity: 150,
+        distance: 38,
+        decay: 1.3,
+        range: 80,
+        fade: 15,
+        ahead: 6,
+        drop: 3,
+        glass: 0xf4f6ff,
+        halo: { color: 0xdce6ff, size: 2.6, opacity: 0.6 },
+        night: { on: 18.75, off: 6.75, ramp: 0.75 },
+        fitRange: 1.8,
+        fitSeconds: 1.4,
+      },
       dressing: {
         net: { size: 5.2, height: 2.5, sag: 0.38, lumps: 0.16, cells: 12, holes: 0.1, tatters: 18, patches: 10 },
         wire: { out: 1.6, run: 7, gap: 1.2, radius: 0.42, pitch: 0.32, flat: 0.3 },
-        generator: { x: -0.4, z: -3.4, yaw: 15 },
+        generator: { cables: 2 }, // Session 19 (Aaron): moved out by the barricade's floodlights (outpost.json floods.generator); cables to this many of them
         brass: { barricade: 120, gunPit: 60 },
       },
       weather: { rust: [0x2a2c2a, 0x1c1e1c, 0x34382a, 0x3a2a20, 0x2a3034, 0x2e2e2a, 0x1e1e1c, 0x2e3228, 0x26241e, 0x1e1e1c] },
@@ -2863,6 +2899,7 @@ export const config = {
         netDark: 0x22261a,
         razor: 0x34342e,
         cable: 0x121212,
+        generator: 0x262a1c, // Session 19: darker than the olive (it glared under the torch)
       },
     },
   },

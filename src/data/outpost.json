@@ -36,7 +36,7 @@
       { "x": 23.6, "z": 16.8, "w": 4.2, "d": 5.4 }
     ],
     "comms": { "x": 9.6, "z": 10.2, "w": 3.4, "d": 3.0, "height": 2.5, "mast": [12, 12.4] },
-    "armoury": { "x": 14.6, "z": 9.6 },
+    "armoury": { "x": 11.66, "z": 9.6, "face": 1 },
     "containers": [
       { "id": "c1", "kind": "empty", "x": -21, "z": 10, "yaw": 90 },
       { "id": "c2", "kind": "resin", "x": -21, "z": 17.2, "yaw": 90 },
@@ -52,12 +52,17 @@
     { "id": "tentA", "label": "search the tent", "x": 18.7, "z": 9.2, "gives": [{ "item": "firstAid", "amount": 1 }], "loot": [{ "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 }, { "item": "scrap", "chance": 0.6, "min": 2, "max": 5 }] },
     { "id": "tentB", "label": "search the tent", "x": 20.3, "z": 16.8, "loot": [{ "item": "rifleAmmo", "chance": 0.6, "min": 3, "max": 6 }, { "item": "helmet", "chance": 0.5 }, { "item": "flare", "chance": 0.4 }] },
     { "id": "footlocker", "label": "search the footlocker", "x": 18.6, "z": 13, "loot": [{ "item": "scrap", "chance": 1, "min": 3, "max": 6 }, { "item": "firstAid", "chance": 0.4 }] },
-    { "id": "armoury", "label": "search the armoury lockers", "x": 13.3, "z": 9.6 },
+    { "id": "armoury", "label": "search the armoury lockers", "x": 12.95, "z": 9.6 },
     { "id": "report", "label": "read the field report", "x": 10.1, "z": 10.2 },
     { "id": "manifest", "label": "read the clipboard", "x": -15.4, "z": 13.6 }
   ],
   "peak": [
     [2, 12], [-3, 14], [5, 15], [-6, 11], [0, 18], [-10, 15], [8, 13], [-13, 20], [3, 21], [-6, 19],
     [11, 16], [-2, 24], [-9, 26], [7, 24], [-15, 16], [14, 13], [1, 27], [-4, 9], [4, 9], [-11, 9]
-  ]
+  ],
+  "floods": {
+    "_note": "Session 19 (Aaron: floodlights to brighten the outpost; a generator out in the open that a battery lights): generator: where it stands (frame x, z, yaw), near the barricade's floodlights (barricade.lights), which it powers; always: floodlights [x, z, yaw] that are on from the start: one inside each of the outpost's gates (the road's, the cemetery path's) aimed in along the path, and one lighting C-7's torn end; a fourth number scales its light (C-7's gentler, so the paint doesn't glare).",
+    "generator": { "x": -11, "z": 1.4, "yaw": 10 },
+    "always": [[73.2, -36.6, -100], [-58.2, -12.0, 100], [48.1, -27.7, -83, 0.45]]
+  }
 }
