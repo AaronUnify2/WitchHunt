@@ -7,6 +7,9 @@
 //    dead limbs. Open: the stretch over the trail cut out and rolled aside.
 //  - chainGate: the outpost's chain-link double gate on tall posts with
 //    chain-link wings. Open: both leaves swung in.
+// Session 19 (style pass 2): the pipe gate's chain looped round its post
+// and concrete footings; moss and snapped stubs on the fallen oak,
+// sawdust once it's cut; barbed wire along the chain-link gate's top.
 // Each gate is a group turned so local +z runs along the path (the way
 // the path heads through it) and +x across it. No lights; a handful of
 // small meshes per gate, near the station or not at all.
@@ -132,11 +135,29 @@ export class GateProps {
     const lock = new THREE.Mesh(this.box(0.1, 0.14, 0.12), this.mat(0x2a2620));
     lock.position.set(half + 0.12, this.localGround(holder, half, 0) + k.height * 0.8, 0.05);
     holder.add(lock);
+    // Session 19 (style pass 2): the chain looped round the post (a few
+    // links), concrete footings at the posts' feet.
+    const chainMat = this.mat(0x26241e);
+    const links = [];
+    for (let i = 0; i < 5; i++) {
+      const l = new THREE.Mesh(this.hold(new THREE.TorusGeometry(0.035, 0.009, 4, 8)), chainMat);
+      l.position.set(half + 0.08 + i * 0.03, this.localGround(holder, half, 0) + k.height * 0.8 - 0.06 - i * 0.055, 0.07 - (i % 2) * 0.02);
+      l.rotation.set(i % 2 ? Math.PI / 2 : 0, 0.3, 0);
+      holder.add(l);
+      links.push(l);
+    }
+    const foot = this.mat(0x34322e);
+    for (const side of [-1, 1]) {
+      const f = new THREE.Mesh(this.cyl(0.2, 0.24, 0.18, 8), foot);
+      f.position.set(side * (half + 0.15), this.localGround(holder, side * (half + 0.15), 0) + 0.04, 0);
+      holder.add(f);
+    }
     this.wings(holder, half + 0.3, k.wing, k.post, 1.1);
     return {
       setOpen: (open) => {
         hinge.rotation.y = open ? -1.7 : 0; // swings back along the path
         lock.visible = !open;
+        for (const l of links) l.visible = !open;
       },
     };
   }
@@ -204,6 +225,29 @@ export class GateProps {
       b.castShadow = true;
       tree.add(b);
     }
+    // Session 19 (style pass 2): moss along the trunk's top, a few snapped
+    // stubs; sawdust round the cut rounds once it's opened.
+    const moss = this.mat(0x26301a);
+    const mossy = [];
+    for (let i = 0; i < 7; i++) {
+      const x = -half + 0.8 + i * ((k.length - 1.6) / 6);
+      const m = new THREE.Mesh(this.hold(new THREE.SphereGeometry(1, 7, 4)), moss);
+      m.scale.set(0.45, 0.06, rAt(x) * 0.7);
+      m.position.set(x, this.localGround(holder, x, 0) + rAt(x) * 2 - 0.1, 0);
+      tree.add(m);
+      mossy.push({ m, x });
+    }
+    for (let i = 0; i < 3; i++) {
+      const x = -half + 2 + i * 2.6;
+      const stub = new THREE.Mesh(this.cyl(0.05, 0.08, 0.35, 5), branchMat);
+      stub.position.set(x, this.localGround(holder, x, 0) + rAt(x) * 1.6 + 0.1, (i % 2 ? 1 : -1) * rAt(x) * 0.5);
+      stub.rotation.set((i % 2 ? 1 : -1) * 0.6, 0, 0.3);
+      tree.add(stub);
+    }
+    const dust = new THREE.Mesh(this.hold(new THREE.CircleGeometry(1.4, 10).rotateX(-Math.PI / 2)), this.mat(0x4a3c2a));
+    dust.position.set(0, this.localGround(holder, 0, 0) + 0.03, 0);
+    dust.visible = false;
+    holder.add(dust);
     // Cut: the middle rolled aside as two rounds on the verge, fresh-sawn faces showing.
     const rounds = [];
     for (let i = 0; i < 2; i++) {
@@ -220,6 +264,8 @@ export class GateProps {
       setOpen: (open) => {
         middle.visible = !open;
         for (const r of rounds) r.visible = open;
+        dust.visible = open;
+        for (const { m, x } of mossy) if (Math.abs(x) < gap) m.visible = !open;
       },
     };
   }
@@ -263,6 +309,28 @@ export class GateProps {
     const lock = new THREE.Mesh(this.box(0.12, 0.4, 0.12), this.mat(0x22201c));
     lock.position.set(0, this.localGround(holder, 0, 0) + 1.2, -0.05);
     holder.add(lock);
+    // Session 19 (style pass 2): barbed wire along the top: an arm on each
+    // post leaning out (toward the road), three strands between them.
+    const barb = this.mat(0x2a2a26);
+    const ends = [];
+    for (const side of [-1, 1]) {
+      const x = side * (half + 0.1);
+      const y = this.localGround(holder, x, 0) + k.height + 0.3;
+      const arm = new THREE.Mesh(this.box(0.04, 0.5, 0.04), barb);
+      arm.position.set(x, y + 0.2, -0.12);
+      arm.rotation.x = -0.6;
+      holder.add(arm);
+      ends.push({ x, y });
+    }
+    const wire = [];
+    for (let i = 0; i < 3; i++) {
+      const dz = -0.05 - i * 0.12;
+      const dy = 0.05 + i * 0.13;
+      wire.push(ends[0].x, ends[0].y + dy, dz, ends[1].x, ends[1].y + dy, dz);
+    }
+    const wg = this.hold(new THREE.BufferGeometry());
+    wg.setAttribute('position', new THREE.Float32BufferAttribute(wire, 3));
+    holder.add(new THREE.LineSegments(wg, this.hold(new THREE.LineBasicMaterial({ color: 0x1c1c1a }))));
     // Chain-link wings either side: the outpost's outer fence.
     for (const side of [-1, 1]) {
       const wing = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(k.wing, k.height)), chain);
