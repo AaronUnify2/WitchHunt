@@ -524,7 +524,8 @@
           "seconds": 0.3
         }
       ],
-      "duration": 3.4
+      "duration": 3.4,
+      "jolt": true
     },
     {
       "id": "gas.witch",
@@ -581,7 +582,8 @@
           "sfx": "witchShriek"
         }
       ],
-      "duration": 4.6
+      "duration": 4.6,
+      "jolt": true
     },
     {
       "id": "day1.tower",
@@ -1833,7 +1835,8 @@
           "sfx": "reveal"
         }
       ],
-      "duration": 3.6
+      "duration": 3.6,
+      "jolt": true
     },
     {
       "id": "clip.dogfight",
@@ -2536,7 +2539,8 @@
           "pitch": 0.12
         }
       ],
-      "duration": 3.2
+      "duration": 3.2,
+      "jolt": true
     },
     {
       "id": "ending.victory",

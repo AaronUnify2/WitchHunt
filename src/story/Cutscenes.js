@@ -75,6 +75,7 @@ export class Cutscenes {
         <div class="cs-osd-time"></div>
         <div class="cs-osd-rec">&#9679; REC</div>
         <div class="cs-osd-mark"></div>
+        <div class="cs-osd-extra"></div>
       </div>
       <p class="cs-skip">A / Enter: skip</p>
     `;
@@ -86,6 +87,7 @@ export class Cutscenes {
     this.osdTime = q('.cs-osd-time');
     this.osdRec = q('.cs-osd-rec');
     this.osdMark = q('.cs-osd-mark');
+    this.osdExtra = q('.cs-osd-extra');
     this.skipEl = q('.cs-skip');
   }
 
@@ -156,6 +158,11 @@ export class Cutscenes {
     document.body.classList.add('in-cutscene');
     for (const a of data.actors ?? []) cur.actors.set(a.id, this.makeActor(a));
     this.setLook(data.look ?? null, data.light);
+    // Session 19 (style pass 2): a reveal (data "jolt") jolts the camera as it takes over.
+    if (data.jolt && this.cc.treatments?.jolt) {
+      cur.shake = this.cc.treatments.jolt.shake;
+      cur.shakeLeft = this.cc.treatments.jolt.shakeSeconds;
+    }
     if (this.ownCamera) this.renderer.setCamera(this.camera);
     this.frameTimer = 0;
     this.bus.emit('cutscene:started', { id });
@@ -211,6 +218,7 @@ export class Cutscenes {
     this.updateCamera(dt);
     this.updateFade(dt);
     this.updateOsd();
+    this.updateTreatment();
     // M9.2: a looping feed (the main menu's) runs until it's stopped.
     if (cur.data.loop && cur.t >= cur.length) {
       cur.t = 0;
@@ -453,10 +461,31 @@ export class Cutscenes {
     if (e.sfx) this.sfx?.play(e.sfx);
   }
 
+  // Session 19 (style pass 2): the sweeps' grade eases in over the first
+  // second or so and out over the last; a reveal's jolt (data "jolt") fades
+  // from its first moment (config.cutscenes.treatments, the looks in
+  // config.postFX.treatments). Nothing while a camera look is on.
+  updateTreatment() {
+    const cur = this.current;
+    const tc = this.cc.treatments;
+    if (!tc || !cur) return;
+    const d = cur.data;
+    if (d.style === 'sweep' && d.treatment !== false) {
+      const e = tc.sweepEase;
+      const a = Math.max(0, Math.min(1, cur.t / e, (cur.length - cur.t) / e));
+      this.postFX.setTreatment('sweep', a * a * (3 - 2 * a));
+    } else if (d.jolt) {
+      const a = Math.max(0, 1 - cur.t / tc.jolt.seconds);
+      this.postFX.setTreatment('jolt', a * a);
+    }
+  }
+
   // A camera look (config.postFX.looks) and the camera's light on the
   // actors (config.cutscenes.actorLight; light overrides it).
   setLook(look, light) {
     this.postFX.setLook(look);
+    // Session 19: the on-screen display dresses for the look (a camcorder's date stamp, a trail cam's data strip).
+    if (this.osdEl) this.osdEl.dataset.look = look ?? '';
     const l = this.cc.actorLight;
     const cur = this.current;
     if (!cur) return;
@@ -482,8 +511,30 @@ export class Cutscenes {
     const cur = this.current;
     const osd = cur.osd;
     if (!osd) return;
-    const base = osd.time === 'clock' || !osd.time ? this.clockText(cur.hour ?? this.clock.hourOfDay, cur.t) : osd.time;
-    this.osdTime.textContent = osd.time === 'none' ? '' : base;
+    const hour = cur.hour ?? this.clock.hourOfDay;
+    const base = osd.time === 'clock' || !osd.time ? this.clockText(hour, cur.t) : osd.time;
+    const look = this.osdEl.dataset.look;
+    const oc = this.cc.osd ?? {};
+    let time = osd.time === 'none' ? '' : base;
+    let extra = '';
+    if (look === 'trailcam' && oc.trailcam) {
+      // Session 19: a trail cam's data strip: the camera, the moon, the temperature, the date and time.
+      const t = oc.trailcam;
+      const night = hour >= 20 || hour < 6;
+      const temp = Math.round(t.tempDay + (night ? t.tempNight : 0) + Math.sin(hour) * 2);
+      time = `${osd.name ?? ''}   ${t.moon}  ${temp}°F   ${time}`;
+    } else if (look === 'camcorder' && oc.camcorder) {
+      // Session 19: a camcorder's date stamp (12-hour time over the date) and its tape counter.
+      const total = Math.floor(hour * 3600 + Math.max(0, cur.t));
+      const h24 = Math.floor(total / 3600) % 24;
+      const h12 = h24 % 12 || 12;
+      const mm = String(Math.floor(total / 60) % 60).padStart(2, '0');
+      time = osd.time === 'none' ? '' : `${h24 < 12 ? 'AM' : 'PM'} ${h12}:${mm}\n${oc.camcorder.date}`;
+      const c = Math.floor(oc.camcorder.counterStart + cur.t);
+      extra = `${oc.camcorder.speed}  ${Math.floor(c / 3600)}:${String(Math.floor(c / 60) % 60).padStart(2, '0')}:${String(c % 60).padStart(2, '0')}`;
+    }
+    this.osdTime.textContent = time;
+    this.osdExtra.textContent = extra;
     this.osdRec.style.visibility = Math.floor(cur.t * 1.4) % 2 === 0 ? 'visible' : 'hidden';
   }
 

@@ -1316,6 +1316,23 @@ body.in-viewer .final-battle {
 .cs-osd-name { position: absolute; top: 0; left: 0; }
 .cs-osd-time { position: absolute; bottom: 0; left: 0; }
 .cs-osd-rec { position: absolute; top: 0; right: 0; color: #ff3a2a; }
+.cs-osd-extra { position: absolute; top: 1.6em; left: 0; }
+
+/* Session 19 (style pass 2): the camcorder's amber date stamp, bottom right, its tape counter under PLAY. */
+.cs-osd[data-look='camcorder'] { color: #ffc46a; font-weight: bold; }
+.cs-osd[data-look='camcorder'] .cs-osd-time { left: auto; right: 0; text-align: right; white-space: pre; font-size: 1.15em; }
+/* Session 19: a trail cam's data strip along the bottom; its name moves into the strip. */
+.cs-osd[data-look='trailcam'] .cs-osd-name { visibility: hidden; }
+.cs-osd[data-look='trailcam'] .cs-osd-time {
+  left: -6vw;
+  right: -6vw;
+  bottom: -6vh;
+  padding: 0.35em 1.2em;
+  background: rgba(0, 0, 0, 0.72);
+  color: #e8f0e8;
+  white-space: pre;
+  font-size: 0.9em;
+}
 
 .cs-osd-mark {
   position: absolute;

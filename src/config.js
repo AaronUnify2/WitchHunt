@@ -178,12 +178,24 @@ export const config = {
     // dropout: chance per second of a frame of static. chroma: colour
     // fringe (pixels). mask: a round scope mask (0 off).
     looks: {
-      cctv: { tint: 0xd8e4dc, saturation: 0.25, contrast: 1.15, gain: 1.6, noise: 0.12, scanlines: 0.18, lines: 240, bend: 0.12, vignette: 0.55, tear: 0.0, dropout: 0.0, chroma: 1.2, mask: 0 },
-      trailcam: { tint: 0x7cff8c, saturation: 0, contrast: 1.25, gain: 3.4, noise: 0.16, scanlines: 0.12, lines: 200, bend: 0.06, vignette: 0.6, tear: 0.0, dropout: 0.0, chroma: 0.6, mask: 0 },
-      camcorder: { tint: 0xfff0dc, saturation: 0.8, contrast: 1.08, gain: 1.5, noise: 0.07, scanlines: 0.08, lines: 288, bend: 0.03, vignette: 0.4, tear: 0.02, dropout: 0.0, chroma: 2.2, mask: 0 },
-      military: { tint: 0xd4dcc4, saturation: 0.35, contrast: 1.2, gain: 1.8, noise: 0.2, scanlines: 0.22, lines: 200, bend: 0.1, vignette: 0.6, tear: 0.25, dropout: 0.6, chroma: 1.8, mask: 0 },
+      cctv: { tint: 0xd8e4dc, saturation: 0.25, contrast: 1.15, gain: 1.6, noise: 0.12, scanlines: 0.18, lines: 240, bend: 0.12, vignette: 0.55, tear: 0.0, dropout: 0.0, chroma: 1.2, mask: 0, soft: 0.15 },
+      trailcam: { tint: 0x7cff8c, saturation: 0, contrast: 1.25, gain: 3.4, noise: 0.16, scanlines: 0.12, lines: 200, bend: 0.06, vignette: 0.6, tear: 0.0, dropout: 0.0, chroma: 0.6, mask: 0, soft: 0.3, blow: 1.1, blowAt: 0.55 },
+      camcorder: { tint: 0xfff0dc, saturation: 0.8, contrast: 1.08, gain: 1.5, noise: 0.07, scanlines: 0.08, lines: 288, bend: 0.03, vignette: 0.4, tear: 0.02, dropout: 0.0, chroma: 2.2, mask: 0, soft: 0.2, focusHunt: 0.75, blow: 0.8, blowAt: 0.6, wobble: 0.0035 },
+      military: { tint: 0xd4dcc4, saturation: 0.35, contrast: 1.2, gain: 1.8, noise: 0.2, scanlines: 0.22, lines: 200, bend: 0.1, vignette: 0.6, tear: 0.25, dropout: 0.6, chroma: 1.8, mask: 0, soft: 0.25 },
       government: { tint: 0xb8d0ff, saturation: 0.3, contrast: 1.1, gain: 1.7, noise: 0.06, scanlines: 0.1, lines: 360, bend: 0.04, vignette: 0.45, tear: 0.0, dropout: 0.0, chroma: 0.4, mask: 0 },
-      scope: { tint: 0xffffff, saturation: 0.9, contrast: 1.05, gain: 1.3, noise: 0.03, scanlines: 0, lines: 240, bend: 0, vignette: 0.2, tear: 0, dropout: 0, chroma: 0, mask: 1 },
+      scope: { tint: 0xffffff, saturation: 0.9, contrast: 1.05, gain: 1.3, noise: 0.03, scanlines: 0, lines: 240, bend: 0, vignette: 0.2, tear: 0, dropout: 0, chroma: 0.6, mask: 1, sway: 1, milDots: 1, edgeDark: 0.55 },
+    },
+    // Session 19 (style pass 2): the new look numbers (each off when left
+    // out): soft (a cheap lens, 0..1), focusHunt (a camcorder losing focus
+    // now and then), blow / blowAt (highlights over blowAt pushed toward
+    // white), wobble (a hand holding it), sway (the scope's breathing),
+    // milDots, edgeDark (the scope's rim). And the treatments laid over the
+    // live picture while no look is on (PostFX.setTreatment): the sweeps'
+    // grade (a touch cooler, flatter and vignetted, easing in and out) and
+    // a reveal's jolt (a hard vignette and colour fringe, fading fast).
+    treatments: {
+      sweep: { tint: 0xe4ecf4, saturation: 0.82, contrast: 1.06, vignette: 0.4, chroma: 0.5 },
+      jolt: { saturation: 0.7, contrast: 1.15, vignette: 0.85, chroma: 4, noise: 0.05, bend: 0.06 },
     },
   },
 
@@ -3112,6 +3124,15 @@ export const config = {
     skipAfter: 0.5, // seconds before A / Enter can skip (so a held button doesn't)
     lineGrace: 6, // seconds a cutscene waits past its end for its lines to finish
     dateText: 'OCT 2003', // the date on the camera feeds (#151: 2003)
+    // Session 19 (style pass 2): the sweeps' grade eases in and out over this many seconds; a reveal's jolt
+    // fades over `seconds`, its camera shaken this hard for `shakeSeconds` (cutscenes.json "jolt": true).
+    treatments: { sweepEase: 1.4, jolt: { seconds: 0.9, shake: 0.8, shakeSeconds: 0.35 } },
+    // Session 19: the on-screen display per look: a trail cam's strip (the moon's glyph, degrees F by day,
+    // and how much colder at night); a camcorder's stamp (its date, the tape's speed, the counter's start).
+    osd: {
+      trailcam: { moon: '◐', tempDay: 49, tempNight: -8 },
+      camcorder: { date: 'OCT.13.2003', speed: 'SP', counterStart: 2417 },
+    },
     // The camera's own light (a trail cam's infrared lamp, a camcorder's
     // lamp), on the actors only: they glow this fraction of their own
     // colour, by look, so a clip at night shows them. A cutscene's "light"

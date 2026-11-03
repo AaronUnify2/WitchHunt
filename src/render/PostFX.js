@@ -114,6 +114,17 @@ const LookShader = {
     uStatic: { value: 0 },
     uChroma: { value: 0 },
     uMask: { value: 0 },
+    // Session 19 (style pass 2): softness (and a camcorder's focus hunting
+    // through it), blown highlights, a handheld wobble, the scope's sway,
+    // mil-dots and darker rim.
+    uSoft: { value: 0 },
+    uFocusHunt: { value: 0 },
+    uBlow: { value: 0 },
+    uBlowAt: { value: 0.6 },
+    uWobble: { value: 0 },
+    uSway: { value: 0 },
+    uMilDots: { value: 0 },
+    uEdgeDark: { value: 0 },
     uAspect: { value: 1 },
     uTexel: { value: new THREE.Vector2(1 / 1024, 1 / 768) },
   },
@@ -134,6 +145,14 @@ const LookShader = {
     uniform float uStatic;
     uniform float uChroma;
     uniform float uMask;
+    uniform float uSoft;
+    uniform float uFocusHunt;
+    uniform float uBlow;
+    uniform float uBlowAt;
+    uniform float uWobble;
+    uniform float uSway;
+    uniform float uMilDots;
+    uniform float uEdgeDark;
     uniform float uAspect;
     uniform vec2 uTexel;
     varying vec2 vUv;
@@ -149,6 +168,9 @@ const LookShader = {
       vec2 c = vUv - 0.5;
       float r2 = dot(c, c);
       vec2 uv = 0.5 + c * (1.0 + uBend * r2);
+      // Session 19: a hand holding the camera; the scope's breathing sway.
+      uv += uWobble * vec2(sin(uTime * 1.7) + 0.4 * sin(uTime * 5.1), sin(uTime * 1.3 + 0.5) + 0.3 * sin(uTime * 6.7));
+      uv += uSway * 0.004 * vec2(sin(uTime * 0.8), 0.7 * sin(uTime * 1.13 + 1.0));
       // Torn rows: now and then a band of rows slides sideways.
       float row = floor(uv.y * uLines * 0.25);
       float t = floor(uTime * 12.0);
@@ -160,9 +182,19 @@ const LookShader = {
       }
       vec2 off = vec2(uChroma * uTexel.x, 0.0);
       vec3 col = vec3(texture2D(tDiffuse, uv + off).r, texture2D(tDiffuse, uv).g, texture2D(tDiffuse, uv - off).b);
+      // Session 19: soft (a cheap lens), softer still while a camcorder hunts for focus.
+      float hunt = uFocusHunt * smoothstep(0.72, 1.0, 0.5 + 0.5 * sin(uTime * 0.7) + 0.2 * sin(uTime * 2.3));
+      float soft = clamp(uSoft + hunt, 0.0, 1.0);
+      if (soft > 0.001) {
+        vec2 o = uTexel * (1.0 + 3.0 * soft);
+        vec3 blur = (texture2D(tDiffuse, uv + vec2(o.x, 0.0)).rgb + texture2D(tDiffuse, uv - vec2(o.x, 0.0)).rgb + texture2D(tDiffuse, uv + vec2(0.0, o.y)).rgb + texture2D(tDiffuse, uv - vec2(0.0, o.y)).rgb) * 0.25;
+        col = mix(col, blur, soft);
+      }
       col *= uGain;
       float l = dot(col, LUMA);
       col = mix(vec3(l), col, uSaturation) * uTint;
+      // Session 19: highlights blown out (a camcorder's, a trail cam's IR glare).
+      col += vec3(max(l - uBlowAt, 0.0) * uBlow);
       col = (col - 0.5) * uContrast + 0.5;
       // Scanlines and static.
       col *= 1.0 - uScanlines * (0.5 + 0.5 * sin(uv.y * uLines * 3.14159));
@@ -174,8 +206,21 @@ const LookShader = {
       if (uMask > 0.0) {
         vec2 m = vec2(c.x * uAspect, c.y);
         float d = length(m);
+        // Session 19: the glass darker toward its rim; a duplex reticle (thick
+        // posts in from the rim, the fine cross in the middle) with mil-dots.
+        col *= 1.0 - uEdgeDark * smoothstep(0.22, 0.4, d);
         col *= 1.0 - smoothstep(0.40, 0.42, d);
-        col = mix(col, vec3(0.0), (step(abs(m.x), 0.0015) + step(abs(m.y), 0.0015)) * step(d, 0.4) * 0.9);
+        float inside = step(d, 0.4);
+        float fine = step(abs(m.x), 0.0012) + step(abs(m.y), 0.0012);
+        float post = step(abs(m.x), 0.0055) * step(0.13, abs(m.y)) + step(abs(m.y), 0.0055) * step(0.13, abs(m.x));
+        float dots = 0.0;
+        if (uMilDots > 0.0) {
+          float sp = 0.026;
+          float dx = abs(fract(m.x / sp + 0.5) - 0.5) * sp;
+          float dy = abs(fract(m.y / sp + 0.5) - 0.5) * sp;
+          dots = step(length(vec2(dx, m.y)), 0.0032) * step(abs(m.x), 0.12) + step(length(vec2(m.x, dy)), 0.0032) * step(abs(m.y), 0.12);
+        }
+        col = mix(col, vec3(0.0), clamp(fine + post + dots, 0.0, 1.0) * inside * 0.9);
       }
       gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }
@@ -230,8 +275,14 @@ export class PostFX {
   setLook(name) {
     const k = name ? this.cfg.looks[name] : null;
     this.lookName = k ? name : null;
+    this.treating = null;
     this.look.enabled = Boolean(k);
     if (!k) return;
+    this.applyLook(k);
+  }
+
+  // A look's numbers into the pass (Session 19: the new ones default to off).
+  applyLook(k) {
     const u = this.look.uniforms;
     u.uTint.value.setHex(k.tint);
     u.uSaturation.value = k.saturation;
@@ -245,7 +296,50 @@ export class PostFX {
     u.uTear.value = k.tear;
     u.uChroma.value = k.chroma;
     u.uMask.value = k.mask;
-    this.dropout = k.dropout;
+    u.uSoft.value = k.soft ?? 0;
+    u.uFocusHunt.value = k.focusHunt ?? 0;
+    u.uBlow.value = k.blow ?? 0;
+    u.uBlowAt.value = k.blowAt ?? 0.6;
+    u.uWobble.value = k.wobble ?? 0;
+    u.uSway.value = k.sway ?? 0;
+    u.uMilDots.value = k.milDots ?? 0;
+    u.uEdgeDark.value = k.edgeDark ?? 0;
+    this.dropout = k.dropout ?? 0;
+  }
+
+  // Session 19 (style pass 2): a light treatment over the live picture
+  // while no camera look is on (config.postFX.treatments): the sweeps'
+  // grade easing in and out, a reveal's jolt. amount 0..1 blends it in
+  // from a clean picture; 0 turns the pass back off. A camera look wins.
+  setTreatment(name, amount) {
+    if (this.lookName) return;
+    const k = name ? this.cfg.treatments?.[name] : null;
+    if (!k || amount <= 0.001) {
+      if (this.treating) {
+        this.treating = null;
+        this.look.enabled = false;
+      }
+      return;
+    }
+    this.treating = name;
+    this.look.enabled = true;
+    const a = Math.min(1, amount);
+    const mix = (v, clean) => clean + ((v ?? clean) - clean) * a;
+    this.treatTint ??= new THREE.Color();
+    this.applyLook({
+      tint: this.treatTint.setRGB(1, 1, 1).lerp(new THREE.Color(k.tint ?? 0xffffff), a).getHex(),
+      saturation: mix(k.saturation, 1),
+      contrast: mix(k.contrast, 1),
+      gain: mix(k.gain, 1),
+      noise: mix(k.noise, 0),
+      scanlines: 0,
+      lines: 240,
+      bend: mix(k.bend, 0),
+      vignette: mix(k.vignette, 0),
+      tear: 0,
+      chroma: mix(k.chroma, 0),
+      mask: 0,
+    });
   }
 
   // M8: a burst of full static (a feed glitching or dying), 0..1, fading over `seconds`.
