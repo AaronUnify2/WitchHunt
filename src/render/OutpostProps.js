@@ -1094,19 +1094,41 @@ export class OutpostProps {
     // Session 17 (Aaron: one side read backwards): a face each way, each the right way round.
     const halt = signTexture(['HALT', 'MILITARY CHECKPOINT', 'NO CIVILIANS BEYOND THIS POINT', 'USE OF DEADLY FORCE AUTHORIZED'], '#5a2018');
     const a = (s.yaw * Math.PI) / 180;
-    for (const side of [1, -1]) {
+    // Session 19 (the draw-call budget): both faces one mesh (was two), and the containers' codes one (was seven).
+    const place = (g, x, z, yy, yawDeg) => {
+      const w = frameToWorld(this.frame, x, z);
+      g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(w.x, yy, w.z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, this.rotY(yawDeg), 0, 'YXZ')), new THREE.Vector3(1, 1, 1)));
+      return g;
+    };
+    const faces = [1, -1].map((side) => {
       const off = side * 0.006;
-      this.board(side > 0 ? halt : halt.clone(), 2.0, 1.25, s.x + Math.sin(a) * off, s.z + Math.cos(a) * off, y + 1.55, side > 0 ? s.yaw : s.yaw + 180);
-    }
-    // The containers' codes, on both long sides (C-7 is the Mothman's: CONTAINMENT C-7 on the feed).
+      return place(new THREE.PlaneGeometry(2.0, 1.25), s.x + Math.sin(a) * off, s.z + Math.cos(a) * off, y + 1.55, side > 0 ? s.yaw : s.yaw + 180);
+    });
+    const haltMesh = new THREE.Mesh(this.hold(mergeGeometries(faces)), this.hold(new THREE.MeshLambertMaterial({ map: this.hold(halt) })));
+    faces.forEach((g) => g.dispose());
+    haltMesh.receiveShadow = true;
+    this.group.add(haltMesh);
+    // The containers' codes, on both long sides (C-7 is the Mothman's: CONTAINMENT C-7 on the feed): one atlas, one mesh.
     const codes = { empty: 'C-3', resin: 'C-4', mothman: 'C-7', brood: 'C-9' };
+    const kinds = Object.keys(codes);
+    const atlas = stencilAtlas(kinds.map((kd) => [codes[kd], kd === 'brood' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV']));
+    const boards = [];
     for (const c of this.data.compound.containers) {
       const y0 = this.containerY(c) + CONTAINER.deck + 1.6;
-      const tex = stencilTexture(codes[c.kind] ?? 'C-?', c.kind === 'brood' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV');
+      const slot = Math.max(0, kinds.indexOf(c.kind));
       for (const s2 of c.kind === 'mothman' ? [-1] : [-1, 1]) {
         const p = this.local(c, s2 * (CONTAINER.width / 2 + 0.08), 0.6);
-        this.board(tex, 2.0, 0.85, p.x, p.z, y0, c.yaw + s2 * 90 + 180, { transparent: true });
+        const g = new THREE.PlaneGeometry(2.0, 0.85);
+        const uv = g.getAttribute('uv');
+        for (let i = 0; i < uv.count; i++) uv.setY(i, (uv.getY(i) + (kinds.length - 1 - slot)) / kinds.length);
+        boards.push(place(g, p.x, p.z, y0, c.yaw + s2 * 90 + 180));
       }
+    }
+    if (boards.length) {
+      const codeMesh = new THREE.Mesh(this.hold(mergeGeometries(boards)), this.hold(new THREE.MeshLambertMaterial({ map: this.hold(atlas), transparent: true })));
+      boards.forEach((g) => g.dispose());
+      codeMesh.receiveShadow = true;
+      this.group.add(codeMesh);
     }
     // LIVE SPECIMEN on the crates' road-facing sides.
     const crateMat = this.hold(new THREE.MeshLambertMaterial({ map: this.hold(stencilTexture('LIVE SPECIMEN', 'THIS SIDE UP')), transparent: true }));
@@ -1254,6 +1276,30 @@ function signTexture(lines, colour) {
 }
 
 // A stencilled code on steel: a big code and a line under it, the paint flaking.
+// Session 19: several stencils stacked in one texture (top to bottom, in order), each as stencilTexture draws it.
+function stencilAtlas(entries) {
+  const H = 112;
+  const { canvas, ctx } = makeCanvas(256, H * entries.length);
+  ctx.clearRect(0, 0, 256, H * entries.length);
+  entries.forEach(([code, line], i) => {
+    const y = i * H;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6a6656';
+    ctx.font = 'bold 54px monospace';
+    ctx.fillText(code, 128, y + 56);
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText(line, 128, y + 92);
+    ctx.globalCompositeOperation = 'destination-out';
+    for (let j = 0; j < 70; j++) {
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      ctx.fillRect((j * 67 + i * 13) % 256, y + ((j * 41) % H), 2 + ((j * 5) % 6), 2 + ((j * 3) % 4));
+    }
+  });
+  ctx.globalCompositeOperation = 'source-over';
+  return toTexture(canvas);
+}
+
 function stencilTexture(code, line) {
   const { canvas, ctx } = makeCanvas(256, 112);
   ctx.clearRect(0, 0, 256, 112);

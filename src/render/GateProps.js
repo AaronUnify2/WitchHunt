@@ -15,6 +15,7 @@
 // small meshes per gate, near the station or not at all.
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { css, makeCanvas, toTexture } from './proceduralTextures.js';
 import { makeSignTexture } from './mapTextures.js';
 
@@ -137,21 +138,24 @@ export class GateProps {
     holder.add(lock);
     // Session 19 (style pass 2): the chain looped round the post (a few
     // links), concrete footings at the posts' feet.
-    const chainMat = this.mat(0x26241e);
-    const links = [];
+    // One mesh each (the draw-call budget).
+    const linkGeos = [];
     for (let i = 0; i < 5; i++) {
-      const l = new THREE.Mesh(this.hold(new THREE.TorusGeometry(0.035, 0.009, 4, 8)), chainMat);
-      l.position.set(half + 0.08 + i * 0.03, this.localGround(holder, half, 0) + k.height * 0.8 - 0.06 - i * 0.055, 0.07 - (i % 2) * 0.02);
-      l.rotation.set(i % 2 ? Math.PI / 2 : 0, 0.3, 0);
-      holder.add(l);
-      links.push(l);
+      const g2 = new THREE.TorusGeometry(0.035, 0.009, 4, 8);
+      g2.applyMatrix4(new THREE.Matrix4().compose(
+        new THREE.Vector3(half + 0.08 + i * 0.03, this.localGround(holder, half, 0) + k.height * 0.8 - 0.06 - i * 0.055, 0.07 - (i % 2) * 0.02),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(i % 2 ? Math.PI / 2 : 0, 0.3, 0)),
+        new THREE.Vector3(1, 1, 1),
+      ));
+      linkGeos.push(g2);
     }
-    const foot = this.mat(0x34322e);
-    for (const side of [-1, 1]) {
-      const f = new THREE.Mesh(this.cyl(0.2, 0.24, 0.18, 8), foot);
-      f.position.set(side * (half + 0.15), this.localGround(holder, side * (half + 0.15), 0) + 0.04, 0);
-      holder.add(f);
-    }
+    const chainMesh = new THREE.Mesh(this.hold(mergeGeometries(linkGeos)), this.mat(0x26241e));
+    linkGeos.forEach((g2) => g2.dispose());
+    holder.add(chainMesh);
+    const links = [chainMesh];
+    const footGeos = [-1, 1].map((side) => new THREE.CylinderGeometry(0.2, 0.24, 0.18, 8).translate(side * (half + 0.15), this.localGround(holder, side * (half + 0.15), 0) + 0.04, 0));
+    holder.add(new THREE.Mesh(this.hold(mergeGeometries(footGeos)), this.mat(0x34322e)));
+    footGeos.forEach((g2) => g2.dispose());
     this.wings(holder, half + 0.3, k.wing, k.post, 1.1);
     return {
       setOpen: (open) => {
@@ -215,35 +219,53 @@ export class GateProps {
     root.position.set(-half - 0.2, this.localGround(holder, -half, 0) + 1.2, 0);
     root.castShadow = true;
     tree.add(root);
-    // Dead limbs off the crown end.
+    // Dead limbs off the crown end (Session 19: one mesh with the snapped stubs below, was six).
+    const limbs = [];
     for (let i = 0; i < 6; i++) {
       const len = 1.5 + (i % 3) * 0.8;
-      const b = new THREE.Mesh(this.cyl(0.04, 0.12, len, 5), branchMat);
       const x = half * (0.35 + i * 0.1);
-      b.position.set(x, this.localGround(holder, x, 0) + rAt(x) + len * 0.35, (i % 2 ? 1 : -1) * 0.3);
-      b.rotation.set((i % 2 ? 1 : -1) * 0.7, 0, 0.5 - i * 0.15);
-      b.castShadow = true;
-      tree.add(b);
+      const g2 = new THREE.CylinderGeometry(0.04, 0.12, len, 5);
+      g2.applyMatrix4(new THREE.Matrix4().compose(
+        new THREE.Vector3(x, this.localGround(holder, x, 0) + rAt(x) + len * 0.35, (i % 2 ? 1 : -1) * 0.3),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler((i % 2 ? 1 : -1) * 0.7, 0, 0.5 - i * 0.15)),
+        new THREE.Vector3(1, 1, 1),
+      ));
+      limbs.push(g2);
     }
     // Session 19 (style pass 2): moss along the trunk's top, a few snapped
     // stubs; sawdust round the cut rounds once it's opened.
-    const moss = this.mat(0x26301a);
-    const mossy = [];
+    // Merged: the moss on the ends one mesh, on the cut stretch another (it goes with it), the stubs one.
+    const mossEnds = [];
+    const mossMid = [];
     for (let i = 0; i < 7; i++) {
       const x = -half + 0.8 + i * ((k.length - 1.6) / 6);
-      const m = new THREE.Mesh(this.hold(new THREE.SphereGeometry(1, 7, 4)), moss);
-      m.scale.set(0.45, 0.06, rAt(x) * 0.7);
-      m.position.set(x, this.localGround(holder, x, 0) + rAt(x) * 2 - 0.1, 0);
-      tree.add(m);
-      mossy.push({ m, x });
+      const g2 = new THREE.SphereGeometry(1, 7, 4).scale(0.45, 0.06, rAt(x) * 0.7).translate(x, this.localGround(holder, x, 0) + rAt(x) * 2 - 0.1, 0);
+      (Math.abs(x) < gap ? mossMid : mossEnds).push(g2);
     }
+    const moss = this.mat(0x26301a);
+    const mossy = [];
+    for (const list of [mossEnds, mossMid]) {
+      if (!list.length) continue;
+      const m = new THREE.Mesh(this.hold(mergeGeometries(list)), moss);
+      list.forEach((g2) => g2.dispose());
+      tree.add(m);
+      mossy.push({ m, x: list === mossMid ? 0 : half });
+    }
+    const stubs = limbs;
     for (let i = 0; i < 3; i++) {
       const x = -half + 2 + i * 2.6;
-      const stub = new THREE.Mesh(this.cyl(0.05, 0.08, 0.35, 5), branchMat);
-      stub.position.set(x, this.localGround(holder, x, 0) + rAt(x) * 1.6 + 0.1, (i % 2 ? 1 : -1) * rAt(x) * 0.5);
-      stub.rotation.set((i % 2 ? 1 : -1) * 0.6, 0, 0.3);
-      tree.add(stub);
+      const g2 = new THREE.CylinderGeometry(0.05, 0.08, 0.35, 5);
+      g2.applyMatrix4(new THREE.Matrix4().compose(
+        new THREE.Vector3(x, this.localGround(holder, x, 0) + rAt(x) * 1.6 + 0.1, (i % 2 ? 1 : -1) * rAt(x) * 0.5),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler((i % 2 ? 1 : -1) * 0.6, 0, 0.3)),
+        new THREE.Vector3(1, 1, 1),
+      ));
+      stubs.push(g2);
     }
+    const limbMesh = new THREE.Mesh(this.hold(mergeGeometries(stubs)), branchMat);
+    limbMesh.castShadow = true;
+    tree.add(limbMesh);
+    stubs.forEach((g2) => g2.dispose());
     const dust = new THREE.Mesh(this.hold(new THREE.CircleGeometry(1.4, 10).rotateX(-Math.PI / 2)), this.mat(0x4a3c2a));
     dust.position.set(0, this.localGround(holder, 0, 0) + 0.03, 0);
     dust.visible = false;
