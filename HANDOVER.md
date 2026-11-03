@@ -45,7 +45,7 @@
 
 ### Unfinished
 
-- **Aaron's play-test of round 28.** Notes from it come first in the next session.
+- **Aaron's play-test of rounds 28-29.** Notes from it come first in the next session.
 - **The trail in behind the gas station is 157**, 2 over the 155 start. The rest of it is:
   - the forest;
   - the quad's 9 meshes;
