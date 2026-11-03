@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { css, makeCanvas, toTexture } from './proceduralTextures.js';
+import { noise3 } from './propKit.js';
 import { makeSignTexture } from './mapTextures.js';
 import { ChunkCuller } from './ChunkCuller.js';
 import { roadProps } from '../world/road.js';
@@ -79,6 +80,29 @@ function makeAsphaltTexture(cfg, rng) {
     }
     ctx.stroke();
   }
+  // Session 19 (style pass 2): potholes, a couple per tile, off the centre
+  // line: a dark broken-edged hollow with grit in it, a paler rim.
+  for (let i = 0; i < cfg.potholes; i++) {
+    const px = w * (rng.chance(0.5) ? rng.range(0.15, 0.4) : rng.range(0.6, 0.85));
+    const py = rng.range(h * 0.05, h * 0.95);
+    const pr = rng.range(w * 0.04, w * 0.09);
+    ctx.fillStyle = css(cfg.potholeRim, 0.5);
+    for (let k = 0; k < 7; k++) {
+      ctx.beginPath();
+      ctx.ellipse(px + rng.range(-pr, pr) * 0.35, py + rng.range(-pr, pr) * 0.5, pr * rng.range(0.8, 1.1), pr * rng.range(1.0, 1.6), 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = css(cfg.potholeColor, 0.95);
+    for (let k = 0; k < 6; k++) {
+      ctx.beginPath();
+      ctx.ellipse(px + rng.range(-pr, pr) * 0.3, py + rng.range(-pr, pr) * 0.45, pr * rng.range(0.5, 0.8), pr * rng.range(0.7, 1.2), rng.range(0, 3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let k = 0; k < 40; k++) {
+      ctx.fillStyle = css(rng.chance(0.5) ? 0x3a3834 : 0x14120f, rng.range(0.4, 0.8));
+      ctx.fillRect(px + rng.range(-pr, pr) * 0.7, py + rng.range(-pr, pr), 2, 2);
+    }
+  }
   // The edges crumble into the gravel.
   for (let i = 0; i < 1200; i++) {
     const left = rng.chance(0.5);
@@ -104,7 +128,7 @@ export class Road {
     this.group = new THREE.Group();
     this.culler = new ChunkCuller(STRETCH * 2, 8);
     this.texture = makeAsphaltTexture(c, this.rng.fork('asphalt'));
-    this.material = new THREE.MeshLambertMaterial({ map: this.texture, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    this.material = new THREE.MeshLambertMaterial({ map: this.texture, vertexColors: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     this.geometries = [];
     this.buildStrip(road, ground);
     const props = roadProps(road, c);
@@ -124,6 +148,12 @@ export class Road {
       const rows = end - start + 1;
       const positions = new Float32Array(cols * rows * 3);
       const uvs = new Float32Array(cols * rows * 2);
+      // Session 19 (style pass 2): colour in the vertices too, so the tile
+      // doesn't read as repeating: broad mottling along the road, the edges
+      // dirtier, leaf litter drifted onto them here and there.
+      const colors = new Float32Array(cols * rows * 3);
+      const leaf = new THREE.Color(c.wear.leaf);
+      const tint = new THREE.Color();
       let v = 0;
       for (let i = start; i <= end; i++) {
         const a = points[Math.max(0, i - 1)];
@@ -140,6 +170,14 @@ export class Road {
           positions[v * 3 + 2] = z;
           uvs[v * 2] = k / c.across;
           uvs[v * 2 + 1] = along[i] / c.textureMeters;
+          const m = noise3(x * c.wear.scale, 0, z * c.wear.scale);
+          const edge = Math.abs(k / c.across - 0.5) * 2; // 0 in the middle, 1 at the edge
+          tint.setRGB(1, 1, 1).multiplyScalar(1 - c.wear.mottle * m - c.wear.edge * edge * edge);
+          const drift = Math.max(0, noise3(x * 0.21 + 40, 0, z * 0.21) - 0.45) * 2.2 * edge * edge;
+          tint.lerp(leaf, Math.min(0.8, drift));
+          colors[v * 3] = tint.r;
+          colors[v * 3 + 1] = tint.g;
+          colors[v * 3 + 2] = tint.b;
           v++;
         }
       }
@@ -153,6 +191,7 @@ export class Road {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
@@ -170,9 +209,20 @@ export class Road {
     const pc = this.cfg.poles;
     const pole = new THREE.CylinderGeometry(pc.radius * 0.8, pc.radius, pc.height, 7).translate(0, pc.height / 2, 0);
     const bar = new THREE.BoxGeometry(pc.crossbar, 0.12, 0.12).translate(0, pc.height - 0.5, 0);
-    const geometry = mergeGeometries([pole.toNonIndexed(), bar.toNonIndexed()]);
-    pole.dispose();
-    bar.dispose();
+    // Session 19 (style pass 2): glass insulators on the crossbar, its two
+    // braces, and the climbing steps up the pole.
+    const extra = [];
+    for (const s of [-0.4, 0.4]) extra.push(new THREE.CylinderGeometry(0.035, 0.05, 0.12, 6).translate(pc.crossbar * s, pc.height - 0.38, 0));
+    for (const s of [-1, 1]) extra.push(new THREE.BoxGeometry(0.04, 0.7, 0.04).rotateZ(s * 0.75).translate(s * 0.22, pc.height - 0.75, 0.03));
+    for (let y = 2.2; y < pc.height - 1; y += 0.45) extra.push(new THREE.BoxGeometry(0.03, 0.03, 0.26).rotateY((y * 3) % 2 > 1 ? Math.PI / 2 : 0).translate(0, y, 0));
+    const pieces = [pole, bar, ...extra].map((g) => {
+      const n = g.toNonIndexed();
+      g.dispose();
+      n.deleteAttribute('uv');
+      return n;
+    });
+    const geometry = mergeGeometries(pieces);
+    pieces.forEach((g) => g.dispose());
     this.geometries.push(geometry);
     this.poleMaterial = new THREE.MeshLambertMaterial({ color: pc.color });
     this.poles = new THREE.InstancedMesh(geometry, this.poleMaterial, poles.length);

@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import { FamilyRenderer } from './FamilyRenderer.js';
 import { buildInterior } from './stationInterior.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { pillowGeometry } from './propKit.js';
 
 export class StationRenderer {
   constructor(stationConfig, rng, family) {
@@ -431,23 +432,61 @@ export class StationRenderer {
 
   // ---- barricades, spikes, floodlights ------------------------------------------------
 
+  // Session 19 (style pass 2; Session 18 put them outside the fence, an
+  // outer ring): one module per metre of a piece, scaled to its length:
+  // two courses of plump sandbags, a sheet of corrugated tin behind
+  // planks nailed across two posts (no strut: a piece's inside isn't
+  // always the same side of the module).
+  // Each instance a shade lighter or darker (instanceColor), so a ring of
+  // them isn't one repeated colour. Still one draw call.
   buildBarricades() {
     const k = this.look;
+    const b = k.barricade ?? {};
+    const bag = b.bag ?? k.sandbag;
+    const bagDark = b.bagDark ?? k.sandbag;
+    const pillow = (x, y, z, w, color) => {
+      const g = pillowGeometry(w, 0.2, 0.44).toNonIndexed();
+      g.deleteAttribute('uv');
+      g.translate(x, y + 0.1, z);
+      return paint(g, color);
+    };
+    const plank = (y, tilt, color) => {
+      const g = new THREE.BoxGeometry(1.02, 0.2, 0.06).rotateZ(tilt).translate(0.5, y, 0.1);
+      return paint(g, color);
+    };
     const parts = [
-      this.box(1, 0.4, 0.5, 0.5, 0, 0, k.sandbag),
-      this.box(1, 0.22, 0.08, 0.5, 0.55, 0.12, k.plank),
-      this.box(1, 0.22, 0.08, 0.5, 0.95, 0.12, k.plank),
-      this.box(1, 0.22, 0.08, 0.5, 1.35, 0.12, k.plank),
+      pillow(0.25, 0, 0, 0.49, bag),
+      pillow(0.75, 0, 0.02, 0.49, bagDark),
+      pillow(0.25, 0.19, 0.03, 0.46, bagDark),
+      pillow(0.74, 0.19, 0, 0.46, bag),
+      // The tin behind the planks and its ribs.
+      this.box(0.98, 1.05, 0.02, 0.5, 0.36, 0.17, b.sheet ?? k.woodDark),
+      plank(0.58, 0.03, b.plank ?? k.plank),
+      plank(0.96, -0.05, b.plankDark ?? k.plank),
+      plank(1.32, 0.02, b.plank ?? k.plank),
       this.box(0.1, 1.7, 0.1, 0.15, 0, 0.2, k.woodDark),
-      this.box(0.1, 1.7, 0.1, 0.85, 0, 0.2, k.woodDark),
+      this.box(0.1, 1.62, 0.1, 0.85, 0, 0.2, k.woodDark),
     ];
-    const geometry = this.keep(mergeGeometries(parts));
-    parts.forEach((g) => g.dispose());
+    for (let i = 0; i < 6; i++) parts.push(this.box(0.03, 1.0, 0.025, 0.1 + i * 0.16, 0.38, 0.155, b.sheetRib ?? k.woodDark));
+    const nonIndexed = parts.map((g) => {
+      const n = g.index ? g.toNonIndexed() : g;
+      if (n !== g) g.dispose();
+      if (n.getAttribute('uv')) n.deleteAttribute('uv');
+      return n;
+    });
+    const geometry = this.keep(mergeGeometries(nonIndexed));
+    nonIndexed.forEach((g) => g.dispose());
     this.barPieces = [];
     this.layout.segments.forEach((s, si) => {
       for (const p of s.barricade.pieces) this.barPieces.push({ si, piece: p });
     });
     this.barricades = new THREE.InstancedMesh(geometry, this.lambert, this.barPieces.length);
+    const shade = new THREE.Color();
+    for (let i = 0; i < this.barPieces.length; i++) {
+      const v = 1 - (b.shadeJitter ?? 0.12) * this.rng.range(0, 1);
+      this.barricades.setColorAt(i, shade.setRGB(v, v, v * 0.97));
+    }
+    if (this.barricades.instanceColor) this.barricades.instanceColor.needsUpdate = true;
     this.barricades.castShadow = true;
     this.group.add(this.barricades);
   }

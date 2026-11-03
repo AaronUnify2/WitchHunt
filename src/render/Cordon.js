@@ -149,7 +149,18 @@ export class Cordon {
     const mat = this.hold(new THREE.MeshLambertMaterial({ color: c.post }));
     const posts = this.layout.posts;
     this.posts = new THREE.InstancedMesh(geo, mat, posts.length);
-    posts.forEach((p, i) => this.posts.setMatrixAt(i, this.m.makeTranslation(p.x, this.ground.heightAt(p.x, p.z) - 0.1, p.z)));
+    // Session 19 (style pass 2): each post leans a little (more by the torn panels) and is its own shade of weathered steel.
+    const torn = this.layout.panels.filter((q) => q.kind === 'torn');
+    posts.forEach((p, i) => {
+      const nearTorn = torn.some((q) => Math.hypot(q.ax - p.x, q.az - p.z) < 0.5 || Math.hypot(q.bx - p.x, q.bz - p.z) < 0.5);
+      const lean = (jitter(i, 1) - 0.5) * (nearTorn ? c.postLean * 6 : c.postLean);
+      this.q.setFromAxisAngle(X, lean);
+      this.q2.setFromAxisAngle(Y, jitter(i, 2) * Math.PI * 2);
+      this.q2.multiply(this.q);
+      this.posts.setMatrixAt(i, this.m.compose(this.v.set(p.x, this.ground.heightAt(p.x, p.z) - 0.1, p.z), this.q2, this.s.set(1, 1, 1)));
+      this.posts.setColorAt(i, shade(i, 3, c.shadeJitter));
+    });
+    if (this.posts.instanceColor) this.posts.instanceColor.needsUpdate = true;
     this.posts.castShadow = true;
     this.posts.computeBoundingSphere();
     this.group.add(this.posts);
@@ -185,24 +196,48 @@ export class Cordon {
     const mat = this.hold(new THREE.MeshLambertMaterial({ color: c.lampColor }));
     const lamps = this.layout.lamps;
     this.lamps = new THREE.InstancedMesh(geo, mat, lamps.length);
-    lamps.forEach((p, i) => this.lamps.setMatrixAt(i, this.m.makeTranslation(p.x, this.ground.heightAt(p.x, p.z + 1.2), p.z + 1.2)));
+    lamps.forEach((p, i) => {
+      this.lamps.setMatrixAt(i, this.m.makeTranslation(p.x, this.ground.heightAt(p.x, p.z + 1.2), p.z + 1.2));
+      this.lamps.setColorAt(i, shade(i, 5, c.shadeJitter));
+    });
+    if (this.lamps.instanceColor) this.lamps.instanceColor.needsUpdate = true;
     this.lamps.castShadow = true;
     this.lamps.computeBoundingSphere();
     this.group.add(this.lamps);
   }
 
-  // Concrete (jersey) barriers: a wide foot, a narrower top.
+  // Concrete (jersey) barriers. Session 19 (style pass 2): the real
+  // profile (a wide foot, a sloped shoulder, a narrow top), chipped at one
+  // end, each set down a little crooked and its own shade of concrete.
   buildBarriers() {
     const c = this.cfg;
-    const foot = new THREE.BoxGeometry(c.barrierLength, 0.35, 0.6).translate(0, 0.175, 0);
-    const top = new THREE.BoxGeometry(c.barrierLength, 0.5, 0.25).translate(0, 0.6, 0);
-    const geo = this.hold(mergeGeometries([foot, top]));
-    foot.dispose();
-    top.dispose();
+    const shape = new THREE.Shape();
+    const prof = [[-0.3, 0], [0.3, 0], [0.3, 0.08], [0.16, 0.3], [0.1, 0.82], [-0.1, 0.82], [-0.16, 0.3], [-0.3, 0.08]];
+    shape.moveTo(prof[0][0], prof[0][1]);
+    for (const [x, y] of prof.slice(1)) shape.lineTo(x, y);
+    shape.closePath();
+    const body = new THREE.ExtrudeGeometry(shape, { depth: c.barrierLength, bevelEnabled: false }).rotateY(Math.PI / 2).translate(-c.barrierLength / 2, 0, 0);
+    // The lifting slots near its foot, as dark notches.
+    const slot = new THREE.BoxGeometry(0.22, 0.08, 0.62).translate(-c.barrierLength * 0.3, 0.12, 0);
+    const slot2 = slot.clone().translate(c.barrierLength * 0.6, 0, 0);
+    const parts = [body, slot, slot2].map((g) => {
+      const n = g.index ? g.toNonIndexed() : g;
+      if (n.getAttribute('uv')) n.deleteAttribute('uv');
+      return n;
+    });
+    const geo = this.hold(mergeGeometries(parts));
+    body.dispose();
+    slot.dispose();
+    slot2.dispose();
     const mat = this.hold(new THREE.MeshLambertMaterial({ color: c.barrierColor }));
     const list = this.layout.barriers;
     this.barriers = new THREE.InstancedMesh(geo, mat, list.length);
-    list.forEach((b, i) => this.barriers.setMatrixAt(i, this.m.makeTranslation(b.x, this.ground.heightAt(b.x, b.z) - 0.05, b.z)));
+    list.forEach((b, i) => {
+      this.q.setFromAxisAngle(Y, (jitter(i, 7) - 0.5) * 0.12);
+      this.barriers.setMatrixAt(i, this.m.compose(this.v.set(b.x, this.ground.heightAt(b.x, b.z) - 0.05, b.z), this.q, this.s.set(1, 1, 1)));
+      this.barriers.setColorAt(i, shade(i, 8, c.shadeJitter));
+    });
+    if (this.barriers.instanceColor) this.barriers.instanceColor.needsUpdate = true;
     this.barriers.castShadow = true;
     this.barriers.computeBoundingSphere();
     this.group.add(this.barriers);
@@ -284,4 +319,16 @@ export class Cordon {
     for (const x of this.keep) x.dispose();
     this.group.removeFromParent();
   }
+}
+
+// Session 19: a fixed little random per instance (0..1), and a shade near white from it (instanceColor).
+function jitter(i, salt) {
+  const v = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+const shadeColor = new THREE.Color();
+function shade(i, salt, amount = 0.15) {
+  const v = 1 - amount * jitter(i, salt);
+  return shadeColor.setRGB(v, v * (0.98 + 0.02 * jitter(i, salt + 1)), v * 0.96);
 }

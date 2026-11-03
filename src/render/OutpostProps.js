@@ -38,7 +38,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { frameToWorld } from '../world/clearingFrame.js';
 import { css, makeCanvas, toTexture } from './proceduralTextures.js';
 import { buildFigure } from './figureKit.js';
-import { bakeParts, weatherFor } from './propKit.js';
+import { bakeParts, pillowGeometry, weatherFor } from './propKit.js';
 import { alienSpec } from './alienModel.js';
 
 // A container: 6.06 long, 2.44 wide, 2.6 tall, on a deck this high.
@@ -202,22 +202,7 @@ export class OutpostProps {
   }
 
   static bagGeometry(w, h, d) {
-    const g = new THREE.BoxGeometry(w, h, d, 2, 1, 2);
-    const p = g.getAttribute('position');
-    for (let i = 0; i < p.count; i++) {
-      const ex = Math.abs(p.getX(i)) > w * 0.49;
-      const ez = Math.abs(p.getZ(i)) > d * 0.49;
-      if (ex && ez) {
-        // A corner: squashed down to the seam and in a little.
-        p.setY(i, p.getY(i) * 0.35);
-        p.setX(i, p.getX(i) * 0.92);
-        p.setZ(i, p.getZ(i) * 0.9);
-      } else if (ex || ez) {
-        p.setY(i, p.getY(i) * 0.75);
-      } else if (p.getY(i) > 0) p.setY(i, p.getY(i) * 1.12);
-    }
-    g.computeVertexNormals();
-    return g;
+    return pillowGeometry(w, h, d);
   }
 
   // A wall of bags along the frame's x from x0 to x1 at z: `rows` courses, two bags deep.

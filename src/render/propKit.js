@@ -163,6 +163,27 @@ export function segBox(w, h, d, hSeg = 1, wSeg = 1) {
   return n;
 }
 
+// A sandbag (or any pillow-shaped thing): a box cut 2 x 1 x 2, its corners
+// slumped down to the seam and pulled in, its top plumped; centred on the
+// origin, indexed.
+export function pillowGeometry(w, h, d) {
+  const g = new THREE.BoxGeometry(w, h, d, 2, 1, 2);
+  const p = g.getAttribute('position');
+  for (let i = 0; i < p.count; i++) {
+    const ex = Math.abs(p.getX(i)) > w * 0.49;
+    const ez = Math.abs(p.getZ(i)) > d * 0.49;
+    if (ex && ez) {
+      p.setY(i, p.getY(i) * 0.35);
+      p.setX(i, p.getX(i) * 0.92);
+      p.setZ(i, p.getZ(i) * 0.9);
+    } else if (ex || ez) {
+      p.setY(i, p.getY(i) * 0.75);
+    } else if (p.getY(i) > 0) p.setY(i, p.getY(i) * 1.12);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 // A sagging strip (a tarp, fabric, a wire run) from a to b (each a
 // THREE.Vector3), w wide across, drooping by sag at its middle, seg
 // segments. Lies flat (its width along `side`, a unit vector).

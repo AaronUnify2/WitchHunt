@@ -449,6 +449,8 @@ export const config = {
     // through the checkpoint). Intact panels stop everyone; the gaps and the
     // checkpoint's gate stop only the player. Shots go through the wire.
     cordon: {
+      postLean: 0.04, // Session 19: radians a post leans at most (six times that by a torn panel)
+      shadeJitter: 0.18, // Session 19: each post, lamp and barrier up to this much darker
       panelLength: 3, // metres between posts
       height: 3, // metres of chain-link
       thickness: 0.15, // metres (collider half-thickness)
@@ -504,6 +506,13 @@ export const config = {
       lineColor: 0xb9a35a, // the worn centre line (dashed yellow)
       edgeLineColor: 0xa9a598, // faded white edge lines
       lineWear: 0.45, // share of the paint worn away
+      // Session 19 (style pass 2): potholes per texture tile, their colours;
+      // the vertex colouring's wear: broad mottling (cells per metre, how
+      // much darker), the edges dirtier, leaf litter drifted onto them.
+      potholes: 2,
+      potholeColor: 0x1a1816,
+      potholeRim: 0x6a6660,
+      wear: { scale: 0.08, mottle: 0.22, edge: 0.3, leaf: 0x5a4a32 },
       // Telephone poles along the north side, with sagging wires between.
       poles: {
         spacing: 38, // metres along the road
@@ -2237,6 +2246,8 @@ export const config = {
       ammoCan: 0x20271a,
       sandbag: 0x5a5040,
       plank: 0x463424,
+      // Session 19 (style pass 2): the barricades' outer ring. Darker than the station's own (they glared).
+      barricade: { bag: 0x463e30, bagDark: 0x3a3428, sheet: 0x3a3026, sheetRib: 0x2e261e, plank: 0x3c2e20, plankDark: 0x30241a, shadeJitter: 0.14 },
       spike: 0x22211e, // the spikes glared pale under the torch at 0x3e3c38
       windowGlow: 0xffb060,
       monitorGlow: 0x7adcb0,
