@@ -15,20 +15,40 @@
 //  - Outside: the forecourt's concrete (it follows the ground), two pump
 //    islands under a canopy that sags at one corner, the HOME OF BIGFOOT
 //    sign on its pole by the road, a dumpster out back.
+// Session 19 (style pass 2):
+//  - the shell: lap siding on the side and back walls, a gutter and
+//    downpipes, a parapet cap, an air-conditioning unit and a vent on the
+//    roof; outside, an ice chest under the left window, a rack of oil
+//    cans by the door, a propane cage on the east wall, an air pump at
+//    the forecourt's edge, a stack of tyres and a pallet out back;
+//  - inside: a drop ceiling's grid with dead fluorescent tubes (one hangs
+//    by a chain), price strips on the shelves' edges, stains on the floor;
+//  - the forecourt mottled and oil-dark round the pumps, with expansion
+//    joints, cracks and weeds in them;
+//  - the pumps: a plinth, a brand band, a hose looping down to its
+//    holstered nozzle; blown, twisted black stumps, torn panels and a
+//    ragged scorch;
+//  - the canopy: its underside's panels, dead light boxes, the band peeled
+//    off and hanging at the sagging corner.
 // Played straight: faded, dusty, sad. Dull, dark colours (the torch-glare
-// rule). Static parts merged by colour; the textured boards (signs, the
+// rule). Session 19: the static parts are ONE vertex-coloured mesh per
+// group, weathered as they're baked (render/propKit.js: grime from the
+// ground or the floor up, mottling, rust on the metal): far fewer draw
+// calls than the old one per colour. The textured boards (signs, the
 // photos, the note) are a few meshes of their own.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { frameToWorld } from '../world/clearingFrame.js';
 import { makeCanvas, toTexture } from './proceduralTextures.js';
+import { bakeParts, noise3, weatherFor } from './propKit.js';
 
 export class GasStationProps {
-  // cfg: config.gasStation.look. data: data/gasStation.json.
-  constructor(cfg, data) {
+  // cfg: config.gasStation.look. data: data/gasStation.json. weather: config.props.weather (shared).
+  constructor(cfg, data, weather = null) {
     this.cfg = cfg;
     this.data = data;
+    this.weather = weather ? weatherFor(weather, cfg.weather) : null;
     this.keep = [];
     this.parts = new Map(); // colour -> [geometries in world space]
   }
@@ -50,23 +70,40 @@ export class GasStationProps {
     this.canopy();
     this.sign();
     this.dumpster();
+    this.dressing();
     this.flush(this.group);
     this.buildPumpUnits(); // Session 18 (Aaron): the pumps go up when shot: each island's its own mesh, whole and wrecked
     scene.add(this.group);
   }
 
-  // The parts so far, merged by colour into `into`.
+  // The parts so far, baked into ONE vertex-coloured mesh in `into`
+  // (Session 19: was one mesh per colour), weathered.
   flush(into) {
-    for (const [color, geos] of this.parts) {
-      const geo = this.hold(mergeGeometries(geos));
-      for (const g of geos) g.dispose();
-      const mesh = new THREE.Mesh(geo, this.hold(new THREE.MeshLambertMaterial({ color })));
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.matrixAutoUpdate = false;
-      into.add(mesh);
-    }
+    const geo = bakeParts(this.parts, { weather: this.weather, baseAt: (x, y, z) => this.baseAt(x, z), seed: 5 });
     this.parts.clear();
+    if (!geo) return;
+    if (!this.material) this.material = this.hold(new THREE.MeshLambertMaterial({ vertexColors: true }));
+    const mesh = new THREE.Mesh(this.hold(geo), this.material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.matrixAutoUpdate = false;
+    into.add(mesh);
+  }
+
+  // The world point (x, z) in the frame: { x, z }.
+  toFrame(wx, wz) {
+    const f = this.frame;
+    const dx = wx - f.x;
+    const dz = wz - f.z;
+    return { x: dx * f.rx + dz * f.rz, z: dx * f.fx + dz * f.fz };
+  }
+
+  // What a point stands on (grime runs up from it): the store's floor inside it, else the ground.
+  baseAt(wx, wz) {
+    const b = this.data.building;
+    const p = this.toFrame(wx, wz);
+    if (p.x > b.x0 - 0.05 && p.x < b.x1 + 0.05 && p.z > b.z0 - 0.05 && p.z < b.z1 + 0.05) return this.floorY;
+    return this.ground.heightAt(wx, wz);
   }
 
   // A group of its own from the parts added since the last flush.
@@ -101,7 +138,7 @@ export class GasStationProps {
   put(geo, color, x, z, y, yawDeg = 0, { rotX = 0, rotZ = 0 } = {}) {
     let g = geo.index ? geo.toNonIndexed() : geo;
     if (g !== geo) geo.dispose();
-    g.deleteAttribute('uv');
+    if (g.getAttribute('uv')) g.deleteAttribute('uv');
     const w = frameToWorld(this.frame, x, z);
     const m = new THREE.Matrix4().compose(new THREE.Vector3(w.x, y, w.z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rotX, this.rotY(yawDeg), rotZ, 'YXZ')), new THREE.Vector3(1, 1, 1));
     g.applyMatrix4(m);
@@ -110,9 +147,44 @@ export class GasStationProps {
   }
 
   // A box: w across (local x), h up from its base, d along (local z).
+  // Session 19: big ones are cut into a few segments, so the weathering
+  // (grime up from the ground, mottling) has vertices to vary across.
   box(w, h, d, x, z, y, color, yawDeg = 0, opts = {}) {
-    const g = new THREE.BoxGeometry(w, h, d).translate(opts.ox ?? 0, h / 2 + (opts.oy ?? 0), opts.oz ?? 0);
+    const seg = (v) => Math.min(8, Math.max(1, Math.ceil(v / 1.4)));
+    const g = new THREE.BoxGeometry(w, h, d, seg(w), Math.min(5, Math.max(1, Math.ceil(h / 0.7))), seg(d)).translate(opts.ox ?? 0, h / 2 + (opts.oy ?? 0), opts.oz ?? 0);
     this.put(g, color, x, z, y, yawDeg, opts);
+  }
+
+  // A cylinder standing at frame (x, z), base y (opts.rotX / rotZ tip it, ox/oy/oz shift it first).
+  cyl(r, h, x, z, y, color, seg = 8, opts = {}) {
+    const g = new THREE.CylinderGeometry(opts.top ?? r, r, h, seg).translate(opts.ox ?? 0, h / 2 + (opts.oy ?? 0), opts.oz ?? 0);
+    this.put(g, color, x, z, y, opts.yaw ?? 0, opts);
+  }
+
+  // A thin bar between frame points a and b (each [x, y, z], y absolute).
+  bar(a, b, r, color) {
+    const wa = frameToWorld(this.frame, a[0], a[2]);
+    const wb = frameToWorld(this.frame, b[0], b[2]);
+    const from = new THREE.Vector3(wa.x, a[1], wa.z);
+    const to = new THREE.Vector3(wb.x, b[1], wb.z);
+    const len = from.distanceTo(to);
+    const g = new THREE.BoxGeometry(r * 2, len, r * 2).translate(0, len / 2, 0);
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize());
+    g.applyMatrix4(new THREE.Matrix4().compose(from, q, new THREE.Vector3(1, 1, 1)));
+    const n = g.toNonIndexed();
+    g.dispose();
+    n.deleteAttribute('uv');
+    if (!this.parts.has(color)) this.parts.set(color, []);
+    this.parts.get(color).push(n);
+  }
+
+  // A geometry already in world space.
+  putWorld(g, color) {
+    const n = g.index ? g.toNonIndexed() : g;
+    if (n !== g) g.dispose();
+    if (n.getAttribute('uv')) n.deleteAttribute('uv');
+    if (!this.parts.has(color)) this.parts.set(color, []);
+    this.parts.get(color).push(n);
   }
 
   // A box spanning frame x0..x1 and z0..z1 (axis-aligned in the frame).
@@ -210,6 +282,33 @@ export class GasStationProps {
     this.span(b.x0 - 0.3, b.x1 + 0.3, b.z0 - 0.3, b.z1 + 0.9, fy + H, 0.25, k.roof);
     this.span(b.x0 - 0.3, b.x1 + 0.3, b.z1 + 0.85, b.z1 + 0.95, fy + H - 0.5, 1.15, k.fascia);
     this.board(fasciaTexture(this.cfg), (b.x1 - b.x0) * 0.7, 0.75, 0, b.z1 + 0.97, fy + H + 0.08, 0);
+    // Session 19: the parapet's cap; lap siding on the sides and back; a
+    // gutter along the back and two downpipes; the roof's AC unit and vent.
+    const cap = fy + H + 0.25;
+    this.span(b.x0 - 0.34, b.x1 + 0.34, b.z0 - 0.34, b.z0 - 0.22, cap, 0.12, k.trim);
+    this.span(b.x0 - 0.34, b.x0 - 0.22, b.z0 - 0.34, b.z1 + 0.9, cap, 0.12, k.trim);
+    this.span(b.x1 + 0.22, b.x1 + 0.34, b.z0 - 0.34, b.z1 + 0.9, cap, 0.12, k.trim);
+    const lap = this.cfg.siding;
+    for (let h = lap.from; h < H - 0.1; h += lap.step) {
+      const yy = fy + h;
+      this.span(b.x0 - t / 2 - lap.out, b.x0 - t / 2, b.z0, b.z1, yy, lap.height, k.wallLap);
+      this.span(b.x1 + t / 2, b.x1 + t / 2 + lap.out, b.z0, b.z1, yy, lap.height, k.wallLap);
+      if (h < 2.1) {
+        this.span(b.x0, bd0, b.z0 - t / 2 - lap.out, b.z0 - t / 2, yy, lap.height, k.wallLap);
+        this.span(bd1, b.x1, b.z0 - t / 2 - lap.out, b.z0 - t / 2, yy, lap.height, k.wallLap);
+      } else this.span(b.x0, b.x1, b.z0 - t / 2 - lap.out, b.z0 - t / 2, yy, lap.height, k.wallLap);
+    }
+    this.span(b.x0 - 0.3, b.x1 + 0.3, b.z0 - 0.5, b.z0 - 0.32, fy + H - 0.05, 0.16, k.gutter);
+    for (const gx of [b.x0 - 0.1, b.x1 + 0.1]) {
+      this.box(0.09, fy + H - low, 0.09, gx, b.z0 - 0.42, low, k.gutter);
+      this.box(0.3, 0.09, 0.09, gx, b.z0 - 0.42, this.groundAt(gx, b.z0 - 0.42) + 0.05, k.gutter, 0, { oz: -0.1 });
+    }
+    const ac = this.cfg.roofUnit;
+    this.box(1.3, 0.75, 1.0, ac.x, ac.z, fy + H + 0.25, k.acUnit, 8);
+    this.box(1.1, 0.5, 0.02, ac.x, ac.z, fy + H + 0.35, k.acGrille, 8, { oz: 0.51 });
+    this.box(0.4, 0.4, 1.6, ac.x, ac.z, fy + H + 0.25, k.acUnit, 8, { oz: -1.2, ox: 0.3 });
+    this.cyl(0.08, 0.9, ac.x - 2.5, ac.z + 1.5, fy + H + 0.25, k.gutter, 8);
+    this.cyl(0.14, 0.08, ac.x - 2.5, ac.z + 1.5, fy + H + 1.15, k.gutter, 8);
     // The back rooms: the partition with its two doorways, and the wall between the rooms.
     const gaps = [b.officeDoor, b.stockDoor].map((g) => [g.x - g.width / 2, g.x + g.width / 2]).sort((p, q) => p[0] - q[0]);
     x = b.x0;
@@ -272,6 +371,23 @@ export class GasStationProps {
     const pb = s.photoBoard;
     this.board(photoBoardTexture(this.cfg), pb.width, 1.3, pb.x, pb.z, fy + 1.9, -90);
     for (const cst of s.casts) this.box(0.24, 0.05, 0.4, cst.x, cst.z, fy + 1.62, k.plaster);
+    // Session 19: the drop ceiling's grid under the roof, its dead tubes (one hanging by a chain).
+    const b = this.data.building;
+    const ceil = fy + b.height - 0.03;
+    for (let gx = b.x0 + 1.2; gx < b.x1 - 0.2; gx += 1.2) this.span(gx - 0.02, gx + 0.02, b.partitionZ, b.z1, ceil, 0.03, k.ceilingGrid);
+    for (let gz = b.partitionZ + 0.6; gz < b.z1 - 0.2; gz += 1.2) this.span(b.x0, b.x1, gz - 0.02, gz + 0.02, ceil, 0.03, k.ceilingGrid);
+    for (const [fx, fz, hang] of this.cfg.fixtures) {
+      if (hang) {
+        this.bar([fx - 0.5, ceil, fz], [fx - 0.45, ceil - 0.55, fz], 0.008, k.metal);
+        this.box(1.2, 0.08, 0.28, fx, fz, ceil - 0.75, k.fixture, 0, { rotZ: 0.55 });
+      } else this.box(1.2, 0.07, 0.3, fx, fz, ceil - 0.07, k.fixture);
+    }
+    // Stains on the lino.
+    for (let i = 0; i < 6; i++) {
+      const x = b.x0 + 1 + this.rand() * (b.x1 - b.x0 - 2);
+      const z = b.partitionZ + 0.8 + this.rand() * (b.z1 - b.partitionZ - 1.6);
+      this.box(0.5 + this.rand() * 0.9, 0.005, 0.4 + this.rand() * 0.7, x, z, fy + 0.02, k.stain, this.rand() * 180);
+    }
     // Litter: a few fallen goods on the floor.
     for (let i = 0; i < 14; i++) {
       const x = -1 + this.rand() * 8;
@@ -295,6 +411,8 @@ export class GasStationProps {
     this.box(0.08, 1.6, L, sh.x, sh.z, y, k.shelf, yawDeg, opts);
     this.box(0.6, 0.12, L, sh.x, sh.z, y, k.shelfDark, yawDeg, opts);
     for (const h of [0.55, 1.05, 1.55]) this.box(0.6, 0.03, L, sh.x, sh.z, y, k.shelf, yawDeg, { ...opts, oy: h });
+    // Session 19: the price strips along the shelves' edges.
+    for (const h of [0.12, 0.55, 1.05]) for (const side of [-0.31, 0.31]) this.box(0.02, 0.045, L, sh.x, sh.z, y, k.priceStrip, yawDeg, { ...opts, ox: side, oy: h - 0.03 });
     if (sh.fallen) {
       // Its goods spilled across the floor beside it.
       for (let i = 0; i < 16; i++) this.box(0.18, 0.1, 0.12, sh.x + (this.rand() - 0.5) * L, sh.z + 0.5 + this.rand() * 1.2, fy + 0.02, this.goodsColor(), this.rand() * 360);
@@ -380,15 +498,21 @@ export class GasStationProps {
 
   // ---- outside -------------------------------------------------------------------------------------------
 
-  // The forecourt's concrete, a grid that follows the ground.
+  // The forecourt's concrete, a grid that follows the ground. Session 19:
+  // mottled and oil-dark round the pumps (in its vertices), expansion
+  // joints across it, cracks with weeds in them.
   forecourt() {
     const f = this.data.forecourt;
     const k = this.cfg.colors;
-    const nx = 26;
-    const nz = 14;
+    const fc = this.cfg.forecourt;
+    const nx = fc.cellsX;
+    const nz = fc.cellsZ;
     const g = new THREE.PlaneGeometry(1, 1, nx, nz);
     const pos = g.attributes.position;
-    const v = new THREE.Vector3();
+    const cols = new Float32Array(pos.count * 3);
+    const base = new THREE.Color(k.concrete);
+    const oil = new THREE.Color(k.stain);
+    const c = new THREE.Color();
     for (let i = 0; i < pos.count; i++) {
       // The plane's x, y in -0.5..0.5: across and along the forecourt.
       const u = pos.getX(i) + 0.5;
@@ -396,23 +520,87 @@ export class GasStationProps {
       const fx = f.x0 + (f.x1 - f.x0) * u;
       const fz = f.z0 + (f.z1 - f.z0) * w;
       const at = frameToWorld(this.frame, fx, fz);
-      v.set(at.x, this.ground.heightAt(at.x, at.z) + this.cfg.forecourtLift, at.z);
-      pos.setXYZ(i, v.x, v.y, v.z);
+      pos.setXYZ(i, at.x, this.ground.heightAt(at.x, at.z) + this.cfg.forecourtLift, at.z);
+      // Oil soaked in round the islands; mottling everywhere; darker at the edges where the dirt blows on.
+      let near = 0;
+      for (const p of this.data.pumps) {
+        const d = Math.hypot((fx - p.x) / 3.2, (fz - p.z) / 1.8);
+        near = Math.max(near, 1 - Math.min(1, d));
+      }
+      const m = noise3(fx * 0.7, 0, fz * 0.7);
+      const edge = Math.min(u, 1 - u, w, 1 - w) * Math.min(f.x1 - f.x0, f.z1 - f.z0);
+      c.copy(base).lerp(oil, Math.min(1, near * fc.oil + Math.max(0, m - 0.6) * 0.8));
+      c.multiplyScalar((1 + (m - 0.5) * fc.mottle) * (edge < 1.2 ? 0.7 + 0.25 * edge : 1));
+      cols[i * 3] = c.r;
+      cols[i * 3 + 1] = c.g;
+      cols[i * 3 + 2] = c.b;
     }
+    g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
     g.computeVertexNormals();
     // Facing up whichever way the frame turned it.
     if (g.attributes.normal.getY(0) < 0) {
       g.index.array.reverse();
       g.computeVertexNormals();
     }
-    const mesh = new THREE.Mesh(this.hold(g), this.hold(new THREE.MeshLambertMaterial({ color: k.concrete, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })));
+    const mesh = new THREE.Mesh(this.hold(g), this.hold(new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })));
     mesh.receiveShadow = true;
     this.group.add(mesh);
-    // Oil stains and cracks: a few dark flat patches.
+    const lift = this.cfg.forecourtLift + 0.012;
+    // A strip on the concrete from a to b (frame x, z), in short runs so it follows the ground.
+    const strip = (ax, az, bx, bz, width, color) => {
+      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 1.2));
+      for (let j = 0; j < n; j++) {
+        const x0 = ax + ((bx - ax) * j) / n;
+        const z0 = az + ((bz - az) * j) / n;
+        const x1 = ax + ((bx - ax) * (j + 1)) / n;
+        const z1 = az + ((bz - az) * (j + 1)) / n;
+        const yaw = (Math.atan2(x1 - x0, z1 - z0) * 180) / Math.PI;
+        const len = Math.hypot(x1 - x0, z1 - z0);
+        const xm = (x0 + x1) / 2;
+        const zm = (z0 + z1) / 2;
+        this.box(width, 0.006, len + 0.02, xm, zm, this.groundAt(xm, zm) + lift, color, -yaw);
+      }
+    };
+    // Expansion joints.
+    for (let x = f.x0 + fc.joint; x < f.x1 - 0.5; x += fc.joint) strip(x, f.z0 + 0.3, x, f.z1 - 0.3, 0.035, k.joint);
+    for (let z = f.z0 + fc.joint; z < f.z1 - 0.5; z += fc.joint) strip(f.x0 + 0.3, z, f.x1 - 0.3, z, 0.035, k.joint);
+    // Cracks: short wandering runs, weeds coming up along them.
+    for (let i = 0; i < fc.cracks; i++) {
+      let x = f.x0 + 2 + this.rand() * (f.x1 - f.x0 - 4);
+      let z = f.z0 + 2 + this.rand() * (f.z1 - f.z0 - 4);
+      let a = this.rand() * Math.PI * 2;
+      for (let j = 0; j < 5; j++) {
+        a += (this.rand() - 0.5) * 1.4;
+        const nx2 = x + Math.cos(a) * (0.5 + this.rand() * 0.8);
+        const nz2 = z + Math.sin(a) * (0.5 + this.rand() * 0.8);
+        strip(x, z, nx2, nz2, 0.025, k.crack);
+        if (this.rand() < 0.45) this.weed(nx2, nz2, this.groundAt(nx2, nz2) + lift);
+        x = nx2;
+        z = nz2;
+      }
+    }
+    // Weeds along the forecourt's edges.
+    for (let i = 0; i < fc.edgeWeeds; i++) {
+      const t = this.rand();
+      const side = Math.floor(this.rand() * 3);
+      const x = side === 0 ? f.x0 + 0.3 : side === 1 ? f.x1 - 0.3 : f.x0 + t * (f.x1 - f.x0);
+      const z = side === 2 ? f.z1 - 0.3 : f.z0 + t * (f.z1 - f.z0);
+      this.weed(x, z, this.groundAt(x, z) + lift);
+    }
+    // Oil stains: a few dark flat patches.
     for (let i = 0; i < 10; i++) {
       const x = f.x0 + 2 + this.rand() * (f.x1 - f.x0 - 4);
       const z = f.z0 + 3 + this.rand() * (f.z1 - f.z0 - 4);
       this.box(0.6 + this.rand() * 1.2, 0.01, 0.4 + this.rand() * 0.8, x, z, this.groundAt(x, z) + this.cfg.forecourtLift + 0.01, k.stain, this.rand() * 180);
+    }
+  }
+
+  // A tuft of weeds: three thin dark blades.
+  weed(x, z, y) {
+    const k = this.cfg.colors;
+    for (let i = 0; i < 3; i++) {
+      const h = 0.12 + this.rand() * 0.18;
+      this.put(new THREE.ConeGeometry(0.03, h, 3).translate(0, h / 2, 0), k.weed, x + (this.rand() - 0.5) * 0.12, z + (this.rand() - 0.5) * 0.12, y, this.rand() * 360, { rotX: (this.rand() - 0.5) * 0.5, rotZ: (this.rand() - 0.5) * 0.5 });
     }
   }
 
@@ -429,6 +617,8 @@ export class GasStationProps {
   }
 
   // Each island's two pumps, whole (pumpsN) and wrecked (pumpsNWreck: blackened stumps, a scorch on the slab).
+  // Session 19: a plinth, a brand band, the hose looping down to its
+  // holstered nozzle; the wreck twisted, torn panels lying about, a ragged scorch.
   buildPumpUnits() {
     const k = this.cfg.colors;
     this.pumpGroups = [];
@@ -436,23 +626,51 @@ export class GasStationProps {
       const y = this.groundAt(p.x, p.z) + this.cfg.forecourtLift;
       for (const side of [-0.95, 0.95]) {
         const x = p.x + side;
+        this.box(0.74, 0.1, 0.52, x, p.z, y + 0.17, k.plinth);
         this.box(0.62, 1.55, 0.42, x, p.z, y + 0.21, k.pump);
         this.box(0.64, 0.32, 0.44, x, p.z, y + 1.76, k.pumpTop);
-        // The faded price window and the nozzle on its hook, both sides.
+        this.box(0.635, 0.1, 0.43, x, p.z, y + 1.5, k.canopyBand);
+        // The faded price window and the nozzle in its holster, both faces.
         for (const face of [-1, 1]) {
-          this.box(0.42, 0.24, 0.02, x, p.z, y + 1.25, k.screen, 0, { oz: face * 0.22 });
-          this.box(0.08, 0.22, 0.1, x, p.z, y + 0.85, k.metal, 0, { ox: 0.22, oz: face * 0.24 });
+          this.box(0.42, 0.24, 0.02, x, p.z, y + 1.2, k.screen, 0, { oz: face * 0.22 });
+          this.box(0.3, 0.05, 0.02, x, p.z, y + 1.02, k.screen, 0, { oz: face * 0.22 });
+          this.box(0.1, 0.16, 0.08, x, p.z, y + 0.82, k.metal, 0, { ox: 0.26, oz: face * 0.18 });
+          this.box(0.04, 0.04, 0.2, x, p.z, y + 0.95, k.metal, 0, { ox: 0.28, oz: face * 0.24, rotX: face * 0.6 });
+          // The hose: out of the pump's side high up, slack down in a loop, up into the nozzle.
+          const pts = [
+            new THREE.Vector3(0.31, 1.45, face * 0.08),
+            new THREE.Vector3(0.42, 0.9, face * 0.14),
+            new THREE.Vector3(0.4, 0.45, face * 0.2),
+            new THREE.Vector3(0.3, 0.7, face * 0.22),
+            new THREE.Vector3(0.27, 0.86, face * 0.2),
+          ];
+          this.put(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.022, 5, false), k.hose, x, p.z, y);
         }
-        // The hose, slack to the ground.
-        this.box(0.04, 0.04, 0.9, x, p.z, y + 0.4, k.hose, 0, { ox: 0.24, oz: 0.5, rotX: 0.7 });
       }
       const whole = this.ownGroup(`pumps${i}`);
       for (const side of [-0.95, 0.95]) {
         const x = p.x + side;
-        this.box(0.66, 0.5, 0.46, x, p.z, y + 0.21, k.scorch, side * 8, { rotZ: side * 0.12 });
-        this.box(0.3, 0.06, 0.5, x + side * 0.4, p.z + 0.6, y + 0.2, k.scorch, 40);
+        this.box(0.7, 0.1, 0.5, x, p.z, y + 0.17, k.scorch);
+        this.box(0.6, 0.38, 0.42, x, p.z, y + 0.21, k.scorch, side * 8, { rotZ: side * 0.14 });
+        // Torn sheet standing up from the stump, curled.
+        for (let j = 0; j < 3; j++) {
+          const h = 0.3 + this.rand() * 0.45;
+          this.box(0.24 + this.rand() * 0.2, h, 0.03, x + (this.rand() - 0.5) * 0.4, p.z + (j - 1) * 0.18, y + 0.45, k.scorch, this.rand() * 90, { rotX: (this.rand() - 0.5) * 0.9, rotZ: (this.rand() - 0.5) * 0.9 });
+        }
+        // A panel blown off and lying on the slab, a burnt hose stub.
+        this.box(0.55, 0.03, 0.4, x + side * 0.9, p.z + 0.8, y + 0.2, k.debris, 30 + side * 40, { rotX: 0.1 });
+        this.box(0.04, 0.04, 0.5, x, p.z, y + 0.5, k.hose, side * 50, { rotX: 1.1, oz: 0.2 });
+        for (let j = 0; j < 4; j++) this.box(0.08 + this.rand() * 0.12, 0.03, 0.06 + this.rand() * 0.1, x + (this.rand() - 0.5) * 3, p.z + (this.rand() - 0.5) * 3, y + 0.03, k.debris, this.rand() * 180);
       }
-      this.box(this.cfg.island.length + 2.4, 0.01, this.cfg.island.depth + 2.6, p.x, p.z, y + 0.012, k.scorch, 7);
+      // The scorch: a ragged black patch on the slab.
+      const sc = new THREE.CircleGeometry(1, 20);
+      const sp = sc.getAttribute('position');
+      for (let j = 1; j < sp.count; j++) {
+        const kk = 0.7 + 0.45 * noise3(sp.getX(j) * 2 + i * 9, sp.getY(j) * 2, 0);
+        sp.setXY(j, sp.getX(j) * kk, sp.getY(j) * kk);
+      }
+      sc.rotateX(-Math.PI / 2).scale((this.cfg.island.length + 2.6) / 2, 1, (this.cfg.island.depth + 2.8) / 2);
+      this.put(sc, k.scorch, p.x, p.z, y + 0.012, 7);
       const wreck = this.ownGroup(`pumps${i}Wreck`);
       wreck.visible = false;
       this.pumpGroups.push({ whole, wreck });
@@ -486,11 +704,19 @@ export class GasStationProps {
     // The fascia band round it, faded red.
     this.box(w + 0.1, 0.5, 0.08, cx, cz, top - 0.45, k.canopyBand, 0, { rotX: tipX, rotZ: tipZ, oz: d / 2 + 0.04, oy: 0 });
     this.box(w + 0.1, 0.5, 0.08, cx, cz, top - 0.45, k.canopyBand, 0, { rotX: tipX, rotZ: tipZ, oz: -d / 2 - 0.04, oy: 0 });
+    // Session 19: the underside's panel seams and its dead light boxes.
+    const tilt = { rotX: tipX, rotZ: tipZ };
+    for (let oz = -d / 2 + 0.9; oz < d / 2 - 0.3; oz += 0.9) this.box(w - 0.1, 0.03, 0.05, cx, cz, top, k.canopyUnder, 0, { ...tilt, oy: -0.23, oz });
+    for (const [ox, oz] of this.cfg.canopyLights) this.box(1.1, 0.09, 0.45, cx, cz, top, k.lightBox, 0, { ...tilt, ox, oz, oy: -0.29 });
+    // The band peeled away at the low corner, hanging.
+    const low = this.cfg.peel;
+    this.box(1.5, 0.48, 0.05, c.x0 + low.x, c.z1 + 0.1, top - c.sag - 0.95, k.canopyBand, low.yaw, { rotZ: low.tilt });
     for (const p of this.data.pumps) {
       for (const side of [-1, 1]) {
         const x = p.x + side * (isl.length / 2 + 0.25);
         const y = this.groundAt(x, p.z) + this.cfg.forecourtLift;
         this.box(0.25, top - y - 0.25, 0.25, x, p.z, y, k.post);
+        this.box(0.34, 0.3, 0.34, x, p.z, y, k.kerb); // its footing
       }
     }
   }
@@ -520,6 +746,79 @@ export class GasStationProps {
     // A couple of split rubbish bags beside it.
     this.box(0.6, 0.45, 0.5, d.x + 1.4, d.z + 0.2, y, k.bag, 20);
     this.box(0.5, 0.4, 0.5, d.x + 1.2, d.z + 0.9, y, k.bag, -30);
+  }
+
+  // Session 19: what stands about the store (data: gasStation.json dressing).
+  dressing() {
+    const dr = this.data.dressing;
+    if (!dr) return;
+    const k = this.cfg.colors;
+    const fy = this.floorY;
+    if (dr.iceChest) {
+      const a = dr.iceChest;
+      const y = this.groundAt(a.x, a.z);
+      this.box(1.2, 0.95, 0.7, a.x, a.z, y, k.iceChest, a.yaw ?? 0);
+      this.box(1.24, 0.08, 0.74, a.x, a.z, y + 0.95, k.iceLid, a.yaw ?? 0);
+      this.box(0.9, 0.22, 0.02, a.x, a.z, y + 0.55, k.iceLabel, a.yaw ?? 0, { oz: 0.36 });
+      this.box(0.3, 0.05, 0.05, a.x, a.z, y + 0.85, k.metal, a.yaw ?? 0, { oz: 0.38 });
+    }
+    if (dr.oilRack) {
+      const a = dr.oilRack;
+      const y = Math.max(this.groundAt(a.x, a.z), fy - 0.3);
+      for (const sx of [-0.33, 0.33]) this.box(0.03, 1.1, 0.03, a.x, a.z, y, k.metal, a.yaw ?? 0, { ox: sx });
+      for (const h of [0.15, 0.55, 0.95]) {
+        this.box(0.7, 0.03, 0.32, a.x, a.z, y + h, k.metal, a.yaw ?? 0);
+        for (let i = 0; i < 4; i++) {
+          if (this.rand() < 0.3) continue;
+          const can = k.oilCans[Math.floor(this.rand() * k.oilCans.length)];
+          this.box(0.12, 0.22, 0.08, a.x, a.z, y + h + 0.03, can, a.yaw ?? 0, { ox: -0.24 + i * 0.16 });
+        }
+      }
+    }
+    if (dr.propane) {
+      const a = dr.propane;
+      const y = this.groundAt(a.x, a.z);
+      const cw = 0.8;
+      const cd = 1.3;
+      const ch = 1.45;
+      // Four tanks inside a mesh cage.
+      for (let i = 0; i < 4; i++) this.cyl(0.15, 0.6, a.x + (i % 2 ? 0.18 : -0.18), a.z + (i < 2 ? -0.3 : 0.3), y + 0.05 + (i === 3 ? 0.62 : 0), k.propane, 10);
+      for (const sx of [-cw / 2, cw / 2]) {
+        for (const sz of [-cd / 2, cd / 2]) this.box(0.04, ch, 0.04, a.x + sx, a.z + sz, y, k.propaneCage);
+      }
+      for (const h of [0.05, ch / 2, ch - 0.04]) {
+        this.box(cw, 0.03, 0.03, a.x, a.z - cd / 2, y + h, k.propaneCage);
+        this.box(cw, 0.03, 0.03, a.x, a.z + cd / 2, y + h, k.propaneCage);
+        this.box(0.03, 0.03, cd, a.x - cw / 2, a.z, y + h, k.propaneCage);
+        this.box(0.03, 0.03, cd, a.x + cw / 2, a.z, y + h, k.propaneCage);
+      }
+      for (let i = 1; i < 6; i++) this.box(0.015, ch, 0.015, a.x - cw / 2, a.z - cd / 2 + (i * cd) / 6, y, k.propaneCage);
+      this.box(cw + 0.06, 0.04, cd + 0.06, a.x, a.z, y + ch, k.propaneCage);
+    }
+    if (dr.airPump) {
+      const a = dr.airPump;
+      const y = this.groundAt(a.x, a.z);
+      this.box(0.36, 0.1, 0.36, a.x, a.z, y, k.kerb);
+      this.box(0.28, 1.15, 0.22, a.x, a.z, y + 0.1, k.airPump, a.yaw ?? 0);
+      this.box(0.24, 0.16, 0.02, a.x, a.z, y + 0.95, k.screen, a.yaw ?? 0, { oz: 0.12 });
+      this.put(new THREE.TorusGeometry(0.16, 0.018, 4, 10).translate(0.18, 0.55, 0), k.hose, a.x, a.z, y, (a.yaw ?? 0) + 90);
+    }
+    if (dr.tyres) {
+      const a = dr.tyres;
+      const y = this.groundAt(a.x, a.z);
+      for (let i = 0; i < a.count; i++) {
+        const g = new THREE.TorusGeometry(0.32, 0.12, 5, 10).rotateX(Math.PI / 2);
+        this.put(g, k.tyre, a.x + (this.rand() - 0.5) * 0.08, a.z + (this.rand() - 0.5) * 0.08, y + 0.12 + i * 0.23, this.rand() * 90, { rotX: (this.rand() - 0.5) * 0.08 });
+      }
+      const g = new THREE.TorusGeometry(0.32, 0.12, 5, 10);
+      this.put(g, k.tyre, a.x + 0.8, a.z + 0.3, y + 0.42, 30, { rotZ: 0.25 }); // one leaning on the stack
+    }
+    if (dr.pallet) {
+      const a = dr.pallet;
+      const y = this.groundAt(a.x, a.z);
+      for (let i = 0; i < 5; i++) this.box(1.1, 0.1, 0.02, a.x, a.z, y + 0.08 + i * 0.25, k.pallet, a.yaw ?? 0, { rotX: -0.18, oz: 0.02 + i * 0.045 });
+      for (const sx of [-0.45, 0, 0.45]) this.box(0.08, 1.2, 0.09, a.x, a.z, y, k.pallet, a.yaw ?? 0, { ox: sx, rotX: -0.18, oz: 0.1 });
+    }
   }
 
   update() {}

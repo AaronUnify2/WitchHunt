@@ -459,5 +459,37 @@
     "x0": 0.3,
     "x1": 3.5,
     "near": 3
+  },
+  "dressing": {
+    "_note": "Session 19 (style pass 2): what stands about the store, in the gas station's frame, with colliders (GasStation.buildColliders). iceChest: under the left window; oilRack: on the pier between that window and the door; propane: a cage of tanks against the east wall; airPump: at the forecourt's west edge; tyres: a stack out back by the dumpster (count high); pallet: leaning on the back wall.",
+    "iceChest": {
+      "x": -6.2,
+      "z": -2.5,
+      "yaw": 0
+    },
+    "oilRack": {
+      "x": -0.1,
+      "z": -2.6,
+      "yaw": 0
+    },
+    "propane": {
+      "x": 8.7,
+      "z": -6.0
+    },
+    "airPump": {
+      "x": -12.0,
+      "z": 6.2,
+      "yaw": 90
+    },
+    "tyres": {
+      "x": -6.4,
+      "z": -16.9,
+      "count": 4
+    },
+    "pallet": {
+      "x": 1.8,
+      "z": -15.4,
+      "yaw": 180
+    }
   }
 }

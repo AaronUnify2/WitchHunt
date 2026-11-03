@@ -97,7 +97,7 @@ export class Campsite {
     // shot round the cabin (no anchor given): it's named for any cutscene now.
     this.cutscenes?.namedAnchors?.set('campsite', () => this.frameAnchor());
     this.car = this.findCar();
-    this.props = new CampsiteProps(this.cc.look, this.data);
+    this.props = new CampsiteProps(this.cc.look, this.data, this.cfg.props?.weather);
     this.props.init(scene, this.frame, this.ground);
     this.buildColliders(ctx.colliders);
     // Its loot is rolled from the cluster's seed (the same every run), like its cars.

@@ -226,7 +226,83 @@
         "angle": 80,
         "out": 0.7
       }
-    ]
+    ],
+    "dressing": {
+      "_note": "Session 19 (style pass 2): set dressing with no colliders (small enough to walk through or step over), in the campsite's frame. scorch: a blackened ring round the fire. grate and pot: on the fire ring. woodpile, stump (an axe in it), table (a camp stove on it), clothesline (two posts, a towel and a shirt), sleepingBag (spilling out of the torn tent's door), litter (tins, bottles, a paper plate).",
+      "scorch": 1.15,
+      "woodpile": {
+        "x": -3.6,
+        "z": 6.2,
+        "yaw": 20
+      },
+      "stump": {
+        "x": -4.8,
+        "z": 4.8,
+        "yaw": 60
+      },
+      "table": {
+        "x": 2.9,
+        "z": 3.8,
+        "yaw": -30
+      },
+      "clothesline": {
+        "a": {
+          "x": -9.2,
+          "z": 0.6
+        },
+        "b": {
+          "x": -6.6,
+          "z": -2.6
+        }
+      },
+      "sleepingBag": {
+        "x": 3.4,
+        "z": 7.6,
+        "yaw": 200
+      },
+      "litter": [
+        {
+          "x": 1.2,
+          "z": -0.6,
+          "kind": "tin"
+        },
+        {
+          "x": -0.9,
+          "z": 2.8,
+          "kind": "bottle"
+        },
+        {
+          "x": 1.6,
+          "z": 2.4,
+          "kind": "tin"
+        },
+        {
+          "x": -2.1,
+          "z": 0.9,
+          "kind": "plate"
+        },
+        {
+          "x": 3.6,
+          "z": -3.1,
+          "kind": "bottle"
+        },
+        {
+          "x": -5.2,
+          "z": -1.4,
+          "kind": "tin"
+        },
+        {
+          "x": 5.8,
+          "z": 8.4,
+          "kind": "tin"
+        },
+        {
+          "x": 0.3,
+          "z": 4.6,
+          "kind": "plate"
+        }
+      ]
+    }
   },
   "smoke": {
     "x": 0,

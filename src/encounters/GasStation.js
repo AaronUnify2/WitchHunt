@@ -87,7 +87,7 @@ export class GasStation {
     if (!this.frame) return;
     this.enemies = ctx.combat?.enemies;
     this.floorY = this.levelFloor();
-    this.props = new GasStationProps(this.gc.look, this.data);
+    this.props = new GasStationProps(this.gc.look, this.data, this.cfg.props?.weather);
     this.props.init(scene, this.frame, this.ground, this.floorY);
     if (ctx.colliders) this.buildColliders(ctx.colliders);
     const at = (s) => ({ ...s, ...frameToWorld(this.frame, s.x, s.z) });
@@ -261,6 +261,19 @@ export class GasStation {
     const dw = frameToWorld(this.frame, dp.x, dp.z);
     const dy = this.ground.heightAt(dw.x, dw.z);
     this.block(grid, dp.x, dp.z, 1.9, 1.2, dy - 1, dy + 1.3, true, dp.yaw);
+    // Session 19 (style pass 2): the dressing round the store.
+    const dr = this.data.dressing ?? {};
+    const solid = (a, w, d, h, stops) => {
+      if (!a) return;
+      const aw = frameToWorld(this.frame, a.x, a.z);
+      const ay = this.ground.heightAt(aw.x, aw.z);
+      this.block(grid, a.x, a.z, w, d, ay - 1, ay + h, stops, a.yaw ?? 0);
+    };
+    solid(dr.iceChest, 1.2, 0.7, 1.05, true);
+    solid(dr.oilRack, 0.7, 0.35, 1.1, false);
+    solid(dr.propane, 0.85, 1.35, 1.5, true);
+    solid(dr.airPump, 0.35, 0.35, 1.25, false);
+    solid(dr.tyres, 0.8, 0.8, 0.12 + (dr.tyres?.count ?? 0) * 0.23, true);
   }
 
   // ---- where Tom is ----------------------------------------------------------------------------------

@@ -2596,8 +2596,45 @@ export const config = {
       forecourtLift: 0.04, // metres above the ground
       island: { length: 3.8, depth: 1.1 }, // a pump island's kerb
       sign: { width: 3.6, height: 2.25 }, // the HOME OF BIGFOOT board
+      // Session 19 (style pass 2): lap siding (rows every `step` m from
+      // `from` up, `out` proud of the wall); the roof's AC unit (frame x, z);
+      // the shop's dead fluorescent fixtures ([x, z, hanging]); the
+      // forecourt's grid (cells), oil darkening round the pumps, mottling,
+      // expansion joints every `joint` m, cracks, weeds; the canopy's light
+      // boxes ([x, z] from its middle); the band peeled at its low corner.
+      siding: { from: 0.3, step: 0.34, out: 0.025, height: 0.035 },
+      roofUnit: { x: 3.5, z: -11.5 },
+      fixtures: [[-4.5, -5.6, false], [-4.5, -8.6, false], [1.5, -5.6, false], [1.5, -8.6, true], [5.6, -7.2, false]],
+      forecourt: { cellsX: 52, cellsZ: 28, oil: 0.55, mottle: 0.3, joint: 4.2, cracks: 9, edgeWeeds: 26 },
+      canopyLights: [[-6, -1.2], [-6, 1.2], [-1.2, -1.2], [-1.2, 1.2], [3.6, -1.2], [3.6, 1.2], [7.2, 0]],
+      peel: { x: 1.2, yaw: 14, tilt: 0.45 },
+      weather: { rust: [0x232426, 0x3a3a2a, 0x2a3a2c, 0x3a3a38, 0x2e2a22, 0x2c2a26, 0x3a3c3a, 0x34342c, 0x2e3430] },
       // Dull and dark: pale props glare under the torch (Aaron).
       colors: {
+        // Session 19 (style pass 2).
+        wallLap: 0x4c463c,
+        gutter: 0x2c2a26,
+        acUnit: 0x3a3c3a,
+        acGrille: 0x1a1a1a,
+        ceilingGrid: 0x2a2824,
+        fixture: 0x3a3a36,
+        priceStrip: 0x3a3424,
+        joint: 0x262624,
+        crack: 0x1c1c1a,
+        weed: 0x28301c,
+        plinth: 0x34342e,
+        debris: 0x1e1c1a,
+        canopyUnder: 0x363632,
+        lightBox: 0x2e2e2c,
+        iceChest: 0x3a4448,
+        iceLid: 0x343c40,
+        iceLabel: 0x22344a,
+        oilCans: [0x3a2a1a, 0x1c2a3a, 0x3a3a1c, 0x2a1c1c],
+        propaneCage: 0x34342c,
+        propane: 0x4a4a46,
+        airPump: 0x2e3430,
+        tyre: 0x121212,
+        pallet: 0x3a3020,
         slab: 0x3a3936,
         floor: 0x2e2c28,
         wall: 0x5a5448, // weathered pale siding, dirty
@@ -2627,11 +2664,11 @@ export const config = {
         brass: 0x6a5a2a,
         radio: 0x161616,
         cardboard: 0x3c3121,
-        concrete: 0x3e3e3a,
+        concrete: 0x363633,
         stain: 0x22221f,
         kerb: 0x4a4a46,
         kerbTop: 0x3a3a36,
-        pump: 0x5a2622, // faded red
+        pump: 0x4a201c, // faded red (Session 19: darker, it glowed red by moonlight)
         scorch: 0x141210, // Session 18: a blown pump's stumps and the scorch round it
         pumpTop: 0x4a4a46,
         hose: 0x1a1a1a,
@@ -2810,6 +2847,8 @@ export const config = {
     keysRange: 1.8,
     hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },
     look: {
+      // Session 19 (style pass 2): the keys' glint and the colouring book's pale pages stay bright (on purpose); rust on the hatch and the tins.
+      weather: { keepBright: [0xffe8a0, 0x8a8070] },
       colors: {
         earth: 0x2a2014,
         earthDark: 0x1a140c,
@@ -2903,6 +2942,35 @@ export const config = {
   },
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
+  // Style pass 2 (Session 19): the weathering every place's props are baked
+  // with (render/propKit.js), each place overriding what it likes in its
+  // look.weather. grime: the colour's multiplier right at the ground (or
+  // floor), easing to none at grimeHeight metres up, tinted toward
+  // grimeTint by grimeTintAmount. mottle: a soft noise over everything
+  // (noiseScale cells per metre); pieceJitter: each piece lighter or
+  // darker by up to this. underside: faces looking down. rust: streaks
+  // on the colours a place lists as metal (rustTint, rustAmount how much
+  // of the metal, rustScale per metre). maxLuma: the glare rule's ceiling
+  // (sRGB luma, 0..1); keepBright lists the colours let past it.
+  props: {
+    weather: {
+      grime: 0.55,
+      grimeHeight: 0.8,
+      grimeTint: 0x2a2216,
+      grimeTintAmount: 0.45,
+      mottle: 0.16,
+      noiseScale: 1.4,
+      pieceJitter: 0.1,
+      underside: 0.65,
+      rustTint: 0x4a2a16,
+      rustAmount: 0.35,
+      rustScale: 2.2,
+      maxLuma: 0.45,
+      rust: [],
+      keepBright: [],
+    },
+  },
+
   campsite: {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
@@ -2915,11 +2983,11 @@ export const config = {
       colors: {
         pole: 0x2a2a28,
         slit: 0x0c0b0a,
-        stone: 0x4a4844,
+        stone: 0x3c3a36,
         ash: 0x1c1b1a,
         char: 0x151210,
         frame: 0x3a3c3e,
-        cloth: 0x2c3a4a,
+        cloth: 0x24303c,
         pack: 0x4a3a28,
         packFlap: 0x3a2c1e,
         cooler: 0x6a3428,
@@ -2929,7 +2997,33 @@ export const config = {
         stick: 0x3a2c1e,
         bark: 0x2e241a,
         cut: 0x6a5c44,
+        // Session 19 (style pass 2): the dressing.
+        guy: 0x2a2822,
+        peg: 0x3a3a38,
+        tentPole: 0x2e3032,
+        scorch: 0x201a14,
+        grate: 0x1e1c1a,
+        pot: 0x2a2826,
+        tin: 0x3a3c3a,
+        tinLabel: 0x4a2a22,
+        bottle: 0x1e2a1c,
+        wood: 0x3a2c1e,
+        woodEnd: 0x4a3c2a,
+        stump: 0x2e241a,
+        axeHead: 0x2a2c2e,
+        axeHandle: 0x4a3622,
+        table: 0x3a3428,
+        stove: 0x2c4a30,
+        line: 0x3a3830,
+        towel: 0x3a2020,
+        shirt: 0x202a36,
+        sleepingBag: 0x3a2a40,
+        bagLining: 0x2a2420,
+        paper: 0x5a564a,
       },
+      // The guy lines' pegs: how far out from a tent's ends and sides (m).
+      guyOut: 0.9,
+      weather: { grimeHeight: 0.5, rust: [0x3a3c3e, 0x2a2826, 0x3a3c3a, 0x1e1c1a, 0x2a2c2e] },
     },
   },
 
