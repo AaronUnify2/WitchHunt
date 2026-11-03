@@ -2779,6 +2779,20 @@ export const config = {
     interactRange: 1.4,
     hold: { climb: 0.8, search: 1.0, rounds: 0.8, read: 0.5, crate: 1.6 },
     look: {
+      // Session 19 (style pass 2): the dressing. net: the camo net over
+      // the gun pit (size m square, height at its poles, sag, cells, the
+      // share of cells torn out, tatters, darker patches). wire: the
+      // concertina out in front of the sandbag runs (`out` m past the
+      // bags, runs `run` m with `gap` m breaks, its radius and pitch, the
+      // share trampled flat). generator: by the comms hut (from its middle).
+      // brass: spent casings on the ground.
+      dressing: {
+        net: { size: 5.2, height: 2.5, sag: 0.38, lumps: 0.16, cells: 12, holes: 0.1, tatters: 18, patches: 10 },
+        wire: { out: 1.6, run: 7, gap: 1.2, radius: 0.42, pitch: 0.32, flat: 0.3 },
+        generator: { x: -0.4, z: -3.4, yaw: 15 },
+        brass: { barricade: 120, gunPit: 60 },
+      },
+      weather: { rust: [0x2a2c2a, 0x1c1e1c, 0x34382a, 0x3a2a20, 0x2a3034, 0x2e2e2a, 0x1e1e1c, 0x2e3228, 0x26241e, 0x1e1e1c] },
       colors: {
         sandbag: 0x3a3424,
         sandbagDark: 0x2c271a,
@@ -2821,6 +2835,11 @@ export const config = {
         casing: 0x6a5420,
         blood: 0x1c0806,
         void: 0x050505,
+        // Session 19 (style pass 2).
+        net: 0x2e3220,
+        netDark: 0x22261a,
+        razor: 0x34342e,
+        cable: 0x121212,
       },
     },
   },
@@ -2848,8 +2867,34 @@ export const config = {
     hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },
     look: {
       // Session 19 (style pass 2): the keys' glint and the colouring book's pale pages stay bright (on purpose); rust on the hatch and the tins.
-      weather: { keepBright: [0xffe8a0, 0x8a8070] },
+      weather: { keepBright: [0xffe8a0, 0x8a8070], rust: [0x2a2a2a, 0x34281c, 0x3e2e1e, 0x2e3a2a, 0x4a1c14] },
+      // Session 19: up top, the mound's sod patches, grass tufts, roots
+      // and stones, and the tarp (from the hatch, m); below, the floor's
+      // boards, the walls' plank width, the roots through the ceiling
+      // ([x, z, length] room-local), a cobweb's size, the hung lamp, the
+      // coat, the calendar, the spilled earth (room-local).
+      mound: { sod: 6, tufts: 16, roots: 5, stones: 9, tarp: { x: 1.3, z: 1.1, w: 1.6, d: 1.3 } },
+      room: {
+        floorBoards: 13,
+        plankWidth: 0.2,
+        roots: [[-0.9, -0.3, 0.45], [0.6, 0.9, 0.3], [-0.2, 1.05, 0.55], [1.1, -0.6, 0.25]],
+        web: 0.35,
+        lamp: { x: -0.6, z: -0.2 },
+        coat: { x: -1.47, z: -0.85, yaw: 90 },
+        calendar: { x: 0.2, z: 1.27 },
+        spill: { x: 1.2, z: 1.0 },
+      },
       colors: {
+        // Session 19 (style pass 2).
+        sod: 0x26281a,
+        grass: 0x2e3420,
+        root: 0x2a1e12,
+        stone: 0x34322e,
+        tarp: 0x242a20,
+        web: 0x4a4a46,
+        coat: 0x2e3a24,
+        calendar: 0x4a463c,
+        calendarTop: 0x3a1c16,
         earth: 0x2a2014,
         earthDark: 0x1a140c,
         leaves: 0x2c2414,

@@ -100,7 +100,7 @@ export class Outpost {
     this.towerAt = frameToWorld(this.frame, t.x, t.z);
     this.ladderAt = frameToWorld(this.frame, t.x, t.z - t.half - 0.9);
     if (scene) {
-      this.props = new OutpostProps(this.oc.look, this.data, this.cfg.aliens?.grey);
+      this.props = new OutpostProps(this.oc.look, this.data, this.cfg.aliens?.grey, this.cfg.props?.weather);
       this.props.init(scene, this.frame, this.ground);
     }
     if (ctx.colliders) this.buildColliders(ctx.colliders);
@@ -302,7 +302,7 @@ export class Outpost {
     this.block(grid, a.x, a.z, 0.6, 1.95, this.gy(a.x, a.z) - 1, this.gy(a.x, a.z) + 1.9, true);
     // The containers on their trailers (the torn one too: its bent side sticks out).
     for (const ct of this.data.compound.containers) {
-      const y = this.gy(ct.x, ct.z);
+      const y = OutpostProps.containerY(this.frame, this.ground, ct); // Session 19: level on its highest ground (C-7's on a slope)
       const wide = ct.kind === 'mothman' ? CONTAINER.width + 1.2 : CONTAINER.width + 0.1;
       this.block(grid, ct.x, ct.z, wide, CONTAINER.length + 0.6, y - 1, y + CONTAINER.deck + CONTAINER.height, true, ct.yaw);
     }

@@ -20,8 +20,17 @@
 //    busted open (C-9, the brood: Session 17); the beetles' crates; a
 //    clipboard on an upturned crate. C-4's doors are shut until Tom hauls
 //    them open (Session 17, Aaron: the reveal).
-// Dull, dark colours (the torch-glare rule). Static parts merged by colour;
-// what changes (the rounds, the report, the charge, each crate whole or
+// Session 19 (style pass 2): sandbags shaped like bags (plump, slumped at
+// their corners); a camo net strung over the gun pit on four poles, torn,
+// tatters hanging; a concertina of razor wire out in front of the
+// barricade's sandbag runs, trampled flat in places; a generator by the
+// comms hut, its cable run to the hut; brass everywhere they fought; C-7's
+// trailer seated on its slope (legs run down to the ground, cribbing
+// under the wheels): containerY().
+// Dull, dark colours (the torch-glare rule). Static parts baked into one
+// vertex-coloured mesh, weathered (render/propKit.js: grime up from the
+// ground, mottling, rust streaks on the steel and the containers); what
+// changes (the rounds, the report, the charge, each crate whole or
 // broken) is its own.
 
 import * as THREE from 'three';
@@ -29,6 +38,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { frameToWorld } from '../world/clearingFrame.js';
 import { css, makeCanvas, toTexture } from './proceduralTextures.js';
 import { buildFigure } from './figureKit.js';
+import { bakeParts, weatherFor } from './propKit.js';
 import { alienSpec } from './alienModel.js';
 
 // A container: 6.06 long, 2.44 wide, 2.6 tall, on a deck this high.
@@ -37,10 +47,12 @@ export const CRATE = { w: 1.4, h: 1.1, d: 1.1 };
 
 export class OutpostProps {
   // cfg: config.outpost.look. data: data/outpost.json. alienCfg: config.aliens.grey (the body in the resin).
-  constructor(cfg, data, alienCfg) {
+  // weather: config.props.weather (shared; Session 19).
+  constructor(cfg, data, alienCfg, weather = null) {
     this.cfg = cfg;
     this.data = data;
     this.alienCfg = alienCfg;
+    this.weather = weather ? weatherFor(weather, cfg.weather) : null;
     this.keep = [];
     this.parts = new Map(); // colour -> [geometries in world space]
     this.own = new Map(); // id -> Group (what changes)
@@ -62,6 +74,7 @@ export class OutpostProps {
     this.armoury();
     for (const c of this.data.compound.containers) this.container(c);
     this.manifest();
+    this.dressing();
     this.flush(this.group);
     this.buildFence();
     this.buildResin();
@@ -78,26 +91,12 @@ export class OutpostProps {
   // Session 17 (the performance gate): everything since the last flush as
   // ONE mesh, its colours in the vertices (so the whole static set is a
   // draw call or two, not one per colour).
+  // Session 19: weathered as it's baked (render/propKit.js).
   flush(into) {
-    const geos = [];
-    for (const [color, list] of this.parts) {
-      const c = new THREE.Color(color);
-      for (const g of list) {
-        const n = g.getAttribute('position').count;
-        const cols = new Float32Array(n * 3);
-        for (let i = 0; i < n; i++) {
-          cols[i * 3] = c.r;
-          cols[i * 3 + 1] = c.g;
-          cols[i * 3 + 2] = c.b;
-        }
-        g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-        geos.push(g);
-      }
-    }
+    const baked = bakeParts(this.parts, { weather: this.weather, baseAt: (x, y, z) => this.ground.heightAt(x, z), seed: 17 });
     this.parts.clear();
-    if (!geos.length) return null;
-    const geo = this.hold(mergeGeometries(geos));
-    for (const g of geos) g.dispose();
+    if (!baked) return null;
+    const geo = this.hold(baked);
     if (!this.material) this.material = this.hold(new THREE.MeshLambertMaterial({ vertexColors: true }));
     const mesh = new THREE.Mesh(geo, this.material);
     mesh.castShadow = true;
@@ -194,9 +193,31 @@ export class OutpostProps {
   // ---- sandbags -------------------------------------------------------------------------------------
 
   // One bag: a squashed box, a little turned, sitting at y.
+  // Session 19: plump in the middle, slumped at the corners (a box cut 2 x 1 x 2, its corners pulled in and down).
   bag(x, z, y, yawDeg, color) {
     const k = this.cfg.colors;
-    this.box(0.62, 0.22, 0.4, x, z, y, color ?? (this.rand() < 0.5 ? k.sandbag : k.sandbagDark), yawDeg + this.range(-6, 6), { rotZ: this.range(-0.05, 0.05) });
+    const g = OutpostProps.bagGeometry(0.62, 0.22, 0.4);
+    g.translate(0, 0.11, 0);
+    this.put(g, color ?? (this.rand() < 0.5 ? k.sandbag : k.sandbagDark), x, z, y, yawDeg + this.range(-6, 6), { rotZ: this.range(-0.05, 0.05) });
+  }
+
+  static bagGeometry(w, h, d) {
+    const g = new THREE.BoxGeometry(w, h, d, 2, 1, 2);
+    const p = g.getAttribute('position');
+    for (let i = 0; i < p.count; i++) {
+      const ex = Math.abs(p.getX(i)) > w * 0.49;
+      const ez = Math.abs(p.getZ(i)) > d * 0.49;
+      if (ex && ez) {
+        // A corner: squashed down to the seam and in a little.
+        p.setY(i, p.getY(i) * 0.35);
+        p.setX(i, p.getX(i) * 0.92);
+        p.setZ(i, p.getZ(i) * 0.9);
+      } else if (ex || ez) {
+        p.setY(i, p.getY(i) * 0.75);
+      } else if (p.getY(i) > 0) p.setY(i, p.getY(i) * 1.12);
+    }
+    g.computeVertexNormals();
+    return g;
   }
 
   // A wall of bags along the frame's x from x0 to x1 at z: `rows` courses, two bags deep.
@@ -541,13 +562,201 @@ export class OutpostProps {
     for (let i = 0; i < 3; i++) this.bag(a.x - 1.4, a.z - 0.6 + i * 0.62, this.groundAt(a.x - 1.4, a.z) - 0.04, 0);
   }
 
+  // ---- Session 19: the dressing ----------------------------------------------------------------------------
+
+  dressing() {
+    const d = this.cfg.dressing;
+    const k = this.cfg.colors;
+    if (d.net) this.camoNet(d.net);
+    if (d.wire) this.concertina(d.wire);
+    if (d.generator) this.generator(d.generator);
+    // Brass: where they held the barricade and round the gun pit.
+    const B = this.data.barricade;
+    for (let i = 0; i < d.brass.barricade; i++) {
+      const x = this.range(-30, 30);
+      const z = B.z - this.range(0.4, 2.6);
+      this.cyl(0.011, 0.05, x, z, this.groundAt(x, z) + 0.012, k.casing, 5, { rotX: Math.PI / 2, yaw: this.range(0, 180) });
+    }
+    const g = this.data.staging.gunPit;
+    for (let i = 0; i < d.brass.gunPit; i++) {
+      const a = this.range(0, Math.PI * 2);
+      const r = this.range(0.2, g.r + 1.2);
+      const x = g.x + Math.cos(a) * r;
+      const z = g.z + Math.sin(a) * r;
+      this.cyl(0.013, 0.07, x, z, this.groundAt(x, z) + 0.014, k.casing, 5, { rotX: Math.PI / 2, yaw: this.range(0, 180) });
+    }
+  }
+
+  // A camo net over the gun pit: a sagging sheet on four poles, holes torn in it, tatters hanging.
+  camoNet(n) {
+    const k = this.cfg.colors;
+    const g = this.data.staging.gunPit;
+    const y0 = this.groundAt(g.x, g.z);
+    const half = n.size / 2;
+    const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+    for (const [sx, sz] of corners) {
+      const x = g.x + sx * half;
+      const z = g.z + sz * half;
+      const gy = this.groundAt(x, z);
+      this.cyl(0.035, y0 + n.height - gy, x, z, gy - 0.05, k.timberDark, 5);
+      this.bar([x, y0 + n.height, z], [x + sx * 1.1, this.groundAt(x + sx * 1.1, z + sz * 1.1), z + sz * 1.1], 0.006, k.wire);
+    }
+    const seg = n.cells;
+    const verts = [];
+    const pt = (i, j) => {
+      const u = i / seg;
+      const v = j / seg;
+      const x = g.x - half + u * n.size;
+      const z = g.z - half + v * n.size;
+      // Slung between its poles: the edges sag between the corners, the middle more; lumpy where it's bunched.
+      const sag = n.sag * (0.5 * Math.sin(Math.PI * u) + 0.5 * Math.sin(Math.PI * v)) + n.sag * 0.6 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v) + (this.rand() - 0.5) * n.lumps;
+      const w = frameToWorld(this.frame, x, z);
+      return [w.x, y0 + n.height - sag, w.z];
+    };
+    const grid = [];
+    for (let i = 0; i <= seg; i++) {
+      grid.push([]);
+      for (let j = 0; j <= seg; j++) grid[i].push(pt(i, j));
+    }
+    for (let i = 0; i < seg; i++) {
+      for (let j = 0; j < seg; j++) {
+        if (this.rand() < n.holes) continue;
+        const a = grid[i][j];
+        const b = grid[i + 1][j];
+        const c = grid[i + 1][j + 1];
+        const d = grid[i][j + 1];
+        // Both windings: seen from under it and from the tower.
+        verts.push(...a, ...b, ...c, ...a, ...c, ...d, ...a, ...c, ...b, ...a, ...d, ...c);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    geo.computeVertexNormals();
+    this.parts.has(k.net) || this.parts.set(k.net, []);
+    this.parts.get(k.net).push(geo);
+    // Tatters hanging off its edges, and the scrim's darker patches on top.
+    for (let i = 0; i < n.tatters; i++) {
+      const side = i % 4;
+      const t = this.range(0.1, 0.9);
+      const [x, z] = [
+        [g.x - half + t * n.size, g.z - half],
+        [g.x + half, g.z - half + t * n.size],
+        [g.x - half + t * n.size, g.z + half],
+        [g.x - half, g.z - half + t * n.size],
+      ][side];
+      const len = this.range(0.3, 0.9);
+      this.box(0.18, len, 0.015, x, z, y0 + n.height - len - 0.02, this.rand() < 0.5 ? k.net : k.netDark, side % 2 ? 90 : 0, { rotZ: this.range(-0.2, 0.2) });
+    }
+    for (let i = 0; i < n.patches; i++) {
+      const x = g.x + this.range(-half * 0.8, half * 0.8);
+      const z = g.z + this.range(-half * 0.8, half * 0.8);
+      const u = (x - (g.x - half)) / n.size;
+      const v = (z - (g.z - half)) / n.size;
+      const y = y0 + n.height - n.sag * (0.5 * Math.sin(Math.PI * u) + 0.5 * Math.sin(Math.PI * v) + 0.6 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v)) + 0.03;
+      this.box(this.range(0.3, 0.6), 0.02, this.range(0.2, 0.5), x, z, y, k.netDark, this.range(0, 180));
+    }
+  }
+
+  // Concertina wire out in front of the barricade's sandbag runs (the compound side), trampled flat in places.
+  concertina(wc) {
+    const k = this.cfg.colors;
+    const B = this.data.barricade;
+    const z = B.z + wc.out;
+    for (const p of B.pieces) {
+      if (p.kind !== 'sandbags') continue;
+      const x0 = Math.min(p.x0, p.x1);
+      const x1 = Math.max(p.x0, p.x1);
+      for (let xa = x0 + 0.3; xa < x1 - 0.3; xa += wc.run) {
+        const xb = Math.min(x1 - 0.3, xa + wc.run - wc.gap);
+        if (xb - xa < 1) continue;
+        const flat = this.rand() < wc.flat;
+        const r = flat ? wc.radius * 0.35 : wc.radius;
+        const turns = Math.round((xb - xa) / wc.pitch);
+        const pts = [];
+        for (let i = 0; i <= turns * 8; i++) {
+          const t = i / (turns * 8);
+          const a = t * turns * Math.PI * 2;
+          const x = xa + (xb - xa) * t;
+          const gz = z + Math.sin(a) * r;
+          pts.push(new THREE.Vector3(x, this.groundAt(x, gz) + r + Math.cos(a) * r * (flat ? 0.6 : 1), gz));
+        }
+        const world = pts.map((q) => {
+          const w = frameToWorld(this.frame, q.x, q.z);
+          return new THREE.Vector3(w.x, q.y, w.z);
+        });
+        const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(world), turns * 8, 0.008, 3, false);
+        const n2 = tube.toNonIndexed();
+        tube.dispose();
+        n2.deleteAttribute('uv');
+        this.parts.has(k.razor) || this.parts.set(k.razor, []);
+        this.parts.get(k.razor).push(n2);
+        // Its pickets.
+        for (let x = xa; x <= xb; x += wc.pitch * 4) this.box(0.04, r * 2 + 0.2, 0.04, x, z, this.groundAt(x, z) - 0.1, k.steelDark, 0, { rotZ: this.range(-0.15, 0.15) });
+      }
+    }
+  }
+
+  // A field generator by the comms hut, its cable snaking to the hut.
+  generator(gc) {
+    const k = this.cfg.colors;
+    const c = this.data.compound.comms;
+    const x = c.x + gc.x;
+    const z = c.z + gc.z;
+    const y = this.groundAt(x, z);
+    this.box(1.1, 0.12, 0.7, x, z, y, k.steelDark, gc.yaw); // the skid
+    this.box(1.0, 0.62, 0.62, x, z, y + 0.12, k.olive, gc.yaw); // the body
+    this.box(0.3, 0.3, 0.64, x, z, y + 0.74, k.oliveDark, gc.yaw, { ox: -0.3 }); // the tank
+    this.box(0.04, 0.04, 0.5, x, z, y + 0.5, k.steel, gc.yaw, { ox: 0.5, oy: 0.2 }); // the frame's handle
+    this.cyl(0.035, 0.4, x, z, y + 0.6, k.steelDark, 6, { ox: 0.35 }); // the exhaust stack
+    this.box(0.5, 0.36, 0.02, x, z, y + 0.25, k.oliveDark, gc.yaw, { oz: 0.32 }); // the panel
+    // The cable across the ground to the hut's corner, and up its post.
+    const tx = c.x - c.w / 2;
+    const tz = c.z - c.d / 2;
+    const pts = [];
+    for (let i = 0; i <= 8; i++) {
+      const t = i / 8;
+      const px = x + (tx - x) * t + Math.sin(t * 9) * 0.25;
+      const pz = z + (tz - z) * t + Math.cos(t * 7) * 0.25;
+      const w = frameToWorld(this.frame, px, pz);
+      pts.push(new THREE.Vector3(w.x, this.groundAt(px, pz) + 0.03, w.z));
+    }
+    const wt = frameToWorld(this.frame, tx, tz);
+    pts.push(new THREE.Vector3(wt.x, this.groundAt(tx, tz) + 1.2, wt.z));
+    const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 18, 0.02, 4, false);
+    const n2 = tube.toNonIndexed();
+    tube.dispose();
+    n2.deleteAttribute('uv');
+    this.parts.has(k.cable) || this.parts.set(k.cable, []);
+    this.parts.get(k.cable).push(n2);
+  }
+
   // ---- the containers -----------------------------------------------------------------------------------
+
+  // Session 19 (the handover: C-7's off the levelled clearing, on the road's
+  // shoulder): a trailer stands level on the highest ground under its
+  // wheels and landing legs; its legs then run down to the ground, and
+  // timber cribbing fills in under any wheel left in the air.
+  static containerY(frame, ground, c) {
+    const a = (c.yaw * Math.PI) / 180;
+    let top = -Infinity;
+    for (const oz of [-2.9, -2.0, 2.4]) {
+      for (const ox of [-1.1, 1.1]) {
+        const w = frameToWorld(frame, c.x + oz * Math.sin(a) - ox * Math.cos(a), c.z + oz * Math.cos(a) + ox * Math.sin(a));
+        top = Math.max(top, ground.heightAt(w.x, w.z));
+      }
+    }
+    return top;
+  }
+
+  containerY(c) {
+    return OutpostProps.containerY(this.frame, this.ground, c);
+  }
 
   // A flatbed trailer and its container. Local: z along it (the doors at +z), x across.
   container(c) {
     const k = this.cfg.colors;
     const C = CONTAINER;
-    const y = this.groundAt(c.x, c.z);
+    const y = this.containerY(c);
     const L = C.length + 0.6;
     // The trailer: deck, beams, wheels at the back, the landing legs at the front.
     this.box(C.width + 0.1, 0.22, L, c.x, c.z, y + C.deck - 0.22, k.flatbed, c.yaw);
@@ -556,9 +765,25 @@ export class OutpostProps {
       for (const s of [-1, 1]) {
         const g = new THREE.CylinderGeometry(0.48, 0.48, 0.3, 12).rotateZ(Math.PI / 2).translate(s * (C.width / 2 - 0.1), 0.48, oz);
         this.put(g, k.tyre, c.x, c.z, y, c.yaw);
+        // Cribbing: timbers stacked crosswise under a wheel off the ground.
+        const p = this.local(c, s * (C.width / 2 - 0.1), oz);
+        const gy = this.groundAt(p.x, p.z);
+        for (let h = gy - 0.05, j = 0; h < y - 0.02; h += 0.14, j++) this.box(0.5, Math.min(0.14, y - h), 0.16, p.x, p.z, h, k.timberDark, c.yaw + (j % 2 ? 90 : 0));
       }
     }
-    for (const s of [-0.8, 0.8]) this.box(0.12, C.deck - 0.4, 0.12, c.x, c.z, y, k.steelDark, c.yaw, { ox: s, oz: 2.4 });
+    // The landing legs, down to the ground (a foot plate each).
+    for (const s of [-0.8, 0.8]) {
+      const p = this.local(c, s, 2.4);
+      const gy = this.groundAt(p.x, p.z);
+      this.box(0.12, y + C.deck - 0.4 - gy + 0.05, 0.12, p.x, p.z, gy - 0.05, k.steelDark, c.yaw);
+      this.box(0.3, 0.05, 0.3, p.x, p.z, gy - 0.01, k.steelDark, c.yaw);
+    }
+    // Session 19: the landing gear's crossbrace and crank.
+    {
+      const p = this.local(c, 0, 2.4);
+      this.box(1.6, 0.08, 0.08, p.x, p.z, y + C.deck - 0.9, k.steelDark, c.yaw);
+      this.box(0.04, 0.04, 0.35, p.x, p.z, y + C.deck - 0.75, k.steel, c.yaw, { ox: 0.9, rotX: 0.6 });
+    }
     const base = y + C.deck;
     const paint = { empty: k.containerA, resin: k.containerC, mothman: k.containerB, brood: k.containerD }[c.kind] ?? k.containerA;
     if (c.kind === 'mothman') this.tornContainer(c, base, paint);
@@ -697,7 +922,7 @@ export class OutpostProps {
     const c = this.data.compound.containers.find((x) => x.kind === 'resin');
     if (!c) return;
     const k = this.cfg.colors;
-    const y = this.groundAt(c.x, c.z) + CONTAINER.deck + 0.08;
+    const y = this.containerY(c) + CONTAINER.deck + 0.08;
     const p = this.local(c, 0, CONTAINER.length / 2 - 1.1);
     const w = frameToWorld(this.frame, p.x, p.z);
     const yaw = this.rotY(c.yaw);
@@ -729,7 +954,7 @@ export class OutpostProps {
     const k = this.cfg.colors;
     const C = CONTAINER;
     const hw = C.width / 2;
-    const base = this.groundAt(c.x, c.z) + C.deck;
+    const base = this.containerY(c) + C.deck;
     this.resinDoors = [-1, 1].map((s) => {
       const hinge = this.local(c, s * hw, C.length / 2 + 0.03);
       const w = frameToWorld(this.frame, hinge.x, hinge.z);
@@ -891,7 +1116,7 @@ export class OutpostProps {
     // The containers' codes, on both long sides (C-7 is the Mothman's: CONTAINMENT C-7 on the feed).
     const codes = { empty: 'C-3', resin: 'C-4', mothman: 'C-7', brood: 'C-9' };
     for (const c of this.data.compound.containers) {
-      const y0 = this.groundAt(c.x, c.z) + CONTAINER.deck + 1.6;
+      const y0 = this.containerY(c) + CONTAINER.deck + 1.6;
       const tex = stencilTexture(codes[c.kind] ?? 'C-?', c.kind === 'brood' ? 'LIVE · DO NOT OPEN' : 'BIOHAZARD · CLASS IV');
       for (const s2 of c.kind === 'mothman' ? [-1] : [-1, 1]) {
         const p = this.local(c, s2 * (CONTAINER.width / 2 + 0.08), 0.6);

@@ -97,7 +97,7 @@ export class StormShelter {
     this.roomAt = frameToWorld(this.frame, r.x, r.z);
     this.ladderAt = this.roomPoint(r.ladder.x, r.ladder.z);
     if (scene) {
-      this.props = new StormShelterProps(this.sc.look, this.data);
+      this.props = new StormShelterProps(this.sc.look, this.data, this.cfg.props?.weather);
       this.props.init(scene, this.frame, this.ground, hatchY, floorY);
     }
     this.points = this.data.searches.map((s) => ({ ...s, ...(s.below ? this.roomPoint(s.x, s.z) : frameToWorld(this.frame, s.x, s.z)) }));
