@@ -60,3 +60,83 @@ describe("Aaron's notes", () => {
     expect(f.intensity).toBeGreaterThan(0);
   });
 });
+
+describe('round 3: the generator at the tower, the outpost on the map', async () => {
+  const { Objectives } = await import('../src/story/Objectives.js');
+  const dialogue = (await import('../src/data/dialogue.json')).default;
+  it('the generator stands at the foot of the watchtower', () => {
+    const g = outpost.floods.generator;
+    const t = outpost.tower;
+    expect(Math.hypot(g.x - t.x, g.z - t.z)).toBeLessThan(4);
+  });
+  it('the family point it out, and nudge the fight step', () => {
+    const ids = new Set(dialogue.lines.map((l) => l.id));
+    expect(ids.has('outpost.floods.hint')).toBe(true);
+    expect(ids.has('hint.outpostFight')).toBe(true);
+  });
+
+  // A stand-in game with just enough for the outpost's steps.
+  const fake = (over = {}) => {
+    const flags = new Set(['gasStationVisited', 'rifleClaimed', 'homeStop', 'outpostCall', ...(over.flags ?? [])]);
+    const p = (x, z) => ({ x, z });
+    const op = {
+      frame: { x: 0, z: 0, rx: 1, rz: 0, fx: 0, fz: 1 },
+      approachStarted: true,
+      peakState: 'none',
+      floodsOn: false,
+      turret: { state: 'dead' },
+      roundsTaken: false,
+      gapAt: p(0, 4),
+      generatorAt: () => p(13, -8),
+      turretAt: () => p(-8, -10),
+      roundsAt: () => p(-7, -9),
+      told: new Set(),
+      searched: new Set(),
+      crates: ['whole'],
+      crateAt: [p(20, 20)],
+      resinDoorAt: p(-18, 17),
+      c7At: p(40, -26),
+      points: [{ id: 'armoury', ...p(13, 9) }, { id: 'report', ...p(11, 10) }, { id: 'manifest', ...p(10, 20) }],
+      ladderAt: p(11, -9),
+      dogfightSeen: false,
+      ...over.op,
+    };
+    return {
+      progress: { has: (f) => flags.has(f) },
+      clock: { day: 3, phase: 'day' },
+      station: { layout: {} },
+      campsite: {},
+      gasStation: {},
+      shelter: {},
+      outpost: op,
+      watch: { has: () => false },
+      world: { map: { clearings: [], cluster: { checkpoint: p(0, 30) } } },
+      combat: { inventory: { batteries: 0 }, weapons: { order: ['shovel'] } },
+    };
+  };
+  const objectivesFor = (g) => {
+    const o = new Objectives(config, null);
+    o.init(g);
+    return o.work();
+  };
+  it('before the barricade falls: the fight, the generator, the gun and the rounds, all on the map', () => {
+    const s = objectivesFor(fake());
+    expect(s.id).toBe('outpostFight');
+    expect(s.ats.length).toBe(4);
+    expect(s.text).toMatch(/floodlights/);
+    expect(s.text).toMatch(/machine gun/);
+  });
+  it('done jobs drop off the list', () => {
+    const s = objectivesFor(fake({ op: { floodsOn: true, turret: { state: 'live' }, roundsTaken: true } }));
+    expect(s.ats.length).toBe(1);
+  });
+  it('after: explore the compound, every point of interest at once', () => {
+    const s = objectivesFor(fake({ flags: ['outpostCleared'], op: { peakState: 'done' } }));
+    expect(s.id).toBe('outpostCompound');
+    expect(s.ats.length).toBe(7);
+  });
+  it('once everything is seen to: the checkpoint', () => {
+    const op = { peakState: 'done', told: new Set(['beetlesDone', 'resinOpen', 'c7']), searched: new Set(['armoury', 'report', 'manifest']), dogfightSeen: true };
+    expect(objectivesFor(fake({ flags: ['outpostCleared'], op })).id).toBe('cross');
+  });
+});

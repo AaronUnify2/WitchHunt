@@ -148,8 +148,9 @@ export class Minimap {
     ctx.restore();
 
     // Session 16 (Aaron): the objective, or on the rim the way to it when it's off the map.
-    if (this.objective?.at) {
-      let [ox, oy] = toScreen(this.objective.at.x, this.objective.at.z);
+    // Session 19 round 3: every place the step points at (ats), or its one (at).
+    for (const at of this.objective?.ats?.length ? this.objective.ats : this.objective?.at ? [this.objective.at] : []) {
+      let [ox, oy] = toScreen(at.x, at.z);
       const m = size * 0.04;
       const dx = ox - half;
       const dy = oy - half;

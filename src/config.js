@@ -2844,11 +2844,12 @@ export const config = {
         night: { on: 18.75, off: 6.75, ramp: 0.75 },
         fitRange: 1.8,
         fitSeconds: 1.4,
+        hintRange: 22, // Session 19 round 3 (Aaron: the family prompt it): Wyatt points it out the first time Tom's this close, the approach on
       },
       dressing: {
         net: { size: 5.2, height: 2.5, sag: 0.38, lumps: 0.16, cells: 12, holes: 0.1, tatters: 18, patches: 10 },
         wire: { out: 1.6, run: 7, gap: 1.2, radius: 0.42, pitch: 0.32, flat: 0.3 },
-        generator: { cables: 2 }, // Session 19 (Aaron): moved out by the barricade's floodlights (outpost.json floods.generator); cables to this many of them
+        generator: { cables: 1 }, // Session 19 (Aaron): out in the open (round 3: at the tower's foot; outpost.json floods.generator); cables to this many of the nearest floodlights
         brass: { barricade: 120, gunPit: 60 },
       },
       weather: { rust: [0x2a2c2a, 0x1c1e1c, 0x34382a, 0x3a2a20, 0x2a3034, 0x2e2e2a, 0x1e1e1c, 0x2e3228, 0x26241e, 0x1e1e1c] },

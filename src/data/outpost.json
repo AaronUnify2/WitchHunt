@@ -61,8 +61,8 @@
     [11, 16], [-2, 24], [-9, 26], [7, 24], [-15, 16], [14, 13], [1, 27], [-4, 9], [4, 9], [-11, 9]
   ],
   "floods": {
-    "_note": "Session 19 (Aaron: floodlights to brighten the outpost; a generator out in the open that a battery lights): generator: where it stands (frame x, z, yaw), near the barricade's floodlights (barricade.lights), which it powers; always: floodlights [x, z, yaw] that are on from the start: one inside each of the outpost's gates (the road's, the cemetery path's) aimed in along the path, and one lighting C-7's torn end; a fourth number scales its light (C-7's gentler, so the paint doesn't glare).",
-    "generator": { "x": -11, "z": 1.4, "yaw": 10 },
+    "_note": "Session 19 (Aaron: floodlights to brighten the outpost; a generator out in the open that a battery lights): generator: where it stands (frame x, z, yaw; Session 19 round 3, Aaron: at the foot of the watchtower, by its ladder, so it's one of the first things you find), powering the barricade's floodlights (barricade.lights); always: floodlights [x, z, yaw] that are on from the start: one inside each of the outpost's gates (the road's, the cemetery path's) aimed in along the path, and one lighting C-7's torn end; a fourth number scales its light (C-7's gentler, so the paint doesn't glare).",
+    "generator": { "x": 14.1, "z": -9.0, "yaw": 0 },
     "always": [[73.2, -36.6, -100], [-58.2, -12.0, 100], [48.1, -27.7, -83, 0.45]]
   }
 }

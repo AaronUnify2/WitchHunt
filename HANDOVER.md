@@ -2,9 +2,9 @@
 
 ## Just finished: Session 19, Graphics Engineer: style pass 2 (the opening cluster's places and their camera looks)
 
-**Status: everything is on `main` (live).** 674 tests pass and the build is clean. Details: `STATUS.md` (Session 19 and its round 2), `PLAYTEST.md` rounds 28-29, `OPEN_QUESTIONS.md` #282-314.
+**Status: everything is on `main` (live).** 680 tests pass and the build is clean. Details: `STATUS.md` (Session 19 and its round 2), `PLAYTEST.md` rounds 28-30, `OPEN_QUESTIONS.md` #282-320.
 
-**Round 2 (Aaron's playtest notes, all built):** the axe out of the campsite; the counter's box gone; Earl's office dressed; the shelter's and gas station's sweeps keep the world moving (unseen); the diary's blank page out; the report signed MERCER (not Hale); the armoury against the comms hut; **working floodlights at the outpost**: a generator by the barricade that a battery lights, and lamps at both gates and C-7 on from the start (#304-314). Round 29 isn't play-tested yet.
+**Round 2 (Aaron's playtest notes, all built):** the axe out of the campsite; the counter's box gone; Earl's office dressed; the shelter's and gas station's sweeps keep the world moving (unseen); the diary's blank page out; the report signed MERCER (not Hale); the armoury against the comms hut; **working floodlights at the outpost**: a generator by the barricade that a battery lights, and lamps at both gates and C-7 on from the start (#304-314). **Round 3:** the generator at the foot of the watchtower, Wyatt points it out; the outpost's objectives show several map points at once (the fight, the lights, the gun, the rounds; then explore the compound, in any order); the dogfight's ready once the barricade's down (#315-320). Rounds 29-30 aren't play-tested yet.
 
 **How we worked:**
 - Aaron answered the kickoff questions up front:
@@ -45,7 +45,7 @@
 
 ### Unfinished
 
-- **Aaron's play-test of rounds 28-29.** Notes from it come first in the next session.
+- **Aaron's play-test of rounds 28-30.** Notes from it come first in the next session.
 - **The trail in behind the gas station is 157**, 2 over the 155 start. The rest of it is:
   - the forest;
   - the quad's 9 meshes;
@@ -67,7 +67,7 @@
 
 ## Next: Session 20, Level & Encounter Designer (+ AI Programmer): the north frontier (M10 part 1)
 
-**First:** ask Aaron for his notes from the rounds 28-29 playtest (and anything older). Fix the bugs and small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.
+**First:** ask Aaron for his notes from the rounds 28-30 playtest (and anything older). Fix the bugs and small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.
 
 **Goal (DESIGN.md "Build plan", Session 20):** the north frontier's encounters:
 - the old barn (Milo the Clown);
@@ -121,7 +121,7 @@
 
 ### Open questions for Aaron
 
-- **Session 19:** #282-314 (all to check in play). In particular:
+- **Session 19:** #282-320 (all to check in play). In particular:
   - #311: should the generator have its own battery nearby (it competes with the machine gun);
   - #308: the campsite's and outpost's sweeps running too;
   - #300: the sweeps' letterbox bars;
@@ -145,8 +145,8 @@
 
 ```
 You are the Level & Encounter Designer (+ AI Programmer) on Witch Hunt, Session 20: the north frontier (M10 part 1): the old barn, the crashed plane and the abandoned mineshaft.
-Read HANDOVER.md first, then STATUS.md (Sessions 19 and its round 2, 18, 17), docs/DESIGN.md ("Build plan", "Encounters": the north band's old barn, crashed plane and mineshaft, "Aliens", "Giant beetles", "The Mothman", "Cutscenes") and OPEN_QUESTIONS.md (#282-314, then the older open ones).
-First ask Aaron for his notes from the PLAYTEST rounds 28-29 playtest (Session 19's style pass) and fix the small ones, pushing each to main.
+Read HANDOVER.md first, then STATUS.md (Sessions 19 and its round 2, 18, 17), docs/DESIGN.md ("Build plan", "Encounters": the north band's old barn, crashed plane and mineshaft, "Aliens", "Giant beetles", "The Mothman", "Cutscenes") and OPEN_QUESTIONS.md (#282-320, then the older open ones).
+First ask Aaron for his notes from the PLAYTEST rounds 28-30 playtest (Session 19's style pass) and fix the small ones, pushing each to main.
 Then ask whether his encounter redesign for the frontier is ready; per rule 10, propose a build plan for each encounter (how it's made, what it looks like, how it plays, its cost in draw calls) and workshop it with him before building. Build the props the Session 19 way (render/propKit.js). Keep his rules: dull and dark props (pale ones glare under the torch), one idea at a time over the radio, cutscenes talk except the dogfight.
 Then confirm your role and ask Aaron for his notes.
 When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session, and end with the HANDOVER READY signal.

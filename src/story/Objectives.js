@@ -8,7 +8,9 @@
 // the shovel, the storm shelter, the tapes home, the safe; Session 17: the
 // outpost (the road, the watchtower, the barricade, the armoury, the report, the checkpoint).
 //
-// current: { id, text, at: { x, z } | null } (at null: nothing to point at).
+// current: { id, text, at: { x, z } | null, ats: [{ x, z }] } (at null: nothing
+// to point at). Session 19 round 3 (Aaron: the outpost's beats come in any
+// order): a step can point at several places at once (ats; at is the first).
 //
 // Session 17 (Aaron: more breadcrumbs from the family): stuck on the same
 // step a while (config.objectives.hintAfter, while playing), the family give
@@ -71,7 +73,12 @@ export class Objectives {
     const gas = g.gasStation;
     const sh = g.shelter;
     const clearing = (key) => g.world.map.clearings.find((c) => c.cluster && c.key === key);
-    const step = (id, text, at = null) => ({ id, text, at: at ? { x: at.x, z: at.z } : null });
+    const step = (id, text, at = null) => ({ id, text, at: at ? { x: at.x, z: at.z } : null, ats: at ? [{ x: at.x, z: at.z }] : [] });
+    // Several places at once (Session 19 round 3): any order.
+    const steps = (id, text, list) => {
+      const ats = list.filter(Boolean).map((p) => ({ x: p.x, z: p.z }));
+      return { id, text, at: ats[0] ?? null, ats };
+    };
     const day1 = clock.day === 1 && clock.phase === 'day';
     const watching = (id) => g.watch?.has(id);
 
@@ -144,21 +151,37 @@ export class Objectives {
     const op = g.outpost;
     if (op?.frame && has('outpostCall') && !has('outpostCleared')) {
       if (!op.approachStarted) return step('outpost', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', frameToWorld(op.frame, 44, -33));
-      if (op.peakState === 'none') {
-        if (!op.approachDone) return step('outpostRoad', 'Fight your way down the road to the checkpoint.', op.gapAt);
-        if (!op.roundsTaken) return step('outpostRounds', 'Check the machine gun nest by the road for rounds that fit Earl\'s rifle.', op.roundsAt()); // Session 18 (Aaron)
-        return step('outpostBarricade', 'Get to the barricade.', op.gapAt);
+      // Session 19 round 3 (Aaron): the fight, the floodlights and the machine gun together, in any order.
+      const extras = [];
+      const jobs = [];
+      if (!op.floodsOn && op.generatorAt?.()) {
+        extras.push(op.generatorAt());
+        jobs.push('turn the floodlights on at the generator');
       }
-      return step('outpostPeak', 'Hold the barricade.');
+      if (op.turret?.state === 'dead') {
+        extras.push(op.turretAt());
+        jobs.push('put a battery in the machine gun');
+      }
+      if (!op.roundsTaken) {
+        extras.push(op.roundsAt());
+        jobs.push("find rounds for Earl's rifle in the gun pit");
+      }
+      const also = jobs.length ? ` ${jobs.join(', ').replace(/^./, (c) => c.toUpperCase())}.` : '';
+      if (op.peakState === 'none') return steps('outpostFight', `Defeat the dead at the outpost.${also}`, [op.gapAt, ...extras]);
+      return steps('outpostPeak', `Hold the barricade.${also}`, extras);
     }
     if (op?.frame && has('outpostCleared') && !has('crossedCordon')) {
       const pt = (id) => op.points.find((x) => x.id === id);
-      // Session 18 (Aaron): look round the compound first (the crates, the containers, the papers); the
-      // dogfight from the tower is the last beat.
-      if (!op.told.has('beetlesDone')) return step('outpostCompound', "Look round the outpost's compound. Something's scratching in those crates.", op.crateAt?.find((_, i) => op.crates[i] === 'whole') ?? op.crateAt?.[0]);
-      if (!op.searched.has('armoury')) return step('outpostArmoury', "Search the outpost's armoury lockers.", pt('armoury'));
-      if (!op.searched.has('report')) return step('outpostReport', "Find the field report in the outpost's comms hut.", pt('report'));
-      if (!op.dogfightSeen) return step('outpostScope', "Climb the outpost's watchtower and look through the hunting rifle's scope.", op.ladderAt);
+      // Session 19 round 3 (Aaron): explore the compound, every point of interest on the map at once, any order.
+      const list = [];
+      if (!op.told.has('beetlesDone')) list.push(op.crateAt?.find((_, i) => op.crates[i] === 'whole') ?? op.crateAt?.[0]);
+      if (!op.told.has('resinOpen')) list.push(op.resinDoorAt);
+      if (!op.told.has('c7')) list.push(op.c7At);
+      if (!op.searched.has('armoury')) list.push(pt('armoury'));
+      if (!op.searched.has('report')) list.push(pt('report'));
+      if (!op.searched.has('manifest') && pt('manifest')) list.push(pt('manifest'));
+      if (!op.dogfightSeen) list.push(op.ladderAt);
+      if (list.filter(Boolean).length) return steps('outpostCompound', "Explore the outpost's compound: the crates, the containers, the lockers, the comms hut, and the view from the watchtower.", list);
       return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);
     }
     return step('free', 'Keep the station running, and dig up her sigils.');

@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-29 Session 19 (style pass 2)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -261,7 +261,12 @@ Round 29 (Session 19: your playtest notes; OPEN_QUESTIONS #304-314):
 - [ ] **The field report:** signed CPT R. MERCER.
 - [ ] **The armoury:** the lockers against the back of the comms hut, facing out the far side.
 - [ ] **The outpost by night:** the floodlights at both gates and at C-7 are on as you arrive. C-7's sweep: can you make out the container?
-- [ ] **The generator:** just behind the barricade, west of the road gap. Hold X with a battery: the barricade's floodlights come on. Is it bright enough to fight under? (Debug: Military outpost, "the floodlights' generator".)
+- [ ] **The generator:** **moved in round 30**. Hold X with a battery: the barricade's floodlights come on. Is it bright enough to fight under? (Debug: Military outpost, "the floodlights' generator".)
+
+Round 30 (Session 19: the generator at the tower; the outpost's objectives; OPEN_QUESTIONS #315-320):
+- [ ] **The generator** is at the foot of the watchtower, by the ladder. Coming near it once the fight's on, Wyatt points it out.
+- [ ] **During the fight:** the map's NEXT says to defeat the dead, turn the floodlights on, put a battery in the machine gun and find the rifle rounds, with a star on each (map and minimap). Each star goes once it's done.
+- [ ] **After the barricade:** "Explore the outpost's compound", with stars on the crates, C-4, C-7, the lockers, the report, the manifest and the tower. Do them in any order; the dogfight plays from the tower whenever you go up. Once they're all done, the star moves to the checkpoint.
 
 ## 1. The main menu
 

@@ -169,8 +169,9 @@ export class MapScreen {
       const [bx, by] = toScreen(this.quad.x, this.quad.z);
       drawQuadMarker(ctx, bx, by, -this.quad.heading, marker * 2.2);
     }
-    if (this.objective?.at) {
-      const [qx, qy] = toScreen(this.objective.at.x, this.objective.at.z);
+    // Session 19 round 3: every place the step points at (ats), or its one (at).
+    for (const at of this.objective?.ats?.length ? this.objective.ats : this.objective?.at ? [this.objective.at] : []) {
+      const [qx, qy] = toScreen(at.x, at.z);
       drawObjectiveMarker(ctx, qx, qy, marker * 1.6, 1 + 0.12 * Math.sin(performance.now() * 0.006));
     }
 

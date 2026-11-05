@@ -377,6 +377,7 @@ export class Outpost {
     this.updateSmoke();
     this.updateCompound(dt, l);
     this.updateTurret(dt);
+    this.updateGeneratorHint();
     this.beetles?.update(dt, true);
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
@@ -614,9 +615,9 @@ export class Outpost {
     this.dialogue?.play('outpost.cleared.ellen');
     this.dialogue?.play('outpost.cleared.wyatt');
     this.beat();
-    // Session 18 (Aaron): the dogfight's the last beat: once the compound's been seen to (its beetles down),
-    // Wyatt asks Tom up the tower to look through the scope, in a quiet moment.
-    if (this.dogfightReady && !this.dogfightSeen) this.scopeAskDue = true;
+    // Session 19 round 3: the compound's beats in any order (the dogfight's ready now); Wyatt's ask to
+    // look through the scope still waits for the beetles to be down, as a nudge, not a gate.
+    if (this.told.has('beetlesDone') && !this.dogfightSeen) this.scopeAskDue = true;
   }
 
   // ---- pacing (Session 18, Aaron: "they're just not getting time to breathe") ---------------------------
@@ -627,10 +628,10 @@ export class Outpost {
     return Boolean(d?.subtitles?.busy || d?.pending?.length);
   }
 
-  // Session 18 (Aaron): the dogfight is the outpost's last beat: the barricade down and the compound
-  // seen to (every beetle let out is down).
+  // Session 19 round 3 (Aaron: the compound's beats come in any order): the dogfight is ready once
+  // the barricade's down (Session 18 held it until the beetles were down too).
   get dogfightReady() {
-    return this.peakState === 'done' && this.told.has('beetlesDone');
+    return this.peakState === 'done';
   }
 
   // A beat's just happened: the next one that comes by itself waits.
@@ -1040,6 +1041,19 @@ export class Outpost {
     if (h >= n.on) return ease(h - n.on);
     if (h < n.off) return ease(n.off - h);
     return 0;
+  }
+
+  // Session 19 round 3 (Aaron: the family should prompt it): the first time Tom's near the dark
+  // generator, in a quiet-enough moment, Wyatt points it out.
+  updateGeneratorHint() {
+    const fl = this.oc.look.floods;
+    if (this.floodsOn || this.told.has('generatorHint') || !fl || !this.approachStarted || this.witchOn || this.cutscenes?.active) return;
+    const at = this.generatorAt();
+    const p = this.player.position;
+    if (!at || Math.hypot(p.x - at.x, p.z - at.z) > fl.hintRange) return;
+    this.told.add('generatorHint');
+    // Queued behind whatever's being said (one idea at a time), and dropped if the lights are on by then.
+    this.dialogue?.playLater('outpost.floods.hint', 1.5, () => !this.floodsOn);
   }
 
   updateFloods() {

@@ -785,9 +785,9 @@ export class OutpostProps {
     }
   }
 
-  // The field generator (Session 19, Aaron: out in the open by the
-  // floodlights, a battery lights them): its cables snake off to the
-  // barricade's two near lamps.
+  // The field generator (Session 19, Aaron: out in the open, a battery
+  // lights the floodlights; round 3: at the foot of the watchtower): its
+  // cables snake off to the nearest of the barricade's lamps.
   generator(gc) {
     const k = this.cfg.colors;
     const at = this.data.floods?.generator;
@@ -803,7 +803,9 @@ export class OutpostProps {
     this.cyl(0.035, 0.4, x, z, y + 0.6, k.steelDark, 6, { ox: 0.35 }); // the exhaust stack
     this.box(0.5, 0.36, 0.02, x, z, y + 0.25, k.oliveDark, yaw, { oz: 0.32 }); // the panel
     this.box(0.36, 0.2, 0.3, x, z, y + 0.12, k.steelDark, yaw, { ox: 0.75 }); // the empty battery tray
-    for (const [lx, lz] of this.data.barricade.lights.slice(0, gc?.cables ?? 2)) {
+    // To the nearest of the floodlights it powers.
+    const near = [...this.data.barricade.lights].sort((p, q) => Math.hypot(p[0] - x, p[1] - z) - Math.hypot(q[0] - x, q[1] - z));
+    for (const [lx, lz] of near.slice(0, gc?.cables ?? 2)) {
       const pts = [];
       for (let i = 0; i <= 10; i++) {
         const t = i / 10;

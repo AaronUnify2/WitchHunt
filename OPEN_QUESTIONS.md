@@ -1,5 +1,16 @@
 # Open questions
 
+## Session 19, round 3 (Aaron: the generator at the tower; the outpost's objectives)
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 315 | **The generator at the foot of the watchtower** (its south-west leg, beside the ladder), its cable to the nearest barricade floodlight. | As described. | `outpost.json` `floods.generator` |
+| 316 | **Wyatt points it out:** the first time Tom's within 22 m of the dark generator once the fight's begun, after whatever's being said: "Dad, there's a generator at the bottom of that tower. Get a battery in it and those floodlights will come on." (draft). Dropped if the lights are already on. | As described. | `dialogue.json` `outpost.floods.hint`; `config.outpost.look.floods.hintRange` |
+| 317 | **Before the barricade falls, one objective with several map points:** "Defeat the dead at the outpost. Turn the floodlights on at the generator, put a battery in the machine gun, find rounds for Earl's rifle in the gun pit." A star at the barricade, the generator, the machine gun and the gun pit's ammo box; each drops off when done. While the barricade's peak is on: "Hold the barricade." plus whatever's left. **I kept the rounds** in the list (you need them for the dogfight). Its breadcrumb: Wyatt says both take a car battery, check the army trucks. | Replaces the old road / rounds / barricade steps. | `Objectives.work()` (`outpostFight`, `outpostPeak`); `hint.outpostFight` |
+| 318 | **After: "Explore the outpost's compound"**, with a star on every point of interest not yet seen to: a whole crate (until the beetles are down), C-4's doors, C-7, the armoury lockers, the field report, the manifest, the watchtower's ladder (the dogfight). Any order; the checkpoint once they're all done. | Replaces the old one-at-a-time compound steps. | `Objectives.work()` (`outpostCompound`) |
+| 319 | **The dogfight in any order:** it plays from the tower once the barricade's down (Session 18 held it until the beetles were down too). Wyatt's ask to go up and look still comes once the beetles are down, as a nudge. | As described. | `Outpost.dogfightReady` |
+| 320 | **The map and minimap draw every star a step has** (`ats`). Several off the minimap's edge sit on its rim, pointing their ways. | As described. | `ui/MapScreen.js`, `ui/Minimap.js` |
+
 ## Session 19, round 2 (Aaron's playtest notes)
 
 Aaron's notes: the axe at the campsite reads as a weapon you should be able to pick up; a brown box beside the phone on the counter muddles it; Earl's office is empty but for the desk; the dead stand frozen in the shelter's arrival sweep; a blank page at the end of Earl's diary; C-7's sweep too dark to make out; the field report signed by a Hale; the armoury's lockers oddly placed; the outpost wants floodlights, a generator out in the open that takes a battery, lights at the gates on from the start. All built. The calls I made:
