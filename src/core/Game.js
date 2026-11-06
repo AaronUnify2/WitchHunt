@@ -59,6 +59,9 @@ import { Gates } from '../world/Gates.js';
 import { Campsite } from '../encounters/Campsite.js';
 import { GasStation } from '../encounters/GasStation.js';
 import { Quad } from '../world/Quad.js';
+import { Ute } from '../world/Ute.js';
+import { AlienQuad } from '../world/AlienQuad.js';
+import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
@@ -133,6 +136,7 @@ export class Game {
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
     this.initFirstDay();
+    this.initExperimental(root);
     // Session 16 (Aaron): what to do next, on the map and the minimap.
     this.objectives = new Objectives(cfg, this.bus);
     this.objectives.init(this);
@@ -526,6 +530,37 @@ export class Game {
     });
   }
 
+  // The experimental vehicles (debug menu only, not yet in the story): the
+  // ute with a turret and the alien quad. Each rides like Earl's quad
+  // (world/Quad.js) and has its own HUD while ridden (ui/VehicleHud.js).
+  initExperimental(root) {
+    this.vehicleHud = new VehicleHud();
+    this.vehicleHud.init(root);
+    const ctx = {
+      scene: this.scene,
+      ground: this.world.ground,
+      colliders: this.colliders,
+      player: this.player,
+      combat: this.combat,
+      witch: this.witch,
+      renderer: this.renderer, // the ute's rear-view mirror
+      clock: this.clock, // the ute radio's clock
+      vhud: this.vehicleHud,
+      notify: (text) => this.toast.show(text),
+    };
+    this.ute = new Ute(this.cfg, this.bus);
+    this.ute.init(ctx);
+    this.alienQuad = new AlienQuad(this.cfg, this.bus);
+    this.alienQuad.init(ctx);
+    this.experimental = [this.ute, this.alienQuad];
+    for (const v of this.experimental) {
+      this.combat.promptSources.push(v.hud);
+      this.vehicles.busy?.push(v.hud);
+      this.explosives.busy?.push?.(v.hud);
+      this.station.blockers.push(v.hud);
+    }
+  }
+
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
   // reload a new map needed.
   showMenu() {
@@ -634,6 +669,7 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
+    this.overlay.addStat('experimental', () => this.experimental.map((v) => v.overlayLine()).join('  '));
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
@@ -672,6 +708,7 @@ export class Game {
     this.shelter.addDebugItems(menu);
     this.outpost.addDebugItems(menu);
     this.quad.addDebugItems(menu);
+    for (const v of this.experimental) v.addDebugItems(menu); // the ute with a turret, the alien quad
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1196,7 +1233,7 @@ export class Game {
     const riding = Boolean(this.player.riding);
     this.combat.update(dt, riding ? this.lockedInput : input, playing, daylight, locked || riding);
     this.director.update(dt, riding ? this.lockedInput : controls, playing, this.clock.phase, this.player.camera.position, daylight);
-    this.witch.speedScale = riding ? this.cfg.quad.witchSpeedScale : 1;
+    this.witch.speedScale = riding ? (this.player.riding.qc?.witchSpeedScale ?? this.cfg.quad.witchSpeedScale) : 1;
     this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
     this.explosives.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
@@ -1210,8 +1247,14 @@ export class Game {
     this.progress.update(dt, playing && first);
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
-    const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.quad.hud.prompt);
-    this.quad.update(dt, controls, playing && first, !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt), daylight);
+    const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.player.riding.hud?.prompt);
+    const rideFree = !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt);
+    this.quad.update(dt, controls, playing && first, rideFree && !(this.player.riding && this.player.riding !== this.quad) && !this.experimental.some((v) => v.hud.prompt), daylight);
+    let offered = Boolean(this.quad.hud.prompt) && !this.player.riding;
+    for (const v of this.experimental) {
+      v.update(dt, controls, playing && first, rideFree && !offered, daylight);
+      offered ||= Boolean(v.hud.prompt) && !v.riding;
+    }
     this.campsite.update(dt, controls, playing && first, !locked && !busy);
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     this.shelter.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
@@ -1243,6 +1286,8 @@ export class Game {
     this.shelter.dispose();
     this.outpost.dispose();
     this.quad.dispose();
+    for (const v of this.experimental) v.dispose();
+    this.vehicleHud.dispose();
     this.gates.dispose();
     this.progress.dispose();
     this.viewer.dispose();

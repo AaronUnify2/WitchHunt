@@ -80,6 +80,16 @@
   - a jeep model;
   - the CCTV placeholder `clip.mothmanContainer`.
 
+## Side pass after Session 19: the experimental vehicles (debug menu only)
+
+Aaron asked for a quick experimental pass (not minimum viable): **a ute with a turret** and **an alien-upgraded quad** (neon, a 3 s boost, plasma), in the debug menu's **Experimental vehicles**, not in the story yet (maybe end-of-game unlocks). Built, tested headless (Playwright on the road, day and night), 710 tests pass. Details: `STATUS.md` ("Side pass after Session 19"), `OPEN_QUESTIONS.md` #321-331. **Aaron hasn't driven them yet:** ask how they feel when he has. Gotchas for whoever picks them up:
+- They ride on `world/Quad.js`'s rules (`Ute` and `AlienQuad` extend `Quad`), but are their own things: `Game.experimental` updates them after Earl's quad; only one vehicle offers its prompt at a time.
+- `Player.update` calls `riding.placeCamera(player)` after its own camera (the ute's cab tilts with it). `Combat.onStrike` asks `riding.strikeScale()`.
+- Their lights are made on first `bring()` (`ensureLights()`): never add lights while playing normally.
+- The ute's rear-view mirror is a `Renderer.preRender` hook (every third frame, in the cab only).
+- The config's `ute.view` is the cab's look limits; `ute.look` is its colours.
+- Driving up the road toward the gas station plays its arrival sweep (as on foot).
+
 ## Next: Session 20, Level & Encounter Designer (+ AI Programmer): the north frontier (M10 part 1)
 
 **First:** ask Aaron for his notes from the rounds 28-30 playtest. Fix the bugs and small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.

@@ -19,6 +19,7 @@ export const DEBUG = {
   zombies: 'Sigils & zombies',
   player: 'Player',
   station: 'Station & vehicles',
+  experimental: 'Experimental vehicles', // the ute with a turret, the alien quad (debug only for now)
   story: 'Story, radio & trail cams',
   progress: 'Story flags & gates',
   firstDay: 'First day & campsite', // M9.2

@@ -1,5 +1,23 @@
 # Open questions
 
+## Side pass after Session 19: the experimental vehicles (the ute with a turret, the alien quad)
+
+Debug menu only (**Experimental vehicles**), not yet in the story: Aaron is thinking of them as end-of-game unlocks. Aaron's answers before the build: seat swap for the ute's gun; RT plasma and L3 / A boost on the alien quad; debug only, playable, not saved or on the map.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 321 | **Where do they come from in the story?** The ute: whose is it (Earl's? the army's, a "technical" from the outpost)? The alien quad: when do the greys rebuild Earl's quad, and how does Tom get it? | Neither is in the story. "Bring it here" in the debug menu sets it down in front of Tom. | `world/Ute.js`, `world/AlienQuad.js` `bring()`; `Game.initExperimental()` |
+| 322 | **The ute's gun never runs dry**: a belt with no end, held back only by heat (about five seconds of fire from cold, about two to cool from locked). Should it take rounds (the outpost's ammo cans?) or a battery like the gun pit's? | Heat only. | `config.ute.gun` (`heatPerShot`, `coolRate`, `jamUntil`) |
+| 323 | **The ute is strong**: a full-speed ram drops any citizen and throws it; the gun drops a citizen in two rounds and punches through three in a line; the cab takes half the dead's swipes. Too strong for the early game, fine for an unlock? | As described. | `config.ute.ram`, `config.ute.gun`, `config.ute.strikeScale` |
+| 324 | **The alien quad's plasma**: a capacitor of 10 cells (a bolt costs 1, an orb 4) that refills at 2.6 a second once it's left alone half a second. Bolts pull gently toward the dead near the crosshair. The orb's burst stings Tom at a quarter strength if he's caught in it. | As described. | `config.alienQuad.plasma` |
+| 325 | **The boost** lasts 3 s from a full meter (a part-full meter gives a shorter burst), refills in 7 s, reaches about 108 km/h, triples the ram and mostly ignores the brush. A tree ends it. | As described. | `config.alienQuad.boost` |
+| 326 | **The rear-view mirror is live** (a second small camera, drawn every third frame while Tom's in the driver's seat). It costs draw calls on those frames (the cab runs about 100-180 on the road headless). Keep it, or dark glass? | Live, with a debug toggle ("Ute: rear-view mirror ... (toggle)"). | `config.ute.mirror` (`live`, `every`, `far`) |
+| 327 | **Lights**: the ute adds two spotlights (the headlamps, the gun's lamp), the alien quad a spotlight and two point lights (underglow, the plasma's). They're made the first time each is brought (a one-off shader hitch), so a normal run never pays for them. | As described. | `Ute.ensureLights()`, `AlienQuad.ensureLights()`, `Plasma.ensureLights()` |
+| 328 | **Right-hand drive** (an Australian ute): Tom gets out on the right. The radio shows the game's time; the speedo reads km/h. Keep it, or a left-hand-drive American pickup to match the county? | Right-hand drive, km/h. | `render/uteModel.js` (`UTE.driver`, `DIALS`); `config.ute.eye` |
+| 329 | **The ute's paint**: a dull bush green (pale paint glares under the torch). The alien quad: blue-black chitin, cyan-green neon, violet accents. | As described. | `config.ute.look.paint`; `config.alienQuad.look` |
+| 330 | **The witch is faster while Tom's in either** (as on Earl's quad, x1.6). | As on the quad. | `config.ute.witchSpeedScale`, `config.alienQuad.witchSpeedScale` |
+| 331 | **Not in the audio pass yet**: the ute's diesel, the alien drive, the gun, the plasma, the boost, the horn are placeholder synth sounds like the rest. | Placeholders. | `audio/Sfx.js` (`ENGINE_VOICES`, the experimental recipes) |
+
 ## Session 19, round 3 (Aaron: the generator at the tower; the outpost's objectives)
 
 Aaron's answers: #317 and #319 settled. The rest to check in play.

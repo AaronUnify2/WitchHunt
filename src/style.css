@@ -1515,3 +1515,306 @@ body.cs-quiet .subtitles {
   text-align: center;
 }
 .map-screen-objective.hidden { display: none; }
+
+/* ---- Experimental vehicles (the ute, the alien quad): ui/VehicleHud.js ---- */
+
+body.in-vehicle .hud-crosshair,
+body.in-vehicle .hud-weapon {
+  visibility: hidden; /* the gun's slung: the vehicle's own sight and panel stand in */
+}
+
+body.in-viewer .vhud,
+body.in-cutscene .vhud {
+  visibility: hidden;
+}
+
+.vhud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: ui-monospace, monospace;
+  font-size: clamp(11px, 2vmin, 18px);
+  color: #e8e2d0;
+  text-shadow: 0 1px 2px #000;
+}
+
+.vhud.hidden {
+  display: none;
+}
+
+.vhud > div {
+  display: none;
+}
+
+.vhud .vhud-hint {
+  display: block;
+  position: absolute;
+  left: 50%;
+  bottom: 2.2%;
+  transform: translateX(-50%);
+  font-size: 0.72em;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+
+/* The cab: a small plate (gear, handbrake). */
+.vhud-ute-cab .vhud-plate {
+  display: block;
+  position: absolute;
+  right: 3%;
+  bottom: 6%;
+  padding: 0.2em 0.6em;
+  border: 1px solid rgba(232, 226, 208, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+}
+
+/* The gun: a ring sight, its heat as an arc round it. */
+.vhud-ute-gun .vhud-sight {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.vhud-heat {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: -60px;
+  top: -60px;
+  transform: rotate(-90deg);
+}
+
+.vhud-heat circle {
+  fill: none;
+  stroke-width: 3;
+}
+
+.vhud-heat-bg {
+  stroke: rgba(232, 226, 208, 0.14);
+}
+
+.vhud-heat-arc {
+  stroke: rgba(232, 226, 208, 0.75);
+  stroke-dasharray: 0 999;
+  transition: stroke 0.2s;
+}
+
+.vhud-heat-arc.warm {
+  stroke: #ffb040;
+}
+
+.vhud-heat-arc.hot {
+  stroke: #ff4a20;
+}
+
+.vhud-ring {
+  position: absolute;
+  border: 1.5px solid rgba(232, 226, 208, 0.7);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  transition: width 0.06s, height 0.06s, margin 0.06s;
+}
+
+.vhud-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #ff5a2a;
+  box-shadow: 0 0 4px #ff5a2a;
+}
+
+.vhud-locked {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  transform: translateX(-50%);
+  color: #ff4a20;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  opacity: 0;
+}
+
+.vhud.locked .vhud-locked {
+  animation: vhud-blink 0.5s steps(2) infinite;
+}
+
+.vhud.locked .vhud-ring {
+  border-color: rgba(255, 74, 32, 0.8);
+}
+
+@keyframes vhud-blink {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+/* The alien quad: a neon reticle, the panel, the speed lines. */
+.vhud-alien {
+  --neon: #4dffd2;
+  --neon2: #a98bff;
+}
+
+.vhud-alien .vhud-reticle {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90px;
+  height: 90px;
+  margin: -45px 0 0 -45px;
+  filter: drop-shadow(0 0 3px var(--neon));
+  transition: opacity 0.15s;
+}
+
+.vhud-reticle svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.vhud-reticle circle,
+.vhud-reticle path {
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 2;
+}
+
+.vhud-reticle .vhud-charge-bg {
+  stroke: rgba(77, 255, 210, 0.15);
+}
+
+.vhud-reticle .vhud-charge {
+  stroke: var(--neon2);
+  stroke-width: 4;
+  stroke-dasharray: 0 999;
+}
+
+.vhud-reticle .vhud-centre {
+  fill: var(--neon);
+}
+
+.vhud-reticle.no-orb .vhud-charge-bg {
+  stroke: rgba(255, 80, 80, 0.25);
+}
+
+.vhud-reticle.out {
+  opacity: 0.25;
+}
+
+.vhud-alien .vhud-panel {
+  display: flex;
+  position: absolute;
+  right: 3%;
+  bottom: 6%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35em;
+  color: var(--neon);
+  text-shadow: 0 0 6px var(--neon), 0 1px 2px #000;
+}
+
+.vhud-speed-n {
+  font-size: 1.9em;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.vhud-speed-u {
+  margin-left: 0.3em;
+  font-size: 0.75em;
+  opacity: 0.7;
+}
+
+.vhud-cells {
+  display: flex;
+  gap: 4px;
+}
+
+.vhud-cells i {
+  --fill: 0;
+  position: relative;
+  width: 14px;
+  height: 7px;
+  border: 1px solid rgba(77, 255, 210, 0.5);
+  transform: skewX(-20deg);
+  background: linear-gradient(to right, var(--neon) calc(var(--fill) * 100%), transparent 0);
+  box-shadow: none;
+}
+
+.vhud-cells i.on {
+  box-shadow: 0 0 6px var(--neon);
+}
+
+.vhud-boost {
+  position: relative;
+  width: 180px;
+  height: 8px;
+  border: 1px solid rgba(169, 139, 255, 0.55);
+  transform: skewX(-20deg);
+}
+
+.vhud-boost span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--neon2);
+  box-shadow: 0 0 8px var(--neon2);
+}
+
+.vhud-boost em {
+  position: absolute;
+  left: -4.6em;
+  top: -0.45em;
+  font-style: normal;
+  font-size: 0.7em;
+  color: var(--neon2);
+  text-shadow: 0 0 6px var(--neon2);
+  transform: skewX(20deg);
+  opacity: 0.6;
+}
+
+.vhud-boost.ready em {
+  opacity: 1;
+}
+
+.vhud-boost.burning span {
+  animation: vhud-flicker 0.08s steps(2) infinite;
+}
+
+@keyframes vhud-flicker {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.vhud-alien .vhud-lines {
+  display: block;
+  position: absolute;
+  inset: -10%;
+  opacity: 0;
+  background: repeating-conic-gradient(from 0deg, rgba(160, 255, 230, 0.16) 0deg 0.6deg, transparent 0.6deg 7deg);
+  -webkit-mask: radial-gradient(circle at center, transparent 32%, #000 75%);
+  mask: radial-gradient(circle at center, transparent 32%, #000 75%);
+  animation: vhud-lines 0.12s linear infinite;
+}
+
+@keyframes vhud-lines {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(3deg) scale(1.04);
+  }
+}

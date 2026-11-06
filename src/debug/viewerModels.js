@@ -30,6 +30,8 @@ import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
+import { buildUte } from '../render/uteModel.js';
+import { buildAlienQuad } from '../render/alienQuadModel.js';
 import { Rng } from '../core/Rng.js';
 import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
@@ -220,6 +222,34 @@ export const VIEWER_MODELS = [
     variants: () => ['Intact', 'Destroyed (burning)'],
     poses: [{ id: 'still', name: 'As it stands' }],
     create: hutModel,
+  },
+  {
+    id: 'ute',
+    name: 'Ute with a turret (experimental)',
+    note: 'A right-hand-drive farm ute, bull bar and snorkel, a heavy machine gun behind a shield in the tray. Drive it from the debug menu: Experimental vehicles.',
+    height: () => 1.6,
+    startDistance: () => 9,
+    poses: [
+      { id: 'parked', name: 'Parked' },
+      { id: 'driving', name: 'Driving (wheels rolling, steering, on its springs)' },
+      { id: 'firing', name: 'The gun firing (traversing, the barrel heating)' },
+      { id: 'lights', name: 'Lights: headlamps, driving lights, brake, reverse' },
+    ],
+    create: uteModel,
+  },
+  {
+    id: 'alienQuad',
+    name: 'Alien quad (experimental)',
+    note: "Earl's quad as the greys rebuilt it: neon veins, glowing hubs, twin plasma emitters, a boost. Ride it from the debug menu: Experimental vehicles.",
+    height: () => 1.1,
+    startDistance: () => 4.2,
+    poses: [
+      { id: 'parked', name: 'Parked (the neon idling)' },
+      { id: 'riding', name: 'Ridden (wheels rolling, the holo ring on)' },
+      { id: 'boost', name: 'Boosting (flame, the neon blazing)' },
+      { id: 'charge', name: 'Charging an orb (the cores swelling)' },
+    ],
+    create: alienQuadModel,
   },
   {
     id: 'standIns',
@@ -794,5 +824,78 @@ function standInModel(ctx) {
       free();
       holder.removeFromParent();
     },
+  };
+}
+
+// ---- the experimental vehicles: the ute and the alien quad ------------------------------------------
+
+function uteModel(ctx) {
+  const uc = ctx.cfg.ute;
+  const m = buildUte(uc);
+  ctx.scene.add(m.root);
+  const lit = uc.look.lit;
+  const glow = (mat, hex, gain) => mat.emissive.setHex(hex || 0).multiplyScalar(hex ? gain : 0);
+  let spin = 0;
+  let heat = 0;
+  let flash = 0;
+  return {
+    objects: [m.root],
+    update(dt, s) {
+      m.root.position.set(s.x, s.y, s.z);
+      m.root.rotation.set(0, s.facing + Math.PI, 0);
+      const driving = s.pose === 'driving';
+      const firing = s.pose === 'firing';
+      const lights = s.pose === 'lights';
+      const steer = driving ? Math.sin(s.poseTime * 0.8) * 0.5 : 0;
+      spin -= driving ? dt * 12 : 0;
+      for (const w of m.wheels) {
+        w.spin.rotation.x = spin;
+        w.group.rotation.y = w.front ? -steer : 0;
+      }
+      m.body.rotation.set(driving ? Math.sin(s.poseTime * 2.1) * 0.015 : 0, 0, driving ? steer * 0.06 : 0);
+      m.turret.yaw.rotation.y = firing ? Math.sin(s.poseTime * 0.6) * 1.2 : 0;
+      m.turret.pitch.rotation.x = firing ? 0.1 + Math.sin(s.poseTime * 1.3) * 0.08 : 0;
+      heat = firing ? Math.min(1, heat + dt * 0.25) : Math.max(0, heat - dt * 0.5);
+      if (firing && dt > 0) {
+        flash -= dt;
+        if (flash <= -0.07) flash = 0.04;
+      } else flash = 0;
+      m.turret.flash.visible = flash > 0;
+      m.turret.flash.rotation.z = s.poseTime * 37;
+      const k = Math.max(0, (heat - 0.35) / 0.65);
+      m.turret.barrel.emissive.setHex(uc.look.heatGlow).multiplyScalar(k * k * 2.2);
+      glow(m.lamps.head, lights ? lit.head : 0, 3);
+      glow(m.lamps.spot, lights ? lit.spot : 0, 3);
+      glow(m.lamps.tail, lights ? lit.tail : 0, 1.5);
+      glow(m.lamps.brake, lights && Math.floor(s.poseTime) % 2 === 0 ? lit.brake : 0, 2.5);
+      glow(m.lamps.reverse, lights && Math.floor(s.poseTime) % 4 === 3 ? lit.reverse : 0, 2);
+    },
+    setThermal() {}, // a cold engine
+    dispose: () => m.dispose(),
+  };
+}
+
+function alienQuadModel(ctx) {
+  const ac = ctx.cfg.alienQuad;
+  const m = buildAlienQuad(ac);
+  ctx.scene.add(m.root);
+  let spin = 0;
+  let t = 0;
+  return {
+    objects: [m.root],
+    update(dt, s) {
+      t += dt;
+      m.root.position.set(s.x, s.y, s.z);
+      m.root.rotation.set(0, s.facing + Math.PI, 0);
+      const riding = s.pose !== 'parked';
+      const boost = s.pose === 'boost' ? 1 : 0;
+      spin -= riding ? dt * (boost ? 40 : 14) : 0;
+      for (const w of m.wheels) w.spin.rotation.x = spin;
+      const charge = s.pose === 'charge' ? (s.poseTime % 1.6) / 1.1 : 0;
+      m.lens.material.emissive.setHex(riding ? ac.look.vein : 0).multiplyScalar(riding ? 3 : 0);
+      m.setGlow(t, { riding, boost, charge: Math.min(1, charge), cells: riding ? ac.plasma.cells * (0.5 + 0.5 * Math.sin(t)) : ac.plasma.cells, boostMeter: boost ? 1 - (s.poseTime % 3) / 3 : 1, firing: 0 });
+    },
+    setThermal() {},
+    dispose: () => m.dispose(),
   };
 }

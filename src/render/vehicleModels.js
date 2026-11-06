@@ -1041,3 +1041,6 @@ export function mirrorGeometry(g) {
   m.scale(-1, 1, 1);
   return flip(m.index ? m.toNonIndexed() : m); // (scale mirrors the normals too)
 }
+
+// The kit, for the experimental vehicles (the ute: render/uteModel.js).
+export const VEHICLE_KIT = { extrude, box, panel, rod, reshape, paint, merge, arch, flip };

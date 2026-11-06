@@ -104,6 +104,7 @@ export class Player {
       this.riding.drive(dt, input, this);
       this.bobOffset -= this.bobOffset * Math.min(1, this.cfg.headBob.returnSpeed * dt);
       this.applyCamera();
+      this.riding?.placeCamera?.(this); // the experimental vehicles: the view from the seat (the ute's cab tilts with it)
       return;
     }
     this.updateLook(input);

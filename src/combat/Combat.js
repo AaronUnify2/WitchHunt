@@ -154,7 +154,9 @@ export class Combat {
   onStrike(zombie, damage) {
     this.sfx.play('swipe', zombie);
     if (this.player.platform) return; // up the lookout tower, out of reach (M5)
-    this.hurtPlayer(damage, zombie.kind === 'mutant' ? 2 : 1);
+    const scale = this.player.riding?.strikeScale?.() ?? 1; // the experimental ute: the cab's door, the tray's height
+    if (scale <= 0) return;
+    this.hurtPlayer(damage * scale, zombie.kind === 'mutant' ? 2 : 1);
   }
 
   // Damage the player (armour first). shake: x the usual hurt shake.

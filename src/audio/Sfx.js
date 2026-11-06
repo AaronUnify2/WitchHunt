@@ -123,44 +123,69 @@ export class Sfx {
 
   // Session 15b: the quad bike's engine, a held note. on: running or not;
   // speed 0..1 (the pitch climbs with it); throttle 0..1 (a little louder on the gas).
-  engine(on, speed = 0, throttle = 0) {
+  // voice (the experimental vehicles): 'quad' (Earl's), 'ute' (a diesel's
+  // low knock, speed being its revs), 'alien' (a whining drive, a sub hum;
+  // boost 0..1 opens it up into a roar).
+  engine(on, speed = 0, throttle = 0, voice = 'quad', boost = 0) {
     if (!this.ready) return;
     if (this.engineMuted) on = false; // Session 17 (Aaron): cut while a cutscene plays
     const ctx = this.ctx;
+    if (on && this.engineNodes && this.engineNodes.voice !== voice) this.engine(false);
     if (!on) {
       if (this.engineNodes) {
-        const { osc, osc2, gain } = this.engineNodes;
+        const { oscs, gain } = this.engineNodes;
         gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08);
-        osc.stop(ctx.currentTime + 0.4);
-        osc2.stop(ctx.currentTime + 0.4);
+        for (const o of oscs) o.stop(ctx.currentTime + 0.4);
         this.engineNodes = null;
       }
       return;
     }
     if (!this.engineNodes) {
-      const osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      const osc2 = ctx.createOscillator();
-      osc2.type = 'square';
+      const V = ENGINE_VOICES[voice] ?? ENGINE_VOICES.quad;
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.value = 420;
+      filter.frequency.value = V.filter;
+      filter.Q.value = V.q ?? 0.7;
       const gain = ctx.createGain();
       gain.gain.value = 0.0001;
-      osc.connect(filter);
-      osc2.connect(filter);
-      filter.connect(gain).connect(this.master);
-      osc.start();
-      osc2.start();
-      this.engineNodes = { osc, osc2, filter, gain };
+      const oscs = V.waves.map((w) => {
+        const o = ctx.createOscillator();
+        o.type = w;
+        o.connect(filter);
+        o.start();
+        return o;
+      });
+      // The diesel's knock: the level wobbled at the firing rate.
+      let lfo = null;
+      let trem = null;
+      if (V.knock) {
+        trem = ctx.createGain();
+        trem.gain.value = 1;
+        lfo = ctx.createOscillator();
+        lfo.type = 'square';
+        const depth = ctx.createGain();
+        depth.gain.value = V.knock;
+        lfo.connect(depth).connect(trem.gain);
+        lfo.start();
+        oscs.push(lfo);
+        filter.connect(trem).connect(gain);
+      } else {
+        filter.connect(gain);
+      }
+      gain.connect(this.master);
+      this.engineNodes = { voice, oscs, filter, gain, lfo };
     }
-    const { osc, osc2, filter, gain } = this.engineNodes;
+    const n = this.engineNodes;
+    const V = ENGINE_VOICES[voice] ?? ENGINE_VOICES.quad;
     const t = ctx.currentTime;
-    const f = 38 + speed * 62 + throttle * 8;
-    osc.frequency.setTargetAtTime(f, t, 0.12);
-    osc2.frequency.setTargetAtTime(f * 0.502, t, 0.12);
-    filter.frequency.setTargetAtTime(380 + speed * 700 + throttle * 200, t, 0.15);
-    gain.gain.setTargetAtTime((0.09 + throttle * 0.05 + speed * 0.04) * 0.8, t, 0.1); // Session 16 (Aaron): 20% quieter
+    const f = V.base + speed * V.range + throttle * V.gas + boost * (V.boost ?? 0);
+    n.oscs.forEach((o, i) => {
+      if (o === n.lfo) return;
+      o.frequency.setTargetAtTime(f * V.ratios[i], t, 0.12);
+    });
+    if (n.lfo) n.lfo.frequency.setTargetAtTime(f * 0.5, t, 0.1);
+    n.filter.frequency.setTargetAtTime(V.filter + speed * V.open + throttle * 200 + boost * 1800, t, 0.15);
+    n.gain.gain.setTargetAtTime((V.level + throttle * 0.05 + speed * 0.04 + boost * 0.06) * 0.8, t, 0.1); // Session 16 (Aaron): 20% quieter
   }
 
   // M8: a dialogue blip (a short square pip at the speaker's pitch).
@@ -174,6 +199,15 @@ export class Sfx {
     this.ctx = null;
   }
 }
+
+// The engines' voices: waves (one oscillator each) at ratios of the base
+// frequency (Hz) that climbs with speed (range), the gas (gas) and a boost;
+// a low-pass that opens with speed; knock: a diesel's tremor (0..1).
+const ENGINE_VOICES = {
+  quad: { waves: ['sawtooth', 'square'], ratios: [1, 0.502], base: 38, range: 62, gas: 8, filter: 380, open: 700, level: 0.09 },
+  ute: { waves: ['sawtooth', 'sawtooth', 'square'], ratios: [1, 1.006, 0.5], base: 24, range: 46, gas: 5, filter: 260, open: 520, level: 0.1, knock: 0.45, q: 1.2 },
+  alien: { waves: ['sine', 'triangle', 'sawtooth'], ratios: [1, 2.01, 4.02], base: 70, range: 120, gas: 20, boost: 140, filter: 900, open: 1600, level: 0.07, q: 4 },
+};
 
 const RECIPES = {
   // M9.1: the flare gun's hollow pop, the flare catching with a hiss, and
@@ -581,6 +615,103 @@ const RECIPES = {
   radioStatic(s) {
     const o = s.out(undefined, undefined, 0.5);
     s.noiseBurst(o, { seconds: 1.4, type: 'bandpass', freq: 1700, endFreq: 1300, q: 0.8, gain: 0.28, attack: 0.2 });
+  },
+  // ---- the experimental vehicles (the ute, the alien quad) ----
+  horn(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 140);
+    s.tone(o, { seconds: 0.55, wave: 'square', freq: 392, gain: 0.18, attack: 0.02 });
+    s.tone(o, { seconds: 0.55, wave: 'square', freq: 466, gain: 0.14, attack: 0.02 });
+  },
+  carCrash(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.35, freq: 1400, endFreq: 120, gain: 0.8 });
+    s.tone(o, { seconds: 0.3, freq: 80, endFreq: 40, gain: 0.6 });
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 2600, q: 4, gain: 0.15, attack: 0.03 });
+  },
+  gearShift(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.35);
+    s.noiseBurst(o, { seconds: 0.06, type: 'bandpass', freq: 900, q: 2, gain: 0.4 });
+    s.tone(o, { seconds: 0.08, freq: 160, endFreq: 110, gain: 0.25 });
+  },
+  uteGun(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1.1, 220);
+    s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 2400, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.32, freq: 2800, endFreq: 160, gain: 1.0 });
+    s.tone(o, { seconds: 0.18, wave: 'square', freq: 58, endFreq: 34, gain: 0.55 });
+  },
+  gunHot(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 1.6, type: 'highpass', freq: 3500, endFreq: 5000, gain: 0.35, attack: 0.05 });
+    s.tone(o, { seconds: 0.25, wave: 'square', freq: 180, endFreq: 120, gain: 0.15 });
+  },
+  gunCool(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    s.noiseBurst(o, { seconds: 0.1, type: 'bandpass', freq: 1200, q: 3, gain: 0.4 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.08, type: 'bandpass', freq: 800, q: 3, gain: 0.4 }), 110);
+  },
+  brass(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.25);
+    s.tone(o, { seconds: 0.12, wave: 'triangle', freq: 3200 + Math.random() * 1500, endFreq: 2600, gain: 0.12 });
+  },
+  wiper(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.3);
+    s.noiseBurst(o, { seconds: 0.9, type: 'bandpass', freq: 700, endFreq: 500, q: 2, gain: 0.12, attack: 0.15 });
+  },
+  alienHum(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.tone(o, { seconds: 1.0, wave: 'sine', freq: 90, endFreq: 420, gain: 0.3, attack: 0.1, vibrato: 12 });
+    s.tone(o, { seconds: 0.8, wave: 'triangle', freq: 880, endFreq: 1760, gain: 0.06, attack: 0.3 });
+  },
+  boost(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 1.2, type: 'bandpass', freq: 400, endFreq: 3000, q: 1.2, gain: 0.7, attack: 0.02 });
+    s.tone(o, { seconds: 0.9, wave: 'sawtooth', freq: 110, endFreq: 660, gain: 0.25, attack: 0.02 });
+    s.tone(o, { seconds: 0.25, freq: 60, endFreq: 30, gain: 0.6 });
+  },
+  boostEnd(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.noiseBurst(o, { seconds: 0.7, type: 'bandpass', freq: 2000, endFreq: 300, q: 1, gain: 0.3 });
+  },
+  boostReady(s) {
+    const o = s.out(undefined, undefined, 0.3);
+    s.tone(o, { seconds: 0.12, wave: 'sine', freq: 880, gain: 0.25 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.2, wave: 'sine', freq: 1320, gain: 0.25 }), 110);
+  },
+  plasmaShot(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.tone(o, { seconds: 0.22, wave: 'sawtooth', freq: 1400, endFreq: 180, gain: 0.25 });
+    s.tone(o, { seconds: 0.16, wave: 'sine', freq: 300, endFreq: 90, gain: 0.35 });
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 4000, gain: 0.2 });
+  },
+  plasmaCharge(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    s.tone(o, { seconds: 1.15, wave: 'sawtooth', freq: 120, endFreq: 960, gain: 0.16, attack: 0.08, vibrato: 18 });
+    s.tone(o, { seconds: 1.15, wave: 'sine', freq: 240, endFreq: 1920, gain: 0.1, attack: 0.1 });
+  },
+  plasmaOrb(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.tone(o, { seconds: 0.6, wave: 'sawtooth', freq: 700, endFreq: 70, gain: 0.35 });
+    s.tone(o, { seconds: 0.5, wave: 'sine', freq: 140, endFreq: 40, gain: 0.7 });
+    s.noiseBurst(o, { seconds: 0.4, freq: 3000, endFreq: 300, gain: 0.4 });
+  },
+  plasmaFizzle(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.4);
+    s.noiseBurst(o, { seconds: 0.35, type: 'highpass', freq: 2500, endFreq: 6000, gain: 0.25 });
+  },
+  plasmaEmpty(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.3);
+    s.tone(o, { seconds: 0.08, wave: 'square', freq: 220, endFreq: 180, gain: 0.15 });
+  },
+  plasmaBurst(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 90);
+    s.noiseBurst(o, { seconds: 0.4, type: 'bandpass', freq: 1800, endFreq: 200, q: 0.8, gain: 0.7 });
+    s.tone(o, { seconds: 0.3, wave: 'sine', freq: 520, endFreq: 60, gain: 0.35 });
+  },
+  plasmaBoom(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1.3, 160);
+    s.noiseBurst(o, { seconds: 1.4, freq: 2200, endFreq: 70, gain: 1.1, attack: 0.005 });
+    s.tone(o, { seconds: 1.1, wave: 'sawtooth', freq: 300, endFreq: 30, gain: 0.45 });
+    s.tone(o, { seconds: 0.9, wave: 'sine', freq: 90, endFreq: 25, gain: 0.9 });
   },
   death(s) {
     const o = s.out();

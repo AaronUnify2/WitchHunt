@@ -3047,6 +3047,261 @@ export const config = {
     look: { tyre: 0x121212, hub: 0x262626, frame: 0x1c1c1c, body: 0x2a3018, seat: 0x161412, rack: 0x161616, metal: 0x18191a, grip: 0x0e0e0e, lamp: 0x3a3a30 },
   },
 
+  // ---- Experimental vehicles (debug menu only: "Experimental vehicles") ----
+  // Built to try out, not yet in the story (maybe end-of-game unlocks).
+  // Brought to Tom from the debug menu; not saved, not on the map.
+
+  // The ute (world/Ute.js, render/uteModel.js): a right-hand-drive farm ute
+  // with a heavy machine gun on a post in the tray. Tom drives from the cab
+  // (the view from the driver's seat: the gauges, the mirror, his hands on
+  // the wheel) and Y climbs him over into the tray to man the gun (the ute
+  // handbrakes to a stop); Y again drops him back behind the wheel.
+  // Riding it reuses the quad's rules where it can (getting on and off, the
+  // headlamp and its glare, the engine's noise, the witch's snare).
+  ute: {
+    // Driving (m/s, m/s², radians). A heavier, faster thing than the quad:
+    // about 85 km/h flat out on a pathway, still held back in the brush.
+    maxSpeed: 23.5,
+    reverseSpeed: 6,
+    acceleration: 7.5, // at low speed; it falls away toward the top
+    brake: 16,
+    coast: 1.6, // rolling resistance off the gas
+    engineBrake: 1.2, // extra drag off the gas in a low gear
+    undergrowthMultiplier: 0.42, // four-wheel drive: the brush slows it less than the quad
+    brushDrag: 2.5, // m/s² extra in thick brush
+    wheelbase: 3.18,
+    maxSteer: 0.6, // the front wheels' lock
+    steerSpeed: 2.6, // how fast the wheels turn toward the stick (rad/s)
+    steerFastLoss: 0.6, // share of the lock taken away at top speed (it's twitchy otherwise)
+    grip: 10, // how fast sideways sliding is killed (1/s)
+    handbrake: { grip: 1.4, yawBoost: 1.7, drag: 5 }, // A / Space: the rear lets go, it slides round
+    radius: 1.0, // each of its three body circles
+    circles: [-1.75, 0, 1.75], // ...along it (z)
+    bumpSpeed: 2.5,
+    bumpKeep: 0.35,
+    bumpShake: 1.4,
+    // The gears (an old five-speed diesel): each gear's top as a share of
+    // maxSpeed; it changes up at shiftUp of its range, down below shiftDown.
+    gears: [0.2, 0.38, 0.58, 0.8, 1],
+    idleRpm: 0.75, // x1000
+    redline: 4.0,
+    shiftUp: 0.92,
+    shiftDown: 0.42,
+    shiftSeconds: 0.3, // the drive cut while it changes
+    // Suspension (the body rocking on its springs): pitch and roll per m/s² and its spring.
+    suspension: { pitch: 0.006, roll: 0.012, stiffness: 55, damping: 7, maxPitch: 0.06, maxRoll: 0.07 },
+    // Getting in and out (the quad's prompts), the cab's view.
+    mountRange: 2.6, // from its side, by the driver's door
+    mountSeconds: 0.6,
+    dismountSeconds: 0.5,
+    dismountSpeed: 1.5,
+    stepOff: 1.9,
+    eye: { x: 0.42, y: 1.57, z: 0.16 }, // in the cab (the ute's frame)
+    eyeHeight: 1.57,
+    restPitch: -0.2, // the cab's view rests looking a little down (the road, the gauges over the wheel) // above the ground (Tom's position is kept under his eye)
+    seatBack: 0,
+    view: { yawLimit: 2.0, pitchMin: -0.7, pitchMax: 0.5, recentre: 1.6, recentreRate: 2.5 }, // radians; recentre: seconds of no look before the view eases back ahead
+    // The gunner: standing in the tray behind the gun.
+    gunner: { back: 0.8, up: 0.52, climbSeconds: 0.45, brakeStop: 30 },
+    // The gun (a heavy machine gun, belt-fed; no reloads, but it overheats).
+    gun: {
+      rate: 8.5, // rounds a second
+      damage: 46, // a level-1 citizen falls to two
+      pierce: 3, // through this many of the dead in a line
+      pierceKeep: 0.7,
+      range: 160,
+      falloff: [40, 160, 0.6], // full damage to 40 m, 60% at 160 m
+      spread: 0.45, // degrees, first rounds
+      spreadMax: 1.6, // degrees, after a long burst (short bursts stay tight)
+      spreadGrow: 0.07, // degrees per round
+      spreadSettle: 3.5, // degrees a second it settles off the trigger
+      aimSpread: 0.6, // x the spread with LT held (the view zooms)
+      aimFov: 0.72,
+      stagger: 0.5,
+      knockback: 1.2,
+      heatPerShot: 0.024, // about five seconds of fire from cold
+      coolRate: 0.38, // a second, off the trigger
+      coolDelay: 0.25,
+      jamUntil: 0.3, // overheated: it won't fire until it's cooled to this
+      kick: 0.35, // degrees of camera kick per round
+      shake: 0.12,
+      traverse: 9, // rad/s the gun can swing (the mount's weight; the view rides the gun)
+      pitchMin: -0.38,
+      pitchMax: 0.62,
+      tracerEvery: 2, // every second round's a tracer
+      noise: 90, // metres the dead hear it
+      brass: { pool: 60, life: 2.2, bounce: 0.35 },
+      rangeAssist: 0.08, // controller: radians either side where the gun's slowed over a target
+    },
+    // Into the dead at speed: they're thrown.
+    ram: { minSpeed: 4, reach: 1.3, front: 2.75, damage: 160, mutantScale: 0.45, stagger: 1, knockback: 9, keep: 0.93, mutantKeep: 0.55, shake: 0.6, witchDamage: 60 },
+    sideShove: 6, // m/s the dead are pushed away along its flanks
+    noise: { every: 1.2, idle: 30, full: 80 },
+    horn: { alert: 120, seconds: 0.5 }, // B / R in the cab: the dead within this come
+    strikeScale: { cab: 0.5, gunner: 0.85 }, // the dead's swipes through the door, up at the tray
+    witchSpeedScale: 1.6,
+    headlamp: { autoBelow: 0.35, color: 0xfff1d8, intensity: 1600, distance: 110, decay: 1.4, angle: 24, penumbra: 0.55, y: 1.05, front: -2.6, aimDistance: 32, aimDrop: 1.1, lens: 0xfff2c8,
+      glare: { fullDistance: 7, minFactor: 0.3, response: 8, spread: 0.1 } }, // dims up close (as the quad's), but the roadside trees don't kill it
+    // The gun's lamp, on the shield: it looks where the gun looks (on with the headlamps, D-pad right / H).
+    gunLamp: { color: 0xfff0d8, intensity: 1100, distance: 85, decay: 1.4, angle: 13, penumbra: 0.45, aimDistance: 30, aimDrop: 0.4 },
+    snare: { presses: 8, decay: 0.15, shake: 1.1, range: 2.6 },
+    // The windscreen: the dead's blood on it; the wipers come on by themselves.
+    splats: { pool: 8, minSpeed: 6, size: [0.07, 0.14], wipeDelay: 0.7, sweepSeconds: 1.1, sweeps: 2, fade: 3 },
+    // The rear-view mirror shows what's behind (a second, small camera; every `every` frames).
+    mirror: { live: true, width: 256, height: 80, every: 3, far: 70, fov: 32 },
+    fuel: 0.62, // where the gauge sits (the ute doesn't run out)
+    look: {
+      paint: 0x47503c, // dull bush green (pale paint glares under the torch)
+      dirt: 0x5a4030,
+      dirtHeight: 1.1,
+      dialInk: '#e6dfcc',
+      dialBrightness: 1.1,
+      needle: 0xff6a1a,
+      dashGlow: 0x0b0806, // the cab's faint night glow off the gauges
+      radioInk: '#ffb640',
+      warnLamp: 0x3cff6a,
+      warnBrake: 0xff2a1a,
+      blood: 0x3a0606,
+      flash: 0xffc070,
+      headLens: 0x3a3a34,
+      spotLens: 0x34342e,
+      tailLens: 0x3a0c08,
+      brakeLens: 0x400c08,
+      reverseLens: 0x3a3a36,
+      lit: { head: 0xfff0d0, spot: 0xfff4e0, tail: 0x8a1408, brake: 0xff2010, reverse: 0xd8d8d0 }, // the lenses' glow when lit
+      heatGlow: 0xff4a10, // the barrel at its hottest
+      odometerStart: 412873.4,
+      colours: {
+        under: '#141414',
+        rubber: '#121212',
+        steel: '#3a3b3c',
+        bar: '#1c1d1e',
+        glass: '#0c1014',
+        grille: '#0e0e0e',
+        seam: '#101010',
+        plate: '#5c5848',
+        amber: '#5a3a10',
+        alloy: '#4c4e50',
+        alloyDark: '#2e3032',
+        gun: '#26282a',
+        gunDark: '#1a1b1c',
+        shield: '#353a2e',
+        shieldEdge: '#202218',
+        ammoCan: '#3a4228',
+        brass: '#7a5e26',
+        grip: '#18120c',
+        jerry: '#4a1810',
+        jerryB: '#3a4228',
+        crate: '#3c3a28',
+        tyre: '#121212',
+        tyreWall: '#1c1c1c',
+        rim: '#4a4a46',
+        hole: '#0a0a0a',
+        hub: '#2a2a2a',
+        rope: '#5a4a30',
+        lining: '#565048',
+        liningDark: '#38352e',
+        trim: '#34312e',
+        trimDark: '#161514',
+        door: '#3e3a35',
+        dash: '#2a2826',
+        dashTop: '#22201e',
+        dashDark: '#0e0e0e',
+        dashSeam: '#232220',
+        knob: '#121212',
+        mat: '#101010',
+        seat: '#4a3426',
+        seatStripe: '#4a3a2a',
+        wheel: '#141414',
+        wheelHub: '#1a1a1a',
+        glove: '#4a3622',
+        sleeve: '#3a3c30',
+        cuff: '#22241c',
+        leaf: '#2c4a24',
+        string: '#8a8070',
+      },
+    },
+  },
+
+  // The alien quad (world/AlienQuad.js, render/alienQuadModel.js): Earl's
+  // quad as the greys rebuilt it: neon veins, glowing hubs, twin plasma
+  // emitters on the front rack, a boost. RT fires plasma bolts (hold for
+  // more), LT holds a charge for a big orb and lets it go; L3 / A boosts
+  // for three seconds. Keyboard: left mouse, right mouse (hold), Shift / Space.
+  alienQuad: {
+    maxSpeed: 15,
+    reverseSpeed: 4,
+    acceleration: 7,
+    brake: 14,
+    coast: 2.5,
+    steerRate: 2.1,
+    steerFullAt: 3,
+    steerFastLoss: 0.45,
+    undergrowthMultiplier: 0.5, // it skims the brush a little better than Earl's
+    radius: 0.85,
+    parkedRadius: 1.0,
+    bumpSpeed: 2,
+    bumpKeep: 0.25,
+    bumpShake: 1.2,
+    eyeHeight: 1.6,
+    seatBack: 0.4,
+    mountRange: 2.2,
+    mountSeconds: 0.6,
+    dismountSeconds: 0.5,
+    dismountSpeed: 1.5,
+    stepOff: 1.3,
+    wheel: { radius: 0.33, width: 0.27 },
+    // The boost: three seconds of it, then it charges back up.
+    boost: {
+      seconds: 3,
+      recharge: 7, // seconds from empty to full
+      minToStart: 0.35, // share of the meter it needs to fire up
+      speed: 30, // top speed while it burns (m/s: about 108 km/h)
+      acceleration: 24,
+      brush: 0.85, // the brush holds it back far less while it burns
+      fov: 1.2, // the view widens
+      shake: 0.25,
+      ram: 2.2, // x the ram's damage
+      steer: 0.75, // the steering's gentler at that speed
+    },
+    // The plasma: bolts from alternate emitters, a charged orb from both.
+    plasma: {
+      cells: 10, // the capacitor
+      recharge: 2.6, // cells a second, once it's been idle a moment
+      rechargeDelay: 0.5,
+      bolt: { cost: 1, every: 0.2, speed: 58, damage: 55, splash: 2.4, splashDamage: 34, radius: 0.16, life: 2.2, gravity: 2.5, knockback: 2.5, stagger: 0.6, scale: 1 },
+      orb: { cost: 4, charge: 1.1, speed: 40, damage: 180, splash: 5.5, splashDamage: 130, radius: 0.34, life: 3, gravity: 1.5, knockback: 9, stagger: 1, scale: 2.4, minCharge: 0.25 },
+      homing: { cone: 0.2, turn: 2.2, range: 45 }, // radians, rad/s, metres: a gentle pull toward the dead near the crosshair
+      aimCone: 1.2, // radians either side of ahead it can fire (the emitters face forward)
+      lights: 1, // point lights handed to the nearest balls (in the scene once the quad's been brought)
+      lightIntensity: 22,
+      lightDistance: 9,
+      noise: 40,
+      selfSplash: 0.25, // x the splash on Tom (an orb at his feet stings)
+    },
+    ram: { minSpeed: 4, reach: 0.95, damage: 80, mutantScale: 0.45, stagger: 0.8, knockback: 5, keep: 0.8, mutantKeep: 0.2, shake: 0.5 },
+    noise: { every: 1.5, idle: 22, full: 55 },
+    witchSpeedScale: 1.6,
+    headlamp: { autoBelow: 0.35, color: 0x9ffff0, intensity: 1100, distance: 85, decay: 1.4, angle: 19, penumbra: 0.5, y: 0.86, front: -1.08, aimDistance: 26, aimDrop: 0.8, lens: 0x9ffff0,
+      glare: { fullDistance: 7, minFactor: 0.25, response: 8, spread: 0.12 } },
+    snare: { presses: 6, decay: 0.15, shake: 0.9, range: 2.2 },
+    underglow: { color: 0x30ffb0, intensity: 4, distance: 4.5 },
+    look: {
+      tyre: 0x101010,
+      frame: 0x1a1d20,
+      body: 0x262c32,
+      seat: 0x101214,
+      metal: 0x22262a,
+      grip: 0x0c0c0c,
+      chitin: 0x232a32, // the greys' plating: a dark, blue-black shell
+      vein: 0x24ffc0, // the neon (cyan-green)
+      veinB: 0x8a5cff, // and violet accents
+      plasma: 0x3cffd0,
+      orb: 0x9a7cff,
+      glow: 1.9, // how far past white the neon's pushed (the bloom catches it)
+    },
+  },
+
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
   // Style pass 2 (Session 19): the weathering every place's props are baked
   // with (render/propKit.js), each place overriding what it likes in its

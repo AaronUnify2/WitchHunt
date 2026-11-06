@@ -15,6 +15,7 @@ export class Renderer {
     this.scale = renderConfig.renderScale;
     this.postEnabled = false;
     this.retro = false; // Session 10: the optional retro pixel filter (setRetro)
+    this.preRender = []; // functions (webglRenderer, scene) drawn before the frame: the ute's rear-view mirror
   }
 
   init(container, scene, camera) {
@@ -108,6 +109,7 @@ export class Renderer {
       camera.updateProjectionMatrix();
     }
     this.renderer.info.reset();
+    for (const draw of this.preRender) draw(this.renderer, this.scene);
     // M8: a cutscene's camera look needs the post chain, whatever the quality.
     if (this.postEnabled || this.postFX.lookActive) this.postFX.render(dt);
     else this.renderer.render(this.scene, camera);
