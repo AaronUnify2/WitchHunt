@@ -30,6 +30,7 @@ export class MapUi {
       sigilMarker: this.cfg.sigilMarker,
       witchMarker: this.cfg.witchMarker,
     };
+    this.shared = shared; // the experimental dozer repaints mapCanvas where it carves
     this.minimap = new Minimap(this.cfg.minimap);
     this.minimap.init(root, shared);
     this.screen = new MapScreen(this.cfg.mapScreen);

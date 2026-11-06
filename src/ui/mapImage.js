@@ -74,6 +74,36 @@ export function drawMapImage(ground, map, typeColors) {
   return canvas;
 }
 
+// The experimental dozer: repaint the map's cells in [i0, j0, i1, j1]
+// (a trail it carved) from the ground's masks, shaded as drawMapImage does.
+export function repaintMapCells(canvas, ground, [i0, j0, i1, j1]) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = i1 - i0 + 1;
+  const h = j1 - j0 + 1;
+  const image = ctx.getImageData(i0, j0, w, h);
+  const px = image.data;
+  const col = [0, 0, 0];
+  const cell = ground.maskCell;
+  const geo = ground.geo;
+  for (let j = j0; j <= j1; j++) {
+    const z = geo.zMin + j * cell;
+    for (let i = i0; i <= i1; i++) {
+      const x = geo.xMin + i * cell;
+      const idx = j * ground.maskNx + i;
+      pixelColor(ground, x, z, ground.open[idx], ground.dirt[idx], col);
+      const slope = ground.heightAt(x - cell, z - cell) - ground.heightAt(x + cell, z + cell);
+      const shade = Math.max(0.55, Math.min(1.45, 1 + slope * SHADE));
+      const o = ((j - j0) * w + (i - i0)) * 4;
+      px[o] = Math.min(255, col[0] * shade);
+      px[o + 1] = Math.min(255, col[1] * shade);
+      px[o + 2] = Math.min(255, col[2] * shade);
+      px[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(image, i0, j0);
+}
+
 function pixelColor(ground, x, z, open, dirt, out) {
   const geo = ground.geo;
   const line = ground.cliffZ(x);

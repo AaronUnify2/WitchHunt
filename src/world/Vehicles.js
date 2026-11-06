@@ -71,6 +71,7 @@ export class Vehicles {
     this.list = placed.map((p) => ({ ...p, def: this.data.types[p.type], spots: spotsOf(p, this.data.types[p.type], vc.spotOut) }));
     this.time = 0;
     this.restock();
+    this.colliderGrid = ctx.colliders;
     this.buildColliders(ctx.colliders);
     this.renderer = new VehicleRenderer(vc, this.data, this.rng.fork('looks'));
     this.renderer.init(scene, this.list, this.ground);
@@ -135,13 +136,51 @@ export class Vehicles {
       const s = Math.sin(v.yaw);
       const c = Math.cos(v.yaw);
       const y = this.ground.heightAt(v.x, v.z);
+      v.colliders = [];
       for (let i = 0; i < n; i++) {
         const a = -core / 2 + (core * i) / n;
         const b = -core / 2 + (core * (i + 1)) / n;
         const col = segmentCollider(v.x + s * a, v.z + c * a, v.x + s * b, v.z + c * b, width / 2, y - 0.5, y + height, true);
+        col.vehicle = v; // the experimental dozer pushes cars (moveVehicle)
         grid.insert(col);
+        v.colliders.push(col);
       }
     }
+  }
+
+  // The experimental dozer: v pushed or dragged to (x, z), facing yaw. Its
+  // colliders, search spots, model and lamps go with it.
+  moveVehicle(v, x, z, yaw) {
+    const grid = this.colliderGrid;
+    for (const col of v.colliders ?? []) {
+      col.off = true;
+      const cell = grid?.cells.get(grid.key(Math.floor(col.x / grid.cellSize), Math.floor(col.z / grid.cellSize)));
+      const i = cell ? cell.indexOf(col) : -1;
+      if (i >= 0) cell.splice(i, 1);
+    }
+    v.x = x;
+    v.z = z;
+    v.yaw = yaw;
+    v.spots = spotsOf(v, v.def, this.vc.spotOut);
+    if (grid) {
+      const piece = this.vc.colliderPiece;
+      const [length, width, height] = v.def.size;
+      const core = Math.max(0.01, length - width);
+      const n = Math.max(1, Math.ceil(core / piece));
+      const s = Math.sin(yaw);
+      const c = Math.cos(yaw);
+      const y = this.ground.heightAt(x, z);
+      v.colliders = [];
+      for (let i = 0; i < n; i++) {
+        const a = -core / 2 + (core * i) / n;
+        const b = -core / 2 + (core * (i + 1)) / n;
+        const col = segmentCollider(x + s * a, z + c * a, x + s * b, z + c * b, width / 2, y - 0.5, y + height, true);
+        col.vehicle = v;
+        grid.insert(col);
+        v.colliders.push(col);
+      }
+    }
+    this.renderer.move(v, this.ground);
   }
 
   // ---- each frame ----------------------------------------------------------------

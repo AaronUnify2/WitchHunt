@@ -161,6 +161,7 @@ export class NearTrunks {
         if (!list) continue;
         for (const i of list) {
           const tree = this.trees[i];
+          if (tree.felled) continue; // the experimental dozer pushed it over
           if (Math.hypot(tree.x - x, tree.z - z) > reach) continue;
           const kind = c.kinds[tree.variant];
           const k = kind.trunk;

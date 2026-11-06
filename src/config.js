@@ -3302,6 +3302,106 @@ export const config = {
     },
   },
 
+  // The dozer (world/Dozer.js, render/dozerModel.js, world/LandClearing.js;
+  // experimental, debug menu only): Earl's old forestry crawler dozer. Slow
+  // and unstoppable: it pushes over trees (the tall and thick hold a moment),
+  // cuts trails that stay (and show on the map), shoves the dead before its
+  // blade and crushes them under its tracks, pushes abandoned cars about and
+  // drags them (or the dead) on its winch. The loudest thing in the woods.
+  // Left stick: drive (tank steering: it pivots on the spot); RT / left mouse:
+  // the blade down (it digs: bare earth); LT / right mouse: the blade right up
+  // (the dead slip under it, into the tracks); B / R: the winch's hook at what
+  // you're looking at (again: let go); hold Y / F: reel it in; A / Space: the
+  // horn; D-pad right / H: the work lights; hold X / E (stopped): get off.
+  dozer: {
+    maxSpeed: 5.2, // m/s: about 19 km/h (a jog: a sprint outruns it)
+    reverseSpeed: 3,
+    acceleration: 2.2,
+    brake: 6,
+    turnRate: 0.95, // rad/s at full lock (pivoting on the spot, too)
+    turnAccel: 3,
+    undergrowthMultiplier: 0.88, // the brush barely slows it
+    bladeLoad: 0.75, // x top speed with the blade down, digging
+    pushLoad: 0.55, // x top speed pushing a car
+    pileLoad: 0.06, // x top speed lost for each of the dead before the blade
+    halfTrack: 0.98,
+    circles: [-1.15, 0, 1.2], // its body's circles along it (z), radius `radius`
+    radius: 1.28,
+    bladeHalf: 1.7,
+    bladeFront: -2.95, // the blade's face (z), when carried
+    bladeSpeed: 1.4, // how fast the blade moves (lift units a second)
+    bumpSpeed: 0.8,
+    bumpShake: 1.4,
+    // Getting on and off (the quad's prompts).
+    mountRange: 2.6,
+    mountSeconds: 0.8,
+    dismountSeconds: 0.6,
+    dismountSpeed: 0.6,
+    stepOff: 2.1,
+    eye: { x: 0, y: 2.6, z: 0.66 }, // on the seat (its frame), high over the hood
+    eyeHeight: 2.6,
+    seatBack: 0,
+    restPitch: -0.3,
+    view: { yawLimit: 2.6, pitchMin: -0.85, pitchMax: 0.6, recentre: 2.2, recentreRate: 1.8 },
+    // Trees: pushed by the blade (or the body), they go; the big ones hold a while.
+    fell: { minSpeed: 0.05, sideFell: true },
+    // The dead: before the blade they're pushed (and hurt), pinned they're crushed;
+    // under the tracks (the blade up, or from the side) they're crushed.
+    crush: { push: 18, pinned: 260, tracks: 340, ram: 40, mutantScale: 0.5, knockback: 3, shove: 5, stagger: 0.9 },
+    // They climb onto it while it's slow (the open cab): one that's held on
+    // beside the station for `seconds` reaches Tom; going fast or pivoting throws them off.
+    climb: { seconds: 1.4, slowBelow: 1.4, throwAbove: 2.4, throwTurn: 0.7, spot: [1.12, 0.55] },
+    strikeScale: 0.9,
+    // The winch: its hook, its cable, the pull.
+    winch: { range: 30, cone: 0.22, hookSpeed: 40, reel: 2.6, minLength: 2.5, drag: 7, carPull: 1, zombieDamage: 14, segments: 10, sag: 0.08 },
+    noise: { every: 1.0, idle: 70, full: 150 },
+    horn: { alert: 160 },
+    witchSpeedScale: 1.3,
+    // The work lights: on the radiator guard, over the blade, lighting the ground before it.
+    headlamp: { autoBelow: 0.35, color: 0xfff2dc, intensity: 1300, distance: 70, decay: 1.4, angle: 26, penumbra: 0.6, y: 1.8, front: -2.2, aimDistance: 24, aimDrop: 1.6, lens: 0xfff2c8,
+      glare: { fullDistance: 7, minFactor: 0.08, response: 8, spread: 0.16 } },
+    snare: { presses: 6, decay: 0.15, shake: 0.9, range: 2.8 },
+    // The ground it works, the trees it fells (world/LandClearing.js).
+    clearing: {
+      trackOpen: 0.75, // under the tracks: the undergrowth crushed this far (open ground)
+      trackDirt: 0.25, // ...and churned up this much
+      bladeWidth: 1.75, // the blade's cut (half), when it's down
+      soft: 1.2,
+      stampSpacing: 1.2,
+      flushEvery: 0.35, // seconds between sending the ground and the map
+      logs: 120,
+      stumps: 300,
+      fallingPool: 6,
+      // How long a tree holds: past freeHeight metres tall (and freeRadius thick).
+      strain: { freeHeight: 14, perMetre: 0.12, freeRadius: 0.55, perRadius: 1.2 },
+      fall: { gravity: 3.2, push: 0.3, lie: 2.2, sink: 2.2, shake: 0.8 },
+      look: { bark: 0x2e261e, cut: 0x6a5a40, dust: 0x5a4a34, needles: 0x2a3a22, stumpHeight: 0.45 },
+    },
+    look: {
+      mudHeight: 1.1,
+      dialInk: '#e6dfcc',
+      dialBrightness: 1.05,
+      hoursStart: 18432.6,
+      colours: {
+        paint: 0x7a6420, // a faded, dull cat yellow (bright yellow glares under the torch)
+        frame: 0x222220,
+        dark: 0x161616,
+        steel: 0x3a3a38,
+        seam: 0x2a2410,
+        exhaust: 0x2a2018,
+        seat: 0x1c1a16,
+        edge: 0x2c2c2a,
+        shoe: 0x262624,
+        cable: 0x34302a,
+        cableDark: 0x1e1c18,
+        chrome: 0x6a6a66,
+        glove: 0x4a3622,
+        sleeve: 0x3a3c30,
+      },
+      mud: 0x3a2c1c,
+    },
+  },
+
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
   // Style pass 2 (Session 19): the weathering every place's props are baked
   // with (render/propKit.js), each place overriding what it likes in its

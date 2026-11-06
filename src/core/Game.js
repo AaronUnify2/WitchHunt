@@ -61,6 +61,8 @@ import { GasStation } from '../encounters/GasStation.js';
 import { Quad } from '../world/Quad.js';
 import { Ute } from '../world/Ute.js';
 import { AlienQuad } from '../world/AlienQuad.js';
+import { Dozer } from '../world/Dozer.js';
+import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
 import { MetaStore } from '../meta/MetaStore.js';
@@ -552,7 +554,12 @@ export class Game {
     this.ute.init(ctx);
     this.alienQuad = new AlienQuad(this.cfg, this.bus);
     this.alienQuad.init(ctx);
-    this.experimental = [this.ute, this.alienQuad];
+    // The dozer, and what it does to the woods (trees down, trails cut: saved).
+    this.clearing = new LandClearing(this.cfg.dozer.clearing, this.cfg.forest, this.bus);
+    this.clearing.init(this.scene, { world: this.world, mapUi: this.mapUi, colliders: this.colliders, sfx: this.combat.sfx, fx: this.combat.fx, player: this.player });
+    this.dozer = new Dozer(this.cfg, this.bus);
+    this.dozer.init({ ...ctx, clearing: this.clearing, vehicles: this.vehicles });
+    this.experimental = [this.ute, this.alienQuad, this.dozer];
     for (const v of this.experimental) {
       this.combat.promptSources.push(v.hud);
       this.vehicles.busy?.push(v.hud);
@@ -1025,6 +1032,7 @@ export class Game {
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
+      clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
       homeStop: this.homeStop.saveState(), // Session 18 (optional)
     };
   }
@@ -1070,6 +1078,7 @@ export class Game {
     this.outpost.loadState(d.outpost);
     this.outpost.checkCall();
     this.quad.loadState(d.quad);
+    this.clearing.loadState(d.clearing);
     this.homeStop.loadState(d.homeStop);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
@@ -1287,6 +1296,7 @@ export class Game {
     this.outpost.dispose();
     this.quad.dispose();
     for (const v of this.experimental) v.dispose();
+    this.clearing.dispose();
     this.vehicleHud.dispose();
     this.gates.dispose();
     this.progress.dispose();

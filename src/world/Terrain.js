@@ -103,6 +103,7 @@ export class Terrain {
     masks.minFilter = THREE.LinearFilter;
     masks.needsUpdate = true;
     this.textures.push(litter, moss, dirt, noise, masks);
+    this.masks = masks; // the experimental dozer carves trails into it (updateMasks)
 
     // Mask texel centres sit on the mask grid points.
     const width = (g.maskNx - 1) * g.maskCell;
@@ -344,6 +345,23 @@ export class Terrain {
 
   setDrawDistance(distance) {
     this.culler.setDrawDistance(distance);
+  }
+
+  // The experimental dozer: the mask cells in [i0, j0, i1, j1] rewritten
+  // from the ground's masks; uploaded on the next frame drawn.
+  updateMasks(box) {
+    const g = this.ground;
+    const data = this.masks?.image.data;
+    if (!data || !box) return;
+    const [i0, j0, i1, j1] = box;
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const idx = j * g.maskNx + i;
+        data[idx * 2] = Math.round(g.dirt[idx] * 255);
+        data[idx * 2 + 1] = Math.round(g.open[idx] * 255);
+      }
+    }
+    this.masks.needsUpdate = true;
   }
 
   dispose() {

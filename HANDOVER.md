@@ -89,6 +89,7 @@ Aaron asked for a quick experimental pass (not minimum viable): **a ute with a t
 - The ute's rear-view mirror is a `Renderer.preRender` hook (every third frame, in the cab only).
 - The config's `ute.view` is the cab's look limits; `ute.look` is its colours.
 - Driving up the road toward the gas station plays its arrival sweep (as on foot).
+- **Part 2, the dozer** (`world/Dozer.js`, `world/LandClearing.js`, `render/dozerModel.js`): it edits the world: `Forest.fellTree()` hides a tree's instance and turns its collider off; `GroundField.carve()` changes the masks, `Terrain.updateMasks()` re-sends the texture (a few times a second while it works), `repaintMapCells()` redraws the map there. Felled trees and carved ground are saved (`clearing`). `Vehicles.moveVehicle()` moves an abandoned car (its colliders, spots and every instance). Aaron hasn't driven it yet.
 
 ## Next: Session 20, Level & Encounter Designer (+ AI Programmer): the north frontier (M10 part 1)
 

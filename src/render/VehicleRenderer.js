@@ -259,7 +259,7 @@ export class VehicleRenderer {
         new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, v.yaw, roll, 'YXZ')),
         new THREE.Vector3(1, 1, 1),
       );
-      const look = { base, paint, paint2, lampAt: li };
+      const look = { base, paint, paint2, lampAt: li, flat, from: { si, di, wi, li } };
       v.look = look;
       v.groundY = y;
       const model = this.models[v.type];
@@ -328,6 +328,7 @@ export class VehicleRenderer {
         look.lampKeys.push(lamp[6]);
       }
       look.lampsOn = false;
+      look.to = { si, di, wi, li }; // its instances run from look.from to here, in each mesh (move())
       this.refresh(v);
     }
     const modelMeshes = Object.values(this.models).flatMap((m) => Object.values(m.meshes));
@@ -495,6 +496,47 @@ export class VehicleRenderer {
     out.copy(base).multiply(this.local.makeTranslation(hx, hy, hz)).multiply(rot);
     out.multiply(this.local.makeTranslation(sx - hx, sy - hy, sz - hz)).multiply(this.local.makeScale(sw, sh, sl));
     return out;
+  }
+
+  // The experimental dozer pushes and winches cars about: v now stands at
+  // (v.x, v.z) facing v.yaw. Every instance it owns is carried by the change
+  // in its base (sat again on the slope under it).
+  move(v, ground) {
+    const look = v.look;
+    const t = this.data.types[v.type];
+    const [length, width] = t.size;
+    const s = Math.sin(v.yaw);
+    const c = Math.cos(v.yaw);
+    const h = (lx, lz) => ground.heightAt(v.x + s * lz + c * lx, v.z + c * lz - s * lx);
+    const front = h(0, length / 2);
+    const back = h(0, -length / 2);
+    const left = h(-width / 2, 0);
+    const right = h(width / 2, 0);
+    const y = Math.min((front + back) / 2, (left + right) / 2, ground.heightAt(v.x, v.z)) - UP_SINK;
+    const base = new THREE.Matrix4().compose(
+      new THREE.Vector3(v.x, y, v.z),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.atan2(back - front, length), v.yaw, Math.atan2(right - left, width) + (look.flat ?? 0), 'YXZ')),
+      new THREE.Vector3(1, 1, 1),
+    );
+    const delta = new THREE.Matrix4().copy(base).multiply(this.tmp.copy(look.base).invert());
+    const m = new THREE.Matrix4();
+    const carry = (mesh, i0, i1) => {
+      for (let i = i0; i < i1; i++) {
+        mesh.getMatrixAt(i, m);
+        mesh.setMatrixAt(i, m.premultiply(delta));
+      }
+      if (i1 > i0) mesh.instanceMatrix.needsUpdate = true;
+    };
+    const { from, to } = look;
+    carry(this.solid, from.si, to.si);
+    carry(this.wedge, from.di, to.di);
+    carry(this.wheel, from.wi, to.wi);
+    carry(this.lamp, from.li, to.li);
+    const model = this.models[v.type];
+    if (model) for (const mesh of Object.values(model.meshes)) carry(mesh, look.model, look.model + 1);
+    look.base = base;
+    v.groundY = y;
+    for (const mesh of [this.solid, this.wedge, this.wheel, this.lamp, ...(model ? Object.values(model.meshes) : [])]) mesh.boundingSphere = null;
   }
 
   // An alarm flashes its lamps.

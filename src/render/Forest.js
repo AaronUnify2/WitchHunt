@@ -14,6 +14,7 @@ import { ChunkCuller } from './ChunkCuller.js';
 import { NearTrunks } from './NearTrunks.js';
 
 const MAX_SPRITES = 16; // size of the atlas rectangle table in the shader
+const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 
 // Shared GLSL: which way a sprite faces (toward the camera on the ground
 // plane). cameraPosition is the shadow camera during the shadow pass, so
@@ -92,6 +93,7 @@ export class Forest {
     this.bushes = layoutUndergrowth(c.undergrowth, ground, this.rng.fork('undergrowth'), c.densityScale);
     const atlas = makeForestAtlas(c, this.rng.fork('atlas'));
     this.atlas = atlas.texture;
+    this.rects = atlas.rects; // each sprite's [u, v, w, h] in the atlas (the dozer's falling trees use them)
     const rects = Array.from({ length: MAX_SPRITES }, (_, i) => new THREE.Vector4(...(atlas.rects[i] ?? [0, 0, 1, 1])));
     this.uniforms = {
       uTime: { value: 0 },
@@ -120,10 +122,57 @@ export class Forest {
     // Session 10: solid 3D trunks for the trees near you.
     this.nearTrunks = new NearTrunks(c, this.trees, this.rng.fork('trunks'));
     this.nearTrunks.init(this.scene, this.uniforms);
-    for (const tree of this.trees) {
+    this.trees.forEach((tree, i) => {
       // r blocks the player; vr (the canopy) is what the torch's glare check sees.
-      colliders.insert({ x: tree.x, z: tree.z, r: c.trunkRadius, vr: tree.width * c.glareRadiusRatio });
+      // tree: its index (the experimental dozer fells them: fellTree()).
+      tree.collider = { x: tree.x, z: tree.z, r: c.trunkRadius, vr: tree.width * c.glareRadiusRatio, tree: i };
+      colliders.insert(tree.collider);
+    });
+  }
+
+  // ---- felling (the experimental dozer: world/LandClearing.js) ----------------------------
+
+  // Tree i is down: its sprite and solid trunk gone, its collider off.
+  fellTree(i) {
+    const tree = this.trees[i];
+    if (!tree || tree.felled) return;
+    tree.felled = true;
+    if (tree.collider) tree.collider.off = true;
+    this.hideInstance(tree);
+    this.nearTrunks.dirty = true;
+  }
+
+  // A bush flattened.
+  clearBush(bush) {
+    if (bush.cleared) return;
+    bush.cleared = true;
+    this.hideInstance(bush);
+  }
+
+  hideInstance(item) {
+    if (!item.chunk) return;
+    item.chunk.setMatrixAt(item.slot, ZERO_MATRIX);
+    item.chunk.instanceMatrix.needsUpdate = true;
+  }
+
+  // The bushes within r of (x, z) (a grid of them made on first use).
+  bushesNear(x, z, r, out = []) {
+    const cell = 8;
+    if (!this.bushGrid) {
+      this.bushGrid = new Map();
+      for (const b of this.bushes) {
+        const key = `${Math.floor(b.x / cell)},${Math.floor(b.z / cell)}`;
+        if (!this.bushGrid.has(key)) this.bushGrid.set(key, []);
+        this.bushGrid.get(key).push(b);
+      }
     }
+    out.length = 0;
+    for (let cx = Math.floor((x - r) / cell); cx <= Math.floor((x + r) / cell); cx++) {
+      for (let cz = Math.floor((z - r) / cell); cz <= Math.floor((z + r) / cell); cz++) {
+        for (const b of this.bushGrid.get(`${cx},${cz}`) ?? []) if (!b.cleared && Math.hypot(b.x - x, b.z - z) <= r) out.push(b);
+      }
+    }
+    return out;
   }
 
   // colour: the colour pass (gets the tint), not the shadow pass.
@@ -170,6 +219,8 @@ export class Forest {
         matrix.makeScale(item.width, item.height, item.width).setPosition(item.x, item.y, item.z);
         mesh.setMatrixAt(i, matrix);
         variants[i] = sprite;
+        item.chunk = mesh; // where it's drawn (so it can be hidden: fellTree, clearBush)
+        item.slot = i;
         cx += item.x / entries.length;
         cz += item.z / entries.length;
       });

@@ -32,6 +32,7 @@ import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
 import { buildUte } from '../render/uteModel.js';
 import { buildAlienQuad } from '../render/alienQuadModel.js';
+import { buildDozer } from '../render/dozerModel.js';
 import { Rng } from '../core/Rng.js';
 import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
@@ -250,6 +251,21 @@ export const VIEWER_MODELS = [
       { id: 'charge', name: 'Charging an orb (the cores swelling)' },
     ],
     create: alienQuadModel,
+  },
+  {
+    id: 'dozer',
+    name: 'Forestry dozer (experimental)',
+    note: "Earl's old crawler dozer: tracks round an idler and a sprocket, a semi-U blade on push arms and rams, a ROPS cage, a winch. Drive it from the debug menu: Experimental vehicles.",
+    height: () => 2.0,
+    startDistance: () => 9,
+    poses: [
+      { id: 'parked', name: 'Parked (the blade carried)' },
+      { id: 'driving', name: 'Driving (the tracks running)' },
+      { id: 'pivot', name: 'Pivoting (the tracks running opposite ways)' },
+      { id: 'blade', name: 'The blade: up and down through its range' },
+      { id: 'lights', name: 'Work lights' },
+    ],
+    create: dozerModel,
   },
   {
     id: 'standIns',
@@ -894,6 +910,32 @@ function alienQuadModel(ctx) {
       const charge = s.pose === 'charge' ? (s.poseTime % 1.6) / 1.1 : 0;
       m.lens.material.emissive.setHex(riding ? ac.look.vein : 0).multiplyScalar(riding ? 3 : 0);
       m.setGlow(t, { riding, boost, charge: Math.min(1, charge), cells: riding ? ac.plasma.cells * (0.5 + 0.5 * Math.sin(t)) : ac.plasma.cells, boostMeter: boost ? 1 - (s.poseTime % 3) / 3 : 1, firing: 0 });
+    },
+    setThermal() {},
+    dispose: () => m.dispose(),
+  };
+}
+
+function dozerModel(ctx) {
+  const m = buildDozer(ctx.cfg.dozer);
+  ctx.scene.add(m.root);
+  let left = 0;
+  let right = 0;
+  return {
+    objects: [m.root],
+    update(dt, s) {
+      m.root.position.set(s.x, s.y, s.z);
+      m.root.rotation.set(0, s.facing + Math.PI, 0);
+      if (s.pose === 'driving') {
+        left += dt * 2.5;
+        right += dt * 2.5;
+      } else if (s.pose === 'pivot') {
+        left -= dt * 1.5;
+        right += dt * 1.5;
+      }
+      m.setTracks(left, right);
+      m.setBlade(s.pose === 'blade' ? Math.sin(s.poseTime * 0.8) : 0);
+      m.lamps.work.emissive.setHex(s.pose === 'lights' ? 0xfff0d0 : 0).multiplyScalar(s.pose === 'lights' ? 3 : 0);
     },
     setThermal() {},
     dispose: () => m.dispose(),

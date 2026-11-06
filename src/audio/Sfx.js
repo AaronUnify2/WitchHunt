@@ -206,6 +206,7 @@ export class Sfx {
 const ENGINE_VOICES = {
   quad: { waves: ['sawtooth', 'square'], ratios: [1, 0.502], base: 38, range: 62, gas: 8, filter: 380, open: 700, level: 0.09 },
   ute: { waves: ['sawtooth', 'sawtooth', 'square'], ratios: [1, 1.006, 0.5], base: 24, range: 46, gas: 5, filter: 260, open: 520, level: 0.1, knock: 0.45, q: 1.2 },
+  dozer: { waves: ['sawtooth', 'square', 'sawtooth'], ratios: [1, 0.5, 1.51], base: 17, range: 22, gas: 6, boost: 9, filter: 200, open: 380, level: 0.12, knock: 0.6, q: 1.6 },
   alien: { waves: ['sine', 'triangle', 'sawtooth'], ratios: [1, 2.01, 4.02], base: 70, range: 120, gas: 20, boost: 140, filter: 900, open: 1600, level: 0.07, q: 4 },
 };
 
@@ -712,6 +713,75 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 1.4, freq: 2200, endFreq: 70, gain: 1.1, attack: 0.005 });
     s.tone(o, { seconds: 1.1, wave: 'sawtooth', freq: 300, endFreq: 30, gain: 0.45 });
     s.tone(o, { seconds: 0.9, wave: 'sine', freq: 90, endFreq: 25, gain: 0.9 });
+  },
+  // ---- the dozer ----
+  dozerStart(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 200);
+    s.tone(o, { seconds: 1.4, wave: 'sawtooth', freq: 30, endFreq: 18, gain: 0.4, attack: 0.15 });
+    s.noiseBurst(o, { seconds: 1.2, freq: 500, endFreq: 120, gain: 0.5, attack: 0.1 });
+  },
+  dozerHorn(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 200);
+    s.tone(o, { seconds: 0.8, wave: 'square', freq: 196, gain: 0.2, attack: 0.03 });
+    s.tone(o, { seconds: 0.8, wave: 'sawtooth', freq: 247, gain: 0.12, attack: 0.03 });
+  },
+  hydraulic(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    s.tone(o, { seconds: 0.6, wave: 'sawtooth', freq: 260, endFreq: 330, gain: 0.06, attack: 0.08, vibrato: 6 });
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 2400, q: 2, gain: 0.1, attack: 0.05 });
+  },
+  trackClank(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.35, 90);
+    s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 1300 + Math.random() * 500, q: 5, gain: 0.5 });
+    s.tone(o, { seconds: 0.06, wave: 'square', freq: 120, endFreq: 90, gain: 0.12 });
+  },
+  treeCreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.tone(o, { seconds: 0.4, wave: 'sawtooth', freq: 90 + Math.random() * 40, endFreq: 140, gain: 0.12, attack: 0.1, vibrato: 25 });
+  },
+  treeCrack(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 160);
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 1800, gain: 1 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 900, endFreq: 300, q: 1, gain: 0.5 }), 60);
+  },
+  treeFall(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1.2, pos?.range ?? 140);
+    s.noiseBurst(o, { seconds: 1.0, freq: 1600, endFreq: 80, gain: 0.8, attack: 0.01 });
+    s.tone(o, { seconds: 0.7, freq: 55, endFreq: 28, gain: 0.9 });
+  },
+  scrape(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.noiseBurst(o, { seconds: 0.4, type: 'bandpass', freq: 2200 + Math.random() * 800, q: 6, gain: 0.35, attack: 0.03 });
+    s.tone(o, { seconds: 0.35, wave: 'sawtooth', freq: 700 + Math.random() * 300, endFreq: 500, gain: 0.04 });
+  },
+  crunch(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.18, freq: 1500, endFreq: 200, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 3000, gain: 0.4 });
+    s.tone(o, { seconds: 0.15, freq: 90, endFreq: 50, gain: 0.5 });
+  },
+  winchFire(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    s.noiseBurst(o, { seconds: 0.25, type: 'highpass', freq: 2500, endFreq: 800, gain: 0.4 });
+    s.tone(o, { seconds: 0.3, wave: 'sawtooth', freq: 600, endFreq: 150, gain: 0.08 });
+  },
+  winchClunk(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.tone(o, { seconds: 0.12, wave: 'square', freq: 180, endFreq: 90, gain: 0.3 });
+    s.noiseBurst(o, { seconds: 0.08, type: 'bandpass', freq: 1500, q: 3, gain: 0.5 });
+  },
+  winchReel(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.3);
+    s.noiseBurst(o, { seconds: 0.03, type: 'bandpass', freq: 2800, q: 6, gain: 0.5 });
+  },
+  winchRelease(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    s.tone(o, { seconds: 0.25, wave: 'triangle', freq: 400, endFreq: 900, gain: 0.12 });
+  },
+  winchSnap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 3500, gain: 1 });
+    s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 900, endFreq: 60, gain: 0.2 });
   },
   death(s) {
     const o = s.out();

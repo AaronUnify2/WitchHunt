@@ -33,6 +33,14 @@ export class VehicleHud {
         <div class="vhud-boost"><span></span><em>BOOST</em></div>
       </div>
       <div class="vhud-plate"></div>
+      <div class="vhud-dz">
+        <svg viewBox="0 0 60 40" class="vhud-blade"><path d="M4 34 L56 34" class="vhud-ground"/><g class="vhud-blade-g"><path d="M38 30 Q30 18 36 6 L40 6 Q34 18 42 30 Z" class="vhud-blade-p"/><path d="M40 26 L18 30" class="vhud-arm"/></g><rect x="6" y="20" width="20" height="10" rx="2" class="vhud-body"/></svg>
+        <div class="vhud-dz-state"></div>
+        <div class="vhud-dz-stats"></div>
+        <div class="vhud-dz-winch"></div>
+      </div>
+      <div class="vhud-strain"><span></span></div>
+      <div class="vhud-warn"></div>
       <div class="vhud-hint"></div>
     `;
     root.appendChild(this.el);
@@ -49,6 +57,12 @@ export class VehicleHud {
     this.hintEl = q('.vhud-hint');
     this.linesEl = q('.vhud-lines');
     this.reticle = q('.vhud-reticle');
+    this.bladeG = q('.vhud-blade-g');
+    this.dzState = q('.vhud-dz-state');
+    this.dzStats = q('.vhud-dz-stats');
+    this.dzWinch = q('.vhud-dz-winch');
+    this.strainBar = q('.vhud-strain span');
+    this.warnEl = q('.vhud-warn');
     this.owner = null;
     this.mode = '';
     this.cache = {};
@@ -73,6 +87,7 @@ export class VehicleHud {
     this.set('hint', d.hint ?? '', (t) => (this.hintEl.textContent = t));
     if (mode === 'ute-gun') this.showGun(d);
     else if (mode === 'alien') this.showAlien(d);
+    else if (mode === 'dozer') this.showDozer(d);
     else this.showCab(d);
   }
 
@@ -125,6 +140,23 @@ export class VehicleHud {
     this.set('charge', charge, (c) => (this.charge.style.strokeDasharray = `${C * c} ${C}`));
     this.set('orb', d.canOrb, (on) => this.reticle.classList.toggle('no-orb', !on));
     this.set('arc', d.inArc, (on) => this.reticle.classList.toggle('out', !on));
+  }
+
+  // The dozer: the blade's height as a little side view, what it's doing, the trees and trail, the winch.
+  showDozer(d) {
+    const lift = Math.round(d.blade * 20) / 20;
+    this.set('blade', lift, (b) => (this.bladeG.style.transform = `translateY(${-b * 10}px)`));
+    const state = d.blade < -0.5 ? 'BLADE DOWN · DIGGING' : d.blade > 0.6 ? 'BLADE UP' : 'BLADE CARRIED';
+    this.set('state', `${state}${d.pile ? ` · ${d.pile} before the blade` : ''}`, (t) => (this.dzState.textContent = t));
+    this.set('stats', `${Math.round(d.speed)} km/h · trees ${d.trees} · trail ${Math.round(d.trail)} m`, (t) => (this.dzStats.textContent = t));
+    this.set('winch', d.winch, (t) => (this.dzWinch.textContent = t));
+    this.set('aimed', d.aimed, (on) => this.el.classList.toggle('aimed', on));
+    const strain = Math.round(d.straining * 20) / 20;
+    this.set('strain', strain, (s) => {
+      this.strainBar.parentElement.style.opacity = s > 0 ? '1' : '0';
+      this.strainBar.style.width = `${s * 100}%`;
+    });
+    this.set('warn', d.climbers ? `${d.climbers > 1 ? `${d.climbers} OF THEM` : 'ONE OF THEM'} ON BOARD · PIVOT OR GO` : '', (t) => (this.warnEl.textContent = t));
   }
 
   hide(owner) {

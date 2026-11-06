@@ -1818,3 +1818,101 @@ body.in-cutscene .vhud {
     transform: rotate(3deg) scale(1.04);
   }
 }
+
+/* The dozer: a side view of the blade, its state, the winch; a strain bar when a tree holds. */
+.vhud-dozer .vhud-dz {
+  display: flex;
+  position: absolute;
+  right: 3%;
+  bottom: 6%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2em;
+  padding: 0.4em 0.7em;
+  border: 1px solid rgba(232, 200, 120, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  color: #e8d8a8;
+  font-size: 0.85em;
+  letter-spacing: 0.04em;
+}
+
+.vhud-blade {
+  width: 90px;
+  height: 60px;
+}
+
+.vhud-blade path,
+.vhud-blade rect {
+  fill: none;
+  stroke: #e8d8a8;
+  stroke-width: 2;
+}
+
+.vhud-blade .vhud-blade-p {
+  fill: rgba(232, 200, 120, 0.35);
+}
+
+.vhud-blade .vhud-ground {
+  stroke: rgba(232, 216, 168, 0.35);
+}
+
+.vhud-blade-g {
+  transition: transform 0.1s;
+}
+
+.vhud-dz-winch {
+  color: #c8c0a8;
+  min-height: 1.1em;
+}
+
+.vhud-dozer.aimed .vhud-sight {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.vhud-dozer .vhud-heat,
+.vhud-dozer .vhud-ring,
+.vhud-dozer .vhud-locked {
+  display: none;
+}
+
+.vhud-dozer .vhud-dot {
+  background: #e8c050;
+  box-shadow: 0 0 4px #e8c050;
+}
+
+.vhud-dozer .vhud-strain {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 160px;
+  height: 6px;
+  margin-left: -80px;
+  border: 1px solid rgba(232, 200, 120, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.vhud-strain span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #e8a040;
+}
+
+.vhud-dozer .vhud-warn {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  color: #ff5a3a;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  animation: vhud-blink 0.6s steps(2) infinite;
+}

@@ -1,5 +1,20 @@
 # Open questions
 
+## Side pass after Session 19, part 2: the forestry dozer (debug menu only)
+
+Claude's pick for a new experimental vehicle, Aaron's go-ahead ("debug menu only, showing off").
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 332 | **Felled trees and cut trails are saved** (the tree indices and the ground's stamps), so a run with the dozer keeps its trails. The rest of the experimental vehicles aren't saved. Keep that? | Saved (`clearing` in the save, optional). | `world/LandClearing.js` `saveState` / `loadState`; `Game.saveRun` |
+| 333 | **Cut trails change the game for everyone**: open ground is open ground, so the dead walk them faster too, and the witch can plant there. And the trails show on the map and minimap. | As described. | `GroundField.carve()`; `config.dozer.clearing` (`trackOpen`, `trackDirt`) |
+| 334 | **Big trees hold it**: past 14 m (and the thick oaks), the blade strains on them up to about a second before they go. Every tree can be felled; rocks, buildings and big trees at its flanks stop it. | As described. | `config.dozer.clearing.strain`; `Dozer.fellTrees()` |
+| 335 | **The dead**: before the blade they're pushed along (18 a second; pinned against something solid, 260 a second); with the blade up they slip under into the tracks (340 a second). Mutants take half. It's an open cab: stopped or slow, after 1.4 s beside the seat one climbs on and can reach Tom; going on past 2.4 m/s or pivoting hard throws it off. | As described. | `config.dozer.crush`, `config.dozer.climb` |
+| 336 | **Cars**: the blade shoves abandoned cars and wrecks; the winch hooks a car or one of the dead (B / R at it, within 30 m), drags it as the dozer drives away, reels it in on Y / F. Moved cars stay moved (not saved). | As described. | `Dozer.pushCars()`, `Dozer.updateWinch()`; `Vehicles.moveVehicle()`, `VehicleRenderer.move()` |
+| 337 | **Its speed**: 19 km/h (a jog; a sprint outruns it), pivoting on the spot. | As described. | `config.dozer.maxSpeed`, `turnRate` |
+| 338 | **It's the loudest thing in the woods**: the dead within 70-150 m come every second it runs; the horn draws them from 160 m. | As described. | `config.dozer.noise`, `horn` |
+| 339 | **The falling trees** are two crossed cards of the tree's own sprite, tipping over and sinking away after they land, a log and a stump left (up to 120 logs and 300 stumps, the oldest recycled). | As described. | `world/LandClearing.js`; `config.dozer.clearing` |
+
 ## Side pass after Session 19: the experimental vehicles (the ute with a turret, the alien quad)
 
 Debug menu only (**Experimental vehicles**), not yet in the story: Aaron is thinking of them as end-of-game unlocks. Aaron's answers before the build: seat swap for the ute's gun; RT plasma and L3 / A boost on the alien quad; debug only, playable, not saved or on the map.

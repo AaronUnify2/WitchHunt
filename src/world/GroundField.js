@@ -139,6 +139,34 @@ export class GroundField {
     return 1 - this.openAt(x, z);
   }
 
+  // The experimental dozer (world/LandClearing.js): open ground (and dirt,
+  // up to `dirt`) cut into the masks within r of (x, z), feathered over
+  // `soft` metres. Returns the mask cells' box it touched [i0, j0, i1, j1]
+  // or null if nothing changed.
+  carve(x, z, r, dirt = 1, soft = 1, open = 1) {
+    let box = null;
+    this.forBox(x, z, x, z, r + soft, (idx, px, pz) => {
+      const d = Math.hypot(px - x, pz - z);
+      const k = d <= r ? 1 : Math.max(0, 1 - (d - r) / soft);
+      if (k <= 0) return;
+      const o = Math.max(this.open[idx], open * k);
+      const t = Math.max(this.dirt[idx], dirt * k);
+      if (o === this.open[idx] && t === this.dirt[idx]) return;
+      this.open[idx] = o;
+      this.dirt[idx] = t;
+      const i = idx % this.maskNx;
+      const j = (idx - i) / this.maskNx;
+      if (!box) box = [i, j, i, j];
+      else {
+        box[0] = Math.min(box[0], i);
+        box[1] = Math.min(box[1], j);
+        box[2] = Math.max(box[2], i);
+        box[3] = Math.max(box[3], j);
+      }
+    });
+    return box;
+  }
+
   // The dirt and open masks as byte pairs (0-255: dirt, open), row by row
   // from the north-west corner, for the ground shader.
   maskBytes() {
