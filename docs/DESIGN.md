@@ -1,6 +1,6 @@
 # Witch Hunt — Game Dev Doc
 
-Oct 9, 2026 · @Aaron
+Oct 9, 2026 · @Aaron · **Brought up to date with the build on Nov 7, 2026** (after Session 19 and the experimental vehicles)
 
 ## How to use this doc
 
@@ -10,6 +10,8 @@ This is the single source of truth for building **Witch Hunt**. It is written fo
 - Every number is a **placeholder** that belongs in `config.js`, not in code.
 - Build in the order given in **Build plan**. Do not build ahead.
 - Where the doc is silent, pick the simplest option, make it a config value, and log it in `OPEN_QUESTIONS.md` in the repo.
+- **Where things stand** (Nov 7, 2026): the next section, **State of the game**, says what's built, what's a stand-in and what's still only designed. Sections describe the game **as it plays now** where it's built; designs not yet built are marked **Designed, not built**. In the built encounters, **"As built" and "As it plays now" notes override the original design text** below them, which is kept (with its *(proposed)* marks) as the record of what was planned. The mid-game and end-game encounters (everything past the cordon) are earlier designs waiting on Aaron's redesign.
+- `STATUS.md` has the build's detail session by session; `OPEN_QUESTIONS.md` the calls made along the way; `PLAYTEST.md` Aaron's play-test rounds.
 
 ## Overview
 
@@ -31,6 +33,52 @@ A browser-based first-person survival shooter in three.js. Play as a park ranger
 - Keyboard and mouse is a secondary scheme, mainly for development. No small-phone layout.
 - **Target device:** a Samsung Galaxy Tab S10 FE 5G (SM-X526B, April 2025: Exynos 1580, Xclipse 540 GPU, 2304×1440 display at 90 Hz) in Android Chrome, with an Xbox controller over Bluetooth. Runs fullscreen in landscape (Fullscreen API; lock to landscape where supported). Hosted on **GitHub Pages**.
 
+## State of the game (Nov 7, 2026)
+
+A snapshot for redesigning the mid-game and end-game: what a run is today, what's built that new encounters can lean on, and what's still only on paper. Built through Session 19 (style pass 2) plus the experimental vehicles; 726 tests pass; live on GitHub Pages.
+
+### A run today
+
+1. **The menu** over a live CCTV feed of the station gate: Continue, New Run, Skip intro (once the opening's been seen on this device). Modifiers and Settings are greyed out.
+2. **The opening** (Day 1, can't be failed): the Ground Zero cold open; Tom wakes in the comms room; the tower (the red light far south, the campsite's smoke); the campsite (the camcorder, the shotgun, the first wave, the first battery); home (patch the fence, fit the battery, Junie's talk).
+3. **Night 1**, the first defence: 9 zombies in three overlapping waves at the fence; the rifle on the tower or the shotgun at the fence; camera six's clip of the witch planting at the Pruitts' storm shelter; a fade to dawn.
+4. **Day 2 onward**, the rest of the opening cluster: the gas station (the forecourt pack, the first mutant, Earl's note, the scanner, the witch at the treeline, Earl's quad bike) → the storm shelter (12 dead and Earl holding the hatch, the sigil, Earl's keys, the room below, the diary and the tapes; a stop at home on the ride back) → the safe opens (the hunting rifle, empty; Ellen's call to adventure) → the military outpost (waves of army dead, helmets, the gun pit's rounds and machine gun, the generator and its floodlights, the barricade's peak, the compound's beetles, the Mothman's container C-7, the resin body, the armoury's charge, the field report and manifest, the dogfight through the scope from the watchtower) → the checkpoint opens.
+5. **Past the cordon** the map is the seeded frontier, but **none of its encounters are built**: every frontier clearing is a placeholder signpost (or a sigil ground). What works out there is the system layer: sigils and their marches home, the witch roaming and planting from her hut, trail cameras, abandoned cars, pathway fights with her, and the hut and the final battle (with charges from the outpost's armoury or the debug menu).
+6. **Every night** the witch plants (only inside the cluster until the cordon's crossed), sigils raise zombies that march on the station, and the station holds or falls whether Tom's home or away. Dawn autosaves.
+
+### Built (and reusable for the mid and end game)
+
+| Area | What's there |
+| --- | --- |
+| World | Seeded 22-clearing map (1 km × 1.4 km) with the fixed opening cluster, the road, the military cordon (blocks Tom only), story-flag gates, fog of war, minimap and map screen with objective stars |
+| Station | Fence (12 panels and a gate), doors, comms room, barricades (outside the fence), spike traps, floodlights, the fence box and charge, the turret (debug-given), the ledger (plan of the compound, upgrades, security, forecast, monitors, papers), real and simulated nights, alarm, dawn autosave |
+| Combat | Shovel, service rifle, shotgun, hunting rifle (scope, helmet-piercing), flare gun (lure, conk); pistol, SMG, heat-scope semi-auto and auto shotgun exist but only from the debug menu. Health, three armour bars, first aid. Explosive charges and the detonator. Exploding cars and gas pumps |
+| Enemies with AI | Zombies (citizen, police, army with helmets, Men in Black, Earl), mutants (incl. the gas station's authored one), hordes and marches, giant beetles (crates, the shell and the face), the witch (roam, plant, fight, flee, traps, hexes, wounds), the outpost's machine gun |
+| Models without AI yet | The grey alien (four cowboy-drift kit stages), the armed Men in Black. **Not modelled:** Bigfoot, the Mothman, the miner zombie |
+| Story systems | Dialogue from data (158 lines), radio with rate limits, face-to-face talk, subtitles with blips, trail cameras, cutscenes from data (69, every one in the debug menu) with camera looks, lore hand-ins (17 items) and the monitors, papers in close-up, tapes on D-pad down, story flags, objectives with breadcrumbs, the ESCAPE THE WITCH alert |
+| Vehicles | Abandoned cars (search, bonnet, battery, alarms, wear, explosions); **Earl's quad bike**; three **experimental vehicles** in the debug menu (the ute with a turret, the alien quad, the forestry dozer) |
+| Look | Style passes 1 and 2: ground blend, six tree kinds with solid trunks near, mist, fog nights, the grade, fireflies, beam dust, light shafts, the props kit (weathered, glare-capped meshes), dressed opening cluster, camera looks |
+| Debug | Overlay, debug menu in categories (time, cutscenes, models, teleport, witch, hut and explosives, zombies, player, station and vehicles, experimental vehicles, story, flags and gates, first day, outpost, dialogue, run and save, display), model viewer |
+
+### Stand-ins and gaps in what's built
+
+- **The HUD is a placeholder:** no clock or zombie-level pips on screen, no pixel font, no controller glyphs (prompts name the button in text). **No pause menu, inventory screen, settings, save-and-quit, modifiers or achievements.** The Menu and View buttons do nothing in play.
+- **Saving:** a dawn autosave only (and one after Skip intro). Zombies, pickups and the random streams aren't saved (OPEN_QUESTIONS #102).
+- **Sigil grounds** work (planting, faster spawning) but look like a signpost and a ring of stakes; their set dressing, twists and tells aren't built. The cemetery is the one inside the cluster.
+- **The witch's sighting lines** from trail cameras, the family's idle lines and most of the dialogue plan beyond the opening are unwritten.
+- **Sounds** are all placeholder Web Audio synth; the audio pass (Session 29) is to come.
+- **The crash sites** of the plane and the UFO are only marked by smoke columns after the dogfight; nothing is built at either.
+
+### Designed, not built (the mid and end game)
+
+Everything past the cordon. All of these are **earlier designs awaiting Aaron's redesign** (see Encounters):
+
+- **North frontier:** the old barn (Milo the Clown), the crashed plane (its lone grey alien), the abandoned mineshaft, the Car Armory and the government base (the turret, restocking charges, Men in Black).
+- **Middle band:** stairs in the woods, the time capsule, the Caller, the Bigfoot cave (the Mothman, Bigfoot, the Blessing).
+- **South band:** Ground Zero, the crashed UFO and the alien ship (the power core).
+- **The systems they need:** the interior system, Men in Black and alien AI, the Mothman (cave boss and flare attention: flares are counted, nothing comes), Bigfoot, the three unique prizes as world rewards, the classified documents (outlined, unwritten), sigil grounds' dressing.
+- **Late-game meta:** modifiers, achievements, the final HUD and menus.
+
 ## Core loop
 
 The game runs on a repeating day/night cycle. Each night the witch plants more sigils, so pressure rises until the player kills her or is overrun.
@@ -44,16 +92,17 @@ The game runs on a repeating day/night cycle. Each night the witch plants more s
 
 ### Time
 
-- Day/night length is config. Starting point: 8 min day, 6 min night, 1 min each for dusk and dawn (about 16 min per cycle).
-- The clock is always on the HUD.
+- Day/night length is config: 8 min day (07:00-19:00), 1 min dusk, 6 min night (20:00-06:00), 1 min dawn (about 16 min per cycle). Runs start at 07:00 on Day 1.
+- The clock is meant to be always on the HUD. **As built:** not on the placeholder HUD yet (the final HUD, Session 28); the debug overlay shows it.
+- The clock pauses while the map screen, a paper in close-up or a cutscene is up, and on Day 1 it holds at 17:00 until the opening's done (see Opening and first run).
 
 ### Run length and saving
 
 - A run should feel like a long board game session, like a game of Monopoly: roughly 1.5–2.5 hours across about 6–10 nights. Tune the witch so a skilled player can corner her around night 6–8.
 - **Permadeath:** one life per run, a new map seed each run.
-- **Saving:** autosave at each dawn; save and quit from the pause menu. One save slot per run, deleted when the run ends (win, death or overrun). **Destroying the hut also deletes it** (Aaron, Session 9): the final battle is a true point of no return, and nothing saves again that run.
-- **The save stores:** seed, clock and night number, player stats and inventory, armour bars, revealed map, station state (defences, damage, fence charge, turret ammo and mode), sigils, enemies, witch state and wounds, looted containers and vehicles, prizes secured, documents found, dialogue lines heard, Mothman attention, Men in Black state.
-- **Persistent across runs** (stored with settings, never deleted): achievements, unlocked modifiers, Skip intro.
+- **Saving:** autosave at each dawn; save and quit from the pause menu. **As built:** the dawn autosave (and one after Skip intro) only; there's no pause menu or save-and-quit yet (M12). One save slot per run, deleted when the run ends (win, death or overrun). **Destroying the hut also deletes it** (Aaron, Session 9): the final battle is a true point of no return, and nothing saves again that run.
+- **The save stores** (as built: seed, clock, player, inventory and armour, the station, vehicles, sigils, the witch, story flags, heard lines and milestones, lore, the opening's encounters, Earl's quad, the outpost's state, and the experimental dozer's felled trees and cut trails; not yet zombies, pickups or the random streams). As designed: seed, clock and night number, player stats and inventory, armour bars, revealed map, station state (defences, damage, fence charge, turret ammo and mode), sigils, enemies, witch state and wounds, looted containers and vehicles, prizes secured, documents found, dialogue lines heard, Mothman attention, Men in Black state.
+- **Persistent across runs** (stored with settings, never deleted): achievements, unlocked modifiers, Skip intro. **As built:** only Skip intro (whether the opening has been seen on this device).
 
 ## Player
 
@@ -63,27 +112,31 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 
 | Xbox controller | Keyboard / mouse | Action |
 | --- | --- | --- |
-| Left stick | WASD | Move |
+| Left stick | WASD | Move (riding: drive) |
 | Right stick | Mouse | Look |
-| L3 | Shift | Sprint (uses stamina) |
+| L3 | Shift | Sprint (uses stamina; click L3 once to sprint until you stop) |
 | R3 | C | Toggle crouch |
-| A | Space | Jump |
+| A | Space | Jump; skips a cutscene; picks in menus and the ledger |
 | RT | Left click | Attack / fire |
-| LT | Right click | Aim down sights |
-| X (hold) | E (hold) | Interact: dig, search, build, repair, fit battery, plant charge |
+| LT | Right click | Aim down sights (the hunting rifle: the scope) |
+| X (hold) | E (hold) | Interact: dig, search, take, build, repair, fit a battery, plant a charge, get on or off a vehicle, talk to the family |
 | B | R | Reload |
 | RB / LB | 1–8 / scroll | Next / previous weapon (decided with Aaron in M2; LB instead of Y from M5; keys 5–8 for the Session 10b guns) |
 | Y | F | Fire flare (Y from M5; was LB) |
 | D-pad up | M | Full map |
 | D-pad left | L | Toggle flashlight |
-| D-pad right | H | Use a first aid kit (decided with Aaron in M2) |
-| D-pad down | V | Radio home (e.g. to check a suspicious call) |
-| View | Tab | Inventory |
-| Menu | Esc | Pause, save and quit |
+| D-pad right | H | Use a first aid kit (decided with Aaron in M2); riding, the vehicle's headlamp instead |
+| D-pad down | V | Watch: play a tape or a feed that's waiting (Session 16, Aaron; was "radio home", never built) |
+| View | Tab | Inventory (no screen yet) |
+| Menu | Esc | Pause, save and quit (no pause menu yet) |
+| View + D-pad down (hold) | ` | Debug menu |
+| View + Menu (hold) | F3 | Debug overlay |
 
 - Light aim assist (slowdown near targets), adjustable stick sensitivity and dead zones (config).
 - **Headshots** do extra damage (config multiplier; Aaron in M2: ×2 at least, open to ×3–4; M2 uses ×3).
 - Detonating planted charges: a remote, selected like a weapon (RB / LB) and fired with RT.
+- Papers read in close-up (Earl's note, his diary, the field report, the manifest): D-pad / LB / RB turn pages, A goes on (and takes the paper on its last page), B puts it down.
+- **On vehicles** the gun is slung: no firing, charges or digging from the saddle of Earl's quad. The experimental vehicles have their own controls (see Vehicles Tom drives).
 
 ### Movement, flashlight and stealth
 
@@ -97,25 +150,34 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 
 ### Weapons
 
-The player starts each run with the **shovel**, the **flare gun** (and a few flares) and the **ranger service rifle** with only a handful of rounds.
+**As built (Sessions 15-16, Aaron):** Tom wakes **empty-handed**, with no first aid kits and no flares. The opening hands him his kit as he goes:
 
-- **As built** (Session 11 review): the shotgun is still in the starting kit (M2, so the guns could be compared); it moves to the campsite with the opening cluster (M9). **The flare gun is built** (M9.1, Session 14: see Flares); the Mothman's flare attention comes with M10.
+- **The shovel** leans by the cabin's front door (it can be taken once Night 1's clip has shown the witch burying something). Digging a sigil needs it.
+- **The service rifle** waits at the top of the lookout tower (5 + 10 rounds), there from the first climb but taken on Night 1 (its beat).
+- **The shotgun** is at the campsite (the green dome tent), with 8 shells.
+- **The hunting rifle** is in Earl's gun safe (the gas station's stockroom), empty; its rounds are in the outpost's gun pit (10).
+- **The flare gun** is always to hand on Y; flares are found (police car boots, sometimes an army zombie). Carry 3.
+- **First aid:** the comms room's first aid box holds 2 (once).
+- **The pistol, SMG, heat-scope semi-auto and auto shotgun** are built (Session 10b) but only come from the debug menu until encounters give them (OPEN_QUESTIONS #143).
+- Skip intro starts with the shovel, the service rifle, the shotgun, the box's 2 kits and the tutorial's scrap.
+
+The original design, kept for reference: the player starts each run with the **shovel**, the **flare gun** (and a few flares) and the **ranger service rifle** with only a handful of rounds.
 - Guns that fire the same rounds share one pool (Session 10b): the pistol and SMG, the pump and auto shotgun, the hunting rifle and the heat-scope rifle.
 
 | Weapon | Role | Where it comes from | Damage (placeholder) |
 | --- | --- | --- | --- |
-| Shovel | Melee, digging, quiet takedowns | Start | 20 |
-| Service rifle | Long range, good against the witch | Start | 25 per round |
+| Shovel | Melee, digging, quiet takedowns | By the cabin door (as built) | 20 |
+| Service rifle | Long range, good against the witch | The lookout tower (as built) | 25 per round |
 | Shotgun | Close range, crowd control | Campsite (guaranteed, every run) | 8 pellets × 6 |
-| Pistol | Reliable sidearm | The crashed plane (pilot's pistol) | 10 per round |
-| Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe, opened with the owner's combination (storm shelter); its rare rounds are in the military outpost's watchtower | 50 per round (150 to the head) |
-| Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter (Session 10b; which one is open) | 50 per round |
-| SMG (MP5-style) | Full auto; fires pistol rounds | An encounter (Session 10b; which one is open) | 10 per round |
-| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | An encounter (Session 10b; which one is open) | 8 pellets × 6 |
-| Flare gun | Light; lures zombies | Start | — |
-| Explosive charge | Remote-detonated blast | Mineshaft, military outpost, Car Armory | Config |
+| Pistol | Reliable sidearm | The crashed plane (pilot's pistol): not built, debug only for now | 10 per round |
+| Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
+| Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter (Session 10b; which one is open): debug only for now | 50 per round |
+| SMG (MP5-style) | Full auto; fires pistol rounds | An encounter (Session 10b; which one is open): debug only for now | 10 per round |
+| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | An encounter (Session 10b; which one is open): debug only for now | 8 pellets × 6 |
+| Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
+| Explosive charge | Remote-detonated blast | Built: the military outpost's armoury (one). Designed: the mineshaft, the Car Armory. Debug menu | Config |
 
-- **Alien shotgun shells:** 150% of a normal shell's damage, with a purple muzzle flash. From aliens.
+- **Alien shotgun shells:** 150% of a normal shell's damage, with a purple muzzle flash. From aliens. *(Designed, not built.)*
 - Damage values live in one weapon table in config; the turret's ammo conversion reads from it.
 
 ### The shovel and digging
@@ -123,6 +185,7 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 - Main melee weapon: short range, no ammo, silent.
 - **Hold interact** on a buried sigil to dig it up over a few seconds. Taking damage interrupts digging.
 - The same action digs open the storm shelter hatch, digs up the time capsule, and buries the Bigfoot's Blessing.
+- **As built:** a 2 s dig (Session 18) with a dig animation; a sigil being dug raises nothing. No digging on Night 1.
 
 ### Health, armour and healing
 
@@ -133,13 +196,13 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 | Armour | Colour | Comes from | Per pickup | Supply |
 | --- | --- | --- | --- | --- |
 | Ballistic | Grey-blue | Police zombies (vest), army zombies (helmet), Men in Black (body armour) | Vest +40, helmet +20, body armour +40 | Repeatable |
-| Energy | Green-cyan | Aliens (alien shields) | +30 | Limited: the crashed plane's lone alien and the alien ship |
-| Nature | Mossy green | Bigfoot's gift | +40 | One-off |
+| Energy | Green-cyan | Aliens (alien shields) | +30 | Limited: the crashed plane's lone alien and the alien ship *(designed, not built)* |
+| Nature | Mossy green | Bigfoot's gift | +40 | One-off *(designed, not built)* |
 
 - **Damage order** (one config list): ballistic → energy → nature → health, so the commonest armour goes first.
 - Energy and nature being limited is a starting position; revisit after play-testing.
 
-**Healing:** first aid kits are kept in the inventory (stackable) and used from it or a quick-use button (D-pad right / H). No animation: the player keeps moving.
+**Healing:** first aid kits are kept in the inventory (stackable, up to 9) and used from it or a quick-use button (D-pad right / H). No animation: the player keeps moving. Tom starts with none (the comms room's box has 2).
 
 - Health climbs one point at a time at **10 per second**: a **first aid kit heals 30** (3 s), an **alien med kit heals 60** (6 s).
 - A second kit used while one is working queues rather than stacks, so the 10/sec cap holds and nobody can spam-heal out of a burst of damage.
@@ -150,17 +213,32 @@ The player starts each run with the **shovel**, the **flare gun** (and a few fla
 - **Scrap:** the catch-all for building, repairing and upgrading.
 - **Batteries:** power the electric fence and turret. Taken from vehicles and some encounters. (Aaron, M5: no carry limit and no slowdown for carrying them, for now.)
 - **Explosive charges:** carry at most two. Take carry slots.
-- **Flares:** carry at most 3 (config). Few sources: start, loot tables, the crashed plane, the outpost.
-- **Ammo** per weapon type, **first aid kits**, **lore items** (documents, logbooks, the camcorder, the time capsule).
-- Limited carry slots, so trips home matter.
+- **Flares:** carry at most 3 (config). Few sources: police car boots, army zombies (as built); the crashed plane, the outpost (designed).
+- **Ammo** per weapon type, **first aid kits**, **lore items** (documents, logbooks, the camcorder, the time capsule, Earl's note, diary and tapes, the field report, the manifest).
+- Limited carry slots, so trips home matter. **As built:** no carry slots or inventory screen yet; ammo, kits, batteries, scrap and charges are counted on the HUD.
 
 ### Vehicles and batteries
 
-- Abandoned cars and trucks sit along pathways, in clearings and at encounters.
+- Abandoned cars and trucks sit along pathways, in clearings and at encounters. **As built:** about 45 a map (the cluster's in the same places every run), four types (sedan, pickup, sheriff's car, M35 army truck), each worn differently; three fixed wrecks on the road, the bloody wreck on the trail to the campsite, the campers' car, the gas station's forecourt cars, the outpost's trucks. Searching is quick (1.25 s; the bonnet 0.75 s, the battery 1.5 s). Cars blow up (see Ideas for later: exploding cars, built).
 - Searching the cabin and boot gives scrap and ammo.
 - **Getting a battery is physical:** hold interact on the bonnet to lift it (animation and sound), then hold again to pull the battery. Never a menu loot.
 - Each vehicle can be looted once per run.
 - (Aaron, M5: four types to start, car, pickup truck, police car and army truck, with special one-off vehicles possible for later scenes; about 45 a map, about 60% with a battery. Pulling a battery is noisy, and some have an alarm that pulling the battery kills.)
+
+### Vehicles Tom drives
+
+**Earl's quad bike** (built, Session 15b; Aaron: "too much walking and running"): behind the gas station by the stockroom's back door; Wyatt points it out after the witch sighting.
+
+- Hold X to get on (and, slowed right down, off). Left stick: gas, brake then reverse, steer (tighter slow). About 47 km/h on pathways, a third of that in the brush; trunks and walls stop it with a jolt; ridden into the dead at speed it knocks them down.
+- **No shooting from the saddle** (the gun's slung). Its engine draws the dead every 1.5 s, and **the witch is 1.6x faster while Tom rides**.
+- A headlamp (D-pad right), on by itself in the dark, dimmed up close like the torch. A witch's snare ridden over wraps round the front wheel: get off and tap X by it to free it.
+- Shown on both maps (an orange icon) where it was left; saved. Tom is never saved riding.
+
+**The experimental vehicles** (built after Session 19, **debug menu only**: "Experimental vehicles"; not in the story; Aaron: maybe end-of-game unlocks; OPEN_QUESTIONS #321-339). Each rides on the quad's rules (hold X on and off, its headlamp, its noise, the witch faster while Tom's on it, a snare round a wheel) and has its own HUD.
+
+- **The ute with a turret** (`world/Ute.js`): a right-hand-drive farm ute (bull bar, driving lights, snorkel, alloy tray) with a heavy machine gun behind a shield on a post in the tray. Driven from the cab: the view from the driver's seat (working gauges through five gears, the radio showing the game's time, a live rear-view mirror, his hands on the wheel), a handbrake that slides it round (A), a horn (B) that draws the dead. Ridden into the dead it throws them, with blood on the windscreen and the wipers clearing it. **Y climbs over into the tray** (it handbrakes to a stop) to man the gun: RT fires, LT steadies; a belt with no end that overheats; brass, tracers, a lamp on the gun. About 85 km/h.
+- **The alien quad** (`world/AlienQuad.js`): Earl's quad as the greys rebuilt it: neon veins, glowing hubs, a holo ring of cells over the bars. **L3 / A boosts** for 3 s (about 108 km/h, the brush hardly holding it, the ram tripled; 7 s to refill). **RT fires plasma bolts** that home gently and burst with splash; **hold LT to charge an orb** and let go. A capacitor of 10 cells. Answers the "quad upgrades" idea below.
+- **The forestry dozer** (`world/Dozer.js`, `world/LandClearing.js`): Earl's old crawler dozer. Tank steering (it pivots on the spot), about 19 km/h. **It changes the woods for the rest of the run:** the blade pushes trees over (the big ones strain first) leaving logs and stumps; the tracks crush the undergrowth; the blade, down (RT), cuts bare-earth trails that show on the map and are saved. The dead are shoved before the blade and crushed when pinned or under the tracks (blade up, LT); it's an open cab, so the dead climb on while it's slow. The blade shoves abandoned cars; **the winch** (B at a car or one of the dead) drags them. The loudest thing in the woods.
 
 ## Map
 
@@ -171,7 +249,7 @@ A dense forest stored as a graph: **clearings** are nodes, **pathways** are edge
 - **North to south.** The player always starts on the northern edge; the witch's hut is always deep in the south. The run is a push south.
 - **Northern cliff.** A tall cliff runs along the north edge. Nothing comes from the north and the player can't go north.
 - **22 clearings** (config): home, the witch's hut, one per encounter and one per sigil ground. The map is big on purpose: **1 km wide by 1.4 km north to south** (decided with Aaron in M3, to revisit after play-testing). Clearings and encounters are **data-driven**, so more can be added later without code changes.
-- **Danger gradient.** Each clearing has a band (north, middle, south) and a 0–1 "southness" value that scales enemy strength, trap danger and how strange the encounters get.
+- **Danger gradient.** Each clearing has a band (north, middle, south) and a 0–1 "southness" value that scales enemy strength, trap danger and how strange the encounters get. As built: north 0–0.40, middle 0.40–0.70, south 0.70–1 (Session 14 widened the north so the north frontier fits south of the cordon).
 - **Pathways** are walkable corridors through thick forest. Off-path forest is full of undergrowth that slows the player (and, less, zombies), so movement mostly follows the graph. Decided with Aaron in M3: it never blocks, so cutting through is a choice with a cost.
 - **Ground:** gentle rolling hills, levelled in clearings (decided with Aaron in M3).
 
@@ -202,13 +280,15 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 
 **Soft-gated path order (the classic soft funnel).** The world stays continuous: paths open and close; nothing teleports.
 
-| Step | When | What opens | On the forced corridor? |
+| Step | When (as built) | What opens | On the forced corridor? |
 | --- | --- | --- | --- |
-| 1 | Day 1 | Only the path to the abandoned campsite | Yes |
-| 2 | Night 1 onward | The way to the storm shelter, where the first sigil is planted, so the family's "go dig it up" works | No (Aaron, Oct 17): a short spur inside the cluster, reachable from Night 1 but never forced |
-| 3 | Day 2, after the campsite | The path to the gas station: the player's guaranteed second outing | Yes |
-| 4 | After the gas station, once the hunting rifle is claimed (safe + storm shelter combination), with Ellen's call to adventure | The path to the military outpost | Yes |
-| 5 | Once the player has fought through the outpost | The checkpoint opens and the frontier takes over | Yes |
+| 1 | Day 1, once Tom's been up the tower (the gate is chained until then) | Only the path to the abandoned campsite | Yes |
+| 2 | Dawn 1 (flag `day2`) | The path to the gas station (a fallen oak across the trail until then): the player's guaranteed second outing | Yes |
+| 3 | Once the gas station's witch sighting and Earl's note are both done (flag `shelterCall`; back-up: the first dawn after the gas station) | The way to the storm shelter on Pruitt land (a padlocked pipe gate) | No: a short spur inside the cluster, never forced, but needed for the safe's combination |
+| 4 | The moment the safe opens and the hunting rifle is claimed (flags `rifleClaimed`, `outpostCall`), with Ellen's call to adventure | The path to the military outpost (chained gates on the road and the cemetery path) | Yes |
+| 5 | Once the barricade's peak is down (flag `outpostCleared`) | The checkpoint opens; crossing it (`crossedCordon`) lets the frontier take over | Yes |
+
+*Changed in play-testing (Session 15b, Aaron):* the shelter was step 2 (open from Night 1); it now waits until after the gas station ("Pruitt land stays shut until the gas station"), so the order is always campsite → gas station → storm shelter → outpost.
 
 **The outpost is the genuine wall.** The M3 rule says off-path undergrowth only slows, never blocks. The home cluster is the deliberate, meaningful exception, and the block is the **military cordon** itself, not random terrain: the military sealed off the south, and the outpost's sandbag walls and checkpoint are the barrier. It's reinforced psychologically with signage, a checkpoint and the clear sense that Tom isn't supposed to go past. Tom's a ranger and this is nominally his forest, but the military have fenced off the south of it and won't say why. The player fights through the overrun checkpoint to open the south.
 
@@ -224,13 +304,13 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 
 **Call to adventure.** Ellen, who worked on the edge of the portal programme, knows what a quarantine zone means. When the witch's sigils turn up **outside** the military's containment zone, she realises containment has failed and sends Tom to the military checkpoint to report that the witch has escaped it. When Tom reaches the outpost, it's already overrun: the soldiers are dead, the containment has collapsed and nobody is coming. It's just Tom now. This is the big call to adventure and the point where the game lets go of the player's hand. It recasts the push south as Tom defying a failed cordon to find out what the military were hiding, which ties into Ground Zero and the portal backstory.
 
-- *(proposed)* Ellen's realisation lands after the gas station (her line at that dusk or the next dawn), since by then Tom has seen the sigil and the witch herself on this side of the cordon. The outpost path opens with it.
+- **As built (Session 17, Aaron):** Ellen's call comes the moment the safe opens and the hunting rifle is in Tom's hands ("...and come home if it goes bad"). The outpost path opens with it.
 
 **As built (M9.1, Session 14):**
 - **The cluster is data** (`src/data/openingCluster.json`): the five places plus the family cemetery (the cluster's sigil ground), in metres from home, which sits on the cliff in the middle of the north edge. Its pathways make a loop (station, campsite, gas station, outpost, cemetery, shelter), so the dead and the witch reach the shelter side without walking through the station. Everything north of the cordon (the cliff, hills, trees, rocks, the cluster's pathways and cars) comes from a fixed seed, so the opening looks the same every run. The frontier joins it by one pathway, due south out of the outpost through the checkpoint. The north band runs to southness 0.40 (was 0.34) so the north frontier fits south of the cordon; the cluster's clearings are a "home woods" type (citizens, some police, no army).
 - **The road** (`world/road.js`, `render/Road.js`): in from the dense forest at the west edge, past the gas station's forecourt (about 14 m south of its centre: the station building goes north of it, M9.3), through the outpost and the checkpoint. Worn asphalt, telephone poles, a ROAD CLOSED sign; three fixed wrecks (a sedan on the forecourt, the sheriff's car, a jackknifed M35).
 - **The cordon** (`world/cordon.js`, `render/Cordon.js`): along the line 290 m south of home, just past the outpost. Whole panels stop everyone; the five torn gaps and the shut checkpoint gate stop only Tom (a `playerOnly` collider). Shots pass the wire.
-- **The gates and story progress flags** (`src/data/progress.json`, `story/StoryProgress.js`, `world/Gates.js`): saved flags, each set by a trigger; most are stand-ins until Sessions 15-17's story beats set them. Shelter spur: `night1`. Gas station trail: `day2` (the first dawn after the campsite). The outpost's road and cemetery gates: `outpostCall` (stand-in: the gas station and the shelter both visited, for the rifle and Ellen's call). The checkpoint: `outpostCleared` (stand-in: no zombies left at the outpost once Tom's there). `crossedCordon` is set for real when Tom is south of the line. Lines can name the flags as conditions.
+- **The gates and story progress flags** (`src/data/progress.json`, `story/StoryProgress.js`, `world/Gates.js`): saved flags, each set by a trigger, all real since Sessions 15-17 (no stand-ins left). Gas station trail: `day2`. Shelter spur: `shelterCall`. The outpost's road and cemetery gates: `outpostCall` (the safe opening). The checkpoint: `outpostCleared` (the barricade's peak down). `crossedCordon` when Tom is south of the line. Lines and objectives can name the flags as conditions; the debug menu can toggle any of them.
 - **The witch's cluster rule:** until `crossedCordon`, she plants only north of the cordon (config `witch.clusterPlantMargin`), still preferring a free sigil ground.
 - **Camera six** (the Hales' Night 1 camera) is fixed at the storm shelter (#153); the five seeded trail cameras are all in the frontier.
 
@@ -240,7 +320,7 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 - **The gas station** plants the hunting rifle chain: the safe, and the owner's note pointing to the storm shelter.
 - Future threads planted in the cluster should follow the same rule: the want is guaranteed every run; the payoff lives out in the frontier. (The hunting rifle chain is the exception: it completes inside the opening, so it always resolves.)
 
-**The hunting rifle chain always completes (resolved Oct 16).** All three links are in the authored opening, so every seed has them: the gas station (the safe and the note) → the storm shelter (the combination on the owner's body at the hatch) → the outpost's watchtower (the rounds).
+**The hunting rifle chain always completes (resolved Oct 16).** All three links are in the authored opening, so every seed has them: the gas station (the safe and the note) → the storm shelter (the combination on Earl's keys, where he falls) → the outpost's gun pit (the rounds; Session 18 moved them from the watchtower).
 
 **The storm shelter is a spur, never forced (Aaron, Oct 17).** It's reachable from Night 1 and the game never forces *when* it's done, but it is **required** before the outpost: the outpost path needs the hunting rifle, which needs the shelter's combination.
 
@@ -255,6 +335,9 @@ Each clearing has a type that sets its look and its zombie variant mix (sigils p
 | Roadside | Abandoned cars, roadblock | Police |
 | Checkpoint | Sandbags, wrecked jeeps | Army |
 | Standing stones | Open, ritual feel | Even mix |
+| Home woods (as built; never rolled at random) | The opening cluster's own clearings | Citizens, some police, no army |
+
+As built, clearing types tint the map, name the placeholder signpost and set the variant mix; their own looks (bog fog, graveyard stones, the checkpoint's jeeps) aren't built.
 
 ### The map screen and fog of war
 
@@ -263,6 +346,7 @@ Each clearing has a type that sets its look and its zombie variant mix (sigils p
 - Revealed areas show live enemy positions, including enemies in the abstract simulation tier. Unrevealed areas show nothing, even if the witch is there.
 - Seen things are marked: home, sigils, vehicles, encounters, traps, trail cameras, the hut.
 - Implementation: a low-res reveal texture over the map graph.
+- **As built:** the minimap and the map screen (placeholder looks) show the revealed terrain, clearings and their names, pathways, the known sigils, seen vehicles (dimmed once emptied), trail cameras (blue; red and blinking after a sighting), Earl's quad (orange), and the current **objective** (a gold star, several at once when a step has several places, sitting on the minimap's rim when off it; "NEXT: ..." on the map screen). Trails cut by the experimental dozer are drawn in.
 
 ## The ranger station (home)
 
@@ -275,6 +359,7 @@ The player's home and base, set against the northern cliff. The family live here
 - **Station cabin** in the centre, with the **fire lookout tower** beside it. Climbing the tower reveals the map within a large radius (config).
 - **Comms room:** a fortified room inside the station with the radio, the CCTV monitors and the ledger. The family shelter here every night.
 - **Three layers of defence:** fence → station front door → comms room door. Each has its own health and is repaired and upgraded with scrap.
+- **As built (Sessions 15-18):** the comms room's **first aid box** (2 kits, once), the **shovel** by the cabin's front door, the **service rifle** at the top of the tower. On Day 1 the gate is chained until Tom's been up the tower. **Barricades stand outside the fence** (Session 18): the dead get through them first, and the fence zaps through a barricade.
 - **Decided with Aaron in M5:** the fence is **12 segments plus a gate** due south that opens itself for the player. Runs start with the **east fence torn up, a little scrap and no charge**. Spare scrap goes on **barricades** (an outer wall in front of a segment, outside the fence: Session 18, Aaron, so the dead have to get through it before they can pull the fence down), **spike traps** (outside a segment) and **floodlights** (four fixed poles), all at fixed slots.
 
 ### The ledger
@@ -315,7 +400,7 @@ The sum of every defence's current value (each scales with its remaining health)
 
 ### The automated turret
 
-One per run, from the Car Armory.
+One per run, from the Car Armory. **As built:** the turret itself works (installed on its pad, powered by the fence, loaded by hand, three fire modes, the forecast's run-dry warning), but it comes from the debug menu until the Car Armory exists; the ledger's Turret tab is padlocked until then.
 
 - **Power:** wired into the fence's charge. Unpowered = offline, whatever ammo it holds.
 - **Aaron, M5:** its rounds carve through a crowd even more than the rifle's: make a spectacle of it. Until the Car Armory exists (M11) the debug menu gives it.
@@ -367,6 +452,7 @@ Buried sigils are the source of every zombie. The witch plants them; the player 
 - **Five-sigil cap:** at most five active at once. She replants on later nights when one is dug up.
 - **Zombie level = number of active sigils** (1–5), map-wide. Digging one up lowers the level immediately: the player's main lever on difficulty.
 - Sigils show as a faint glow and disturbed earth, easier to spot at night.
+- **As built:** all of the above. A sigil the family have seen go in is `known` (on the map); the Night 1 sigil `hold`s its dead near it rather than marching them. While one is being dug it raises nothing. Digging needs the shovel.
 - **Lore:** the sigils were originally the land's own protective warding marks. The witch has corrupted them into spawn points, so digging one up is cleansing the land.
 
 ### Sigil grounds
@@ -389,21 +475,24 @@ Five eerie clearings per run (config): two in the north band, two in the middle,
 
 More grounds = a look, set dressing and one atmospheric twist.
 
+**As built:** the grounds are placed (one, the family cemetery, inside the opening cluster on every run) and the witch prefers them, but each is still a placeholder signpost and a ring of stakes. Their set dressing, twists and tells (crows, turned earth, candles) are **designed, not built**.
+
 ## Enemies
 
 ### Roster
 
-| Enemy | Where | Render | Behaviour |
-| --- | --- | --- | --- |
-| Zombie (citizen, police, army, Men in Black; Earl Pruitt) | Forest, from sigils | Doom-style billboard sprite, 8 angles (5 stored, 3 mirrored); a palette swap gives each zombie its own hair, clothes, sleeves and blood (Session 13) | The main enemy. Levels 1–5 |
-| Mutant zombie | Forest, level 3+ | 3D | Giant, mutated, much more health. A mini-boss in the horde |
-| Giant beetle | Mineshaft (a few), Bigfoot cave | 3D | Armoured shell; only the soft spot on its face takes full damage |
-| The Mothman | Bigfoot cave (boss); the forest if flares are spammed | 3D | Flying dive attacks, disorienting screech, calls beetles |
-| Men in Black | Government base, Ground Zero | 3D: the cutscenes' Man in Black with a pistol (most), an SMG or a sniper rifle (Session 13) | Armed agents using cover; stealth-aware squads |
-| Alien | Alien ship; one at the crashed plane | 3D | Hides behind cover, ambushes up close |
-| The witch | Forest and hut | 3D | See The witch |
+| Enemy | Where | Render | Behaviour | Status |
+| --- | --- | --- | --- | --- |
+| Zombie (citizen, police, army, Men in Black; Earl Pruitt) | Forest, from sigils | Doom-style billboard sprite, 8 angles (5 stored, 3 mirrored); a palette swap gives each zombie its own hair, clothes, sleeves and blood (Session 13) | The main enemy. Levels 1–5 | Built |
+| Mutant zombie | Forest, level 3+; the gas station's authored first mutant | 3D | Giant, mutated, much more health. A mini-boss in the horde | Built |
+| Giant beetle | The military outpost's crates (built); mineshaft, Bigfoot cave (designed) | 3D | Armoured shell (30% damage); the soft spot on its face takes 3x. Emerge, threat display, charge, rear and snap | Built (Session 17) |
+| The Mothman | Bigfoot cave (boss); the forest if flares are spammed | 3D | Flying dive attacks, disorienting screech, calls beetles | Designed, not built (no model; flares are counted) |
+| Men in Black | Government base, Ground Zero | 3D: the cutscenes' Man in Black with a pistol (most), an SMG or a sniper rifle (Session 13) | Armed agents using cover; stealth-aware squads | Model and poses built; no AI |
+| Alien | Alien ship; one at the crashed plane | 3D: the grey alien with its four cowboy-drift kit stages (Session 13) | Hides behind cover, ambushes up close | Model and poses built; no AI |
+| The witch | Forest and hut | 3D | See The witch | Built |
+| The outpost's machine gun | The military outpost's gun pit | 3D | Not an enemy: Tom's. Dead until a battery's fitted, then fires 25 rounds at the nearest dead, overheats and blows up | Built (Session 17) |
 
-**Friendly:** Bigfoot (can't be harmed). Harmless: the animals in Milo's barn.
+**Friendly:** Bigfoot (can't be harmed; designed, not built, no model). Harmless: the animals in Milo's barn (designed, not built).
 
 ### Enemy targeting
 
@@ -441,11 +530,14 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 | Police | Uniform and bulletproof vest; tougher | Vest (+40 ballistic), pistol ammo |
 | Army | Fatigues and helmet; tougher. The helmet blocks the headshot bonus, so they eat extra bullets. It comes off with enough damage, or a powerful enough round (the hunting rifle) punches straight through it; once the helmet is gone, headshots land normally (Aaron, Oct 16). First met on the military outpost approach | Helmet (+20 ballistic), rifle ammo (the main rifle ammo source) |
 | Men in Black | A dead agent: torn black suit over a white shirt, tie, sunglasses, body armour; as tough as the army (Session 13). Found where the agents fell (the government base, Ground Zero) | Body armour (+40 ballistic, the vest pickup), pistol ammo |
-| Miner (mineshaft only) | Helmet and headlamp | Scrap, lamp batteries |
+| Miner (mineshaft only; designed, not built) | Helmet and headlamp | Scrap, lamp batteries |
+| Earl Pruitt (the storm shelter only; built, Session 13) | One fixed look: a faded red trucker cap, grey stubble, a tan work shirt, jeans | His keys (the safe's combination) |
 
-**Daytime:** most zombies thin out at dawn; a few stragglers wander the pathways by day.
+**Daytime:** most zombies thin out at dawn; a few stragglers wander the pathways by day. An encounter's own dead (`authored`: the gas station's pack and mutant, the storm shelter's horde, the outpost's soldiers) don't sink at dawn.
 
 ### Men in Black
+
+*Designed, not built (the model and its poses are; the AI is M11's).*
 
 - Government agents guarding the base and covering up the disaster.
 - **Detection states:** unaware until the player is in their sight in light, or makes loud noise (gunfire). Then the whole squad goes alert. Killing an unaware agent quietly (shovel) doesn't raise the alarm.
@@ -455,6 +547,8 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 
 ### Aliens
 
+*Designed, not built (the model and its kit stages are; the AI is M10-M11's).*
+
 - Martians. They hide behind crates and cover, wait until the player is close, then jump out.
 - **Cowboy drift (running gag):** they've started adopting Americana. Near the ship's entrance they just carry shotguns; deeper in they add hats, bandanas and holsters; the deepest is a full saloon gunslinger. The costume doubles as a threat gauge.
 - They use custom shotgun shells because Earth shotguns turned out to beat their ray guns.
@@ -463,8 +557,11 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 ### Giant beetles
 
 - The Mothman's brood. Armoured shell: body shots do little. A soft spot on the face takes full damage, so the player has to face them and aim.
+- **As built (Session 17):** first met at the military outpost, from crates in the compound (one breaks open by itself as Tom passes; opening a second sets the rest off in a burst) and scratching in a sealed container. The shell takes 30%, the face 3x. They emerge, threaten, charge, rear and snap, flinch and die flipped over; they can't climb the watchtower.
 
 ### The Mothman
+
+*Designed, not built. The outpost hints at him (the torn-open container C-7, never named); flares are counted for his attention but nothing comes yet.*
 
 - A tall winged figure with glowing red eyes. Boss of the Bigfoot cave, fought in its deepest chamber.
 - Flies around the chamber and swoops in for dive attacks; a screech briefly blurs the screen and slows the player; calls beetles from the tunnels; lands or clings to the walls between swoops (the window for heavy damage).
@@ -502,9 +599,11 @@ A fully 3D, agile folk-horror witch. She roams at night planting sigils, and fle
 - **Movement:** a Left 4 Dead–style agile runner (vaults logs, weaves, doubles back). Faster than the player on paths; slower while dropping traps. Simulated as a point on the graph when far away.
 - **Planting interruption:** enough damage while planting (config) cancels the sigil; she then flees or attacks.
 
-### Running from her (Aaron, Session 14)
+### Running from her (Aaron, Sessions 14 and 17)
 
 In the early game Tom can run from her: she gives up a fight once he's 50 m from where it started (140 m once he's crossed the cordon; never in the final battle), then leaves him be for 40 s unless he hits her (`config.witch.pursuit`).
+
+**Escape the witch** (Session 17, `story/WitchEscape.js`): until the cordon's crossed, while she attacks Tom close by, ESCAPE THE WITCH stands on the screen, Ellen tells him to get away (at the outpost: leave the checkpoint and come back), Wyatt says to take the quad if it's near, and Wyatt says when she's gone. The outpost holds its beats meanwhile. You can't fight her properly this early.
 
 ### Wounds and recovery
 
@@ -531,6 +630,7 @@ In the early game Tom can run from her: she gives up a fight once he's 50 m from
 
 ### Explosives
 
+- **As built:** one charge in the outpost's armoury locker; the rest from the debug menu until the mineshaft and the Car Armory exist. Charges blow up cars and gas pumps too.
 - Sources: the mineshaft (one), the military outpost (one), and the Car Armory's crate, which restocks. The outpost is now every run (Oct 16), so every run has at least one early charge; a second depends on the mineshaft appearing. (This replaces the earlier "two, one or none" variety. Aaron, Oct 17: one guaranteed charge is no problem, since the hut needs two charges together, so one alone can't start the final battle.)
 - Also a general weapon: plant one as a trap on a path, or drop one while chased and detonate as enemies follow.
 - Always manual detonation (no proximity trigger). The player is hurt if caught in the blast. Radius and damage are config.
@@ -548,6 +648,8 @@ In the early game Tom can run from her: she gives up a fight once he's 50 m from
 
 **Victory:**
 
+*As built (M7-M8): the final battle's intro, the victory and the defeat play as cutscenes from data (`final.intro`, `ending.victory`, `ending.defeat`); the victory's montage is trail-cam shots in placeholder form, without the Ground Zero portal shot yet. Then the run summary.*
+
 1. First-person: the witch is consumed by her own witchfire and bursts apart in embers, sticks and bone. The red sky drains away.
 2. CCTV montage: on trail cam after trail cam, the zombies collapse mid-stride.
 3. Ground Zero's camera: the portal, open and humming all game, flickers and goes dark.
@@ -560,27 +662,29 @@ In the early game Tom can run from her: she gives up a fight once he's 50 m from
 
 Hand-built set pieces placed by the map generator. The campsite, gas station, storm shelter and military outpost are the exception: they're part of the fixed opening cluster (see Map: Fixed opening cluster). Every encounter needs nine things: opening cutscene, aesthetic, enemies, loot, dungeon or not, lore, whether it appears every game, its band, and a novel interaction. All are designed below.
 
-**More to come (Aaron, Oct 17).** Aaron is redesigning the random encounters, and many more encounter updates will land in this doc. So far the four in the fixed opening cluster (campsite, gas station, storm shelter, military outpost) are fleshed out in full; the rest are still their earlier designs and will change. Each encounter's session takes its design from here, workshopped with Aaron first (rule 10).
+**More to come (Aaron, Oct 17; still true Nov 7).** Aaron is redesigning the random encounters, and many more encounter updates will land in this doc. The four in the fixed opening cluster (campsite, gas station, storm shelter, military outpost) are **built and play-tested**; their sections below describe them as they play now. **Everything else is an earlier design, not built**, and will change: these are the mid-game and end-game encounters up for redesign. Each encounter's session takes its design from here, workshopped with Aaron first (rule 10).
 
 ### Overview
 
-| Encounter | Band | Appears | Placement |
-| --- | --- | --- | --- |
-| Abandoned campsite | North | Every run (fixed opening cluster) | Next to the ranger station; first gated path |
-| Roadside gas station | North | Every run (fixed opening cluster; guaranteed witch sighting) | On the cluster's road; second gated path from home |
-| Old barn (Milo the Clown) | North (frontier) | Common | A farm clearing |
-| Storm shelter | North | Every run (fixed opening cluster; Night 1 sigil) | Inside the home cluster |
-| Crashed plane | North (frontier) | Every run (Aaron, Oct 16: the outpost's scope cutscene shows it come down) | Just past the cordon, where the cutscene shows it crash |
-| Abandoned mineshaft | North (frontier) | Uncommon | Hillside edge |
-| Overrun military outpost | North | Every run (fixed opening cluster; the gateway south) | The checkpoint in the military cordon, the only way out of the home cluster |
-| Stairs in the woods | Middle | 2–3 per run | Off-path clearings |
-| Time capsule | Middle | Uncommon | A ruined old church |
-| The Caller (night event) | Middle | 0–2 per run | Over the radio |
-| Bigfoot cave | Middle | Every run (unique prize) | Rocky clearing or path edge |
-| Car Armory | North (frontier; Aaron, M6) | Every run (unique prize) | A clearing of wrecked military vehicles |
-| Ground Zero | South | Every run | A crater clearing |
-| Crashed UFO | South | Every run (unique prize) | A south clearing; enterable from night 5 (config) |
-| Witch's hut | South | Every run (fixed) | Deep south |
+| Encounter | Band | Appears | Placement | Status (Nov 7) |
+| --- | --- | --- | --- | --- |
+| Abandoned campsite | North | Every run (fixed opening cluster) | Next to the ranger station; first gated path | **Built** (Session 15) |
+| Roadside gas station | North | Every run (fixed opening cluster; guaranteed witch sighting) | On the cluster's road; second gated path from home | **Built** (Sessions 15b-16) |
+| Storm shelter | North | Every run (fixed opening cluster; Night 1 sigil) | Inside the home cluster, on Pruitt land | **Built** (Session 16) |
+| Overrun military outpost | North | Every run (fixed opening cluster; the gateway south) | The checkpoint in the military cordon, the only way out of the home cluster | **Built** (Sessions 17-19) |
+| Old barn (Milo the Clown) | North (frontier) | Common | A farm clearing | Designed (earlier design), not built |
+| Crashed plane | North (frontier) | Every run (Aaron, Oct 16: the outpost's scope cutscene shows it come down) | Just past the cordon, where the cutscene shows it crash | Its clearing is placed every run and smokes after the dogfight; nothing built there |
+| Abandoned mineshaft | North (frontier) | Uncommon | Hillside edge | Designed (earlier design), not built |
+| Car Armory | North (frontier; Aaron, M6) | Every run (unique prize) | A clearing of wrecked military vehicles | Designed (earlier design), not built |
+| Stairs in the woods | Middle | 2–3 per run | Off-path clearings | Designed (earlier design), not built |
+| Time capsule | Middle | Uncommon | A ruined old church | Designed (earlier design), not built |
+| The Caller (night event) | Middle | 0–2 per run | Over the radio | Designed (earlier design), not built |
+| Bigfoot cave | Middle | Every run (unique prize) | Rocky clearing or path edge | Designed (earlier design), not built |
+| Ground Zero | South | Every run | A crater clearing | Designed; only the cold open's cutscene is built |
+| Crashed UFO | South | Every run (unique prize) | A south clearing; enterable from night 5 (config) | Its clearing is placed every run and smokes after the dogfight; nothing built there |
+| Witch's hut | South | Every run (fixed) | Deep south | **Built** (M7; its look Session 13) |
+
+The frontier's clearings are placed by the generator from `data/encounters.json` (which ones appear, in which band); until each is built it shows as a placeholder signpost.
 
 ### Design checklist
 
@@ -594,17 +698,17 @@ Hand-built set pieces placed by the map generator. The campsite, gas station, st
 | Stairs in the woods | No | Establishing sweep to the stairs | A lone staircase attached to nothing | None (zombies drawn after climbing) | None | Glimpses of the witch's dimension | Climb for a first-person vision |
 | Time capsule | No | Establishing sweep to the plaque | Ruined old church, weathered plaque | None | None | 1903 records of a woman in the woods | Dig it up |
 | The Caller | No | None (radio) | A too-thin silhouette at a clearing's edge | Silent zombie pack at the lure point | None | A mimic entity; Junie's aftermath | Fake radio calls; radio home to check |
-| Military outpost (gateway south) | No | Tom arrives to report the witch; waves of dead soldiers on the approach reveal it's overrun | Approach road, watchtower, sandbag barricade with breached steel fence, compound of tents, comms hut and armoured shipping containers | Waves of helmeted army zombies peaking at the barricade; caged beetles in the compound | Rifle ammo, helmets, scrap, first aid, jeep battery, one charge; hunting rifle rounds in the watchtower | A failed transfer point: torn-open containers (one held the Mothman, never named), resin-frozen alien, field report | Needs the hunting rifle to reach; the scope cutscene shows the live dogfight; crossing the barricade opens the frontier; beetle crates break open when shot |
+| Military outpost (gateway south) | No | Tom arrives to report the witch; waves of dead soldiers on the approach reveal it's overrun | Approach road, watchtower, gun pit, sandbag barricade with breached steel fence, compound of tents, comms hut, armoury lockers and armoured shipping containers; working floodlights on a generator | Waves of helmeted army zombies peaking at the barricade; caged beetles in the compound | Rifle ammo, helmets, scrap, first aid, a truck's battery, one charge; hunting rifle rounds in the gun pit | A failed transfer point: torn-open containers (C-7 held the Mothman, never named), the resin-frozen alien (C-4), the field report and the manifest | Needs the hunting rifle to reach; the gun pit's machine gun (a battery); the generator's floodlights (a battery); the scope cutscene shows the live dogfight; the barricade's peak opens the checkpoint; beetle crates break open when shot |
 | Mineshaft | Short tunnel | CCTV patched through by Wyatt: the blast and the Mothman bursting out | Timber entrance, rails, abandoned gear | Zombie miners, a few beetles | Scrap, lamp batteries, one charge | The Mothman's origin | Collecting an explosive charge |
 | Crashed plane | No | Establishing sweep settling on the lone alien examining the wreck | Military patrol plane torn through the trees | One plain-grey alien | Pistol, flares, first aid, battery; alien loot | The dogfight Tom watched from the outpost tower | First alien kill and first alien loot |
-| Storm shelter | Small room | Wyatt: whoever dug this hid it well; the camera reveals a horde standing on the hatch | Half-buried steel hatch; concrete room | Horde on the hatch (the first sigil's spawn) | First aid, ammo, batteries, radio; the gas station safe's combination (on the owner's body at the hatch) | The gas station owner's diary, trail-cam photos and tapes: his family died a few feet short of the hatch | The first sigil (tutorial); clear the horde, dig the hatch open; carry the tapes home for a cutscene |
+| Storm shelter | Small room (a platform under the hatch, no loading) | Wyatt: whoever dug this hid it well; the camera reveals a horde standing on the hatch | A low earth mound, a rusted hatch in a timber collar; a small plank room Earl dug himself | 12 citizens and Earl holding the hatch (more climb out of the sigil until it's dug) | The gas station safe's combination (on Earl's keys) | Earl's diary and his trail-cam tapes: the witch at the hatch, the kids running into the trees | The first sigil dug (the family work out sigils raise the dead); dig the hatch open; the tapes on D-pad down |
 | Old barn | No | Slow sweep at night, heat-lamp glow from inside | Milo the Clown lettering, animals, knife-throwing pedestal | Zombies dropping from the loft | Scrap, tractor battery | Milo; mutilated cattle | Loft ambush; harmless animals |
-| Gas station | No (single-room store) | Sweep across the pumps to the car bonnets and the "Home of Bigfoot" sign; first-person cutscene of the witch on the way out | Store, pumps, cars, "Home of Bigfoot" sign; dark aisles inside | Small citizen pack outside; the authored first mutant inside | Scrap, car batteries, first aid; the hunting rifle in a locked gun safe | "Home of Bigfoot" souvenirs and sighting photos (played straight); the owner's note | First mutant reveal by torchlight; guaranteed witch sighting; a safe that needs the storm shelter combination and outpost ammo |
-| Campsite | No | Sweep to the campers' car; radio: check for guns | Tents, cold campfire, blood, stick figures, slashed tents | None on arrival; a wave when the shotgun is taken | Guaranteed shotgun, ammo, scrap, car battery | The campers were killed by the witch; a camcorder clip of her attacking them | Picking up the shotgun triggers a zombie wave; the game's first battery pull |
+| Gas station | No (a store with an office and a stockroom) | Sweep from behind the store across the pumps to the "Home of Bigfoot" sign; first-person cutscene of the mutant waking and of the witch on the way out | Store, pumps, cars, "Home of Bigfoot" sign; dark aisles inside | 5 citizens on the forecourt; the authored first mutant inside | Scrap, car batteries, first aid, bulk ammo behind the counter; the hunting rifle in a locked gun safe; Earl's quad out back | "Home of Bigfoot" souvenirs and sighting photos (played straight); Earl's note; the scanner's quarantine broadcast | First mutant reveal by torchlight; guaranteed witch sighting; a safe that needs the storm shelter combination; the scanner needs a battery; the pumps blow |
+| Campsite | No | Sweep past the campers' car to the torn tent and up over the camp; Wyatt: check the tents | Tents (one slashed from inside), cold campfire, blood, marked trunks | None on arrival; a wave of 7 when the shotgun is taken | Guaranteed shotgun, shells, a first aid kit, scrap, car battery | The campers were killed by the witch; a camcorder clip of her attacking them | Picking up the shotgun triggers a zombie wave; the game's first battery pull |
 
 ### Unique prizes
 
-Three base upgrades exist exactly once per run, each from one encounter. A three-item checklist on the pause screen shows which are secured.
+Three base upgrades exist exactly once per run, each from one encounter. A three-item checklist on the pause screen shows which are secured. *(Designed, not built: none of the three sources exist yet; the turret works but comes from the debug menu.)*
 
 | Prize | Source | Effect |
 | --- | --- | --- |
@@ -617,8 +721,6 @@ Three base upgrades exist exactly once per run, each from one encounter. A three
 #### Abandoned campsite (every run, next to home)
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
-
-**The order, as Aaron set it in Session 18 (after playing it):** the arrival sweep (C-7, the Mothman's torn container, lies by the road in, beside the first helmet) → C-7's own sweep as Tom walks up to it (not from the quad, not mid-fight) → the first helmet; Wyatt asks if the machine gun nest's ammo fits Earl's rifle (the hunting rifle's rounds are in the gun pit, not up the tower) → the waves and the barricade's peak → the compound: the papers, C-4, the crates (one breaks by itself; the second one opened sets off the rest) → **last**, Wyatt asks Tom up the watchtower to look through the scope: the dogfight. The machine gun: 25 rounds. The fence at home zaps through barricades, which stand outside it.
 
 **Purpose.** The first stop of every run and the player's introduction to the witch. Day 1 has no witch roaming and nothing else to do, so this encounter has to turn what would be a boring first outing into the moment the game announces itself. It also quietly teaches the rhythm every later encounter uses: **arrive calm, search, get hit with a turn, get rewarded, go home changed.** It must never feel like a tutorial with its hand up.
 
@@ -686,7 +788,15 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 **Performance cost.** Low: one small clearing, 6–8 sprite zombies, no extra point lights (the fire is cold), one short cutscene clip.
 
-**As built (M9.2, Session 15; agreed with Aaron: the proposals above, on my recommendations):** `encounters/Campsite.js`, `data/campsite.json` (laid out from where the path from home walks in). The car by the path in; the camcorder in the cooler by the entrance; the shotgun in the far, slashed tent; a first aid kit in the dome; scrap for the fence across the camp. The wave: 7 level-1 citizens from both flanks over 6 s. Day 1 can't be failed: health stops at 20%. Visited on any day or night, it plays the same; once looted it stays empty. The clip: about 8 s, never a clean frame of her. Open points: OPEN_QUESTIONS #185-197.
+**As built (M9.2, Session 15, then Aaron's play-tests; OPEN_QUESTIONS #185-197, #304):** `encounters/Campsite.js`, `data/campsite.json` (laid out from where the path from home walks in), dressed in Session 19 (`CampsiteProps`).
+- **The walk out** passes the bloody wreck on the trail (the same every run, a window smashed); Wyatt and Ellen's first foreshadowing.
+- **Arrival:** the sweep starts at the clearing's edge, past the car to the torn tent and up over the camp; line 5.
+- **The searches** (hold X; the tents from their centres, 3.2 m): **the camcorder in the torn tent**, **the shotgun (+8 shells) in the green dome tent**, a first aid kit in the near tent, shells in a backpack, about 15 scrap for the fence across the camp.
+- **The camcorder:** offered on D-pad down to play (the watch queue), lines 6-7 around it; about 8 s, never a clean frame of her. The cars can't be searched until the tape has played (or the wave's down).
+- **The wave:** 7 level-1 citizens from both flanks over 6 s when the shotgun's taken (line 8), lines 9-10 when they're down. Day 1 can't be failed (health stops at 20%).
+- **The campers' car:** a sure battery, the game's first battery pull.
+- **Removed in play-testing:** the stick figures in the trees (Session 16), the axe and its stump (Session 19). The X-marked trunks and the slashed tent stay.
+- Visited on any day or night it plays the same; once looted it stays empty; saved.
 
 **Open questions for the campsite**
 
@@ -750,7 +860,7 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 
 1. **The gas station (see it).** The safe is found and the owner's note explains what's inside. A steel safe can't be forced with a shovel or a shotgun, so the locked state reads as real, not as video-game rules.
 2. **The storm shelter (the combination).** The owner, **Earl Pruitt**, fled to his family's storm shelter and took the combination with him. He died at the hatch and came back: he's a zombie there, and the combination is on his body once he's put down (Aaron, Session 13). His look is the zombie variant `earl` (Session 13): sixties, a faded red trucker cap, grey stubble, a tan work shirt, jeans; one fixed look.
-3. **The military outpost (the ammo).** The rifle is empty and its rare rounds are up in the outpost's watchtower.
+3. **The military outpost (the ammo).** The rifle is empty and its rare rounds are at the outpost: in the gun pit's ammo box since Session 18 (first designed up in the watchtower).
 
 - **The owner's note** (text to be written) says roughly: the rifle's in the safe, but she's empty; never could find the right rounds. Combination's with me. Gone to the shelter. It explains why a man fleeing for his life left his gun behind (it was useless to him), and why he locked it up (so it wouldn't fall into the wrong hands). It also points the player at the storm shelter.
 - **Order:** the combination and the ammo can be found in either order. *(proposed)* The rifle can be claimed with just the combination and carried empty.
@@ -801,6 +911,18 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 
 **Performance cost.** Low to medium: one small clearing, a single-room interior with no loading, 4–6 sprite zombies plus one 3D mutant, the torch as the main light, one short cutscene.
 
+**As built (Sessions 15b-18, then Aaron's play-tests; MORNING.md and OPEN_QUESTIONS, Sessions 15b-18):** `encounters/GasStation.js`, `data/gasStation.json`, `render/GasStationProps.js`.
+- **The set:** a low block north of the road (GAS · GIFTS · BAIT), the forecourt with two pump islands under a sagging canopy, the HOME OF BIGFOOT pole sign (PRUITT & SONS EST. 1971), a dumpster out back where the trail from the campsite comes in. Inside, dark by day: the counter, shelf runs (one knocked over), dead coolers, a chainsaw-carved Bigfoot, a board of sighting photos ("EARL SAW IT"), plaster casts. Behind a partition: **Earl's office** (his desk and note, dressed in Session 19) and **the stockroom** (the gun safe, the scanner, boxes, the back door out to the quad).
+- **Arrival:** the sweep starts behind the store and comes over to the sign; Wyatt: "No lights on... their truck's gone."
+- **The forecourt pack:** 5 citizens lingering among the pumps and cars before Tom arrives.
+- **The first mutant:** crouched down the west aisle, dormant and silent (not on the minimap); a first-person reveal as Tom reaches the aisle (it wakes only from inside the store), the camera jolts, then it charges. Its own health: **240** (Aaron: 180 was too easy). Ellen when it's down.
+- **Searches:** counter (a sure 14 shotgun shells and 14 rifle rounds: bulk ammunition), shelves, coolers, cabinet, boxes, rack. **The phone** is dead. **Earl's note** opens in close-up and is taken (a lore item). **The scanner** needs a battery (Wyatt: the cars out front), then plays the quarantine broadcast and Ellen. **The safe** stays locked until Earl's combination; then the hunting rifle, empty, and Ellen's call to adventure.
+- **The witch:** once the mutant's down, back out on the forecourt: first person, she stands at the treeline across the road looking at the store, then runs; a cutscene actor, nothing to shoot. Ellen, then Junie once the note's been read; then Wyatt points Tom at Earl's quad out back.
+- **The pumps blow** (Session 18): each island takes shots, hisses, and goes up in a big blast that chains to the other island and the cars.
+- **Leaving** (after the shelter call): Ellen sends Tom home for the shovel.
+- **Earl's note (final):** "Marcy, I've taken the kids to the shelter. If you find this, come straight there. Do NOT go to the military checkpoint, they don't know what they're dealing with. That witch has been burying things in the woods for weeks. Rifle's in the safe, but she's empty, never found the right rounds. Combination's on my keys. E."
+- One forecourt car has a sure battery; all of it is saved.
+
 **Open questions for the gas station**
 
 - Settled (Oct 16): the gas station appears every run, as part of the fixed opening cluster, and is always the player's second outing.
@@ -810,6 +932,8 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 - How long the witch is on screen and how clearly she's seen.
 
 #### Old barn (Milo the Clown)
+
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
 
 - A weathered barn painted with faded lettering for **"Milo the Clown"**, a lone clown with his own one-man act who kept his animals here. (A nod to another of the designer's stories.) **Milo has no connection to the circus** sigil ground: he's a lone clown doing his own thing, which is the joke.
 - **Inside:** a turkey and a donkey alive in their stalls, a big snake in a reptile enclosure under a glowing heat lamp, and a knife-throwing pedestal with the wall around it scarred by knife marks. The animals are harmless.
@@ -822,6 +946,15 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
 
 **Built (Session 16; Aaron's calls).** Earl dug it himself, so it's **small and a bit shabby**. **12 citizens** hold the hatch through the day, Earl among them as a zombie (Session 13's call); while the sigil's in the ground more climb out of it, and once it's dug up they stop, and the family work out that **the sigils are raising the dead**. **Nothing indicates the children died:** the room is empty of them, Ellen says maybe they got away, and on the tape the kids run into the trees while she goes after Earl. The diary is read in a **paper close-up** (Earl's note at the gas station too). The room below is part of the main map (a platform under the hatch, no loading). See STATUS (Session 16) and OPEN_QUESTIONS #213-221.
+
+**As it plays now (after Aaron's play-tests, Sessions 16-19):**
+- **Reached after the gas station:** Pruitt land's gate opens once the witch sighting and Earl's note are done (not on Night 1). Ellen sends Tom home for the shovel first.
+- **Arrival:** the sweep starts 32 m up the path, down across the horde to the hatch, while the world runs on unseen (the dead keep moving; nothing notices Tom); Wyatt's line. The horde (12 and Earl) is put there 70 m out, so the quad can plough in.
+- **The sigil** sits about 5.5 m from the hatch; while it's in the ground the dead climb out of it (one every 6 s, up to 12); dug, the rising stops and Wyatt and Ellen work out that the sigils raise the dead.
+- **Earl:** put down, his keys glint where he fell; Ellen knows him by his red cap. The brass tag is the safe's combination.
+- **The hatch:** dug clear with the shovel, hauled open; climb down. **The room** is only the story now: the diary (in close-up, taken home) and the tapes. No loot, no usable radio or photos (Session 16, Aaron). Junie asks if Earl's kids are down there; Ellen: "Nobody's here. Maybe they got away."
+- **The tapes** are offered on D-pad down the moment they're taken (Session 17); handed in, they go on the monitors.
+- **On the ride back,** Wyatt calls Tom in for **a stop at home** (Session 18, `story/HomeStop.js`): inside the fence, Ellen and a hint point to the fence box or the ledger.
 
 **Purpose.** Part of the fixed opening cluster, doing three jobs:
 
@@ -857,9 +990,9 @@ The clearing above is a fight; the room below is the game's **first proper inter
    - **Trail-cam photos pinned to the wall:** mostly empty forest, one or two with a smear of motion that is unmistakably the witch.
    - Supplies: first aid kits, ammo, batteries, a radio.
 7. **The diary.** On the table. The owner's, written before the end (see below).
-8. **The tapes.** The owner's trail-cam footage, which the player takes home.
+8. **The tapes.** The owner's trail-cam footage. *(As built: offered on D-pad down as soon as they're taken.)*
 9. **Back up.** Climbing out past the bodies that prove the family never got the chance.
-10. **At home: the tapes.** Handed in at the comms room, they trigger a cutscene (see below).
+10. **At home: the tapes.** Handed in at the comms room, they go on the monitors (see below).
 
 **The world only sees her through lenses.** The camcorder at the campsite, the sighting at the gas station, the family's trail cams, and now a dead man's photos and tapes: everyone glimpses her in fragments, never clearly. That's her mystique.
 
@@ -874,13 +1007,15 @@ The owner's diary, written **before** the end. It's a reflective object, so it s
 
 Then a **blank page**. The blank page is the horror. *(Session 19, Aaron's playtest: the blank page read as an extra, empty page: taken out; the diary just stops. OPEN_QUESTIONS #305.)*
 
-*(proposed)* Entry dates: entry 1 around 1987, entry 2 around 1989, entry 3 around 2002, entry 4 in 2003, a few weeks before the game. That fits Bigfoot predating the portal by at least 15 years (see Ideas for later).
+**As built** (`data/papers.json` `earlDiary`, five entries): **June 14, 1987** (entry 1); **April 2, 1989** (entry 2); **Aug 21, 1996** (added in Session 16: seven years of watching, he's stopped wanting to prove anything; the big fella comes down to the creek at dusk and sits across it from him); **Oct 9, 2002** (replaces entry 3: thirteen years of trail cams and the big fella caught maybe twice, both a blur, "suits us both fine", but this year something else); **Sept 30, 2003** (entry 4). It fits Bigfoot predating the portal by at least 15 years (see Ideas for later).
 
 **The trail-cam tapes**
 
 The footage, not the diary, delivers the family's final day. The player recovers it in the shelter and carries it home: a find in the field that pays off at base.
 
-**What the footage shows** (camera four, night-vision green, timestamped late at night, 2003):
+**As built** (`clip.pruittTape`, camera four, trail-cam green): the witch already low over the ground beside the hatch; **Earl and his two kids** hurry in and pull up short (Marcy isn't with them: Earl's note asks her to come to the shelter); she turns, far too fast; **the kids run one way into the trees, Earl the other, and she goes after him**; the clearing empties to the hatch and the sigil's glow. Then Wyatt, Ellen, Junie (maybe the kids got away), Wyatt again (the glow is the thing Tom dug up). Nothing says the children died (Aaron).
+
+**What the footage shows** as first designed (camera four, night-vision green, timestamped late at night, 2003):
 
 1. The clearing with the hatch, empty.
 2. Movement at the treeline: the family hurry in (the father, Marcy, two kids), heading for the hatch.
@@ -900,7 +1035,7 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 **Enemies**
 
-- **The horde on the hatch**, the first sigil's spawn. *(proposed)* 6–10 level-1 citizens (config), sized for an early player; the father, Marcy and the kids are not among them (no zombified family, so the sad beat stays sad rather than grotesque).
+- **The horde on the hatch**, the first sigil's spawn. As built: 12 level-1 citizens and Earl himself (a zombie: Session 13's call), held there through the day; more rise from the sigil until it's dug up. Marcy and the kids are not among them (no zombified family, so the sad beat stays sad rather than grotesque).
 - **The room below:** none. It's a quiet room.
 
 **Loot**
@@ -941,9 +1076,11 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 - **Two cameras, one night.** The Hales' Night 1 trail-cam clip (tutorial lines 17–19, camera six) shows the witch planting this sigil. The owner's camera four shows the same night with his family. **Settled (Aaron, Oct 17): the Pruitts die on Night 1, while Tom is at the station.** The Hales' camera sits further off and only catches her after the Pruitts have scattered out of its frame, so on Night 1 the Hales see only a witch planting something. Earl's tape later reveals what they never saw: people were there, and it happened while they watched.
 - Settled (Session 11): the combination is on a brass tag on his keyring; the owner is Earl Pruitt.
-- Whether the room below is part of the main map (a hatch and a ladder) or uses the interior system.
+- Settled (Session 16): the room below is part of the main map (a hatch and a ladder; a platform Tom is kept inside), not the interior system.
 
 #### Crashed plane
+
+*Designed, not built: an earlier design awaiting Aaron's redesign. Built so far: its clearing is placed on every run, the outpost's dogfight brings the plane down exactly there, and smoke stands over it afterwards.*
 
 - A military patrol plane torn through the treetops, wings sheared off, gun pods scorched.
 - **Enemy:** a single plain-grey alien survivor examining the wreck: the player's first alien. It drops energy armour (+30), an alien med kit and alien shotgun shells, the first hint that healing, armour and ammo come in stranger forms.
@@ -951,6 +1088,8 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 - **Lore:** the pilot's log: chasing a craft of strange lights over the ridge and trading fire. The plane and the alien ship shot each other down; the ship limped south and became the crashed UFO. **Changed Oct 16: the dogfight happens live, mid-game.** Tom watches it through the hunting rifle scope from the military outpost's watchtower (see Overrun military outpost), so the crash is fresh when he arrives: smoke still rising, the pilot only just dead, and the lone alien survivor examining the wreck. The log's last entries were written in the air that day. The crashed plane appears every run (Aaron, Oct 16), placed where the cutscene shows it come down.
 
 #### Abandoned mineshaft
+
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
 
 - A timber-framed entrance in a hillside, rails running into the dark. A short linear tunnel; dark, so the flashlight matters.
 - **The Mothman's origin:** the glowing seam the miners struck was a thin spot, and the Mothman came up out of it. The miners fled, leaving tools, lunch pails and a half-loaded cart.
@@ -962,7 +1101,17 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
 
-**Built in Session 17 (M9.4), waiting on Aaron's play-test.** Agreed with Aaron at the start: Ellen's call comes the moment the safe opens (with "come home if it goes bad"); waves of 3, 5, 8, then 14 at the barricade, tuned in play; the dead can't climb the watchtower; the plane and the craft come down where the map puts the crashed plane and the crashed UFO; bigger waves by night; a retreat resets to the last wave cleared. How the proposals below were built, and the calls made: STATUS.md (Session 17), OPEN_QUESTIONS #225-241. In short: the outpost's clearing sits on the cordon, so the barricade runs across it and the compound lies between it and the cordon (the checkpoint is the compound's south gate); the "jeep" across the barricade is an army truck for now; the crashed plane is on every run.
+**As it plays now (built in Session 17, M9.4; reworked after Aaron's play-tests in Sessions 17-19; OPEN_QUESTIONS #225-256, #263-281, #304-320):** `encounters/Outpost.js`, `data/outpost.json`, `render/OutpostProps.js`, `ai/Beetles.js`.
+
+- **The order, as Aaron set it in Session 18 (after playing it):** the arrival sweep (C-7, the Mothman's torn container, lies by the road in, beside the first helmet) → C-7's own sweep as Tom walks up to it (not from the quad, not mid-fight) → the first helmet; Wyatt asks if the machine gun nest's ammo fits Earl's rifle (**the hunting rifle's 10 rounds are in the gun pit's ammo box**, not up the tower) → the waves (2, 4, 6 on the approach after Session 17's tuning; bigger by night) with the radio in the lulls, then **the barricade's peak** (12 in three bursts out of the compound; more by night) → the compound in any order: the papers (the field report, signed CPT R. MERCER; the manifest on its clipboard), C-4 hauled open on the body in resin, the armoury's charge (its lockers against the comms hut's back wall), the crates (one breaks by itself; opening a second sets off the rest, up to 4, a beat apart), C-9 busted open (the brood's container) → **last**, Wyatt asks Tom up the watchtower to look through the scope: **the dogfight** (ready once the barricade's down; only from the tower). Each beat waits for 15 quiet seconds after the last.
+- **The gun pit's machine gun** (Aaron's idea, Session 17): dead until Tom fits a battery, then 25 rounds at the nearest of the dead, every 0.6 s; it overheats (an amber light, smoke, Wyatt) and blows up (its blast hurts Tom too).
+- **Working floodlights** (Session 19): the barricade's three run off **a generator at the foot of the watchtower** (fit a battery; Wyatt points it out once the fight's on); one at each gate and one at C-7 burn dusk to dawn.
+- **Objectives with several map points** (Session 19): before the barricade falls, one step lists the fight, the generator, the machine gun and the gun pit's rounds, each dropping off when done; then "explore the compound" with a star on everything not yet seen to; then the checkpoint.
+- **The dead can't climb the watchtower**; neither can the beetles (they mill below).
+- **A retreat** never resends a wave; the witch arriving pauses the outpost's beats (escape her first).
+- **Crossing:** the barricade's peak down opens the checkpoint (`outpostCleared`); south of the line, `crossedCordon` and the frontier. The plane and the craft come down where the map puts the crashed plane and the crashed UFO; smoke stands over both sites (nothing else is built there yet).
+
+**The first build (Session 17).** Agreed with Aaron at the start: Ellen's call comes the moment the safe opens (with "come home if it goes bad"); waves of 3, 5, 8, then 14 at the barricade, tuned in play; the dead can't climb the watchtower; the plane and the craft come down where the map puts the crashed plane and the crashed UFO; bigger waves by night; a retreat resets to the last wave cleared. How the proposals below were built, and the calls made: STATUS.md (Session 17), OPEN_QUESTIONS #225-241. In short: the outpost's clearing sits on the cordon, so the barricade runs across it and the compound lies between it and the cordon (the checkpoint is the compound's south gate); the "jeep" across the barricade is an army truck for now; the crashed plane is on every run.
 
 **Purpose.** The climax of the authored opening and the threshold between the home cluster and the randomised frontier (see Map: Fixed opening cluster). It's the moment Tom learns the cordon failed and he's on his own, so it has to *feel* like crossing a line. It's also the early game's first big fight.
 
@@ -973,13 +1122,13 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 **The gate: the hunting rifle.** The player can't reach the outpost without the hunting rifle, so the whole opening becomes the assembly of the loadout needed to cross the threshold. The tutorial isn't just teaching; it's equipping.
 
 - The outpost path (step 4 of the soft funnel) opens only once the player has **claimed the hunting rifle** from the gas station safe, which needs the storm shelter's combination. So the storm shelter is required before the outpost, whenever the player does it.
-- The rifle is claimed **empty**; its rounds are at the outpost, in the watchtower, which the player reaches before the barricade (see the order below).
+- The rifle is claimed **empty**; its rounds are at the outpost, in the gun pit (as built; first designed in the watchtower), which the player reaches before the barricade (see the order below).
 - Ellen's call to adventure comes when the rifle is in hand *(proposed)*. If the player has the gas station done but not the shelter, the family nudge them back to the shelter for the combination.
 
 **Layout** *(proposed)*
 
 - **The approach:** a road or wide trail running south from the home cluster into the cordon, a few hundred metres of forest with abandoned military vehicles, dropped gear and fallen soldiers along it. Signage warns civilians off.
-- **The watchtower:** stands on the near side of the barricade, covering it, where the snipers could fire over the checkpoint. Placing it before the barricade is what lets the player get the rounds before the peak.
+- **The watchtower:** stands on the near side of the barricade, covering it, where the snipers could fire over the checkpoint. Placing it before the barricade is what lets the player get the rounds before the peak. *(As built: the rounds are in the gun pit beside it; the tower is the dogfight's vantage point. A generator at its foot powers the barricade's floodlights.)*
 - **The barricade:** the checkpoint in the cordon: sandbag walls, a breached section of steel fence (the same model as the station's, reused as grim set dressing, with bodies against it), a jeep across the road, dead floodlights. The only way through.
 - **The compound:** beyond the barricade. Tents, a comms hut, the armoury, and a row of **armoured shipping containers** on flatbed trucks. A south gate out of the compound leads into the frontier.
 
@@ -989,7 +1138,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 2. **The first helmet.** A single army zombie in helmet and fatigues: the player's first armoured zombie. Its helmet blocks headshots, so it eats extra bullets. The first sign things have gone wrong.
 3. **Waves.** The approach comes in **waves** rather than a steady stream: a quiet stretch, a cluster, quieter, a bigger cluster, so Tom keeps thinking he's through it and isn't. Each wave is more soldiers than the last, and the player works out from sheer accumulation that the base is completely overrun. No cutscene announces it. One straggler is a casualty; a dozen is an overrun.
 4. **The radio in the lulls.** Between waves, Ellen and Wyatt talk: realising the soldiers are the dead, what Ellen knows about containment, what "quarantine zone" really meant. They set up the story while the player catches their breath.
-5. **The watchtower.** The player climbs it for the hunting rifle rounds, at the snipers' last stand: spent casings, a dropped (damaged) rifle, sandbags. The climb is exposed, so zombies below can swarm the ladder *(proposed)*.
+5. **The watchtower.** The player climbs it for the hunting rifle rounds, at the snipers' last stand: spent casings, a dropped (damaged) rifle, sandbags. The climb is exposed, so zombies below can swarm the ladder *(proposed)*. *(As built: the rounds are in the gun pit since Session 18, and the dead can't climb the tower; it's the dogfight's vantage point and a sniping perch.)*
 6. **The scope (cutscene).** The first time the player raises the hunting rifle's scope at the top of the tower, it triggers a cutscene: **a plane and a UFO in the sky, in a live dogfight, ending with both coming down** in the forest beyond the cordon. It introduces the aliens, signposts both the crashed plane and the crashed UFO as real places in the player's future, and shows the world is actively getting worse while Tom's in it. It also teaches the scope as binoculars. *(proposed)* The camera follows the scope view; the radio erupts (Wyatt: did you see that?).
 7. **The barricade (the peak).** The final, biggest wave, at the chokepoint where the soldiers made their last stand and died thickest. Now the player has a loaded hunting rifle that punches through lines of zombies, just in time for the densest crowd. **Crossing the barricade is what opens the south.**
 8. **The compound.** Quieter, a crime scene of the failed transfer, read off the container doors:
@@ -1013,10 +1162,11 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 | Search point | Holds | Guaranteed or rolled |
 | --- | --- | --- |
-| The watchtower's sniper nest | Hunting rifle rounds | Guaranteed |
+| The gun pit's ammo box (as built; designed: the watchtower's sniper nest) | Hunting rifle rounds (10) | Guaranteed |
 | The armoury locker | One explosive charge | Guaranteed |
 | The comms hut | The field report (lore document) | Guaranteed |
-| A jeep | A battery | Guaranteed |
+| The manifest's clipboard (as built) | The shipping manifest (lore document; C-7's line redacted) | Guaranteed |
+| An army truck (designed: a jeep) | A battery | Guaranteed |
 | Army zombies | Helmets (+20 ballistic), rifle ammo | Per variant drops |
 | Tents, bodies, crates | Rifle ammo, scrap, first aid | Outpost loot table (rolled) |
 
@@ -1032,7 +1182,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 - Ellen's call to adventure (sending Tom to report) and her lines in the lulls.
 - The field report (a lore document), handed in at the comms room.
-- *(proposed)* A shipping manifest on a clipboard by the containers lists contents by code, with one line redacted. It ties to classified document 4 (the specimen inventory, which already mentions transfer orders to the outpost).
+- A shipping manifest on a clipboard by the containers lists contents by code, with one line redacted (built). It ties to classified document 4 (the specimen inventory, which already mentions transfer orders to the outpost).
 - The resin-frozen alien and the beetles show that the government knew about the creatures long before Tom did.
 
 **Edge cases** *(proposed)*
@@ -1051,6 +1201,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Car Armory and the government base (every run; north frontier, Aaron M6: the turret matters most for travelling away from home)
 
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
+
 - **Outside:** trashed military vehicles; an armoured truck with its back doors open on a glowing purple portal.
 - **Inside:** a secret government base, hand-built: corridors, labs, an armory section, far bigger than the truck. The source of the portal technology.
 - **Enemies:** Men in Black, stealth-aware.
@@ -1062,6 +1214,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Stairs in the woods (2–3 per run)
 
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
+
 - Based on the modern ranger legend of free-standing staircases deep in the forest that rangers don't talk about. Tom knows the unwritten rule never to touch them; the family react nervously if he heads toward one.
 - A lone staircase in an off-path clearing, attached to nothing.
 - **Climbing to the top** triggers a few seconds of first-person vision of the witch's dimension, then snaps the player back to the bottom. Each staircase shows a different glimpse. Each is usable once.
@@ -1070,11 +1224,15 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Time capsule
 
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
+
 - A ruined old church with a weathered plaque: a time capsule buried in **1903**, "to be opened in 100 years", so it falls due in 2003, the year of the game (Aaron, Oct 17). Dig it up with the shovel.
 - **Inside:** letters, photos and clippings from the town that once stood here: a woman in the woods, missing livestock, strange lights, people who went into the trees and never came back.
 - **Lore:** she didn't arrive out of nowhere. This forest was already a thin place where she could almost reach through, which may be why the government built here. Ellen links it to the classified files.
 
 #### The Caller (night event, 0–2 per run)
+
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
 
 - Based on the Appalachian superstition never to answer when your name is called from the trees.
 - **A separate entity, not the witch.** Something from the other side that hunts by imitation. Almost never seen: a too-tall, too-thin silhouette at a clearing's edge, gone when the player looks again.
@@ -1085,6 +1243,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - **Aftermath:** if Tom tells the family, the real Junie is shaken that something used her voice.
 
 #### Bigfoot cave (every run)
+
+*Designed, not built: an earlier design awaiting Aaron's redesign.*
 
 - A dark entrance framed by boulders and trees. Walking in loads a small **seeded** cave interior: a short labyrinth of tunnels and chambers, about 3–6 minutes. Dark; the flashlight matters.
 - **Bigfoot is good.** The cave is his home, overrun by the Mothman and its beetles.
@@ -1097,6 +1257,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Ground Zero (every run)
 
+*Designed, not built: an earlier design awaiting Aaron's redesign. Built so far: the cold open's CCTV cutscene of the portal and the Men in Black; the red light Tom sees from the tower on Day 1 (Ellen: "a training exercise, they told everyone").*
+
 - Where the portal programme went wrong. A wide crater with a shattered metal ring at its centre, **still holding a shimmering, humming field: the portal is stuck open** and the government never found a way to switch it off. A cracked control bunker, wrecked trucks, cables, toppled floodlights.
 - **Reality anomalies** (hazards and atmosphere): gravity hiccups (float briefly, land heavily); sound dropping out completely; **time skips** (the clock jumps forward, costing daylight); flickers of other dimensions.
 - **Enemies:** a few Men in Black guarding the bunker.
@@ -1104,6 +1266,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - **Lore:** the programme's final documents: what they were trying to do, why this forest (the thin place), the moment it failed, and that the portal can't be shut. Ellen's biggest revelations.
 
 #### Crashed UFO and the alien ship (every run, enterable from night 5)
+
+*Designed, not built: an earlier design awaiting Aaron's redesign. Built so far: its clearing is placed on every run, the dogfight's craft limps south and comes down there, and smoke stands over it; the grey alien's model and cowboy-drift kit.*
 
 - The ship the patrol plane shot down, crashed in a south clearing. **Changed Oct 16:** it comes down mid-game, in the dogfight Tom watches from the military outpost's watchtower, so he sees where it falls.
 - **Entering:** interacting with the wreck switches on its tractor beam, which pulls the player up into the alien ship (hand-built interior). The aliens are shocked and immediately hostile.
@@ -1114,9 +1278,11 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Witch's hut (fixed)
 
-See The witch: destroying the hut and the final battle.
+**Built** (M7; its look Session 13): a taken settler's log cabin, leaning, witchfire leaking through boarded windows, a porch whose rocking chair rocks by itself when Tom's near, totems and a fire pit; blown apart and burning after the charges. Her traps line the approach. See The witch: destroying the hut and the final battle.
 
 ### Interiors (shared system)
+
+*Designed, not built (planned for Session 21). The storm shelter's room is built without it: a platform on the main map under the hatch, no loading.*
 
 - One interior-map system: entering loads the interior, the main map keeps simulating in the abstract tier, the clock keeps running (visible on the HUD), and leaving returns the player to the entrance.
 - **Bigfoot cave:** generated from the run seed out of tunnel and chamber pieces on a grid.
@@ -1176,6 +1342,7 @@ The family run the station's radio and trail-camera network, so they stay part o
 - **New-line marker:** a small marker floats over a family member with something new to say.
 - **What lines do:** piece things together in step with the player; drop gentle hints; explain oddities (e.g. Wyatt on why aliens carry shotgun shells); build character.
 - **As built (M8, Session 12):** `src/data/dialogue.json`. A line has an id, speaker, channel (`radio`, `face`, or `caption`), text with `{names}` a system fills in, `when` (night range, phase, `all` and `none` flags), priority, `on` (an event that plays it), `next` (the line that follows it straight away), `repeatable`, the radio's `kind` and `urgent`, and `script` (a scripted sequence's lines play from their triggers only while it's live: Day 1's until M9.2 wires them). Milestone flags come from events (`config.story.milestones`) and lore hand-ins (`lore.<id>`). A `face` line heard while Tom isn't in the cabin comes over the radio. Talking to the family: hold interact while looking at one of them **in the comms room**. Nobody has idle lines yet ("has nothing new to say" shows instead).
+- **Added in the opening's sessions (15-19):** about 158 lines in all (most of the opening's, many still marked `draft`); `cued` lines that only a system plays (never picked by talking); `Dialogue.playLater()` so one idea is said at a time; the family only offer a talk when they've something new; **breadcrumbs**: stuck on an objective a while, the family's `hint.<step>` line, once; on-screen control hints in their own slot as each control is first needed. Cutscenes speak as they play, except the dogfight, whose lines come after it.
 
 ### Dialogue presentation (no voice acting)
 
@@ -1188,13 +1355,15 @@ The family run the station's radio and trail-camera network, so they stay part o
 
 - Family dialogue (face to face and radio).
 - **Classified documents** from the government base (5) and Ground Zero (3): 8 in total, listed below.
-- Found items: the camcorder (campsite), the gas station owner's diary and trail-cam tapes (storm shelter), the pilot's log (crashed plane), the foreman's logbook (mineshaft), the field report (outpost), the time capsule.
+- Found items: the camcorder (campsite), Earl's note (gas station), the gas station owner's diary and trail-cam tapes (storm shelter), the pilot's log (crashed plane), the foreman's logbook (mineshaft), the field report and the shipping manifest (outpost), the time capsule.
 - Each item is handed in at the comms room and unlocks family lines.
+- **Papers in close-up** (Session 16, `ui/PaperNote.js`, `data/papers.json`): a note, a ruled diary, a typed report or a manifest read over a darkened view (the world and the clock wait), pages turned on the D-pad, taken with A on the last page. Handed in, they're listed under THE PAPERS on the ledger's Monitors page to read again.
+- **Tapes and feeds** (Session 16, `story/WatchQueue.js`): the campers' camcorder, camera six's feed and Earl's tapes wait under the hint slot ("D-pad down: play the camcorder") and play when Tom presses it.
 - **As built (M8):** `src/data/lore.json` lists each item by name and where it's found (the texts are written with Aaron in each encounter's session, which also places the pickup). Items are handed in on the ledger's **Monitors** page. Each sets the flag `lore.<id>`, and one with a clip puts it on the monitors. The monitors keep every clip seen (trail cam sightings, and cutscenes marked `rewatch`) to watch again.
 
 ### The classified documents
 
-Eight documents tell the programme's story in order. Each unlocks lines from Ellen. Outlines only; the text is still to be written. None of them names or explains the witch.
+Eight documents tell the programme's story in order. Each unlocks lines from Ellen. Outlines only; the text is still to be written. *(Designed, not built: their sources, the government base and Ground Zero, aren't built.)* None of them names or explains the witch.
 
 | # | Found at | Document | What it reveals |
 | --- | --- | --- | --- |
@@ -1227,6 +1396,8 @@ Eight documents tell the programme's story in order. Each unlocks lines from Ell
 | Idle | Nothing new to say | Each | \~2 each |
 
 Roughly 155–175 lines in total (the opening cluster added about 25, Session 11), plus the written texts: the owner's diary (drafted above), the owner's note, the field report and the 8 classified documents.
+
+**As built (Nov 7):** about 158 lines exist, nearly all for the opening (Day 1, Night 1, the campsite, gas station, shelter, home stop, the outpost, escaping the witch, breadcrumbs) and the ending; Earl's note, his diary, the field report and the manifest are written. Still to write: the dusk forecasts and dawn reports beyond placeholders, the frontier's encounters, prizes, characters by night, idle lines, the Caller, the 8 classified documents.
 
 ### Day 1 tutorial lines
 
@@ -1279,6 +1450,8 @@ Three styles, all rendered live from the real game world from one data-driven ti
 - **As built (M8, Session 12):** `src/data/cutscenes.json`, one timeline format: camera keys relative to anchors (the map is seeded: home, the hut, the witch, the player, a trail camera, a clearing by encounter, the nearest clearing), eased or cut, orbits for the sweep; placeholder actors (figures, the portal ring, glows, boxes, eyes); timed events (lines, captions, moves, poses, flares, glitches, fades, sounds, a cut to another camera with its own look and hour). The looks are a pass in PostFX (`config.postFX.looks`): CCTV, trail cam (night vision), camcorder, military, government, the scope. The on-screen display shows the camera's name, the time (OCT 2003), a blinking REC and a CLASSIFIED watermark. **A cutscene pauses the clock** (Aaron, Session 12). Clips from elsewhere also hold the world still; first-person ones (`"world": "run"`) let it carry on with your controls locked. The HUD hides, A / Enter skips, and the grade and look are handed back afterwards. CCTV runs at about 10-12 fps. At night the camera's lamp lights the actors only (a real light would recompile every shader). The final battle's intro and the ending and defeat are cutscenes now.
 - **Every cutscene is in the debug menu** (Aaron, Session 11): a Cutscenes category lists every one (the placeholders too) and plays it on the spot, from anywhere, so each can be watched, tweaked and watched again until it's really good. M8 builds the category; every session that adds a cutscene adds it there in the same step.
 
+- **Since M8 (Sessions 15-19):** 69 cutscenes. Cutscenes speak as they play (Aaron, Session 17 round 5), except the dogfight (`linesAfter`). Sweeps can run the world on **unseen** (`"world": "run", "unseen": true`: the dead keep moving, nothing notices Tom). A first-person reveal can **jolt** (`"jolt": true`). Actors can fly timed paths (the dogfight's plane and craft), cast tracers, rays, smoke trails and blasts; cameras can track actors; a cutscene can have its own near and far planes (the scope). Style pass 2 refined the looks: the camcorder's focus hunting, blown highlights, handheld wobble, amber date stamp (OCT.13.2003) and tape counter; the trail cams' data strip; the scope's mil-dot reticle and breathing sway; the sweeps' grade. The letterbox bars show on every non-CCTV cutscene.
+
 **Planned clips:** the Ground Zero cold open; the campers' camcorder; the Night 1 trail-cam clip of the witch planting; an establishing clip for each encounter (see the design checklist); the witch's fifth sigil going in (a warning); the dogfight and both crashes through the hunting rifle scope (military outpost; this replaces the earlier "UFO passing over the treeline" foreshadowing clip); the Mothman's torn-open container (military outpost; a hint, never named); government footage of the portal programme (unlocked by classified documents); the hut exploding (first-person); the victory montage.
 
 ## Opening and first run
@@ -1310,12 +1483,12 @@ Ellen explains the first forecast.
 - **The first defence** (Aaron, Session 15b; replaces "only a few strays"): once the fence is patched, the battery's in and Junie's had her word (13-14, indoors), the day fades straight to night (no dusk to wait out); the forecast and Ellen's line 15 come up as the picture returns. At night 9 zombies come at the compound in waves of 3, each from a new side (up the campsite path, then the south, then the east), the next once the last is down. The family suggest the two ways to fight: the tower with the rifle, or the shotgun at the fence. It shows the charged fence doing its job and gives the guns some practice. No health floor: Night 1 is real.
 - The night's one sigil is far enough off that it raises nothing that reaches home before dawn.
 - **The first sigil is scripted** (Session 11): the real witch comes out on Night 1 on a fixed route and plants at the storm shelter, the one exception to "night 1 is safe, planting from night 2" (`config.witch.firstNight`). The owner's family die there that night (see Storm shelter). From Night 2 her normal rules take over (inside the cluster until the cordon is crossed).
-- The family patch through the trail-cam clip of the witch planting her first sigil at the storm shelter; it's marked on the map. *(proposed)* One of the trail cameras is fixed near the shelter, so the clip is always possible.
+- The family patch through the trail-cam clip of the witch planting her first sigil at the storm shelter; it's marked on the map. Camera six is fixed at the shelter (built, Session 14), so the clip is always possible.
 - **The clip comes once the 9 are down** (Session 15b), after Ellen's warning that a trail cam's live. Then the family talk it over: it's the Pruitts' shelter; line 20, someone needs to check on them at first light; and Ellen: start at their gas station, for supplies and a phone or radio to reach the outside. Then the night fades to dawn (no waiting it out), so the sigil isn't dug up on Night 1.
 
 ### Dawn 1
 
-Autosave. Ellen sends Tom to the gas station to check on the Pruitts (Session 15b: not to the sigil). On Day 2 the path to the gas station opens (the guaranteed second outing). After it, Ellen's call to adventure sends Tom to the military checkpoint, which he finds overrun; fighting through it opens the frontier (see Map: Fixed opening cluster).
+Autosave. Ellen sends Tom to the gas station to check on the Pruitts (Session 15b: not to the sigil). On Day 2 the path to the gas station opens (the guaranteed second outing). After it, Pruitt land opens: the storm shelter (Earl's keys). The safe opens with them, and Ellen's call to adventure sends Tom to the military checkpoint, which he finds overrun; fighting through it opens the frontier (see Map: Fixed opening cluster).
 
 ### Repeat runs
 
@@ -1330,9 +1503,12 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 - **Day 1 can't fail** (a 20% health floor, the day only) and **its clock holds at 17:00** until nightfall: Session 15b, once the battery's fitted, the torn fence patched and Junie's had her word (or 60 s), the day fades to dusk (`day1.nightfall`). Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
 - **Night 1** (Session 15b): straight in from the day (no dusk); 9 zombies in waves of 3 from the south-west (the campsite path), the south and the east (line 16, the family's tower and shotgun lines, a line per wave); once they're down the witch's first sigil goes in at the storm shelter; camera six's clip (17-19); the sigil marked on the map and the spur open; the family's talk (19a, 20, 20a: three lines, the Pruitts, the gas station); then a fade to dawn. The night holds short of dawn until she's planted. Its dead stay at the shelter. The real witch stays home: the clip shows her.
 - **Dawn 1:** lines 21 / 22 and 23; the gas station trail opens.
+- **Also built since:** Tom wakes empty-handed (the shovel by the door, the rifle on the tower, the comms room's first aid box); the gate chained until the tower; control hints as each control is first needed; objectives on the map; the bloody wreck on the trail; Night 1's waves overlapping (15 s apart); no digging on Night 1; Pruitt land shut until the gas station.
 - **Skip intro:** a fresh map at Dawn 1, the tutorial done, the campsite looted, the camcorder handed in, the Night 1 sigil planted.
 
 ## Modifiers and achievements
+
+*Designed, not built (M12). The menu shows Modifiers greyed out.*
 
 **Modifiers** are Halo skulls–style options toggled before a new run. Locked until earned; they can be combined.
 
@@ -1377,6 +1553,8 @@ Console style (mockup: the "Witch Hunt HUD" design canvas). Nothing in boxed pan
 - Prompts always show the controller glyph (A green, B red, X blue, Y yellow), or the key when keyboard is in use.
 - The pause screen shows the three-prize checklist, documents found and the full map.
 
+**As built (a placeholder until Session 28):** bottom left, health (10 segments), three armour bars, the HIDDEN eye; bottom right, the weapon's name, ammo, the reload bar, kits, scrap, batteries, flares and charges in text; centre, the crosshair, the hit marker and interaction prompts with a hold bar (the button named in text); the round minimap top right with the objective star; the station-under-attack banner and the witch's boss bar when they apply; a pickup feed; **three message slots** (toasts, control hints under them, and the red alert slot: ESCAPE THE WITCH); subtitles at the bottom centre; the dusk forecast panel. **Not built:** the clock and zombie-level pips, the pixel font, glyphs, the D-pad legend, the pause screen. **While riding an experimental vehicle** its own HUD takes over (the ute's gear plate or the gun's heat ring, the alien quad's neon reticle, cells and boost, the dozer's blade, trail and winch), and the crosshair and gun panel hide.
+
 ## Art style and rendering
 
 **Atmospheric 3D with retro touches.** A real 3D forest rendered at normal resolution (scaled automatically to hold the frame rate), aiming for an Xbox 360-era horror look. No chunky-pixel upscale. Retro flavour lives only where it fits: the pixel-font HUD and subtitles, the Doom-style zombie sprites, and heavily grained CCTV and camcorder footage. An optional retro pixel filter is available in the Quality settings.
@@ -1413,6 +1591,8 @@ All of this is tiered by the Quality setting so the tablet gets a version that h
 
 - **Art is generated in code** (agreed with Aaron, Session 10): textures, sprites and models are drawn or built at load, with no texture files to download. A consistent, moody colour palette across all assets, kept dark so the torch doesn't glare.
 - **References** (Session 10): Appalachia, US forest rangers, a 1980s made-in-the-USA chainsaw manual, American folklore; Left 4 Dead, Silent Hill, Evil Dead 2.
+- **The glare rule** (Aaron, from M1 on): props are dull and dark, because pale ones glare white under the torch. Since Session 19 it's enforced: nothing brighter than sRGB luma 0.45 unless a place lists it to keep bright, checked in the tests for every place's palette.
+- **The props kit** (Session 19, `render/propKit.js`): a place's static props are baked into one vertex-coloured mesh, weathered as they're baked (grime up from the ground or floor, mottling, darker undersides, rust on the metal), so a dressed place costs a few draw calls. What changes (doors, lids, the hatch, lamps) stays in groups of its own. Every new place is built this way.
 
 | Thing | Render as |
 | --- | --- |
@@ -1421,7 +1601,8 @@ All of this is tiered by the Quality setting so the tablet gets a version that h
 | Mutants, beetles, the Mothman, aliens, Bigfoot, the witch | Low-poly 3D, animated |
 | Trees | Billboard sprites, instanced, camera-facing (near and far), with solid 3D trunks near the player |
 | Bushes, grass, ferns | Instanced sprites |
-| Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D. Vehicles: four models built in code from extruded profiles, instanced per type, each one worn differently in the shader (Session 13) |
+| Station, tower, defences, turret, hut, traps, vehicles | Low-poly 3D. Vehicles: four models built in code from extruded profiles, instanced per type, each one worn differently in the shader (Session 13); Earl's quad and the experimental vehicles are their own models |
+| The opening cluster's places | One baked, weathered mesh each from the props kit (Session 19), with the moving parts on their own |
 | Pickups and sigils | Small 3D or sprite with a glow |
 
 Everything shares the same fog and moonlight colour so the mix reads as one style.
@@ -1431,6 +1612,7 @@ Everything shares the same fog and moonlight colour so the mix reads as one styl
 - Gradient sky dome driven by time of day; `Points` starfield; moon sprite.
 - One directional light (sun/moon) plus ambient. The only real-time shadows come from the flashlight (see Visual ambition).
 - A small pool of point lights for the flashlight, muzzle flash, flares and witchfire.
+- **No lights added or removed while playing:** adding one recompiles every shader (a hitch). Lights are made at load and sit at intensity 0 when off (the quad's headlamp, the outpost's floodlight pool of three handed to the nearest lit lamps); the experimental vehicles make theirs the first time each is brought from the debug menu.
 - Distance fog: blue-grey by day, deep blue-black at night; red during blood night.
 
 ## Audio direction
@@ -1450,6 +1632,7 @@ Mostly synthesised with the Web Audio API (oscillators, filtered noise, a few sh
 
 - **Stingers:** the witch's whispers and singing nearby, a low tone when a sigil is planted, Mothman wingbeats, the Caller's slightly wrong radio, turret fire, the bonnet and battery pull, digging.
 - **Music:** adaptive layers that rise with danger and fall back to ambience.
+- **As built:** every sound is a placeholder synthesised on the fly (`audio/Sfx.js`): guns, hits, the dead, the witch, the station, cars, alarms, the radio crackle and dialogue blips, explosions, engines with their own voices (Earl's quad, the ute's diesel, the alien drive, the dozer). No ambience, music or samples yet: the audio pass (Session 29).
 
 ## Performance and simulation LOD
 
@@ -1465,7 +1648,8 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
 - `InstancedMesh` for trees, bushes, grass and identical sprites; one texture atlas per sprite enemy type.
 - The map is split into chunks; only chunks within fog distance are drawn (fog end = draw distance).
 - Object pools for enemies, projectiles, particles and lights. No allocation in the main loop.
-- **Budgets** (debug overlay): draw calls under \~100; active enemies capped (e.g. 25); at most \~4 point lights at once; dynamic resolution drops the render scale automatically to hold the frame target; frame time split into simulation and render. A \*\*Quality setting\*\* (render scale, draw distance, flashlight shadow, post effects, mist and particle density, 30 or 60 fps cap, plus the optional retro pixel filter) is the safety valve, with defaults chosen for the tablet.
+- **Budgets as they stand (Session 19, Aaron):** 155 draw calls to start with (he has never seen the tablet's frame rate dip); the opening's worst spot is the trail behind the gas station at about 157. The outpost's barricade peak by night (20 army dead, 5 beetles) sits around 110-145 with under 1 ms of simulation (headless). The experimental vehicles run 80-130 (the ute's live mirror adds a pass every third frame).
+- **Budgets** (debug overlay, the original targets): draw calls under \~100; active enemies capped (e.g. 25); at most \~4 point lights at once; dynamic resolution drops the render scale automatically to hold the frame target; frame time split into simulation and render. A \*\*Quality setting\*\* (render scale, draw distance, flashlight shadow, post effects, mist and particle density, 30 or 60 fps cap, plus the optional retro pixel filter) is the safety valve, with defaults chosen for the tablet.
 
 ## Technical architecture
 
@@ -1483,21 +1667,23 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
 /src
   main.js                entry: creates Game
   config.js              ALL tuning numbers
-  core/                  Game (loop, phases), Clock, EventBus, Rng, Input (gamepad + kb/m), SaveStore and saveData, runStats
-  render/                Renderer (dynamic resolution), Sky, Forest, NearTrunks, Atmosphere and the mist, PostFX (tone mapping, bloom, grade, grain, heat scope, the cutscene camera looks), the renderers for zombies, the witch, the station, vehicles, the hut, traps and pickups
-  world/                 MapGraph, MapGenerator, Terrain, GroundField, FogOfWar, Vehicles, Hut, fog nights (Interiors to come)
-  player/                Player, Weapons, ViewModel, Inventory, Armour, Health, Flashlight, Digging
-  combat/                Combat (the hub), WeaponState, hit-scan, aim assist, loot, Explosives
-  ai/                    EnemyManager (pools, sim tiers), Zombie, ZombieDirector, Sigils, detection, marches, revisits, Witch and her routes, hexes and traps (Beetle, Alien, MenInBlack, Mothman to come)
-  base/                  Station, StationState, Turret, siege routing, danger, NightWatch (forecast and alarm), nightResolver
-  encounters/            FinalBattle now; one module per encounter to come
-  story/                 (M8) Dialogue (lines, picker, conditions; the radio's rate limit in radioGate), FamilyTalk, TrailCams, Cutscenes (and the pure cutsceneTimeline), Lore (hand-ins, the monitors)
-  meta/                  (M12) Achievements, Modifiers
+  core/                  Game (loop, phases), Clock, EventBus, Rng, Input (gamepad + kb/m), Display, SaveStore and saveData, runStats
+  render/                Renderer (dynamic resolution, pre-render hooks), Sky, Forest, NearTrunks, Atmosphere and the mist, PostFX (tone mapping, bloom, grade, grain, heat scope, the cutscene camera looks and treatments), the props kit, each place's props (Campsite, GasStation, StormShelter, Outpost, Gate, Road, Cordon), the renderers and models for zombies, mutants, the witch, the family (figure kit), the grey alien, beetles, the Men in Black, vehicles, the hut, the station, traps, flares and pickups; the experimental vehicles' models (ute, alien quad, dozer)
+  world/                 World, MapGenerator, mapGeometry, mapGraph, Terrain, GroundField, Forest layout, FogOfWar, fog nights, road, cordon, Gates, Vehicles and vehicle placement, Hut, Pickups, clearingFrame, collision, SpatialGrid; Quad (Earl's), Ute, AlienQuad, Dozer and LandClearing (Interiors to come)
+  player/                Player, Weapons, ViewModel, Inventory, Armour, Health, Stamina, Flashlight, Digging, HoldAction
+  combat/                Combat (the hub), WeaponState, hit-scan, aim assist, loot, Explosives, Flares, Plasma (the alien quad's)
+  ai/                    EnemyManager (pools, sim tiers), Zombie, ZombieBrain, ZombieDirector, Sigils and the planter, detection, marches, revisits, Beetles, the Witch with her routes, hexes and traps (Alien, MenInBlack, Mothman to come)
+  base/                  Station, StationState, stationLayout, fencePlan, Turret, siege routing, danger, NightWatch (forecast and alarm), nightResolver
+  encounters/            Campsite, GasStation, StormShelter, Outpost, FinalBattle (one module per encounter)
+  story/                 Dialogue (picker, radio gate), FamilyTalk, TrailCams, Cutscenes (timeline, flight paths), Lore, StoryProgress and the flags, Objectives, WatchQueue, FirstDay, HomeStop, WitchEscape
+  meta/                  MetaStore (what the device remembers); Achievements, Modifiers to come (M12)
   audio/                 Sfx now (placeholders); AudioEngine, Ambience, Stingers, Blips in the audio pass
-  ui/                    Hud, Minimap, MapScreen, Ledger, ScopeOverlay, NoReturnNotice, RunEndScreen, StartScreen, Toast, Subtitles (Menus to come)
-  data/                  encounters.json, clearingTypes.json, sigilGrounds.json, loot.json, vehicles.json, ending.json, dialogue.json, cutscenes.json, lore.json
-  debug/                 DebugMenu (in categories), DebugOverlay
-/tests                   unit tests for pure logic
+  ui/                    Hud, Minimap, MapScreen, MapUi, mapImage, Ledger, ScopeOverlay, PaperNote, NoReturnNotice, RunEndScreen, StartScreen, Toast, Subtitles, VehicleHud (Menus to come)
+  data/                  encounters, clearingTypes, sigilGrounds, loot, vehicles, ending, dialogue, cutscenes, lore, papers, progress, openingCluster, campsite, gasStation, stormShelter, outpost (.json)
+  debug/                 DebugMenu (in categories), DebugOverlay, ModelViewer (and its catalogue)
+/tests                   unit tests for pure logic and simulated play (726)
+/docs/DESIGN.md          this doc
+STATUS.md, HANDOVER.md, OPEN_QUESTIONS.md, PLAYTEST.md, MORNING.md   the build's running notes
 ```
 
 ### Conventions
@@ -1530,8 +1716,11 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 
 - Overlay: fps, frame time (simulation vs render), draw calls, active enemy count, seed, clock.
 - Debug menu: set seed, skip time and phases, reveal map, god mode, give items, spawn any enemy, place or remove sigils, set zombie level, teleport to any clearing or encounter, trigger any cutscene (its own Cutscenes category, Aaron, Session 11) or dialogue line, force the witch's state, toggle LOD tier colours, and (from Session 13) a model viewer to look at any character model in any pose.
+- **As built (Nov 7):** all of the above, in categories: Time & night, Cutscenes, Models, Teleport & map, Witch, Hut & explosives, Sigils & zombies, Player (a jetpack, refill flares, give guns), Station & vehicles, **Experimental vehicles** (the ute, the alien quad, the dozer), Story, radio & trail cams, Story flags & gates (toggle any flag), First day & campsite, Military outpost, Dialogue: Day 1 lines, Run & save, Display & performance. Fast-forward runs the whole world faster. The overlay is off on a new game (View + Menu or F3 shows it).
 
 ### Milestones
+
+**Where they stand (Nov 7, 2026):** M0-M8 done; the gate passed on the witch's side (pacing and the dusk choice wait for full runs); **M9 done** (9.1-9.4, the opening cluster, play-tested over many rounds); part of M13 done (style passes 1 and 2, Sessions 10, 10b, 13, 19); experimental vehicles built outside the plan (debug only). **Next: M10**, which waits on Aaron's encounter redesign for the mid-game and end-game. M11-M14 not started.
 
 | # | Milestone | Includes | Done when |
 | --- | --- | --- | --- |
@@ -1611,7 +1800,8 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate. **Built** (and three rounds of Aaron's playthrough notes: escaping the witch early on, no dialogue in cutscenes, breadcrumbs, everything readable again from the ledger, the gun pit's machine gun). The tablet's frame rate at the outpost is Session 18's | M9.4 |
 | 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs. **Rounds 1-5 built** (round 5: his second notes, the outpost reordered, the scanner's battery; rounds 1-3: Aaron's early-game notes: papers taken with A, the pumps blow, a 2 s dig, a stop at home, barricades outside the fence; the outpost's beats spaced out, C-7 by the road in, the beetles' burst; an ammo audit and a sure 6 rounds in the gun pit). **Done** (rounds 25-27 still to be play-tested at the start of Session 19) | QA |
 | 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks. **Done** (one pass, unattended): a shared props kit (one vertex-coloured mesh per place, weathered as it's baked: grime, mottling, rust; the glare rule's ceiling enforced and tested); every place dressed; C-7 seated on its slope; the barricades at home, the cordon, the road and the gates; the camera looks (the camcorder's focus hunting and date stamp, the trail cams' data strip, the scope's mil-dot reticle and sway, the sweeps' grade, the reveals' jolt). Draw calls down (the worst spot 203 to 157) | Part of M13 |
-| 20 | Level & Encounter Designer (+ AI) | The north frontier: barn, crashed plane, mineshaft (designs from Aaron's redesign) | M10 (part 1) |
+| — | (side pass, Aaron's request) | **Experimental vehicles, debug menu only:** the ute with a turret, the alien quad, the forestry dozer (it fells trees and cuts trails into the map). **Done** and play-tested by Aaron ("really good"); not in the story yet | — |
+| 20 | Level & Encounter Designer (+ AI) | The north frontier: barn, crashed plane, mineshaft (designs from Aaron's redesign). **Next**, once the redesign's ready | M10 (part 1) |
 | 21 | Level & Encounter Designer + AI Programmer | The interior system, Bigfoot cave, the Mothman, Bigfoot | M10 (part 2) |
 | 22 | Level & Encounter Designer | Stairs, time capsule, the Caller, Mothman flare attention | M10 (part 3) |
 | 23 | QA & Balance | Play-test the frontier's north and middle | QA |
@@ -1679,13 +1869,15 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **The battery gate.** A sealed gate with no power, where fitting a battery opens it onto a horde: a real choice to open it or not. Cut from the military outpost because you could shoot through chain-link, which kills both the drama and the ammo economy. It needs a spot where the horde is truly sealed off and can't be shot through (solid doors, a bunker, a container yard).
 - **Exploding cars: built (Aaron, Session 14).** Rounds that stop on a car, flares and blasts damage it: it smokes at 40%, catches fire at 80% and burns down the rest itself, and explodes at 300 damage (the charges' blast, a little smaller), hurting zombies, the witch and the player nearby and leaving a burnt-out, empty wreck. Close-parked cars go up in a chain (`config.vehicles.damage`).
 - **Make the walk back matter (a candidate design pillar).** The game is a push north to south, but every push creates a return trip. Seed keys, combinations, tools and knowledge in the south (and across encounters generally) that unlock new value at places already visited in the north, so return journeys are rewarding re-reads of the map rather than dead travel. The first instance is the hunting rifle chain: the gas station safe, the storm shelter combination and the outpost's watchtower ammo.
-- **Quad bike upgrades (Aaron, Session 16).** Upgrades for Earl's quad, bought with scrap and maybe materials found during play: a **spiked battering ram** on the front (ramming the dead harder), and perhaps an **alien ray gun** that can be fired while driving (the one exception to "no shooting from the saddle"). More ideas to come.
+- **Quad bike upgrades (Aaron, Session 16).** Upgrades for Earl's quad, bought with scrap and maybe materials found during play: a **spiked battering ram** on the front (ramming the dead harder), and perhaps an **alien ray gun** that can be fired while driving (the one exception to "no shooting from the saddle"). More ideas to come. **The alien quad** (built, debug only) tries out the ray gun idea: plasma bolts, a charged orb and a boost.
+- **The experimental vehicles as unlocks (Aaron, Nov 6).** The ute with a turret, the alien quad and the forestry dozer are built and playable from the debug menu, not yet in the story. Maybe end-of-game unlocks; where each comes from (Earl's dozer at a logging site? the army's ute at the outpost or the Car Armory? the greys rebuilding Earl's quad?) is open (OPEN_QUESTIONS #321, #332). The dozer's trail cutting is the first thing that changes the world's map for the rest of a run.
 
 ## Open questions
 
 - The full text of the 8 classified documents (outlines are done).
 - The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
-- **The encounter redesign is still under way** (Aaron, Oct 17): many more encounter updates are coming. The opening cluster's four are done; the rest are earlier designs.
+- **The encounter redesign is still under way** (Aaron, Oct 17; Nov 7: he's about to redesign the mid-game and end-game): many more encounter updates are coming. The opening cluster's four are built; the rest are earlier designs.
+- Where the experimental vehicles fit, if at all (OPEN_QUESTIONS #321-339).
 - Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). Aaron will answer it as he designs those encounters in depth. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
