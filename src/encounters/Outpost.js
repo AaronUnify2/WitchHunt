@@ -1142,13 +1142,24 @@ export class Outpost {
       case 'report':
         this.props?.setTaken('report', true);
         this.lore?.give('fieldReport');
-        this.combat?.sfx?.play('paper');
-        if (!this.paper?.open('fieldReport', { device: this.device, take: true, onClose: () => this.dialogue?.play('outpost.report') })) this.dialogue?.play('outpost.report');
+        {
+          const after = () => this.dialogue?.play('outpost.report');
+          const read = () => {
+            this.combat?.sfx?.play('paper');
+            if (!this.paper?.open('fieldReport', { device: this.device, take: true, onClose: after })) after();
+          };
+          if (!this.card?.show('fieldReport', { read, keep: after }, this.device)) read(); // Session 20: its inspect card
+        }
         break;
       case 'manifest':
         this.props?.setTaken('manifest', true);
-        this.combat?.sfx?.play('paper');
-        if (!this.paper?.open('outpostManifest', { device: this.device, take: true, onClose: () => this.manifestRead() })) this.manifestRead();
+        {
+          const read = () => {
+            this.combat?.sfx?.play('paper');
+            if (!this.paper?.open('outpostManifest', { device: this.device, take: true, onClose: () => this.manifestRead() })) this.manifestRead();
+          };
+          if (!this.card?.show('outpostManifest', { read, keep: () => this.manifestRead() }, this.device)) read(); // Session 20: its inspect card
+        }
         break;
       default:
         this.loot(pt);

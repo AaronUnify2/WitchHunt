@@ -681,9 +681,14 @@ export class GasStation {
     const after = () => this.noteRead(first);
     // Session 18 (Aaron): A takes it, and it's gone from the desk.
     this.props?.setNoteTaken(true);
-    if (this.paper?.open('earlNote', { onClose: after, device: this.device, take: true })) return;
-    this.dialogue?.play('gas.note', {}, false); // read on the spot: no radio crackle
-    after();
+    const read = () => {
+      if (this.paper?.open('earlNote', { onClose: after, device: this.device, take: true })) return;
+      this.dialogue?.play('gas.note', {}, false); // read on the spot: no radio crackle
+      after();
+    };
+    // Session 20 (Aaron): its inspect card first: read it now, or keep it for the ledger.
+    if (first && this.card?.show('earlNote', { read, keep: after }, this.device)) return;
+    read();
   }
 
   noteRead(first) {

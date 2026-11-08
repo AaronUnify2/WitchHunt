@@ -1,33 +1,57 @@
 {
-  "_note": "Lore items (M8; DESIGN.md 'Lore sources', 'The classified documents'): found in the world, handed in at the comms room (the ledger's Monitors page), each setting a flag lines can ask for ('lore.<id>'). An item with a clip unlocks it on the monitors. Names and where they're found only: the texts are written with Aaron in each encounter's session. The encounter sessions place the pickups (Lore.give); until then the debug menu gives them. Session 17 (Aaron): everything picked up goes to the ledger: paper (a papers.json id): once handed in, it can be read again from the Monitors page, as a clip can be watched again.",
+  "_note": "Lore items (M8; DESIGN.md 'Lore sources', 'The classified documents'): found in the world, handed in at the comms room (the ledger's Monitors page), each setting a flag lines can ask for ('lore.<id>'). An item with a clip unlocks it on the monitors. Names and where they're found only: the texts are written with Aaron in each encounter's session. The encounter sessions place the pickups (Lore.give); until then the debug menu gives them. Session 17 (Aaron): everything picked up goes to the ledger: paper (a papers.json id): once handed in, it can be read again from the Monitors page, as a clip can be watched again. Session 20: `card` is the inspect card (ui/InspectCard.js): look (the placeholder's shape: camcorder, tape, note, book, report, device), color and label (its colours), line (a line about it; drafts for Aaron).",
   "items": [
     {
       "id": "camcorder",
       "name": "The campers' camcorder",
       "from": "campsite",
       "kind": "tape",
-      "clip": "clip.camcorder"
+      "clip": "clip.camcorder",
+      "card": {
+        "look": "camcorder",
+        "color": "#44444a",
+        "label": "#b33",
+        "line": "Mud on the strap. The tape's still in it, and the battery's got a little left. (draft)"
+      }
     },
     {
       "id": "earlNote",
       "name": "Earl Pruitt's note",
       "from": "gasStation",
       "kind": "document",
-      "paper": "earlNote"
+      "paper": "earlNote",
+      "card": {
+        "look": "note",
+        "color": "#e8e2c8",
+        "label": "#335",
+        "line": "Torn off a notepad, left on the desk where he knew someone would look. (draft)"
+      }
     },
     {
       "id": "pruittDiary",
       "name": "Earl Pruitt's diary",
       "from": "stormShelter",
       "kind": "item",
-      "paper": "earlDiary"
+      "paper": "earlDiary",
+      "card": {
+        "look": "book",
+        "color": "#5a3a22",
+        "label": "#c9b98a",
+        "line": "Earl's diary, swollen with damp. The last entry's September 30, 2003. (draft)"
+      }
     },
     {
       "id": "pruittTapes",
       "name": "Earl Pruitt's trail-cam tapes",
       "from": "stormShelter",
       "kind": "tape",
-      "clip": "clip.pruittTape"
+      "clip": "clip.pruittTape",
+      "card": {
+        "look": "tape",
+        "color": "#3e3b36",
+        "label": "#d8d0b0",
+        "line": "A shoebox of VHS-C tapes, each labelled in Earl's hand: a camera number and a date. (draft)"
+      }
     },
     {
       "id": "pilotLog",
@@ -46,14 +70,26 @@
       "name": "The field report",
       "from": "outpost",
       "kind": "document",
-      "paper": "fieldReport"
+      "paper": "fieldReport",
+      "card": {
+        "look": "report",
+        "color": "#d9d4bf",
+        "label": "#7a1a14",
+        "line": "A field report on an army form, stamped and signed. Someone meant to send it. (draft)"
+      }
     },
     {
       "id": "outpostManifest",
       "name": "The outpost's shipping manifest",
       "from": "outpost",
       "kind": "document",
-      "paper": "outpostManifest"
+      "paper": "outpostManifest",
+      "card": {
+        "look": "report",
+        "color": "#cfc8ae",
+        "label": "#333",
+        "line": "A shipping manifest on a clipboard. Most of the crates on it were never meant to leave. (draft)"
+      }
     },
     {
       "id": "timeCapsule",

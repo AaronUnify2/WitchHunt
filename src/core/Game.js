@@ -29,6 +29,7 @@ import { Explosives } from '../combat/Explosives.js';
 import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
+import { InspectCard } from '../ui/InspectCard.js';
 import { PaperNote } from '../ui/PaperNote.js';
 import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
@@ -134,6 +135,9 @@ export class Game {
     this.paper = new PaperNote(this.bus);
     this.paper.init(root, this.combat.sfx);
     this.lore.paper = this.paper; // Session 17 (Aaron): papers handed in are read again from the ledger
+    // Session 20 (Aaron): special items get an inspect card (watch, read, or keep for later).
+    this.card = new InspectCard(this.bus);
+    this.card.init(root, this.combat.sfx);
     // Session 16 (Aaron): tapes and feeds wait for D-pad down.
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
@@ -416,6 +420,7 @@ export class Game {
     this.campsite = new Campsite(this.cfg, this.bus);
     this.campsite.init(this.scene, {
       watch: this.watch,
+      card: this.card, // Session 20
       world: this.world,
       combat: this.combat,
       player: this.player,
@@ -442,6 +447,7 @@ export class Game {
       dialogue: this.dialogue,
       progress: this.progress,
       paper: this.paper,
+      card: this.card, // Session 20
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.gasStation.hud);
@@ -466,6 +472,7 @@ export class Game {
       progress: this.progress,
       lore: this.lore,
       paper: this.paper,
+      card: this.card, // Session 20
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.shelter.hud);
@@ -487,6 +494,7 @@ export class Game {
       progress: this.progress,
       lore: this.lore,
       paper: this.paper,
+      card: this.card, // Session 20
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.outpost.hud);
@@ -945,7 +953,7 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };
@@ -1151,9 +1159,10 @@ export class Game {
     viewer.update(dt, this.input, !this.debugMenu.isOpen);
     const held = viewing || viewer.active;
     // Session 16: a paper in close-up holds the game too (open at the start of the frame counts).
-    const reading = this.paper.isOpen;
+    const reading = this.paper.isOpen || this.card.isOpen;
     this.paper.update(dt, this.input);
-    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen;
+    this.card.update(dt, this.input); // Session 20: after the paper's (a card can open one)
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen || this.card.isOpen;
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
     // Session 19 (Aaron: the dead stood frozen in the shelter's sweep): a cutscene marked "unseen" lets the world
     // run on while it plays, but nothing notices Tom (detection.playerSenses).
@@ -1221,10 +1230,10 @@ export class Game {
     if (!this.cutscenes.active) this.hints.update(dt);
     this.alert.update(dt);
     if (this.state === 'running') {
-      this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && this.combat.alive);
+      this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && this.combat.alive);
       this.mapUi.setObjective(this.objectives.current);
     }
-    this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.noReturn.isOpen && this.combat.alive);
+    this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.overlay.update(dt);
   }
 
@@ -1232,7 +1241,7 @@ export class Game {
   // fast-forward steps have them locked).
   step(dt, running, playing, first) {
     const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !ledgerPause) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !this.card.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const cinematic = this.finalBattle.cinematic || this.cutscenes.locksControls;
@@ -1313,6 +1322,7 @@ export class Game {
     this.runEnd.dispose();
     this.noReturn.dispose();
     this.paper.dispose();
+    this.card.dispose();
     this.watch.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();

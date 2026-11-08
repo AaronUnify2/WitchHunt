@@ -1916,3 +1916,92 @@ body.in-cutscene .vhud {
   letter-spacing: 0.12em;
   animation: vhud-blink 0.6s steps(2) infinite;
 }
+
+/* Session 20: the inspect card (ui/InspectCard.js). The item turns slowly:
+   a CSS 3D box in its shape and colours (a placeholder until the art pass). */
+.inspect {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.62);
+  touch-action: none;
+}
+.inspect.hidden { display: none; }
+.inspect-card {
+  box-sizing: border-box;
+  width: min(88vw, 26rem);
+  padding: 1.2rem 1.4rem 1.1rem;
+  background: rgba(18, 16, 14, 0.94);
+  border: 1px solid rgba(220, 200, 150, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  color: #e8e0cc;
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  text-align: center;
+}
+.inspect-stage {
+  height: 9.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+}
+.inspect-item {
+  --w: 6rem; --h: 4rem; --d: 2.4rem;
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+  animation: inspect-turn 9s linear infinite;
+}
+.inspect-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: var(--item-color);
+  box-shadow: inset 0 0 1.4rem rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.inspect-face.front, .inspect-face.back { width: var(--w); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2); }
+.inspect-face.left, .inspect-face.right { width: var(--d); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--d) / -2); }
+.inspect-face.top, .inspect-face.bottom { width: var(--w); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--w) / -2); }
+.inspect-face.front { transform: translateZ(calc(var(--d) / 2)); }
+.inspect-face.back { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.inspect-face.right { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); }
+.inspect-face.left { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); }
+.inspect-face.top { transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); }
+.inspect-face.bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); }
+/* A label stripe on the front: the tape's sticker, the form's stamp. */
+.inspect-face.front::after {
+  content: '';
+  position: absolute;
+  left: 18%; right: 18%; top: 30%; height: 26%;
+  background: var(--item-label);
+  opacity: 0.85;
+}
+.inspect-item.look-camcorder { --w: 7rem; --h: 4rem; --d: 3.2rem; }
+.inspect-item.look-tape { --w: 5.6rem; --h: 3.4rem; --d: 1.2rem; }
+.inspect-item.look-note { --w: 5rem; --h: 6.4rem; --d: 0.12rem; }
+.inspect-item.look-book { --w: 5.2rem; --h: 7rem; --d: 1.4rem; }
+.inspect-item.look-report { --w: 5.4rem; --h: 7rem; --d: 0.3rem; }
+.inspect-item.look-device { --w: 4.6rem; --h: 4.6rem; --d: 1.8rem; }
+.inspect-item.look-note .inspect-face.front::after,
+.inspect-item.look-report .inspect-face.front::after { top: 12%; height: 6%; left: 12%; right: 40%; }
+@keyframes inspect-turn {
+  from { transform: rotateX(-14deg) rotateY(0deg); }
+  to { transform: rotateX(-14deg) rotateY(360deg); }
+}
+.inspect-name { margin: 0.6rem 0 0.3rem; font-size: 1.1rem; letter-spacing: 0.06em; color: #f0d890; }
+.inspect-line { margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.45; color: #cfc6b0; }
+.inspect-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.inspect-actions button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e0cc;
+  border: 1px solid rgba(220, 200, 150, 0.35);
+  cursor: pointer;
+}

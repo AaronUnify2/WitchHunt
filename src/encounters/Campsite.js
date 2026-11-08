@@ -280,6 +280,8 @@ export class Campsite {
     // Ellen: play it. Session 16 (Aaron): the clip waits for D-pad down (on
     // Tom's own time, not over the family's talk); then her line after it.
     this.dialogue.play('day1.06');
+    // Session 20 (Aaron): its inspect card: watch it now, or keep it (the prompt waits, and handed in it's on the monitors).
+    if (this.card?.show('camcorder', { watch: () => this.playClip(), keep: () => this.offerTape() })) return;
     this.offerTape();
   }
 

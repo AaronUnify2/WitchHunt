@@ -454,13 +454,20 @@ export class StormShelter {
       case 'diary':
         this.props?.setTaken('diary', true);
         this.lore?.give('pruittDiary');
-        if (!this.paper?.open('earlDiary', { device: this.device, take: true, onClose: () => this.dialogue?.play('shelter.diary') })) this.dialogue?.play('shelter.diary');
+        {
+          const after = () => this.dialogue?.play('shelter.diary');
+          const read = () => {
+            if (!this.paper?.open('earlDiary', { device: this.device, take: true, onClose: after })) after();
+          };
+          if (!this.card?.show('pruittDiary', { read, keep: after }, this.device)) read(); // Session 20: its inspect card
+        }
         break;
       case 'tapes':
         this.props?.setTaken('tapes', true);
         this.lore?.give('pruittTapes');
         this.dialogue?.play('shelter.tapes');
-        this.offerTapes();
+        // Session 20: its inspect card: watch them now, or keep them (the prompt waits; handed in, they're on the monitors).
+        if (!this.card?.show('pruittTapes', { watch: () => this.playTapes(), keep: () => this.offerTapes() }, this.device)) this.offerTapes();
         break;
       default:
         this.loot(pt);
