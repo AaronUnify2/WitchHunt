@@ -33,6 +33,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { segmentCollider } from '../world/collision.js';
 import { StationRenderer } from '../render/StationRenderer.js';
 import { Ledger } from '../ui/Ledger.js';
+import { hasRoom, isTool, slotOf, swapCandidates } from '../player/loadout.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 import { buildFencePlan } from './fencePlan.js';
 
@@ -262,13 +263,13 @@ export class Station {
   // Session 15b (Aaron): the service rifle on the tower, while Tom hasn't got one.
   get rifleOnTower() {
     const r = this.sc.towerRifle;
-    return Boolean(r) && !this.combat.weapons.order.includes(r.weapon);
+    return Boolean(r) && !this.combat.weapons.has(r.weapon);
   }
 
   // Session 15b (Aaron): the shovel by the cabin's front door, while Tom hasn't got one.
   get shovelAtDoor() {
     const s = this.sc.shovelByDoor;
-    return Boolean(s) && !this.combat.weapons.order.includes(s.weapon);
+    return Boolean(s) && !this.combat.weapons.has(s.weapon);
   }
 
   // Session 16 (Aaron): the first aid box on the comms room's wall, by its
@@ -309,6 +310,47 @@ export class Station {
     this.combat.hud.pickup(`Healing: ${inv.healing} (D-pad right to heal)${left ? `. ${left} left in the box` : ''}`);
     this.combat.sfx.play('pickup');
     return null;
+  }
+
+  // Session 20 (Aaron): the gun rack on the comms room's east wall. The
+  // guns that don't fit the loadout wait here; the ledger's Gun rack page
+  // swaps them (render/stationInterior.js draws it).
+  rackSpot() {
+    const c = this.layout.cabin;
+    const r = this.sc.gunRack;
+    return { x: c.x + c.halfW - r.standOff, z: c.z + r.z };
+  }
+
+  // The ledger's Gun rack page.
+  rackRows() {
+    const w = this.combat.weapons;
+    const L = this.cfg.weapons.loadout;
+    const name = (id) => this.cfg.weapons[id].name;
+    const slotName = { long: 'long gun', sidearm: 'sidearm', melee: 'melee' };
+    const rows = [{ heading: `CARRIED (${L.slots.long} long guns, ${L.slots.sidearm} sidearm, ${L.slots.melee} melee; the flare gun's always to hand)` }];
+    const carried = w.order.filter((id) => slotOf(L, id));
+    if (carried.length === 0) rows.push({ label: 'Nothing', value: '', action: null });
+    for (const id of carried) {
+      const tool = isTool(L, id);
+      rows.push({ label: `${name(id)} (${slotName[slotOf(L, id)]})`, value: tool ? 'A: hang it on your belt (it still digs)' : 'A: put it on the rack', action: () => this.rackAct(() => w.stow(id)) });
+    }
+    rows.push({ heading: 'ON THE RACK' });
+    if (w.rack.length === 0) rows.push({ label: 'Empty', value: 'guns that don\'t fit your loadout come here', action: null });
+    const offers = (id) => {
+      const slot = slotName[slotOf(L, id)];
+      if (hasRoom(L, w.order, id)) rows.push({ label: `${name(id)} (${slot})`, value: 'A: take it', action: () => this.rackAct(() => w.draw(id)) });
+      for (const out of swapCandidates(L, w.order, id)) rows.push({ label: `${name(id)} (${slot})`, value: `A: take it, leave the ${name(out).toLowerCase()}`, action: () => this.rackAct(() => w.swap(id, out)) });
+    };
+    for (const id of w.rack) offers(id);
+    if (w.belt.length) {
+      rows.push({ heading: 'ON YOUR BELT (tools: they come out by themselves)' });
+      for (const id of w.belt) offers(id);
+    }
+    return rows;
+  }
+
+  rackAct(fn) {
+    if (fn()) this.combat.sfx.play('pickup');
   }
 
   // Where it leans: { x, z } (outside the front wall, east of the door).
@@ -569,6 +611,7 @@ export class Station {
       else offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: `First aid box: ${what}. Your healing is full`, act: null });
     }
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
+    offer(dist(this.rackSpot()), { key: 'gun-rack', prompt: `Hold ${X}: the gun rack (${this.combat.weapons.rack.length} on it)`, seconds: h.ledger, act: () => this.ledger.open('rack') }); // Session 20
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 
     const box = L.fenceBox;
@@ -901,6 +944,7 @@ export class Station {
       { id: 'turret', title: t.available ? 'Turret' : 'Turret \u{1F512}', rows: turret },
       { id: 'upgrades', title: 'Upgrades', rows: upgrades },
       { id: 'security', title: 'Security', rows: security },
+      { id: 'rack', title: 'Gun rack', rows: this.rackRows() }, // Session 20
       ...this.pageSources.flatMap((pages) => pages()), // M6: NightWatch's forecast; M8: the comms room's monitors
     ];
   }

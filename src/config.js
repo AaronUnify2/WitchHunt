@@ -951,6 +951,21 @@ export const config = {
     startingLoadout: ['hands'],
     startingWeapon: 'hands',
     switchSeconds: 0.35, // lower one weapon and raise the next
+    // Session 20 (Aaron, Nov 8): the loadout (player/loadout.js). Two long
+    // guns, a sidearm, one melee weapon; the flare gun is always to hand.
+    // The rest wait on the comms room's gun rack (a gun found with its slot
+    // full goes there by itself). Tools never take a slot: the shovel digs
+    // from the belt once something better is in the melee slot.
+    loadout: {
+      slots: { long: 2, sidearm: 1, melee: 1 },
+      slotOf: {
+        rifle: 'long', shotgun: 'long', sniper: 'long', thermal: 'long', autoShotgun: 'long',
+        pistol: 'sidearm', smg: 'sidearm',
+        shovel: 'melee',
+      },
+      tools: ['shovel'],
+      rackName: "the comms room's gun rack",
+    },
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
     // Session 15b: empty-handed (no model, no attack).
@@ -2209,6 +2224,8 @@ export const config = {
     // Session 16 (Aaron): the first aid box on the comms room wall; 2 kits in it.
     // Session 20 (Aaron): it's where kits go that don't fit in the healing pool.
     aidBox: { kits: { firstAid: 2 } },
+    // Session 20 (Aaron): the gun rack on the comms room's east wall (z: metres from the cabin's centre; standOff: where Tom stands, in from the wall).
+    gunRack: { z: -2.2, standOff: 0.9 },
     shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright
       handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
@@ -2316,6 +2333,8 @@ export const config = {
       clock: 0x2a2622,
       firstAid: 0x7a7a74,
       firstAidCross: 0x8a1a14,
+      rackBoard: 0x4a3420, // Session 20: the gun rack
+      rackPeg: 0x2a2a2a,
       extinguisher: 0x7a1a14,
       hearth: 0x2a2826,
       iron: 0x161616,

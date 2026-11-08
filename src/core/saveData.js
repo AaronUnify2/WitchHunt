@@ -51,7 +51,8 @@ export function loadClock(clock, d) {
 export function savePlayer(player, combat) {
   const w = combat.weapons;
   const weapons = {};
-  for (const id of w.order) weapons[id] = { mag: w.states[id].mag, reserve: w.states[id].reserve };
+  // Session 20: the rack's and the belt's too (their magazines are kept).
+  for (const id of [...w.order, ...(w.rack ?? []), ...(w.belt ?? [])]) weapons[id] = { mag: w.states[id].mag, reserve: w.states[id].reserve };
   const inv = combat.inventory;
   return {
     x: player.position.x,
@@ -62,6 +63,9 @@ export function savePlayer(player, combat) {
     inventory: { kits: { ...inv.kits }, scrap: inv.scrap, batteries: inv.batteries, flares: inv.flares, ammo: { ...inv.ammo } },
     weapon: w.index,
     weapons,
+    carried: [...w.order], // Session 20: the loadout, in its cycle order
+    rack: [...(w.rack ?? [])],
+    belt: [...(w.belt ?? [])],
     kills: combat.kills,
   };
 }
@@ -80,10 +84,20 @@ export function loadPlayer(combat, d) {
   const w = combat.weapons;
   // Session 10b: guns picked up along the way (the hunting rifle) come back
   // too. The detonator's slot belongs to the charges, which restore it.
-  for (const id of Object.keys(d.weapons ?? {})) {
-    if (!w.order.includes(id) && w.cfg[id]?.kind === 'hitscan') w.setSlot(id, true);
+  // Session 20: the loadout, the rack and the belt as saved (the detonator
+  // isn't in `carried`'s keeping: the charges restore it).
+  if (d.carried) {
+    for (const id of d.carried) if (!w.order.includes(id) && id !== 'detonator') w.setSlot(id, true);
+    for (const id of [...w.order]) if (!d.carried.includes(id) && id !== 'detonator') w.setSlot(id, false);
+    w.rack = [...(d.rack ?? [])];
+    w.belt = [...(d.belt ?? [])];
+    for (const id of [...w.rack, ...w.belt]) if (!w.states[id]) w.addState(id);
+  } else {
+    for (const id of Object.keys(d.weapons ?? {})) {
+      if (!w.order.includes(id) && w.cfg[id]?.kind === 'hitscan') w.setSlot(id, true);
+    }
   }
-  for (const id of w.order) {
+  for (const id of [...w.order, ...(w.rack ?? []), ...(w.belt ?? [])]) {
     const s = d.weapons[id];
     if (s) w.states[id].init(s.mag, s.reserve);
   }

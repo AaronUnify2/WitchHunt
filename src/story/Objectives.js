@@ -125,7 +125,7 @@ export class Objectives {
     }
 
     // ---- the shovel and the storm shelter ----
-    const shovel = g.combat.weapons.order.includes('shovel');
+    const shovel = g.combat.weapons.has('shovel');
     if (!shovel && has('shelterCall')) return step('shovel', 'Fetch the shovel from beside the cabin door.', st.shovelSpot());
     if (sh?.frame && has('shelterCall')) {
       if (!has('shelterVisited')) return step('shelter', "Go to the Pruitts' storm shelter, on their land east of home.", sh.frame);

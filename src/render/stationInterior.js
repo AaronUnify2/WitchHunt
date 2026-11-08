@@ -210,6 +210,14 @@ export function buildInterior(cabin, fy, k, box, rng) {
   add(0.06, 0.18, 0.02, cdx - cdw - 0.45, 1.46, c.partZ - inset - 0.16, k.firstAidCross);
   add(0.18, 0.06, 0.02, cdx - cdw - 0.45, 1.52, c.partZ - inset - 0.16, k.firstAidCross);
   add(0.14, 0.5, 0.14, cdx + cdw + 0.25, 0, c.partZ - inset - 0.1, k.extinguisher);
+  // Session 20 (Aaron): the gun rack on the east wall: a board, a shelf
+  // for the butts and a rail of pegs for the barrels (config.station.gunRack).
+  const eastX = hw - inset;
+  const rz = -2.2;
+  add(0.04, 1.3, 1.5, eastX - 0.02, 0.5, rz, k.rackBoard);
+  add(0.3, 0.05, 1.5, eastX - 0.15, 0.55, rz, k.rackBoard);
+  add(0.06, 0.06, 1.5, eastX - 0.06, 1.55, rz, k.rackPeg);
+  for (let i = 0; i < 5; i++) add(0.18, 0.04, 0.04, eastX - 0.1, 1.5, rz - 0.6 + i * 0.3, k.rackPeg);
 
   // ---- the main room ----
   // The woodstove: a cast-iron box on legs, its door (the fire shows

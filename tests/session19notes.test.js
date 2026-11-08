@@ -111,7 +111,7 @@ describe('round 3: the generator at the tower, the outpost on the map', async ()
       outpost: op,
       watch: { has: () => false },
       world: { map: { clearings: [], cluster: { checkpoint: p(0, 30) } } },
-      combat: { inventory: { batteries: 0 }, weapons: { order: ['shovel'] } },
+      combat: { inventory: { batteries: 0 }, weapons: { order: ['shovel'], has: (id) => id === 'shovel' } },
     };
   };
   const objectivesFor = (g) => {

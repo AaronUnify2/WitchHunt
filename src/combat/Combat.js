@@ -206,16 +206,18 @@ export class Combat {
 
   // Session 10b: a gun found in the world (the hunting rifle). Any of its
   // rounds picked up before it (kept in the inventory) load into it.
+  // Session 20: into the loadout if its slot has room, else to the comms
+  // room's gun rack (a tool to the belt). Returns where it went.
   giveWeapon(id, rounds = 0) {
     const w = this.weapons;
-    w.setSlot(id, true);
+    const where = w.take(id);
     const type = w.ammoType(id);
     const stored = this.inventory.ammo[type] ?? 0;
     if (stored > 0) delete this.inventory.ammo[type];
     w.addAmmo(type, rounds + stored);
-    w.select(w.order.indexOf(id));
-    // Session 15b: empty hands are gone once there's something to hold.
-    if (id !== 'hands' && w.order.includes('hands')) w.setSlot('hands', false);
+    if (where === 'carried') w.select(w.order.indexOf(id));
+    else if (where === 'rack') this.hud.pickup(`${w.cfg[id].name}: sent to ${w.cfg.loadout.rackName}`);
+    return where;
   }
 
   // "Try again": fresh health, kit, ammo, no zombies, back to the start.

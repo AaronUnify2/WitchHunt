@@ -275,7 +275,7 @@ export class ZombieDirector {
     // Session 16: nor from a platform (up the tower, or down in the storm shelter's room under the sigil).
     const target = this.combat.alive && !this.digLocked && !this.player.platform ? this.sigils.nearest(p.x, p.z, this.cfg.digging.range) : null;
     // Session 15b (Aaron): digging takes the shovel (it waits by the cabin's front door).
-    const shovel = this.combat.weapons.order.includes('shovel');
+    const shovel = this.combat.weapons.has('shovel');
     const done = this.digging.update(dt, shovel ? target : null, shovel && input.isDown('interact'));
     if (this.digging.active) {
       this.scrapeTimer -= dt;

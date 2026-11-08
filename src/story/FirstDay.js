@@ -262,7 +262,7 @@ export class FirstDay {
     if ((step === 'fit' || step === 'repair') && zone >= 1 && !this.fenceWhole() && calm) {
       once('fence', null, 'The torn fence: hold X at it, or repair it from the ledger in the comms room', 'The torn fence: hold E at it, or repair it from the ledger in the comms room');
     }
-    if (this.progress.has('shelterCall') && !this.combat.weapons.order.includes('shovel') && calm) {
+    if (this.progress.has('shelterCall') && !this.combat.weapons.has('shovel') && calm) {
       once('shovel', null, 'Fetch the shovel from beside the cabin door: it digs up what she buries', 'Fetch the shovel from beside the cabin door: it digs up what she buries');
     }
     if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.cutscenes.active) {

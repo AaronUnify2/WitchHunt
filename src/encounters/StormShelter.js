@@ -428,7 +428,7 @@ export class StormShelter {
     }
     if (dist(this.hatchAt) < this.sc.interactRange) {
       if (this.hatch === 'buried') {
-        if (!this.combat?.weapons?.order.includes('shovel')) return { key: 'hatch-info', prompt: 'A steel hatch, buried under leaf litter and earth. You need a shovel', act: null };
+        if (!this.combat?.weapons?.has('shovel')) return { key: 'hatch-info', prompt: 'A steel hatch, buried under leaf litter and earth. You need a shovel', act: null };
         return { key: 'hatch-dig', prompt: `Hold ${X}: dig the hatch clear`, busy: 'Digging…', seconds: h.digHatch, act: () => this.digHatch() };
       }
       if (this.hatch === 'clear') return { key: 'hatch-open', prompt: `Hold ${X}: haul the hatch open`, busy: 'Hauling…', seconds: h.openHatch, act: () => this.openHatch() };

@@ -717,7 +717,7 @@ export class GasStation {
     if (!this.shelterTalk || this.cutscenes?.active) return;
     if (Math.hypot(l.x, l.z) < this.frame.radius + this.gc.shelterTalkDistance) return;
     this.shelterTalk = false;
-    const shovel = this.combat?.weapons.order.includes('shovel');
+    const shovel = this.combat?.weapons.has('shovel');
     this.dialogue?.play(shovel ? 'gas.shovel.have' : 'gas.shovel');
     if (shovel && !this.weaponTold) {
       this.weaponTold = true;

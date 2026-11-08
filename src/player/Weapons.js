@@ -15,6 +15,7 @@
 
 import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
+import { hasRoom, isTool, slotOf } from './loadout.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
 import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind, helmetPart } from '../combat/hitscan.js';
 
@@ -58,6 +59,8 @@ export class Weapons {
 
   reset() {
     this.order = [...this.cfg.startingLoadout];
+    this.rack = []; // Session 20: guns waiting on the comms room's gun rack
+    this.belt = []; // Session 20: tools out of the melee slot (the shovel)
     this.states = {};
     this.pools = {}; // Session 10b: reserve rounds by ammo type, shared by the guns that fire them
     for (const id of this.order) this.addState(id);
@@ -329,7 +332,7 @@ export class Weapons {
     const current = this.id;
     if (present) {
       this.order.push(id);
-      this.addState(id);
+      if (!this.states[id]) this.addState(id); // Session 20: a gun off the rack keeps its magazine
       return;
     }
     this.order = this.order.filter((x) => x !== id);
@@ -340,6 +343,76 @@ export class Weapons {
     } else {
       this.index = this.order.indexOf(current);
     }
+  }
+
+  // ---- the loadout (Session 20; player/loadout.js) ----------------------------
+
+  // Does Tom own it (carried, on the belt or on the rack)?
+  has(id) {
+    return this.order.includes(id) || this.rack.includes(id) || this.belt.includes(id);
+  }
+
+  // A weapon found: carried if its slot has room, else a tool goes on the
+  // belt and a gun to the rack. Returns 'carried', 'belt' or 'rack'.
+  take(id) {
+    const L = this.cfg.loadout;
+    if (this.order.includes(id)) return 'carried';
+    if (this.rack.includes(id)) return 'rack';
+    if (this.belt.includes(id)) return 'belt';
+    if (hasRoom(L, this.order, id)) {
+      this.setSlot(id, true);
+      if (id !== 'hands') this.setSlot('hands', false);
+      return 'carried';
+    }
+    if (!this.states[id]) this.addState(id);
+    if (isTool(L, id)) {
+      this.belt.push(id);
+      return 'belt';
+    }
+    this.rack.push(id);
+    return 'rack';
+  }
+
+  // Off the rack (or belt) into a free slot. False if there's no room.
+  draw(id) {
+    const from = this.rack.includes(id) ? this.rack : this.belt.includes(id) ? this.belt : null;
+    if (!from || !hasRoom(this.cfg.loadout, this.order, id)) return false;
+    from.splice(from.indexOf(id), 1);
+    this.setSlot(id, true);
+    this.setSlot('hands', false);
+    return true;
+  }
+
+  // A carried weapon onto the rack (a tool onto the belt). Tom is never left
+  // with nothing in hand: empty hands come back if it was the last.
+  stow(id) {
+    if (!this.order.includes(id) || !slotOf(this.cfg.loadout, id)) return false;
+    if (this.order.length === 1) this.setSlot('hands', true);
+    this.setSlot(id, false);
+    (isTool(this.cfg.loadout, id) ? this.belt : this.rack).push(id);
+    if (!this.order.includes(this.id)) this.index = 0;
+    return true;
+  }
+
+  // Take `inId` off the rack (or belt) in place of the carried `outId`, in
+  // the same slot and the same place in the cycle.
+  swap(inId, outId) {
+    const from = this.rack.includes(inId) ? this.rack : this.belt.includes(inId) ? this.belt : null;
+    const at = this.order.indexOf(outId);
+    const L = this.cfg.loadout;
+    if (!from || at < 0 || slotOf(L, inId) !== slotOf(L, outId)) return false;
+    from.splice(from.indexOf(inId), 1);
+    (isTool(L, outId) ? this.belt : this.rack).push(outId);
+    const holding = this.index === at;
+    if (holding) this.state.cancelReload();
+    this.order[at] = inId;
+    if (!this.states[inId]) this.addState(inId);
+    if (holding) {
+      this.switchTimer = this.cfg.switchSeconds;
+      this.meleeTimer = -1;
+      this.bus.emit('weapon:switched', { id: this.id });
+    }
+    return true;
   }
 
   // Was the detonator's trigger pulled since the last call? (M7)

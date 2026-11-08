@@ -183,15 +183,17 @@ The original design, kept for reference: the player starts each run with the **s
 - **Alien shotgun shells:** 150% of a normal shell's damage, with a purple muzzle flash. From aliens; the first come off the crashed plane's grey. *(Designed, not built.)*
 - **Ammo types** *(Aaron, Nov 8; designed, not built)*: **tap B to reload; hold B to choose the ammo** (normal or alien shells). The gun reloads with what's chosen, and the HUD shows the type (a purple shell for alien). The crashed plane's shells teach it.
 
-#### Loadout *(Aaron, Nov 8; designed, not built)*
+#### Loadout *(Aaron, Nov 8; built Session 20)*
 
 - Tom carries **two long guns, a sidearm, one melee weapon and the flare gun**. The rest wait on a **gun rack in the comms room**.
 - *(Proposed)* The ute has a gun locker in its tray, so loadouts can be swapped in the field without a trip home.
 - Choosing a loadout fits "every night is a choice": the hunting rifle for the witch, or the auto shotgun to hold the fence.
 - **Carrying isn't a real pressure.** No limits that force pointless trips home to drop things off.
+- **As built (Session 20, Aaron's answers):** long guns are the service rifle, shotgun, hunting rifle, heat-scope rifle and auto shotgun; the sidearm is the pistol or the SMG. A gun found with its slot full **goes to the rack by itself** (a toast says so); its rounds still go to its ammo pool. The rack hangs on the comms room's east wall: hold X there (or open the ledger) for the **Gun rack** page, to put a carried gun on the rack, take one into a free slot, or swap one for a carried gun of the same slot (it takes the same place in the RB / LB cycle and keeps its magazine). Saved. `player/loadout.js`; `config.weapons.loadout`. The rack shows no guns on it yet.
 
-#### Tools vs weapons *(Aaron, Nov 8; designed, not built)*
+#### Tools vs weapons *(Aaron, Nov 8; the belt built Session 20)*
 
+- *As built (Session 20):* the shovel is the melee weapon until it's swapped out; then it hangs on the belt and still digs (the dig always shows the shovel). Everything that needs it asks whether Tom owns it (`Weapons.has`), not whether it's in hand.
 - **Tools go on a tool belt** (the shovel; the **wire cutters** from the moonshiners' holler, Nov 8, for disarming trip wires; later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
 - **One melee slot for fighting.** It starts as the shovel and can be swapped for something better: the **railroad spike maul** (the railway cutting) or the **chainsaw** (the sawmill) (Nov 8).
 - **No flamethrower for Tom** (Aaron, Nov 8: tedious in shooters); it's a killdozer part only. **No fuel anywhere in the game.**
