@@ -242,7 +242,7 @@ export class Weapons {
 
   fireHitscan(w) {
     const eye = this.eye;
-    const dmg = dmg * this.state.damageScale; // Session 20: alien shells hit 1.5x
+    const dmg = w.damage * this.state.damageScale; // Session 20: alien shells hit 1.5x
     const spread = (this.aiming ? w.aimSpreadDegrees : w.spreadDegrees) * DEG_TO_RAD;
     const check = Math.min(w.range, MISS_CHECK_DISTANCE);
     const half = check / 2;

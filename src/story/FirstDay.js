@@ -629,6 +629,8 @@ export class FirstDay {
     for (const s of st.state.segments) s.health = s.max;
     st.state.fitBattery();
     st.syncColliders();
+    // Session 20 (Aaron, #344): Skip intro hands over the shovel too (it leans by the door otherwise).
+    if (this.station.shovelAtDoor) this.combat.giveWeapon(this.cfg.station.shovelByDoor.weapon);
     if (this.station.rifleOnTower) this.combat.giveWeapon(this.cfg.station.towerRifle.weapon); // Session 15b: it's on the tower otherwise
     this.combat.giveWeapon('shotgun', this.fc.skip.shotgunShells);
     this.combat.inventory.scrap = this.fc.skip.scrap;
