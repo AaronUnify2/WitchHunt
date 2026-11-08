@@ -2,7 +2,7 @@
 
 ## Just finished: Session 20, the new systems (M10.1; Lead Engineer + Gameplay Programmer)
 
-**Status: built, tested and pushed to the session branch `ccr-f5e0ac7a-jc0fw9`, not to `main`.** Merge it to main (a PR) to put it live. 754 tests pass (was 726); the build is clean.
+**Status: everything is on `main` (live).** 759 tests pass (was 726); the build is clean.
 
 **Aaron's answers first** (OPEN_QUESTIONS "Session 20"):
 - the vehicles don't glare under the torch, but other things do (**a fuller glare list is coming from him**);
@@ -39,6 +39,11 @@
    - `SAVE_VERSION` is now 3;
    - saving is refused during Day 1 and Night 1 (the clock reads day 1 until dawn), and after the hut is destroyed.
 
+**After Aaron's first look at round 31** (all on main):
+- **Bug, fixed: no gun's rounds landed.** Ammo types broke the damage line in `Weapons.fireHitscan()`, so every shot threw an error after the round was spent. Tests now fire real shots (`tests/ammoTypes.test.js`); I hadn't fired a gun headless before pushing. **Fire every gun in a headless check after touching weapons.**
+- **Holding B (Aaron):** it swaps the ammo **once per hold** (no cycling), and **only with another type in the pack**; otherwise B reloads on the press. When the chosen type runs out, a reload falls back to one that has rounds (`Weapons.reloadInHand()`). Alien shells feel good.
+- **#344:** Skip intro now gives the shovel. **#347:** a kept tape's prompt keeps waiting (as built). **#349:** the alien quad's power numbers stay.
+
 **Debug items for trying it** (Aaron's PLAYTEST round 31):
 - Player: an alien med kit, alien shells, the 10% health floor;
 - Station: the plane's power cell;
@@ -47,10 +52,7 @@
 
 ### Unfinished
 
-- **Aaron's play-test, PLAYTEST round 31.** Ask for his notes first. My calls are OPEN_QUESTIONS #340-352. In particular:
-  - #344: Skip intro has never given the shovel, though the old handover said it did;
-  - #347: should a kept tape still leave the D-pad down prompt waiting?
-  - #349: the alien quad's power numbers.
+- **The rest of Aaron's round 31 play-test.** He's tried the guns and alien shells so far. Ask for his notes on the rest first: the healing pool, the rack, the cards, the power cell, the flares, the health floor, and pause with Save and quit. My calls are OPEN_QUESTIONS #340-352; #344, #345, #347 and #349 are settled.
 - **His glare list** (things that glare under the torch).
 - **Not played end to end headless:** Night 1's waves, then the gas station, the shelter and the outpost in sequence with the new systems. They were checked piece by piece on seeds 1234, 7 and 4242, and the full run is Aaron's round 31. DESIGN.md's M10 gate says "the opening still plays through on every seed".
 - **From before:**
@@ -102,7 +104,7 @@ Not this session:
 
 ### Open questions for Aaron
 
-- **Session 20:** #340-352 (above), and his glare list.
+- **Session 20:** #340-352 (#344, #345, #347 and #349 settled), and his glare list.
 - **For Session 21:** where the spine's places sit relative to each other is in DESIGN.md. Ask before choosing anything the doc leaves open, such as how far north ROAD CLOSED is, and whether the railway crosses the road at grade.
 - **Session 19:** #282-320, to check in play (#300, #308, #311, #317 and #319 are settled). In particular #302, the draw calls.
 - **The experimental vehicles:** #321-339.
@@ -114,7 +116,7 @@ Not this session:
 ```
 You are the Lead Engineer on Witch Hunt, Session 21: the map (M10.2): the fixed story spine, the road north and its ROAD CLOSED barrier, the 1903 railway line, the seed dealing optional encounters, and the interior system.
 Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": M10 and Session 21; "Map": Structure, Generation, the road north, the 1903 railway line; "Encounters": the story spine and the encounter table; "Interiors (shared system)"), STATUS.md (Session 20) and OPEN_QUESTIONS.md (#340-352, then the older open ones).
-First ask Aaron for his notes from PLAYTEST round 31 (Session 20's new systems) and his list of things that glare under the torch, and fix the small ones, pushing each.
+First ask Aaron for his notes from the rest of PLAYTEST round 31 (Session 20's new systems; the guns and alien shells are done) and his list of things that glare under the torch, and fix the small ones, pushing each.
 Then build the map one piece at a time, each tested and pushed, keeping the opening playable on every seed; bump SAVE_VERSION when the map moves.
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
 Then confirm your role and ask Aaron for his notes.
