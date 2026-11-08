@@ -90,12 +90,8 @@ describe('the optional encounters', () => {
     }
   });
 
-  it('deals each one on some runs and not on others (none guaranteed)', () => {
-    for (const k of optionalKeys) {
-      const seen = maps.filter((map) => map.clearings.some((c) => c.key === k)).length;
-      expect(seen).toBeGreaterThan(0);
-      expect(seen).toBeLessThan(maps.length);
-    }
+  it('deals all five designed ones (Aaron, Session 21: as many as fit)', () => {
+    for (const k of optionalKeys) expect(maps.filter((map) => map.clearings.some((c) => c.key === k)).length).toBe(maps.length);
   });
 
   it('places them where the seed says (they move between runs)', () => {

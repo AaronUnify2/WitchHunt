@@ -25,6 +25,7 @@
 // The whole lot is drawn only within the draw distance.
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { bakeParts, noise3, weatherFor } from './propKit.js';
 import { makeCanvas, toTexture, css } from './proceduralTextures.js';
 import { ChunkCuller } from './ChunkCuller.js';
@@ -291,53 +292,59 @@ export class RoadNorthProps {
 
   // ---- the brush -----------------------------------------------------------------------------------
 
+  // Session 21 (Aaron: it should clear a piece at a time): each piece of the
+  // brush (world/roadNorth.js brushPieces) is baked on its own, then all are
+  // merged into one mesh, each piece's vertices a known range, so a piece can
+  // be knocked away by itself (popPiece) and the brush is still one draw call.
   buildBrush() {
     const k = this.k;
     const br = this.layout.brush;
-    const parts = new Map();
-    const add = (geo, color, x, y, z, yaw = 0, rx = 0, rz = 0) => {
-      const g = geo.index ? geo.toNonIndexed() : geo;
-      if (g !== geo) geo.dispose();
-      g.deleteAttribute('uv');
-      g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, yaw, rz)), new THREE.Vector3(1, 1, 1)));
-      if (!parts.has(color)) parts.set(color, []);
-      parts.get(color).push(g);
-    };
     const gy = (x, z) => this.ground.heightAt(x, z);
-    // Bushes: lumpy clumps, the back ones taller (up the rock), packed tight.
-    for (let i = 0; i < 34; i++) {
-      const bx = br.x + (this.rand() * 2 - 1) * br.hx;
-      const bz = br.z + (this.rand() * 2 - 1) * br.hz;
-      const back = 1 - (bz - (br.z - br.hz)) / (br.hz * 2); // 1 against the rock
-      const s = 0.9 + this.rand() * 0.9 + back * 1.1;
-      const g = rockBlob(s * (0.9 + this.rand() * 0.4), s * (0.7 + back * 0.5), s, 300 + i, 0.32);
-      const color = [k.leafDark, k.leaf, k.leafDark, k.leafBrown][i % 4];
-      add(g, color, bx, gy(bx, bz) + s * 0.45, bz, this.rand() * 6);
-    }
-    // Deadfall: branches and two trunks leaned up against the rock.
-    for (let i = 0; i < 14; i++) {
-      const len = 2.5 + this.rand() * 4.5;
-      const r = 0.05 + this.rand() * 0.12;
-      const bx = br.x + (this.rand() * 2 - 1) * br.hx * 0.9;
-      const bz = br.z + (this.rand() * 2 - 1) * br.hz * 0.7;
-      const g = new THREE.CylinderGeometry(r * 0.6, r, len, 5).translate(0, len / 2, 0);
-      add(g, i % 3 ? k.twig : k.deadwood, bx, gy(bx, bz) - 0.1, bz, this.rand() * 6, -0.5 - this.rand() * 0.6, (this.rand() - 0.5) * 0.8);
-    }
-    for (const s of [-1, 1]) {
-      const len = 7.5;
-      const g = new THREE.CylinderGeometry(0.22, 0.3, len, 7).translate(0, len / 2, 0);
-      add(g, k.deadwood, br.x + s * 1.6, gy(br.x, br.z + br.hz) - 0.2, br.z + br.hz * 0.6, 0, -0.95, s * 0.35);
-    }
-    // Briars: thin arching canes over the front.
-    for (let i = 0; i < 22; i++) {
-      const bx = br.x + (this.rand() * 2 - 1) * br.hx;
-      const bz = br.z + br.hz * (0.2 + this.rand() * 0.8);
-      const len = 1.4 + this.rand() * 1.4;
-      const g = new THREE.CylinderGeometry(0.012, 0.02, len, 3).translate(0, len / 2, 0);
-      add(g, k.briar, bx, gy(bx, bz), bz, this.rand() * 6, 0.6 + this.rand() * 0.5, (this.rand() - 0.5) * 0.6);
-    }
-    const geo = bakeParts(parts, { weather: this.weather, baseAt: (x, y, z) => gy(x, z), seed: 22 });
-    this.brushMesh = new THREE.Mesh(this.hold(geo), this.material ?? this.hold(new THREE.MeshLambertMaterial({ vertexColors: true })));
+    const geos = [];
+    this.pieces = [];
+    let start = 0;
+    br.pieces.forEach((p, i) => {
+      const parts = new Map();
+      const add = (geo, color, x, y, z, yaw = 0, rx = 0, rz = 0) => {
+        const g = geo.index ? geo.toNonIndexed() : geo;
+        if (g !== geo) geo.dispose();
+        g.deleteAttribute('uv');
+        g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, yaw, rz)), new THREE.Vector3(1, 1, 1)));
+        if (!parts.has(color)) parts.set(color, []);
+        parts.get(color).push(g);
+      };
+      const y0 = gy(p.x, p.z);
+      if (p.kind === 'bush') {
+        // A lumpy clump (two lobes), a couple of dead sticks through it, briar canes arching over the front.
+        const s = p.r * (1.15 + p.back * 0.5);
+        add(rockBlob(s * (0.9 + this.rand() * 0.3), s * (0.75 + p.back * 0.45), s * 0.9, p.seed, 0.32), [k.leafDark, k.leaf, k.leafBrown][i % 3], p.x, y0 + s * 0.45, p.z, this.rand() * 6);
+        add(rockBlob(s * 0.6, s * 0.55, s * 0.6, p.seed + 50, 0.35), [k.leaf, k.leafDark, k.leafDark][i % 3], p.x + (this.rand() - 0.5) * s, y0 + s * 0.35, p.z + (this.rand() - 0.5) * s * 0.6, this.rand() * 6);
+        for (let t = 0; t < 2; t++) {
+          const len = 1.6 + this.rand() * 2;
+          add(new THREE.CylinderGeometry(0.03, 0.06, len, 4).translate(0, len / 2, 0), t ? k.twig : k.deadwood, p.x + (this.rand() - 0.5) * s, y0 - 0.1, p.z + (this.rand() - 0.5) * s * 0.5, this.rand() * 6, -0.4 - this.rand() * 0.5, (this.rand() - 0.5) * 0.7);
+        }
+        for (let t = 0; t < 3; t++) {
+          const len = 1.2 + this.rand() * 1.2;
+          add(new THREE.CylinderGeometry(0.012, 0.02, len, 3).translate(0, len / 2, 0), k.briar, p.x + (this.rand() - 0.5) * s * 1.2, y0, p.z + s * 0.3, this.rand() * 6, 0.6 + this.rand() * 0.5, (this.rand() - 0.5) * 0.6);
+        }
+      } else {
+        // A deadfall trunk leaned against the rock, a couple of its branches.
+        const len = 6.5;
+        add(new THREE.CylinderGeometry(0.2, 0.28, len, 7).translate(0, len / 2, 0), k.deadwood, p.x, y0 - 0.2, p.z, 0, -0.95, p.lean);
+        for (let t = 0; t < 2; t++) add(new THREE.CylinderGeometry(0.04, 0.08, 1.8, 4).translate(0, 0.9, 0), k.twig, p.x + (t ? 0.3 : -0.3), y0 + 1.2 + t * 1.1, p.z - 0.8 - t * 0.7, this.rand() * 6, -0.3, t ? 0.8 : -0.8);
+      }
+      const geo = bakeParts(parts, { weather: this.weather, baseAt: (x, y, z) => gy(x, z), seed: 22 + i });
+      const count = geo.getAttribute('position').count;
+      this.pieces.push({ start, count, x: p.x, y: y0 + p.r * 0.6, z: p.z, state: 'up', t: 0, dx: 0, dz: 1 });
+      start += count;
+      geos.push(geo);
+    });
+    const merged = mergeGeometries(geos);
+    for (const g of geos) g.dispose();
+    this.brushBase = Float32Array.from(merged.getAttribute('position').array);
+    merged.getAttribute('position').setUsage(THREE.DynamicDrawUsage);
+    merged.computeBoundingSphere();
+    this.brushMesh = new THREE.Mesh(this.hold(merged), this.material ?? this.hold(new THREE.MeshLambertMaterial({ vertexColors: true })));
     this.brushMesh.castShadow = true;
     this.brushMesh.receiveShadow = true;
     this.brushMesh.name = 'cave brush';
@@ -369,11 +376,78 @@ export class RoadNorthProps {
     this.group.add(this.clearedMesh);
   }
 
-  // Shown (true) until the dozer clears it.
+  // Shown (true) until the dozer clears it: every piece back, or all gone and the churned ground left.
   setBrush(on) {
     if (!this.brushMesh) return;
-    this.brushMesh.visible = on;
+    for (let i = 0; i < this.pieces.length; i++) {
+      const p = this.pieces[i];
+      p.state = on ? 'up' : 'gone';
+      p.t = on ? 0 : 1;
+      this.posePiece(p);
+    }
     this.clearedMesh.visible = !on;
+  }
+
+  // Knock piece i away from the blade (dx, dz: the way it's shoved): it tumbles off and shrinks to nothing.
+  // instant: gone at once (loading a save).
+  popPiece(i, dx = 0, dz = 1, instant = false) {
+    const p = this.pieces?.[i];
+    if (!p || p.state !== 'up') return;
+    const len = Math.hypot(dx, dz) || 1;
+    p.dx = dx / len;
+    p.dz = dz / len;
+    p.state = instant ? 'gone' : 'going';
+    p.t = instant ? 1 : 0;
+    if (instant) this.posePiece(p);
+  }
+
+  // Lay a piece's vertices out for its t (0 standing .. 1 gone).
+  posePiece(p) {
+    const pos = this.brushMesh.geometry.getAttribute('position');
+    const a = pos.array;
+    const b = this.brushBase;
+    const t = p.t;
+    const scale = 1 - t * t;
+    const ox = p.dx * t * 3.2;
+    const oz = p.dz * t * 3.2;
+    const oy = Math.sin(Math.PI * Math.min(1, t * 1.2)) * 1.4 - t * 0.6;
+    // A tumble: turn about the shove's sideways axis as it goes.
+    const ang = t * 2.2;
+    const c = Math.cos(ang);
+    const sn = Math.sin(ang);
+    for (let v = p.start; v < p.start + p.count; v++) {
+      const k = v * 3;
+      let x = (b[k] - p.x) * scale;
+      let y = (b[k + 1] - p.y) * scale;
+      let z = (b[k + 2] - p.z) * scale;
+      // Rotate in the plane of the shove (along it, and up).
+      const along = x * p.dx + z * p.dz;
+      const side = -x * p.dz + z * p.dx;
+      const al = along * c - y * sn;
+      y = along * sn + y * c;
+      x = al * p.dx - side * p.dz;
+      z = al * p.dz + side * p.dx;
+      a[k] = p.x + x + ox;
+      a[k + 1] = p.y + y + oy;
+      a[k + 2] = p.z + z + oz;
+    }
+    pos.needsUpdate = true;
+  }
+
+  // Each frame: the pieces on their way.
+  updatePieces(dt) {
+    if (!this.pieces) return;
+    for (const p of this.pieces) {
+      if (p.state !== 'going') continue;
+      p.t = Math.min(1, p.t + dt / this.k.popSeconds);
+      if (p.t >= 1) p.state = 'gone';
+      this.posePiece(p);
+    }
+  }
+
+  // Once the last piece has gone, the churned ground and snapped canes left behind.
+  showCleared() {
+    if (this.clearedMesh) this.clearedMesh.visible = true;
   }
 
   // ---- the lamps -----------------------------------------------------------------------------------
@@ -544,6 +618,7 @@ export class RoadNorthProps {
 
   update(dt, cameraPosition) {
     this.culler.update(cameraPosition.x, cameraPosition.z);
+    this.updatePieces(dt);
     if (!this.group.visible || !this.lamps) return;
     this.time += dt;
     const period = this.k.lampPeriod;

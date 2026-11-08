@@ -291,6 +291,14 @@ Round 32 (Session 21: the map, M10.2; OPEN_QUESTIONS #353-376). **Your old save 
 - [ ] **Saving inside:** go down the shelter, then debug, Run & save: "Save now (as the dawn autosave does)"; reload and Continue: you're beside the hatch, not underground.
 - [ ] **The map:** roads drawn as roads, the railway as a railway.
 
+Round 33 (Session 21, after your first look at round 32):
+- [ ] **Cutscenes:** ride the quad flat out into the storm shelter's clearing (with the horde up). As the sweep plays the quad brakes to a stop, the dead keep moving, and nothing hurts you until it's over.
+- [ ] **Skip intro:** the quad is waiting just outside the station's gate.
+- [ ] **The outpost's points:** prise a crate open: its marker goes at once. Walk up to C-7: its marker goes. The others go as before.
+- [ ] **The brush:** drive the dozer into it: the bushes and trunks go one at a time, tumbling off, as the blade reaches them; most of it gone, the rest comes down and the cave shows.
+- [ ] **No car markers** on the map or the minimap.
+- [ ] **All five optional encounters** every run ("Teleport: next optional encounter").
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

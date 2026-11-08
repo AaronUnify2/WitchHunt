@@ -174,9 +174,11 @@ export class Objectives {
       const pt = (id) => op.points.find((x) => x.id === id);
       // Session 19 round 3 (Aaron): explore the compound, every point of interest on the map at once, any order.
       const list = [];
-      if (!op.told.has('beetlesDone')) list.push(op.crateAt?.find((_, i) => op.crates[i] === 'whole') ?? op.crateAt?.[0]);
+      // Session 21 (Aaron: points should come off the map as they're cleared): every crate still
+      // whole (an opened one goes), C-7 once Tom's been to it (its sweep may have to wait for quiet).
+      if (!op.told.has('beetlesDone')) (op.crateAt ?? []).forEach((at, i) => op.crates[i] === 'whole' && list.push(at));
       if (!op.told.has('resinOpen')) list.push(op.resinDoorAt);
-      if (!op.told.has('c7')) list.push(op.c7At);
+      if (!op.told.has('c7') && !op.told.has('c7Visited')) list.push(op.c7At);
       if (!op.searched.has('armoury')) list.push(pt('armoury'));
       if (!op.searched.has('report')) list.push(pt('report'));
       if (!op.searched.has('manifest') && pt('manifest')) list.push(pt('manifest'));

@@ -1256,6 +1256,21 @@ export class Game {
     if (this.cutscenes.current?.id === 'menu.feed') this.cutscenes.stop(false);
     this.bus.emit('game:started', { seed: this.seed });
     this.firstDay.begin(mode ?? 'new');
+    // Session 21 (Aaron): after Skip intro the quad waits just outside the station's gate, to ride to the gas station.
+    if (mode === 'skip') this.parkQuadAtStation();
+  }
+
+  // Just outside the gate, off the path, nose south (config.quad.skipParked: metres south of the gate and to its side).
+  parkQuadAtStation() {
+    const gate = this.station.layout.gate.mid;
+    const c = this.station.layout.centre;
+    const k = this.cfg.quad.skipParked;
+    const len = Math.hypot(gate.x - c.x, gate.z - c.z) || 1;
+    const ox = (gate.x - c.x) / len;
+    const oz = (gate.z - c.z) / len;
+    const x = gate.x + ox * k.out - oz * k.side;
+    const z = gate.z + oz * k.out + ox * k.side;
+    this.quad.place(x, z, Math.atan2(-ox, -oz));
   }
 
   onFullscreenChanged(fullscreen) {
@@ -1322,7 +1337,14 @@ export class Game {
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
     // Session 19 (Aaron: the dead stood frozen in the shelter's sweep): a cutscene marked "unseen" lets the world
     // run on while it plays, but nothing notices Tom (detection.playerSenses).
-    this.combat.unseen = Boolean(cs.active && cs.current?.data.unseen);
+    // Session 21 (Aaron: rode the quad into the shelter's horde as the sweep began and died in it): every
+    // cutscene now: the dead keep moving, but none can notice or hurt Tom, and the quad brakes to a stop.
+    this.combat.unseen = Boolean(cs.active);
+    this.combat.shielded = Boolean(cs.active);
+    if (this.player.riding) {
+      this.player.riding.halting = Boolean(cs.active);
+      if (cs.active && cs.freezesWorld) this.player.riding.speed = 0; // held still: it doesn't drive on afterwards
+    }
     const locked = this.station.ledger.isOpen;
     const controls = locked ? this.lockedInput : this.input;
     // Debug fast-forward (M6): the whole world (clock, zombies, marches,

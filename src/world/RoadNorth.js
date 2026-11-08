@@ -4,15 +4,17 @@
 //    into it says so; the tunnel behind has fallen in anyway.
 //  - The brush packed in front of the cave stops Tom (not the dozer).
 //    Walking into it says it's too thick to push through: it would take
-//    a machine. The dozer's blade, driven into it, tears it away: the
-//    mouth shows, a black hole into the rock, the story flag caveFound is
-//    set (the map stops calling the place Road's end), and it's saved.
+//    a machine. The dozer's blade, driven into it, knocks it away a piece
+//    at a time (Aaron), each bush and trunk as the blade reaches it; once
+//    most of it's gone the rest comes down too: the mouth shows, a black
+//    hole into the rock, the story flag caveFound is set (the map stops
+//    calling the place Road's end), and it's saved, piece by piece.
 //  - Once it's clear, standing at the mouth: what's there (the cave
 //    itself is built with its story beat, M12; Session 21's interior
 //    system is how it will load).
-// Events: 'roadNorth:brushCleared' { by }.
+// Events: 'roadNorth:brushPiece' { index }, 'roadNorth:brushCleared' { by }.
 
-import { roadNorthColliders, inBrush } from './roadNorth.js';
+import { roadNorthColliders } from './roadNorth.js';
 import { distanceToSegment } from './gates.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
@@ -32,6 +34,7 @@ export class RoadNorth {
     this.layout = ctx.world.map.roadNorth;
     this.props = ctx.world.roadNorthProps ?? null;
     this.brushCleared = false;
+    this.popped = new Set(); // pieces of the brush knocked away
     this.bumpTimers = { barrier: 0, brush: 0 };
     this.colliders = [];
     if (!this.layout) return;
@@ -53,23 +56,63 @@ export class RoadNorth {
     if (!this.layout) return;
     for (const k of Object.keys(this.bumpTimers)) this.bumpTimers[k] = Math.max(0, this.bumpTimers[k] - dt);
     if (!playing) return;
-    // The dozer's blade, driven into the brush, tears it away.
+    // The dozer's blade, driven into the brush, knocks it away a piece at a time.
     const d = this.dozer;
-    if (!this.brushCleared && d?.riding && Math.abs(d.speed ?? 0) > 0.3) {
-      const p = d.toWorld(0, d.qc.bladeFront);
-      if (inBrush(this.layout, p.x, p.z, this.rc.bladeReach)) this.clearBrush('dozer');
-    }
+    if (!this.brushCleared && d?.riding && Math.abs(d.speed ?? 0) > 0.3) this.bladeHits(d);
     if (this.player.riding) return;
     const pos = this.player.position;
     const near = this.rc.bumpDistance;
     // Walking into the barrier, or the brush.
     const bar = this.colliders.find((c) => c.what === 'barrier');
     if (bar && distanceToSegment(bar, pos.x, pos.z) < bar.t + near) this.bump('barrier', 'ROAD CLOSED. Behind the barrier the tunnel has fallen in: rock to the roof.');
-    if (!this.brushCleared && inBrush(this.layout, pos.x, pos.z, near)) this.bump('brush', 'Briars and deadfall, packed solid against the rock. Too thick to push through. It would take a machine to shift this.');
+    if (!this.brushCleared && this.nearBrush(pos.x, pos.z, near)) this.bump('brush', 'Briars and deadfall, packed solid against the rock. Too thick to push through. It would take a machine to shift this.');
     // At the cave's mouth, once it shows.
     if (this.brushCleared) {
       const m = this.layout.mouth;
       if (Math.hypot(pos.x - m.x, pos.z - m.z) < this.rc.mouthRange) this.hud.prompt = 'A cave, going deep into the rock. It smells of wet fur. (Built with its story: M12)';
+    }
+  }
+
+  // Is (x, z) within `pad` of a piece of brush still standing?
+  nearBrush(x, z, pad) {
+    const pieces = this.layout.brush.pieces;
+    return pieces.some((p, i) => !this.popped.has(i) && Math.hypot(x - p.x, z - p.z) < p.r + pad);
+  }
+
+  // The pieces the blade reaches (points across its width), knocked away the way it's driving.
+  bladeHits(d) {
+    const front = d.qc.bladeFront;
+    const c = d.toWorld(0, front);
+    const back = d.toWorld(0, 0);
+    let fx = c.x - back.x;
+    let fz = c.z - back.z;
+    if ((d.speed ?? 0) < 0) {
+      fx = -fx;
+      fz = -fz;
+    }
+    const half = this.rc.bladeHalf;
+    const pts = [-1, -0.5, 0, 0.5, 1].map((k) => d.toWorld(k * half, front));
+    this.layout.brush.pieces.forEach((p, i) => {
+      if (this.popped.has(i)) return;
+      if (pts.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < p.r + this.rc.bladeReach)) this.popPiece(i, fx, fz);
+    });
+  }
+
+  popPiece(i, dx = 0, dz = 1, quiet = false) {
+    if (this.popped.has(i)) return;
+    this.popped.add(i);
+    const col = this.colliders.find((c) => c.what === 'brush' && c.piece === i);
+    if (col) col.off = true;
+    this.props?.popPiece(i, dx, dz, quiet);
+    if (!quiet) {
+      const p = this.layout.brush.pieces[i];
+      this.clearing?.carve?.(p.x, p.z, p.r + 0.4);
+      this.sfx?.play('scrape', { x: p.x, z: p.z });
+      this.fx?.dust?.(p.x, this.world.ground.heightAt(p.x, p.z) + 0.5, p.z);
+      this.bus?.emit('roadNorth:brushPiece', { index: i });
+      // Most of it gone: the rest comes down with it.
+      const total = this.layout.brush.pieces.length;
+      if (this.popped.size >= Math.ceil(total * this.rc.brushClearAt)) this.clearBrush('dozer', dx, dz);
     }
   }
 
@@ -80,17 +123,26 @@ export class RoadNorth {
   }
 
   // The brush gone: the mouth shows, the flag's set, bare earth where it was.
-  clearBrush(by = 'dozer') {
+  // dx, dz: the way the last of it is shoved (the dozer's heading).
+  clearBrush(by = 'dozer', dx = 0, dz = 1) {
     if (this.brushCleared || !this.layout) return false;
     this.brushCleared = true;
+    const quiet = by === 'load';
+    this.layout.brush.pieces.forEach((_, i) => {
+      if (this.popped.has(i)) return;
+      this.popped.add(i);
+      const col = this.colliders.find((c) => c.what === 'brush' && c.piece === i);
+      if (col) col.off = true;
+      this.props?.popPiece(i, dx, dz, quiet);
+    });
     for (const c of this.brushColliders) c.off = true;
-    this.props?.setBrush(false);
+    this.props?.showCleared?.();
     const b = this.layout.brush;
-    if (by !== 'load') {
+    if (!quiet) {
       for (let x = b.x - b.hx; x <= b.x + b.hx; x += 2) for (let z = b.z - b.hz; z <= b.z + b.hz; z += 2) this.clearing?.carve?.(x, z, 1.6);
       this.sfx?.play('scrape', { x: b.x, z: b.z });
       this.fx?.dust?.(b.x, this.world.ground.heightAt(b.x, b.z) + 0.6, b.z);
-      this.notify?.('The brush tears away. Behind it, a black opening in the rock: a cave.');
+      this.notify?.('The last of the brush comes away. Behind it, a black opening in the rock: a cave.');
       this.player?.shake?.(0.5);
     }
     this.progress?.setFlag('caveFound');
@@ -101,12 +153,13 @@ export class RoadNorth {
   // ---- saving ----------------------------------------------------------------------------------------
 
   saveState() {
-    return { brushCleared: this.brushCleared };
+    return { brushCleared: this.brushCleared, popped: [...this.popped] };
   }
 
   loadState(d) {
-    if (!d?.brushCleared) return;
-    this.clearBrush('load');
+    if (!d) return;
+    for (const i of d.popped ?? []) if (Number.isInteger(i)) this.popPiece(i, 0, 1, true);
+    if (d.brushCleared) this.clearBrush('load');
   }
 
   // ---- debug -----------------------------------------------------------------------------------------
@@ -138,6 +191,6 @@ export class RoadNorth {
 
   overlayLine() {
     if (!this.layout) return '';
-    return `road north: brush ${this.brushCleared ? 'cleared' : 'standing'}`;
+    return `road north: brush ${this.brushCleared ? 'cleared' : `${this.popped.size}/${this.layout.brush.pieces.length} down`}`;
   }
 }

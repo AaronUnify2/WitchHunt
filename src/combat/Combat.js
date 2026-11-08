@@ -152,6 +152,7 @@ export class Combat {
   }
 
   onStrike(zombie, damage) {
+    if (this.shielded) return; // Session 21 (Aaron): nothing lands on Tom while a cutscene plays
     this.sfx.play('swipe', zombie);
     if (this.player.platform) return; // up the lookout tower, out of reach (M5)
     const scale = this.player.riding?.strikeScale?.() ?? 1; // the experimental ute: the cab's door, the tray's height
@@ -165,6 +166,9 @@ export class Combat {
   // health below it. Session 20: a general switch (setHealthFloor).
   hurtPlayer(damage, shake = 1) {
     if (!this.alive || this.godMode) return;
+    // Session 21 (Aaron: rode the quad into the shelter's horde as its sweep began, and died before it
+    // ended): while a cutscene plays the world moves on, but nothing can hurt Tom (Game sets this).
+    if (this.shielded) return;
     const before = this.health.value;
     const { taken } = this.health.takeDamage(damage);
     const floor = this.healthFloor;

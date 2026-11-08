@@ -396,8 +396,10 @@ export class Quad {
     if (throttle > 0.1) target = throttle * top;
     else if (throttle < -0.1) target = this.speed > 0.4 ? 0 : throttle * q.reverseSpeed;
     else target = 0;
+    // Session 21 (Aaron): a cutscene starting brakes it to a stop (Game sets halting), so it doesn't roll on into the dead.
+    if (this.halting) target = 0;
     const braking = (throttle < -0.1 && this.speed > 0.4) || (target === 0 && this.speed !== 0);
-    const rate = braking ? (throttle < -0.1 ? q.brake : q.coast) : q.acceleration;
+    const rate = this.halting ? q.brake : braking ? (throttle < -0.1 ? q.brake : q.coast) : q.acceleration;
     this.speed += Math.max(-rate * dt, Math.min(rate * dt, target - this.speed));
     // Steering: tighter slow, gentler fast; backwards it turns the other way.
     const grip = Math.min(1, Math.abs(this.speed) / q.steerFullAt);

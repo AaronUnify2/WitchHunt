@@ -71,6 +71,8 @@ Aaron's answers first (OPEN_QUESTIONS "Session 21"): fix the whole spine now; th
 - **Debug, Teleport & map:** next story place, next optional encounter, next railway crossing, the railway's tunnels, the road north's barrier and brush, bring the dozer to the brush, clear the brush.
 - `SAVE_VERSION` 4 (the map moved on every seed).
 
+**After Aaron's first look at round 32** (the cave area a favourite; Save and quit and the fence's cell work; the room's light fine): every cutscene now keeps the dead moving but unable to notice or hurt Tom, and brakes the quad; Skip intro leaves the quad outside the gate; the outpost's points come off the map as cleared (crates, C-7); the brush comes away a piece at a time; no car markers on the maps; all five optional encounters every run. PLAYTEST round 33.
+
 **Checked headless** (seeds 1234, 7, 4242, 99): a New Run through the opening's cutscenes; the campsite, the gas station, behind it, the fork, the shelter, the outpost, the crashed plane and the cave on each (no page errors; about 85-105 draw calls at the default quality); the dogfight from the watchtower bringing the plane and the UFO down at the spine's spots; down into the shelter's room and back; walking into the brush (stopped, the line), the dozer driven into it (cleared, `caveFound`, the map's name); a save made in the shelter's room, reloaded and continued (beside the hatch, the brush still cleared); Night 1's three waves (seed 7, fast-forward); the new teleports. **Not played through end to end** (that's Aaron's round 32).
 
 ### Session 20 (Lead Engineer + Gameplay Programmer): the new systems (M10.1)

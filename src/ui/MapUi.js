@@ -38,9 +38,10 @@ export class MapUi {
   }
 
   // Vehicles (M5 part 2) show on both maps once seen up close.
+  // Session 21 (Aaron): off by default (style.show false): they cluttered the map.
   setVehicles(list, style) {
     for (const view of [this.minimap, this.screen]) {
-      view.vehicles = list;
+      view.vehicles = style?.show === false ? null : list;
       view.vehicleStyle = style;
     }
   }

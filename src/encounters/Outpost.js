@@ -771,6 +771,8 @@ export class Outpost {
     // The Mothman's container (C-7): the first time Tom comes to its torn-open end.
     // Session 17 (Aaron): not mid-fight. Session 18: not over someone talking either (it's by the road in now).
     // Session 18 (Aaron): not from the quad, and not with more than a couple of the dead about.
+    // Session 21 (Aaron): once Tom's been there it's off the map, even if its sweep has to wait.
+    if (!this.told.has('c7Visited') && dist(this.c7At) < this.oc.c7Distance) this.told.add('c7Visited');
     if (!this.told.has('c7') && !busy && !this.player.riding && this.nearCount() <= this.oc.c7MaxNear && !this.talking() && dist(this.c7At) < this.oc.c7Distance) this.playC7();
     // C-4's doors swinging open (the reveal).
     if (this.resinOpen < 1 && this.told.has('resinOpen')) {

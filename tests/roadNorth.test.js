@@ -126,6 +126,9 @@ describe('the end of the road north', () => {
     expect(l.brush.z - l.brush.hz).toBeLessThan(l.mouth.z + 1);
     expect(l.brush.hx * 2).toBeGreaterThan(l.mouth.width);
     expect(inBrush(l, l.mouth.x, l.mouth.z + 1)).toBe(true);
+    // In pieces (Session 21, Aaron): bushes and trunks, every one in front of the mouth's line.
+    expect(l.brush.pieces.length).toBe(nc.brush.cols * nc.brush.rows + nc.brush.logs);
+    for (const p of l.brush.pieces) expect(inBrush(l, p.x, p.z, 0.6)).toBe(true);
   });
 
   it('keeps the ground open (no trees) at the road\'s end, on the spur and in the brush', () => {
@@ -197,22 +200,38 @@ describe('the brush and the cave (in play)', () => {
     expect(rn.hud.prompt).toBe('');
   });
 
-  it('is torn away by the dozer\'s blade: the colliders go, caveFound is set, and the mouth has its prompt', () => {
+  it('is knocked away a piece at a time by the dozer\'s blade (Aaron), then the rest: the colliders go, caveFound, the mouth\'s prompt', () => {
     const { rn, flags, inserted, player, dozer, bus } = makeRoadNorth(map);
-    const heard = [];
-    bus.on('roadNorth:brushCleared', (e) => heard.push(e.by));
+    const pieces = [];
+    const cleared = [];
+    bus.on('roadNorth:brushPiece', (e) => pieces.push(e.index));
+    bus.on('roadNorth:brushCleared', (e) => cleared.push(e.by));
     dozer.riding = true;
     dozer.speed = 1;
-    // Driving north (blade ahead) toward the brush.
+    // Driving north (blade ahead) into the brush's middle: only the pieces the blade reaches go.
     dozer.x = l.brush.x;
     dozer.z = l.brush.z + l.brush.hz + 10;
     rn.update(0.1, true);
-    expect(rn.brushCleared).toBe(false);
-    dozer.z = l.brush.z + l.brush.hz + 3.3;
+    expect(pieces).toHaveLength(0);
+    dozer.z = l.brush.z + l.brush.hz + 3.4;
     rn.update(0.1, true);
+    const first = pieces.length;
+    expect(first).toBeGreaterThan(0);
+    expect(first).toBeLessThan(l.brush.pieces.length / 2);
+    expect(rn.brushCleared).toBe(false);
+    expect(flags.has('caveFound')).toBe(false);
+    for (const i of pieces) expect(inserted.find((c) => c.what === 'brush' && c.piece === i).off).toBe(true);
+    // Sweeping across and in, lane by lane: the rest goes.
+    for (const lane of [-3, 0, 3]) {
+      dozer.x = l.brush.x + lane;
+      for (let z = l.brush.z + l.brush.hz + 4; z > l.brush.z - l.brush.hz; z -= 0.5) {
+        dozer.z = z + 3;
+        rn.update(0.1, true);
+      }
+    }
     expect(rn.brushCleared).toBe(true);
+    expect(cleared).toEqual(['dozer']);
     expect(flags.has('caveFound')).toBe(true);
-    expect(heard).toEqual(['dozer']);
     for (const c of inserted.filter((x) => x.what === 'brush')) expect(c.off).toBe(true);
     expect(inserted.filter((x) => x.what === 'barrier' && x.off)).toHaveLength(0);
     dozer.riding = false;
@@ -222,10 +241,24 @@ describe('the brush and the cave (in play)', () => {
     expect(rn.hud.prompt).toContain('cave');
   });
 
+  it('saves which pieces are down, and puts them back down quietly on loading', () => {
+    const a = makeRoadNorth(map);
+    a.rn.popPiece(0, 0, -1);
+    a.rn.popPiece(3, 0, -1);
+    const saved = JSON.parse(JSON.stringify(a.rn.saveState()));
+    expect(saved.popped.sort()).toEqual([0, 3]);
+    const b = makeRoadNorth(map);
+    b.rn.loadState(saved);
+    expect([...b.rn.popped].sort()).toEqual([0, 3]);
+    expect(b.rn.brushCleared).toBe(false);
+    expect(b.inserted.find((c) => c.piece === 0).off).toBe(true);
+    expect(b.inserted.find((c) => c.piece === 1).off).toBeFalsy();
+  });
+
   it('does nothing with the dozer parked or idling', () => {
     const { rn, dozer } = makeRoadNorth(map);
     dozer.x = l.brush.x;
-    dozer.z = l.brush.z + l.brush.hz + 3.3;
+    dozer.z = l.brush.z + l.brush.hz + 3.4;
     rn.update(0.1, true);
     dozer.riding = true;
     dozer.speed = 0;

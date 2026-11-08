@@ -401,11 +401,12 @@ export const config = {
     },
     // Session 21 (M10.2): the optional encounters (encounters.json placement
     // "optional"; DESIGN.md "Optional encounters"). The seed deals this many
-    // from the pool, each equally likely (none guaranteed), and places them
-    // anywhere around the spine, in any band.
+    // from the pool and places them anywhere around the spine, in any band.
+    // Aaron (Session 21): as many as will reasonably fit, so all five designed
+    // ones each run for now (the roster drops the last dealt if the map's full).
     optional: {
-      min: 3,
-      max: 4,
+      min: 5,
+      max: 5,
     },
     // Session 21: a faint trail (the stairs': off the pathways): metres wide, kept
     // clear either side, and how open and bare it is (1 = a pathway).
@@ -593,7 +594,7 @@ export const config = {
         mouth: { width: 3.8, height: 3.3, depth: 5.5 },
         colliderRadius: 1.8,
       },
-      brush: { width: 9, depth: 5, gap: 0.3 }, // the thicket in front of the mouth (metres)
+      brush: { width: 9, depth: 5, gap: 0.3, cols: 6, rows: 3, logs: 4 }, // the thicket in front of the mouth (metres); Session 21 (Aaron): in pieces, cols x rows bushes and logs trunks, knocked away one at a time (bladeReach, bladeHalf, brushClearAt below)
       // Earl's signs on the way up. along: metres from the fork (negative: from the
       // road's end); side: metres off the centre line, as road.js's frames count
       // it (+ is the left of the heading on the map: west on the road north,
@@ -606,10 +607,13 @@ export const config = {
       bumpDistance: 1.4, // metres: walking into the barrier or the brush says what it is
       bumpCooldown: 8, // seconds
       mouthRange: 3.5, // metres from the mouth: the cave's prompt (once the brush is cleared)
-      bladeReach: 0.8, // metres beyond the brush the dozer's blade clears it from
+      bladeReach: 0.5, // metres beyond a piece of brush the dozer's blade knocks it away from
+      bladeHalf: 1.7, // metres either side of the blade's centre it reaches
+      brushClearAt: 0.8, // once this share of the brush's pieces is down, the rest comes down with it
       look: {
         rockTextureMeters: 8,
         lampPeriod: 1.1, // seconds per blink (the two barricades out of step)
+        popSeconds: 0.55, // Session 21: a piece of brush knocked away tumbles off and shrinks to nothing over this long
         weather: { rust: [0x2e2a24, 0x3a3a38] },
         concrete: 0x56544d,
         concreteDark: 0x403e39,
@@ -2236,7 +2240,7 @@ export const config = {
     lidSeconds: 0.45, // a door, boot or bonnet swings open in this long
     colliderPiece: 1.2, // metres: each body is split into pieces this long along its length (keeps the collision grid's reach small)
     seenDistance: 40, // metres: a vehicle goes on the map once you've been this close
-    map: { minimapPixels: 7, screenPixels: 9, color: '#8fb8dc', doneColor: '#6e7072' }, // steel blue: tan read as part of the dashed pathways
+    map: { show: false, minimapPixels: 7, screenPixels: 9, color: '#8fb8dc', doneColor: '#6e7072' }, // steel blue: tan read as part of the dashed pathways. Session 21 (Aaron: they clutter the map once you've explored): show: false, off both maps
     looks: {
       paintBrightness: 0.7, // every paint is scaled by this: light paint blows out under the torch (as the station's metal did)
       dirtiness: 0.25, // each paint varies by up to this much darker
@@ -3203,6 +3207,7 @@ export const config = {
   },
 
   quad: {
+    skipParked: { out: 7, side: 4.5 }, // Session 21 (Aaron): after Skip intro it waits outside the station's gate: metres out past the gate, and to the side of the path
     parked: { x: 7.5, z: -17.6, yaw: 180 }, // in the gas station's frame (gasStation.json): behind the store, by the stockroom's back door, nose to the trail
     maxSpeed: 13, // about 47 km/h on a pathway (nearly twice a sprint)
     reverseSpeed: 3.5,

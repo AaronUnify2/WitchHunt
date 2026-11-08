@@ -41,6 +41,11 @@ export function roadNorthLayout(geo, north, cfg) {
   const outcrop = { x0: x0 + o.west, x1: x0 + o.east, z0: line - 2, z1: line + o.reach, line };
   const br = cfg.brush;
   const brush = { x: mouth.x, z: mouth.z + br.depth / 2 + br.gap, hx: br.width / 2, hz: br.depth / 2 };
+  // Session 21 (Aaron: it should come away a piece at a time): the brush is
+  // pieces: bushes packed in a jittered grid (the back ones bigger, up the
+  // rock) and deadfall trunks leaned against it. Each its own collider; the
+  // dozer's blade knocks each away as it reaches it.
+  brush.pieces = brushPieces(brush, br);
   // Earl's signs on the way up: frames along the road north (yaw: facing).
   const signs = cfg.signs.map((s) => {
     const f = roadFrame(north, s.along < 0 ? north.length + s.along : s.along);
@@ -59,6 +64,31 @@ export function roadNorthLayout(geo, north, cfg) {
     { x: brush.x, z: brush.z, r: Math.hypot(brush.hx, brush.hz) + 2 },
   ];
   return { end: { x: end.x, z: end.z }, line, portal, barrier, outcrop, mouth, brush, signs, prints, open };
+}
+
+// The brush's pieces ({ x, z, r, kind: 'bush' | 'log', back: 0..1 toward the rock, seed }), from a fixed seed.
+function brushPieces(b, cfg) {
+  let seed = 4021;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  const out = [];
+  const cols = cfg.cols;
+  const rows = cfg.rows;
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const x = b.x - b.hx + ((i + 0.5) / cols) * b.hx * 2 + (rand() - 0.5) * 0.6;
+      const z = b.z - b.hz + ((j + 0.5) / rows) * b.hz * 2 + (rand() - 0.5) * 0.4;
+      const back = 1 - (z - (b.z - b.hz)) / (b.hz * 2);
+      out.push({ x, z, r: 0.75 + rand() * 0.35 + back * 0.4, kind: 'bush', back, seed: 300 + out.length });
+    }
+  }
+  for (let k = 0; k < cfg.logs; k++) {
+    const x = b.x - b.hx * 0.7 + (k / Math.max(1, cfg.logs - 1)) * b.hx * 1.4 + (rand() - 0.5) * 0.5;
+    out.push({ x, z: b.z + b.hz * (0.1 + rand() * 0.5), r: 0.7, kind: 'log', back: 0.5, seed: 500 + k, lean: (rand() - 0.5) * 0.7 });
+  }
+  return out;
 }
 
 // Is (x, z) in the brush in front of the cave (grown by `pad` metres)?
@@ -88,9 +118,7 @@ export function roadNorthColliders(layout, cfg) {
     out.push({ x, z: o.z1 - rr * 0.6, r: rr, what: 'rock' });
     for (let z = o.line + 2; z < o.z1 - rr; z += step * 1.6) out.push({ x, z, r: rr, what: 'rock' });
   }
-  const br = layout.brush;
-  for (let x = br.x - br.hx + 0.8; x <= br.x + br.hx - 0.8 + 1e-6; x += 1.6) {
-    for (let z = br.z - br.hz + 0.8; z <= br.z + br.hz - 0.8 + 1e-6; z += 1.6) out.push({ x, z, r: 1.1, playerOnly: true, what: 'brush' });
-  }
+  // One per piece of the brush (Session 21: they go one at a time).
+  layout.brush.pieces.forEach((p, i) => out.push({ x: p.x, z: p.z, r: p.r, playerOnly: true, what: 'brush', piece: i }));
   return out;
 }

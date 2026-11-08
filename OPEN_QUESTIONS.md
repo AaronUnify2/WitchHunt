@@ -10,6 +10,15 @@ Aaron's answers before the build (Nov 8, a bedtime pass: "no time limit... minim
 - **Q8, the railway and the road:** "have some fun" (built: period crossings wherever a pathway crosses the line; the road never reaches it).
 - **Q9, the first interior:** move the storm shelter's room onto the new system (built).
 
+**Round 32, Aaron (first look):** the Bigfoot cave area is a favourite ("the mountain and the tunnel"); Save and quit works (cabin, items and story kept); the plane's power cell on the fence works; the shelter's room isn't too dark (#370 settled); the dozer at the east end is fine (#354 settled); no handcar (#367 settled: not built). **Fixed after it:**
+- **Cutscenes:** riding the quad into the shelter's sweep, it rolled on into the horde and they killed him before it ended. Now during every cutscene the dead keep moving but can't notice or hurt Tom, and the quad brakes to a stop (`Game.update`: `combat.unseen`, `combat.shielded`, `riding.halting`).
+- **Skip intro leaves the quad just outside the station's gate** (`Game.parkQuadAtStation()`, `config.quad.skipParked`).
+- **The outpost's points come off the map as they're cleared:** every crate still whole (an opened one goes at once, not when the last beetle dies), C-7 once Tom's been to it.
+- **The brush comes away a piece at a time:** 18 bushes and 4 deadfall trunks, each knocked tumbling away as the dozer's blade reaches it; once 80% are down the rest go; saved piece by piece.
+- **The cars' blue markers are off both maps** (`config.vehicles.map.show`).
+- **#357: as many optional encounters as fit:** all five designed, every run (`config.map.optional` 5-5).
+- **#368, the south:** ideas sent to Aaron to think over (not built).
+
 My calls in the build (PLAYTEST round 32):
 
 | # | Question | What it does now | Where to change it |
