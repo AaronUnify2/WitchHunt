@@ -951,6 +951,15 @@ export const config = {
     startingLoadout: ['hands'],
     startingWeapon: 'hands',
     switchSeconds: 0.35, // lower one weapon and raise the next
+    // Session 20 (Aaron, Nov 8): ammo types. Tap B to reload; hold B to
+    // choose the ammo (each further holdStep seconds steps on to the next
+    // type with rounds), and the gun reloads with it on release. A gun lists
+    // the extra types it fires in `altAmmo`; its own rounds come first.
+    ammoChoice: { holdSeconds: 0.35, holdStep: 0.6 },
+    ammoTypes: {
+      // From aliens; the first come off the crashed plane's grey (Session 25).
+      alienShells: { name: 'alien shells', base: 'shotgun', damageScale: 1.5, flash: 0xb070ff, hudColor: '#b98aff' },
+    },
     // Session 20 (Aaron, Nov 8): the loadout (player/loadout.js). Two long
     // guns, a sidearm, one melee weapon; the flare gun is always to hand.
     // The rest wait on the comms room's gun rack (a gun found with its slot
@@ -1022,6 +1031,7 @@ export const config = {
     shotgun: {
       name: 'Shotgun',
       kind: 'hitscan',
+      altAmmo: ['alienShells'], // Session 20: hold B to choose
       damage: 6,
       pellets: 8,
       spreadDegrees: 6,
@@ -1169,6 +1179,7 @@ export const config = {
       name: 'Auto shotgun',
       kind: 'hitscan',
       ammo: 'shotgun', // shares the pump shotgun's shells
+      altAmmo: ['alienShells'], // Session 20
       auto: true,
       damage: 6,
       pellets: 8,
@@ -2260,7 +2271,7 @@ export const config = {
         fast: { seconds: 0.5, security: 20 },
       },
       ammoDamage: { pistol: 10 }, // per round, for ammo whose gun isn't in the weapons table yet
-      loadOrder: ['pistol', 'shotgun', 'rifle'], // the order ammo is listed in the turret's menu
+      loadOrder: ['pistol', 'shotgun', 'alienShells', 'rifle'], // the order ammo is listed in the turret's menu (Session 20: alien shells, 7.2 turret rounds each)
       menuAmounts: [1, 5, 0], // load choices per ammo type in the turret's menu (0 = all of it; Aaron, M5)
       targetEvery: 0.25, // seconds between picking targets
       idleDelay: 2, // seconds with nothing to shoot before it swings back to face the gate (Aaron, M5: it idled facing the cabin)
@@ -3816,6 +3827,7 @@ export const config = {
     fastForwardSteps: [1, 4, 10], // M6: world steps per frame for the debug fast-forward
     giveArmour: 40,
     giveFirstAid: 3,
+    giveAlienShells: 8, // Session 20: until the crashed plane (Session 25)
     giveAlienMed: 1, // Session 20: alien med kits come from the crashed plane on (Session 25)
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands
     sigilTeleportOffset: 4, // metres from a sigil

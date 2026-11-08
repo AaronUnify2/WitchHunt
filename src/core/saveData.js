@@ -52,7 +52,10 @@ export function savePlayer(player, combat) {
   const w = combat.weapons;
   const weapons = {};
   // Session 20: the rack's and the belt's too (their magazines are kept).
-  for (const id of [...w.order, ...(w.rack ?? []), ...(w.belt ?? [])]) weapons[id] = { mag: w.states[id].mag, reserve: w.states[id].reserve };
+  for (const id of [...w.order, ...(w.rack ?? []), ...(w.belt ?? [])]) {
+    const st = w.states[id];
+    weapons[id] = { mag: st.mag, reserve: st.reserve, loaded: st.loaded, chosen: st.chosen }; // Session 20: the ammo types
+  }
   const inv = combat.inventory;
   return {
     x: player.position.x,
@@ -63,6 +66,7 @@ export function savePlayer(player, combat) {
     inventory: { kits: { ...inv.kits }, scrap: inv.scrap, batteries: inv.batteries, flares: inv.flares, ammo: { ...inv.ammo } },
     weapon: w.index,
     weapons,
+    pools: w.pools ? Object.fromEntries(Object.entries(w.pools).map(([t, p]) => [t, p.rounds])) : undefined, // Session 20: every ammo pool
     carried: [...w.order], // Session 20: the loadout, in its cycle order
     rack: [...(w.rack ?? [])],
     belt: [...(w.belt ?? [])],
@@ -99,8 +103,14 @@ export function loadPlayer(combat, d) {
   }
   for (const id of [...w.order, ...(w.rack ?? []), ...(w.belt ?? [])]) {
     const s = d.weapons[id];
-    if (s) w.states[id].init(s.mag, s.reserve);
+    if (!s) continue;
+    const st = w.states[id];
+    st.init(s.mag, s.reserve);
+    // Session 20: the ammo type in the magazine and the one chosen.
+    if (s.loaded && st.typePools?.[s.loaded]) st.loaded = s.loaded;
+    if (s.chosen && st.typePools?.[s.chosen]) st.chosen = s.chosen;
   }
+  if (d.pools && w.pools) for (const [t, rounds] of Object.entries(d.pools)) if (w.pools[t]) w.pools[t].rounds = rounds;
   if (d.weapon >= 0 && d.weapon < w.order.length && d.weapon !== w.index) {
     if (w.select) w.select(d.weapon);
     else w.index = d.weapon;

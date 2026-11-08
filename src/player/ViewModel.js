@@ -665,6 +665,8 @@ export class ViewModel {
     const flashOn = !melee && weapons.shotTime < c.muzzleFlashSeconds;
     this.flash.visible = flashOn;
     if (flashOn) {
+      // Session 20: alien shells flash purple.
+      this.flashMaterial.color.setHex(weapons.cfg.ammoTypes?.[weapons.state.loaded]?.flash ?? this.cfg.muzzleFlashColor);
       this.flash.position.copy(model.muzzle).applyEuler(g.rotation).add(g.position);
       this.flash.rotation.z = weapons.shotTime * 40;
       const scale = 0.8 + Math.random() * 0.6; // cosmetic only

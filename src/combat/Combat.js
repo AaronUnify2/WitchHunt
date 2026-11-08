@@ -212,9 +212,12 @@ export class Combat {
     const w = this.weapons;
     const where = w.take(id);
     const type = w.ammoType(id);
-    const stored = this.inventory.ammo[type] ?? 0;
-    if (stored > 0) delete this.inventory.ammo[type];
-    w.addAmmo(type, rounds + stored);
+    w.addAmmo(type, rounds);
+    // Rounds kept in the pack until there was a gun for them (Session 20: alien shells too).
+    for (const t of [type, ...(w.cfg[id].altAmmo ?? [])]) {
+      const stored = this.inventory.ammo[t] ?? 0;
+      if (stored > 0 && w.addAmmo(t, stored)) delete this.inventory.ammo[t];
+    }
     if (where === 'carried') w.select(w.order.indexOf(id));
     else if (where === 'rack') this.hud.pickup(`${w.cfg[id].name}: sent to ${w.cfg.loadout.rackName}`);
     return where;
@@ -408,6 +411,10 @@ export class Combat {
       (this.cfg.aimAssist.enabled = !this.cfg.aimAssist.enabled),
     );
     player.addItem(`Give ammo (+${d.giveAmmoRounds} each gun)`, () => this.weapons.giveAmmo(d.giveAmmoRounds));
+    // Session 20: until the crashed plane's grey (Session 25).
+    player.addItem(`Give alien shells (+${d.giveAlienShells})`, () => {
+      if (!this.weapons.addAmmo('alienShells', d.giveAlienShells)) this.inventory.addAmmo('alienShells', d.giveAlienShells);
+    });
     player.addItem('Refill flares (M9.1)', () => this.flares.refill());
     // Session 10b: the hunting rifle comes from an encounter later (Aaron).
     player.addItem(`Give the hunting rifle (+${this.cfg.weapons.sniper.debugRounds} rounds)`, () => this.giveWeapon('sniper', this.cfg.weapons.sniper.debugRounds));

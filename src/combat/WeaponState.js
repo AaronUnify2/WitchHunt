@@ -10,10 +10,34 @@
 // firing the same rounds share (the pistol and the SMG, the two hunting
 // rifles, the two shotguns). Without one passed in, the gun has its own.
 
+//
+// Session 20 (Aaron, Nov 8): ammo types. A gun can fire more than one type
+// (the shotguns: normal or alien shells), each its own pool. `chosen` is
+// what the next reload loads; `loaded` what's in the magazine (one type at
+// a time). Reloading with a different type first puts the magazine's
+// rounds back in their pool. The reserve shown is the chosen type's.
+
 export class WeaponState {
-  constructor(weaponConfig, pool = { rounds: 0 }) {
+  // type: the name of `pool`'s ammo type; more join with addType().
+  constructor(weaponConfig, pool = { rounds: 0 }, type = 'normal') {
     this.cfg = weaponConfig;
-    this.pool = pool;
+    this.typePools = { [type]: pool };
+    this.typeDefs = { [type]: null };
+    this.types = [type];
+    this.chosen = type;
+    this.loaded = type;
+  }
+
+  // Another ammo type this gun fires. def: { damageScale, flash } (config.weapons.ammoTypes).
+  addType(type, pool, def = null) {
+    if (this.typePools[type]) return;
+    this.typePools[type] = pool;
+    this.typeDefs[type] = def;
+    this.types.push(type);
+  }
+
+  get pool() {
+    return this.typePools[this.chosen];
   }
 
   get reserve() {
@@ -24,8 +48,23 @@ export class WeaponState {
     this.pool.rounds = rounds;
   }
 
-  // reserve null: leave the (possibly shared) pool as it is.
+  // Choose the ammo the next reload loads. False if the gun can't fire it.
+  choose(type) {
+    if (!this.typePools[type]) return false;
+    this.chosen = type;
+    return true;
+  }
+
+  // The magazine's damage against a normal round (alien shells: 1.5).
+  get damageScale() {
+    return this.typeDefs[this.loaded]?.damageScale ?? 1;
+  }
+
+  // reserve null: leave the (possibly shared) pool as it is. Back to the
+  // gun's first ammo type.
   init(mag = this.cfg.magSize, reserve = this.cfg.startReserve ?? 0) {
+    this.chosen = this.types[0];
+    this.loaded = this.types[0];
     this.mag = mag;
     if (reserve !== null) this.reserve = reserve;
     this.cooldown = 0;
@@ -44,7 +83,7 @@ export class WeaponState {
   }
 
   get canReload() {
-    return this.usesAmmo && !this.reloading && this.mag < this.cfg.magSize && this.reserve > 0;
+    return this.usesAmmo && !this.reloading && (this.mag < this.cfg.magSize || this.loaded !== this.chosen) && this.reserve > 0;
   }
 
   // Fire once if possible. Returns true when a shot (or swing) happens.
@@ -58,6 +97,12 @@ export class WeaponState {
 
   startReload() {
     if (!this.canReload) return false;
+    if (this.loaded !== this.chosen) {
+      // Session 20: a different type: the magazine's rounds go back first.
+      this.typePools[this.loaded].rounds += this.mag;
+      this.mag = 0;
+      this.loaded = this.chosen;
+    }
     this.reloading = true;
     this.reloadTimer = this.cfg.reloadSeconds;
     return true;

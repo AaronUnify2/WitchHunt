@@ -9,7 +9,10 @@
 // Damage per round of an ammo type: a gun's damage x its pellets (a shell
 // is 8 pellets x 6 = 48), or the turret config's table for ammo whose gun
 // isn't carried yet (the pistol).
+// Session 20: an ammo type (alien shells) is its base gun's x its damageScale.
 export function ammoDamage(ammoId, weaponsCfg, turretCfg) {
+  const t = weaponsCfg.ammoTypes?.[ammoId];
+  if (t) return ammoDamage(t.base, weaponsCfg, turretCfg) * t.damageScale;
   const w = weaponsCfg[ammoId];
   if (w && w.kind === 'hitscan') return w.damage * (w.pellets ?? 1);
   return turretCfg.ammoDamage[ammoId] ?? 0;

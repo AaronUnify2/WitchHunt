@@ -71,6 +71,8 @@ export class Weapons {
     this.fireSlow = 0;
     this.meleeTimer = -1;
     this.requireRelease = true; // the click or tap that starts the game must not fire
+    this.reloadHeld = null; // Session 20: seconds B has been held (null: not held)
+    this.choosing = null; // the ammo type showing while B is held
     this.swingTime = Infinity; // seconds since the last swing (view model)
     this.shotTime = Infinity; // seconds since the last shot (view model)
   }
@@ -107,6 +109,8 @@ export class Weapons {
     if (next === this.index) return;
     this.state.cancelReload();
     this.index = next;
+    this.reloadHeld = null;
+    this.choosing = null;
     this.switchTimer = this.cfg.switchSeconds;
     this.meleeTimer = -1;
     this.bus.emit('weapon:switched', { id: this.id });
@@ -135,13 +139,59 @@ export class Weapons {
     // Session 10b: a scope slows the look with its zoom, so 4x isn't twitchy.
     this.player.scopeLookScale = 1 + ((w.scopeLookScale ?? 1) - 1) * this.zoom;
 
-    if (ready && input.wasPressed('reload') && this.state.startReload()) this.bus.emit('weapon:reload', { id: this.id });
+    if (ready) this.updateReload(dt, input);
     if (ready) this.updateFiring(input);
     this.updateMelee(dt);
 
     this.fireSlow = Math.max(0, this.fireSlow - dt);
     this.player.moveMultiplier = this.aiming || this.fireSlow > 0 ? this.playerCfg.aimMultiplier : 1;
     this.updateAimAssist();
+  }
+
+  // Session 20 (Aaron): tap B to reload; hold B to choose the ammo, and it
+  // reloads with the choice on release. A gun with one type reloads on the press.
+  updateReload(dt, input) {
+    const s = this.state;
+    const c = this.cfg.ammoChoice;
+    if (!s.types || s.types.length < 2) {
+      this.choosing = null;
+      if (input.wasPressed('reload') && s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
+      return;
+    }
+    if (input.wasPressed('reload')) this.reloadHeld = 0;
+    if (this.reloadHeld === null) return;
+    if (input.isDown('reload')) {
+      const before = this.reloadHeld;
+      this.reloadHeld += dt;
+      // Each step past the hold moves on to the next type that has rounds.
+      const steps = (t) => (t < c.holdSeconds ? 0 : 1 + Math.floor((t - c.holdSeconds) / c.holdStep));
+      for (let n = steps(before); n < steps(this.reloadHeld); n++) this.chooseNextAmmo();
+      this.choosing = this.reloadHeld >= c.holdSeconds ? s.chosen : null;
+      return;
+    }
+    this.reloadHeld = null;
+    this.choosing = null;
+    if (s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
+  }
+
+  // The next ammo type the gun in hand fires that has rounds (or is loaded).
+  chooseNextAmmo() {
+    const s = this.state;
+    const i = s.types.indexOf(s.chosen);
+    for (let k = 1; k <= s.types.length; k++) {
+      const t = s.types[(i + k) % s.types.length];
+      if (s.typePools[t].rounds > 0 || t === s.loaded) {
+        s.choose(t);
+        this.bus.emit('weapon:ammoChosen', { id: this.id, type: t });
+        return t;
+      }
+    }
+    return s.chosen;
+  }
+
+  // The display name of an ammo type ('normal' rounds have none).
+  ammoName(type) {
+    return this.cfg.ammoTypes[type]?.name ?? null;
   }
 
   updateSwitching(input, dt) {
@@ -186,12 +236,13 @@ export class Weapons {
       this.fireHitscan(w);
       this.player.kick(w.recoilDegrees);
       this.player.shake(w.shake ?? 0);
-      this.bus.emit('weapon:fired', { id: this.id });
+      this.bus.emit('weapon:fired', { id: this.id, ammo: s.loaded });
     }
   }
 
   fireHitscan(w) {
     const eye = this.eye;
+    const dmg = dmg * this.state.damageScale; // Session 20: alien shells hit 1.5x
     const spread = (this.aiming ? w.aimSpreadDegrees : w.spreadDegrees) * DEG_TO_RAD;
     const check = Math.min(w.range, MISS_CHECK_DISTANCE);
     const half = check / 2;
@@ -206,7 +257,7 @@ export class Weapons {
       if (count === 0) {
         if (blocked < check) {
           // damage: what the round still carries (Session 14: cars take it).
-          const damage = w.damage * falloff(blocked, w.falloffStart, w.falloffEnd, w.falloffMin);
+          const damage = dmg * falloff(blocked, w.falloffStart, w.falloffEnd, w.falloffMin);
           this.bus.emit('weapon:impact', { x: eye.x + dir.x * blocked, y: eye.y + dir.y * blocked, z: eye.z + dir.z * blocked, damage, id: this.id });
         }
         continue;
@@ -219,7 +270,7 @@ export class Weapons {
         const hit = this.rayHits[k];
         const part = helmetPart(hit.enemy, hit.part, w); // Session 17: an army helmet stops the headshot bonus
         const mult = partMultiplier(hit.enemy, part, this.cfg.headshotMultiplier);
-        const damage = w.damage * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * mult;
+        const damage = dmg * carried * falloff(hit.distance, w.falloffStart, w.falloffEnd, w.falloffMin) * mult;
         let entry = this.pelletHits.get(hit.enemy);
         if (!entry) {
           entry = { damage: 0, part: 'body', pellets: 0, x: 0, y: 0, z: 0 };
@@ -305,7 +356,12 @@ export class Weapons {
     const type = this.ammoType(id);
     const fresh = !this.pools[type];
     if (fresh) this.pools[type] = { rounds: 0 };
-    const state = new WeaponState(this.cfg[id], this.pools[type]);
+    const state = new WeaponState(this.cfg[id], this.pools[type], type);
+    // Session 20: the other ammo types it fires (alien shells), each a shared pool.
+    for (const alt of this.cfg[id].altAmmo ?? []) {
+      if (!this.pools[alt]) this.pools[alt] = { rounds: 0 };
+      state.addType(alt, this.pools[alt], this.cfg.ammoTypes[alt]);
+    }
     state.init(this.cfg[id].magSize, fresh ? this.cfg[id].startReserve ?? 0 : null);
     this.states[id] = state;
     return state;
@@ -444,7 +500,7 @@ export class Weapons {
 
   // Debug: rounds into every pool (each shared pool once).
   giveAmmo(rounds) {
-    for (const pool of Object.values(this.pools)) pool.rounds += rounds;
+    for (const [type, pool] of Object.entries(this.pools)) if (!this.cfg.ammoTypes[type]) pool.rounds += rounds; // not alien shells (their own item)
   }
 
   dispose() {}

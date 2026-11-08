@@ -189,7 +189,15 @@ export class Hud {
     const w = s.weapons;
     const st = w.state;
     this.set('weapon', w.weapon.name, (name) => (this.weaponNameEl.textContent = name));
-    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}` : '', (text) => (this.ammoEl.textContent = text));
+    // Session 20: the ammo type, when it's not the gun's own (a purple shell for alien).
+    const typeDef = st.usesAmmo ? w.cfg.ammoTypes?.[st.loaded] : null;
+    const chosenDef = st.usesAmmo && st.chosen !== st.loaded ? w.cfg.ammoTypes?.[st.chosen] : null;
+    const typeText = typeDef ? `  \u25AE ${typeDef.name}` : '';
+    const nextText = st.usesAmmo && st.chosen !== st.loaded ? `  (next: ${chosenDef?.name ?? 'normal'})` : '';
+    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}${typeText}${nextText}` : '', (text) => {
+      this.ammoEl.textContent = text;
+      this.ammoEl.style.color = typeDef?.hudColor ?? '';
+    });
     this.set('reloading', st.reloading, (r) => this.reloadEl.classList.toggle('on', r));
     if (st.reloading) this.reloadBarEl.style.width = `${Math.round(st.reloadProgress * 100)}%`;
     const pad = s.device === 'gamepad';
@@ -204,6 +212,7 @@ export class Hud {
 
     let prompt = '';
     if (st.usesAmmo && st.mag === 0 && !st.reloading) prompt = st.reserve > 0 ? `${pad ? 'B' : 'R'}: reload` : 'Out of ammo';
+    if (w.choosing) prompt = `Release ${pad ? 'B' : 'R'}: load ${w.ammoName(w.choosing) ?? 'normal rounds'}  (keep holding for the next)`; // Session 20
     if (s.dig?.prompt) prompt = s.dig.prompt;
     this.set('prompt', prompt, (text) => (this.promptEl.textContent = text));
     const dig = s.dig?.prompt ? s.dig.progress : 0;

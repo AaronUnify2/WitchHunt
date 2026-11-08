@@ -37,7 +37,7 @@ import { hasRoom, isTool, slotOf, swapCandidates } from '../player/loadout.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 import { buildFencePlan } from './fencePlan.js';
 
-const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells' };
+const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells', alienShells: 'alien shells' };
 
 export class Station {
   constructor(cfg, rng, bus) {
@@ -900,6 +900,7 @@ export class Station {
         const have = this.ammoCount(id);
         const per = ammoDamage(id, this.cfg.weapons, tc) / tc.roundDamage;
         const name = AMMO_NAMES[id];
+        if (have <= 0 && this.cfg.weapons.ammoTypes?.[id]) continue; // Session 20: alien shells only once there are some
         if (have <= 0) {
           turret.push({ label: `Load ${name}`, value: `you have none  ·  ${per} turret rounds each`, action: null });
           continue;
