@@ -8,6 +8,7 @@ Aaron's answers before the build (Nov 8):
 - **The healing pool's cap: 270.** Kits that don't fit go to the first aid box in the comms room.
 - **A mid-day save:** Claude's pick. Continue puts Tom back at a safe point (the run is short; most players finish in a couple of playthroughs).
 - **Old saves:** fine to discard them.
+- **Round 31 (Aaron):** the healing pool, the gun rack, the inspect cards, no flares and the alien quad's power are all good. Save and quit still to try.
 - **After round 31's first look:** #344, #347 and #349 settled (yes to all three). **Bug: no gun's rounds landed** (Session 20's ammo types broke the damage line in `Weapons.fireHitscan()`: every shot threw before it hit). Fixed, with tests that fire real shots.
 
 My calls in the build (PLAYTEST round 31):

@@ -52,7 +52,7 @@
 
 ### Unfinished
 
-- **The rest of Aaron's round 31 play-test.** He's tried the guns and alien shells so far. Ask for his notes on the rest first: the healing pool, the rack, the cards, the power cell, the flares, the health floor, and pause with Save and quit. My calls are OPEN_QUESTIONS #340-352; #344, #345, #347 and #349 are settled.
+- **The rest of Aaron's round 31 play-test.** **Confirmed good (Aaron):** the guns and alien shells, the healing pool, the gun rack, the inspect cards, no flares, the alien quad's power. **Still to try:** **pause and Save and quit** (he's doing it after the handover: ask first), the fence's power cell and the health floor. My calls are OPEN_QUESTIONS #340-352; #344, #345, #347 and #349 are settled.
 - **His glare list** (things that glare under the torch).
 - **Not played end to end headless:** Night 1's waves, then the gas station, the shelter and the outpost in sequence with the new systems. They were checked piece by piece on seeds 1234, 7 and 4242, and the full run is Aaron's round 31. DESIGN.md's M10 gate says "the opening still plays through on every seed".
 - **From before:**
@@ -116,7 +116,7 @@ Not this session:
 ```
 You are the Lead Engineer on Witch Hunt, Session 21: the map (M10.2): the fixed story spine, the road north and its ROAD CLOSED barrier, the 1903 railway line, the seed dealing optional encounters, and the interior system.
 Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": M10 and Session 21; "Map": Structure, Generation, the road north, the 1903 railway line; "Encounters": the story spine and the encounter table; "Interiors (shared system)"), STATUS.md (Session 20) and OPEN_QUESTIONS.md (#340-352, then the older open ones).
-First ask Aaron for his notes from the rest of PLAYTEST round 31 (Session 20's new systems; the guns and alien shells are done) and his list of things that glare under the torch, and fix the small ones, pushing each.
+First ask Aaron how Save and quit went (the last of PLAYTEST round 31; the rest of Session 20's systems are confirmed good) and his list of things that glare under the torch, and fix the small ones, pushing each.
 Then build the map one piece at a time, each tested and pushed, keeping the opening playable on every seed; bump SAVE_VERSION when the map moves.
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
 Then confirm your role and ask Aaron for his notes.
