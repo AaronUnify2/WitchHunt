@@ -66,6 +66,7 @@ export class Player {
     this.fovMultiplier = 1;
     this.scopeLookScale = 1; // Session 10b: set by Weapons while looking through a scope
     this.platform = null; // M5: { x, z, y, half } while standing up on the lookout tower; Session 16: or down in a room ({ room, hx, hz, rx, rz, fx, fz, blocks })
+    this.space = null; // Session 21: the interior Tom's in (world/Interiors.js), or null out on the map
     this.jetpack = false; // Session 16: the debug jetpack (hold jump in the air)
     this.jetFuel = 0;
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
@@ -178,8 +179,8 @@ export class Player {
     let speed = this.rooted ? 0 : c.walkSpeed * this.moveMultiplier;
     if (this.sprinting) speed *= c.sprintMultiplier;
     else if (this.crouched) speed *= c.crouchMultiplier;
-    // Undergrowth off the pathways slows every pace.
-    this.undergrowth = this.ground.undergrowthAt(this.position.x, this.position.z);
+    // Undergrowth off the pathways slows every pace (Session 21: none on a room's floor).
+    this.undergrowth = this.platform?.room ? 0 : this.ground.undergrowthAt(this.position.x, this.position.z);
     speed *= 1 + (c.undergrowthMultiplier - 1) * this.undergrowth;
 
     // Stick direction relative to where the player faces, flat on the ground.

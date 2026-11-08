@@ -59,7 +59,8 @@ export class Sfx {
     const dz = z - this.listener.z;
     const dist = Math.hypot(dx, dz);
     const fade = Math.max(0, 1 - dist / range);
-    g.gain.value = gain * fade * fade;
+    // Session 21: inside an interior, what's out in the world comes through muffled.
+    g.gain.value = gain * fade * fade * (this.muffled ?? 1);
     const pan = ctx.createStereoPanner();
     // Listener's right = (cos yaw, -sin yaw) on the ground plane.
     const right = dist > 0.01 ? (dx * Math.cos(this.listener.yaw) - dz * Math.sin(this.listener.yaw)) / dist : 0;

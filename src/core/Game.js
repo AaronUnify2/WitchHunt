@@ -69,6 +69,8 @@ import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
 import { RoadNorth } from '../world/RoadNorth.js';
+import { Interiors } from '../world/Interiors.js';
+import { InteriorHud } from '../ui/InteriorHud.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -122,6 +124,11 @@ export class Game {
 
     this.initWorld(root);
     this.initUi(root);
+    // Session 21 (M10.2): interiors (the storm shelter's room first): loaded on the way in, the world simulating on outside.
+    this.interiorHud = new InteriorHud(cfg.clock);
+    this.interiorHud.init(root);
+    this.interiors = new Interiors(cfg, this.bus);
+    this.interiors.init({ scene: this.scene, player: this.player, combat: this.combat, sky: this.sky, atmosphere: this.atmosphere, flashlight: this.flashlight, sfx: this.combat.sfx, hud: this.interiorHud });
     this.initDialogue(root);
     this.initDirector();
     this.hut = new Hut(this.cfg, this.bus); // M7 step 4
@@ -493,6 +500,7 @@ export class Game {
       lore: this.lore,
       paper: this.paper,
       card: this.card, // Session 20
+      interiors: this.interiors, // Session 21: the room below is an interior
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.shelter.hud);
@@ -704,7 +712,7 @@ export class Game {
     this.overlay.addStat('nights', () => this.nightWatch.overlayLine());
     this.overlay.addStat('atmosphere', () => this.atmosphere.overlayLine(this.clock));
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
-    this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
+    this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}  ${this.interiors.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
@@ -1078,7 +1086,7 @@ export class Game {
   // main menu: the page reloads on the same seed and offers Continue.
   saveAndQuit() {
     if (this.saveRefusal()) return false;
-    const data = this.collectSave();
+    const data = this.collectSaveOutside();
     const safe = this.station.safePoint();
     data.player.x = safe.x;
     data.player.z = safe.z;
@@ -1129,9 +1137,22 @@ export class Game {
     };
   }
 
+  // collectSave(), with Tom outside the interior he's in, if he's in one
+  // (Session 21: a save made inside comes back outside its entrance).
+  collectSaveOutside() {
+    const data = this.collectSave();
+    const out = this.interiors.saveSpot();
+    if (out) {
+      data.player.x = out.x;
+      data.player.z = out.z;
+      if (out.yaw !== undefined) data.player.yaw = out.yaw;
+    }
+    return data;
+  }
+
   autosave() {
     if (this.pastNoReturn) return false;
-    return this.saves.save(this.collectSave());
+    return this.saves.save(this.collectSaveOutside());
   }
 
   // Put a saved run back (the world is already built from its seed).
@@ -1287,6 +1308,11 @@ export class Game {
     // Session 13: the model viewer draws from its own camera, at its light's hour.
     const camera = viewer.active ? viewer.camera : cs.ownCamera ? cs.camera : this.player.camera;
     const hour = viewer.active ? (viewer.hour ?? this.clock.hourOfDay) : (cs.hour ?? this.clock.hourOfDay);
+    // Session 21: inside an interior its own light (not for a cutscene's or the viewer's own camera, out in the world).
+    if (this.state === 'running') this.interiors.update(dt, this.clock);
+    const indoors = this.interiors.inside && !viewer.active && !cs.ownCamera ? this.interiors.inside : null;
+    this.sky.interior = indoors?.light ?? null;
+    this.atmosphere.inside = Boolean(indoors);
     this.atmosphere.preUpdate(this.clock, this.sky);
     this.sky.update(dt, hour, camera);
     this.updateThermal();

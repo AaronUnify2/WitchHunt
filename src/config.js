@@ -3119,6 +3119,13 @@ export const config = {
     sweepDistance: 32,
     interactRange: 2.8, // metres to the hatch (Session 16, Aaron: from further out, it's on a mound) or the keys
     roomRange: 0.9, // metres to a search point below (the room's small)
+    // Session 21: the room below is an interior (world/Interiors.js). shaft:
+    // metres the shaft over the ladder rises above the ceiling to the hatch;
+    // light: its own (an earth room under a thrown-back hatch: dim, warm-grey).
+    interior: {
+      shaft: 1.6,
+      light: { ambientDay: 3.2, ambientNight: 1.1, ambientColor: 0x9a9080, fogColor: 0x080706, fogNear: 5, fogFar: 30 }, // ambientDay / ambientNight: daylight down the hatch by day, less by night (blended by the hour)
+    },
     keysRange: 1.8,
     hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },
     look: {
@@ -3600,6 +3607,15 @@ export const config = {
       },
       mud: 0x3a2c1c,
     },
+  },
+
+  // Session 21 (M10.2; world/Interiors.js; DESIGN.md "Interiors (shared
+  // system)"): interiors are loaded into a pocket this far under their
+  // entrance, beyond any draw distance, so the forest isn't drawn while Tom's
+  // inside; what he hears from outside comes through at `muffle` of its volume.
+  interiors: {
+    depth: 1200,
+    muffle: 0.3,
   },
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).

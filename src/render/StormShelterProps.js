@@ -59,16 +59,52 @@ export class StormShelterProps {
     this.collar();
     this.vent();
     this.litter();
-    this.room();
     this.flush(this.group);
     this.buildDoor();
     this.buildSoil();
     this.buildHole();
     this.buildKeys();
-    this.buildFinds();
-    this.buildCorkboard();
     scene.add(this.group);
     this.setHatch('buried', 0);
+    this.taken = { diary: false, tapes: false };
+  }
+
+  // Session 21 (world/Interiors.js): the room below is an interior, built
+  // when Tom goes down (in its pocket, floorY) and unloaded when he leaves.
+  // shaftTop: where the shaft over the ladder opens (to the sky, in the pocket).
+  // Returns { group, dispose() }.
+  loadRoom(scene, floorY, shaftTop) {
+    const outdoor = this.group;
+    const outdoorKeep = this.keep;
+    this.floorY = floorY;
+    this.shaftTop = shaftTop;
+    const room = new THREE.Group();
+    room.name = 'stormShelter room';
+    this.group = room;
+    this.keep = [];
+    const material = this.material;
+    this.material = null; // its own, so unloading frees it
+    this.seed = 77; // the same room every time it's loaded
+    this.room();
+    this.flush(room);
+    this.buildFinds();
+    this.buildCorkboard();
+    this.setTaken('diary', this.taken.diary);
+    this.setTaken('tapes', this.taken.tapes);
+    const keep = this.keep;
+    this.group = outdoor;
+    this.keep = outdoorKeep;
+    this.material = material;
+    scene.add(room);
+    return {
+      group: room,
+      dispose: () => {
+        room.removeFromParent();
+        for (const x of keep) x.dispose?.();
+        this.diaryMesh = null;
+        this.tapesMesh = null;
+      },
+    };
   }
 
   // The parts so far, baked into ONE vertex-coloured mesh in `into`
@@ -479,8 +515,9 @@ export class StormShelterProps {
     slab(x0, this.rx(lad.x) - sx, z0, zs + sx); // left of it
     slab(this.rx(lad.x) + sx, x1, z0, zs + sx); // right of it
     for (const z of [-0.2, 0.55]) this.box(hx * 2, 0.14, 0.12, this.rx(0), this.rz(z), top - 0.14, k.timberDark);
-    // The shaft up to the hatch: plank sides from the ceiling to the ground.
-    const shaftH = this.hatchY + 0.3 - top;
+    // The shaft up to the hatch: plank sides from the ceiling up (Session 21: to where it opens, in the pocket).
+    const shaftTop = this.shaftTop ?? this.hatchY + 0.3;
+    const shaftH = shaftTop - top;
     const hx2 = this.data.hatch.w / 2;
     const hz2 = this.data.hatch.d / 2;
     const hc = this.data.hatch;
@@ -488,8 +525,13 @@ export class StormShelterProps {
     this.box(hx2 * 2 + 0.2, shaftH, 0.08, hc.x, hc.z + hz2 + 0.04, top, k.plankDark);
     this.box(0.08, shaftH, hz2 * 2, hc.x - hx2 - 0.04, hc.z, top, k.plankDark);
     this.box(0.08, shaftH, hz2 * 2, hc.x + hx2 + 0.04, hc.z, top, k.plank);
+    // The hatch's timber collar where the shaft opens, the sky beyond it.
+    this.box(hx2 * 2 + 0.36, 0.14, 0.18, hc.x, hc.z - hz2 - 0.09, shaftTop, k.timberDark);
+    this.box(hx2 * 2 + 0.36, 0.14, 0.18, hc.x, hc.z + hz2 + 0.09, shaftTop, k.timberDark);
+    this.box(0.18, 0.14, hz2 * 2, hc.x - hx2 - 0.09, hc.z, shaftTop, k.timberDark);
+    this.box(0.18, 0.14, hz2 * 2, hc.x + hx2 + 0.09, hc.z, shaftTop, k.timberDark);
     // The ladder, floor to hatch.
-    const ly = this.hatchY + 0.3 - f;
+    const ly = shaftTop - f;
     for (const s of [-1, 1]) this.box(0.05, ly, 0.06, this.rx(lad.x + s * 0.22), this.rz(lad.z), f, k.timber);
     for (let y = 0.3; y < ly - 0.1; y += 0.3) this.box(0.44, 0.04, 0.05, this.rx(lad.x), this.rz(lad.z), f + y, k.timber);
     this.bunk();
@@ -630,6 +672,7 @@ export class StormShelterProps {
   }
 
   setTaken(id, taken) {
+    if (this.taken) this.taken[id] = taken; // Session 21: remembered while the room isn't loaded
     const m = id === 'diary' ? this.diaryMesh : id === 'tapes' ? this.tapesMesh : null;
     if (m) m.visible = !taken;
   }

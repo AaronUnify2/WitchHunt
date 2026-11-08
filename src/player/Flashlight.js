@@ -10,6 +10,9 @@ import * as THREE from 'three';
 import { makeFlashlightCookie } from '../render/proceduralTextures.js';
 import { nearestHit } from '../world/collision.js';
 
+// Session 21: no terrain (inside an interior).
+const NO_GROUND = { rayDistance: (origin, dir, maxDistance) => maxDistance };
+
 const DEG_TO_RAD = Math.PI / 180;
 
 export class Flashlight {
@@ -81,8 +84,12 @@ export class Flashlight {
     const g = this.cfg.glare;
     const decay = this.cfg.decay;
     const origin = this.light.position;
-    const nearby = this.colliders.query(origin.x, origin.z, g.fullDistance + g.queryMargin, this.nearby);
-    if (extraCircles) for (const c of extraCircles) nearby.push(c);
+    // Session 21: inside an interior (a room platform with a space) the
+    // outdoor world isn't there: no trees, no terrain; its floor, ceiling and
+    // walls are what the beam meets.
+    const room = this.platform?.space && this.platform.room ? this.platform : null;
+    const nearby = room ? (this.nearby.length = 0, this.nearby) : this.colliders.query(origin.x, origin.z, g.fullDistance + g.queryMargin, this.nearby);
+    if (extraCircles && !room) for (const c of extraCircles) nearby.push(c);
 
     this.right.crossVectors(this.aim, THREE.Object3D.DEFAULT_UP).normalize();
     this.up.crossVectors(this.right, this.aim);
@@ -95,8 +102,9 @@ export class Flashlight {
         const a = (i / g.ringRays) * Math.PI * 2;
         this.ray.addScaledVector(this.right, Math.cos(a) * spread).addScaledVector(this.up, Math.sin(a) * spread).normalize();
       }
-      nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit, this.ground, g.groundStep);
+      nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit, room ? NO_GROUND : this.ground, g.groundStep);
       if (this.platform) this.platformHit(origin, this.ray, this.platform, g.platform);
+      if (room) this.wallHit(origin, this.ray, room);
       const strength = this.hit.facing / Math.pow(Math.max(this.hit.distance, g.minDistance), decay);
       if (strength > strongest) {
         strongest = strength;
@@ -126,6 +134,27 @@ export class Flashlight {
     if (Math.abs(origin.x + dir.x * t - pl.x) > half || Math.abs(origin.z + dir.z * t - pl.z) > half) return;
     this.hit.distance = t;
     this.hit.facing = Math.abs(dir.y);
+  }
+
+  // Session 21: a room's four walls (in its own frame: right rx, rz; ahead fx, fz).
+  wallHit(origin, dir, pl) {
+    const ox = origin.x - pl.x;
+    const oz = origin.z - pl.z;
+    const lx = ox * pl.rx + oz * pl.rz;
+    const lz = ox * pl.fx + oz * pl.fz;
+    const dx = dir.x * pl.rx + dir.z * pl.rz;
+    const dz = dir.x * pl.fx + dir.z * pl.fz;
+    const top = pl.y + (pl.roofY ?? 2.5);
+    const test = (t, facing, other, half) => {
+      if (t <= 0 || t >= this.hit.distance) return;
+      if (Math.abs(other) > half) return;
+      const y = origin.y + dir.y * t;
+      if (y < pl.y || y > top) return;
+      this.hit.distance = t;
+      this.hit.facing = facing;
+    };
+    if (Math.abs(dx) > 1e-6) for (const w of [-pl.hx, pl.hx]) test((w - lx) / dx, Math.abs(dx), lz + (dz * (w - lx)) / dx, pl.hz);
+    if (Math.abs(dz) > 1e-6) for (const w of [-pl.hz, pl.hz]) test((w - lz) / dz, Math.abs(dz), lx + (dx * (w - lz)) / dz, pl.hx);
   }
 
   setOn(on) {

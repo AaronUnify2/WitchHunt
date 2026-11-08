@@ -334,7 +334,8 @@ export class Combat {
     s.sprinting = p.sprinting;
     s.speed = p.speed;
     s.undergrowth = p.undergrowth;
-    s.unseen = Boolean(this.unseen); // Session 19: an "unseen" cutscene playing
+    s.unseen = Boolean(this.unseen || this.inside); // Session 19: an "unseen" cutscene playing; Session 21: or Tom's inside an interior
+    s.space = this.inside ?? null; // Session 21: the interior he's in (EnemyManager: everything outside it goes abstract)
     return s;
   }
 

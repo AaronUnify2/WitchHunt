@@ -350,7 +350,9 @@ export class EnemyManager {
     this.candidates.length = 0;
     for (const z of this.pool) {
       if (!z.active) continue;
-      const d = Math.hypot(z.x - player.x, z.z - player.z);
+      // Session 21: a zombie not in the space Tom's in (he's inside an interior and it's
+      // out on the map, or the other way round) is as far as can be: the abstract tier.
+      const d = (z.space ?? null) === (player.space ?? null) ? Math.hypot(z.x - player.x, z.z - player.z) : Infinity;
       z.lodDistance = d;
       let tier = tierFor(z.tier ?? undefined, d, lod);
       if (tier === 'abstract' && this.keepSimulated(z)) tier = 'nearby';

@@ -2041,3 +2041,30 @@ body.in-cutscene .vhud {
   font-size: 0.8rem;
   color: var(--dim);
 }
+
+/* ---- Session 21: inside an interior, where Tom is and the time (no sky to read). ---- */
+.interior-hud {
+  position: absolute;
+  left: 3vmin;
+  top: 3vmin;
+  pointer-events: none;
+  font-family: ui-monospace, monospace;
+  color: #d8cfb4;
+  text-shadow: 0 1px 2px #000;
+  padding: 0.5em 0.8em;
+  background: rgba(8, 8, 6, 0.55);
+  border-left: 3px solid #8a7a4a;
+  z-index: 4;
+}
+.interior-hud.hidden {
+  display: none;
+}
+.interior-hud-name {
+  font-size: clamp(11px, 1.8vmin, 16px);
+  letter-spacing: 0.12em;
+  color: #b8a67e;
+}
+.interior-hud-time {
+  font-size: clamp(12px, 2.1vmin, 19px);
+  margin-top: 0.2em;
+}

@@ -256,6 +256,22 @@ export class Sky {
     if (this.sunDir.y > 0) this.lightDir.set(this.sunDir.x, this.sunDir.y, this.sunDir.z);
     else this.lightDir.copy(this.moonDir);
 
+    // Session 21: inside an interior (world/Interiors.js) the sun and moon
+    // don't reach; the light and fog are its own. The sky dome still shows
+    // (through a hatch, a cave's mouth), fogged to the interior's colour.
+    if (this.interior) {
+      const i = this.interior;
+      this.ambient.color.setHex(i.ambientColor);
+      // Daylight down the hatch by day; darker at night.
+      this.ambient.intensity = i.ambientDay + (i.ambientNight - i.ambientDay) * this.night;
+      this.light.intensity = 0;
+      this.fog.color.setHex(i.fogColor);
+      this.fog.near = i.fogNear;
+      this.fog.far = i.fogFar;
+      this.stars.visible = false;
+      this.moon.visible = false;
+    }
+
     this.group.position.copy(camera.position);
     this.group.scale.setScalar(camera.far * this.cfg.domeFraction);
     this.light.target.position.copy(camera.position);

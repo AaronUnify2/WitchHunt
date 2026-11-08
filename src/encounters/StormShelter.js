@@ -18,8 +18,9 @@
 //     (earlCombination), and the family say so.
 //  5. The hatch: buried under leaf litter and earth (dig it clear with the
 //     shovel), then haul it open, then climb down.
-//  6. The room below (Tom's platform while he's down there; the dead can't
-//     reach him): the diary (read in close-up, then carried home) and the
+//  6. The room below (Session 21: an interior, world/Interiors.js: loaded
+//     when he climbs down, in a pocket under the hatch, the world outside
+//     simulating on; the dead can't reach him): the diary (read in close-up, then carried home) and the
 //     tapes (carried home: the cutscene at the comms room). Session 16
 //     (Aaron): only the story down there, no loot, nothing else to use. The first time down, Junie asks
 //     where his kids are; Ellen: maybe they got away (Aaron: nothing says
@@ -91,7 +92,7 @@ export class StormShelter {
     this.enemies = ctx.combat?.enemies;
     const { hatchY, floorY } = StormShelter.floorY(this.frame, this.ground, this.data);
     this.hatchY = hatchY;
-    this.floorY = floorY;
+    this.floorY = floorY; // Session 21: the interior's pocket floor once it's loaded
     this.hatchAt = frameToWorld(this.frame, this.data.hatch.x, this.data.hatch.z);
     const r = this.data.room;
     this.roomAt = frameToWorld(this.frame, r.x, r.z);
@@ -106,6 +107,7 @@ export class StormShelter {
     this.hold.init();
     this.hud = { prompt: '', progress: 0 };
     this.cutscenes?.namedAnchors?.set('stormShelter', () => frameAnchor(this.frame));
+    this.defineInterior();
     this.reset();
     this.unsubscribers = [
       this.bus.on('player:hurt', () => this.hold.interrupt()),
@@ -141,6 +143,39 @@ export class StormShelter {
     this.props?.setKeys(null);
     this.props?.setTaken('diary', false);
     this.props?.setTaken('tapes', false);
+  }
+
+  // Session 21: the room below as an interior (world/Interiors.js): loaded
+  // as Tom climbs down, in a pocket under the hatch; the world outside
+  // simulates on; leaving puts him beside the hatch.
+  defineInterior() {
+    if (!this.interiors) return;
+    const r = this.data.room;
+    const ic = this.sc.interior;
+    this.interiors.define({
+      id: 'stormShelter',
+      name: 'Storm shelter',
+      entrance: () => ({ ...this.hatchAt }),
+      surfaceY: () => this.hatchY,
+      load: (scene, floorY) => {
+        this.floorY = floorY;
+        return this.props?.loadRoom(scene, floorY, floorY + r.height + ic.shaft) ?? null;
+      },
+      platform: () => this.platform(),
+      spawn: () => {
+        // On the floor at the ladder's foot, facing into the room.
+        const step = this.roomPoint(r.ladder.x, r.ladder.z + 0.45);
+        return { x: step.x, z: step.z, yaw: Math.atan2(-this.frame.fx, -this.frame.fz), pitch: -0.1 };
+      },
+      exit: () => {
+        // Out beside the hatch, on the near side, facing back out the way he came in.
+        const h = this.data.hatch;
+        const out = frameToWorld(this.frame, h.x, h.z - h.d / 2 - 0.9);
+        return { x: out.x, z: out.z, yaw: Math.atan2(this.frame.fx, this.frame.fz) };
+      },
+      light: ic.light,
+      onLeave: () => this.bus.emit('stormShelter:up'),
+    });
   }
 
   // Room-local (x across, z along from the room's centre) in the world.
@@ -346,14 +381,16 @@ export class StormShelter {
   goDown() {
     if (this.below) return;
     const l = this.ladderAt;
-    const pl = this.platform();
-    const r = this.data.room;
-    // On the floor at the ladder's foot, facing into the room.
-    const step = this.roomPoint(r.ladder.x, r.ladder.z + 0.45);
-    this.player.setPlatform(pl, step.x, step.z);
-    this.player.yaw = Math.atan2(-this.frame.fx, -this.frame.fz);
-    this.player.pitch = -0.1;
     this.combat?.sfx?.play('door', l);
+    if (this.interiors) this.interiors.enter('stormShelter');
+    else {
+      // Without the interior system (tests): the room as a platform under the hatch.
+      const r = this.data.room;
+      const step = this.roomPoint(r.ladder.x, r.ladder.z + 0.45);
+      this.player.setPlatform(this.platform(), step.x, step.z);
+      this.player.yaw = Math.atan2(-this.frame.fx, -this.frame.fz);
+      this.player.pitch = -0.1;
+    }
     this.arrived = true; // (down by the debug menu: no arrival sweep on the way back up)
     this.bus.emit('stormShelter:down');
     if (!this.beenDown) {
@@ -372,6 +409,10 @@ export class StormShelter {
 
   goUp() {
     if (!this.below) return;
+    if (this.interiors?.id === 'stormShelter') {
+      this.interiors.leave(); // its onLeave says so ('stormShelter:up')
+      return;
+    }
     // Out beside the hatch, on the near side, facing back out the way he came in.
     const h = this.data.hatch;
     const out = frameToWorld(this.frame, h.x, h.z - h.d / 2 - 0.9);
