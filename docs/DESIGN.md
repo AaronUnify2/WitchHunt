@@ -1,6 +1,6 @@
 # Witch Hunt — Game Dev Doc
 
-Oct 9, 2026 · @Aaron · **Brought up to date with the build on Nov 7, 2026** (after Session 19 and the experimental vehicles) · **Mid-game and end-game story folded in Nov 8, 2026** (Aaron's workshop: [Witch Hunt — Mid-game story notes](https://claude.ai/artifact/JEPw823tjQJEn6Z3Vy7pHL))
+Oct 9, 2026 · @Aaron · **Brought up to date with the build on Nov 7, 2026** (after Session 19 and the experimental vehicles) · **Mid-game and end-game story folded in Nov 8, 2026** (Aaron's workshop: [Witch Hunt — Mid-game story notes](https://claude.ai/artifact/JEPw823tjQJEn6Z3Vy7pHL)) · **Optional encounters folded in Nov 8** ([Milo's barn and more](https://claude.ai/artifact/VtxTRYZ716JQcK63NEmtJq))
 
 ## How to use this doc
 
@@ -74,8 +74,8 @@ A snapshot for redesigning the mid-game and end-game: what a run is today, what'
 Everything past the cordon. **Redesigned with Aaron on Nov 8** as one story spine (see Encounters: the story spine after the outpost):
 
 - **The spine, in order:** the crashed plane (the quick-draw grey) → the Mothman at the crash site (Tom knocked out) → Junie taken by the Caller → the old church and the time capsule → the stairs in the woods (the place beyond; Junie brought home) → the military's dozer on the cordon strip → the bug-zapper night at the station → the Bigfoot cave (the Mothman killed, Bigfoot freed, the Blessing) → the quad gone and the mega night → the crashed UFO and the mothership (the big core, the alien quad) → the Car Armory, Sheriff and the ute → the garage and the killdozer → Ground Zero and the portal (the realm of stories) → the witchfire falls and the hut.
-- **Still optional, waiting for a place in the spine:** the old barn (Milo the Clown), the abandoned mineshaft; and the optional seeded encounters that give the killdozer's parts (not yet listed).
-- **The systems they need:** a fixed story spine on the map; the interior system; Men in Black and alien AI; the Mothman (two fights) and Bigfoot; the Caller as a voice only; the place beyond and the realm of stories (procedural); new zombie types (the Hollow, the Screamer, the Hanged); the garage and Sheriff's upgrades; one power unit for the fence and the alien quad; the healing pool, the loadout and tool belt, ammo types on B, inspect cards for special items; the classified documents (outlined, unwritten); sigil grounds' dressing.
+- **Optional seeded encounters** (Nov 8), each giving a killdozer part: the moonshiners' holler, the railway cutting, the sawmill, the mineshaft, Milo's barn designed; the Flatwoods landing, the National Guard convoy, the Men in Black listening post and the Headless Horseman bridge named only. The 1903 railway line on every map.
+- **The systems they need:** a fixed story spine on the map; the interior system; Men in Black and alien AI; the Mothman (two fights) and Bigfoot; the Caller as a voice only; the place beyond and the realm of stories (procedural); new zombie types (the Hollow, the Screamer, the Hanged); giant moths; the railroad spike maul, the chainsaw and its workbench, dynamite, the wire cutters; set-piece rides (the mineshaft's turret cart); the garage and Sheriff's upgrades; one power unit for the fence and the alien quad; the healing pool, the loadout and tool belt, ammo types on B, inspect cards for special items; the classified documents (outlined, unwritten); sigil grounds' dressing.
 - **Late-game meta:** modifiers, achievements, the final HUD and menus.
 
 ## Core loop
@@ -173,9 +173,12 @@ The original design, kept for reference: the player starts each run with the **s
 | Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
 | Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter (Session 10b; which one is open): debug only for now | 50 per round |
 | SMG (MP5-style) | Full auto; fires pistol rounds | An encounter (Session 10b; which one is open): debug only for now | 10 per round |
-| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | An encounter (Session 10b; which one is open): debug only for now | 8 pellets × 6 |
+| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
-| Explosive charge | Remote-detonated blast | Built: the military outpost's armoury (one). Designed: the mineshaft, the Car Armory. Debug menu | Config |
+| Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). Designed, not built | Config |
+| Chainsaw (melee) | Shreds up close; no fuel. Loud (pulls every zombie nearby), slows Tom while it revs, overheats if held, and dulls (a sharpness gauge; sharpen at the station's workbench for scrap) | The sawmill (optional; Nov 8). Designed, not built | Config |
+| Dynamite (thrown) | The first handheld throwable: small, unstable, short-fused crowd clearing. **Not a hut charge** | The railway cutting's powder store, the mineshaft (optional; Nov 8). Designed, not built | Config |
+| Explosive charge | Remote-detonated blast | Built: the military outpost's armoury (one). Designed: the Car Armory's restocking crate (the mineshaft now gives dynamite instead; Nov 8). Debug menu | Config |
 
 - **Alien shotgun shells:** 150% of a normal shell's damage, with a purple muzzle flash. From aliens; the first come off the crashed plane's grey. *(Designed, not built.)*
 - **Ammo types** *(Aaron, Nov 8; designed, not built)*: **tap B to reload; hold B to choose the ammo** (normal or alien shells). The gun reloads with what's chosen, and the HUD shows the type (a purple shell for alien). The crashed plane's shells teach it.
@@ -189,8 +192,9 @@ The original design, kept for reference: the player starts each run with the **s
 
 #### Tools vs weapons *(Aaron, Nov 8; designed, not built)*
 
-- **Tools go on a tool belt** (the shovel, and later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
-- **One melee slot for fighting.** It starts as the shovel and can be swapped for something better (a machete, say).
+- **Tools go on a tool belt** (the shovel; the **wire cutters** from the moonshiners' holler, Nov 8, for disarming trip wires; later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
+- **One melee slot for fighting.** It starts as the shovel and can be swapped for something better: the **railroad spike maul** (the railway cutting) or the **chainsaw** (the sawmill) (Nov 8).
+- **No flamethrower for Tom** (Aaron, Nov 8: tedious in shooters); it's a killdozer part only. **No fuel anywhere in the game.**
 - Damage values live in one weapon table in config; the turret's ammo conversion reads from it.
 
 ### The shovel and digging
@@ -275,6 +279,7 @@ A dense forest stored as a graph: **clearings** are nodes, **pathways** are edge
 - **Northern cliff.** A tall cliff runs along the north edge. Nothing comes from the north and the player can't go north.
 - **The road north** *(Aaron, Nov 8; designed, not built)*: the road past the gas station runs north as well as south. North it ends at a **ROAD CLOSED barrier** (nobody in or out) instead of an invisible wall. Just south of that barrier, near Earl's store, is **Bigfoot's cave**, its entrance hidden behind brush until the story calls for it. That's why Earl saw Bigfoot so often and opened the Home of Bigfoot shop there.
 - **22 clearings** (config): home, the witch's hut, one per encounter and one per sigil ground. The map is big on purpose: **1 km wide by 1.4 km north to south** (decided with Aaron in M3, to revisit after play-testing). Clearings and encounters are **data-driven**, so more can be added later without code changes.
+- **The 1903 railway line** *(Aaron, Nov 8; designed, not built)*: part of the map on **every run**, like the road and the cordon. The railway that severed the forest in the time capsule's story runs the full width east to west, rusted and abandoned for a century, mostly a faint straight scar through regrown forest, lost at each edge in a collapsed tunnel. It marks the **soft border between the middle and the south band**: no fence and no lock, unlike the cordon, but a landmark that tells the player how far south they are without opening the map. South of it is more open and less structured; the structure comes from the main story. The railway cutting (an optional encounter) sits somewhere along it, by the seed, and other encounters spawn around it.
 - **Danger gradient.** Each clearing has a band (north, middle, south) and a 0–1 "southness" value that scales enemy strength, trap danger and how strange the encounters get. As built: north 0–0.40, middle 0.40–0.70, south 0.70–1 (Session 14 widened the north so the north frontier fits south of the cordon).
 - **Pathways** are walkable corridors through thick forest. Off-path forest is full of undergrowth that slows the player (and, less, zombies), so movement mostly follows the graph. Decided with Aaron in M3: it never blocks, so cutting through is a choice with a cost.
 - **Ground:** gentle rolling hills, levelled in clearings (decided with Aaron in M3).
@@ -300,7 +305,7 @@ Everything past the outpost is the seeded, randomised **frontier**, generated as
 - **One engine.** The cluster is a fixed sub-graph the generator places first (same positions, paths and clearings every run) and then builds the rest of the map around. It is not a separate hand-built map, so it reuses all the generation, chunking and simulation tech.
 - **Why.** It gives authored onboarding while keeping seeded replay value. The scripted early beats always land, in order, every run, and the opening is where all the tutorial teaching and starting equipment is packed: searching, the first battery, the shotgun, the first sigil, close quarters and the flashlight, the first mutant, the witch in the flesh, and a proper firefight.
 - **The arc:** home and safety → the witch on tape (*she exists*) → the first sigil (*what she does*) → the witch in the flesh (*she's here, watching you*) → the overrun checkpoint (*nobody's coming*).
-- **The rest of the north band** (barn, crashed plane, mineshaft) sits just past the outpost, in the frontier's northern edge: the **north frontier** (Session 11). *Changed Nov 8:* the crashed plane is fixed just past the checkpoint; the **Car Armory moves to the south band** (so the turret now arrives late), and the **Bigfoot cave moves into the home cluster's north**, by the gas station (see the road north above).
+- **The rest of the north band** (barn, crashed plane, mineshaft) sits just past the outpost, in the frontier's northern edge: the **north frontier** (Session 11). *Changed Nov 8:* the crashed plane is fixed just past the checkpoint; the barn and mineshaft are now optional seeded encounters that can land in any band; the **Car Armory moves to the south band** (so the turret now arrives late), and the **Bigfoot cave moves into the home cluster's north**, by the gas station (see the road north above).
 - **One road** (Session 11): the cluster has one authored road, past the gas station's forecourt and south to the checkpoint (the outpost's approach). It's the only road on the map for now; the M3 hint "the gas station on a road edge" (OPEN_QUESTIONS #42) comes true here. *Designed, Nov 8:* past the gas station it also runs **north**, to a ROAD CLOSED barrier, with Bigfoot's cave hidden just south of it (see Map: Structure).
 - **Clearing types in the cluster** (Session 11): no checkpoint or roadside types inside it, so its sigils raise citizens and the first army zombie really is met on the outpost approach.
 
@@ -432,6 +437,10 @@ The sum of every defence's current value (each scales with its remaining health)
 - **The big core:** after the mega night (see Encounters), Ellen says they won't survive another like it and sends Tom for the alien ship's big core: the reason the station needs much more power. *(Proposed: the comms room's big radio could reach the outside world, given enough power.)*
 - Cells are shared between the fence and the alien quad.
 
+### The workbench *(Aaron, Nov 8; designed, not built)*
+
+- A workbench at the station, **there from the start**. Tom sharpens the chainsaw (from the sawmill) there for a little scrap. *(Proposed: it could also be where Sheriff's upgrades are bought before he arrives, or be folded into the garage; open.)*
+
 ### The garage *(Aaron, Nov 8; designed, not built)*
 
 - A **three-bay garage** at the station for the vehicles: the quad, the dozer and the ute.
@@ -523,10 +532,11 @@ More grounds = a look, set dressing and one atmospheric twist.
 
 | Enemy | Where | Render | Behaviour | Status |
 | --- | --- | --- | --- | --- |
-| Zombie (citizen, police, army, Men in Black; Earl Pruitt) | Forest, from sigils | Doom-style billboard sprite, 8 angles (5 stored, 3 mirrored); a palette swap gives each zombie its own hair, clothes, sleeves and blood (Session 13) | The main enemy. Levels 1–5 | Built |
+| Zombie (citizen, police, army, Men in Black; Earl Pruitt; designed: miners, moonshiners) | Forest, from sigils | Doom-style billboard sprite, 8 angles (5 stored, 3 mirrored); a palette swap gives each zombie its own hair, clothes, sleeves and blood (Session 13) | The main enemy. Levels 1–5 | Built |
 | Mutant zombie | Forest, level 3+; the gas station's authored first mutant | 3D | Giant, mutated, much more health. A mini-boss in the horde | Built |
 | Giant beetle | The military outpost's crates (built); mineshaft, Bigfoot cave's egg tunnels (designed) | 3D | Armoured shell (30% damage); the soft spot on its face takes 3x. Emerge, threat display, charge, rear and snap | Built (Session 17) |
 | The Mothman | The crashed plane (first meeting), the station (the bug-zapper night), Bigfoot cave (killed); the forest if flares are spammed | 3D | Flying dive attacks, disorienting screech, calls beetles | Designed, not built (no model; flares are counted) |
+| Giant moths | The mineshaft (first met), the Mothman's lair in the Bigfoot cave | 3D | Flying; the Mothman's kin. Behaviour to design | Designed (Nov 8), not built |
 | New zombie types: the Hollow, the Screamer, the Hanged | Debut on the mega night, then the normal mix | Sprite or 3D (open) | Each with a job, Left 4 Dead style (see Zombies) | Designed (placeholders), not built |
 | The Caller | Wherever the forest is severed; the radio in the south | None: a voice only | Imitates the family's voices; can't be shot | Designed, not built |
 | Men in Black | The Car Armory (as zombies, and a few barricaded survivors), Ground Zero | 3D: the cutscenes' Man in Black with a pistol (most), an SMG or a sniper rifle (Session 13) | Armed agents using cover; stealth-aware squads | Model and poses built; no AI |
@@ -534,7 +544,7 @@ More grounds = a look, set dressing and one atmospheric twist.
 | The witch | Forest and hut | 3D | See The witch | Built |
 | The outpost's machine gun | The military outpost's gun pit | 3D | Not an enemy: Tom's. Dead until a battery's fitted, then fires 25 rounds at the nearest dead, overheats and blows up | Built (Session 17) |
 
-**Friendly:** Bigfoot (can't be harmed; designed, not built, no model); **Sheriff**, the friendly grey (designed, not built). Harmless: the animals in Milo's barn (designed, not built).
+**Friendly:** Bigfoot (can't be harmed; designed, not built, no model); **Sheriff**, the friendly grey (designed, not built); **Milo**, who never attacks Tom and can't be hurt (designed, not built). Harmless: the animals in Milo's barn, the staring donkey (designed, not built).
 
 ### Enemy targeting
 
@@ -584,6 +594,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 | Army | Fatigues and helmet; tougher. The helmet blocks the headshot bonus, so they eat extra bullets. It comes off with enough damage, or a powerful enough round (the hunting rifle) punches straight through it; once the helmet is gone, headshots land normally (Aaron, Oct 16). First met on the military outpost approach | Helmet (+20 ballistic), rifle ammo (the main rifle ammo source) |
 | Men in Black | A dead agent: torn black suit over a white shirt, tie, sunglasses, body armour; as tough as the army (Session 13). Found where the agents fell (the government base, Ground Zero) | Body armour (+40 ballistic, the vest pickup), pistol ammo |
 | Miner (mineshaft only; designed, not built) | Helmet and headlamp | Scrap, lamp batteries |
+| Moonshiner (the holler only; designed, not built) | The turned family who ran the still | Open |
 | Earl Pruitt (the storm shelter only; built, Session 13) | One fixed look: a faded red trucker cap, grey stubble, a tan work shirt, jeans | His keys (the safe's combination) |
 
 **Daytime:** most zombies thin out at dawn; a few stragglers wander the pathways by day. An encounter's own dead (`authored`: the gas station's pack and mutant, the storm shelter's horde, the outpost's soldiers) don't sink at dawn.
@@ -626,7 +637,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 - **It can't die outside the cave.** Once it's dead, the Caller is gone for good (see the Caller).
 - **Its brood:** the cave's tunnels are full of its eggs, beetles hatching all around. It keeps Bigfoot in a silk cocoon (moths spin cocoons, not webs).
 - **In the forest (flares):** every flare adds to a hidden attention meter that slowly drains. Spam flares and the Mothman arrives: wingbeats, red eyes in the treeline, dive attacks for a while, then it leaves; hurt enough, it flies off. *(Nov 8: this only matters once flares are back in the drop tables, after the plane; the plane's signal flare is what first answers the meter.)*
-- **Origin:** it first came through at the abandoned mineshaft. *(proposed, reconciling Oct 16)* The military caught it there and were moving it through the military outpost, where it broke out of its container in transit; it then moved into Bigfoot's cave. The outpost hints at it but never names it.
+- **Origin:** it first came through at the abandoned mineshaft (Nov 8: the seam at the bottom, beside the giant torn cocoon it hatched from; see Optional encounters). *(proposed, reconciling Oct 16)* The military caught it there and were moving it through the military outpost, where it broke out of its container in transit; it then moved into Bigfoot's cave. The outpost hints at it but never names it.
 
 ### Flares
 
@@ -695,7 +706,8 @@ In the early game Tom can run from her: she gives up a fight once he's 50 m from
 ### Explosives
 
 - **As built:** one charge in the outpost's armoury locker; the rest from the debug menu until the mineshaft and the Car Armory exist. Charges blow up cars and gas pumps too.
-- Sources: the mineshaft (one), the military outpost (one), and the Car Armory's crate, which restocks. The outpost is now every run (Oct 16), so every run has at least one early charge; a second depends on the mineshaft appearing. (This replaces the earlier "two, one or none" variety. Aaron, Oct 17: one guaranteed charge is no problem, since the hut needs two charges together, so one alone can't start the final battle.)
+- **Changed (Aaron, Nov 8): hut charges now come only from the outpost's armoury (one) and the Car Armory's restocking crate.** The mineshaft gives dynamite instead. **Dynamite is not a hut charge:** small, unstable, short-fused crowd clearing. Thrown at the hut it only scorches it, and Ellen says it'll take real charges set off together.
+- *Earlier:* sources: the mineshaft (one), the military outpost (one), and the Car Armory's crate, which restocks. The outpost is now every run (Oct 16), so every run has at least one early charge; a second depends on the mineshaft appearing. (This replaces the earlier "two, one or none" variety. Aaron, Oct 17: one guaranteed charge is no problem, since the hut needs two charges together, so one alone can't start the final battle.)
 - Also a general weapon: plant one as a trap on a path, or drop one while chased and detonate as enemies follow.
 - Always manual detonation (no proximity trigger). The player is hurt if caught in the blast. Radius and damage are config.
 
@@ -757,8 +769,6 @@ The main story encounters, in order. They become **fixed** places on the map as 
 | Overrun military outpost | North | Every run (fixed opening cluster; the gateway south) | The checkpoint in the military cordon, the only way out of the home cluster | **Built** (Sessions 17-19) |
 | Bigfoot cave | North (moved Nov 8) | Every run (story spine, beat 7; unique prize) | Just south of the ROAD CLOSED barrier on the road north of the gas station, behind brush the dozer clears | Designed (Nov 8), not built |
 | Crashed plane | North (frontier) | Every run (story spine, beat 1; fixed) | Fixed just past the checkpoint, where the dogfight shows it come down; the first stop after the outpost | Its clearing is placed every run and smokes after the dogfight; the encounter is designed (Nov 8), not built |
-| Old barn (Milo the Clown) | North (frontier) | Common (optional) | A farm clearing | Earlier design, not built; its place in the new spine is open |
-| Abandoned mineshaft | North (frontier) | Uncommon (optional) | Hillside edge | Earlier design, not built; its place in the new spine is open |
 | The cordon strip and the dozer | North/middle (along the cordon) | Every run (story spine, beat 7) | Where the military's clearing crew stopped, along the cleared strip (which end is open) | Designed (Nov 8), not built |
 | Time capsule (the old church) | Middle | Every run (story spine, beat 4) | A ruined old church | Designed (Nov 8), not built |
 | Stairs in the woods (the place beyond) | Middle | Every run (story spine, beat 5); whether other stairs appear too is open | Off-path clearing | Designed (Nov 8), not built |
@@ -766,10 +776,12 @@ The main story encounters, in order. They become **fixed** places on the map as 
 | Crashed UFO and the mothership | South | Every run (story spine, beat 9; unique prize) | A south clearing; the beam up to the mothership | Its clearing is placed every run and smokes after the dogfight; designed (Nov 8), not built |
 | Car Armory and the government base | South (moved Nov 8) | Every run (story spine, beat 10; unique prize) | Near the government's main teleporter | Designed (Nov 8), not built |
 | Ground Zero and the portal (the realm of stories) | South | Every run (story spine, beat 11) | A crater clearing; the portal leads to a procedural dungeon | Designed (Nov 8); only the cold open's cutscene is built |
-| Optional seeded encounters (killdozer parts) | Any | Seeded | Around the spine | Not yet listed |
+| The 1903 railway line | Middle/south border | Every run (map feature) | East to west across the full width | Designed (Nov 8), not built |
+| Optional: moonshiners' holler, railway cutting, sawmill, mineshaft, Milo's barn | Any (the cutting on the railway line) | Seeded (none guaranteed) | Around the spine | Designed (Nov 8), not built |
+| Optional: Flatwoods landing, National Guard convoy, Men in Black listening post, Headless Horseman bridge | Any | Seeded | Around the spine | Named only |
 | Witch's hut | South | Every run (fixed; story spine, beat 12) | Deep south, ringed by witchfire until the portal's anchor is broken (Nov 8) | **Built** (M7; its look Session 13); the witchfire gate is designed, not built |
 
-The frontier's clearings are placed by the generator from `data/encounters.json` (which ones appear, in which band); until each is built it shows as a placeholder signpost. The design checklist below predates the Nov 8 redesign for the frontier's rows; where it differs, the encounter's own section wins.
+The frontier's clearings are placed by the generator from `data/encounters.json` (which ones appear, in which band); until each is built it shows as a placeholder signpost. The design checklist below predates the Nov 8 redesign for some frontier rows; where it differs, the encounter's own section wins.
 
 ### Design checklist
 
@@ -784,10 +796,10 @@ The frontier's clearings are placed by the generator from `data/encounters.json`
 | Time capsule | No | Establishing sweep to the plaque | Ruined old church, weathered plaque | None | None | The 1903 town's warning: the railway, the Caller, the nature spirit | Dig it up |
 | The Caller | No | None (a voice) | At most, fog that moves when it shouldn't | None of its own | None | The forest's own old story; comes where the forest is severed | Takes Junie; taunts on the radio in the south |
 | Military outpost (gateway south) | No | Tom arrives to report the witch; waves of dead soldiers on the approach reveal it's overrun | Approach road, watchtower, gun pit, sandbag barricade with breached steel fence, compound of tents, comms hut, armoury lockers and armoured shipping containers; working floodlights on a generator | Waves of helmeted army zombies peaking at the barricade; caged beetles in the compound | Rifle ammo, helmets, scrap, first aid, a truck's battery, one charge; hunting rifle rounds in the gun pit | A failed transfer point: torn-open containers (C-7 held the Mothman, never named), the resin-frozen alien (C-4), the field report and the manifest | Needs the hunting rifle to reach; the gun pit's machine gun (a battery); the generator's floodlights (a battery); the scope cutscene shows the live dogfight; the barricade's peak opens the checkpoint; beetle crates break open when shot |
-| Mineshaft | Short tunnel | CCTV patched through by Wyatt: the blast and the Mothman bursting out | Timber entrance, rails, abandoned gear | Zombie miners, a few beetles | Scrap, lamp batteries, one charge | The Mothman's origin | Collecting an explosive charge |
+| Mineshaft | Yes: a deep mine on rails | The cage lift down (a battery) | Surface office; timber, rails, the seam and the torn cocoon at the bottom | Zombie miners, beetles, giant moths | Dynamite | The Mothman's origin | The turret cart ride; the plunger and the fireball escape |
 | Crashed plane | No | The camera on the grey at its work; it turns and lifts the pistol | Military patrol plane torn through the trees; a gun pod's parts laid out on the wing | One plain-grey alien; then the Mothman | Pistol, alien shells, alien med kit, small power cell | The dogfight Tom watched; the greys studying Earth guns | The quick draw; the signal flare |
 | Storm shelter | Small room (a platform under the hatch, no loading) | Wyatt: whoever dug this hid it well; the camera reveals a horde standing on the hatch | A low earth mound, a rusted hatch in a timber collar; a small plank room Earl dug himself | 12 citizens and Earl holding the hatch (more climb out of the sigil until it's dug) | The gas station safe's combination (on Earl's keys) | Earl's diary and his trail-cam tapes: the witch at the hatch, the kids running into the trees | The first sigil dug (the family work out sigils raise the dead); dig the hatch open; the tapes on D-pad down |
-| Old barn | No | Slow sweep at night, heat-lamp glow from inside | Milo the Clown lettering, animals, knife-throwing pedestal | Zombies dropping from the loft | Scrap, tractor battery | Milo; mutilated cattle | Loft ambush; harmless animals |
+| Milo's barn | No | Milo swings the car gates open one-handed | The barn from The Lone Clown; the dead stacked in rows | None of Milo's (he kills the dead) | A killdozer part (open) | Milo, ambiguous; the morning reveal | Hold still for three knives; shooting fails |
 | Gas station | No (a store with an office and a stockroom) | Sweep from behind the store across the pumps to the "Home of Bigfoot" sign; first-person cutscene of the mutant waking and of the witch on the way out | Store, pumps, cars, "Home of Bigfoot" sign; dark aisles inside | 5 citizens on the forecourt; the authored first mutant inside | Scrap, car batteries, first aid, bulk ammo behind the counter; the hunting rifle in a locked gun safe; Earl's quad out back | "Home of Bigfoot" souvenirs and sighting photos (played straight); Earl's note; the scanner's quarantine broadcast | First mutant reveal by torchlight; guaranteed witch sighting; a safe that needs the storm shelter combination; the scanner needs a battery; the pumps blow |
 | Campsite | No | Sweep past the campers' car to the torn tent and up over the camp; Wyatt: check the tents | Tents (one slashed from inside), cold campfire, blood, marked trunks | None on arrival; a wave of 7 when the shotgun is taken | Guaranteed shotgun, shells, a first aid kit, scrap, car battery | The campers were killed by the witch; a camcorder clip of her attacking them | Picking up the shotgun triggers a zombie wave; the game's first battery pull |
 
@@ -1016,16 +1028,6 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 - The wording of the owner's note. (His name is settled: Earl Pruitt.)
 - How long the witch is on screen and how clearly she's seen.
 
-#### Old barn (Milo the Clown)
-
-*Designed, not built: an earlier design. Not in the Nov 8 story spine; whether it stays as an optional encounter (and which killdozer part it gives) is open.*
-
-- A weathered barn painted with faded lettering for **"Milo the Clown"**, a lone clown with his own one-man act who kept his animals here. (A nod to another of the designer's stories.) **Milo has no connection to the circus** sigil ground: he's a lone clown doing his own thing, which is the joke.
-- **Inside:** a turkey and a donkey alive in their stalls, a big snake in a reptile enclosure under a glowing heat lamp, and a knife-throwing pedestal with the wall around it scarred by knife marks. The animals are harmless.
-- **Danger:** zombies in the hayloft drop down once the player is inside.
-- **Loot:** scrap, a tractor battery.
-- **Foreshadowing:** mutilated cattle in the pens outside, a nod to UFO lore.
-
 #### Storm shelter (every run; fixed opening cluster)
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
@@ -1211,16 +1213,6 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 - The family learn the hard way never to leave the compound at night again. **The Caller now has Junie's voice to use.**
 - **"No trouble ever comes from a family member" still holds:** the danger came from outside; the family were deceived.
 
-#### Abandoned mineshaft
-
-*Designed, not built: an earlier design. Not in the Nov 8 story spine; whether it stays as an optional encounter (its charge, the Mothman's origin) is open.*
-
-- A timber-framed entrance in a hillside, rails running into the dark. A short linear tunnel; dark, so the flashlight matters.
-- **The Mothman's origin:** the glowing seam the miners struck was a thin spot, and the Mothman came up out of it. The miners fled, leaving tools, lunch pails and a half-loaded cart.
-- **Enemies:** zombie miners and a few giant beetles (the first live beetles are now at the military outpost, which every run reaches first). Shed husks and cracked egg casings in the deepest gallery.
-- **Loot:** scrap, lamp batteries, **one explosive charge** in the blasting store.
-- **Lore:** the foreman's logbook (the seam that glowed and hummed, the tall red-eyed thing that came out of it); warnings scratched on the walls.
-
 #### Overrun military outpost (every run; the gateway south)
 
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
@@ -1346,7 +1338,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 6. Wounded, it breaks free and flies off toward the gas station. Ellen connects its flight path with Earl's maps: it's hiding in Bigfoot's cave.
 7. **The cost:** home is defenceless with the fence at zero, so Tom has to recharge or finish the job fast.
 
-**Stage 2: the cave.** Tom bulldozes through the brush to the entrance. Walking in loads a small **seeded** interior (tunnels and chambers; dark, so the flashlight matters). The tunnels are full of the **Mothman's eggs, with beetles hatching all around**: a nest closing in. Deeper in, in the final chamber, Tom fights the wounded Mothman and kills it. **Bigfoot is found wrapped in a silk cocoon** (moths spin cocoons, not webs), as if kept for later; Tom cuts him free. The final chamber's details are still to be designed.
+**Stage 2: the cave.** Tom bulldozes through the brush to the entrance. Walking in loads a small **seeded** interior (tunnels and chambers; dark, so the flashlight matters). The tunnels are full of the **Mothman's eggs, with beetles hatching all around**: a nest closing in. Deeper in, through the Mothman's lair (**giant moths** again, first met in the mineshaft), in the final chamber, Tom fights the wounded Mothman and kills it. **Bigfoot is found wrapped in a silk cocoon** (moths spin cocoons, not webs), as if kept for later; Tom cuts him free. The final chamber's details are still to be designed.
 
 - **Aesthetic (kept):** a lived-in home with Bigfoot's handmade jewellery, beadwork, woven items, carved tools and totems in his own style, showing he's a person with a culture, a tool-user, connected to the people who were on this land longest.
 
@@ -1481,7 +1473,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 **The killdozer.**
 
 - When it's clear Tom has to go through the portal, Sheriff says he'll need a really powerful vehicle and offers to **upgrade the dozer into a killdozer**.
-- **The optional encounters give its parts.** Each optional encounter yields its own upgrade material, so the encounters the seed spawns decide the killdozer's final abilities (one run might have a flamethrower and armour plating, another a ram and a turret).
+- **The optional encounters give its parts.** Each optional encounter yields its own upgrade material, so the encounters the seed spawns decide the killdozer's final abilities (one run might have a flamethrower and armour plating, another a ram and a turret). **Designed so far (Nov 8):** the flamethrower (moonshiners' holler), armour (railway cutting), the head saw (sawmill), a ram (mineshaft); Milo's open (see Optional encounters).
 - *(Proposed)* Sheriff guarantees a **base killdozer** that can always finish the portal; the encounter parts are bonuses on top, so no seed is too weak.
 - **The other side is seeded too.** The seed decides what happens beyond the portal: which enemies Tom meets and in what order. So both the endgame's challenge and the build that meets it differ every run. *(Proposed: the seed loosely pairs threats with parts, so a run full of swarms tends to roll the flamethrower.)*
 
@@ -1499,6 +1491,111 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 #### Witch's hut (fixed; story spine, beat 12)
 
 **Built** (M7; its look Session 13). *Designed, Nov 8, not built: an impassable witchfire ring round it until the portal's anchor is broken.* As built: a taken settler's log cabin, leaning, witchfire leaking through boarded windows, a porch whose rocking chair rocks by itself when Tom's near, totems and a fire pit; blown apart and burning after the charges. Her traps line the approach. See The witch: destroying the hut and the final battle.
+
+### Optional encounters (Aaron, Nov 8)
+
+*Designed with Aaron in a voice call, Nov 8 ([Witch Hunt — Milo's barn (optional encounter)](https://claude.ai/artifact/VtxTRYZ716JQcK63NEmtJq)); none built.* The optional encounters are **seeded**: the seed deals out which appear and where, around the fixed story spine. **None of them guarantee anything**, so some runs are strong and some are harder, but none should feel weak. Each gives its own **killdozer part** (see the endgame), and some give a weapon or tool.
+
+**Rules agreed along the way:**
+
+- **The pool, strongest first:** the moonshiners' holler, the railway cutting, the sawmill, the mineshaft, Milo's barn, the Flatwoods landing, the National Guard convoy, the Men in Black listening post, the Headless Horseman bridge. Nothing is cut yet; the list will change. The last four are names only so far.
+- **Killdozer parts** are worked out per encounter as they're designed.
+- **No flamethrower for Tom.** It's a killdozer part only (Aaron finds flamethrowers tedious in shooters).
+- **No fuel anywhere in the game.** Nothing else uses it, so the chainsaw doesn't either.
+- **No anti-logging message.** The sawmill is an honest working place; the Caller's story is about two specific cuts (the 1903 railway and the cordon strip), not logging.
+- **Dynamite is not a hut charge** (see The witch: explosives).
+
+| Encounter | Rank | Weapon or tool | Killdozer part |
+| --- | --- | --- | --- |
+| Moonshiners' holler | 1 | The wire cutters (tool); *proposed:* the auto shotgun | The flamethrower (the still's copper coil) |
+| Railway cutting | 2 | The railroad spike maul (melee); dynamite | Armour (the cowcatcher and boiler plate) |
+| Sawmill | 3 | The chainsaw (melee) | The head saw on the blade |
+| Abandoned mineshaft | 4 | Dynamite | A ram (the rock drill head) |
+| Milo's barn | 5 | None | Open (placeholder: his spinning target board; the saw went to the sawmill) |
+| Flatwoods landing, National Guard convoy, Men in Black listening post, Headless Horseman bridge | 6–9 | Not designed | Not designed |
+
+#### Moonshiners' holler (optional; rank 1)
+
+A quiet trap puzzle, a break from the busier north. Serious in tone.
+
+- **The holler:** a hidden still down a dark, narrow hollow, entered on foot. The family trapped it against revenue agents: they took the lights over the government land for the law coming for the still.
+- **Readable traps:** fishing line glinting in the torch beam (a shotgun bolted to a stump), tin cans on wire (an alarm that rings in the dead), a bent sapling held by a peg (a spring snare), leaves piled too neatly (a bear trap).
+- **Disarm or use them:** hold X to disarm, or trigger one on purpose on the dead chasing Tom. The turned family can be led into their own traps.
+- **The wire cutters:** found here, a new tool on the tool belt.
+- **The family's trap map:** found halfway in, read in close-up. It's out of date: a couple of traps aren't on it, so Tom still has to read the ground.
+- **The turned moonshiners** wait at the still.
+- **The still, the last puzzle:** still running, nobody tending it, its gauge in the red. Shut it down with the valves in the right order, or it blows and the part goes with it.
+- **Gun:** *proposed*, the auto shotgun (a paranoid family's stockpile). Not yet confirmed.
+- **Killdozer part:** the still's copper coil and fuel, made into **the flamethrower**.
+
+#### The railway cutting: the 1903 line (optional; rank 2)
+
+- **The line is part of the map on every run** (see Map: Structure); the encounter is seeded: where the cutting sits along the line changes with the seed. Other encounters spawn around the line.
+- **The cutting:** the last train of 1903, a rusted locomotive and carriages swallowed by the forest, abandoned the night the town's people were taken. Quiet, eerie, full of old belongings.
+- **The radio:** left out for now, to handle deliberately with the Caller's part of the story.
+- **Weapon:** the **railroad spike maul**, a heavy sledge for the melee slot: slower than the shovel, hits much harder.
+- **Dynamite:** an old powder store from blasting the cutting holds sweating dynamite, the game's first handheld throwables.
+- **No gun.**
+- **Killdozer part:** the locomotive's **cowcatcher and boiler plate**: armour.
+
+#### The sawmill (optional; rank 3)
+
+- **The story:** the government hired the mill's loggers to clear ground for the portal programme (Ground Zero, and maybe the cordon strip). They saw too much, so the Men in Black silenced them as witnesses. Tom finds a crime scene: dead loggers, and Men in Black bodies where the loggers fought back.
+- **A logger's diary:** at first giddy that the government agreed to every number, triple rates, no haggling. Then no paperwork, no payroll office, men told not to talk to their families. The last entry: of course they agreed to any price. Dead men don't get paid.
+- **Weapon: the chainsaw** (melee slot; Evil Dead 2 is a reference). No fuel. Balanced by **noise** (it pulls every zombie nearby), **slowing Tom while it revs**, **overheating** if held too long, and a **sharpness gauge**: as the chain dulls it cuts slower, and Tom sharpens it at a **workbench at the station**, there from the start, for a little scrap.
+- **Killdozer part:** the mill's **head saw** on the front blade, shredding whatever it pushes.
+
+#### Abandoned mineshaft (optional; rank 4)
+
+*Replaces the earlier design (a short tunnel with zombie miners, beetles and one charge).* The Mothman's origin, now a big set piece.
+
+- **On arrival:** the mine's side office and equipment on the surface.
+- **The cage lift** down is dead until Tom fits a battery. Then a creaking ride, ridiculously deep.
+- **The turret cart:** a mine cart with an old mounted gun, like the ute's turret. It rattles down the rails through the tunnels while Tom shoots zombie miners, beetles and **giant moths**.
+- **Giant moths, a new enemy:** first met here, and met again in the Mothman's lair in the Bigfoot cave before Bigfoot is freed.
+- **The bottom:** the seam where the Mothman came through, the **giant torn cocoon** he hatched from, and the miners' explosives, packed but never fired, with a plunger.
+- **The ending:** Tom presses the plunger (or hooks a battery to it), and a short fuse gives him time to get back in the cart. The cart grinds back up and out; a cutscene shows the fireball roaring up the tunnel behind him. The blast seals the seam and the cavern but not his tunnel, and Tom escapes unharmed.
+- **Lore (kept):** the foreman's logbook (the seam that glowed and hummed, the tall red-eyed thing that came out of it).
+- **Loot:** dynamite (replacing the charge it used to give).
+- **Killdozer part:** the **rock drill head**, a ram.
+
+#### Milo's barn (optional; rank 5)
+
+*Replaces the earlier "Old barn (Milo the Clown)" design.*
+
+**The idea.** Milo is the knife thrower from Aaron's story **The Lone Clown**, hosted on the same website as the game. In Witch Hunt he's **alive, in his barn, and permanently in full clown mode**: long arms, a green wig, the painted grin, chaotic dancing, bounding, bubbly and chuckling. He never drops character, so to most players he reads as an otherworldly entity, maybe something from the portal. **Anyone who has read the story knows the truth: he isn't from the portal. He's the guy from the story**, out in the forest doing his own thing, rehearsing his act while the apocalypse happens around him.
+
+- A comedy break from the game's serious tone; ranked strongest of the optional pool when it was designed (now fifth).
+- The one living person in the forest besides the family and the Car Armory's survivors.
+- **Kept ambiguous on purpose:** human, or something else? Some things he does are impossible, and the reveal only explains part of it.
+
+**The approach.**
+
+- **The barn sits ringed by the dead:** bodies everywhere around it, as if he's been holding off a siege by himself.
+- When Tom arrives, Milo is **killing zombies with thrown knives**: bounding, dancing, chuckling. **He never attacks Tom.**
+- **The car gates (cutscene).** Two abandoned cars are parked nose to nose across the lane. Milo grabs both near the bonnets **with one hand** and swings them open like gates, bows, beckons Tom through, then slides them shut behind him. Polite, welcoming and completely impossible. A callback to the story, where he pushes Claire's car with one hand.
+
+**The act: hold still.** Inside, Milo invites Tom onto the platform in front of his board for three knives.
+
+- **Hold still for all three throws** and the act succeeds: Tom earns the **killdozer part**.
+- **The third knife** passes just over Tom's head, like the story's last knife.
+- After the third, Milo breaks character for one line in his normal, warm voice (*proposed:* "Three for three. You didn't flinch."), then goes straight back to the clown.
+- **Shoot at him at any point** and the shot fails the moment Tom pulls the trigger: it misses, or **Milo deflects the bullet with a knife** (otherworldly, and funny). He gives the **"I was in character!"** speech, the story's line, and **throws Tom out of the barn. No reward.**
+- Milo can't be hurt.
+
+**The reveal: come back in the morning.** If Tom held still and comes back **the next morning**, Milo is outside the barn as **just a man**: flannel shirt, jeans, face scrubbed clean, no wig. He hands Tom a tin mug: **"Instant. Sorry."** He's a man with a donkey, in character the rest of the time, and that's why all of it happens. The car gates stay unexplained. It pays off "make the walk back matter" (see Ideas for later).
+
+**Comedy beats (all agreed).**
+
+- **The donkey stares at Tom** through the whole act, and later turns up staring from the treeline near the station. Never explained. (In the story the donkey never looks away and never forgives.)
+- **Milo tidies the dead:** stacks the bodies in neat rows and sweeps the straw between kills.
+- **A hand-painted sign:** "SHOW TONIGHT. ALL WELCOME. NO FLINCHING."
+- **The turkey gives Tom an Aunt June look.** Ellen, watching on camera: "Why is that turkey judging you?"
+- **The family's reactions over the radio:** Wyatt thinks it's the coolest thing ever; Ellen is quietly horrified.
+
+**The barn (from the story).** A donkey, a Shetland pony, a python in a glass tank under a heat lamp, an enormous turkey, and a wall full of knife holes in the outline of a person. Clean straw, full troughs: he loves these animals.
+
+- **Open:** his killdozer part; the exact wording of his lines (the clown voice and the one warm line); the year (the story has a 2009 Civic and mentions 2019, and the game is set in 2003; *proposed:* Witch Hunt happens years before the story, so the donkey could be the same one); whether the family can imagine Milo in the realm of stories if Tom met him; where the barn sits (any band).
 
 ### Interiors (shared system)
 
@@ -2095,7 +2192,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **Bigfoot as a true nature spirit (Aaron, Oct 16).** Bigfoot is not a portal creature. He has been in these woods at least since the gas station owner's first sighting in the late 1980s, and in truth far longer than any of them, long before the government opened the portal, so he belongs here in a way nothing else in the game does. It sharpens the three-sided story: the family are newcomers, the witch is a true outsider who came through the tear, and Bigfoot is the oldest rightful presence. The portal let the hostile things in; it didn't make Bigfoot, who is older than the wound. It also recasts the owner's long-ago sighting as a glimpse of the land's own guardian, the gentlest presence in the story. Consistent with the Native American influence section and the Bigfoot cave (he's the forest's guardian; the Blessing is old protective land magic); the backstory's "Americana made real" list has been updated so he's no longer counted among the portal creatures.
 - **The battery gate.** A sealed gate with no power, where fitting a battery opens it onto a horde: a real choice to open it or not. Cut from the military outpost because you could shoot through chain-link, which kills both the drama and the ammo economy. It needs a spot where the horde is truly sealed off and can't be shot through (solid doors, a bunker, a container yard).
 - **Exploding cars: built (Aaron, Session 14).** Rounds that stop on a car, flares and blasts damage it: it smokes at 40%, catches fire at 80% and burns down the rest itself, and explodes at 300 damage (the charges' blast, a little smaller), hurting zombies, the witch and the player nearby and leaving a burnt-out, empty wreck. Close-parked cars go up in a chain (`config.vehicles.damage`).
-- **Make the walk back matter (a candidate design pillar).** The game is a push north to south, but every push creates a return trip. Seed keys, combinations, tools and knowledge in the south (and across encounters generally) that unlock new value at places already visited in the north, so return journeys are rewarding re-reads of the map rather than dead travel. The first instance is the hunting rifle chain: the gas station safe, the storm shelter combination and the outpost's watchtower ammo.
+- **Make the walk back matter (a candidate design pillar).** The game is a push north to south, but every push creates a return trip. Seed keys, combinations, tools and knowledge in the south (and across encounters generally) that unlock new value at places already visited in the north, so return journeys are rewarding re-reads of the map rather than dead travel. The first instance is the hunting rifle chain: the gas station safe, the storm shelter combination and the outpost's watchtower ammo. *Nov 8:* Milo's morning reveal and the Bigfoot cave by the gas station both pay it off.
 - **Quad bike upgrades (Aaron, Session 16; Nov 8: Sheriff fits them at the garage).** Upgrades for Earl's quad, bought with scrap and maybe materials found during play: a **spiked battering ram** on the front (ramming the dead harder), and perhaps an **alien ray gun** that can be fired while driving (the one exception to "no shooting from the saddle"). More ideas to come. **The alien quad** (built, debug only) tries out the ray gun idea: plasma bolts, a charged orb and a boost.
 - **The experimental vehicles as unlocks (Aaron, Nov 6).** The ute with a turret, the alien quad and the forestry dozer are built and playable from the debug menu, not yet in the story. **Answered Nov 8:** all three are in the story (the military's dozer on the cordon strip, the greys rebuilding Earl's quad, the ute from the Car Armory's motor pool; see Player: vehicles Tom drives) (OPEN_QUESTIONS #321, #332). The dozer's trail cutting is the first thing that changes the world's map for the rest of a run.
 
@@ -2105,7 +2202,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
 - **The Nov 8 story spine** (see Encounters) leaves these open:
   - **Run length:** 3–4 hours by the time Sheriff is at the garage, against the 1.5–2.5 hours planned. Decide it on purpose.
-  - The optional encounters, and which killdozer part each gives; where the barn and mineshaft fit, if at all.
+  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounters give the SMG and the heat-scope semi-auto; the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
   - The mothership's interior and beats; the Car Armory's layout, stealth beats and survivors; Sheriff's lines and look; the upgrade list and costs.
@@ -2114,7 +2211,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
   - Whether the Caller is ever seen at all (leaning no); what the place beyond and the realm of stories look like; whether other staircases still appear.
   - What the station needs the big core's power for, beyond surviving (proposed: the comms room's big radio reaching the outside world).
   - How the mega night's 150 zombies fit the performance budget; the new zombie types in detail.
-- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). Aaron will answer it as he designs those encounters in depth. The hunting rifle is settled (the gas station's safe).
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the auto shotgun is proposed for the moonshiners' holler. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M14).
-- Candidate entities for later, not in scope: Jersey Devil, Flatwoods Monster, Dogman, Headless Horseman.
+- Candidate entities for later, not in scope: Jersey Devil, Dogman. (*Nov 8:* the Flatwoods Monster and the Headless Horseman are now named optional encounters: the Flatwoods landing and the Horseman bridge.)
