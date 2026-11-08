@@ -171,8 +171,8 @@ The original design, kept for reference: the player starts each run with the **s
 | Shotgun | Close range, crowd control | Campsite (guaranteed, every run) | 8 pellets × 6 |
 | Pistol | Reliable sidearm | The crashed plane: the pilot's pistol, taken off the grey alien that picked it up (Nov 8). Not built, debug only for now | 10 per round |
 | Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
-| Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter (Session 10b; which one is open): debug only for now | 50 per round |
-| SMG (MP5-style) | Full auto; fires pistol rounds | An encounter (Session 10b; which one is open): debug only for now | 10 per round |
+| Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter: Aaron is looking for a good spot (Nov 8). Debug only for now | 50 per round |
+| SMG (MP5-style) | Full auto; fires pistol rounds | **The first encounter with the Men in Black** (Aaron, Nov 8): on the story spine, the Car Armory. Debug only for now | 10 per round |
 | Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
 | Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). Designed, not built | Config |
@@ -2234,7 +2234,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **The Nov 8 story spine** (see Encounters) leaves these open:
   - **Run length:** settled Nov 8: a longer run (4+ hours) is accepted; the exact target is set once full runs are played (M18).
   - **The endgame's design** (the final battle and the realm of stories): Aaron is designing it; M15 waits on it.
-  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounters give the SMG and the heat-scope semi-auto; the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
+  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: the first encounter with the Men in Black); whether the SMG moves if a seeded encounter with Men in Black (the sawmill's dead agents, the listening post) comes before the Car Armory; the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
   - The mothership's interior and beats; the Car Armory's layout, stealth beats and survivors; Sheriff's lines and look; the upgrade list and costs.
@@ -2243,7 +2243,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
   - Whether the Caller is ever seen at all (leaning no); what the place beyond and the realm of stories look like; whether other staircases still appear.
   - What the station needs the big core's power for, beyond surviving (proposed: the comms room's big radio reaching the outside world).
   - How the mega night's 150 zombies fit the performance budget; the new zombie types in detail.
-- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the auto shotgun is proposed for the moonshiners' holler. The hunting rifle is settled (the gas station's safe).
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the SMG comes from the first encounter with the Men in Black (the Car Armory on the spine); the auto shotgun is proposed for the moonshiners' holler; Aaron is looking for a spot for the heat-scope rifle. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M18).
 - Candidate entities for later, not in scope: Jersey Devil, Dogman. (*Nov 8:* the Flatwoods Monster and the Headless Horseman are now named optional encounters: the Flatwoods landing and the Horseman bridge.)
