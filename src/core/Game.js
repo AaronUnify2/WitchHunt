@@ -832,6 +832,49 @@ export class Game {
       this.player.teleport(cp.x, cp.z - 8, Math.PI);
       this.toast.show('At the checkpoint');
     });
+    // Session 21 (M10.2): the story spine's places in order, the seed's optional encounters, the railway.
+    const spine = clearings.filter((c) => c.spine).sort((a, b) => (a.beat ?? 0) - (b.beat ?? 0));
+    this.spineIndex = -1;
+    teleport.addItem(
+      () => `Teleport: next story place (${spine.length ? this.world.clearingName(spine[(this.spineIndex + 1) % spine.length]) : 'none'})`,
+      () => {
+        if (!spine.length) return;
+        this.spineIndex = (this.spineIndex + 1) % spine.length;
+        this.teleportTo(spine[this.spineIndex]);
+      },
+    );
+    const optional = clearings.filter((c) => c.optional);
+    this.optionalIndex = -1;
+    teleport.addItem(
+      () => `Teleport: next optional encounter (${optional.length} this run${optional.length ? `: ${this.world.clearingName(optional[(this.optionalIndex + 1) % optional.length])}` : ''})`,
+      () => {
+        if (!optional.length) return;
+        this.optionalIndex = (this.optionalIndex + 1) % optional.length;
+        this.teleportTo(optional[this.optionalIndex]);
+      },
+    );
+    const rail = this.world.railway;
+    if (rail) {
+      this.crossingIndex = -1;
+      teleport.addItem(
+        () => `Teleport: next railway crossing (${rail.crossings.length})`,
+        () => {
+          if (!rail.crossings.length) return;
+          this.crossingIndex = (this.crossingIndex + 1) % rail.crossings.length;
+          const c = rail.crossings[this.crossingIndex];
+          this.player.teleport(c.x - c.tx * 10, c.z - c.tz * 10, Math.atan2(-c.tx, -c.tz));
+          this.toast.show('By a crossing on the 1903 line');
+        },
+      );
+      for (const [i, name] of [[0, 'west'], [1, 'east']]) {
+        teleport.addItem(`Teleport: the railway's ${name} tunnel`, () => {
+          const t = this.world.map.railway.tunnels[i];
+          const x = t.x + t.facing * 16;
+          this.player.teleport(x, t.z, t.facing > 0 ? Math.PI / 2 : -Math.PI / 2);
+          this.toast.show(`At the ${name} end of the 1903 line`);
+        });
+      }
+    }
     // M9.1: every story progress flag (the gates open and shut with them).
     this.progress.addDebugItems(menu.category(DEBUG.progress));
     run.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
