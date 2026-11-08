@@ -66,7 +66,7 @@ A snapshot for redesigning the mid-game and end-game: what a run is today, what'
 - **Saving:** a dawn autosave only (and one after Skip intro). Zombies, pickups and the random streams aren't saved (OPEN_QUESTIONS #102).
 - **Sigil grounds** work (planting, faster spawning) but look like a signpost and a ring of stakes; their set dressing, twists and tells aren't built. The cemetery is the one inside the cluster.
 - **The witch's sighting lines** from trail cameras, the family's idle lines and most of the dialogue plan beyond the opening are unwritten.
-- **Sounds** are all placeholder Web Audio synth; the audio pass (Session 29) is to come.
+- **Sounds** are all placeholder Web Audio synth; the audio pass (Session 50) is to come.
 - **The crash sites** of the plane and the UFO are only marked by smoke columns after the dogfight; nothing is built at either.
 
 ### Designed, not built (the mid and end game)
@@ -92,15 +92,15 @@ The game runs on a repeating day/night cycle. Each night the witch plants more s
 ### Time
 
 - Day/night length is config: 8 min day (07:00-19:00), 1 min dusk, 6 min night (20:00-06:00), 1 min dawn (about 16 min per cycle). Runs start at 07:00 on Day 1.
-- The clock is meant to be always on the HUD. **As built:** not on the placeholder HUD yet (the final HUD, Session 28); the debug overlay shows it.
+- The clock is meant to be always on the HUD. **As built:** not on the placeholder HUD yet (the final HUD, Session 49); the debug overlay shows it.
 - The clock pauses while the map screen, a paper in close-up or a cutscene is up, and on Day 1 it holds at 17:00 until the opening's done (see Opening and first run).
 
 ### Run length and saving
 
 - A run should feel like a long board game session, like a game of Monopoly: roughly 1.5–2.5 hours across about 6–10 nights. Tune the witch so a skilled player can corner her around night 6–8.
-- **Pacing check (Aaron, Nov 8; open question):** with the new story spine, Aaron estimates a run is **3–4 hours in by the time Sheriff is at the garage**, before the portal and the hut. That's a big shift from 1.5–2.5 hours for a permadeath run; decide it on purpose (a longer run, a trimmed spine, or a save that makes long runs comfortable). Between story beats, players keep scavenging, facing night hordes and exploring.
+- **A longer run is accepted (Aaron, Nov 8):** with the new story spine, a run is **3–4 hours in by the time Sheriff is at the garage**, before the portal and the hut, so a full run is likely 4+ hours. Aaron accepts the longer run; save and quit moves forward to M10 so it's comfortable, and the target length is set once full runs are played (M18). The 1.5–2.5 hours above was the original aim. Between story beats, players keep scavenging, facing night hordes and exploring.
 - **Permadeath:** one life per run, a new map seed each run.
-- **Saving:** autosave at each dawn; save and quit from the pause menu. **As built:** the dawn autosave (and one after Skip intro) only; there's no pause menu or save-and-quit yet (M12). One save slot per run, deleted when the run ends (win, death or overrun). **Destroying the hut also deletes it** (Aaron, Session 9): the final battle is a true point of no return, and nothing saves again that run.
+- **Saving:** autosave at each dawn; save and quit from the pause menu. **As built:** the dawn autosave (and one after Skip intro) only; there's no pause menu or save-and-quit yet (M10.1, moved forward on Nov 8 for longer runs). One save slot per run, deleted when the run ends (win, death or overrun). **Destroying the hut also deletes it** (Aaron, Session 9): the final battle is a true point of no return, and nothing saves again that run.
 - **The save stores** (as built: seed, clock, player, inventory and armour, the station, vehicles, sigils, the witch, story flags, heard lines and milestones, lore, the opening's encounters, Earl's quad, the outpost's state, and the experimental dozer's felled trees and cut trails; not yet zombies, pickups or the random streams). As designed: seed, clock and night number, player stats and inventory, armour bars, revealed map, station state (defences, damage, fence charge, turret ammo and mode), sigils, enemies, witch state and wounds, looted containers and vehicles, prizes secured, documents found, dialogue lines heard, Mothman attention, Men in Black state.
 - **Persistent across runs** (stored with settings, never deleted): achievements, unlocked modifiers, Skip intro. **As built:** only Skip intro (whether the opening has been seen on this device).
 
@@ -452,7 +452,7 @@ The sum of every defence's current value (each scales with its remaining health)
 One per run, from the Car Armory (now a late, south-band beat: Nov 8, so the turret arrives late; accepted, since the mid-game has plenty in it). **As built:** the turret itself works (installed on its pad, powered by the fence, loaded by hand, three fire modes, the forecast's run-dry warning), but it comes from the debug menu until the Car Armory exists; the ledger's Turret tab is padlocked until then.
 
 - **Power:** wired into the fence's charge. Unpowered = offline, whatever ammo it holds.
-- **Aaron, M5:** its rounds carve through a crowd even more than the rifle's: make a spectacle of it. Until the Car Armory exists (M11) the debug menu gives it.
+- **Aaron, M5:** its rounds carve through a crowd even more than the rifle's: make a spectacle of it. Until the Car Armory exists (M14) the debug menu gives it.
 - **Ammo:** loaded by hand (at the turret or the ledger). Any ammo converts to turret rounds **by damage**: turret rounds gained = rounds deposited × (that ammo's damage ÷ turret round damage).
 
 | Ammo | Damage per round | Turret rounds per round (turret round = 10) |
@@ -601,7 +601,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 
 ### Men in Black
 
-*Designed, not built (the model and its poses are; the AI is M11's).*
+*Designed, not built (the model and its poses are; the AI is M14's).*
 
 - Government agents guarding the base and covering up the disaster.
 - **Detection states:** unaware until the player is in their sight in light, or makes loud noise (gunfire). Then the whole squad goes alert. Killing an unaware agent quietly (shovel) doesn't raise the alarm.
@@ -612,7 +612,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 
 ### Aliens
 
-*Designed, not built (the model and its kit stages are; the AI is M10-M11's).*
+*Designed, not built (the model and its kit stages are; the AI is M11's and M13's).*
 
 - Martians. They hide behind crates and cover, wait until the player is close, then jump out.
 - **Cowboy drift (running gag):** they've started adopting Americana. Near the ship's entrance they just carry shotguns; deeper in they add hats, bandanas and holsters; the deepest is a full saloon gunslinger. The costume doubles as a threat gauge.
@@ -1599,7 +1599,7 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 
 ### Interiors (shared system)
 
-*Designed, not built (planned for Session 21). The storm shelter's room is built without it: a platform on the main map under the hatch, no loading.*
+*Designed, not built (planned for Session 21, M10.2). The storm shelter's room is built without it: a platform on the main map under the hatch, no loading.*
 
 - One interior-map system: entering loads the interior, the main map keeps simulating in the abstract tier, the clock keeps running (visible on the HUD), and leaving returns the player to the entrance.
 - **Bigfoot cave:** generated from the run seed out of tunnel and chamber pieces on a grid.
@@ -1821,7 +1821,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 ### As built (M9.2, Session 15)
 
 `story/FirstDay.js`, agreed with Aaron (my recommendations; OPEN_QUESTIONS #185-197):
-- **The menu:** the title over a looping grey CCTV feed from the station gate; New Run, Continue, Skip intro (once the opening's been seen on the device), Modifiers and Settings greyed out until M12 and Session 28; no Quit (a browser tab).
+- **The menu:** the title over a looping grey CCTV feed from the station gate; New Run, Continue, Skip intro (once the opening's been seen on the device), Modifiers and Settings greyed out until M16 and Session 49; no Quit (a browser tab).
 - **The opening:** the cold open, then Tom wakes in the comms room facing Ellen (from black), lines 1-2.
 - **The tower:** the first climb on Day 1; the light far south is a small red light blinking at the edge of sight; the smoke over the campsite; lines 3-4.
 - **Day 1 can't fail** (a 20% health floor, the day only) and **its clock holds at 17:00** until nightfall: Session 15b, once the battery's fitted, the torn fence patched and Junie's had her word (or 60 s), the day fades to dusk (`day1.nightfall`). Draft nudge lines (`day1.nudge.*`) if Tom seems stuck.
@@ -1832,7 +1832,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 
 ## Modifiers and achievements
 
-*Designed, not built (M12). The menu shows Modifiers greyed out.*
+*Designed, not built (M16). The menu shows Modifiers greyed out.*
 
 **Modifiers** are Halo skulls–style options toggled before a new run. Locked until earned; they can be combined.
 
@@ -1847,7 +1847,7 @@ After the first run, **Skip intro** starts at Dawn 1 with the tutorial done (fen
 
 **Coven rules:** the three witches share the five-sigil cap, live in the same hut, all come out when it's blown, and the run is won only when all three are dead.
 
-**Divorced Dad rules** (Aaron's idea, M6; not built yet, to be designed with the other modifiers in M12): the family and the compound are gone, so the station can't fall and the dusk forecast, alarm and night marches have nothing to defend. Open questions for later: where the run starts and where Tom sleeps; where batteries, scrap and the turret go (no fence to power or repair); whether marching groups head for the player instead, or just wander; and how it combines with Coven and Blood Moon.
+**Divorced Dad rules** (Aaron's idea, M6; not built yet, to be designed with the other modifiers in M16): the family and the compound are gone, so the station can't fall and the dusk forecast, alarm and night marches have nothing to defend. Open questions for later: where the run starts and where Tom sleeps; where batteries, scrap and the turret go (no fence to power or repair); whether marching groups head for the player instead, or just wander; and how it combines with Coven and Blood Moon.
 
 | Achievement | Condition | Unlocks |
 | --- | --- | --- |
@@ -1877,7 +1877,7 @@ Console style (mockup: the "Witch Hunt HUD" design canvas). Nothing in boxed pan
 - Prompts always show the controller glyph (A green, B red, X blue, Y yellow), or the key when keyboard is in use.
 - The pause screen shows the three-prize checklist, documents found and the full map.
 
-**As built (a placeholder until Session 28):** bottom left, health (10 segments), three armour bars, the HIDDEN eye; bottom right, the weapon's name, ammo, the reload bar, kits, scrap, batteries, flares and charges in text; centre, the crosshair, the hit marker and interaction prompts with a hold bar (the button named in text); the round minimap top right with the objective star; the station-under-attack banner and the witch's boss bar when they apply; a pickup feed; **three message slots** (toasts, control hints under them, and the red alert slot: ESCAPE THE WITCH); subtitles at the bottom centre; the dusk forecast panel. **Not built:** the clock and zombie-level pips, the pixel font, glyphs, the D-pad legend, the pause screen. **While riding an experimental vehicle** its own HUD takes over (the ute's gear plate or the gun's heat ring, the alien quad's neon reticle, cells and boost, the dozer's blade, trail and winch), and the crosshair and gun panel hide.
+**As built (a placeholder until Session 49):** bottom left, health (10 segments), three armour bars, the HIDDEN eye; bottom right, the weapon's name, ammo, the reload bar, kits, scrap, batteries, flares and charges in text; centre, the crosshair, the hit marker and interaction prompts with a hold bar (the button named in text); the round minimap top right with the objective star; the station-under-attack banner and the witch's boss bar when they apply; a pickup feed; **three message slots** (toasts, control hints under them, and the red alert slot: ESCAPE THE WITCH); subtitles at the bottom centre; the dusk forecast panel. **Not built:** the clock and zombie-level pips, the pixel font, glyphs, the D-pad legend, the pause screen. **While riding an experimental vehicle** its own HUD takes over (the ute's gear plate or the gun's heat ring, the alien quad's neon reticle, cells and boost, the dozer's blade, trail and winch), and the crosshair and gun panel hide.
 
 ## Art style and rendering
 
@@ -1956,7 +1956,7 @@ Mostly synthesised with the Web Audio API (oscillators, filtered noise, a few sh
 
 - **Stingers:** the witch's whispers and singing nearby, a low tone when a sigil is planted, Mothman wingbeats, the Caller's slightly wrong radio, turret fire, the bonnet and battery pull, digging.
 - **Music:** adaptive layers that rise with danger and fall back to ambience.
-- **As built:** every sound is a placeholder synthesised on the fly (`audio/Sfx.js`): guns, hits, the dead, the witch, the station, cars, alarms, the radio crackle and dialogue blips, explosions, engines with their own voices (Earl's quad, the ute's diesel, the alien drive, the dozer). No ambience, music or samples yet: the audio pass (Session 29).
+- **As built:** every sound is a placeholder synthesised on the fly (`audio/Sfx.js`): guns, hits, the dead, the witch, the station, cars, alarms, the radio crackle and dialogue blips, explosions, engines with their own voices (Earl's quad, the ute's diesel, the alien drive, the dozer). No ambience, music or samples yet: the audio pass (Session 50).
 
 ## Performance and simulation LOD
 
@@ -2000,7 +2000,7 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
   base/                  Station, StationState, stationLayout, fencePlan, Turret, siege routing, danger, NightWatch (forecast and alarm), nightResolver
   encounters/            Campsite, GasStation, StormShelter, Outpost, FinalBattle (one module per encounter)
   story/                 Dialogue (picker, radio gate), FamilyTalk, TrailCams, Cutscenes (timeline, flight paths), Lore, StoryProgress and the flags, Objectives, WatchQueue, FirstDay, HomeStop, WitchEscape
-  meta/                  MetaStore (what the device remembers); Achievements, Modifiers to come (M12)
+  meta/                  MetaStore (what the device remembers); Achievements, Modifiers to come (M16)
   audio/                 Sfx now (placeholders); AudioEngine, Ambience, Stingers, Blips in the audio pass
   ui/                    Hud, Minimap, MapScreen, MapUi, mapImage, Ledger, ScopeOverlay, PaperNote, NoReturnNotice, RunEndScreen, StartScreen, Toast, Subtitles, VehicleHud (Menus to come)
   data/                  encounters, clearingTypes, sigilGrounds, loot, vehicles, ending, dialogue, cutscenes, lore, papers, progress, openingCluster, campsite, gasStation, stormShelter, outpost (.json)
@@ -2034,7 +2034,7 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 9. **Complete files, small modules, no new dependencies without a reason** written in `STATUS.md`.
 10. **Workshop content before building it.** Before building any encounter, enemy, boss, interior, cutscene or other piece of content, write a short practical build plan (how it will be made, what it will look like, how it plays, what it costs in performance) and workshop the design and execution with Aaron. Build only once he has agreed. This applies to content, not core systems.
 11. **Each milestone ends with a short play-test script** for Aaron: what to try on the controller and what "good" looks like.
-12. **Play-test generously** (Aaron, Session 11: "I don't think we can really overdo playtesting"). Each milestone part ends with Aaron's play-test and its fixes before the next part starts, push each step to `main` so he can try it, and a QA session follows each content milestone (M9, M10, M11).
+12. **Play-test generously** (Aaron, Session 11: "I don't think we can really overdo playtesting"). Each milestone part ends with Aaron's play-test and its fixes before the next part starts, push each step to `main` so he can try it, and a QA session follows each content milestone (M9-M15).
 
 ### Debug tools (built in M0, extended every milestone)
 
@@ -2044,7 +2044,15 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 
 ### Milestones
 
-**Where they stand (Nov 7, 2026):** M0-M8 done; the gate passed on the witch's side (pacing and the dusk choice wait for full runs); **M9 done** (9.1-9.4, the opening cluster, play-tested over many rounds); part of M13 done (style passes 1 and 2, Sessions 10, 10b, 13, 19); experimental vehicles built outside the plan (debug only). **Next: M10.** Aaron's redesign of the mid-game and end-game landed on Nov 8 (the story spine, see Encounters); M10 and M11 below are re-cut to follow it, and the session order from 20 on should be re-planned with Aaron before Session 20 starts. M11-M14 not started.
+**Where they stand (Nov 8, 2026):** M0-M8 done; the gate passed on the witch's side (pacing and the dusk choice wait for full runs); **M9 done** (9.1-9.4, the opening cluster, play-tested over many rounds); part of M17 done (style passes 1 and 2, Sessions 10, 10b, 13, 19); experimental vehicles built outside the plan (debug only). **Next: M10, Session 20.**
+
+**The plan from M10 on (agreed with Aaron, Nov 8).** It follows the story spine (see Encounters):
+
+- **In story order, each beat built finished and play-tested** (as the opening was), **after early spikes** on the riskiest tech: about 150 zombies on the mega night, the procedural four-path forest (the place beyond and the realm of stories), a flying enemy, and parts bolted onto the dozer. A spike that fails changes the design before content depends on it.
+- **A longer run is accepted** (4+ hours), so **save and quit moves forward to M10**; the run's length is set once full runs are played (M18).
+- **The five designed optional encounters are built with the stretch they belong to:** the railway cutting and Milo's barn with M11, the mineshaft with M12 (its giant moths before the cave's), the sawmill with M13, the moonshiners' holler with M14. Their killdozer parts are collected as they're built; the killdozer itself comes in M15.
+- **The endgame (M15) waits on Aaron's design** of the final battle and the realm of stories; Session 43 folds it in and re-plans M15's sessions.
+- **Renumbered (Nov 8):** M10 and M11 are replaced by M10-M15; the old M12 (meta), M13 (art and audio) and M14 (balance) are now **M16, M17 and M18**. Older notes in this doc and in STATUS.md that say "M12-M14" mean those.
 
 | # | Milestone | Includes | Done when |
 | --- | --- | --- | --- |
@@ -2059,15 +2067,19 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 | — | **Gate: play-test the slice** | Aaron plays two or three full runs | The core loop is fun before any content is added. Fix the loop first if it isn't |
 | M8 | Story systems | Dialogue data and picker, subtitles, talking bob, blips, new-line marker, radio and rate limiting, trail cameras (witch sightings as leads), the cutscene timeline and its three styles, the CCTV, camcorder and trail-cam looks, lore item hand-ins and rewatching on the monitors, **the Cutscenes debug category**. Takes over today's placeholders (the no-return call, NightWatch's radio calls, the ending and defeat cards, the final battle's intro). Wires up only the lines already written (Day 1, the ending); new lines are written with each encounter (Aaron, Session 11) | A radio call, a CCTV patch-through and a face-to-face line all work from data alone; every cutscene plays from the debug menu |
 | M9 | **The opening cluster** (Aaron's Oct 16 design), in four parts | **9.1 The cluster on the map:** the fixed sub-graph placed first, the road, the cordon (blocks Tom only; torn gaps for the dead), the gates on each path, story progress flags (saved), the witch planting only inside the cluster until the crossing, the flare gun and its lure. **9.2 First day:** main menu, opening cutscene, the Day 1 tower, the campsite (camcorder, shotgun wave, first battery), the scripted Night 1 sigil, Dawn 1, Skip intro, the shotgun out of the starting kit. **9.3 Shelter and gas station:** the storm shelter (the horde that holds the hatch, the room below, the combination, diary, tapes cutscene at home), the gas station (store and back office, the authored mutant, the witch sighting, the safe), the rifle chain. **9.4 The outpost:** approach waves, helmets, the watchtower and its rounds, the scope as binoculars, the dogfight cutscene, the barricade peak, the containers and the Mothman's container, beetles, Ellen's call to adventure; crossing opens the frontier | A new player gets from waking up to the frontier without help, on every seed. (Each part: 9.1 the same cluster on every seed and the gates open in order; 9.2 through Day 1 and Night 1 without help; 9.3 the hunting rifle claimable on every seed; 9.4 the frontier opens) |
-| M10 | The story spine to Bigfoot (Nov 8) | The fixed crashed plane (the quick-draw grey, its drops: the pistol, alien shells, the med kit, the power cell); the systems it teaches (ammo types on B, the healing pool, one power unit and the fence's 1000 capacity, inspect cards, loadout and tool belt); flares out of the opening; the Mothman at the crash site (the 10% floor); Junie taken and the Caller (a voice only; comms in the south); the old church and the time capsule; the stairs and the place beyond (procedural); the road north, ROAD CLOSED and the cave's brush; the dozer on the cordon strip; the bug-zapper night; the interior system and the Bigfoot cave (seeded); the Mothman and Bigfoot; the Blessing at home | Junie is brought home, the Mothman dies in the cave, and the Blessing works at home and restores the comms |
-| M11 | Bigfoot to the hut (Nov 8) | The missing quad and the mega night (about 150 zombies; the Hollow, the Screamer, the Hanged); the crashed UFO and the mothership (the big core, the alien quad, the full aliens); the Car Armory in the south (Men in Black zombies, the survivors' stealth section, documents, the turret, restocking explosives), Sheriff and the ute chase; the garage and Sheriff's upgrades; the killdozer and the optional encounters' parts; Ground Zero, the portal and the realm of stories (the family's imagination, Bigfoot answering Junie); the witchfire ring round the hut | All three unique prizes obtainable; explosives come from the world instead of debug; a run goes from the outpost to the final battle on the story spine |
-| M12 | Meta and persistence | Full save and quit, achievements, modifiers (Coven included), run summary | Achievements and modifiers survive permadeath and a browser restart |
-| M13 | Art and audio | Final sprites and models, the full lighting, fog and post-processing pass, grain and camera-style shaders, the audio pass, the final HUD | Matches the art and audio direction |
-| M14 | Balance and polish | Tune every number, the remaining dialogue lines (about 155–175 in all), performance pass, bug bash | A full run lands in 1.5–2.5 hours and feels fair |
+| M10 | **Foundations for the new story** (Nov 8 plan), in three parts | **10.1 Systems:** the healing pool (D-pad right, the HUD total); the loadout (two long guns, a sidearm, a melee slot, the flare gun), the comms room's gun rack and the tool belt; ammo types (tap B to reload, hold B to choose); inspect cards for special items (watch, read or keep); one power unit (a battery = 100, the fence's capacity 300, cells shared with the alien quad); flares out of the opening; a scripted health floor for set pieces; **the pause menu and save and quit** (moved forward from M16: runs are now long). **10.2 The map:** the fixed story spine (story places placed first, the same every run, like the cluster), the 1903 railway line, the road north and its ROAD CLOSED barrier, the cave's brush; optional encounters dealt by the seed; the interior system. **10.3 Spikes** (rough, debug only, measured on the tablet): about 150 zombies at the station; the procedural four-path forest (the place beyond, later the realm of stories); a flying enemy (the Mothman's flyovers and dives); a part bolted onto the dozer | The opening still plays through on every seed with the new systems; a save mid-run quits and continues; each spike has a measured go / change-the-design answer, written into this doc |
+| M11 | **Plane to Junie** (story beats 1–5) | The crashed plane (the grey's AI, the quick draw, its drops); the Mothman's model and the crash-site fight (the 10% floor, the blackout); Junie taken (the time cut, the family's account); the Caller as a voice (lures, taunts, comms lost in the south); the old church and the time capsule; the stairs and the place beyond. **Optional:** the railway cutting (the spike maul, dynamite, the armour part), Milo's barn (Milo, the act, the morning reveal) | Junie is brought home on every seed, and the south's radio is only the Caller |
+| M12 | **Bigfoot** (beats 6–7) | The family's plan and Earl's maps; the military's dozer on the cordon strip (the grappling hook and winch); the bug-zapper night at the station (the lure flares, the family battle, the fence drained); the Bigfoot cave (seeded interior, the eggs, giant moths, the Mothman killed); Bigfoot's model, the cocoon, the Blessing (buried at home; comms back); the Caller gone. **Optional:** the mineshaft (the cage lift, the turret cart, giant moths first, the plunger escape, the ram part) | The Blessing works at home, the family's voices reach the south, and the Caller never speaks again |
+| M13 | **The mega night and the mothership** (beats 8–9) | The quad going missing (the scorched ring, the icon gone); the mega night (about 150 zombies; the Hollow, the Screamer, the Hanged; the difficulty rise); Ellen's ask; the crashed UFO's beam; the mothership (hand-built interior, the cowboy-drift aliens' AI, the core room, the hangar); the big core at the fence; the alien quad in the story. **Optional:** the sawmill (the chainsaw, the station's workbench, the head saw part) | The station survives the mega night when it's ready for it, and Tom comes home with the core and the alien quad |
+| M14 | **The Car Armory and Sheriff** (beat 10) | The Car Armory in the south (Men in Black zombies; the barricaded survivors and Men in Black AI; the stealth section; classified documents 1–5); Sheriff freed; the ute turret chase; the turret and the restocking charges; the garage, Sheriff at home, his upgrades (guns, ammo, vehicles); the ute's gun locker *(proposed)*. **Optional:** the moonshiners' holler (the traps, the wire cutters, the still, the flamethrower part) | All three unique prizes come from the world; Sheriff's upgrades work; all five designed optional encounters give their parts |
+| M15 | **The endgame** (beats 11–12). **Waiting on Aaron's design** of the final battle and the realm of stories | As designed so far: the killdozer (Sheriff's base build plus the encounters' parts); Ground Zero (anomalies, documents 6–8); the portal and the realm of stories (seeded arenas, the family's imagined help, Bigfoot answering Junie); breaking the anchor; the witchfire ring round the hut; the witch's scripted beats through the story; the final battle | A full run goes from Day 1 to the witch's death on the story spine, on every seed |
+| M16 | Meta and persistence | Achievements, modifiers (Coven included), run summary (save and quit moved to M10) | Achievements and modifiers survive permadeath and a browser restart |
+| M17 | Art and audio | Final sprites and models, the full lighting, fog and post-processing pass, grain and camera-style shaders, the audio pass, the final HUD | Matches the art and audio direction |
+| M18 | Balance and polish | Tune every number, the remaining dialogue lines, performance pass, bug bash | A full run lands in its target length (Aaron, Nov 8: a longer run is accepted, 4+ hours; to set once full runs are played) and feels fair |
 
 ### Performance gates
 
-Check on the Samsung tablet, against the budgets, at the end of **M1, M3, M6, M9 (the outpost, the biggest fight so far), M11 and M14**. If a gate fails, fix performance before starting the next milestone.
+Check on the Samsung tablet, against the budgets, at the end of **M1, M3, M6, M9 (the outpost), M10 (the spikes: 150 zombies, the procedural forest), M12 (the cave), M13 (the mega night and the mothership), M14, M15 and M18**. If a gate fails, fix performance before starting the next milestone.
 
 ### Main risks and how we handle them
 
@@ -2113,31 +2125,50 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 7 | Lead Engineer | Simulation LOD, simulated nights, forecast, alarm, autosave | M6 |
 | 8 | AI Programmer | The witch, hut, explosives, final battle, ending: the vertical slice | M7 |
 | 9 | QA & Balance | Test the slice on the tablet, fix bugs, tune; prepare Aaron's play-test | Gate |
-| 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M13 |
+| 10 | Graphics Engineer | Style pass 1: make the slice look good (ground, trees, mist, post-processing). 10b: the guns, a sniper rifle and four more guns | Part of M17 |
 | 11 | Lead Engineer (design review, with the Narrative and Level & Encounter Designer hats) | Folded in Aaron's story and encounter design (the opening cluster); reviewed DESIGN.md against what's built; redid the milestones and this plan. No feature code | — |
 | 12 | Narrative Designer | Story systems: dialogue and picker, subtitles, radio, trail cameras, the cutscene system and its looks, lore hand-ins, the Cutscenes debug category; wire up the existing lines. **Done** (12a and 12b in one session; the looks are a first pass for Aaron to react to) | M8 |
-| 13 | Graphics Engineer / Technical Artist | Characters and the deferred art, play-test driven. **Done:** a debug model viewer; the zombies' variety (a palette swap), army camo and helmet loss, Men in Black zombies, Earl Pruitt; the mutant, the witch, the family, the grey alien and the cowboy drift, the giant beetle, the armed Men in Black; the cars (four types and their wear), the station's interior, the witch's hut. Frontier creatures still to model: Bigfoot and the Mothman (before M10) | Part of M13 |
+| 13 | Graphics Engineer / Technical Artist | Characters and the deferred art, play-test driven. **Done:** a debug model viewer; the zombies' variety (a palette swap), army camo and helmet loss, Men in Black zombies, Earl Pruitt; the mutant, the witch, the family, the grey alien and the cowboy drift, the giant beetle, the armed Men in Black; the cars (four types and their wear), the station's interior, the witch's hut. Frontier creatures still to model: Bigfoot and the Mothman (before M10) | Part of M17 |
 | 14 | Lead Engineer | The cluster on the map: fixed sub-graph, road, cordon, gates, progress flags, the witch's cluster rule, the flare gun. **Done** (and the storm shelter's fixed camera, #153; the gates' and checkpoint's triggers are stand-ins for Sessions 15-17's beats) | M9.1 |
 | 15 | Level & Encounter Designer (+ Narrative) | First day: main menu, opening, Day 1 and the campsite, the scripted Night 1, Dawn 1, Skip intro; its lines written with Aaron. **Built** | M9.2 |
 | 15b | Level & Encounter Designer (+ Narrative) | Aaron's play-test of the first day and its tweaks | M9.2 |
 | 16 | Level & Encounter Designer + AI Programmer | The storm shelter and the gas station, the rifle chain; their lines. **Built** (and two playthroughs of the opening: objectives, D-pad down to watch, papers in close-up) | M9.3 |
 | 17 | Level & Encounter Designer + AI Programmer | The military outpost, helmets, beetles, the dogfight; its lines; the performance gate. **Built** (and three rounds of Aaron's playthrough notes: escaping the witch early on, no dialogue in cutscenes, breadcrumbs, everything readable again from the ledger, the gun pit's machine gun). The tablet's frame rate at the outpost is Session 18's | M9.4 |
 | 18 | QA & Balance | Full runs through the opening on the tablet: pacing, ammo and loot, the dusk choice, bugs. **Rounds 1-5 built** (round 5: his second notes, the outpost reordered, the scanner's battery; rounds 1-3: Aaron's early-game notes: papers taken with A, the pumps blow, a 2 s dig, a stop at home, barricades outside the fence; the outpost's beats spaced out, C-7 by the road in, the beetles' burst; an ammo audit and a sure 6 rounds in the gun pit). **Done** (rounds 25-27 still to be play-tested at the start of Session 19) | QA |
-| 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks. **Done** (one pass, unattended): a shared props kit (one vertex-coloured mesh per place, weathered as it's baked: grime, mottling, rust; the glare rule's ceiling enforced and tested); every place dressed; C-7 seated on its slope; the barricades at home, the cordon, the road and the gates; the camera looks (the camcorder's focus hunting and date stamp, the trail cams' data strip, the scope's mil-dot reticle and sway, the sweeps' grade, the reveals' jolt). Draw calls down (the worst spot 203 to 157) | Part of M13 |
+| 19 | Graphics Engineer | Style pass 2: the opening cluster's places (campsite, gas station, storm shelter, outpost, the cordon and the road) and their camera looks. **Done** (one pass, unattended): a shared props kit (one vertex-coloured mesh per place, weathered as it's baked: grime, mottling, rust; the glare rule's ceiling enforced and tested); every place dressed; C-7 seated on its slope; the barricades at home, the cordon, the road and the gates; the camera looks (the camcorder's focus hunting and date stamp, the trail cams' data strip, the scope's mil-dot reticle and sway, the sweeps' grade, the reveals' jolt). Draw calls down (the worst spot 203 to 157) | Part of M17 |
 | — | (side pass, Aaron's request) | **Experimental vehicles, debug menu only:** the ute with a turret, the alien quad, the forestry dozer (it fells trees and cuts trails into the map). **Done** and play-tested by Aaron ("really good"); not in the story yet | — |
-| 20 | Level & Encounter Designer (+ AI) | The crashed plane and what it teaches (Aaron's Nov 8 design): the quick-draw grey and its drops, ammo types, the healing pool, the power cell and the fence's new capacity, flares out of the opening; then the Mothman at the crash site. **Next.** *Sessions 20-26 below predate the Nov 8 spine and are to be re-planned with Aaron* | M10 (part 1) |
-| 21 | Level & Encounter Designer + AI Programmer | The interior system, Bigfoot cave, the Mothman, Bigfoot | M10 (part 2) |
-| 22 | Level & Encounter Designer | Stairs, time capsule, the Caller, Mothman flare attention | M10 (part 3) |
-| 23 | QA & Balance | Play-test the frontier's north and middle | QA |
-| 24 | Level & Encounter Designer + AI Programmer | Car Armory, government base, Men in Black, stealth | M11 (part 1) |
-| 25 | Level & Encounter Designer + AI Programmer | Ground Zero, crashed UFO, alien ship, aliens | M11 (part 2) |
-| 26 | QA & Balance | Play-test the south and full runs; the performance gate | QA |
-| 27 | Graphics Engineer | Style pass 3: the frontier's encounters and interiors, the remaining camera looks | Part of M13 |
-| 28 | UI / UX Programmer | Final HUD, menus, settings (Quality levers, retro filter), save and quit, achievements, modifiers, run summary | M12 |
-| 29 | Audio Designer | Audio engine, ambience, stingers, music, blips | Part of M13 |
-| 30 | Narrative Designer | Write the remaining dialogue and document text with Aaron | Part of M14 |
-| 31 | Graphics Engineer | Final style pass across the whole game | M13 |
-| 32 | QA & Balance | Full-run balance, performance pass on the tablet, bug bash | M14 |
+| 20 | Lead Engineer + Gameplay Programmer | The new systems: the healing pool, loadout, gun rack and tool belt, ammo types, inspect cards, power units, flares out of the opening, the health floor; the pause menu and save and quit | M10.1 |
+| 21 | Lead Engineer | The map: the fixed story spine, the railway line, the road north and ROAD CLOSED, the seed dealing optional encounters; the interior system | M10.2 |
+| 22 | Lead Engineer + AI Programmer | The spikes: 150 zombies, the procedural four-path forest, a flying enemy, a dozer part; the performance gate | M10.3 |
+| 23 | QA & Balance | Play-test the opening with the new systems; save and quit on the tablet | QA |
+| 24 | Graphics Engineer / Technical Artist | Models for the next stretch: the Mothman, giant moths, Bigfoot, Milo (and his animals), the crashed plane's set | Part of M17 |
+| 25 | Level & Encounter Designer + AI Programmer | The crashed plane (the grey's AI, the quick draw) and the Mothman at the crash site | M11 (part 1) |
+| 26 | Level & Encounter Designer + Narrative Designer | Junie taken, the Caller, comms in the south, the old church and the time capsule; their lines | M11 (part 2) |
+| 27 | Level & Encounter Designer | The stairs and the place beyond; Junie home | M11 (part 3) |
+| 28 | Level & Encounter Designer + AI Programmer | Optional: the railway cutting (spike maul, dynamite) and Milo's barn | M11 (part 4) |
+| 29 | QA & Balance | Play-test beats 1–5 and the two optionals | QA |
+| 30 | Level & Encounter Designer + AI Programmer | The dozer on the cordon strip and the bug-zapper night | M12 (part 1) |
+| 31 | Level & Encounter Designer + AI Programmer | Optional: the mineshaft (the turret cart, giant moths) | M12 (part 2) |
+| 32 | Level & Encounter Designer + AI Programmer | The Bigfoot cave, the Mothman killed, Bigfoot, the Blessing | M12 (part 3) |
+| 33 | QA & Balance | Play-test to the Blessing; the performance gate | QA |
+| 34 | Graphics Engineer | Style pass 3: the frontier so far (the plane, the church, the place beyond, the cave and its interior, the optionals) | Part of M17 |
+| 35 | Level & Encounter Designer + AI Programmer | The missing quad, the mega night and the new zombie types | M13 (part 1) |
+| 36 | Level & Encounter Designer + AI Programmer | The crashed UFO, the mothership, the aliens, the core and the alien quad | M13 (part 2) |
+| 37 | Level & Encounter Designer + Gameplay Programmer | Optional: the sawmill (the chainsaw, the workbench) | M13 (part 3) |
+| 38 | QA & Balance | Play-test to the mothership; the mega night on the tablet | QA |
+| 39 | Level & Encounter Designer + AI Programmer | The Car Armory, Men in Black, the stealth section, Sheriff, the ute chase | M14 (part 1) |
+| 40 | Gameplay Programmer | The garage, Sheriff's upgrades, the turret and the restocking charges | M14 (part 2) |
+| 41 | Level & Encounter Designer | Optional: the moonshiners' holler (the traps, the wire cutters, the still) | M14 (part 3) |
+| 42 | QA & Balance | Play-test to Sheriff; the performance gate | QA |
+| 43 | Lead Engineer (design review) | Fold in Aaron's endgame design and re-plan M15's sessions. No feature code | — |
+| 44–46 | Level & Encounter Designer + AI Programmer | The endgame, as planned in Session 43: the killdozer, Ground Zero, the realm of stories, the hut and the final battle | M15 |
+| 47 | QA & Balance | Full runs, Day 1 to the witch; the performance gate | QA |
+| 48 | Graphics Engineer | Style pass 4: the south, the interiors, the realm of stories | Part of M17 |
+| 49 | UI / UX Programmer | Final HUD, menus, settings (Quality levers, retro filter), achievements, modifiers, run summary | M16 |
+| 50 | Audio Designer | Audio engine, ambience, stingers, music, blips | Part of M17 |
+| 51 | Narrative Designer | Write the remaining dialogue and document text with Aaron | Part of M18 |
+| 52 | Graphics Engineer | Final style pass across the whole game | M17 |
+| 53 | QA & Balance | Full-run balance, performance pass on the tablet, bug bash | M18 |
 
 Sessions are a guide, not a contract: split any session that grows too big into parts ("12a", "12b"), and add QA or style sessions whenever they're needed.
 
@@ -2201,7 +2232,8 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - The full text of the 8 classified documents (outlines are done).
 - The rest of the dialogue lines (Day 1 is written; about 130–150 to go).
 - **The Nov 8 story spine** (see Encounters) leaves these open:
-  - **Run length:** 3–4 hours by the time Sheriff is at the garage, against the 1.5–2.5 hours planned. Decide it on purpose.
+  - **Run length:** settled Nov 8: a longer run (4+ hours) is accepted; the exact target is set once full runs are played (M18).
+  - **The endgame's design** (the final battle and the realm of stories): Aaron is designing it; M15 waits on it.
   - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounters give the SMG and the heat-scope semi-auto; the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
@@ -2213,5 +2245,5 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
   - How the mega night's 150 zombies fit the performance budget; the new zombie types in detail.
 - Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the auto shotgun is proposed for the moonshiners' holler. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
-- Exact numbers for everything marked config: settled in play-testing (M14).
+- Exact numbers for everything marked config: settled in play-testing (M18).
 - Candidate entities for later, not in scope: Jersey Devil, Dogman. (*Nov 8:* the Flatwoods Monster and the Headless Horseman are now named optional encounters: the Flatwoods landing and the Horseman bridge.)
