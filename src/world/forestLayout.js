@@ -62,18 +62,35 @@ export function pickTreeKind(kinds, r) {
   return kinds.length - 1;
 }
 
+// Session 21: how much the railway's grown back here ({ chance, cfg }), or
+// null off it, or where something else (a pathway, a clearing) has opened
+// the ground further than the bed is.
+function regrowth(ground, x, z, open) {
+  const rc = ground.mapCfg?.railway;
+  if (!rc?.regrowth || !ground.regrowthAt) return null;
+  if (open > rc.bedOpen + 0.04) return null;
+  const chance = ground.regrowthAt(x, z);
+  return chance > 0 ? { chance, cfg: rc.regrowth } : null;
+}
+
 // Trees: [{ x, y, z, height, width, variant }]; variant indexes cfg.kinds.
 export function layoutForest(cfg, ground, rng) {
   const geo = ground.geo;
   const trees = [];
   jitteredGrid(geo, cfg.cellSize, cfg.jitter, rng, fixedStream(ground, 'trees'), (z) => ground.isFixed(z), 4, (x, z, r) => {
     const keep = cfg.densityMin + (1 - cfg.densityMin) * ground.densityAt(x, z, cfg.densityScale);
-    if (r[0] >= keep) return;
-    if (ground.openAt(x, z) > cfg.maxOpen) return;
+    let scale = 1;
+    const open = ground.openAt(x, z);
+    if (open > cfg.maxOpen) {
+      // Session 21: young trees come back onto the 1903 railway's bed (not where a pathway crosses it).
+      const sap = regrowth(ground, x, z, open);
+      if (!sap || r[0] >= sap.chance * sap.cfg.saplings) return;
+      scale = sap.cfg.saplingScale[0] + (sap.cfg.saplingScale[1] - sap.cfg.saplingScale[0]) * r[2];
+    } else if (r[0] >= keep) return;
     if (!clearOfCliff(geo, x, z, cfg.cliffGap)) return;
     const variant = pickTreeKind(cfg.kinds, r[3]);
     const kind = cfg.kinds[variant];
-    const height = kind.height[0] + (kind.height[1] - kind.height[0]) * r[1];
+    const height = (kind.height[0] + (kind.height[1] - kind.height[0]) * r[1]) * scale;
     const ratio = kind.widthRatio[0] + (kind.widthRatio[1] - kind.widthRatio[0]) * r[2];
     trees.push({ x, y: ground.heightAt(x, z), z, height, width: height * ratio, variant });
   });
@@ -88,8 +105,12 @@ export function layoutUndergrowth(cfg, ground, rng, densityScale) {
   const bushes = [];
   jitteredGrid(geo, cfg.cellSize, 1, rng, fixedStream(ground, 'undergrowth'), (z) => ground.isFixed(z), 3, (x, z, r) => {
     const keep = cfg.densityMin + (1 - cfg.densityMin) * ground.densityAt(x, z, densityScale);
-    if (r[0] >= keep) return;
-    if (ground.openAt(x, z) > cfg.maxOpen) return;
+    const open = ground.openAt(x, z);
+    if (open > cfg.maxOpen) {
+      // Session 21: brush on the 1903 railway's bed.
+      const sap = regrowth(ground, x, z, open);
+      if (!sap || r[0] >= sap.chance * sap.cfg.bushes) return;
+    } else if (r[0] >= keep) return;
     if (z < geo.cliff.baseZ + geo.cliff.amplitude + geo.cliff.walkMargin && z < cliffZ(geo, x) + geo.cliff.walkMargin) return;
     const height = cfg.heightMin + (cfg.heightMax - cfg.heightMin) * r[1];
     const variant = Math.min(cfg.variants - 1, Math.floor(r[2] * cfg.variants));

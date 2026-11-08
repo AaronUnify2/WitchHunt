@@ -13,6 +13,7 @@ import { Landmarks } from '../render/Landmarks.js';
 import { Road } from '../render/Road.js';
 import { Cordon } from '../render/Cordon.js';
 import { RoadNorthProps } from '../render/RoadNorthProps.js';
+import { Railway } from '../render/Railway.js';
 import { roadProps } from './road.js';
 import { gateLayout } from './gates.js';
 import encountersData from '../data/encounters.json';
@@ -67,6 +68,11 @@ export class World {
     if (rn) {
       this.roadNorthProps = new RoadNorthProps(cfg.map.roadNorth, cfg.props?.weather);
       this.roadNorthProps.init(scene, rn, this.ground, this.cliff.material);
+    }
+    // Session 21: the 1903 railway line (its bed and grade are in the ground).
+    if (this.map.railway) {
+      this.railway = new Railway(cfg.map.railway, cfg.props?.weather);
+      this.railway.init(scene, colliders, this.map.railway, this.map.paths, this.ground, this.map.geometry);
     }
     // M9.1: the military cordon across the map, south of the outpost.
     this.cordon = new Cordon(cfg.map.cordon, cfg.landmarks);
@@ -136,6 +142,7 @@ export class World {
     this.landmarks.update(dt, cameraPosition);
     this.road.update(dt, cameraPosition);
     this.roadNorthProps?.update(dt, cameraPosition);
+    this.railway?.update(dt, cameraPosition);
   }
 
   setDrawDistance(distance) {
@@ -145,12 +152,14 @@ export class World {
     this.landmarks.setDrawDistance(distance);
     this.road.setDrawDistance(distance);
     this.roadNorthProps?.setDrawDistance(distance);
+    this.railway?.setDrawDistance(distance);
   }
 
   dispose() {
     this.landmarks.dispose();
     this.road.dispose();
     this.roadNorthProps?.dispose();
+    this.railway?.dispose();
     this.cordon.dispose();
     this.forest.dispose();
     this.cliff.dispose();

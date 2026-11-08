@@ -33,8 +33,27 @@ describe('layoutForest', () => {
     expect(trees.length).toBeGreaterThan(30000);
   });
 
-  it('keeps pathways and clearings free of trees', () => {
-    for (const t of trees) expect(ground.openAt(t.x, t.z)).toBeLessThanOrEqual(f.maxOpen + 1e-6);
+  // Session 21: the young trees grown back onto the 1903 railway's bed.
+  const rail = config.map.railway;
+  const sapling = (t) => ground.regrowthAt(t.x, t.z) > 0 && ground.openAt(t.x, t.z) > f.maxOpen;
+
+  it('keeps pathways and clearings free of trees (the railway\'s bed grows saplings)', () => {
+    let saplings = 0;
+    for (const t of trees) {
+      if (sapling(t)) {
+        saplings++;
+        expect(ground.openAt(t.x, t.z)).toBeLessThanOrEqual(rail.bedOpen + 0.04 + 1e-6);
+        continue;
+      }
+      expect(ground.openAt(t.x, t.z)).toBeLessThanOrEqual(f.maxOpen + 1e-6);
+    }
+    expect(saplings).toBeGreaterThan(10);
+    // Thin: a scar through the forest, not a wood.
+    expect(saplings).toBeLessThan(400);
+  });
+
+  it('grows the saplings small (young trees)', () => {
+    for (const t of trees.filter(sapling)) expect(t.height).toBeLessThan(f.kinds[t.variant].height[1] * rail.regrowth.saplingScale[1] + 1e-6);
   });
 
   it('keeps trees off the cliff face (plateau trees are fine)', () => {
@@ -60,6 +79,7 @@ describe('layoutForest', () => {
 
   it("keeps each tree's size within its kind's range", () => {
     for (const t of trees) {
+      if (sapling(t)) continue;
       expect(Number.isInteger(t.variant)).toBe(true);
       expect(t.variant).toBeGreaterThanOrEqual(0);
       expect(t.variant).toBeLessThan(f.kinds.length);
@@ -91,7 +111,9 @@ describe('layoutUndergrowth', () => {
   it('grows bushes off the pathways only, south of the cliff', () => {
     expect(bushes.length).toBeGreaterThan(30000);
     for (const b of bushes) {
-      expect(ground.openAt(b.x, b.z)).toBeLessThanOrEqual(u.maxOpen + 1e-6);
+      // Session 21: brush on the railway's bed (never on a pathway or in a clearing).
+      if (ground.regrowthAt(b.x, b.z) > 0) expect(ground.openAt(b.x, b.z)).toBeLessThanOrEqual(config.map.railway.bedOpen + 0.04 + 1e-6);
+      else expect(ground.openAt(b.x, b.z)).toBeLessThanOrEqual(u.maxOpen + 1e-6);
       expect(b.z).toBeGreaterThan(cliffZ(ground.geo, b.x));
     }
   });

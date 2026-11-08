@@ -60,6 +60,12 @@ describe('GroundField masks', () => {
     }
     for (const p of map.paths) {
       const q = p.points[Math.floor(p.points.length / 2)];
+      if (p.faint) {
+        // Session 21: the stairs' faint trail: half grown over, but you can follow it.
+        expect(ground.openAt(q.x, q.z)).toBeGreaterThan(0.3);
+        expect(ground.openAt(q.x, q.z)).toBeLessThan(0.85);
+        continue;
+      }
       expect(ground.openAt(q.x, q.z)).toBeGreaterThan(0.95);
       expect(ground.undergrowthAt(q.x, q.z)).toBeLessThan(0.05);
     }

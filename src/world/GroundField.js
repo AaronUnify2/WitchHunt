@@ -41,7 +41,17 @@ export class GroundField {
     this.edgeSeed = noiseSeed(this.seed, 'edges');
     this.fixedEdgeSeed = noiseSeed(this.fixedSeed, 'edges');
     for (const c of this.map.clearings) this.rasterClearing(c);
-    for (const p of this.map.paths) this.rasterPath(p.points, this.mapCfg.paths);
+    // Session 21: the 1903 railway first (its bed is only partly open: saplings
+    // and brush have come back onto it), so a pathway crossing it is open over it.
+    this.rail = this.map.railway ? railLookup(this.map.railway, this.geo) : null;
+    if (this.rail) this.rasterRailway();
+    for (const p of this.map.paths) {
+      // Session 21: a faint trail (the stairs'): narrow, half grown over.
+      if (p.faint) {
+        const f = this.mapCfg.faintTrail;
+        this.rasterPath(p.points, { ...this.mapCfg.paths, width: f.width, clearance: f.clearance, edgeNoise: f.edgeNoise, openScale: f.open, dirtScale: f.dirt });
+      } else this.rasterPath(p.points, this.mapCfg.paths);
+    }
     // The road (M9.1): asphalt with gravel shoulders (dirt), trees kept back.
     if (this.map.road) {
       const r = this.mapCfg.road;
@@ -101,8 +111,34 @@ export class GroundField {
     });
   }
 
-  // p: config.map.paths, or the road's own widths.
+  // Session 21: the railway's bed (ballast: worn dirt, partly open) and the
+  // thin strip either side (the old cleared ground, grown back). Its own
+  // open values replace the forest's there (max with what's already set).
+  rasterRailway() {
+    const r = this.mapCfg.railway;
+    const pts = this.map.railway.points;
+    this.rasterPath(pts, { ...this.mapCfg.paths, width: r.bed, clearance: r.shoulder, edgeNoise: 0.5, openScale: r.bedOpen, dirtScale: 0.85, shoulderOpen: r.shoulderOpen });
+  }
+
+  // How much the forest has grown back over the railway here: 1 on its bed,
+  // fading over its shoulders, 0 elsewhere (saplings and brush on it; Forest).
+  regrowthAt(x, z) {
+    if (!this.rail) return 0;
+    const r = this.mapCfg.railway;
+    const d = Math.abs(z - this.rail.zAt(x));
+    const half = r.bed / 2;
+    if (d >= half + r.shoulder) return 0;
+    return d <= half ? 1 : 1 - (d - half) / r.shoulder;
+  }
+
+  // p: config.map.paths, or the road's own widths. openScale / dirtScale
+  // (Session 21): cap how open and how bare the line gets (a faint trail,
+  // the railway's bed); shoulderOpen: the open value its clearance strip
+  // reaches (else the same as the middle).
   rasterPath(points, p) {
+    const oScale = p.openScale ?? 1;
+    const dScale = p.dirtScale ?? 1;
+    const shoulder = p.shoulderOpen ?? oScale;
     const half = p.width / 2;
     const openHalf = half + p.clearance;
     const reach = openHalf + p.edgeNoise + p.edgeSoftness;
@@ -111,8 +147,9 @@ export class GroundField {
       const b = points[s + 1];
       this.forBox(a.x, a.z, b.x, b.z, reach, (idx, x, z) => {
         const d = pointSegmentDistance(x, z, a.x, a.z, b.x, b.z) + this.edgeWobble(x, z, p.edgeNoiseScale, p.edgeNoise);
-        const open = 1 - smoothstep(openHalf - p.edgeSoftness, openHalf, d);
-        const dirt = 1 - smoothstep(half - p.edgeSoftness, half + p.edgeSoftness, d);
+        let open = 1 - smoothstep(openHalf - p.edgeSoftness, openHalf, d);
+        if (oScale !== 1 || shoulder !== oScale) open *= d <= half ? oScale : shoulder + (oScale - shoulder) * (1 - smoothstep(half, half + p.edgeSoftness, d));
+        const dirt = (1 - smoothstep(half - p.edgeSoftness, half + p.edgeSoftness, d)) * dScale;
         if (open > this.open[idx]) this.open[idx] = open;
         if (dirt > this.dirt[idx]) this.dirt[idx] = dirt;
       });
@@ -201,6 +238,10 @@ export class GroundField {
     this.fixedOctaveSeeds = t.octaves.map((_, i) => noiseSeed(this.fixedSeed, `height${i}`));
     // Each clearing is levelled toward the height at its centre.
     this.levels = this.map.clearings.map((c) => this.rawHeight(c.x, c.z, 1));
+    // Session 21: the railway's grade: the ground along its line, smoothed
+    // over a long window (a surveyed grade: cuttings through the rises,
+    // low banks over the dips).
+    if (this.rail) this.rail.grade = railGrade(this.rail, this.geo, this.mapCfg.railway.grade, (x, z) => this.rawHeight(x, z, 1));
     this.heights = new Float32Array(this.nx * this.nz);
     this.minHeight = Infinity;
     this.maxHeight = -Infinity;
@@ -244,9 +285,39 @@ export class GroundField {
       const w = (1 - smoothstep(c.radius, reach, d)) * t.clearingFlatten;
       h += (this.levels[i] - h) * w;
     }
+    // Session 21: eased toward the railway's grade along its line, and the
+    // hills its two collapsed tunnels are bored into at the map's edges.
+    if (this.rail) h = this.railHeight(x, z, h);
     // Behind the cliff face the ground climbs to the plateau on top.
     const behind = cliffZ(this.geo, x) - z;
     if (behind > 0) h += cliffHeight(this.geo, x) * smoothstep(0, this.geo.cliff.rampWidth, behind);
+    return h;
+  }
+
+  railHeight(x, z, h) {
+    const rc = this.mapCfg.railway;
+    const g = rc.grade;
+    const zr = this.rail.zAt(x);
+    const d = Math.abs(z - zr);
+    if (d < g.reach) {
+      const w = g.blend * (1 - smoothstep(rc.bed / 2, g.reach, d));
+      h += (this.rail.gradeAt(x) - h) * w;
+    }
+    // The tunnel hills: each portal is set in the face of a hill outside the
+    // walkable area, the line running up to it in a cutting (its sides
+    // rising either side of the bed, the bed itself at the grade).
+    const t = rc.tunnel;
+    for (const tn of this.map.railway.tunnels) {
+      const ahead = (x - tn.x) * tn.facing; // metres in front of the portal (toward the map)
+      if (ahead > t.hillFront) continue;
+      const across = Math.abs(z - tn.z);
+      if (across > t.hillWidth) continue;
+      const rise = smoothstep(t.hillFront, t.hillFront - t.hillRise, ahead);
+      const side = 1 - smoothstep(t.hillWidth * 0.55, t.hillWidth, across);
+      let hill = t.hillHeight * rise * side;
+      if (ahead > -0.5) hill *= smoothstep(t.cutHalf, t.cutHalf + t.cutSlope, across);
+      h += hill;
+    }
     return h;
   }
 
@@ -349,4 +420,54 @@ export class GroundField {
       }
     }
   }
+}
+
+// Session 21: a quick lookup of the railway's z at any x (it runs west to
+// east without doubling back), on a 1 m grid.
+function railLookup(railway, geo) {
+  const x0 = geo.xMin - 2;
+  const n = Math.ceil(geo.xMax - geo.xMin) + 5;
+  const zs = new Float32Array(n);
+  const pts = railway.points;
+  let i = 1;
+  for (let k = 0; k < n; k++) {
+    const x = x0 + k;
+    while (i < pts.length - 1 && pts[i].x < x) i++;
+    const a = pts[i - 1];
+    const b = pts[i];
+    const t = Math.max(0, Math.min(1, (x - a.x) / (b.x - a.x || 1)));
+    zs[k] = a.z + (b.z - a.z) * t;
+  }
+  const at = (arr, x) => {
+    const f = Math.max(0, Math.min(n - 1.001, x - x0));
+    const k = Math.floor(f);
+    return arr[k] + (arr[k + 1] - arr[k]) * (f - k);
+  };
+  const out = { x0, n, zs, zAt: (x) => at(zs, x), grade: null, gradeAt: (x) => (out.grade ? at(out.grade, x) : 0) };
+  return out;
+}
+
+// The grade along the line: the raw ground at the line, a moving average
+// over `window` metres (the same 1 m grid as railLookup).
+function railGrade(rail, geo, cfg, rawAt) {
+  const raw = new Float32Array(rail.n);
+  for (let k = 0; k < rail.n; k++) raw[k] = rawAt(rail.x0 + k, rail.zs[k]);
+  const half = Math.round(cfg.window / 2);
+  const out = new Float32Array(rail.n);
+  let sum = 0;
+  let count = 0;
+  for (let k = -half; k < rail.n; k++) {
+    const add = k + half;
+    if (add < rail.n) {
+      sum += raw[add];
+      count++;
+    }
+    const drop = k - half - 1;
+    if (drop >= 0) {
+      sum -= raw[drop];
+      count--;
+    }
+    if (k >= 0) out[k] = sum / count + cfg.lift;
+  }
+  return out;
 }

@@ -407,6 +407,9 @@ export const config = {
       min: 3,
       max: 4,
     },
+    // Session 21: a faint trail (the stairs': off the pathways): metres wide, kept
+    // clear either side, and how open and bare it is (1 = a pathway).
+    faintTrail: { width: 1.6, clearance: 0.8, open: 0.7, dirt: 0.45, edgeNoise: 0.35 },
     // Plain clearings fill the bands in proportion to these (Session 21: the
     // north frontier between the cordon and the middle band is small).
     wildBandWeights: { north: 0.5, middle: 1, south: 1 },
@@ -426,8 +429,39 @@ export const config = {
       shoulderOpen: 0.45,
       // Graded, as a railway is: the ground along it is eased toward a smooth
       // grade (cuttings through rises, low banks over dips).
-      grade: { window: 140, blend: 0.85, reach: 14 },
-      tunnel: { beyondEdge: 6 }, // the collapsed tunnels sit this far beyond the walkable area's east and west edges
+      grade: { window: 140, blend: 0.85, reach: 14, lift: 0.25 }, // window: metres smoothed over; reach: metres either side it eases the ground; lift: the bed's bank (metres)
+      // The collapsed tunnels sit beyond the walkable area's east and west
+      // edges, bored into hills that rise behind them (metres).
+      tunnel: { beyondEdge: 6, hillFront: 18, hillRise: 22, hillHeight: 13, hillWidth: 42, cutHalf: 3.2, cutSlope: 7 }, // hillFront: metres in front of the portal its hill starts to rise; hillRise: over how far; cutHalf / cutSlope: the cutting's floor either side of the line and its banks
+      regrowth: { saplings: 0.12, saplingScale: [0.3, 0.55], bushes: 0.55 }, // on the bed: the chance per tree spot of a young tree (and its size), per bush spot of brush
+      // Drawn (render/Railway.js).
+      gauge: 1.435, // metres between the rails (standard gauge)
+      tieSpacing: 0.9, // metres
+      tieLength: 2.5,
+      tiesGone: 0.32, // noise below this: the tie's rotted away
+      railsGone: 0.36, // noise below this: the rail's buried or gone
+      crossbuckBack: 4.5, // metres before the rails a crossing's crossbuck stands
+      whistleBack: 60, // metres up and down the line from a crossing: the W posts
+      poles: { spacing: 48, offset: 7, side: 1, height: 7.5, radius: 0.13, arm: 1.9, down: 0.18, leaning: 0.45, wiresGone: 0.55, sag: 1.1 }, // the telegraph line (side 1: north of it, as road.js frames count it); down / leaning: the share fallen and leaning hard
+      tunnelLook: { width: 4.8, spring: 3.2, height: 8.4, faceWidth: 12 }, // the stone portals (metres)
+      look: {
+        weather: { rust: [0x3a2618, 0x2e2016] },
+        rail: 0x3a2618,
+        tie: 0x3a3228,
+        tieDark: 0x2a241c,
+        plank: 0x3e3428,
+        plankDark: 0x2c261e,
+        pole: 0x3a3026,
+        wire: 0x1a1a1a,
+        boardPaint: 0x6a665a,
+        boardInk: 0x1a1612,
+        post: 0x3a3228,
+        stone: 0x4e4a42,
+        stoneDark: 0x3c3934,
+        stoneLight: 0x5c5850,
+        rubble: 0x3e3a32,
+        carve: 0x1e1c18,
+      },
     },
     clearing: {
       radiusMin: 16,
