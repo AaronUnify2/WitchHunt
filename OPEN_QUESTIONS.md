@@ -17,7 +17,7 @@ Aaron's answers before the build (Nov 8, a bedtime pass: "no time limit... minim
 - **The brush comes away a piece at a time:** 18 bushes and 4 deadfall trunks, each knocked tumbling away as the dozer's blade reaches it; once 80% are down the rest go; saved piece by piece.
 - **The cars' blue markers are off both maps** (`config.vehicles.map.show`).
 - **#357: as many optional encounters as fit:** all five designed, every run (`config.map.optional` 5-5).
-- **#368, the south:** ideas sent to Aaron to think over (not built).
+- **#368, the south: Aaron's pick is a mix of burn country and government ground** (HANDOVER.md, "Designed for a future session"; not built).
 
 My calls in the build (PLAYTEST round 32):
 

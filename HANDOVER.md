@@ -2,7 +2,12 @@
 
 ## Just finished: Session 21, the map (M10.2; Lead Engineer)
 
-**Status: everything is on `claude/handover-review-zpvgy0`, pushed** (not merged to `main` yet: Aaron reviews first). 813 tests pass (was 759); the build is clean. A bedtime pass (Aaron: "no time limit... minimal viable product is the enemy of good gaming"): **Aaron hasn't seen any of it yet.** `MORNING.md` is the short version for him; PLAYTEST round 32 is the list; my calls are OPEN_QUESTIONS #353-376.
+**Status: everything is on `main` (live)** and on `claude/handover-review-zpvgy0`. 814 tests pass (was 759); the build is clean. A bedtime pass, then **Aaron's first look at round 32** and a round of fixes (round 33). `MORNING.md` was the overnight summary; my calls are OPEN_QUESTIONS #353-376, with Aaron's round 32 answers at the top of that section.
+
+**After Aaron's first look at round 32** (all on main):
+- **Liked:** the Bigfoot cave area ("the mountain and the tunnel": "some of your best work"); Save and quit works; the plane's cell on the fence works; the shelter's room isn't too dark; the dozer at the east end is fine; **no handcar**.
+- **Fixed:** every cutscene keeps the dead moving but unable to notice or hurt Tom, and brakes the quad (he rode into the shelter's horde and died in the sweep); Skip intro leaves the quad outside the station's gate; the outpost's points come off the map as cleared (crates at once, C-7 once visited); **the brush comes away a piece at a time** (22 pieces, each tumbling off as the blade reaches it); no car markers on the maps; **all five optional encounters every run** ("as many as will reasonably fit").
+- **Still to test (round 33):** those fixes; more Save and quit at other points in the story; the health floor; his glare list.
 
 **Aaron's answers first** (OPEN_QUESTIONS "Session 21"):
 - round 31's last items (Save and quit, the fence's power cell, the health floor) and **his glare list: still to come** (his tablet was off for the night);
@@ -36,15 +41,24 @@
 
 - **Aaron's review of all of it** (round 32), plus round 31's last items and his glare list. Fix the small ones first, one at a time, each pushed; bigger ones to OPEN_QUESTIONS for Session 23. **Merge to `main`** once he's happy (the live build deploys from `main`).
 - **The cave doesn't load yet** (a prompt at the mouth): it's M12's seeded interior on the new system.
-- **"South of the railway is more open and less structured"** isn't done (#368).
-- **The handcar idea** (#367): an old pump trolley on the rails, ridable east to west. Not built; Aaron to say.
+- **The south's biome change (#368): Aaron chose a mix of burn country and government ground** (see "Designed for a future session: the south of the railway" below). Not built.
 - **From before:**
   - the trail behind the gas station's draw calls (#302);
   - the rack shows no guns on it (#343); the common pickups' first-time introductions (#348); the card's turning item is a CSS placeholder (#346).
 
+## Designed for a future session: the south of the railway (Aaron, Session 21)
+
+DESIGN.md "the 1903 railway line" says the south is "more open and less structured". Aaron's pick from four ideas: **a mix of burn country and government ground**, so crossing the line feels like a biome change. Workshop the details with him first (rule 10). The ideas as offered:
+
+- **Burn country:** an old wildfire scar. Sparse, blackened standing trunks, ash-grey ground and young growth coming back. It's open, so you see further and feel exposed (the witch and the dead see you sooner too). Fog lies low in the open: good round the crashed UFO and Ground Zero.
+- **Government ground:** forest the portal programme cleared and lost. Stumps in rows, survey stakes with faded tape, straight access tracks between the Car Armory and Ground Zero, a toppled radio mast. Newer scars than the railway's, and more open.
+- **How they might mix** (a proposal to confirm): the railway's regrown country just south of the line, giving way to burn country through the south band, and government ground (the cleared rows, the tracks) round the Car Armory and Ground Zero, burnt at its edges. Southness or distance from the spine's places can drive the blend.
+- **Where it touches the code:** `world/forestLayout.js` (tree and undergrowth density by a south factor; a burnt-snag tree kind; stumps in rows), `render/treeSprites.js` (blackened trunks, new growth), `world/GroundField.js` and the terrain shader's floor (ash and churned ground by region), `config.forest` and `config.terrain.floor`, `render/Atmosphere.js` (low fog in the open), detection (sight further where it's open?), the map image's colours. Keep the cluster's land untouched (fixed seed north of the cordon) and **mind the draw-call and sprite budgets on the tablet**.
+- Open: whether it's open enough to change how fights and the witch play (sight lines), whether the government tracks become pathways on the map, and which session builds it (an art/graphics session after the spikes fits).
+
 ## Next: Session 22, Lead Engineer + AI Programmer: the spikes (M10.3)
 
-**First:** if Aaron's round 32 notes aren't in yet, ask for them (and round 31's last items, and the glare list); fix the small ones first, one at a time, pushing each.
+**First:** ask Aaron for his round 33 notes (the round 32 fixes), more Save and quit at other points in the story, the health floor, and his glare list; fix the small ones first, one at a time, pushing each.
 
 **Goal** (DESIGN.md "Build plan", M10.3 and the Session 22 row): rough, debug-only spikes on the riskiest tech, **measured on the tablet**, each with a go / change-the-design answer written into DESIGN.md:
 1. **About 150 zombies at the station** (the mega night): the active cap is about 25; the marches and sim tiers need a plan.
@@ -65,7 +79,7 @@ Not this session: any encounter's content (the crashed plane is Session 25).
 
 ### Open questions for Aaron
 
-- **Session 21:** #353-376 (my calls), in particular #354 (which end of the strip for the dozer), #357 (how many optional encounters a run), #363/#365 (the cave's hints), #367 (the handcar), #368 (the south of the railway).
+- **Session 21:** #353-376 (my calls; #354, #357, #367, #368 and #370 settled), in particular #353 (the spine's places), #363/#365 (the cave's hints), #371 (the clock inside), #375 (the Day 1 red light), and the south's biome (above).
 - **Session 20:** #340-352 (#344, #345, #347 and #349 settled), and his glare list.
 - **Session 19:** #282-320, to check in play (#300, #308, #311, #317 and #319 are settled). In particular #302, the draw calls.
 - **The experimental vehicles:** #321-339.
@@ -77,7 +91,7 @@ Not this session: any encounter's content (the crashed plane is Session 25).
 ```
 You are the Lead Engineer (with the AI Programmer) on Witch Hunt, Session 22: the spikes (M10.3): about 150 zombies at the station, the procedural four-path forest (on Session 21's interior system), a flying enemy, a part bolted onto the dozer; each rough, debug only, measured on the tablet.
 Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": M10 and Session 22; "Interiors (shared system)"; "Stairs in the woods: the place beyond"; "The Mothman"; "The endgame: the killdozer"; "Performance and simulation LOD"), STATUS.md (Sessions 20-21) and OPEN_QUESTIONS.md (#353-376, then the older open ones).
-First ask Aaron for his notes on PLAYTEST round 32 (the map) and the rest of round 31, and his glare list, and fix the small ones, pushing each.
+First ask Aaron for his notes on PLAYTEST rounds 32-33 (the map, and its fixes), more Save and quit tests, the health floor, and his glare list, and fix the small ones, pushing each.
 Then build the spikes one at a time, each tested and pushed, each with a measured go / change-the-design answer written into DESIGN.md; keep the opening playable on every seed.
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
 Then confirm your role and ask Aaron for his notes.
