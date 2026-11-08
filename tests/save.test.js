@@ -88,7 +88,7 @@ describe('save round trip', () => {
     a.armour.add('ballistic', 40);
     a.inventory.scrap = 77;
     a.inventory.batteries = 2;
-    a.inventory.firstAid = 1;
+    a.inventory.kits.firstAid = 1;
     a.inventory.ammo.pistol = 9;
     a.weapons.states.rifle.init(3, 21);
     a.weapons.index = 2;
@@ -99,7 +99,7 @@ describe('save round trip', () => {
     loadPlayer(b, d);
     expect(b.health.value).toBe(63);
     expect(b.armour.get('ballistic')).toBe(40);
-    expect([b.inventory.scrap, b.inventory.batteries, b.inventory.firstAid, b.inventory.ammo.pistol]).toEqual([77, 2, 1, 9]);
+    expect([b.inventory.scrap, b.inventory.batteries, b.inventory.kits.firstAid, b.inventory.ammo.pistol]).toEqual([77, 2, 1, 9]);
     expect([b.weapons.states.rifle.mag, b.weapons.states.rifle.reserve]).toEqual([3, 21]);
     expect(b.weapons.index).toBe(2);
     expect(b.kills).toBe(31);

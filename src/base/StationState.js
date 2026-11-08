@@ -53,6 +53,21 @@ export class StationState {
     this.charge = c.power.startCharge;
     this.floods = this.layout.floods.map((fl, i) => ({ index: i, segment: fl.segment, built: false }));
     this.turret = { available: false, installed: false, mode: c.turret.startMode, rounds: 0 };
+    // Session 20 (Aaron): the comms room's first aid box holds the kits that
+    // don't fit in Tom's healing pool ({ [kind]: count }).
+    this.aidBox = { ...(c.aidBox?.kits ?? {}) };
+  }
+
+  // Kits into the first aid box (from anywhere: they're sent home).
+  stashKits(kind, count) {
+    if (count > 0) this.aidBox[kind] = (this.aidBox[kind] ?? 0) + count;
+    return count;
+  }
+
+  get aidBoxCount() {
+    let n = 0;
+    for (const v of Object.values(this.aidBox)) n += v;
+    return n;
   }
 
   // Every barrier, for lookups by id.

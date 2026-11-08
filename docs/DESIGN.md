@@ -219,9 +219,10 @@ The original design, kept for reference: the player starts each run with the **s
 - **Damage order** (one config list): ballistic → energy → nature → health, so the commonest armour goes first.
 - Energy and nature being limited is a starting position; revisit after play-testing.
 
-**Healing:** first aid kits are kept in the inventory (stackable, up to 9) and used from it or a quick-use button (D-pad right / H). No animation: the player keeps moving. Tom starts with none (the comms room's box has 2).
+**Healing:** first aid kits are kept in the inventory (the healing pool below, up to 270 points) and used from it or a quick-use button (D-pad right / H). No animation: the player keeps moving. Tom starts with none (the comms room's box has 2).
 
-- **The healing pool** *(Aaron, Nov 8; designed, not built; replaces the kit count)*: one pool of healing points, whatever the kit (a first aid kit adds 30, an alien med kit 60). D-pad right heals from it, the kit chosen automatically (it won't waste an alien med kit on a small top-up). No menu; choosing gives the player nothing. The HUD shows one total, e.g. "Healing: 90". The 10-a-second cap stays.
+- **The healing pool** *(Aaron, Nov 8; built Session 20; replaces the kit count)*: one pool of healing points, whatever the kit (a first aid kit adds 30, an alien med kit 60). D-pad right heals from it, the kit chosen automatically (it won't waste an alien med kit on a small top-up). No menu; choosing gives the player nothing. The HUD shows one total, e.g. "Healing: 90". The 10-a-second cap stays.
+  **As built (Session 20):** the pool is capped at **270** (Aaron). The kit used is the biggest that heals no more than what's still missing (after anything already healing), else the smallest carried. **Kits that don't fit go to the comms room's first aid box** (Aaron), wherever they're found; the box starts with 2, and holding X at it fills the pool. Alien med kits come from the debug menu until the crashed plane (Session 25). `player/healingPool.js`; `config.inventory.healing`.
 
 - Health climbs one point at a time at **10 per second**: a **first aid kit heals 30** (3 s), an **alien med kit heals 60** (6 s).
 - A second kit used while one is working queues rather than stacks, so the 10/sec cap holds and nobody can spam-heal out of a burst of damage.

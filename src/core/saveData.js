@@ -59,7 +59,7 @@ export function savePlayer(player, combat) {
     yaw: player.yaw,
     health: combat.health.value,
     armour: { ...combat.armour.values },
-    inventory: { firstAid: inv.firstAid, scrap: inv.scrap, batteries: inv.batteries, flares: inv.flares, ammo: { ...inv.ammo } },
+    inventory: { kits: { ...inv.kits }, scrap: inv.scrap, batteries: inv.batteries, flares: inv.flares, ammo: { ...inv.ammo } },
     weapon: w.index,
     weapons,
     kills: combat.kills,
@@ -72,7 +72,7 @@ export function loadPlayer(combat, d) {
   combat.health.clearHealing?.();
   Object.assign(combat.armour.values, d.armour);
   const inv = combat.inventory;
-  inv.firstAid = d.inventory.firstAid;
+  inv.kits = { ...inv.kits, ...(d.inventory.kits ?? {}) }; // Session 20: the healing pool
   inv.scrap = d.inventory.scrap;
   inv.batteries = d.inventory.batteries;
   if (d.inventory.flares !== undefined) inv.flares = d.inventory.flares; // M9.1
@@ -106,6 +106,7 @@ export function saveStation(state) {
     charge: state.charge,
     floods: state.floods.map((f) => f.built),
     turret: { ...state.turret },
+    aidBox: { ...state.aidBox }, // Session 20
   };
 }
 
@@ -126,6 +127,7 @@ export function loadStation(state, d) {
     if (state.floods[i]) state.floods[i].built = built;
   });
   Object.assign(state.turret, d.turret);
+  if (d.aidBox) state.aidBox = { ...d.aidBox }; // Session 20
 }
 
 // Vehicles by id (their placement rebuilds from the seed).

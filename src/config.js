@@ -1278,12 +1278,21 @@ export const config = {
     },
   },
 
-  // First aid kits (DESIGN.md "Healing"): kept in the inventory, used with
-  // D-pad right (H), no animation.
+  // Healing (DESIGN.md "Health, armour and healing"): used with D-pad
+  // right (H), no animation.
   inventory: {
-    startFirstAid: 0, // Session 16 (Aaron): none; the comms room's first aid box has 2 (config.station.aidBox)
-    maxFirstAid: 9,
-    firstAidHeal: 30,
+    // Session 20 (Aaron, Nov 8): the healing pool. Every kit is points in one
+    // pool (the HUD shows the total); the kit used is chosen automatically
+    // (player/healingPool.js). Kits that don't fit under the cap go to the
+    // comms room's first aid box (config.station.aidBox).
+    healing: {
+      poolCap: 270, // Aaron: was 9 kits
+      kits: {
+        firstAid: { heal: 30, name: 'first aid kit' },
+        alienMed: { heal: 60, name: 'alien med kit' },
+      },
+      startKits: {}, // Session 16 (Aaron): none; the comms room's first aid box has 2
+    },
     // M4: loot that has no other home yet. Pistol ammo waits for the
     // pistol; scrap waits for building and repairs (M5).
     // M5: "a little bit of scrap" to patch the torn east fence (Aaron). M9.2:
@@ -2197,7 +2206,9 @@ export const config = {
     // on the south side). lean: radians off upright, into the rail.
     // Session 15b (Aaron): the shovel leans on the cabin's front wall beside
     // the door (at: metres east of the door, out from the wall), there until Tom takes it.
-    aidBox: { kits: 2 }, // Session 16 (Aaron): the first aid box on the comms room wall, searched once
+    // Session 16 (Aaron): the first aid box on the comms room wall; 2 kits in it.
+    // Session 20 (Aaron): it's where kits go that don't fit in the healing pool.
+    aidBox: { kits: { firstAid: 2 } },
     shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright
       handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },
@@ -3786,6 +3797,7 @@ export const config = {
     fastForwardSteps: [1, 4, 10], // M6: world steps per frame for the debug fast-forward
     giveArmour: 40,
     giveFirstAid: 3,
+    giveAlienMed: 1, // Session 20: alien med kits come from the crashed plane on (Session 25)
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands
     sigilTeleportOffset: 4, // metres from a sigil
     marchTeleportBehind: 25, // M6: metres behind a marcher that its debug teleport lands

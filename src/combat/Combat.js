@@ -254,8 +254,17 @@ export class Combat {
     if (def.armour) {
       if (this.armour.add(def.armour, def.amount) <= 0) return false;
     } else if (def.firstAid) {
-      if (this.inventory.firstAidFull) return false;
-      this.inventory.addFirstAid(amount);
+      // Session 20 (Aaron): into the healing pool; what doesn't fit goes to the comms room's box.
+      const kind = def.kit ?? 'firstAid';
+      const kept = this.inventory.addKits(kind, amount);
+      if (kept < amount) {
+        if (!this.stashKits) return false;
+        this.stashKits(kind, amount - kept);
+        this.hud.pickup(`+ ${def.name} (sent to the comms room's first aid box)`);
+        this.sfx.play('pickup');
+        this.bus.emit('pickup:taken', { item, amount });
+        return true;
+      }
     } else if (def.ammo) {
       // Into the pool of the guns that fire it, or the pack until you have one.
       if (!this.weapons.addAmmo(def.ammo, amount)) this.inventory.addAmmo(def.ammo, amount);
@@ -301,7 +310,7 @@ export class Combat {
       if (this.alive && !locked) {
         this.weapons.update(dt, input, player.camera);
         this.flares.update(dt, input, true);
-        if (input.wasPressed('firstAid') && this.inventory.useFirstAid(this.health)) this.sfx.play('heal');
+        if (input.wasPressed('firstAid') && this.inventory.heal(this.health)) this.sfx.play('heal'); // Session 20: the healing pool
         this.health.update(dt);
       }
       else this.flares.update(dt, input, false); // burning on while you're down or locked
@@ -406,7 +415,13 @@ export class Combat {
       player.addItem(`Give the ${w.name.toLowerCase()} (+${w.debugRounds} rounds)`, () => this.giveWeapon(id, w.debugRounds));
     }
     player.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
-    player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => this.inventory.addFirstAid(d.giveFirstAid));
+    // Session 20: kits that don't fit go to the comms room's box, as a pickup's would.
+    const giveKits = (kind, n) => {
+      const kept = this.inventory.addKits(kind, n);
+      if (kept < n) this.stashKits?.(kind, n - kept);
+    };
+    player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => giveKits('firstAid', d.giveFirstAid));
+    player.addItem(`Give an alien med kit (+${d.giveAlienMed}; Session 20)`, () => giveKits('alienMed', d.giveAlienMed));
     player.addItem('Hurt me (-25)', () => {
       this.health.takeDamage(25);
       this.hud.hurt();

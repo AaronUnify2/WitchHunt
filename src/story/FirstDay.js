@@ -632,8 +632,8 @@ export class FirstDay {
     if (this.station.rifleOnTower) this.combat.giveWeapon(this.cfg.station.towerRifle.weapon); // Session 15b: it's on the tower otherwise
     this.combat.giveWeapon('shotgun', this.fc.skip.shotgunShells);
     this.combat.inventory.scrap = this.fc.skip.scrap;
-    // Session 16: the comms room's first aid box, already searched.
-    this.combat.inventory.addFirstAid(this.cfg.station.aidBox.kits);
+    // Session 16: the comms room's first aid box, already searched (Session 20: into the healing pool).
+    this.station.takeAidBox(true);
     this.progress.setFlag('aidBoxTaken');
     this.campsite.completeAll();
     if (this.lore.give('camcorder')) this.lore.handIn('camcorder');

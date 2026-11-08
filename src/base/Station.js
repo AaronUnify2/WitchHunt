@@ -272,20 +272,41 @@ export class Station {
   }
 
   // Session 16 (Aaron): the first aid box on the comms room's wall, by its
-  // door (render/stationInterior.js draws it): searched once, 2 first aid kits.
+  // door (render/stationInterior.js draws it): 2 first aid kits in it.
+  // Session 20 (Aaron): it also holds the kits that didn't fit in Tom's
+  // healing pool (StationState.aidBox); taking from it fills the pool.
   aidBoxSpot() {
     const c = this.layout.cabin;
     return { x: c.commsDoor.x - c.commsDoor.width / 2 - 0.45, z: c.commsDoor.z - 0.6 }; // in front of it, in the comms room
   }
 
-  takeAidBox() {
-    const n = this.sc.aidBox.kits;
+  // The kits waiting in the box, e.g. "2 first aid kits, 1 alien med kit".
+  aidBoxText() {
+    const kinds = this.cfg.inventory.healing.kits;
+    return Object.entries(this.state.aidBox)
+      .filter(([, n]) => n > 0)
+      .map(([kind, n]) => `${n} ${kinds[kind]?.name ?? kind}${n === 1 ? '' : 's'}`)
+      .join(', ');
+  }
+
+  // quiet: no toast or sound (Skip intro).
+  takeAidBox(quiet = false) {
     const inv = this.combat.inventory;
-    const room = this.cfg.inventory.maxFirstAid - inv.firstAid;
-    if (room <= 0) return 'Your first aid kits are full';
-    const got = inv.addFirstAid(Math.min(n, room));
+    const box = this.state.aidBox;
+    let got = 0;
+    // The biggest kits first, so the pool carries the most it can.
+    const kinds = this.cfg.inventory.healing.kits;
+    const order = Object.keys(box).sort((a, b) => (kinds[b]?.heal ?? 0) - (kinds[a]?.heal ?? 0));
+    for (const kind of order) {
+      const n = inv.addKits(kind, box[kind]);
+      box[kind] -= n;
+      got += n;
+    }
+    if (got === 0) return 'Your healing is full';
     this.progress?.setFlag('aidBoxTaken');
-    this.combat.hud.pickup(`+${got} first aid kit${got === 1 ? '' : 's'} (D-pad right to use)`);
+    if (quiet) return null;
+    const left = this.state.aidBoxCount;
+    this.combat.hud.pickup(`Healing: ${inv.healing} (D-pad right to heal)${left ? `. ${left} left in the box` : ''}`);
     this.combat.sfx.play('pickup');
     return null;
   }
@@ -540,7 +561,13 @@ export class Station {
     const c = L.cabin;
     // Session 15b (Aaron): it can't be taken until the witch has been seen burying (Night 1's clip).
     if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
-    if (this.progress && !this.progress.has('aidBoxTaken')) offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: `Hold ${X}: search the first aid box`, busy: 'Searching…', seconds: h.ledger, act: () => this.takeAidBox() });
+    if (this.state.aidBoxCount > 0) {
+      // Session 20: the box keeps what didn't fit in the healing pool.
+      const first = this.progress && !this.progress.has('aidBoxTaken');
+      const what = this.aidBoxText();
+      if (inv.canTakeKit()) offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: first ? `Hold ${X}: search the first aid box` : `Hold ${X}: take from the first aid box (${what})`, busy: 'Searching…', seconds: h.ledger, act: () => this.takeAidBox() });
+      else offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: `First aid box: ${what}. Your healing is full`, act: null });
+    }
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 

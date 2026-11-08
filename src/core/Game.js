@@ -260,6 +260,8 @@ export class Game {
       mapUi: this.mapUi,
       notify: (text) => this.toast.show(text),
     });
+    // Session 20 (Aaron): kits that don't fit in the healing pool go to the comms room's first aid box.
+    this.combat.stashKits = (kind, n) => this.station.state.stashKits(kind, n);
     this.combat.promptSources.push(this.station.hud);
     // Mist may drift inside the fence, but not into the cabin (Aaron).
     const L = this.station.layout;
