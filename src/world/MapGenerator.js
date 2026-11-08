@@ -30,6 +30,7 @@ import { makeGeometry, cliffZ, southnessAt, zAtSouthness } from './mapGeometry.j
 import { minimumSpanningTree, addLoops, hopCounts, isConnected, graphDistance, edgeFits } from './mapGraph.js';
 import { buildRoad, buildBranch, nearestRoadIndex } from './road.js';
 import { buildRailway, railZAt, railDistance } from './railway.js';
+import { roadNorthLayout } from './roadNorth.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const BANDS = ['north', 'middle', 'south'];
@@ -41,12 +42,14 @@ export function generateMap(mapCfg, data, rng, seed = rng.seed) {
   const road = buildRoad(geo.cluster.home, data.cluster.road, mapCfg.road);
   // Session 21: the road north (a fork off the main road) and the railway.
   if (data.cluster.roadNorth) road.north = buildBranch(geo.cluster.home, road, data.cluster.roadNorth, mapCfg.road);
+  const roadNorth = road.north && mapCfg.roadNorth ? roadNorthLayout(geo, road.north, mapCfg.roadNorth) : null;
   const railway = mapCfg.railway ? buildRailway(geo, mapCfg.railway) : null;
   geo.railway = railway;
   for (let attempt = 0; attempt < mapCfg.maxAttempts; attempt++) {
     const map = tryGenerate(mapCfg, data, rng.fork(`attempt${attempt}`), geo, road);
     if (map) {
       map.seed = seed;
+      map.roadNorth = roadNorth; // Session 21: the end of the road north (the tunnel, the barrier, the cave)
       map.attempts = attempt + 1;
       return map;
     }

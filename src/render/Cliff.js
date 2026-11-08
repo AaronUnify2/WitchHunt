@@ -18,9 +18,12 @@ export class Cliff {
     this.rng = rng;
   }
 
-  // ground: the GroundField.
-  init(scene, colliders, ground) {
+  // ground: the GroundField. flats (Session 21): [{ x0, x1, blend }] where
+  // the face is smoothed flat onto the cliff line (behind the road tunnel's
+  // headwall, so no bulge pokes through it).
+  init(scene, colliders, ground, flats = []) {
     const c = this.cfg;
+    this.flats = flats;
     this.ground = ground;
     this.geo = ground.geo;
     this.seed = noiseSeed(ground.fixedSeed, 'cliff-face'); // the cliff is wholly in the fixed north (M9.1)
@@ -68,7 +71,7 @@ export class Cliff {
         const ledge = Math.max(0, Math.sin(y * 0.9 + valueNoise(x / 20, 1.5, this.seed) * 6)) * c.ledges;
         const talus = c.talus * (1 - f) * (1 - f);
         const lean = k === rows ? -1.5 : 0;
-        const z = line + bulge + ledge + talus + lean;
+        const z = line + (bulge + ledge + talus) * this.roughAt(x) + lean;
         positions.push(x, y, z);
         uvs.push(x / c.textureMeters, y / c.textureMeters);
       }
@@ -88,6 +91,16 @@ export class Cliff {
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
     return geometry;
+  }
+
+  // 1 where the face is rough, 0 where it's smoothed flat (flats), blended between.
+  roughAt(x) {
+    let k = 1;
+    for (const f of this.flats) {
+      const d = Math.max(f.x0 - x, x - f.x1, 0);
+      k = Math.min(k, Math.min(1, d / (f.blend || 1)));
+    }
+    return k;
   }
 
   update(dt, cameraPosition) {

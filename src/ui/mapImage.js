@@ -21,6 +21,8 @@ export const MAP_COLORS = {
   sigilGround: '#b080e0',
   wild: '#c8c0a8',
   path: 'rgba(240, 220, 170, 0.6)',
+  road: 'rgba(74, 72, 68, 0.95)', // Session 21: the roads, asphalt grey
+  railway: 'rgba(40, 30, 26, 0.95)', // Session 21: the 1903 line
   label: '#f0e8d0',
   labelShadow: 'rgba(0, 0, 0, 0.85)',
 };
@@ -71,7 +73,62 @@ export function drawMapImage(ground, map, typeColors) {
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+  drawLines(ctx, map, geo, cell);
   return canvas;
+}
+
+// Session 21: the roads drawn as roads (asphalt grey over their dirt
+// shoulders), and the 1903 railway as a railway is on a map: a dark line
+// with cross ties.
+function drawLines(ctx, map, geo, cell) {
+  const toPx = (p) => [(p.x - geo.xMin) / cell, (p.z - geo.zMin) / cell];
+  const stroke = (points, width, color, dash = null) => {
+    if (!points?.length) return;
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      const [x, y] = toPx(p);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.setLineDash(dash ?? []);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  const road = map.road;
+  if (road) {
+    const w = (road.width ?? 6.5) / cell;
+    stroke(road.points, w, MAP_COLORS.road);
+    if (road.north) stroke(road.north.points, w, MAP_COLORS.road);
+  }
+  const rail = map.railway;
+  if (rail) {
+    stroke(rail.points, Math.max(1.5, 2.2 / cell), MAP_COLORS.railway);
+    // Ties across it every 12 m.
+    ctx.strokeStyle = MAP_COLORS.railway;
+    ctx.lineWidth = Math.max(1, 1.2 / cell);
+    for (let d = 6; d < rail.length; d += 12) {
+      let i = 1;
+      while (i < rail.points.length - 1 && rail.along[i] < d) i++;
+      const a = rail.points[i - 1];
+      const b = rail.points[i];
+      const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+      const t = (d - rail.along[i - 1]) / (rail.along[i] - rail.along[i - 1] || 1);
+      const x = a.x + (b.x - a.x) * t;
+      const z = a.z + (b.z - a.z) * t;
+      const nx = (-(b.z - a.z) / len) * 3.2;
+      const nz = ((b.x - a.x) / len) * 3.2;
+      const [x0, y0] = toPx({ x: x - nx, z: z - nz });
+      const [x1, y1] = toPx({ x: x + nx, z: z + nz });
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+  }
 }
 
 // The experimental dozer: repaint the map's cells in [i0, j0, i1, j1]

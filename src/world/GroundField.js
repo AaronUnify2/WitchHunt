@@ -47,6 +47,9 @@ export class GroundField {
       const r = this.mapCfg.road;
       const p = this.mapCfg.paths;
       this.rasterPath(this.map.road.points, { ...p, width: r.width + r.shoulder * 2, clearance: r.clearance, edgeNoise: p.edgeNoise * 0.5 });
+      // Session 21: the road north, the same, and the ground kept open at its end (the tunnel, the barrier, the spur of rock, the brush).
+      if (this.map.road.north) this.rasterPath(this.map.road.north.points, { ...p, width: r.width + r.shoulder * 2, clearance: r.clearance, edgeNoise: p.edgeNoise * 0.5 });
+      for (const o of this.map.roadNorth?.open ?? []) this.rasterOpen(o.x, o.z, o.r);
     }
     // The cordon (M9.1): a bare track along the fence, trees cleared each side.
     if (this.map.cluster && this.mapCfg.cordon) {
@@ -87,6 +90,14 @@ export class GroundField {
       const dirt = 1 - smoothstep(dirtR - k.edgeSoftness, dirtR + k.edgeSoftness, d);
       if (open > this.open[idx]) this.open[idx] = open;
       if (dirt > this.dirt[idx]) this.dirt[idx] = dirt;
+    });
+  }
+
+  // Session 21: open ground (no trees or undergrowth; no dirt) in a circle, feathered over 2 m.
+  rasterOpen(cx, cz, r) {
+    this.forBox(cx, cz, cx, cz, r + 2, (idx, x, z) => {
+      const open = 1 - smoothstep(r, r + 2, Math.hypot(x - cx, z - cz));
+      if (open > this.open[idx]) this.open[idx] = open;
     });
   }
 

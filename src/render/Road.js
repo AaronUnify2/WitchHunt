@@ -131,15 +131,23 @@ export class Road {
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, vertexColors: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     this.geometries = [];
     this.buildStrip(road, ground);
+    // Session 21: the road north, the same asphalt with more leaf litter on it
+    // (nobody's driven it since the army closed it), drawn just under the
+    // main road where they meet.
+    if (road.north) {
+      this.northMaterial = new THREE.MeshLambertMaterial({ map: this.texture, vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+      this.buildStrip(road.north, ground, this.northMaterial, c.northWear);
+    }
     const props = roadProps(road, c);
     this.buildPoles(props.poles, ground, colliders);
+    if (props.northPoles?.length) this.buildPoles(props.northPoles, ground, colliders);
     this.buildSign(props.sign, ground, colliders);
     scene.add(this.group);
   }
 
   // The asphalt, draped over the ground: one mesh per stretch.
-  buildStrip(road, ground) {
-    const c = this.cfg;
+  buildStrip(road, ground, material = this.material, wearOverride = null) {
+    const c = { ...this.cfg, wear: { ...this.cfg.wear, ...(wearOverride ?? {}) } };
     const { points, along } = road;
     const per = Math.max(2, Math.round(STRETCH / c.sample));
     for (let start = 0; start < points.length - 1; start += per) {
@@ -173,7 +181,7 @@ export class Road {
           const m = noise3(x * c.wear.scale, 0, z * c.wear.scale);
           const edge = Math.abs(k / c.across - 0.5) * 2; // 0 in the middle, 1 at the edge
           tint.setRGB(1, 1, 1).multiplyScalar(1 - c.wear.mottle * m - c.wear.edge * edge * edge);
-          const drift = Math.max(0, noise3(x * 0.21 + 40, 0, z * 0.21) - 0.45) * 2.2 * edge * edge;
+          const drift = Math.max(0, noise3(x * 0.21 + 40, 0, z * 0.21) - 0.45) * 2.2 * (edge * edge + (c.wear.across ?? 0));
           tint.lerp(leaf, Math.min(0.8, drift));
           colors[v * 3] = tint.r;
           colors[v * 3 + 1] = tint.g;
@@ -196,7 +204,7 @@ export class Road {
       geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
       this.geometries.push(geometry);
-      const mesh = new THREE.Mesh(geometry, this.material);
+      const mesh = new THREE.Mesh(geometry, material);
       mesh.receiveShadow = true;
       this.group.add(mesh);
       const s = geometry.boundingSphere;
@@ -224,7 +232,7 @@ export class Road {
     const geometry = mergeGeometries(pieces);
     pieces.forEach((g) => g.dispose());
     this.geometries.push(geometry);
-    this.poleMaterial = new THREE.MeshLambertMaterial({ color: pc.color });
+    this.poleMaterial ??= new THREE.MeshLambertMaterial({ color: pc.color });
     this.poles = new THREE.InstancedMesh(geometry, this.poleMaterial, poles.length);
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
@@ -266,7 +274,7 @@ export class Road {
     wireGeometry.setAttribute('position', new THREE.Float32BufferAttribute(wire, 3));
     wireGeometry.computeBoundingSphere();
     this.geometries.push(wireGeometry);
-    this.wireMaterial = new THREE.LineBasicMaterial({ color: pc.wireColor });
+    this.wireMaterial ??= new THREE.LineBasicMaterial({ color: pc.wireColor });
     this.wires = new THREE.LineSegments(wireGeometry, this.wireMaterial);
     this.group.add(this.wires);
   }
@@ -310,6 +318,7 @@ export class Road {
   dispose() {
     for (const g of this.geometries) g.dispose();
     this.material.dispose();
+    this.northMaterial?.dispose();
     this.texture.dispose();
     this.poleMaterial.dispose();
     this.wireMaterial.dispose();

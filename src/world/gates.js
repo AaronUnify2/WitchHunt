@@ -61,7 +61,8 @@ export function gateLayout(map, data, cfg) {
     if (g.kind === 'checkpoint') {
       at = { x: map.cluster.checkpoint.x, z: map.cluster.checkpoint.z, tx: 0, tz: 1 };
     } else if (g.road !== undefined) {
-      const f = roadFrame(map.road, g.road);
+      // Session 21: line "north" is the road north (metres from its fork).
+      const f = roadFrame(g.line === 'north' ? map.road.north : map.road, g.road);
       at = { x: f.x, z: f.z, tx: f.tx, tz: f.tz };
     } else {
       const pts = clusterPath(map, g.path[0], g.path[1]);

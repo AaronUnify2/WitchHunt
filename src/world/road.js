@@ -73,7 +73,18 @@ export function roadProps(road, cfg) {
   }
   const f = roadFrame(road, cfg.sign.along);
   const sign = { x: f.x + f.rx * cfg.sign.side, z: f.z + f.rz * cfg.sign.side, yaw: Math.atan2(-f.tx, -f.tz) };
-  return { poles, sign };
+  // Session 21: none standing on the road north where it forks off; its own
+  // line of poles runs up its west side to the barrier.
+  if (!road.north) return { poles, sign };
+  const keep = road.width / 2 + pc.offset - 1;
+  const main = poles.filter((p) => roadDistance(road.north, p.x, p.z).distance > keep);
+  const north = [];
+  const nc = cfg.northPoles;
+  for (let d = nc.startAlong; d <= road.north.length - nc.endBefore; d += pc.spacing) {
+    const g = roadFrame(road.north, d);
+    north.push({ x: g.x + g.rx * nc.side * pc.offset, z: g.z + g.rz * nc.side * pc.offset, yaw: Math.atan2(g.tx, g.tz) });
+  }
+  return { poles: main, northPoles: north, sign };
 }
 
 // The point `d` metres along the road, its direction (unit tangent) and

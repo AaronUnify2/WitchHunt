@@ -68,6 +68,7 @@ import { Dozer } from '../world/Dozer.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
+import { RoadNorth } from '../world/RoadNorth.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -152,6 +153,10 @@ export class Game {
     this.watch.init(root);
     this.initFirstDay();
     this.initExperimental(root);
+    // Session 21 (M10.2): the end of the road north (the barrier, the brush the dozer clears, the cave's mouth).
+    this.roadNorth = new RoadNorth(cfg, this.bus);
+    this.roadNorth.init({ world: this.world, colliders: this.colliders, player: this.player, progress: this.progress, notify: (text) => this.toast.show(text), sfx: this.combat.sfx, fx: this.combat.fx, clearing: this.clearing, dozer: this.dozer });
+    this.combat.promptSources.push(this.roadNorth.hud);
     // Session 16 (Aaron): what to do next, on the map and the minimap.
     this.objectives = new Objectives(cfg, this.bus);
     this.objectives.init(this);
@@ -701,7 +706,7 @@ export class Game {
     this.overlay.addStat('vehicles', () => this.vehicles.overlayLine());
     this.overlay.addStat('progress', () => `${this.progress.overlayLine()}  ${this.gates.overlayLine()}`);
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
-    this.overlay.addStat('experimental', () => this.experimental.map((v) => v.overlayLine()).join('  '));
+    this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
@@ -741,6 +746,7 @@ export class Game {
     this.outpost.addDebugItems(menu);
     this.quad.addDebugItems(menu);
     for (const v of this.experimental) v.addDebugItems(menu); // the ute with a turret, the alien quad
+    this.roadNorth.addDebugItems(menu); // Session 21
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1119,6 +1125,7 @@ export class Game {
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
       homeStop: this.homeStop.saveState(), // Session 18 (optional)
+      roadNorth: this.roadNorth.saveState(), // Session 21: the brush in front of the cave (optional)
     };
   }
 
@@ -1165,6 +1172,7 @@ export class Game {
     this.quad.loadState(d.quad);
     this.clearing.loadState(d.clearing);
     this.homeStop.loadState(d.homeStop);
+    this.roadNorth.loadState(d.roadNorth);
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1366,6 +1374,7 @@ export class Game {
     if (first) this.firstDay.update(dt, playing);
     if (first) this.witchEscape.update(dt, playing && this.combat.alive);
     if (first) this.homeStop.update(dt, playing && this.combat.alive);
+    if (first) this.roadNorth.update(dt, playing && this.combat.alive);
   }
 
   get phase() {

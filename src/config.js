@@ -533,6 +533,85 @@ export const config = {
     // The opening cluster's road (M9.1; DESIGN.md "Fixed opening cluster"):
     // the old county road past the gas station to the checkpoint. Its line
     // is in data/openingCluster.json.
+    // Session 21 (M10.2; world/roadNorth.js, render/RoadNorthProps.js,
+    // world/RoadNorth.js): the end of the road north. An old road tunnel
+    // into the cliff, fallen in; the army's ROAD CLOSED barrier in front of
+    // it; a spur of rock out from the cliff east of the road with Bigfoot's
+    // cave in its south face, hidden behind brush the dozer clears.
+    roadNorth: {
+      tunnelName: 'LAUREL GAP TUNNEL',
+      tunnelYear: 'W.P.A.  1936',
+      portal: {
+        front: 3.6, // metres south of the cliff line: the headwall's face (Tom stops 4.5 m out: cliff.walkMargin)
+        into: 1.2, // metres it's set back into the rock
+        width: 18,
+        height: 11,
+        opening: { width: 7.6, spring: 3.4 }, // the arch: its span, and the height its curve starts at
+        wing: { length: 7, angle: 0.62 }, // wing walls angled back into the rock (radians)
+        cliffFlat: 3, // metres either side beyond its width where the cliff's face is smoothed flat behind it
+      },
+      barrier: { fromCliff: 9.5, half: 7, jerseyBack: 1.6 }, // metres: the barricades' line from the cliff; half its span; the jersey barriers behind
+      outcrop: {
+        west: 8.5, // metres east of the road's centre: the spur's west side
+        east: 25,
+        reach: 24, // metres south of the cliff line: its south face, the cave's mouth in it
+        mouthEast: 15, // the mouth's centre, metres east of the road
+        mouth: { width: 3.8, height: 3.3, depth: 5.5 },
+        colliderRadius: 1.8,
+      },
+      brush: { width: 9, depth: 5, gap: 0.3 }, // the thicket in front of the mouth (metres)
+      // Earl's signs on the way up. along: metres from the fork (negative: from the
+      // road's end); side: metres off the centre line, as road.js's frames count
+      // it (+ is the left of the heading on the map: west on the road north,
+      // so each stands on its readers' right); for: the traffic that reads it.
+      signs: [
+        { id: 'bigfootXing', along: 70, side: -5.4, for: 'northbound', title: 'BIGFOOT XING', lines: ['NEXT 2 MILES'], art: 'bigfoot' },
+        { id: 'homeOfBigfoot', along: -82, side: 5.4, for: 'southbound', title: 'HOME OF BIGFOOT', lines: ["EARL'S GAS  BAIT  GIFTS", 'JUST AHEAD', 'WE BELIEVE!'] },
+      ],
+      prints: [[-1.0, 1.2, 0.12], [0.5, 2.6, -0.05], [-0.7, 4.1, 0.1]], // the big prints going into the brush: metres from the mouth's line, south of the brush; turn (radians)
+      bumpDistance: 1.4, // metres: walking into the barrier or the brush says what it is
+      bumpCooldown: 8, // seconds
+      mouthRange: 3.5, // metres from the mouth: the cave's prompt (once the brush is cleared)
+      bladeReach: 0.8, // metres beyond the brush the dozer's blade clears it from
+      look: {
+        rockTextureMeters: 8,
+        lampPeriod: 1.1, // seconds per blink (the two barricades out of step)
+        weather: { rust: [0x2e2a24, 0x3a3a38] },
+        concrete: 0x56544d,
+        concreteDark: 0x403e39,
+        concreteLight: 0x625f57,
+        soot: 0x1e1d1b,
+        rubble: 0x3c3a35,
+        moss: 0x34362c,
+        metal: 0x2e2a24,
+        jersey: 0x5a5852,
+        jerseyDark: 0x3e3c38,
+        leg: 0x3a3a38,
+        stripeOrange: 0x6a3418,
+        stripeWhite: 0x66635a,
+        sandbag: 0x3a3424,
+        wire: 0x3a3a38,
+        lampLens: 0x3a2a10,
+        lampLit: 0xffa424,
+        boardWhite: 0x8a867c,
+        boardInk: 0x141210,
+        boardYellow: 0x8a7a2e,
+        plywood: 0x6a5a40,
+        stencil: 0x1e1a14,
+        plaque: 0x4a463c,
+        plaqueInk: 0x1e1c18,
+        earlBoard: 0x5c4630,
+        earlInk: 0xb8a67e,
+        signBack: 0x2e261c,
+        leafDark: 0x1c2614,
+        leaf: 0x26341a,
+        leafBrown: 0x3a2e1a,
+        twig: 0x2e2418,
+        deadwood: 0x3a3226,
+        briar: 0x3a1e1a,
+        earth: 0x2e2418,
+      },
+    },
     road: {
       width: 6.5, // metres of asphalt
       sample: 2, // metres between points along its centre line
@@ -555,6 +634,7 @@ export const config = {
       potholeColor: 0x1a1816,
       potholeRim: 0x6a6660,
       wear: { scale: 0.08, mottle: 0.22, edge: 0.3, leaf: 0x5a4a32 },
+      northWear: { mottle: 0.3, edge: 0.4, across: 0.35 }, // across: leaf litter over the whole width, not just the edges // Session 21: the road north, unused since the army closed it
       // Telephone poles along the north side, with sagging wires between.
       poles: {
         spacing: 38, // metres along the road
@@ -569,6 +649,8 @@ export const config = {
         wireSegments: 8, // straight pieces per span
         startAlong: 20, // metres from the west end to the first pole
       },
+      // Session 21: the road north's poles, up its west side (side +1, as road.js's frames count it).
+      northPoles: { startAlong: 24, endBefore: 14, side: 1 },
       // The sign before the outpost.
       sign: {
         along: 426, // metres from the west end (the outpost's centre is at about 520); Session 17: by the outpost's road gate, moved back to 432 for a longer approach

@@ -12,6 +12,7 @@ import { Forest } from '../render/Forest.js';
 import { Landmarks } from '../render/Landmarks.js';
 import { Road } from '../render/Road.js';
 import { Cordon } from '../render/Cordon.js';
+import { RoadNorthProps } from '../render/RoadNorthProps.js';
 import { roadProps } from './road.js';
 import { gateLayout } from './gates.js';
 import encountersData from '../data/encounters.json';
@@ -50,7 +51,10 @@ export class World {
     this.terrain = new Terrain(cfg.terrain, this.rng.fork('terrain'));
     this.terrain.init(scene, colliders, this.ground, this.map);
     this.cliff = new Cliff(cfg.map.cliff, cfg.terrain, this.rng.fork('cliff'));
-    this.cliff.init(scene, colliders, this.ground);
+    // Session 21: the face is smoothed flat behind the road north's tunnel headwall.
+    const rn = this.map.roadNorth;
+    const flats = rn ? [{ x0: rn.portal.x - rn.portal.width / 2 - cfg.map.roadNorth.portal.cliffFlat, x1: rn.portal.x + rn.portal.width / 2 + cfg.map.roadNorth.portal.cliffFlat, blend: 6 }] : [];
+    this.cliff.init(scene, colliders, this.ground, flats);
     this.forest = new Forest(cfg.forest, this.rng.fork('forest'));
     this.forest.init(scene, colliders, this.ground);
     this.landmarks = new Landmarks(cfg.landmarks);
@@ -59,6 +63,11 @@ export class World {
     this.road = new Road(cfg.map.road, cfg.landmarks, cfg.map.cluster.seed);
     this.road.init(scene, colliders, this.map.road, this.ground);
     this.roadProps = roadProps(this.map.road, cfg.map.road);
+    // Session 21: the end of the road north (the tunnel, the barrier, the spur of rock, the cave and its brush).
+    if (rn) {
+      this.roadNorthProps = new RoadNorthProps(cfg.map.roadNorth, cfg.props?.weather);
+      this.roadNorthProps.init(scene, rn, this.ground, this.cliff.material);
+    }
     // M9.1: the military cordon across the map, south of the outpost.
     this.cordon = new Cordon(cfg.map.cordon, cfg.landmarks);
     this.cordon.init(scene, colliders, this.map, this.ground);
@@ -126,6 +135,7 @@ export class World {
     this.forest.update(dt, cameraPosition);
     this.landmarks.update(dt, cameraPosition);
     this.road.update(dt, cameraPosition);
+    this.roadNorthProps?.update(dt, cameraPosition);
   }
 
   setDrawDistance(distance) {
@@ -134,11 +144,13 @@ export class World {
     this.forest.setDrawDistance(distance);
     this.landmarks.setDrawDistance(distance);
     this.road.setDrawDistance(distance);
+    this.roadNorthProps?.setDrawDistance(distance);
   }
 
   dispose() {
     this.landmarks.dispose();
     this.road.dispose();
+    this.roadNorthProps?.dispose();
     this.cordon.dispose();
     this.forest.dispose();
     this.cliff.dispose();

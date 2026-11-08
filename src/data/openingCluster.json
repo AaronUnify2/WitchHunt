@@ -33,7 +33,7 @@
     "_note": "Session 21 (M10.2; DESIGN.md \"the road north\"): the road past the gas station also runs north. It forks off the main road branchAlong metres from its west end (just west of the forecourt; lead: metres east along the main road that set its turn) and ends at the ROAD CLOSED barrier at the foot of the cliff, where an old road tunnel goes into the rock (world/roadNorth.js, render/RoadNorth.js). Bigfoot's cave is just south of the barrier, its mouth in the cliff behind brush. points: control points (dx, dz from home) after the fork.",
     "branchAlong": 322,
     "lead": 12,
-    "points": [[-182, 175], [-200, 128], [-224, 80], [-243, 35], [-250, 0], [-250, -24]]
+    "points": [[-182, 175], [-200, 128], [-224, 80], [-243, 35], [-250, 0], [-250, -29.6]]
   },
   "road": {
     "points": [[-495, 190], [-380, 196], [-260, 208], [-160, 214], [-100, 214], [-50, 222], [-5, 240], [10, 262], [10, 290], [10, 302]],
