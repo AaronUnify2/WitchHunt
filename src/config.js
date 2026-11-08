@@ -2188,6 +2188,12 @@ export const config = {
       startCharge: 0, // Aaron: no charge at the start
       maxCharge: 300,
       batteryCharge: 100, // one battery fitted at the fence box
+      // Session 20 (Aaron, Nov 8): one power unit for everything (base/powerUnit.js).
+      // maxCharge is the starting capacity; it's saved and grows with a cell.
+      cells: {
+        // The crashed plane's small alien power cell (Session 25; the debug menu until then).
+        planeCell: { name: "the plane's alien power cell", capacity: 1000, charge: 500 },
+      },
       fullSecurityCharge: 100, // charge that gives the fence its full security value
       nightDrain: 40, // drained steadily over each night
       floodlightNightDrain: 4, // per floodlight, per night
@@ -3306,6 +3312,11 @@ export const config = {
       steer: 0.75, // the steering's gentler at that speed
     },
     // The plasma: bolts from alternate emitters, a charged orb from both.
+    // Session 20 (Aaron, Nov 8): its store, in the station's power units (a
+    // battery is 100). Driving is free; the plasma capacitor's refill (perCell
+    // units a cell) and the boost (boostPerSecond while it burns) draw on it.
+    // A battery fits at its back (rearOffset metres behind its middle, within rearRange).
+    power: { capacity: 1000, start: 1000, perCell: 10, boostPerSecond: 20, rearOffset: 1.1, rearRange: 1.1, fitSeconds: 0.8 },
     plasma: {
       cells: 10, // the capacitor
       recharge: 2.6, // cells a second, once it's been idle a moment
@@ -3827,6 +3838,7 @@ export const config = {
     fastForwardSteps: [1, 4, 10], // M6: world steps per frame for the debug fast-forward
     giveArmour: 40,
     giveFirstAid: 3,
+    crashFloor: 0.1, // Session 20: the crashed plane's set piece (health can't drop below 10%)
     giveAlienShells: 8, // Session 20: until the crashed plane (Session 25)
     giveAlienMed: 1, // Session 20: alien med kits come from the crashed plane on (Session 25)
     teleportOffset: 6, // metres from a clearing's centre that a teleport lands

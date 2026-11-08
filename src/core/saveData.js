@@ -128,6 +128,7 @@ export function saveStation(state) {
     gate: state.gate.health,
     doors: Object.fromEntries(Object.entries(state.doors).map(([id, d]) => [id, { health: d.health, max: d.max, reinforced: d.reinforced }])),
     charge: state.charge,
+    capacity: state.capacity, // Session 20: the power unit's capacity (a cell raises it)
     floods: state.floods.map((f) => f.built),
     turret: { ...state.turret },
     aidBox: { ...state.aidBox }, // Session 20
@@ -146,6 +147,7 @@ export function loadStation(state, d) {
   });
   state.gate.health = d.gate;
   for (const [id, door] of Object.entries(d.doors)) Object.assign(state.doors[id], door);
+  if (d.capacity) state.capacity = d.capacity; // Session 20
   state.charge = d.charge;
   d.floods.forEach((built, i) => {
     if (state.floods[i]) state.floods[i].built = built;

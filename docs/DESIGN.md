@@ -231,6 +231,8 @@ The original design, kept for reference: the player starts each run with the **s
 - A second kit used while one is working queues rather than stacks, so the 10/sec cap holds and nobody can spam-heal out of a burst of damage.
 - Healing stops at 100; leftovers are lost.
 
+**The health floor** *(Session 20)*: a general switch a set piece holds (`Combat.setHealthFloor(owner, fraction, onHit)`): health can't drop below that share of full, and each hit it stops raises `player:floorHit` and the owner's `onHit` (the crash site's 10% and its blackout, Session 25). Day 1's can't-fail 20% uses it too. The debug menu (Player) can hold a 10% floor to try.
+
 ### Resources and inventory
 
 - **Scrap:** the catch-all for building, repairing and upgrading.
@@ -434,13 +436,14 @@ The sum of every defence's current value (each scales with its remaining health)
 - The turret draws from the same charge.
 - The **alien power core** adds a huge charge and drains far slower.
 
-**Power: one unit for everything** *(Aaron, Nov 8; designed, not built)*
+**Power: one unit for everything** *(Aaron, Nov 8; the unit built Session 20)*
 
 - **A car battery = 100.** The fence starts with a **capacity of 300**. The alien quad holds **1000** (10 car batteries fill it).
 - **The crashed plane's small alien power cell** raises the fence's capacity to **1000** and puts 500 in; batteries top up the rest. Ellen's line once it's in (wording to polish): the cell supercharged the fence; she can't believe one alien was carrying it around, so their ships must run on something far bigger. It plants the alien ship.
 - **Why:** collecting batteries is the early game's job. The upgrade lifts that chore just as the frontier pulls Tom away from home, and zombie numbers can rise without endangering the base.
 - **The big core:** after the mega night (see Encounters), Ellen says they won't survive another like it and sends Tom for the alien ship's big core: the reason the station needs much more power. *(Proposed: the comms room's big radio could reach the outside world, given enough power.)*
 - Cells are shared between the fence and the alien quad.
+- **As built (Session 20):** the fence's store has a saved **capacity** (300 at the start); the plane's cell (`config.station.power.cells.planeCell`; the debug menu until Session 25) raises it to 1000 and puts 500 in. The alien quad has its own store of **1000** in the same units, full when it's brought: **driving is free**; refilling the plasma capacitor costs 10 a cell and the boost 20 a second (an empty store ends a boost and stops the refill). A battery fits at the quad's back (hold X). `base/powerUnit.js`; `config.alienQuad.power`.
 
 ### The workbench *(Aaron, Nov 8; designed, not built)*
 
@@ -645,6 +648,8 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 - **Origin:** it first came through at the abandoned mineshaft (Nov 8: the seam at the bottom, beside the giant torn cocoon it hatched from; see Optional encounters). *(proposed, reconciling Oct 16)* The military caught it there and were moving it through the military outpost, where it broke out of its container in transit; it then moved into Bigfoot's cave. The outpost hints at it but never names it.
 
 ### Flares
+
+**As built (Session 20):** flares (`loot.json`: `"after": "mothmanMet"`) never drop from any table (army zombies, police boots, the outpost's searches) until the story flag `mothmanMet` is set (Session 25 sets it at the crashed plane; the debug menu's story flags can set it now). The dice still roll, so the rest of a seed's loot is the same either way.
 
 - **Changed (Aaron, Nov 8; designed, not built):** **no flares in the opening.** Take them out of police car boots and army zombie drops until after the crashed plane. Both big Mothman moments fire their flares in cutscenes (the plane's signal flare, the station's lure flares). Once the Mothman's been met at the plane, flares join the general drop tables as random finds.
 - **Lure:** zombies near a burning flare chase the flare instead of the player for its burn time (e.g. 20 s). Fire one away to drag a horde off, or toward a planted charge.

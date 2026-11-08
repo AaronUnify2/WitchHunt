@@ -161,19 +161,52 @@ export class Combat {
 
   // Damage the player (armour first). shake: x the usual hurt shake.
   // Also used by the witch's swipes and hexes (M7).
-  // M9.2: healthFloor (set by story/FirstDay.js on Day 1, which can't be
-  // failed): the hit can't take health below it.
+  // M9.2: the health floor (Day 1 can't be failed): the hit can't take
+  // health below it. Session 20: a general switch (setHealthFloor).
   hurtPlayer(damage, shake = 1) {
     if (!this.alive || this.godMode) return;
     const before = this.health.value;
     const { taken } = this.health.takeDamage(damage);
-    const floor = this.healthFloor ?? 0;
-    if (floor > 0 && this.health.value < floor) this.health.value = Math.min(before, floor);
+    const floor = this.healthFloor;
+    if (floor.value > 0 && this.health.value < floor.value) {
+      this.health.value = Math.min(before, floor.value);
+      if (floor.owner) {
+        this.bus.emit('player:floorHit', { owner: floor.owner });
+        floor.onHit?.();
+      }
+    }
     this.hud.hurt();
     this.player.shake(this.cfg.feedback.hurtShake * shake);
     this.sfx.play('hurt');
     this.bus.emit('player:hurt', { damage, taken });
     if (this.health.dead) this.die();
+  }
+
+  // ---- the health floor (Session 20) ----------------------------------------------------------
+
+  // A floor `owner` holds (a story beat): health can't drop below `fraction`
+  // of full. onHit (optional): called each time a hit is stopped at it, and
+  // 'player:floorHit' { owner } goes out (the crash site's blackout answers
+  // it). fraction 0 (or clearHealthFloor) lets go. The highest floor wins.
+  setHealthFloor(owner, fraction, onHit = null) {
+    this.floors ??= new Map();
+    if (fraction > 0) this.floors.set(owner, { fraction, onHit });
+    else this.floors.delete(owner);
+  }
+
+  clearHealthFloor(owner) {
+    this.floors?.delete(owner);
+  }
+
+  // { value, owner, onHit }: the floor in health points (0: none).
+  get healthFloor() {
+    let best = { value: 0, owner: null, onHit: null };
+    if (!this.floors) return best;
+    for (const [owner, f] of this.floors) {
+      const value = f.fraction * this.health.cfg.max;
+      if (value > best.value) best = { value, owner, onHit: f.onHit };
+    }
+    return best;
   }
 
   // The run ends: M7's run-end screen (ui/RunEndScreen.js) takes over
@@ -431,12 +464,13 @@ export class Combat {
     };
     player.addItem(`Give first aid kits (+${d.giveFirstAid})`, () => giveKits('firstAid', d.giveFirstAid));
     player.addItem(`Give an alien med kit (+${d.giveAlienMed}; Session 20)`, () => giveKits('alienMed', d.giveAlienMed));
-    player.addItem('Hurt me (-25)', () => {
-      this.health.takeDamage(25);
-      this.hud.hurt();
-      this.bus.emit('player:hurt', { damage: 25, taken: 25 });
-      if (this.health.dead) this.die();
+    // Session 20: try the crash site's 10% floor (Session 25's blackout answers it).
+    player.addItem(() => `Health floor 10%, as at the crash site (${this.floors?.has('debug') ? 'on' : 'off'})`, () => {
+      if (this.floors?.has('debug')) this.clearHealthFloor('debug');
+      else this.setHealthFloor('debug', d.crashFloor, () => this.hud.pickup('The floor held: the crash site would black out here'));
     });
+    // Session 20: through hurtPlayer, so the health floor holds (not in god mode).
+    player.addItem('Hurt me (-25)', () => this.hurtPlayer(25));
   }
 
   overlayLine() {

@@ -30,6 +30,7 @@ import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { InspectCard } from '../ui/InspectCard.js';
+import { lootGate } from '../combat/loot.js';
 import { PaperNote } from '../ui/PaperNote.js';
 import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
@@ -395,6 +396,11 @@ export class Game {
     this.progress = new StoryProgress(this.cfg, this.bus);
     this.progress.init({ world: this.world, player: this.player, enemies: this.combat.enemies });
     this.station.progress = this.progress; // Session 16: the comms room's first aid box (taken once, a flag)
+    // Session 20 (Aaron): items held back until a story flag (flares: the Mothman at the crashed plane).
+    lootGate.allows = (item) => {
+      const after = this.combat.items[item]?.after;
+      return !after || this.progress.has(after);
+    };
     // The witch's cluster rule (Session 11): until Tom crosses the cordon
     // she plants only inside the opening cluster (still preferring its
     // sigil ground); then anywhere.

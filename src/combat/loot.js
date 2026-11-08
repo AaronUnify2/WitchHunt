@@ -2,10 +2,19 @@
 // (data/loot.json); every entry is rolled on its own, so one body can
 // drop several things. Returns [{ item, amount }] in table order.
 
+// Session 20: lootGate.allows(item) holds items back until their story
+// flag (loot.json items' "after"; Game sets it). The chance is still
+// rolled, so a held-back item doesn't change the rest of the loot.
+export const lootGate = { allows: () => true };
+
 export function rollLoot(table, rng, out = []) {
   out.length = 0;
   for (const entry of table ?? []) {
     if (!rng.chance(entry.chance)) continue;
+    if (!lootGate.allows(entry.item)) {
+      if (entry.min !== undefined) rng.int(entry.min, entry.max ?? entry.min); // the same draws either way
+      continue;
+    }
     const amount = entry.min === undefined ? 1 : rng.int(entry.min, entry.max ?? entry.min);
     if (amount > 0) out.push({ item: entry.item, amount });
   }

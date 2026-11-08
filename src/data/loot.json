@@ -1,5 +1,5 @@
 {
-  "_note": "Zombie drops (DESIGN.md \"Zombies\" variant table). items: what each pickup is and where it goes: ammo (a carried weapon's reserve, else the inventory's ammo store), inventory (a counter in the inventory), armour + amount (added to that bar on the spot; a full bar leaves it lying), firstAid + kit (a kit of that kind into the healing pool; one that doesn't fit is sent to the comms room's first aid box, Session 20). color: the placeholder pickup's colour. tables: one per variant (and 'mutant'); every entry is rolled on its own, so one body can drop several things. min/max: how many (rounds, scrap); armour and kits always drop one. More items and variants can be added here without code changes. Ammo rates were cut hard after Aaron's M4 play-test (a headshot kill often paid back six rounds, so looting the world would never matter): on average a kill now returns about 0.1 rifle rounds, so ammo runs down and encounters stay worth looting.",
+  "_note": "Zombie drops (DESIGN.md \"Zombies\" variant table). items: what each pickup is and where it goes: ammo (a carried weapon's reserve, else the inventory's ammo store), inventory (a counter in the inventory), armour + amount (added to that bar on the spot; a full bar leaves it lying), after (Session 20: a story flag; until it's set the item never drops from any table, the dice still rolled so the rest of the loot is unchanged: flares wait for the Mothman at the crashed plane), firstAid + kit (a kit of that kind into the healing pool; one that doesn't fit is sent to the comms room's first aid box, Session 20). color: the placeholder pickup's colour. tables: one per variant (and 'mutant'); every entry is rolled on its own, so one body can drop several things. min/max: how many (rounds, scrap); armour and kits always drop one. More items and variants can be added here without code changes. Ammo rates were cut hard after Aaron's M4 play-test (a headshot kill often paid back six rounds, so looting the world would never matter): on average a kill now returns about 0.1 rifle rounds, so ammo runs down and encounters stay worth looting.",
   "items": {
     "rifleAmmo": { "name": "rifle rounds", "ammo": "rifle", "color": "#c8a040" },
     "shotgunAmmo": { "name": "shotgun shells", "ammo": "shotgun", "color": "#b03424" },
@@ -10,7 +10,7 @@
     "alienMed": { "name": "alien med kit", "firstAid": true, "kit": "alienMed", "color": "#7fd6c8" },
     "vest": { "name": "police vest", "armour": "ballistic", "amount": 40, "color": "#465a78" },
     "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" },
-    "flare": { "name": "flare", "inventory": "flares", "color": "#d0402c" }
+    "flare": { "name": "flare", "inventory": "flares", "color": "#d0402c", "after": "mothmanMet" }
   },
   "tables": {
     "citizen": [

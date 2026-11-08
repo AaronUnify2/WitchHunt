@@ -9,6 +9,7 @@
 // { id, kind ('fence' | 'gate' | 'barricade' | 'door'), name, health, max,
 //   open (a gate or door standing open), built (barricades) }.
 
+import { addCharge, fitCell, isFull } from './powerUnit.js';
 import { turretRoundsFor, turretSecurity, ammoCoverage, roundsNeeded } from './turretMath.js';
 
 export const TURRET_MODES = ['slow', 'medium', 'fast'];
@@ -51,6 +52,7 @@ export class StationState {
     const door = (id, name) => ({ id, kind: 'door', name, health: d.health, max: d.health, reinforced: false, open: false, openAmount: 0 });
     this.doors = { front: door('front', 'front door'), comms: door('comms', 'comms room door') };
     this.charge = c.power.startCharge;
+    this.capacity = c.power.maxCharge; // Session 20: saved; a power cell raises it
     this.floods = this.layout.floods.map((fl, i) => ({ index: i, segment: fl.segment, built: false }));
     this.turret = { available: false, installed: false, mode: c.turret.startMode, rounds: 0 };
     // Session 20 (Aaron): the comms room's first aid box holds the kits that
@@ -187,15 +189,19 @@ export class StationState {
   // ---- power --------------------------------------------------------------------
 
   // A battery at the fence box. Returns the charge actually added.
+  // Session 20: the fence's store is a power unit (base/powerUnit.js): { capacity, charge } on this.
   fitBattery() {
-    const p = this.cfg.power;
-    const before = this.charge;
-    this.charge = Math.min(p.maxCharge, this.charge + p.batteryCharge);
-    return this.charge - before;
+    return addCharge(this, this.cfg.power.batteryCharge);
+  }
+
+  // A power cell (config.station.power.cells): a bigger store, and its charge in.
+  fitPowerCell(id) {
+    const cell = this.cfg.power.cells?.[id];
+    return cell ? fitCell(this, cell) : 0;
   }
 
   get chargeFull() {
-    return this.charge >= this.cfg.power.maxCharge;
+    return isFull(this);
   }
 
   drain(amount) {

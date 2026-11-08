@@ -20,6 +20,7 @@
 //
 // Events: 'alienQuad:mounted', 'alienQuad:dismounted', 'alienQuad:boost'.
 
+import { addCharge, drawCharge, isFull } from '../base/powerUnit.js';
 import * as THREE from 'three';
 import { Quad } from './Quad.js';
 import { resolveCircles } from './collision.js';
@@ -97,6 +98,9 @@ export class AlienQuad extends Quad {
     this.boosting = false;
     this.boostFx = 0;
     this.cells = this.qc.plasma.cells;
+    // Session 20 (Aaron): its store in the station's power units (base/powerUnit.js).
+    // Driving is free; the capacitor's refill and the boost draw on it.
+    this.power = { capacity: this.qc.power.capacity, charge: this.qc.power.start };
     this.idleFor = 10;
     this.fireTimer = 0;
     this.charge = 0;
@@ -169,7 +173,14 @@ export class AlienQuad extends Quad {
       const p = this.player.position;
       const d = Math.hypot(p.x - this.x, p.z - this.z);
       if (this.wheelSnare) freeing = d < this.qc.snare.range;
-      else if (d < this.qc.mountRange) offer = { key: 'aq-on', prompt: `Hold ${X}: ride the alien quad`, seconds: this.qc.mountSeconds, act: () => this.mount() };
+      else if (d < this.qc.mountRange) {
+        // Session 20: at its back, with a battery: fit it in the store (cells shared with the fence).
+        const pw = this.qc.power;
+        const rear = Math.hypot(p.x - (this.x + Math.sin(this.heading) * pw.rearOffset), p.z - (this.z + Math.cos(this.heading) * pw.rearOffset));
+        if (rear < pw.rearRange && this.combat.inventory.batteries > 0 && !isFull(this.power)) {
+          offer = { key: 'aq-battery', prompt: `Hold ${X}: fit a battery in the alien quad (${Math.round(this.power.charge)}/${this.power.capacity})`, seconds: pw.fitSeconds, act: () => this.fitBattery() };
+        } else offer = { key: 'aq-on', prompt: `Hold ${X}: ride the alien quad`, seconds: this.qc.mountSeconds, act: () => this.mount() };
+      }
     }
     if (this.wheelSnare && !this.riding) {
       if (freeing && input.wasPressed('interact')) this.mash += 1 / this.qc.snare.presses;
@@ -268,13 +279,19 @@ export class AlienQuad extends Quad {
   updateBoost(dt, input) {
     const b = this.qc.boost;
     const pressed = input.wasPressed('sprint') || input.wasPressed('jump');
-    if (pressed && !this.boosting && this.boostMeter >= b.minToStart && !this.wheelSnare) {
+    if (pressed && !this.boosting && this.boostMeter >= b.minToStart && !this.wheelSnare && this.power.charge > 0) {
       this.boosting = true;
       this.combat.sfx?.play('boost', this);
       this.player.shake(0.6);
       this.bus.emit('alienQuad:boost');
     }
     const wasFull = this.boostMeter >= 1;
+    // Session 20: the burn draws on the store; an empty store ends it.
+    if (this.boosting && !drawCharge(this.power, this.qc.power.boostPerSecond * dt)) {
+      this.power.charge = 0;
+      this.boosting = false;
+      this.combat.sfx?.play('boostEnd', this);
+    }
     const s = stepBoost(this.boostMeter, this.boosting, dt, b);
     this.boostMeter = s.meter;
     if (this.boosting && !s.burning) this.combat.sfx?.play('boostEnd', this);
@@ -328,7 +345,24 @@ export class AlienQuad extends Quad {
   rechargeCells(dt, used) {
     const P = this.qc.plasma;
     this.idleFor = used ? 0 : this.idleFor + dt;
-    if (this.idleFor >= P.rechargeDelay) this.cells = Math.min(P.cells, this.cells + P.recharge * dt);
+    if (this.idleFor < P.rechargeDelay) return;
+    // Session 20: each cell refilled costs perCell units from the store.
+    const per = this.qc.power.perCell;
+    const want = Math.min(P.cells - this.cells, P.recharge * dt, per > 0 ? this.power.charge / per : Infinity);
+    if (want <= 0) return;
+    this.cells += want;
+    this.power.charge = Math.max(0, this.power.charge - want * per);
+  }
+
+  // Session 20: a battery (or a power cell) into its store.
+  fitBattery() {
+    const inv = this.combat.inventory;
+    if (inv.batteries <= 0 || isFull(this.power)) return false;
+    inv.useBattery();
+    addCharge(this.power, this.cfg.station.power.batteryCharge);
+    this.combat.hud.pickup(`Battery fitted: alien quad ${Math.round(this.power.charge)}/${this.power.capacity}`);
+    this.combat.sfx?.play('pickup');
+    return true;
   }
 
   rechargeIdle(dt) {
@@ -526,7 +560,7 @@ export class AlienQuad extends Quad {
       charge: this.charge,
       canOrb: this.cells >= this.qc.plasma.orb.cost,
       inArc: this.inArc(),
-      hint: pad ? 'RT plasma · hold LT orb · L3/A boost · hold X off' : 'Mouse plasma · hold Right orb · Shift boost · hold E off',
+      hint: `${pad ? 'RT plasma · hold LT orb · L3/A boost · hold X off' : 'Mouse plasma · hold Right orb · Shift boost · hold E off'} · power ${Math.round(this.power.charge)}/${this.power.capacity}`,
     });
   }
 
@@ -552,7 +586,9 @@ export class AlienQuad extends Quad {
     cat.addItem('Alien quad: refill cells and boost', () => {
       this.cells = this.qc.plasma.cells;
       this.boostMeter = 1;
+      this.power.charge = this.power.capacity; // Session 20: its store too
     });
+    cat.addItem(() => `Alien quad: drain its power store (${Math.round(this.power.charge)}/${this.power.capacity})`, () => (this.power.charge = 0));
     cat.addItem('Alien quad: send it away', () => {
       if (this.riding) this.dismount();
       this.reset();

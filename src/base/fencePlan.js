@@ -137,7 +137,7 @@ export function buildFencePlan(station) {
   const canFit = inv.batteries > 0 && !s.chargeFull;
   const tonight = Math.round(s.nightDrainPerSecond(station.nightSeconds) * station.nightSeconds);
   items.push({
-    svg: `<rect class="shape box" x="${f(box.x - 2)}" y="${f(box.y - 1.6)}" width="4" height="3.2" rx="0.4"/><rect class="charge" x="${f(box.x - 1.6)}" y="${f(box.y + 1.1)}" width="${f(3.2 * Math.min(1, s.charge / p.maxCharge))}" height="0.35"/><text class="glyph" x="${f(box.x)}" y="${f(box.y + 0.5)}">&#9889;</text>`,
+    svg: `<rect class="shape box" x="${f(box.x - 2)}" y="${f(box.y - 1.6)}" width="4" height="3.2" rx="0.4"/><rect class="charge" x="${f(box.x - 1.6)}" y="${f(box.y + 1.1)}" width="${f(3.2 * Math.min(1, s.charge / s.capacity))}" height="0.35"/><text class="glyph" x="${f(box.x)}" y="${f(box.y + 0.5)}">&#9889;</text>`,
     hit: `<rect class="hit" x="${f(box.x - 3)}" y="${f(box.y - 2.6)}" width="6" height="5.2"/>`,
     x: box.x,
     y: box.y,
@@ -146,7 +146,7 @@ export function buildFencePlan(station) {
     spine: 1,
     cls: `box ${s.powered ? 'ok' : 'down'}`,
     label: 'Fence box (power)',
-    value: `charge ${charge}/${p.maxCharge}  ·  you carry ${inv.batteries} batter${inv.batteries === 1 ? 'y' : 'ies'}${canFit ? `  ·  A: fit one (+${p.batteryCharge})` : inv.batteries > 0 ? '  ·  full' : '  ·  bring a battery'}  ·  tonight drains about ${tonight}`,
+    value: `charge ${charge}/${s.capacity}  ·  you carry ${inv.batteries} batter${inv.batteries === 1 ? 'y' : 'ies'}${canFit ? `  ·  A: fit one (+${p.batteryCharge})` : inv.batteries > 0 ? '  ·  full' : '  ·  bring a battery'}  ·  tonight drains about ${tonight}`,
     action: canFit ? () => station.fitBattery() : null,
   });
 

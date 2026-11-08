@@ -615,7 +615,7 @@ export class Station {
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });
 
     const box = L.fenceBox;
-    const chargeText = `charge ${Math.round(s.charge)}/${sc.power.maxCharge}`;
+    const chargeText = `charge ${Math.round(s.charge)}/${s.capacity}`;
     if (inv.batteries > 0 && !s.chargeFull) {
       offer(dist(box), { key: 'battery', prompt: `Hold ${X}: fit a battery in the fence box (${chargeText})`, busy: 'Fitting the battery…', seconds: h.battery, act: () => this.fitBattery() });
     } else {
@@ -798,7 +798,7 @@ export class Station {
     this.combat.sfx.play('battery');
     this.renderer.pulseWire();
     this.bus.emit('station:battery', { charge: this.state.charge });
-    return `Battery fitted: +${Math.round(added)} charge (${Math.round(this.state.charge)}/${this.sc.power.maxCharge})`;
+    return `Battery fitted: +${Math.round(added)} charge (${Math.round(this.state.charge)}/${this.state.capacity})`;
   }
 
   installTurret() {
@@ -859,7 +859,7 @@ export class Station {
   ledgerSummary() {
     const s = this.state;
     const sec = s.security(this.nightSeconds);
-    return `Scrap ${this.combat.inventory.scrap}   ·   Security ${sec.total.toFixed(0)}   ·   Fence charge ${Math.round(s.charge)}/${this.sc.power.maxCharge}   ·   Batteries carried ${this.combat.inventory.batteries}`;
+    return `Scrap ${this.combat.inventory.scrap}   ·   Security ${sec.total.toFixed(0)}   ·   Fence charge ${Math.round(s.charge)}/${s.capacity}   ·   Batteries carried ${this.combat.inventory.batteries}`;
   }
 
   // Tabs (Session 15b, Aaron): Fence (the whole-fence repair, then the
@@ -1068,10 +1068,16 @@ export class Station {
       this.notify('Turret given: install it on its pad by the front door');
     });
     station.addItem('Fill the fence charge', () => {
-      s.charge = this.sc.power.maxCharge;
+      s.charge = s.capacity;
       this.renderer.pulseWire();
     });
     station.addItem('Drain the fence charge', () => (s.charge = 0));
+    // Session 20: the crashed plane's cell (Session 25 puts it in the story).
+    station.addItem(() => `Fit the plane's alien power cell (capacity ${s.capacity})`, () => {
+      const added = s.fitPowerCell('planeCell');
+      this.renderer.pulseWire();
+      this.notify(`Power cell fitted: +${Math.round(added)} (${Math.round(s.charge)}/${s.capacity})`);
+    });
     station.addItem('Repair everything', () => {
       for (const b of s.barriers()) if (b.kind !== 'barricade' || b.built) b.health = b.max;
       this.syncColliders();

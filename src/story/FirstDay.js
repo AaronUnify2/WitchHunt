@@ -218,7 +218,7 @@ export class FirstDay {
   update(dt, playing) {
     const day1 = this.clock.day === 1 && this.clock.phase === 'day';
     // Day 1 can't be failed (config.firstDay.healthFloor: a share of full health).
-    this.combat.healthFloor = day1 && this.fc.cantFail ? this.fc.healthFloor * this.combat.health.cfg.max : 0;
+    this.combat.setHealthFloor('day1', day1 && this.fc.cantFail ? this.fc.healthFloor : 0); // Session 20: the general switch
     // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
     this.station.gateLocked = this.gateLocked();
     // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).
@@ -689,7 +689,7 @@ export class FirstDay {
 
   overlayLine() {
     const n = this.night;
-    return `day1 ${this.currentStep()}${n ? ` night1 t${Math.round(n.time)} wave ${n.waves}/${this.fc.night1.waves.count} (${n.wave.length} up) ${n.planted ? 'planted' : 'waiting'}` : ''}${this.combat.healthFloor ? ' cant-fail' : ''}`;
+    return `day1 ${this.currentStep()}${n ? ` night1 t${Math.round(n.time)} wave ${n.waves}/${this.fc.night1.waves.count} (${n.wave.length} up) ${n.planted ? 'planted' : 'waiting'}` : ''}${this.combat.healthFloor.value ? ' cant-fail' : ''}`;
   }
 
   dispose() {
