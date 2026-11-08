@@ -15,7 +15,10 @@
 // Version 2 (M9.1): the opening cluster changed every seed's map, so a
 // version 1 save would wake up somewhere else; it's discarded cleanly.
 
-export const SAVE_VERSION = 2;
+// Version 3 (Session 20): the healing pool, the loadout and rack, ammo
+// types, the power unit's capacity, and Save and quit. Older saves are
+// discarded cleanly (Aaron: fine).
+export const SAVE_VERSION = 3;
 
 // ---- bytes <-> text (the fog of war is a byte per cell, 0 or 1) -------------
 

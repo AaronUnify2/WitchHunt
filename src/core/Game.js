@@ -31,6 +31,7 @@ import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { InspectCard } from '../ui/InspectCard.js';
 import { lootGate } from '../combat/loot.js';
+import { PauseMenu } from '../ui/PauseMenu.js';
 import { PaperNote } from '../ui/PaperNote.js';
 import { WatchQueue } from '../story/WatchQueue.js';
 import { Objectives } from '../story/Objectives.js';
@@ -139,6 +140,13 @@ export class Game {
     // Session 20 (Aaron): special items get an inspect card (watch, read, or keep for later).
     this.card = new InspectCard(this.bus);
     this.card.init(root, this.combat.sfx);
+    // Session 20 (Aaron): the pause menu: Resume, Save and quit, Settings (greyed).
+    this.pauseMenu = new PauseMenu({
+      resume: () => this.resumeFromPause(),
+      saveAndQuit: () => this.saveAndQuit(),
+      canSave: () => this.saveRefusal(),
+    });
+    this.pauseMenu.init(root);
     // Session 16 (Aaron): tapes and feeds wait for D-pad down.
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
@@ -959,11 +967,19 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };
     this.renderer.canvas.addEventListener('click', this.onCanvasClick);
+
+    // Session 20: losing the mouse lock mid-game (Esc, on desktop) pauses, unless
+    // something that let go of it on purpose is up.
+    this.onPointerLockChange = () => {
+      if (document.pointerLockElement || !hasFinePointer() || !this.canPause()) return;
+      this.pauseMenu.open('keyboardMouse');
+    };
+    document.addEventListener('pointerlockchange', this.onPointerLockChange);
 
     // Don't let a hidden tab produce one huge frame on return.
     this.onVisibility = () => {
@@ -1015,6 +1031,58 @@ export class Game {
       return;
     }
     this.start();
+  }
+
+  // ---- the pause menu (Session 20) ---------------------------------------------------------------
+
+  // Nothing else up: the run's going, Tom's alive, no menu, map, ledger, paper, card or cutscene.
+  canPause() {
+    return (
+      this.state === 'running' &&
+      this.combat.alive &&
+      !this.pauseMenu.isOpen &&
+      !this.debugMenu.isOpen &&
+      !this.mapUi.isOpen &&
+      !this.station.ledger.isOpen &&
+      !this.paper.isOpen &&
+      !this.card.isOpen &&
+      !this.noReturn.isOpen &&
+      !this.runEnd.isOpen &&
+      !this.cutscenes.active &&
+      !this.viewer.active
+    );
+  }
+
+  resumeFromPause() {
+    this.combat.weapons.holdFire(); // the click on Resume mustn't fire
+    if (hasFinePointer()) this.input.requestPointerLock();
+  }
+
+  // Why saving isn't allowed now (null: it is). The opening (Day 1 and
+  // Night 1) is scripted and isn't saved; nothing saves past the point of no return.
+  saveRefusal() {
+    if (this.pastNoReturn) return 'no saving after the hut is destroyed';
+    if (this.clock.day === 1 && this.clock.phase !== 'dawn') return 'saving starts at dawn after night 1'; // dawn 1 is still day 1
+    return null;
+  }
+
+  // Aaron (Session 20): Continue puts Tom back at a safe point (home, in the
+  // cabin), the clock and everything else as they were. Then back to the
+  // main menu: the page reloads on the same seed and offers Continue.
+  saveAndQuit() {
+    if (this.saveRefusal()) return false;
+    const data = this.collectSave();
+    const safe = this.station.safePoint();
+    data.player.x = safe.x;
+    data.player.z = safe.z;
+    data.player.yaw = safe.yaw;
+    if (!this.saves.save(data)) {
+      this.toast.show('Could not save (storage blocked?)');
+      return false;
+    }
+    if (document.pointerLockElement) document.exitPointerLock?.();
+    reloadWithSeed(this.seed);
+    return true;
   }
 
   // A new run: the save goes, and the page reloads on a fresh map.
@@ -1163,7 +1231,16 @@ export class Game {
     const viewer = this.viewer;
     const viewing = viewer.active;
     viewer.update(dt, this.input, !this.debugMenu.isOpen);
-    const held = viewing || viewer.active;
+    // Session 20: the pause menu holds the world and the clock. Menu / Esc opens it
+    // when nothing else is up (Esc closes the ledger, a paper or a card first).
+    const pm = this.pauseMenu;
+    const wasPaused = pm.isOpen;
+    if (!wasPaused && this.input.wasPressed('pause') && this.canPause()) {
+      pm.open(this.input.activeDevice);
+      this.input.swallowHeld?.();
+    }
+    pm.update(this.input, !wasPaused);
+    const held = viewing || viewer.active || wasPaused || pm.isOpen;
     // Session 16: a paper in close-up holds the game too (open at the start of the frame counts).
     const reading = this.paper.isOpen || this.card.isOpen;
     this.paper.update(dt, this.input);
@@ -1239,7 +1316,7 @@ export class Game {
       this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && this.combat.alive);
       this.mapUi.setObjective(this.objectives.current);
     }
-    this.watch.update(dt, this.input, this.state === 'running' && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.noReturn.isOpen && this.combat.alive);
+    this.watch.update(dt, this.input, this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.overlay.update(dt);
   }
 
@@ -1247,7 +1324,7 @@ export class Game {
   // fast-forward steps have them locked).
   step(dt, running, playing, first) {
     const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !this.card.isOpen && !ledgerPause) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const cinematic = this.finalBattle.cinematic || this.cutscenes.locksControls;
@@ -1329,6 +1406,8 @@ export class Game {
     this.noReturn.dispose();
     this.paper.dispose();
     this.card.dispose();
+    this.pauseMenu.dispose();
+    document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();

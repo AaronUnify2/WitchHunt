@@ -2243,6 +2243,8 @@ export const config = {
     aidBox: { kits: { firstAid: 2 } },
     // Session 20 (Aaron): the gun rack on the comms room's east wall (z: metres from the cabin's centre; standOff: where Tom stands, in from the wall).
     gunRack: { z: -2.2, standOff: 0.9 },
+    // Session 20 (Aaron): Save and quit's safe point: the cabin's main room (metres from its centre), facing the front door.
+    safePoint: { at: [1, 1.2], yaw: Math.PI },
     shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright
       handle: 0x5a3e24, blade: 0x3a3c3e },
     towerRifle: { weapon: 'rifle', at: [0.55, -1.36], lean: 0.3, stock: 0x3a2416, steel: 0x1c1e20 },

@@ -2005,3 +2005,39 @@ body.in-cutscene .vhud {
   border: 1px solid rgba(220, 200, 150, 0.35);
   cursor: pointer;
 }
+
+/* Session 20: the pause menu (ui/PauseMenu.js), its buttons as the main menu's. */
+.pause {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 8, 16, 0.7);
+  touch-action: none;
+}
+.pause.hidden { display: none; }
+.pause-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.7rem;
+  min-width: min(24rem, 86vw);
+  text-align: center;
+}
+.pause-title {
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+.pause-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.pause-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+}

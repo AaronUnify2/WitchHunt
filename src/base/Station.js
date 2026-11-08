@@ -312,6 +312,14 @@ export class Station {
     return null;
   }
 
+  // Session 20 (Aaron): where Save and quit puts Tom back: in the cabin's
+  // main room, facing the front door (config.station.safePoint: from the cabin's centre).
+  safePoint() {
+    const c = this.layout.cabin;
+    const s = this.sc.safePoint;
+    return { x: c.x + s.at[0], z: c.z + s.at[1], yaw: s.yaw };
+  }
+
   // Session 20 (Aaron): the gun rack on the comms room's east wall. The
   // guns that don't fit the loadout wait here; the ledger's Gun rack page
   // swaps them (render/stationInterior.js draws it).
