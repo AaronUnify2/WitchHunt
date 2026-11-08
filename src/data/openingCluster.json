@@ -1,12 +1,13 @@
 {
-  "_note": "The fixed opening cluster (DESIGN.md \"Fixed opening cluster\", M9.1): placed first and identical on every seed. Positions are metres from home's centre (dx east, dz south); home sits on the cliff at config.map.cluster.homeX. key: an encounter id from encounters.json, or a sigil ground id from sigilGrounds.json with kind \"sigilGround\". clearingType: homeWoods keeps checkpoint and roadside mixes out of the cluster, so its sigils raise citizens (Session 11). paths: the cluster's pathways (the only ones north of the cordon); the frontier joins at the outpost alone, through the checkpoint. They make a loop, so the dead and the witch reach the shelter side without walking through the station. road: true = this pathway follows the road. road.points: the road's control points (dx, dz from home), west edge to the checkpoint; it passes the gas station's forecourt about 14 m south of the clearing's centre (the station building goes north of it, M9.3) and runs through the outpost and due south through the checkpoint. road.wrecks: the fixed cars on it (along: metres from the west end; side: metres right (+) or left (-) of the centre line; turn: radians off the road's heading; type from vehicles.json). Their batteries and alarms are rolled per run like any car's. gates: the soft-gated path order (DESIGN.md): each blocks Tom (only) on its path until its progress flag (data/progress.json) is set. path + at (metres from the first clearing's centre) or t (fraction along); or road (metres along the road); kind: pipeGate, fallenTree, chainGate, or checkpoint (the cordon's, drawn with the cordon). locked: what Tom finds when he walks into it shut. trailCams: the family's fixed cameras in the cluster (the seeded ones are all in the frontier): id (its number: the storm shelter's is camera six, whose Night 1 clip the tutorial plays, OPEN_QUESTIONS #153), near (a cluster clearing) and dx, dz (metres from that clearing's centre); it faces the centre.",
+  "_note": "The fixed opening cluster (DESIGN.md \"Fixed opening cluster\", M9.1): placed first and identical on every seed. Positions are metres from home's centre (dx east, dz south); home sits on the cliff at config.map.cluster.homeX. key: an encounter id from encounters.json, or a sigil ground id from sigilGrounds.json with kind \"sigilGround\". clearingType: homeWoods keeps checkpoint and roadside mixes out of the cluster, so its sigils raise citizens (Session 11). paths: the cluster's pathways (the only ones north of the cordon); the frontier joins at the outpost alone, through the checkpoint. Session 21: the Bigfoot cave (its mouth in the cliff at the end of the road north, hidden behind brush) is a cluster clearing too. They make a loop, so the dead and the witch reach the shelter side without walking through the station. road: true = this pathway follows the road; road: \"north\" = it follows the main road to the fork and then the road north (Session 21). road.points: the road's control points (dx, dz from home), west edge to the checkpoint; it passes the gas station's forecourt about 14 m south of the clearing's centre (the station building goes north of it, M9.3) and runs through the outpost and due south through the checkpoint. road.wrecks: the fixed cars on it (along: metres from the west end; side: metres right (+) or left (-) of the centre line; turn: radians off the road's heading; type from vehicles.json). Their batteries and alarms are rolled per run like any car's. gates: the soft-gated path order (DESIGN.md): each blocks Tom (only) on its path until its progress flag (data/progress.json) is set. path + at (metres from the first clearing's centre) or t (fraction along); or road (metres along the road; line: \"north\" for the road north, metres from its fork); kind: pipeGate, fallenTree, chainGate, or checkpoint (the cordon's, drawn with the cordon). locked: what Tom finds when he walks into it shut. trailCams: the family's fixed cameras in the cluster (the seeded ones are all in the frontier): id (its number: the storm shelter's is camera six, whose Night 1 clip the tutorial plays, OPEN_QUESTIONS #153), near (a cluster clearing) and dx, dz (metres from that clearing's centre); it faces the centre.",
   "clearings": [
     { "key": "home", "dx": 0, "dz": 0 },
     { "key": "campsite", "dx": -130, "dz": 70, "radius": 20, "clearingType": "homeWoods" },
     { "key": "stormShelter", "dx": 150, "dz": 90, "radius": 20, "clearingType": "homeWoods" },
     { "key": "familyCemetery", "kind": "sigilGround", "dx": 220, "dz": 200, "radius": 18, "clearingType": "homeWoods" },
     { "key": "gasStation", "dx": -100, "dz": 200, "radius": 24, "clearingType": "homeWoods" },
-    { "key": "outpost", "dx": 10, "dz": 260, "radius": 30, "clearingType": "homeWoods" }
+    { "key": "outpost", "dx": 10, "dz": 260, "radius": 30, "clearingType": "homeWoods" },
+    { "key": "bigfootCave", "dx": -240, "dz": -4, "radius": 25, "clearingType": "homeWoods" }
   ],
   "paths": [
     { "a": "home", "b": "campsite" },
@@ -14,7 +15,8 @@
     { "a": "stormShelter", "b": "familyCemetery" },
     { "a": "campsite", "b": "gasStation" },
     { "a": "gasStation", "b": "outpost", "road": true },
-    { "a": "familyCemetery", "b": "outpost" }
+    { "a": "familyCemetery", "b": "outpost" },
+    { "a": "gasStation", "b": "bigfootCave", "road": "north" }
   ],
   "trailCams": [
     { "id": 6, "near": "stormShelter", "dx": -11, "dz": -10 }
@@ -22,10 +24,17 @@
   "gates": [
     { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
     { "id": "gasStationTrail", "kind": "fallenTree", "path": ["campsite", "gasStation"], "t": 0.5, "opensOn": "day2", "locked": "A fallen oak blocks the trail. Too big to climb with a pack." },
+    { "id": "roadNorth", "kind": "fallenTree", "road": 45, "line": "north", "opensOn": "day2", "locked": "Another oak down, across the road this time. Too big to climb with a pack." },
     { "id": "outpostRoad", "kind": "chainGate", "road": 432, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
     { "id": "outpostSide", "kind": "chainGate", "path": ["familyCemetery", "outpost"], "t": 0.72, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },
     { "id": "checkpoint", "kind": "checkpoint", "opensOn": "outpostCleared", "locked": "The checkpoint's gate is shut. Nobody's answering." }
   ],
+  "roadNorth": {
+    "_note": "Session 21 (M10.2; DESIGN.md \"the road north\"): the road past the gas station also runs north. It forks off the main road branchAlong metres from its west end (just west of the forecourt; lead: metres east along the main road that set its turn) and ends at the ROAD CLOSED barrier at the foot of the cliff, where an old road tunnel goes into the rock (world/roadNorth.js, render/RoadNorth.js). Bigfoot's cave is just south of the barrier, its mouth in the cliff behind brush. points: control points (dx, dz from home) after the fork.",
+    "branchAlong": 322,
+    "lead": 12,
+    "points": [[-182, 175], [-200, 128], [-224, 80], [-243, 35], [-250, 0], [-250, -24]]
+  },
   "road": {
     "points": [[-495, 190], [-380, 196], [-260, 208], [-160, 214], [-100, 214], [-50, 222], [-5, 240], [10, 262], [10, 290], [10, 302]],
     "wrecks": [

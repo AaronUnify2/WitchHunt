@@ -47,8 +47,8 @@ describe('generateMap: the roster', () => {
     }
   });
 
-  it('puts the Car Armory in the north (Aaron, M6)', () => {
-    for (const map of maps) expect(map.clearings.find((c) => c.key === 'carArmory').band).toBe('north');
+  it('puts the Car Armory in the south (Aaron, Nov 8: moved south; it was north from M6)', () => {
+    for (const map of maps) expect(map.clearings.find((c) => c.key === 'carArmory').band).toBe('south');
   });
 
   it(`has ${m.sigilGrounds.min}-${m.sigilGrounds.max} different sigil grounds`, () => {
@@ -60,11 +60,10 @@ describe('generateMap: the roster', () => {
     }
   });
 
-  it('has 2-3 staircases and keeps radio events off the map', () => {
+  it('has one staircase (Session 21: the spine\'s, beat 5) and keeps radio events off the map', () => {
     for (const map of maps) {
       const stairs = map.clearings.filter((c) => c.key === 'stairs').length;
-      expect(stairs).toBeGreaterThanOrEqual(2);
-      expect(stairs).toBeLessThanOrEqual(3);
+      expect(stairs).toBe(1);
       expect(map.clearings.some((c) => c.key === 'caller')).toBe(false);
       for (const e of map.radioEvents) expect(e.key).toBe('caller');
     }
@@ -86,7 +85,7 @@ describe('generateMap: placement', () => {
     const bandOf = Object.fromEntries(MAP_DATA.encounters.map((e) => [e.id, e.band]));
     for (const map of maps) {
       for (const c of map.clearings) {
-        if (c.kind !== 'encounter' || c.key === 'campsite') continue;
+        if (c.kind !== 'encounter' || c.key === 'campsite' || c.optional) continue;
         const [lo, hi] = m.bands[bandOf[c.key]];
         expect(c.southness).toBeGreaterThanOrEqual(lo);
         expect(c.southness).toBeLessThanOrEqual(hi);

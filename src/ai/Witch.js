@@ -99,12 +99,25 @@ export class Witch {
     this.bus = bus;
   }
 
+  // The clearings she only passes through when there's no other way.
+  static avoided(map) {
+    const out = [map.homeIndex];
+    map.clearings.forEach((c, i) => {
+      if (i !== map.hutIndex && (c.spine || c.key === 'bigfootCave')) out.push(i);
+    });
+    return out;
+  }
+
   // ctx: { world, director, player, colliders, combat, clock, hutBuilding }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.ground = ctx.world.ground;
     this.map = ctx.world.map;
-    this.routes = new GraphRoutes(this.map, [this.map.homeIndex]);
+    // She keeps clear of the ranger station, and (Session 21, DESIGN.md "Map:
+    // Structure") of the story spine's places and the Bigfoot cave: she never
+    // walks through a main story encounter, so boss fights never overlap.
+    // Her own hut is the exception.
+    this.routes = new GraphRoutes(this.map, Witch.avoided(this.map));
     this.planRng = this.rng.fork('witch-plan');
     this.fightRng = this.rng.fork('witch-fight');
     this.renderer = new WitchRenderer(this.wc.look, this.rng.fork('witch-look'));

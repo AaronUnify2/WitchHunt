@@ -46,8 +46,8 @@ describe('the pause menu (Session 20)', () => {
   });
 
   it('the save format moved on (old saves are discarded); saving starts at dawn 1', () => {
-    expect(SAVE_VERSION).toBe(3);
-    expect(validSave({ version: 2, seed: 1, clock: {}, player: {}, station: {} })).toBe(false);
+    expect(SAVE_VERSION).toBe(4); // Session 21: the map moved (the spine, the road north, the railway)
+    expect(validSave({ version: 3, seed: 1, clock: {}, player: {}, station: {} })).toBe(false);
     expect(config.station.safePoint.at).toHaveLength(2);
   });
 });

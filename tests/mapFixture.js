@@ -9,12 +9,14 @@ import encounters from '../src/data/encounters.json';
 import sigilGrounds from '../src/data/sigilGrounds.json';
 import clearingTypes from '../src/data/clearingTypes.json';
 import openingCluster from '../src/data/openingCluster.json';
+import storySpine from '../src/data/storySpine.json';
 
 export const MAP_DATA = {
   encounters: encounters.encounters,
   sigilGrounds: sigilGrounds.grounds,
   clearingTypes: clearingTypes.types,
   cluster: openingCluster,
+  spine: storySpine,
 };
 
 export function makeMap(seed) {

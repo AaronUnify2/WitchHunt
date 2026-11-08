@@ -19,6 +19,9 @@ export function signText(clearing, typeName) {
     case 'sigilGround':
       return { title: clearing.name.toUpperCase(), lines: ['Sigil ground (placeholder)', type] };
     case 'encounter':
+      // Session 21: the story spine's places and the seed's optional encounters say which they are.
+      if (clearing.spine) return { title: clearing.name.toUpperCase(), lines: [`Story beat ${clearing.beat}: built in ${clearing.builtIn}`, 'Placeholder'] };
+      if (clearing.optional) return { title: clearing.name.toUpperCase(), lines: [`Optional encounter: built in ${clearing.builtIn}`, 'Placeholder'] };
       return { title: clearing.name.toUpperCase(), lines: [`Encounter: built in ${clearing.builtIn}`, type] };
     default:
       return { title: (typeName ?? 'Clearing').toUpperCase(), lines: ['Clearing', clearing.band] };
@@ -51,7 +54,8 @@ export class Landmarks {
     clearings.forEach((cl, i) => {
       // M7: the hut clearing has the hut itself instead of a signpost.
       // Session 15b: so do the sets that are built (config.landmarks.built).
-      if (cl.kind === 'hut' || (cl.cluster && (c.built ?? []).includes(cl.key))) {
+      // Session 21: nor does a secret place (the Bigfoot cave: the sign would give it away).
+      if (cl.kind === 'hut' || cl.hiddenAs || (cl.cluster && (c.built ?? []).includes(cl.key))) {
         matrix.makeScale(0, 0, 0);
         this.posts.setMatrixAt(i, matrix);
         return;

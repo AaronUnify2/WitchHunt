@@ -18,12 +18,14 @@ import encountersData from '../data/encounters.json';
 import sigilGroundsData from '../data/sigilGrounds.json';
 import clearingTypesData from '../data/clearingTypes.json';
 import openingClusterData from '../data/openingCluster.json';
+import storySpineData from '../data/storySpine.json';
 
 export const MAP_DATA = {
   encounters: encountersData.encounters,
   sigilGrounds: sigilGroundsData.grounds,
   clearingTypes: clearingTypesData.types,
   cluster: openingClusterData,
+  spine: storySpineData, // Session 21 (M10.2): the fixed story spine
 };
 
 // Clearings without a type (home, the hut) raise ordinary citizens.
@@ -109,8 +111,11 @@ export class World {
     return this.variantMix(this.nearestClearing(x, z).clearing);
   }
 
-  // Short display name, e.g. "Gas station" or "Bog clearing".
+  // Short display name, e.g. "Gas station" or "Bog clearing". Session 21: a
+  // secret place goes by its cover name until its flag is set (flagSet:
+  // the story progress, wired by Game).
   clearingName(c) {
+    if (c.hiddenAs && !(c.revealedBy && this.flagSet?.(c.revealedBy))) return c.hiddenAs;
     if (c.kind === 'wild') return `${this.typeNames[c.clearingType] ?? 'Plain'} clearing`;
     return c.name;
   }

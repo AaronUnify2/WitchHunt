@@ -18,7 +18,11 @@
 // Version 3 (Session 20): the healing pool, the loadout and rack, ammo
 // types, the power unit's capacity, and Save and quit. Older saves are
 // discarded cleanly (Aaron: fine).
-export const SAVE_VERSION = 3;
+// Version 4 (Session 21, M10.2): the map moved (the fixed story spine, the
+// road north, the 1903 railway line, 30 clearings), so the same seed puts
+// things somewhere else: an older save would wake up in the wrong place.
+// Saving inside an interior saves Tom outside its entrance.
+export const SAVE_VERSION = 4;
 
 // ---- bytes <-> text (the fog of war is a byte per cell, 0 or 1) -------------
 

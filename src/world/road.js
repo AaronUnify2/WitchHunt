@@ -7,7 +7,7 @@
 
 // A Catmull-Rom curve through `pts` ([{ x, z }]), sampled about every
 // `step` metres. Passes through every control point.
-function smoothLine(pts, step) {
+export function smoothLine(pts, step) {
   const out = [{ ...pts[0] }];
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)];
@@ -31,10 +31,33 @@ function smoothLine(pts, step) {
 // points along the centre line, and the distance along it at each.
 export function buildRoad(home, layout, cfg) {
   const control = layout.points.map(([dx, dz]) => ({ x: home.x + dx, z: home.z + dz }));
+  return lineFrom(smoothLine(control, cfg.sample), { width: cfg.width, wrecks: layout.wrecks ?? [] });
+}
+
+// Session 21 (M10.2): the road north. It leaves the main road `branchAlong`
+// metres from its west end (west of the gas station) and runs north to the
+// ROAD CLOSED barrier at the foot of the cliff. layout: openingCluster.json's
+// "roadNorth" ({ branchAlong, points: [[dx, dz], ...] } after the branch).
+// The branch point is the main road's own, so the two join cleanly.
+export function buildBranch(home, main, layout, cfg) {
+  const f = roadFrame(main, layout.branchAlong);
+  // The first control point is a little way east along the main road (the
+  // gas station's side), so the curve leaves it turning off, like a road
+  // that forks from the forecourt's direction.
+  const lead = Math.max(1, layout.lead ?? 10);
+  const control = [{ x: f.x + f.tx * lead, z: f.z + f.tz * lead }, { x: f.x, z: f.z }, ...layout.points.map(([dx, dz]) => ({ x: home.x + dx, z: home.z + dz }))];
   const points = smoothLine(control, cfg.sample);
+  // Drop the lead-in (it lies on the main road): start at the branch point,
+  // which the curve passes through exactly.
+  const start = points.findIndex((p) => Math.hypot(p.x - f.x, p.z - f.z) < 1e-6);
+  return lineFrom(points.slice(Math.max(0, start)), { width: cfg.width, wrecks: layout.wrecks ?? [], branchAlong: layout.branchAlong });
+}
+
+// A sampled line ({ points }) with the distance along it at each point.
+export function lineFrom(points, extra = {}) {
   const along = [0];
   for (let i = 1; i < points.length; i++) along.push(along[i - 1] + Math.hypot(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z));
-  return { points, along, length: along[along.length - 1], width: cfg.width, wrecks: layout.wrecks ?? [] };
+  return { points, along, length: along[along.length - 1], ...extra };
 }
 
 // Where the road's furniture stands: telephone poles along one side, up

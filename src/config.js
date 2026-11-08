@@ -342,7 +342,7 @@ export const config = {
     width: 1000, // metres, west to east
     depth: 1400, // metres, north to south (the plateau above the cliff included)
     edgeMargin: 60, // the walkable area stops this far inside the east, west and south edges (dense forest beyond)
-    clearingCount: 22, // home, the hut, one per encounter and sigil ground, the rest plain clearings
+    clearingCount: 30, // home, the hut, one per encounter and sigil ground, the rest plain clearings (Session 21: 22 -> 30, so the fixed spine and the optional encounters leave room for plain clearings)
     maxAttempts: 40, // generation retries (each from a forked seed) until every rule holds
     // Bands by southness (0 at the cliff, 1 at the southern edge)
     // Session 14: north widened (0.34 -> 0.40) so the north frontier
@@ -396,8 +396,38 @@ export const config = {
       checkpointExit: 30, // metres the frontier's first pathway runs due south from the outpost through the checkpoint
     },
     hut: {
-      southnessMin: 0.9, // deep in the south
+      southnessMin: 0.9, // deep in the south (Session 21: the hut is on the fixed spine, data/storySpine.json; this is the rule it keeps)
       minHops: 4, // at least this many pathways from home
+    },
+    // Session 21 (M10.2): the optional encounters (encounters.json placement
+    // "optional"; DESIGN.md "Optional encounters"). The seed deals this many
+    // from the pool, each equally likely (none guaranteed), and places them
+    // anywhere around the spine, in any band.
+    optional: {
+      min: 3,
+      max: 4,
+    },
+    // Plain clearings fill the bands in proportion to these (Session 21: the
+    // north frontier between the cordon and the middle band is small).
+    wildBandWeights: { north: 0.5, middle: 1, south: 1 },
+    // Session 21 (M10.2): the 1903 railway line (world/railway.js; DESIGN.md
+    // "the 1903 railway line"): the full width east to west on the border
+    // between the middle and the south band, the same every run.
+    railway: {
+      southness: 0.7, // the middle/south border
+      // Control points: x (metres), and metres south (+) of the border's line.
+      // Long straights and gentle curves, as a surveyed line would run.
+      points: [[-560, 8], [-330, 2], [-90, -9], [150, -3], [380, 10], [560, 14]],
+      sample: 4, // metres between points along it
+      bed: 3.4, // metres of ballast across (drawn as worn dirt)
+      shoulder: 2.2, // metres each side of the bed kept thin (the old cleared strip, grown back)
+      clearance: 26, // metres a clearing keeps from the line beyond its radius (the railway cutting excepted)
+      bedOpen: 0.78, // the bed's open ground: 1 = no trees or undergrowth; less lets saplings and brush back onto it
+      shoulderOpen: 0.45,
+      // Graded, as a railway is: the ground along it is eased toward a smooth
+      // grade (cuttings through rises, low banks over dips).
+      grade: { window: 140, blend: 0.85, reach: 14 },
+      tunnel: { beyondEdge: 6 }, // the collapsed tunnels sit this far beyond the walkable area's east and west edges
     },
     clearing: {
       radiusMin: 16,
@@ -2036,7 +2066,7 @@ export const config = {
   // data/vehicles.json; the numbers are here.
   vehicles: {
     placement: {
-      pathSpacing: 85, // metres along a pathway between verge cars (about 45 on a map in all, 35-60 by seed; Aaron: yes)
+      pathSpacing: 175, // metres along a pathway between verge cars (about 45 on a map in all, 35-60 by seed; Aaron: yes). Session 21: 85 -> 175, as the 30-clearing map has half as much pathway again and more clearing cars
       pathJitter: 0.35, // each gap varies by up to this fraction
       pathChance: 0.85, // each spot along a pathway gets a car with this chance
       vergeOffset: 2.7, // metres from a pathway's centre line to a verge car's centre

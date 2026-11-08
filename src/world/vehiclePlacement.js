@@ -237,6 +237,7 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
   // ---- along the pathways ----
   const pathRule = rules.path;
   map.paths.forEach((path, pi) => {
+    if (path.faint) return; // Session 21: no cars on a faint trail (the stairs')
     const keys = path.cluster ? `${map.clearings[path.a].key}-${map.clearings[path.b].key}` : null;
     const r = keys && fixedRoot ? fixedRoot.fork(`path-${keys}`) : rng.fork(`path-${pi}`);
     const loot = keys && fixedRoot ? rng.fork(`path-loot-${keys}`) : r;

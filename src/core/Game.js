@@ -404,6 +404,7 @@ export class Game {
     this.progress = new StoryProgress(this.cfg, this.bus);
     this.progress.init({ world: this.world, player: this.player, enemies: this.combat.enemies });
     this.station.progress = this.progress; // Session 16: the comms room's first aid box (taken once, a flag)
+    this.world.flagSet = (flag) => this.progress.has(flag); // Session 21: secret places' names (the cave)
     // Session 20 (Aaron): items held back until a story flag (flares: the Mothman at the crashed plane).
     lootGate.allows = (item) => {
       const after = this.combat.items[item]?.after;

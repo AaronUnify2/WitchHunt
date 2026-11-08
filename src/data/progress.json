@@ -30,6 +30,7 @@
     {"id": "outpostEntered", "about": "Tom has reached the outpost (Session 17: Outpost sets it a few metres inside the clearing; the visit trigger stays as a back-up).", "standIn": false, "trigger": {"on": "visit", "clearing": "outpost"}},
     {"id": "outpostCleared", "about": "Tom has fought through the outpost: the barricade's peak is down (Session 17: Outpost.peakDown()). Opens the checkpoint.", "standIn": false},
     {"id": "mothmanMet", "about": "Session 20 (Aaron, Nov 8): Tom has met the Mothman at the crashed plane (story spine, beat 2; Session 25 sets it). Until then no flares drop anywhere (loot.json items' \"after\"); from then they're in the general drop tables. The debug menu can set it.", "standIn": false},
+    {"id": "caveFound", "about": "Session 21 (M10.2): the Bigfoot cave's mouth is found: the brush in front of it at the end of the road north is cleared (the dozer's blade: world/RoadNorth.js). Until then the map and the debug lines call its clearing Road's end (encounters.json hiddenAs). Story beat 7 (M12) can set it too, from the family's plan and Earl's maps.", "standIn": false},
     {"id": "crossedCordon", "about": "Tom has crossed the cordon: the frontier is open, and the witch plants anywhere from now on.", "standIn": false, "trigger": {"on": "south", "after": ["outpostCleared"]}}
   ]
 }

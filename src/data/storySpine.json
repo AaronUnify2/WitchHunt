@@ -1,0 +1,13 @@
+{
+  "_note": "The fixed story spine (Session 21, M10.2; DESIGN.md \"Map: Structure\" and \"Encounters: the story spine\"): the main story's places past the cordon, placed right after the opening cluster and the same on every run. Positions are metres from home's centre (dx east, dz south), like openingCluster.json; the seed only fills the map around them (sigil grounds, optional encounters, plain clearings and every pathway past the cordon). key: an encounter id from encounters.json (placement \"spine\"). beat: its story beat (DESIGN.md's numbered spine). clearingType: fixed, so its zombie mix is the same every run (null: none, as home and the hut). entry: the checkpoint's pathway runs to it (the first stop after the outpost). offPath: joined to the map by one faint trail instead of a pathway, and no loops (the stairs: 'a lone staircase in an off-path clearing'). The Bigfoot cave is north of the cordon, so it's in openingCluster.json.",
+  "places": [
+    { "key": "crashedPlane", "beat": 1, "dx": -80, "dz": 392, "radius": 24, "clearingType": "checkpoint", "entry": true },
+    { "key": "cordonDozer", "beat": 7, "dx": 360, "dz": 357, "radius": 20, "clearingType": "checkpoint" },
+    { "key": "timeCapsule", "beat": 4, "dx": -230, "dz": 565, "radius": 22, "clearingType": "graveyard" },
+    { "key": "stairs", "beat": 5, "dx": 250, "dz": 685, "radius": 14, "clearingType": "standingStones", "offPath": true },
+    { "key": "crashedUfo", "beat": 9, "dx": -200, "dz": 990, "radius": 26, "clearingType": "checkpoint" },
+    { "key": "carArmory", "beat": 10, "dx": 300, "dz": 1015, "radius": 28, "clearingType": "checkpoint" },
+    { "key": "groundZero", "beat": 11, "dx": 20, "dz": 1095, "radius": 34, "clearingType": "checkpoint" },
+    { "key": "hut", "beat": 12, "dx": -310, "dz": 1200, "radius": 22, "clearingType": null }
+  ]
+}
