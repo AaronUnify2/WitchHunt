@@ -172,7 +172,7 @@ The original design, kept for reference: the player starts each run with the **s
 | Pistol | Reliable sidearm | The crashed plane: the pilot's pistol, taken off the grey alien that picked it up (Nov 8). Not built, debug only for now | 10 per round |
 | Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
 | Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter: Aaron is looking for a good spot (Nov 8). Debug only for now | 50 per round |
-| SMG (MP5-style) | Full auto; fires pistol rounds | **The first encounter with the Men in Black** (Aaron, Nov 8): on the story spine, the Car Armory. Debug only for now | 10 per round |
+| SMG (MP5-style) | Full auto; fires pistol rounds | **Wherever there are dead Men in Black** (Aaron, Nov 8): the first such place in a run gives it, so the sawmill's dead agents can, and on the story spine the Car Armory always does. Debug only for now | 10 per round |
 | Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
 | Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). Designed, not built | Config |
@@ -1509,7 +1509,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 | --- | --- | --- | --- |
 | Moonshiners' holler | 1 | The wire cutters (tool); *proposed:* the auto shotgun | The flamethrower (the still's copper coil) |
 | Railway cutting | 2 | The railroad spike maul (melee); dynamite | Armour (the cowcatcher and boiler plate) |
-| Sawmill | 3 | The chainsaw (melee) | The head saw on the blade |
+| Sawmill | 3 | The chainsaw (melee); the SMG (on the dead Men in Black) | The head saw on the blade |
 | Abandoned mineshaft | 4 | Dynamite | A ram (the rock drill head) |
 | Milo's barn | 5 | None | Open (placeholder: his spinning target board; the saw went to the sawmill) |
 | Flatwoods landing, National Guard convoy, Men in Black listening post, Headless Horseman bridge | 6–9 | Not designed | Not designed |
@@ -1540,7 +1540,7 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 
 #### The sawmill (optional; rank 3)
 
-- **The story:** the government hired the mill's loggers to clear ground for the portal programme (Ground Zero, and maybe the cordon strip). They saw too much, so the Men in Black silenced them as witnesses. Tom finds a crime scene: dead loggers, and Men in Black bodies where the loggers fought back.
+- **The story:** the government hired the mill's loggers to clear ground for the portal programme (Ground Zero, and maybe the cordon strip). They saw too much, so the Men in Black silenced them as witnesses. Tom finds a crime scene: dead loggers, and Men in Black bodies where the loggers fought back. **The SMG** can be found on the dead agents (Aaron, Nov 8: wherever there are dead Men in Black); the lore of what happened here is still to write.
 - **A logger's diary:** at first giddy that the government agreed to every number, triple rates, no haggling. Then no paperwork, no payroll office, men told not to talk to their families. The last entry: of course they agreed to any price. Dead men don't get paid.
 - **Weapon: the chainsaw** (melee slot; Evil Dead 2 is a reference). No fuel. Balanced by **noise** (it pulls every zombie nearby), **slowing Tom while it revs**, **overheating** if held too long, and a **sharpness gauge**: as the chain dulls it cuts slower, and Tom sharpens it at a **workbench at the station**, there from the start, for a little scrap.
 - **Killdozer part:** the mill's **head saw** on the front blade, shredding whatever it pushes.
@@ -2234,7 +2234,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **The Nov 8 story spine** (see Encounters) leaves these open:
   - **Run length:** settled Nov 8: a longer run (4+ hours) is accepted; the exact target is set once full runs are played (M18).
   - **The endgame's design** (the final battle and the realm of stories): Aaron is designing it; M15 waits on it.
-  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: the first encounter with the Men in Black); whether the SMG moves if a seeded encounter with Men in Black (the sawmill's dead agents, the listening post) comes before the Car Armory; the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
+  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: wherever there are dead Men in Black, the sawmill included); the lore of what happened at the sawmill between the loggers and the agents (to write later); the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
   - The mothership's interior and beats; the Car Armory's layout, stealth beats and survivors; Sheriff's lines and look; the upgrade list and costs.
@@ -2243,7 +2243,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
   - Whether the Caller is ever seen at all (leaning no); what the place beyond and the realm of stories look like; whether other staircases still appear.
   - What the station needs the big core's power for, beyond surviving (proposed: the comms room's big radio reaching the outside world).
   - How the mega night's 150 zombies fit the performance budget; the new zombie types in detail.
-- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the SMG comes from the first encounter with the Men in Black (the Car Armory on the spine); the auto shotgun is proposed for the moonshiners' holler; Aaron is looking for a spot for the heat-scope rifle. The hunting rifle is settled (the gas station's safe).
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the SMG can be found wherever there are dead Men in Black (the sawmill's agents, the Car Armory); the auto shotgun is proposed for the moonshiners' holler; Aaron is looking for a spot for the heat-scope rifle. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M18).
 - Candidate entities for later, not in scope: Jersey Devil, Dogman. (*Nov 8:* the Flatwoods Monster and the Headless Horseman are now named optional encounters: the Flatwoods landing and the Horseman bridge.)

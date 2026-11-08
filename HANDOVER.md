@@ -27,7 +27,7 @@
   - the five designed optional encounters are built with their stretch of the story (M11-M14);
   - **the endgame (M15) waits on Aaron's design** of the final battle and the realm of stories (Session 43 folds it in);
   - **renumbered:** M10-M15 are the new story milestones; the old M12 (meta), M13 (art and audio) and M14 (balance) are now **M16-M18**. Older notes in STATUS.md and OPEN_QUESTIONS.md that say M12-M14 mean those. Sessions 20-53 are re-planned.
-- **Settled:** the SMG comes from the first encounter with the Men in Black (the Car Armory on the spine). Aaron is looking for a spot for the heat-scope rifle.
+- **Settled:** the SMG can be found wherever there are dead Men in Black (the sawmill's agents, the Car Armory). Aaron is looking for a spot for the heat-scope rifle.
 
 ### Unfinished from before
 
