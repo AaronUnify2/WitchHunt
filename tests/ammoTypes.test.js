@@ -57,7 +57,7 @@ describe('ammo types (Session 20)', () => {
     expect(s.choose('nonsense')).toBe(false);
   });
 
-  it('tap B reloads; hold B chooses the next type with rounds, loading it on release', () => {
+  it('tap B reloads; hold B swaps the ammo once (only with another type in the pack), loading it on release', () => {
     const w = weapons();
     w.take('shotgun');
     w.select(w.order.indexOf('shotgun'));
@@ -67,14 +67,31 @@ describe('ammo types (Session 20)', () => {
     expect(st.reloading).toBe(true);
     expect(st.chosen).toBe('shotgun');
     st.cancelReload();
-    holdB(w, 0.6); // a hold, no alien shells: stays on normal
+    holdB(w, 0.6); // a hold, no alien shells: just a reload, on the press
     expect(st.chosen).toBe('shotgun');
+    expect(st.reloading).toBe(true);
+    expect(w.hasOtherAmmo()).toBe(false);
     st.cancelReload();
     w.addAmmo('alienShells', 8);
     holdB(w, 0.6);
     expect(st.chosen).toBe('alienShells');
     expect(st.loaded).toBe('alienShells');
     expect(st.reloading).toBe(true);
+    // Round 31 (Aaron): a long hold swaps once, it doesn't keep cycling.
+    for (let i = 0; i < 40; i++) st.update(0.2);
+    holdB(w, 3);
+    expect(st.chosen).toBe('shotgun');
+    for (let i = 0; i < 40; i++) st.update(0.2);
+    holdB(w, 3);
+    expect(st.chosen).toBe('alienShells');
+    // Out of alien shells: a tap falls back to normal shells.
+    for (let i = 0; i < 40; i++) st.update(0.2);
+    st.typePools.alienShells.rounds = 0;
+    st.mag = 0;
+    holdB(w, 0.1);
+    expect(st.chosen).toBe('shotgun');
+    expect(st.reloading).toBe(true);
+    st.cancelReload();
     // The auto shotgun shares both pools.
     w.take('autoShotgun');
     expect(w.states.autoShotgun.typePools.alienShells).toBe(st.typePools.alienShells);

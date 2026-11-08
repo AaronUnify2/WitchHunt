@@ -951,11 +951,11 @@ export const config = {
     startingLoadout: ['hands'],
     startingWeapon: 'hands',
     switchSeconds: 0.35, // lower one weapon and raise the next
-    // Session 20 (Aaron, Nov 8): ammo types. Tap B to reload; hold B to
-    // choose the ammo (each further holdStep seconds steps on to the next
-    // type with rounds), and the gun reloads with it on release. A gun lists
-    // the extra types it fires in `altAmmo`; its own rounds come first.
-    ammoChoice: { holdSeconds: 0.35, holdStep: 0.6 },
+    // Session 20 (Aaron, Nov 8): ammo types. Tap B to reload; hold B to swap
+    // the ammo, once per hold (round 31), and the gun reloads with it on
+    // release. Holding does nothing different without another type in the
+    // pack. A gun lists the extra types it fires in `altAmmo`; its own rounds come first.
+    ammoChoice: { holdSeconds: 0.35 },
     ammoTypes: {
       // From aliens; the first come off the crashed plane's grey (Session 25).
       alienShells: { name: 'alien shells', base: 'shotgun', damageScale: 1.5, flash: 0xb070ff, hudColor: '#b98aff' },

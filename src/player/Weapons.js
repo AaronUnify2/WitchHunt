@@ -148,30 +148,54 @@ export class Weapons {
     this.updateAimAssist();
   }
 
-  // Session 20 (Aaron): tap B to reload; hold B to choose the ammo, and it
-  // reloads with the choice on release. A gun with one type reloads on the press.
+  // Session 20 (Aaron): tap B to reload; hold B to swap the ammo (once per
+  // hold, round 31), and it reloads with the swap on release. Only when
+  // there's another type to swap to: otherwise B reloads on the press.
   updateReload(dt, input) {
     const s = this.state;
     const c = this.cfg.ammoChoice;
-    if (!s.types || s.types.length < 2) {
+    if (this.reloadHeld === null && !this.hasOtherAmmo()) {
       this.choosing = null;
-      if (input.wasPressed('reload') && s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
+      if (input.wasPressed('reload')) this.reloadInHand();
       return;
     }
-    if (input.wasPressed('reload')) this.reloadHeld = 0;
+    if (input.wasPressed('reload')) {
+      this.reloadHeld = 0;
+      this.swapped = false;
+    }
     if (this.reloadHeld === null) return;
     if (input.isDown('reload')) {
-      const before = this.reloadHeld;
       this.reloadHeld += dt;
-      // Each step past the hold moves on to the next type that has rounds.
-      const steps = (t) => (t < c.holdSeconds ? 0 : 1 + Math.floor((t - c.holdSeconds) / c.holdStep));
-      for (let n = steps(before); n < steps(this.reloadHeld); n++) this.chooseNextAmmo();
-      this.choosing = this.reloadHeld >= c.holdSeconds ? s.chosen : null;
+      if (!this.swapped && this.reloadHeld >= c.holdSeconds) {
+        this.swapped = true;
+        this.chooseNextAmmo();
+        this.choosing = s.chosen;
+      }
       return;
     }
     this.reloadHeld = null;
     this.choosing = null;
-    if (s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
+    this.reloadInHand();
+  }
+
+  // Reload the gun in hand. Out of the chosen type (the alien shells ran
+  // out), it falls back to a type that has rounds.
+  reloadInHand() {
+    const s = this.state;
+    if (s.reserve <= 0 && s.types?.length > 1) {
+      const t = s.types.find((x) => s.typePools[x].rounds > 0);
+      if (t) s.choose(t);
+    }
+    if (!s.startReload()) return false;
+    this.bus.emit('weapon:reload', { id: this.id });
+    return true;
+  }
+
+  // Round 31 (Aaron): is there another ammo type in the pack for the gun in hand?
+  hasOtherAmmo() {
+    const s = this.state;
+    if (!s.types || s.types.length < 2) return false;
+    return s.types.some((t) => t !== s.chosen && s.typePools[t].rounds > 0);
   }
 
   // The next ammo type the gun in hand fires that has rounds (or is loaded).
@@ -221,8 +245,7 @@ export class Weapons {
       return;
     }
     if (s.usesAmmo && s.mag === 0) {
-      if (s.startReload()) this.bus.emit('weapon:reload', { id: this.id });
-      else if (input.wasPressed('attack')) this.bus.emit('weapon:empty');
+      if (!this.reloadInHand() && input.wasPressed('attack')) this.bus.emit('weapon:empty');
       return;
     }
     if (!s.fire()) return;

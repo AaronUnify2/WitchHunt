@@ -212,7 +212,7 @@ export class Hud {
 
     let prompt = '';
     if (st.usesAmmo && st.mag === 0 && !st.reloading) prompt = st.reserve > 0 ? `${pad ? 'B' : 'R'}: reload` : 'Out of ammo';
-    if (w.choosing) prompt = `Release ${pad ? 'B' : 'R'}: load ${w.ammoName(w.choosing) ?? 'normal rounds'}  (keep holding for the next)`; // Session 20
+    if (w.choosing) prompt = `Release ${pad ? 'B' : 'R'}: load ${w.ammoName(w.choosing) ?? 'normal rounds'}`; // Session 20
     if (s.dig?.prompt) prompt = s.dig.prompt;
     this.set('prompt', prompt, (text) => (this.promptEl.textContent = text));
     const dig = s.dig?.prompt ? s.dig.progress : 0;
