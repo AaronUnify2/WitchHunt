@@ -1,166 +1,122 @@
 # Handover
 
-## Just finished: the Nov 8 design pass (Lead Engineer, design review; no feature code)
+## Just finished: Session 20, the new systems (M10.1; Lead Engineer + Gameplay Programmer)
 
-**Status: everything is on `main` (live).** No game code changed since the experimental vehicles (726 tests pass, build clean). Only `docs/DESIGN.md` and this file changed.
+**Status: built, tested and pushed to the session branch `ccr-f5e0ac7a-jc0fw9`, not to `main`.** Merge it to main (a PR) to put it live. 754 tests pass (was 726); the build is clean.
 
-**What was done (with Aaron, Nov 8):**
-- **Aaron's redesign of the mid-game and end-game is in DESIGN.md**, from two workshop docs in Claude Docs:
-  - [Witch Hunt — Mid-game story notes (Nov 8)](https://claude.ai/artifact/JEPw823tjQJEn6Z3Vy7pHL);
-  - [Witch Hunt — Milo's barn (optional encounter)](https://claude.ai/artifact/VtxTRYZ716JQcK63NEmtJq) (also the moonshiners' holler, the railway cutting, the sawmill, the new mineshaft).
-- **The story spine** (DESIGN.md "Encounters: the story spine after the outpost"), 12 beats in order: the crashed plane → the Mothman at the crash site → Junie taken by the Caller → the old church and the time capsule → the stairs and the place beyond → the family's plan → the dozer, the bug-zapper night and the Bigfoot cave → the missing quad and the mega night → the crashed UFO and the mothership → the Car Armory, Sheriff and the ute → the killdozer and the portal → the hut.
-- **Optional seeded encounters** (DESIGN.md "Optional encounters"), each giving a killdozer part. Five designed (holler, cutting, sawmill, mineshaft, Milo's barn), four named only.
-- **New systems in the design:**
-  - the healing pool;
-  - the loadout, the comms room's gun rack and the tool belt;
-  - ammo types on B;
-  - inspect cards;
-  - one power unit;
-  - flares out of the opening;
-  - new zombie types and giant moths;
-  - the garage and the workbench;
-  - the spike maul, the chainsaw, dynamite and the wire cutters;
-  - where the experimental vehicles come from in the story.
-- **The new milestone plan** (DESIGN.md "Build plan: Milestones" and "Session order"), agreed with Aaron:
-  - the story is built **in order, each beat finished and play-tested**, after **early spikes** on the riskiest tech (M10.3);
-  - **a longer run is accepted** (4+ hours), so **save and quit moves forward to M10**;
-  - the five designed optional encounters are built with their stretch of the story (M11-M14);
-  - **the endgame (M15) waits on Aaron's design** of the final battle and the realm of stories (Session 43 folds it in);
-  - **renumbered:** M10-M15 are the new story milestones; the old M12 (meta), M13 (art and audio) and M14 (balance) are now **M16-M18**. Older notes in STATUS.md and OPEN_QUESTIONS.md that say M12-M14 mean those. Sessions 20-53 are re-planned.
-- **Settled:** the SMG can be found wherever there are dead Men in Black (the sawmill's agents, the Car Armory). Aaron is looking for a spot for the heat-scope rifle.
+**Aaron's answers first** (OPEN_QUESTIONS "Session 20"):
+- the vehicles don't glare under the torch, but other things do (**a fuller glare list is coming from him**);
+- #300, #308 and #311 are settled: the sweeps stay as they are, with their bars; the generator is a keeper;
+- the loadout as Claude proposed;
+- the healing pool capped at **270**, with the rest going to the comms room's first aid box;
+- Continue puts Tom back at a safe point (runs are short);
+- old saves can be discarded.
 
-### Unfinished from before
+**What was built** (each in DESIGN.md as built, with its files):
+1. **The healing pool:** `player/healingPool.js`, `config.inventory.healing`. The HUD shows "Healing: N". Overflow goes to `StationState.aidBox`, which is saved.
+2. **The loadout, the gun rack and the tool belt:**
+   - `player/loadout.js`, `config.weapons.loadout`; `Weapons.take` / `draw` / `stow` / `swap` / `has`;
+   - the rack is on the comms room's east wall, plus the ledger's **Gun rack** page;
+   - the shovel goes on the belt once it's swapped out of the melee slot. **Use `weapons.has(id)`, not `order.includes(id)`**, for "does Tom own it".
+3. **Ammo types on B:**
+   - `WeaponState` (`types`, `chosen`, `loaded`, `damageScale`); `Weapons.updateReload()`;
+   - `config.weapons.ammoTypes`, and each gun's `altAmmo`;
+   - alien shells: 1.5x damage, purple, 7.2 turret rounds each.
+4. **Inspect cards:**
+   - `ui/InspectCard.js`; the card text is in `lore.json` `card` (drafts);
+   - `card.show(id, { watch, read, take, keep }, device)` returns false when the card can't show, and the caller then does it the old way;
+   - the opening's six lore items go through it.
+5. **One power unit:**
+   - `base/powerUnit.js`; the station's `capacity` is saved;
+   - `fitPowerCell('planeCell')` raises the fence to 1000 and puts 500 in;
+   - `AlienQuad.power`, `config.alienQuad.power`.
+6. **Flares out of the opening:**
+   - `loot.json` items' `"after"` flag; `lootGate` in `combat/loot.js`, which Game sets up;
+   - the new story flag `mothmanMet` is for Session 25 to set.
+7. **The health floor:** `Combat.setHealthFloor(owner, fraction, onHit)`, `clearHealthFloor(owner)` and the `player:floorHit` event. Day 1's floor uses it. **Session 25's crash site** holds 10% with an `onHit` that starts the blackout.
+8. **The pause menu and Save and quit:**
+   - `ui/PauseMenu.js`; `Game.canPause()`, `saveRefusal()`, `saveAndQuit()`; `config.station.safePoint`;
+   - `SAVE_VERSION` is now 3;
+   - saving is refused during Day 1 and Night 1 (the clock reads day 1 until dawn), and after the hut is destroyed.
 
-- **Aaron's play-test of Session 19's rounds 28-30** and his first drive of the experimental vehicles (the ute, the alien quad, the dozer). Ask for his notes first.
-- **The trail in behind the gas station is at 157 draw calls**, 2 over the 155 start (#302).
-- **`STATUS.md` still describes the old plan** in its header. Session 20 updates it at its end.
+**Debug items for trying it** (Aaron's PLAYTEST round 31):
+- Player: an alien med kit, alien shells, the 10% health floor;
+- Station: the plane's power cell;
+- Experimental vehicles: drain the alien quad's power store;
+- Story progress: `mothmanMet`.
 
-## Next: Session 20, Lead Engineer + Gameplay Programmer: the new systems (M10.1)
+### Unfinished
 
-**First:** ask Aaron for his notes from the rounds 28-30 play-test and the experimental vehicles. Fix the bugs and small ones first, one at a time, pushing to main. Bigger changes go in OPEN_QUESTIONS for a QA session.
+- **Aaron's play-test, PLAYTEST round 31.** Ask for his notes first. My calls are OPEN_QUESTIONS #340-352. In particular:
+  - #344: Skip intro has never given the shovel, though the old handover said it did;
+  - #347: should a kept tape still leave the D-pad down prompt waiting?
+  - #349: the alien quad's power numbers.
+- **His glare list** (things that glare under the torch).
+- **Not played end to end headless:** Night 1's waves, then the gas station, the shelter and the outpost in sequence with the new systems. They were checked piece by piece on seeds 1234, 7 and 4242, and the full run is Aaron's round 31. DESIGN.md's M10 gate says "the opening still plays through on every seed".
+- **From before:**
+  - Aaron's notes on Session 19's rounds 28-30 beyond the answers above;
+  - the trail in behind the gas station is at 157 draw calls (#302).
+- **Small leftovers from Session 20:**
+  - the rack shows no guns on it;
+  - the common pickups' first-time introductions aren't built (#348);
+  - the card's turning item is a CSS placeholder.
 
-**Goal (DESIGN.md "Build plan", M10.1 and Session 20):** the systems the new story leans on, built into the game as it is now, so **the opening still plays through on every seed** and **a run can be saved mid-way, quit and continued**.
+## Next: Session 21, Lead Engineer: the map (M10.2)
 
-These are **core systems**, so rule 10 (workshop first) doesn't apply. But a few are player-facing feel, so confirm the open points listed below with Aaron before building them.
+**First:** ask Aaron for his notes from PLAYTEST round 31 and his glare list. Fix the small ones first, one at a time, and push each. Bigger changes go in OPEN_QUESTIONS for Session 23 (QA, the opening with the new systems).
 
-**What to build** (each one's design is in DESIGN.md, the section named):
+**Goal** (DESIGN.md "Build plan", M10.2 and the Session 21 row; "Map": Structure, Generation, the road north, the 1903 railway line; "Interiors (shared system)"): the map the new story needs, with **the opening still playing through on every seed**.
 
-1. **The healing pool** (Player: "Health, armour and healing"):
-   - one pool of healing points replaces the kit count: a first aid kit adds 30, an alien med kit 60;
-   - D-pad right / H heals from it at 10 a second (the cap stays);
-   - the kit is chosen automatically, so it never wastes an alien kit on a small top-up;
-   - the HUD shows one total ("Healing: 90").
-   - Today: `player/Health.js` (the queue at `config` `healPerSecond`), `player/Inventory.js` (`firstAid`, `maxFirstAid`), `config` `firstAidHeal`.
-   - Saves must carry the pool. Decide the pool's cap with Aaron.
-2. **The loadout, the gun rack and the tool belt** (Weapons: "Loadout", "Tools vs weapons"):
-   - Tom carries two long guns, a sidearm, one melee slot and the flare gun;
-   - the rest wait on a gun rack in the comms room (a new rack, in the world and/or the ledger);
-   - tools (the shovel; later the wire cutters) come out by themselves on interact and never take a slot;
-   - the melee slot starts as the shovel;
-   - "carrying isn't a real pressure".
-   - Today: `player/Weapons.js` (RB / LB cycle every gun held), `player/Digging.js`, `player/HoldAction.js`.
-   - **Check with Aaron:**
-     - which guns count as long guns (the service rifle, shotgun, hunting rifle, heat-scope rifle, auto shotgun?) and the sidearm (the pistol, the SMG?);
-     - what happens when Tom picks up a third long gun away from home (it goes to the rack by itself? he swaps?);
-     - whether the shovel stays digging-only once something better is in the melee slot.
-3. **Ammo types** (Weapons: "Ammo types"):
-   - tap B to reload, hold B to choose the ammo (normal or alien shells for the shotguns);
-   - the gun reloads with what's chosen;
-   - the HUD shows the type (a purple shell for alien);
-   - alien shells do 150% (the turret converts them at 7.2).
-   - Today: `combat/WeaponState.js`, the weapons' `reloadStyle`; Input's B binding.
-   - Alien shells can come from the debug menu until the crashed plane (Session 25).
-4. **Inspect cards** (Player: "Resources and inventory", Pickups):
-   - special items (tapes, papers, alien tech) get a card: the item turning slowly, its name, a line, and D-pad down to watch, A to read, B to keep for later;
-   - kept items play from the ledger's monitors;
-   - common pickups keep their toast (introduced the first time in the opening).
-   - Today: `story/WatchQueue.js` (tapes on D-pad down), `ui/PaperNote.js`, `story/Lore.js`, `ui/Toast.js`.
-   - Rework the opening's tapes and papers (the camcorder, Earl's note, diary and tapes, the field report, the manifest) to go through the card. Aaron: this fixes "today's disjointed tape cutscenes".
-5. **One power unit** (The ranger station: "Power: one unit for everything"):
-   - the fence's numbers already match: `config.station.power` `batteryCharge` 100, `maxCharge` 300;
-   - make the capacity a saved, upgradable value (the plane's cell will raise it to 1000 and put 500 in, from the debug menu for now);
-   - give the alien quad a 1000 capacity in the same units (10 batteries);
-   - cells shared between the fence and the quad;
-   - driving the alien quad is always free; cells feed only its boost and weapons.
-   - Today: `base/StationState.js`, `world/AlienQuad.js` (a capacitor of 10 cells).
-6. **Flares out of the opening** (Enemies: "Flares"):
-   - no flares from police car boots or army zombies until the story flag for the Mothman at the crashed plane;
-   - then flares join the general drop tables.
-   - Today: `data/loot.json` (`flare`, chance 0.05), the police boot loot, `combat/Flares.js`; Tom already starts with none.
-   - Add the flag to `data/progress.json`; the debug menu can toggle it.
-7. **A scripted health floor** for set pieces (the crash site's 10%):
-   - a general switch an encounter can set, like Day 1's 20% floor (`story/FirstDay.js`);
-   - when it's hit, it raises an event the encounter answers (the blackout).
-8. **The pause menu and save and quit** (Core loop: "Run length and saving"):
-   - Menu / Esc pauses (the clock too);
-   - Resume, Save and quit (back to the main menu, Continue picks it up), Settings (greyed);
-   - the dawn autosave stays;
-   - destroying the hut still deletes the save.
-   - Today: `core/SaveStore.js`, `core/saveData.js` (`SAVE_VERSION` 2; zombies, pickups and the random streams aren't saved, #102), `ui/StartScreen.js`.
-   - **Check with Aaron:** whether a mid-day save restores the day exactly (Tom where he stood, the clock, the dead on the map), or snaps to a safe point (home, or the last place he entered) to avoid saving in a fight. Bump `SAVE_VERSION` and discard old saves cleanly (convention).
+What to build:
+1. **The fixed story spine:**
+   - the story places are placed first, the same on every run, like the opening cluster;
+   - places: the crashed plane, the old church and the time capsule, the stairs, the Bigfoot cave (north, just south of ROAD CLOSED), the crashed UFO, the Car Armory, Ground Zero and the hut;
+   - DESIGN.md's encounter table has each one's band and placement.
+2. **The road north:** it runs past the gas station and ends at a **ROAD CLOSED** barrier. The cave's brush is there too (the dozer clears it).
+3. **The 1903 railway line:** part of every map, east to west across the full width, on the middle / south border.
+4. **Optional encounters dealt by the seed:**
+   - the moonshiners' holler, the railway cutting, the sawmill, the mineshaft and Milo's barn get spots;
+   - the encounters themselves come with their stretch of the story (M11-M14);
+   - here they are placeholders on the map.
+5. **The interior system:**
+   - entering loads an interior; the main map keeps simulating in the abstract tier; the clock runs and shows on the HUD; leaving returns Tom to the entrance;
+   - start with one small hand-built space to prove it (the storm shelter's room is a platform on the main map today: a candidate to move onto it).
 
-**Not this session:**
-- the map work (the fixed spine, the railway line, the road north, the interior system: Session 21);
-- the spikes (Session 22);
-- any encounter (the crashed plane is Session 25).
-
-The debug menu gives what the systems need to be tried: alien shells, an alien med kit, the plane's power cell, flares on.
-
-**Tests:**
-- pure logic in Vitest:
-  - the healing pool's choice and cap;
-  - ammo conversion with types;
-  - the loadout's slots;
-  - power capacity and its upgrade;
-  - the save round-trip with the new fields;
-  - the flare gate;
-- then the opening played through headless (see the harness below) on a couple of seeds.
-
-**At the end:** a play-test script for Aaron. Try:
-- healing in a fight;
-- swapping the loadout at the rack;
-- holding B with alien shells;
-- an inspect card on the camcorder, kept for later and watched from the monitors;
-- the fence cell from the debug menu;
-- save and quit mid-day, then Continue.
+Not this session:
+- the spikes (Session 22: 150 zombies, the procedural four-path forest, a flying enemy, a dozer part);
+- any encounter's content (the crashed plane is Session 25).
 
 ### Gotchas and decisions to carry
 
-- **Config and data first** (rules 5, 9): every new number in `config.js`, every new item or card text in `/data`. Complete files, small modules.
-- **No lights added or removed while playing:** it recompiles every shader. A card's turning model is lit by what's already there, or rendered in its own small scene.
-- **HUD:** the final HUD is Session 49. Add the healing total and the ammo type to the placeholder HUD in text, as the rest is.
-- **`Dialogue.playLater(id, s, when)`** waits for the subtitles; one idea at a time over the radio (Aaron).
-- **Skip intro** starts with the shovel, the service rifle, the shotgun, the box's 2 kits and the tutorial's scrap: map the kits into the pool.
-- **The experimental vehicles ride on `world/Quad.js`'s rules** (`Ute`, `AlienQuad` extend `Quad`); `Game.experimental` updates them. The alien quad's cells move to the shared power unit.
-- **My headless harness** (Session 19):
-  - Playwright on `localhost:5173?seed=1234` with `game.startScreen.activate('skip')`;
-  - debug items by label (`game.debugMenu.categories`);
-  - set and pause the clock (`clock.phaseIndex`, `phaseElapsed`, `setPaused`);
+- **Config and data first** (rules 5 and 9), complete files, small modules. **No lights added or removed while playing.** One idea at a time over the radio.
+- **Save format:** the map comes from the seed, so saves don't hold it. A map change moves where things are on every seed: **bump `SAVE_VERSION`** (to 4), as M9.1 did, so an old save doesn't wake up somewhere else.
+- **Safe point:** Save and quit puts Tom in the cabin (`config.station.safePoint`). If the interior system lands, saving inside an interior should come back outside it.
+- **Things that need the shovel ask `combat.weapons.has('shovel')`.** Guns found later go through `combat.giveWeapon(id, rounds)`, which handles the rack.
+- **A special item found later goes through `game.card.show(...)`** with its `card` in `lore.json`. Flares and other story-gated loot use `"after"` in `loot.json`.
+- **My headless harness** (Session 20, built on Session 19's):
+  - Playwright on `localhost:5173?seed=…` with `game.startScreen.activate('skip')` (or `'new'`, then stop cutscenes until none is active: the opening chains several);
+  - debug items by label (`game.debugMenu.categories`; items' labels can be functions);
   - `game.player.teleport()`;
-  - `game.renderer.stats` for draw calls;
-  - canvas screenshots with the HUD hidden;
-  - run the dev server as a background task.
+  - **swiftshader runs at about 5 frames a second with a capped step**, so hold keys with `waitForFunction` on the state, not fixed waits;
+  - **restart the dev server after editing a module you also import from the page**: Vite gives the edited file a new URL, and the page's import gets a second copy.
 
 ### Open questions for Aaron
 
-- **For this session:** the loadout's slots and pick-ups (above); the healing pool's cap; how a mid-day save restores.
-- **Session 19:** #282-320, to check in play (#317 and #319 settled). In particular:
-  - #311: the generator's own battery;
-  - #308: the sweeps running too;
-  - #300: the sweeps' letterbox bars;
-  - #302: draw calls.
-- **The experimental vehicles:** #321-339. Mostly answered by the Nov 8 design (where each comes from); how they feel waits on his drive.
-- **From the Nov 8 design** (DESIGN.md "Open questions"): the endgame's design; Milo's killdozer part; the heat-scope rifle's spot; the four named-only optional encounters; and the rest listed there. None of them block M10.
-- **From before:** #257-281 (Session 18), #225-256 (Session 17), #213-224, #185-197, #171-184, #161-170, #155-160, #143, #136-137, #140-141.
+- **Session 20:** #340-352 (above), and his glare list.
+- **For Session 21:** where the spine's places sit relative to each other is in DESIGN.md. Ask before choosing anything the doc leaves open, such as how far north ROAD CLOSED is, and whether the railway crosses the road at grade.
+- **Session 19:** #282-320, to check in play (#300, #308, #311, #317 and #319 are settled). In particular #302, the draw calls.
+- **The experimental vehicles:** #321-339.
+- **From the Nov 8 design** (DESIGN.md "Open questions"): the endgame's design; Milo's killdozer part; the heat-scope rifle's spot; the four named-only optional encounters. None of these block M10.
+- **From before:** #257-281, #225-256, #213-224, #185-197, #171-184, #161-170, #155-160, #143, #136-137, #140-141.
 
 ## Session kickoff prompt for the next session
 
 ```
-You are the Lead Engineer + Gameplay Programmer on Witch Hunt, Session 20: the new systems (M10.1): the healing pool, the loadout with the gun rack and the tool belt, ammo types on B, inspect cards, one power unit, flares out of the opening, a scripted health floor, and the pause menu with save and quit.
-Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": the plan from M10 on, M10 and Session 20; "Player": weapons, loadout, tools, health and healing, resources and pickups; "The ranger station": power; "Enemies": flares; "Core loop": run length and saving), STATUS.md (the side pass after Session 19 and Session 19) and OPEN_QUESTIONS.md (#282-339, then the older open ones).
-First ask Aaron for his notes from the PLAYTEST rounds 28-30 play-test and his drive of the experimental vehicles, and fix the small ones, pushing each to main.
-Then confirm the open points in HANDOVER.md (the loadout's slots, the healing pool's cap, how a mid-day save restores) and build the systems one at a time, each tested and pushed to main, keeping the opening playable on every seed.
+You are the Lead Engineer on Witch Hunt, Session 21: the map (M10.2): the fixed story spine, the road north and its ROAD CLOSED barrier, the 1903 railway line, the seed dealing optional encounters, and the interior system.
+Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": M10 and Session 21; "Map": Structure, Generation, the road north, the 1903 railway line; "Encounters": the story spine and the encounter table; "Interiors (shared system)"), STATUS.md (Session 20) and OPEN_QUESTIONS.md (#340-352, then the older open ones).
+First ask Aaron for his notes from PLAYTEST round 31 (Session 20's new systems) and his list of things that glare under the torch, and fix the small ones, pushing each.
+Then build the map one piece at a time, each tested and pushed, keeping the opening playable on every seed; bump SAVE_VERSION when the map moves.
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
 Then confirm your role and ask Aaron for his notes.
-When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session (Session 21, Lead Engineer: the map, M10.2), and end with the HANDOVER READY signal.
+When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session (Session 22, Lead Engineer + AI Programmer: the spikes, M10.3), and end with the HANDOVER READY signal.
 ```

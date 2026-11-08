@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -267,6 +267,18 @@ Round 30 (Session 19: the generator at the tower; the outpost's objectives; OPEN
 - [ ] **The generator** is at the foot of the watchtower, by the ladder. Coming near it once the fight's on, Wyatt points it out.
 - [ ] **During the fight:** the map's NEXT says to defeat the dead, turn the floodlights on, put a battery in the machine gun and find the rifle rounds, with a star on each (map and minimap). Each star goes once it's done.
 - [ ] **After the barricade:** "Explore the outpost's compound", with stars on the crates, C-4, C-7, the lockers, the report, the manifest and the tower. Do them in any order; the dogfight plays from the tower whenever you go up. Once they're all done, the star moves to the checkpoint.
+
+Round 31 (Session 20: the new systems, M10.1; OPEN_QUESTIONS #340-352). **Your old save is discarded** (the format changed): take **New Run** or **Skip intro**. Most of the new things are tried from the **debug menu**:
+- [ ] **Healing in a fight:** the HUD shows **"Healing: 60"** once the comms room's first aid box is taken (it was "First aid ×2"). D-pad right heals from it at the old 10 a second. Debug, Player: "Give an alien med kit" (60) and "Give first aid kits" (30 each). Hurt yourself ("Hurt me") a little and heal: a small top-up uses a first aid kit, not the alien one. The pool stops at **270**: anything more goes to **the first aid box in the comms room** (a toast says so). Hold X at the box to fill up again.
+- [ ] **The loadout and the gun rack:** debug, Player: give the hunting rifle, the pistol, the SMG and the heat-scope rifle. With two long guns and a sidearm already, each extra goes to **the gun rack** by itself (a toast). The rack is on the comms room's **east wall**: hold X there (or open the ledger: the **Gun rack** page) to put a gun up, take one into a free slot, or swap. RB / LB only cycle what you carry.
+- [ ] **The shovel on the belt:** at the rack, hang the shovel on your belt (it's off the cycle). Dig a sigil: it still comes out to dig.
+- [ ] **Alien shells, holding B:** debug, Player: "Give alien shells". With the shotgun, **tap B** reloads as before; **hold B**: "Release B: load alien shells" appears, and letting go reloads with them (the normal shells in it go back to your pocket). The HUD reads "▮ alien shells" in purple, the muzzle flash is purple, and they hit harder (1.5x). Hold B again to go back to normal.
+- [ ] **An inspect card:** on a New Run, find the camcorder at the campsite. A card shows it turning slowly with a line about it: **D-pad down** watches it now, **B** keeps it for later (the D-pad down prompt waits, and once it's handed in it's on the monitors). Earl's note, his diary and tapes, the field report and the manifest all get one too (**A** reads a paper). The lines on the cards are drafts (#346). Do the cards fix the "disjointed tape cutscenes"?
+- [ ] **The fence's power cell:** debug, Station: "Fit the plane's alien power cell". The fence box reads **600/1000**; batteries now top up to 1000.
+- [ ] **The alien quad's power:** debug, Experimental vehicles: bring it. Riding is free; the plasma's refill and the boost draw on its store (**power N/1000** at the end of the hint line). Drain it ("Alien quad: drain its power store"): it still drives, but no boost and the cells stop refilling. Stand at its back with a battery: "Hold X: fit a battery".
+- [ ] **No flares:** army zombies and the outpost's packs and tents never give flares now. Debug, Story progress: set **mothmanMet**, and they start dropping again.
+- [ ] **The health floor:** debug, Player: "Health floor 10%, as at the crash site" on, then "Hurt me" over and over: health stops at 10 and a toast says the crash site would black out here.
+- [ ] **Pause, save and quit:** after Night 1 (or Skip intro), press **Menu** (Esc on a keyboard): the world and the clock stop. **Save and quit** goes back to the main menu; **Continue** puts you **in the cabin**, at the same time of day, with everything as you left it. During Day 1 and Night 1 it's greyed ("saving starts at dawn after night 1").
 
 ## 1. The main menu
 
