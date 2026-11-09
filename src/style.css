@@ -2068,3 +2068,51 @@ body.in-cutscene .vhud {
   font-size: clamp(12px, 2.1vmin, 19px);
   margin-top: 0.2em;
 }
+
+/* ---- Session 22: Demo mode (demo/DemoPanel.js, demo/DemoMode.js) ---- */
+.demo-panel .pause-panel {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.demo-rows {
+  gap: 0.35rem;
+}
+.demo-row {
+  font-size: 0.9em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem 1rem;
+  text-align: left;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+.demo-row .start-note {
+  flex-basis: 100%;
+}
+.demo-value {
+  white-space: nowrap;
+  color: var(--accent);
+}
+.demo-arrow {
+  display: inline-block;
+  padding: 0 0.4rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.demo-hud {
+  position: absolute;
+  left: 3vmin;
+  top: 3vmin;
+  z-index: 6;
+  padding: 0.35rem 0.6rem;
+  white-space: pre-line;
+  text-align: left;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--accent);
+  background: rgba(5, 8, 16, 0.55);
+  border: 1px solid rgba(220, 200, 150, 0.25);
+  pointer-events: none;
+}

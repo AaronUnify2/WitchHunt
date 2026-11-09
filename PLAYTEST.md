@@ -301,6 +301,13 @@ Round 33 (Session 21, after your first look at round 32):
 
 Round 34 (Session 22: round 33 all good, Aaron):
 - [ ] **No black flicker:** play anywhere busy (the gas station, the outpost, the shelter's clearing) for a few minutes, on the tablet and on your work computer. The single black frame every 5-10 s should be gone. (It was dynamic resolution resizing the picture after it was drawn; it also settles now instead of stepping up and down every few seconds.) If you still see one, note where and how often.
+- [ ] **Demo mode** (main menu, under New Run): you start in the station's yard by day with the shovel, the service rifle and the shotgun, infinite ammo on and the fence live. No story, no witch, no radio. **Menu** opens the demo panel:
+  - **Zombies to send** (D-pad left and right: 10 up to 150), **Send them**, **Zombie level** (1-5), **Clear the zombies**;
+  - **Time of day** (Day, Dusk, Night), **Fence power**, **Infinite ammo**, **Bring the quad bike**, **Bring the dozer**, **Graphics** (Low, Medium, High);
+  - **Run the device test**: night, 100 zombies, about 20 s; then "Runs great", "Playable" or "Struggling" with the frame rate. If it struggles it drops the graphics a step, and **real runs on that device start on the preset it settled on** (so does the Graphics row).
+  - **Quit the demo** goes back to the main menu. Your saved run is untouched: Continue is still there.
+  - If you die you're back on your feet in the yard after a moment.
+  - The top-left corner shows the frame rate and the zombie count all the time. **Please send 150 at night on the tablet and tell me the number.** That's the 150-zombie spike's measurement.
 
 ## 1. The main menu
 

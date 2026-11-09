@@ -11,7 +11,10 @@
 // Tap or click a choice; on the controller the d-pad moves and A picks;
 // on the keyboard the arrows and Enter (or N for New Run).
 //
-// onActivate(choice): 'continue' | 'new' | 'skip' | 'resume' | 'begin'.
+// Session 22 (Aaron): Demo, always offered: the station on its own, to try
+// the game on this device (demo/DemoMode.js).
+//
+// onActivate(choice): 'continue' | 'new' | 'skip' | 'demo' | 'resume' | 'begin'.
 
 const TEXT = {
   resume: 'Tap to resume',
@@ -113,6 +116,7 @@ export class StartScreen {
     if (save) this.items.push({ choice: 'continue', label: `Continue`, note: save });
     this.items.push({ choice: 'new', label: 'New Run' });
     if (skipIntro) this.items.push({ choice: 'skip', label: 'Skip intro', note: 'start at dawn after night 1' });
+    this.items.push({ choice: 'demo', label: 'Demo', note: 'will it run on this device? try it here' });
     this.items.push({ choice: null, label: 'Modifiers', note: TEXT.later });
     this.items.push({ choice: null, label: 'Settings', note: TEXT.later });
     this.choicesEl.innerHTML = this.items

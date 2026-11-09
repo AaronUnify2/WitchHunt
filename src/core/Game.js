@@ -72,6 +72,7 @@ import { RoadNorth } from '../world/RoadNorth.js';
 import { Interiors } from '../world/Interiors.js';
 import { InteriorHud } from '../ui/InteriorHud.js';
 import { MetaStore } from '../meta/MetaStore.js';
+import { DemoMode } from '../demo/DemoMode.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -155,6 +156,9 @@ export class Game {
       canSave: () => this.saveRefusal(),
     });
     this.pauseMenu.init(root);
+    // Session 22 (Aaron): Demo mode, from the main menu (the station on its own; demo/DemoMode.js).
+    this.demo = new DemoMode(cfg, this.bus);
+    this.demo.init(root, this);
     // Session 16 (Aaron): tapes and feeds wait for D-pad down.
     this.watch = new WatchQueue(this.bus);
     this.watch.init(root);
@@ -179,7 +183,7 @@ export class Game {
     this.showMenu();
     this.addOverlayStats();
     this.addDebugMenuItems();
-    this.applyQuality(cfg.quality.preset);
+    this.applyQuality(this.startQuality());
     this.director.setDrawDistance(this.drawDistance);
     this.wireEvents();
 
@@ -716,6 +720,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
+    this.overlay.addStat('demo', () => this.demo.overlayLine());
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -901,6 +906,12 @@ export class Game {
     for (let i = 0; i < this.cfg.clock.phases.length && this.clock.phase !== name; i++) this.clock.skipPhase();
   }
 
+  // Session 22: the preset this device's demo test (or demo panel) chose, else the config's.
+  startQuality() {
+    const kept = this.meta.get(this.cfg.demo.metaQualityKey);
+    return this.cfg.quality.presets[kept] ? kept : this.cfg.quality.preset;
+  }
+
   // Apply a quality preset to every system it touches.
   applyQuality(name) {
     const q = this.cfg.quality.presets[name];
@@ -1025,7 +1036,7 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && !this.demo.panel?.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };
@@ -1035,7 +1046,8 @@ export class Game {
     // something that let go of it on purpose is up.
     this.onPointerLockChange = () => {
       if (document.pointerLockElement || !hasFinePointer() || !this.canPause()) return;
-      this.pauseMenu.open('keyboardMouse');
+      if (this.demo.active) this.demo.panel.open('keyboardMouse');
+      else this.pauseMenu.open('keyboardMouse');
     };
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
 
@@ -1053,6 +1065,7 @@ export class Game {
 
   // M7 step 6: the run's over. kind: 'victory' | 'defeat'.
   endRun(kind, title, reason) {
+    if (this.demo.active) return this.demo.onDied(); // Session 22: back on your feet in the yard
     if (this.runEnd.isOpen) return;
     this.subtitles.clear();
     this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived);
@@ -1069,6 +1082,10 @@ export class Game {
   // 'begin' carries on with the choice from before the reload; 'resume'
   // is back from leaving fullscreen.
   onStartChoice(choice) {
+    if (choice === 'demo') {
+      this.startDemo();
+      return;
+    }
     if (choice === 'new' || choice === 'skip') {
       if (this.pendingSave) {
         this.meta.setPendingChoice(choice);
@@ -1091,6 +1108,16 @@ export class Game {
     this.start();
   }
 
+  // Session 22 (Aaron): Demo mode on whatever map is loaded (the station is the same on every seed).
+  // Nothing it does is saved: the save store is swapped for one that keeps
+  // nothing, so a saved run is still there to Continue after it.
+  startDemo() {
+    this.saves = { save: () => true, clear: () => {}, load: () => null };
+    this.pendingSave = null;
+    this.start('demo');
+    this.demo.begin();
+  }
+
   // ---- the pause menu (Session 20) ---------------------------------------------------------------
 
   // Nothing else up: the run's going, Tom's alive, no menu, map, ledger, paper, card or cutscene.
@@ -1099,6 +1126,7 @@ export class Game {
       this.state === 'running' &&
       this.combat.alive &&
       !this.pauseMenu.isOpen &&
+      !this.demo.panel?.isOpen &&
       !this.debugMenu.isOpen &&
       !this.mapUi.isOpen &&
       !this.station.ledger.isOpen &&
@@ -1323,12 +1351,17 @@ export class Game {
     // when nothing else is up (Esc closes the ledger, a paper or a card first).
     const pm = this.pauseMenu;
     const wasPaused = pm.isOpen;
-    if (!wasPaused && this.input.wasPressed('pause') && this.canPause()) {
-      pm.open(this.input.activeDevice);
+    // Session 22: in Demo mode, Menu / Esc opens the demo panel instead (it holds the world the same way).
+    const dp = this.demo.panel;
+    const wasPanel = Boolean(dp?.isOpen);
+    if (!wasPaused && !wasPanel && this.input.wasPressed('pause') && this.canPause()) {
+      if (this.demo.active) dp.open(this.input.activeDevice);
+      else pm.open(this.input.activeDevice);
       this.input.swallowHeld?.();
     }
     pm.update(this.input, !wasPaused);
-    const held = viewing || viewer.active || wasPaused || pm.isOpen;
+    dp?.update(this.input, !wasPanel);
+    const held = viewing || viewer.active || wasPaused || pm.isOpen || wasPanel || Boolean(dp?.isOpen);
     // Session 16: a paper in close-up holds the game too (open at the start of the frame counts).
     const reading = this.paper.isOpen || this.card.isOpen;
     this.paper.update(dt, this.input);
@@ -1412,7 +1445,9 @@ export class Game {
     this.toast.update(dt);
     if (!this.cutscenes.active) this.hints.update(dt);
     this.alert.update(dt);
-    if (this.state === 'running') {
+    this.demo.update(dt, running && !held && !this.debugMenu.isOpen && !this.mapUi.isOpen && this.combat.alive);
+    if (this.state === 'running' && this.demo.active) this.mapUi.setObjective(null); // Session 22: no story to point at
+    else if (this.state === 'running') {
       this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && this.combat.alive);
       this.mapUi.setObjective(this.objectives.current);
     }
@@ -1437,7 +1472,8 @@ export class Game {
     this.combat.update(dt, riding ? this.lockedInput : input, playing, daylight, locked || riding);
     this.director.update(dt, riding ? this.lockedInput : controls, playing, this.clock.phase, this.player.camera.position, daylight);
     this.witch.speedScale = riding ? (this.player.riding.qc?.witchSpeedScale ?? this.cfg.quad.witchSpeedScale) : 1;
-    this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
+    // Session 22: no witch in Demo mode (she stays in her hut, far off).
+    if (!this.demo.active) this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
     this.explosives.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
     // M8: the family (before the station, whose prompts wait while theirs shows).
@@ -1446,7 +1482,7 @@ export class Game {
     this.trailCams.update(dt, playing);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
     this.vehicles.update(dt, input, playing && !locked);
-    this.nightWatch.update(dt, this.clock.phase, playing);
+    if (!this.demo.active) this.nightWatch.update(dt, this.clock.phase, playing); // Session 22: the demo sends its own
     this.progress.update(dt, playing && first);
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
@@ -1462,9 +1498,10 @@ export class Game {
     this.gasStation.update(dt, controls, playing && first, !locked && !busy);
     this.shelter.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
     this.outpost.update(dt, controls, playing && first, !locked && !busy && !this.player.riding);
-    if (first) this.firstDay.update(dt, playing);
-    if (first) this.witchEscape.update(dt, playing && this.combat.alive);
-    if (first) this.homeStop.update(dt, playing && this.combat.alive);
+    const story = first && !this.demo.active; // Session 22: Demo mode has no story
+    if (story) this.firstDay.update(dt, playing);
+    if (story) this.witchEscape.update(dt, playing && this.combat.alive);
+    if (story) this.homeStop.update(dt, playing && this.combat.alive);
     if (first) this.roadNorth.update(dt, playing && this.combat.alive);
   }
 
@@ -1508,6 +1545,7 @@ export class Game {
     this.paper.dispose();
     this.card.dispose();
     this.pauseMenu.dispose();
+    this.demo.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();

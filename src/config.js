@@ -4007,6 +4007,49 @@ export const config = {
     pendingKey: 'witchHunt.pendingStart',
   },
 
+  // Session 22 (Aaron): Demo mode, from the main menu: "if it runs in demo
+  // mode, it'll run on your device". The ranger station on its own: no
+  // story, no witch, no saving (the real save is never touched). Menu / Esc
+  // opens the demo panel (demo/DemoPanel.js); demo/DemoMode.js runs it.
+  demo: {
+    day: 2, // the clock's day (past Day 1's scripted beats)
+    // Where each time of day sits: a phase and how far through it (0..1). Set directly, no phase events.
+    times: [
+      { id: 'day', label: 'Day', phase: 'day', progress: 0.35 },
+      { id: 'dusk', label: 'Dusk', phase: 'dusk', progress: 0.6 },
+      { id: 'night', label: 'Night', phase: 'night', progress: 0.3 },
+    ],
+    startTime: 'day',
+    // Early-game weapons only (Aaron: no spoilers): what the opening hands out.
+    weapons: ['shovel', 'rifle', 'shotgun'],
+    infiniteAmmo: true, // the starting setting (the panel toggles it)
+    ammoFloor: 200, // with infinite ammo on, every pool is kept at least this full
+    zombieCounts: [10, 25, 50, 75, 100, 125, 150], // the panel's "how many" steps
+    startCount: 25,
+    levels: [1, 2, 3, 4, 5], // zombie level (speed and toughness); basic zombies only, no mutants
+    startLevel: 2,
+    // They rise on a ring outside the fence (metres past its radius) and come for Tom.
+    ring: { min: 14, max: 45 },
+    fenceOn: true, // the starting setting: the fence fries them (kept charged while on)
+    // The yard, inside the gate: metres in from the gate's middle.
+    yardIn: 9,
+    // Vehicles brought to just outside the gate (metres out, metres to the side).
+    vehicles: { quad: { out: 7, side: 5 }, dozer: { out: 12, side: -8 } },
+    respawnSeconds: 2.5, // after a death, back on your feet in the yard
+    // The device test: night, a big wave, the frame rate measured once they're near.
+    test: {
+      count: 100,
+      settleSeconds: 6, // after sending, before measuring (they rise and close in)
+      measureSeconds: 15,
+      // The verdict, on the average frames per second over the measure.
+      great: 40, // at least this: "Runs great"
+      playable: 24, // at least this: "Playable"; below: "Struggling"
+      cappedGreat: 28, // with a 30 fps frame cap (Low), this counts as great
+    },
+    fpsSmoothing: 0.08, // the on-screen readout's smoothing per frame
+    metaQualityKey: 'quality', // the preset the device test (or the panel) chose, kept for real runs
+  },
+
   // Debug tools
   debug: {
     giveAmmoRounds: 20, // "Give ammo" adds this many to every gun
