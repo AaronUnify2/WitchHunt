@@ -73,6 +73,7 @@ import { Interiors } from '../world/Interiors.js';
 import { InteriorHud } from '../ui/InteriorHud.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { DemoMode } from '../demo/DemoMode.js';
+import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -168,6 +169,7 @@ export class Game {
     this.roadNorth = new RoadNorth(cfg, this.bus);
     this.roadNorth.init({ world: this.world, colliders: this.colliders, player: this.player, progress: this.progress, notify: (text) => this.toast.show(text), sfx: this.combat.sfx, fx: this.combat.fx, clearing: this.clearing, dozer: this.dozer });
     this.combat.promptSources.push(this.roadNorth.hud);
+    this.initSpikes();
     // Session 16 (Aaron): what to do next, on the map and the minimap.
     this.objectives = new Objectives(cfg, this.bus);
     this.objectives.init(this);
@@ -610,6 +612,13 @@ export class Game {
     }
   }
 
+  // Session 22 (M10.3): the spikes, debug only (the Spikes category).
+  initSpikes() {
+    const notify = (text) => this.toast.show(text);
+    this.placeBeyond = new PlaceBeyond(this.cfg, this.bus);
+    this.placeBeyond.init({ world: this.world, player: this.player, interiors: this.interiors, sfx: this.combat.sfx, notify });
+  }
+
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
   // reload a new map needed.
   showMenu() {
@@ -720,7 +729,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => this.demo.overlayLine());
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -760,6 +769,7 @@ export class Game {
     this.quad.addDebugItems(menu);
     for (const v of this.experimental) v.addDebugItems(menu); // the ute with a turret, the alien quad
     this.roadNorth.addDebugItems(menu); // Session 21
+    this.placeBeyond.addDebugItems(menu); // Session 22: the spikes
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(

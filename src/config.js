@@ -3630,6 +3630,30 @@ export const config = {
     muffle: 0.3,
   },
 
+  // Session 22 (M10.3 spikes; debug only, rough, to measure on the tablet).
+  spikes: {
+    // The place beyond the stairs (DESIGN.md "Stairs in the woods"), on the
+    // interior system: a square pocket of foggy forest, a clearing in the
+    // middle and four paths out; the trees are re-dealt for each clearing.
+    placeBeyond: {
+      needed: 3, // silent paths in a row to find Junie
+      half: 34, // metres from the centre to the pocket's edge
+      clearingRadius: 11,
+      pathHalf: 2.2, // a path's half-width (no trees on it)
+      exitReach: 30, // walk this far out along a path and it's taken
+      entryInset: 5, // metres in from the edge Tom arrives at
+      treeSpacing: 3.2, // a grid of trees, each jittered...
+      treeJitter: 1.3, // ...by up to this
+      treeKeep: 0.8, // ...and kept with this chance
+      trunk: { radiusTop: 0.18, radiusBottom: 0.32, height: 9, color: 0x2a2620 },
+      canopy: { radius: 2.0, height: 7, base: 3.5, color: 0x1d2a22 },
+      floor: { color: 0x3a3d33 },
+      sizeJitter: 0.35, // each tree's size, up or down by this fraction
+      callEvery: [3.5, 6], // seconds between Junie's calls (from one calling path, then the other)
+      light: { ambientDay: 2.6, ambientNight: 1.5, ambientColor: 0xa0a8b4, fogColor: 0x5d6469, fogNear: 2, fogFar: 26 },
+    },
+  },
+
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
   // Style pass 2 (Session 19): the weathering every place's props are baked
   // with (render/propKit.js), each place overriding what it likes in its

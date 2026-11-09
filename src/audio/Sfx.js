@@ -212,6 +212,25 @@ const ENGINE_VOICES = {
 };
 
 const RECIPES = {
+  // Session 22 (spikes): placeholders until real recordings.
+  // Junie calling "Da-ad?" down a path in the place beyond: two falling notes,
+  // a child's pitch. Not muffled inside (it's in there with him).
+  junieCall(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.55, 60);
+    o.gain.value /= s.muffled || 1;
+    s.tone(o, { seconds: 0.32, wave: 'triangle', freq: 620, endFreq: 560, gain: 0.32, attack: 0.04, vibrato: 7 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 700, endFreq: 520, gain: 0.3, attack: 0.05, vibrato: 9 }), 360);
+  },
+  // A big flyer's wingbeat: a low, soft thump of air.
+  wingbeat(s, pos) {
+    s.noiseBurst(s.out(pos?.x, pos?.z, 0.7, 70), { seconds: 0.35, type: 'lowpass', freq: 380, endFreq: 120, q: 0.8, gain: 0.7, attack: 0.06 });
+  },
+  // Its screech as it dives.
+  screech(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 90);
+    s.tone(o, { seconds: 0.9, wave: 'sawtooth', freq: 1300, endFreq: 700, gain: 0.22, attack: 0.05, vibrato: 30 });
+    s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 2400, endFreq: 1400, q: 3, gain: 0.25, attack: 0.05 });
+  },
   // M9.1: the flare gun's hollow pop, the flare catching with a hiss, and
   // the thunk of one bouncing off a zombie's head.
   flareGun(s) {
