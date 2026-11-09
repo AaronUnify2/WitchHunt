@@ -3691,6 +3691,34 @@ export const config = {
       flapHz: [1.4, 3.2], // slow gliding to fast flapping (diving)
       hitFlashSeconds: 0.12,
     },
+    // Parts bolted onto the dozer (the killdozer's, DESIGN.md "The endgame:
+    // the killdozer"): each a look on the blade or the body, and what it
+    // changes. crush: multipliers on config.dozer.crush; strainScale: on how
+    // long a big tree holds the blade; noClimbers: the dead can't climb on.
+    dozerParts: {
+      ram: {
+        name: 'Spiked ram (the mineshaft)',
+        mount: 'blade',
+        crush: { push: 3, pinned: 1.5, ram: 2 },
+        color: 0x4a4740,
+        spikeColor: 0x8a8578,
+      },
+      plating: {
+        name: 'Armour plating (the railway cutting)',
+        mount: 'body',
+        noClimbers: true,
+        color: 0x3b3e38,
+      },
+      saw: {
+        name: 'Head saw (the sawmill)',
+        mount: 'blade',
+        crush: { push: 6 },
+        strainScale: 0.15, // the big trees go in a moment
+        spin: 14, // radians a second
+        color: 0x9a9a92,
+        boomColor: 0x2c2a26,
+      },
+    },
   },
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).

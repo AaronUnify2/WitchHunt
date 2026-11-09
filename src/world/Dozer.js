@@ -35,6 +35,8 @@ import { buildDozer, DOZER } from '../render/dozerModel.js';
 import { rayEnemies } from '../combat/hitscan.js';
 import { wrapAngle } from './Ute.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { partMods, toggledParts } from './dozerParts.js';
+import { buildPart } from '../render/dozerParts.js';
 
 const ZERO = { x: 0, y: 0 };
 
@@ -74,6 +76,10 @@ export class Dozer extends Quad {
     this.strain = new Map(); // tree index -> seconds pushed
     this.initCable();
     this.initSmoke();
+    // Session 22 (M10.3 spike): parts bolted on (world/dozerParts.js, render/dozerParts.js).
+    this.parts = [];
+    this.partLooks = new Map();
+    this.mods = partMods(this.qc.crush, this.cfg.spikes.dozerParts, this.parts);
     this.reset();
     this.unsubscribers = [
       this.bus.on('player:respawned', () => this.reset()),
@@ -203,6 +209,7 @@ export class Dozer extends Quad {
   // ---- each frame -------------------------------------------------------------------------------
 
   update(dt, input, playing, canInteract, daylight = 1) {
+    this.spinParts(dt);
     this.daylight = daylight;
     this.device = input.activeDevice;
     if (this.stored) {
@@ -468,7 +475,7 @@ export class Dozer extends Quad {
       const inBlade = forward && Math.abs(lx) < q.bladeHalf + r && lz < q.bladeFront + 0.7 && lz > q.bladeFront - 0.45;
       const onBody = Math.abs(lx) < 1.32 + r && lz > -2.4 && lz < 2.05;
       if (!inBlade && !onBody) continue;
-      const strain = c.strainOf(tree);
+      const strain = c.strainOf(tree) * this.mods.strainScale; // Session 22: the head saw
       // Which way it goes: ahead (the blade), out to the side (the flanks), back (reversing).
       let ox = fx;
       let oz = fz;
@@ -651,7 +658,7 @@ export class Dozer extends Quad {
   // The dead: shoved before the blade (and crushed if pinned), crushed under the tracks, shoved off the flanks.
   crushDead(dt) {
     const q = this.qc;
-    const k = q.crush;
+    const k = this.mods.crush; // Session 22: as the fitted parts change it
     const moving = Math.abs(this.speed) > 0.25 || Math.abs(this.turn) > 0.35;
     this.pile = 0;
     this.crunchTimer -= dt;
@@ -723,6 +730,12 @@ export class Dozer extends Quad {
 
   updateClimbers(dt) {
     const c = this.qc.climb;
+    // Session 22: armour plating round the cab: nothing climbs on (any already on are thrown off).
+    if (this.mods.noClimbers) {
+      this.climbing.clear();
+      if (this.climbers.size) this.releaseClimbers();
+      return;
+    }
     const slow = Math.abs(this.speed) < c.slowBelow && Math.abs(this.turn) < 0.4;
     const throwOff = Math.abs(this.speed) > c.throwAbove || Math.abs(this.turn) > c.throwTurn;
     for (const z of this.enemies.living) {
@@ -1129,7 +1142,38 @@ export class Dozer extends Quad {
     this.notify?.('The dozer is in front of you (hold X by it to climb up)');
   }
 
+  // ---- parts bolted on (Session 22, M10.3 spike) ---------------------------------------------------
+
+  // Fit the part `id`, or take it off if it's on.
+  togglePart(id) {
+    const P = this.cfg.spikes.dozerParts;
+    this.parts = toggledParts(P, this.parts, id);
+    const on = this.parts.includes(id);
+    if (on && !this.partLooks.has(id)) {
+      const look = buildPart(id, P[id]);
+      (look.mount === 'blade' ? this.model.bladeArm : this.model.body).add(look.mesh);
+      this.partLooks.set(id, look);
+    } else if (!on && this.partLooks.has(id)) {
+      this.partLooks.get(id).dispose();
+      this.partLooks.delete(id);
+    }
+    this.mods = partMods(this.qc.crush, P, this.parts);
+    this.notify?.(`${P[id].name}: ${on ? 'bolted on' : 'off'}`);
+  }
+
+  spinParts(dt) {
+    const saw = this.partLooks.get('saw');
+    if (saw?.spinner && this.riding) saw.spinner.rotation.y += this.cfg.spikes.dozerParts.saw.spin * dt;
+  }
+
   addDebugItems(menu) {
+    const sp = menu.category(DEBUG.spikes);
+    for (const [id, p] of Object.entries(this.cfg.spikes.dozerParts)) {
+      sp.addItem(() => `Dozer part: ${p.name} (${this.parts.includes(id) ? 'on' : 'off'})`, () => {
+        if (this.stored) this.bring();
+        this.togglePart(id);
+      });
+    }
     const cat = menu.category(DEBUG.experimental);
     cat.addItem('Dozer: bring it here', () => this.bring());
     cat.addItem('Dozer: put me on it', () => {
@@ -1154,10 +1198,11 @@ export class Dozer extends Quad {
 
   overlayLine() {
     if (this.stored) return 'dozer away';
-    return `dozer ${this.riding ? `${(this.speed * 3.6).toFixed(0)} km/h turn ${this.turn.toFixed(2)}` : 'parked'} blade ${this.blade.toFixed(2)} pile ${this.pile}${this.straining ? ` STRAIN ${Math.round(this.straining * 100)}%` : ''}${this.pushing ? ' PUSHING' : ''} trees ${this.clearing?.felledCount ?? 0} trail ${Math.round(this.clearing?.carvedMetres ?? 0)}m${this.winch ? ` winch ${this.winch.phase}` : ''}${this.climbers.size ? ` climbers ${this.climbers.size}` : ''}`;
+    return `dozer ${this.riding ? `${(this.speed * 3.6).toFixed(0)} km/h turn ${this.turn.toFixed(2)}` : 'parked'} blade ${this.blade.toFixed(2)} pile ${this.pile}${this.straining ? ` STRAIN ${Math.round(this.straining * 100)}%` : ''}${this.pushing ? ' PUSHING' : ''} trees ${this.clearing?.felledCount ?? 0} trail ${Math.round(this.clearing?.carvedMetres ?? 0)}m${this.winch ? ` winch ${this.winch.phase}` : ''}${this.climbers.size ? ` climbers ${this.climbers.size}` : ''}${this.parts.length ? ` parts ${this.parts.join('+')}` : ''}`;
   }
 
   dispose() {
+    for (const look of this.partLooks?.values() ?? []) look.dispose();
     for (const off of this.unsubscribers ?? []) off();
     this.combat?.sfx?.engine?.(false);
     this.unpark();
