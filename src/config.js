@@ -4139,6 +4139,7 @@ export const config = {
     },
     fpsSmoothing: 0.08, // the on-screen readout's smoothing per frame
     metaQualityKey: 'quality', // the preset the device test (or the panel) chose, kept for real runs
+    needsControls: 'Witch Hunt needs a controller (or a keyboard and mouse): connect one to play the demo', // on a touch-only device with no controller
   },
 
   // Debug tools

@@ -308,6 +308,10 @@ Round 34 (Session 22: round 33 all good, Aaron):
   - **Quit the demo** goes back to the main menu. Your saved run is untouched: Continue is still there.
   - If you die you're back on your feet in the yard after a moment.
   - The top-left corner shows the frame rate and the zombie count all the time. **Please send 150 at night on the tablet and tell me the number.** That's the 150-zombie spike's measurement.
+- [ ] **The spikes** (debug menu, **Spikes (M10.3)**; rough on purpose, placeholder looks; what matters is how they feel and the frame rate):
+  - **Place beyond: go in.** A foggy grey forest, a clearing and four paths. Junie calls "Dad?" down two of them (a placeholder sound and a caption); one is silent; the one behind you leads back out. Walk out along the silent path three times in a row to find her; a calling path loops you back to the first clearing. Does it feel like the place beyond? Is the caption too much help (#379)? The frame rate in there?
+  - **Flyer: send one at me.** It comes in from far off, circles, makes two passes overhead, then four dives that hurt if they reach you, then leaves. Shoot it: hurt enough, it shrieks and flies off (it can't die out here). Readable? Too easy or hard to hit (#384)?
+  - **Dozer part: ...** Bolt on the spiked ram, the armour plating and the head saw (each on or off; it brings the dozer). Drive into a crowd (Demo mode's panel sends one) and into big trees. Does each part feel different?
 
 ## 1. The main menu
 

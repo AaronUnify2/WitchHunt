@@ -1,5 +1,33 @@
 # Open questions
 
+## Session 22 (Lead Engineer + AI Programmer: the spikes, M10.3; Demo mode)
+
+Aaron's answers first (Nov 9):
+- **Round 32's fixes:** all good. **Save and quit at more points, the health floor:** seem fine, not fully tested. **His glare list:** needs a bit more work (still to come).
+- **A black flicker frame every 5-10 s** (on the tablet lately, and on his work computer for a while): **fixed** (dynamic resolution resized the canvas after the frame was drawn; it now applies before the draw, and backs off instead of stepping up and down). PLAYTEST round 34.
+- **The 150 zombies:** easy ("I've done max zombies heaps of times and never noticed a dip"); usually 40-50 fps on the tablet; a moment's dip spawning vehicles, probably normal.
+- **Push to `main` as you go.**
+- **Demo mode** (his idea: "if it runs in demo mode, it'll run on your device"): the station, sliders to spawn heaps at once, weapons to try. My four recommendations taken: no touch controls yet (the demo says it needs a controller or keyboard); early weapons and basic zombies only (no spoilers); the fence on, with a toggle; the verdict line, and the preset it settles on kept for real runs.
+- **Overnight:** "work through this entire session on your own recommendations; flag anything for the morning." Built: Demo mode, then the three other spikes (DESIGN.md "Build plan: the M10.3 spikes").
+
+My calls in the build (PLAYTEST round 34):
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 377 | **The place beyond, the way back:** DESIGN didn't say what the path Tom came in by does. From the first clearing it leads **out** (back down the stairs); from any later clearing it **loops to the start**, like a calling path. Right, or should going back only undo one step? | As described. | `world/placeBeyond.js` `choosePath()` |
+| 378 | **The place beyond's look (a placeholder):** grey fog close in (2-26 m), dark cone trees on a grid with jitter, a clearing of 11 m and four paths about 4.4 m wide, in a 68 m square pocket. Each new clearing re-deals the trees; **the first always deals the same**, so a loop back to the start looks like the start. The art is a later session's. | As described. | `config.spikes.placeBeyond` |
+| 379 | **Junie's voice:** a placeholder (two falling notes at a child's pitch, panned toward the path) every 3.5-6 s, from one calling path then the other, with a caption naming the path ("Dad?" down the east path). The real thing needs her recorded lines. **Is the caption too much help?** Without it the puzzle is by ear only. | As described. | `PlaceBeyond.update()`; `Sfx` `junieCall` |
+| 380 | **Each clearing deals its silent path afresh**, and a calling path sends Tom back to the very start (three right choices away again, as designed). | As described. | `world/placeBeyond.js` |
+| 381 | **Demo mode's weapons:** the shovel, the service rifle and the shotgun (what the opening hands out). The pistol, SMG and auto shotgun aren't in the story yet, so they're left out. Add any? | As described. | `config.demo.weapons` |
+| 382 | **The device test:** night, 100 zombies, 6 s to close in, 15 s measured. **Runs great** at 40 fps or more (28 with Low's 30 cap), **Playable** at 24 or more, else **Struggling** (the graphics drop a step). The preset it settles on, or the one picked on the panel's Graphics row, is **kept for real runs on that device**. Dynamic resolution stays on during the test (it measures what a player would get). Your tablet at 40-50 fps would read "Runs great". Right lines? | As described. | `config.demo.test`; `demo/verdict.js` |
+| 383 | **Demo mode's look:** the panel is the pause menu's style; the frame rate and zombie count stay in the top-left corner the whole time; zombies rise 14-45 m outside the fence; the fence is kept charged while it's on; the quad and dozer come to just outside the gate. | As described. | `config.demo`; `src/style.css` (`.demo-hud`) |
+| 384 | **The flyer's script:** from 90 m out, circling (22 m round, 14 m up) between moves, two passes over Tom (9 m up), then four dives that strike for 22 if they reach him, then it leaves. **It can't die out here:** below 35% of its 260 health it shrieks and flies off. The aim doesn't stick to it (no aim assist: a fast flyer should be hard to track). Numbers right for a first feel? | As described. | `config.spikes.flyer` |
+| 385 | **The flyer's look (a placeholder):** a tall dark body, wide flapping wings and two red eyes that aren't fogged (they show in the dark). Not built: the screech's blur and slow, landing or clinging between swoops, calling beetles. | As described. | `ai/Flyer.js` `build()` |
+| 386 | **The dozer's parts:** three to try, matched to DESIGN's encounters: a **spiked ram** (the mineshaft: pushes 3x harder before the blade, rams 2x), **armour plating** round the open cab (the railway cutting: nothing climbs on, any on are thrown off), a **head saw** out front (the sawmill: shreds 6x before the blade, big trees go in 15% of the time; spins while ridden). Placeholder looks; numbers to tune. | As described. | `config.spikes.dozerParts`; `render/dozerParts.js` |
+| 387 | **Debug: a new "Spikes (M10.3)" category:** place beyond (go in; which path is silent), flyer (send one; send it away), dozer parts (each on or off; brings the dozer if it's away). | As described. | `PlaceBeyond`, `Flyer`, `Dozer` `addDebugItems()` |
+| 388 | **The flicker fix's backoff:** a raise in resolution that's dropped again within 3 s doubles the wait before the next try (4 s up to 60 s); a new quality, frame cap or on/off goes back to 4 s. | As described. | `config.render.dynamicResolution` |
+| 389 | **Demo mode on a touch-only device** (no controller, no mouse): it starts, with a toast that the game needs a controller or keyboard and mouse. Touch controls are their own session (Aaron agreed): when? | As described. | `Game.startDemo()`; `config.demo.needsControls` |
+
 ## Session 21 (Lead Engineer: the map, M10.2)
 
 Aaron's answers before the build (Nov 8, a bedtime pass: "no time limit... minimal viable product is the enemy of good gaming"):

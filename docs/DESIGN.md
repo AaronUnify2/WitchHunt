@@ -641,7 +641,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 
 ### The Mothman
 
-*Designed, not built. The outpost hints at him (the torn-open container C-7, never named); flares are counted for his attention but nothing comes yet.*
+*Designed, not built. **A flying-enemy spike is (Session 22, M10.3: flyovers and dives; "Build plan: the M10.3 spikes").*** The outpost hints at him (the torn-open container C-7, never named); flares are counted for his attention but nothing comes yet.*
 
 - A tall winged figure with glowing red eyes. **Met three times** *(Aaron, Nov 8)*:
   1. **At the crashed plane:** the pilot's signal flare answers its long-counted flare attention. A flyover, a second flyover, then a full attack that goes aggressive fast and hits hard. Tom either does enough damage that it flies off early, or drops to a **scripted health floor of 10%** and blacks out (see Encounters: the Mothman at the crash site).
@@ -1416,7 +1416,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Stairs in the woods: the place beyond (story spine, beat 5)
 
-*Designed with Aaron, Nov 8; not built. **Replaces** the stairs' earlier design (2–3 a run, each a short first-person vision).*
+*Designed with Aaron, Nov 8; not built. **A spike is (Session 22, M10.3: the debug menu's Spikes; "Build plan: the M10.3 spikes").*** **Replaces** the stairs' earlier design (2–3 a run, each a short first-person vision).*
 
 - Based on the modern ranger legend of free-standing staircases deep in the forest that rangers don't talk about. A lone staircase in an off-path clearing, attached to nothing.
 - **Climbing it takes Tom into an extra-foggy, alternate version of the forest:** the place beyond.
@@ -1487,6 +1487,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - Breaking the anchor puts out the **witchfire ring round her hut** (see The witch: destroying the hut).
 
 **The killdozer.**
+
+*Spike (Session 22, M10.3): three parts bolt on today from the debug menu (a spiked ram, armour plating, a head saw), each a look and a few multipliers; see "Build plan: the M10.3 spikes".*
 
 - When it's clear Tom has to go through the portal, Sheriff says he'll need a really powerful vehicle and offers to **upgrade the dozer into a killdozer**.
 - **The optional encounters give its parts.** Each optional encounter yields its own upgrade material, so the encounters the seed spawns decide the killdozer's final abilities (one run might have a flamethrower and armour plating, another a ram and a turret). **Designed so far (Nov 8):** the flamethrower (moonshiners' holler), armour (railway cutting), the head saw (sawmill), a ram (mineshaft); Milo's open (see Optional encounters).
@@ -1810,6 +1812,18 @@ The first 20 minutes teach through the radio and the world, not pop-ups. Only co
 
 - The pixel-font title over a live, slow CCTV feed of the forest at night.
 - **New Run**, **Continue** (if a save exists), **Modifiers**, **Settings**, **Quit**.
+- **Demo** *(Aaron, Session 22; built)*: see "Demo mode" below.
+
+### Demo mode (a marketing tool: "if it runs in demo mode, it'll run on your device")
+
+*Aaron, Session 22: a browser game meets every kind of device and browser, so the main menu offers a short, honest test. **Built** (`demo/DemoMode.js`, `demo/DemoPanel.js`, `demo/verdict.js`; `config.demo`).*
+
+- **Demo** is always on the main menu. It starts in the ranger station's yard by day (the station is the same on every seed) with **no story, no witch, no radio and no saving**: a save store that keeps nothing is swapped in, so a saved run is still there to Continue afterwards, and the demo doesn't unlock Skip intro. Day 2, past Day 1's scripted beats; the clock held.
+- **Early-game weapons and basic zombies only** (no spoilers): the shovel, the service rifle and the shotgun; zombies of levels 1-5, no mutants, no Mothman, no aliens.
+- **Menu / Esc opens the demo panel** (it holds the world, like the pause menu): **Run the device test**; **Zombies to send** (10 to 150) and **Send them** (they rise on a ring outside the fence and come for Tom); **Zombie level**; **Clear the zombies**; **Time of day** (Day, Dusk, Night: set straight, without the phase events, so nothing scripted runs); **Fence power**; **Infinite ammo**; **Bring the quad bike** / **the dozer** (to just outside the gate); **Graphics** (Low, Medium, High); **Quit the demo** (back to the main menu).
+- **The device test:** night, 100 zombies, 6 s for them to close in, then the frame rate averaged over 15 s. The verdict: **Runs great** (40 fps or more; 28 with Low's 30 fps cap), **Playable** (24 or more), **Struggling**. Struggling drops the graphics a step. The preset it settles on (or the one picked on the panel) is **kept for real runs on that device** (`meta.quality`).
+- The top-left corner always shows the frame rate and the zombie count. A death puts Tom back on his feet in the yard.
+- **Not yet:** touch controls (Aaron, Session 22: a session of their own; the demo needs a controller or keyboard and mouse like the game); a share card for the verdict.
 
 ### Opening cutscene (under a minute, skippable)
 
@@ -1996,6 +2010,7 @@ Every performance decision is made for the target device: the Galaxy Tab S10 FE 
 - `InstancedMesh` for trees, bushes, grass and identical sprites; one texture atlas per sprite enemy type.
 - The map is split into chunks; only chunks within fog distance are drawn (fog end = draw distance).
 - Object pools for enemies, projectiles, particles and lights. No allocation in the main loop.
+- **The M10.3 spikes (Session 22):** see "Build plan: the M10.3 spikes" for each one's measured go / change-the-design answer.
 - **Budgets as they stand (Session 19, Aaron):** 155 draw calls to start with (he has never seen the tablet's frame rate dip); the opening's worst spot is the trail behind the gas station at about 157. The outpost's barricade peak by night (20 army dead, 5 beetles) sits around 110-145 with under 1 ms of simulation (headless). The experimental vehicles run 80-130 (the ute's live mirror adds a pass every third frame).
 - **Budgets** (debug overlay, the original targets): draw calls under \~100; active enemies capped (e.g. 25); at most \~4 point lights at once; dynamic resolution drops the render scale automatically to hold the frame target; frame time split into simulation and render. A \*\*Quality setting\*\* (render scale, draw distance, flashlight shadow, post effects, mist and particle density, 30 or 60 fps cap, plus the optional retro pixel filter) is the safety valve, with defaults chosen for the tablet.
 
@@ -2101,6 +2116,17 @@ This plan decides whether the project succeeds. It is ordered by **risk first**:
 | M17 | Art and audio | Final sprites and models, the full lighting, fog and post-processing pass, grain and camera-style shaders, the audio pass, the final HUD | Matches the art and audio direction |
 | M18 | Balance and polish | Tune every number, the remaining dialogue lines, performance pass, bug bash | A full run lands in its target length (Aaron, Nov 8: a longer run is accepted, 4+ hours; to set once full runs are played) and feels fair |
 
+### The M10.3 spikes (Session 22): results
+
+Rough, debug only (the debug menu's **Spikes (M10.3)** category), each measured headless (swiftshader in the cloud, about 5 fps, so frame times there mean little; draw calls and simulation time carry over) and **to be measured on the tablet by Aaron** (Demo mode's corner readout and the debug overlay). Each answer is **go** unless the tablet says otherwise.
+
+| Spike | What was built | Measured (headless) | Answer |
+| --- | --- | --- | --- |
+| **About 150 zombies at the station** | Nothing new needed: Demo mode sends up to 150 at the fence (`DemoMode.send()`); the tiers do the rest | Draw calls 95 with none, 96 with 150 (every zombie sprite is one instanced draw); 25 active (the cap), the rest nearby; simulation 1.9 ms at 50, about 2.5-2.7 ms at 100-150 (pool 160 of 480). Aaron (Session 22): "max zombies heaps of times" without a dip; 40-50 fps on the tablet as a rule | **Go.** The mega night (M13) can send about 150 at home. To watch: the tablet's simulation time (a phone CPU is slower than this one), and the fence and turret with 150 at once. **Tablet number wanted:** fps with 150 at night (Demo mode) |
+| **The procedural four-path forest** (the place beyond; later the realm of stories) | `encounters/PlaceBeyond.js` on the interior system, rules in `world/placeBeyond.js` (tested): a square pocket under the stairs' clearing, a clearing and four paths, the trees re-dealt in place for each clearing; trunks block; a fog dome round Tom; Junie's call (placeholder sound and caption) down the two calling paths; three silent in a row find her, a calling path loops to the start | 4 draw calls for the whole space (two instanced meshes, the floor, the dome), about 27 in all with the HUD (against about 95 outside); about 270-290 trees a clearing; a new clearing costs no new draws (instance matrices) | **Go.** Interiors carry a procedural space cheaply; the realm of stories can take the same shape with arenas. Open: the look (#378), the voices (#379), the way back (#377) |
+| **A flying enemy** (the Mothman's flyovers and dives) | `ai/Flyer.js`, steering in `ai/flyerPath.js` (tested): from far off, circling, two passes overhead, dives that strike if they reach him, then it leaves; one of the weapons' extra targets (shot where it flies); can't die out here (below 35% it flies off) | Four meshes, no lights (the eyes unfogged); its steering is a few lines a frame; the hitscan finds it in the air (tested) | **Go.** A flyer needs no new systems: steering, an extra target, its own script. Open: its numbers and aim assist on it (off now, #384), what it does between dives and the screech's blur and slow (not built, #385) |
+| **A part bolted onto the dozer** (the killdozer's) | `world/dozerParts.js` (tested), `render/dozerParts.js`: a spiked ram (pushes harder), armour plating round the cab (nothing climbs on), a head saw out front (shreds before the blade; big trees go in a moment; it spins while ridden); blade parts ride the blade arm (they lift and dig with it) | One merged mesh a part (the saw two): +1-2 draw calls each; the effects are multipliers on `config.dozer.crush` and the tree strain, stacking | **Go.** Parts are data (a look and multipliers), so each optional encounter's part can be a config entry and a small builder. Open: the parts' looks and numbers (#386), parts that need their own system (the flamethrower, the turret) |
+
 ### Performance gates
 
 Check on the Samsung tablet, against the budgets, at the end of **M1, M3, M6, M9 (the outpost), M10 (the spikes: 150 zombies, the procedural forest), M12 (the cave), M13 (the mega night and the mothership), M14, M15 and M18**. If a gate fails, fix performance before starting the next milestone.
@@ -2163,7 +2189,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | — | (side pass, Aaron's request) | **Experimental vehicles, debug menu only:** the ute with a turret, the alien quad, the forestry dozer (it fells trees and cuts trails into the map). **Done** and play-tested by Aaron ("really good"); not in the story yet | — |
 | 20 | Lead Engineer + Gameplay Programmer | The new systems: the healing pool, loadout, gun rack and tool belt, ammo types, inspect cards, power units, flares out of the opening, the health floor; the pause menu and save and quit. **Built (Nov 8)**; Aaron's play-test is PLAYTEST round 31 | M10.1 |
 | 21 | Lead Engineer | The map: the fixed story spine, the railway line, the road north and ROAD CLOSED, the seed dealing optional encounters; the interior system *(built)* | M10.2 |
-| 22 | Lead Engineer + AI Programmer | The spikes: 150 zombies, the procedural four-path forest, a flying enemy, a dozer part; the performance gate | M10.3 |
+| 22 | Lead Engineer + AI Programmer | The spikes: 150 zombies, the procedural four-path forest, a flying enemy, a dozer part; the performance gate. **Built** (each a go, headless; the tablet's numbers still to come), and **Demo mode** on the main menu (Aaron's idea); the flicker frame fixed | M10.3 |
 | 23 | QA & Balance | Play-test the opening with the new systems; save and quit on the tablet | QA |
 | 24 | Graphics Engineer / Technical Artist | Models for the next stretch: the Mothman, giant moths, Bigfoot, Milo (and his animals), the crashed plane's set | Part of M17 |
 | 25 | Level & Encounter Designer + AI Programmer | The crashed plane (the grey's AI, the quick draw) and the Mothman at the crash site | M11 (part 1) |

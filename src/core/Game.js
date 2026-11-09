@@ -1130,6 +1130,9 @@ export class Game {
     this.pendingSave = null;
     this.start('demo');
     this.demo.begin();
+    // No touch controls yet (Aaron, Session 22: their own session): say so on a touch-only device with no controller.
+    const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+    if (!hasFinePointer() && pads.length === 0) this.toast.show(this.cfg.demo.needsControls, this.cfg.ui.toastSeconds * 3);
   }
 
   // ---- the pause menu (Session 20) ---------------------------------------------------------------
