@@ -1,0 +1,235 @@
+// Session 22 (M10.3 spike, debug only): a flying enemy, the Mothman's
+// flyovers and dives (DESIGN.md "The Mothman"). Rough on purpose: it
+// answers "can a flyer move, read, be shot and hurt Tom, cheaply?", not
+// what the Mothman looks like or how his fights are scripted.
+//
+//  - It works through a script (config.spikes.flyer.script): passes over
+//    Tom, circling between, then dives that strike if they reach him; then
+//    it leaves. Its steering is ai/flyerPath.js (tested).
+//  - It's one of the weapons' extra targets (the zombies' hit shape, high
+//    up). It can't die out here: below fleeAt of its health it flies off.
+//  - Its look: a tall dark body, two flapping wings and red eyes that
+//    aren't fogged (they show in the treeline). Four meshes, no lights.
+//
+// Events: 'flyer:struck' { damage }, 'flyer:left' { hurt }.
+
+import * as THREE from 'three';
+import { DEBUG } from '../debug/DebugMenu.js';
+import { steerTo, circlePoint, passEnd, climbEnd, nextMove } from './flyerPath.js';
+
+export class Flyer {
+  constructor(cfg, bus) {
+    this.cfg = cfg;
+    this.fc = cfg.spikes.flyer;
+    this.bus = bus;
+    this.active = false;
+  }
+
+  // ctx: { scene, player, combat, sfx, notify, rng }.
+  init(ctx) {
+    Object.assign(this, ctx);
+    this.build();
+    this.p = { x: 0, y: 0, z: 0 };
+    this.v = { x: 0, y: 0, z: 0 };
+    const f = this.fc;
+    // The weapons' extra target: the hit shape round its body's foot.
+    this.target = {
+      x: 0,
+      y: 0,
+      z: 0,
+      targetable: false,
+      alive: true,
+      hitRadius: f.hitRadius,
+      height: f.height,
+      headBottom: f.headBottom,
+      headRadius: f.headRadius,
+      headshotMultiplier: f.headshotMultiplier,
+      noAssist: true, // the aim doesn't stick to it: a fast flyer should be hard to track
+      takeHit: (amount, part) => this.hit(amount, part),
+    };
+    this.combat.weapons.extraTargets.push(this.target);
+  }
+
+  build() {
+    const f = this.fc;
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.5, 3, 8), new THREE.MeshLambertMaterial({ color: f.bodyColor, emissive: 0x000000 }));
+    g.add(body);
+    // Each wing a flat, ragged triangle hinged at the shoulder.
+    const wingGeo = new THREE.BufferGeometry();
+    const span = f.wingspan / 2;
+    wingGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.5, 0, span, 0.2, -0.3, 0, -0.6, 0, span, 0.2, -0.3, span * 0.7, -0.5, -0.4, 0, -0.6, 0], 3));
+    wingGeo.computeVertexNormals();
+    const wingMat = new THREE.MeshLambertMaterial({ color: f.wingColor, side: THREE.DoubleSide });
+    this.wings = [1, -1].map((side) => {
+      const pivot = new THREE.Group();
+      pivot.position.set(0.25 * side, 0.45, -0.1);
+      const w = new THREE.Mesh(wingGeo, wingMat);
+      w.scale.x = side;
+      pivot.add(w);
+      g.add(pivot);
+      return pivot;
+    });
+    // The eyes: unfogged, so they show far off in the dark.
+    const eyeGeo = new THREE.SphereGeometry(0.07, 6, 4);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: f.eyeColor, fog: false });
+    for (const side of [1, -1]) {
+      const eye = new THREE.Mesh(eyeGeo, eyeMat);
+      eye.position.set(0.13 * side, 1.05, 0.33);
+      g.add(eye);
+    }
+    g.visible = false;
+    this.scene.add(g);
+    this.group = g;
+    this.body = body;
+    this.owned = [body.geometry, body.material, wingGeo, wingMat, eyeGeo, eyeMat];
+    this.flap = 0;
+    this.flash = 0;
+  }
+
+  // ---- starting and stopping ----------------------------------------------------------------------
+
+  // In from far off, on its script.
+  send() {
+    const f = this.fc;
+    const t = this.player.position;
+    const a = this.rng.range(0, Math.PI * 2);
+    this.p.x = t.x + Math.sin(a) * f.startDistance;
+    this.p.z = t.z + Math.cos(a) * f.startDistance;
+    this.p.y = t.y + f.circleHeight + 6;
+    this.v.x = this.v.y = this.v.z = 0;
+    this.health = f.health;
+    this.index = 0;
+    this.active = true;
+    this.hurt = false;
+    this.target.targetable = true;
+    this.group.visible = true;
+    this.begin('circle');
+    this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]) + 3;
+  }
+
+  stop() {
+    this.active = false;
+    this.target.targetable = false;
+    this.group.visible = false;
+  }
+
+  begin(move) {
+    const f = this.fc;
+    const t = this.player.position;
+    this.move = move;
+    if (move === 'circle') {
+      this.angle = Math.atan2(this.p.x - t.x, this.p.z - t.z);
+      this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]);
+    } else if (move === 'flyover') {
+      this.goal = passEnd(this.p, t.x, t.y, t.z, f.flyoverPast, f.flyoverHeight);
+    } else if (move === 'dive') {
+      this.sfx?.play('screech', this.p);
+    } else if (move === 'climb') {
+      this.goal = climbEnd(this.p, this.v, t.y, f.climbDistance, f.circleHeight);
+    } else if (move === 'leave') {
+      const d = Math.hypot(this.p.x - t.x, this.p.z - t.z) || 1;
+      this.goal = { x: this.p.x + ((this.p.x - t.x) / d) * f.leaveDistance * 2, y: t.y + 40, z: this.p.z + ((this.p.z - t.z) / d) * f.leaveDistance * 2 };
+    }
+  }
+
+  // The script's next move, with a circle between each.
+  advance() {
+    if (this.move === 'circle') {
+      this.begin(nextMove(this.fc.script, this.index++));
+    } else {
+      this.begin('circle');
+    }
+  }
+
+  // ---- each frame --------------------------------------------------------------------------------
+
+  update(dt, playing) {
+    if (!this.active) return;
+    const f = this.fc;
+    if (playing) this.fly(dt);
+    // The look: facing where it's going, banked into its turns, the wings beating faster in a dive.
+    const g = this.group;
+    g.position.set(this.p.x, this.p.y, this.p.z);
+    const heading = Math.atan2(this.v.x, this.v.z);
+    g.rotation.set(Math.max(-0.6, Math.min(0.6, -this.v.y * 0.04)), heading, 0, 'YXZ');
+    const fast = this.move === 'dive' ? 1 : this.move === 'flyover' ? 0.5 : 0.15;
+    const hz = f.flapHz[0] + (f.flapHz[1] - f.flapHz[0]) * fast;
+    const before = Math.sin(this.flap);
+    this.flap += dt * hz * Math.PI * 2;
+    const beat = Math.sin(this.flap);
+    this.wings[0].rotation.z = beat * 0.7;
+    this.wings[1].rotation.z = -beat * 0.7;
+    if (before > 0 && beat <= 0 && playing) this.sfx?.play('wingbeat', this.p);
+    this.flash = Math.max(0, this.flash - dt);
+    this.body.material.emissive.setHex(this.flash > 0 ? 0x552211 : 0x000000);
+    // The hit shape follows the body (its foot a little under the body's middle).
+    const tg = this.target;
+    tg.x = this.p.x;
+    tg.y = this.p.y - f.height * 0.55;
+    tg.z = this.p.z;
+  }
+
+  fly(dt) {
+    const f = this.fc;
+    const t = this.player.position;
+    if (this.move === 'circle') {
+      this.angle += (f.circleSpeed / f.circleRadius) * dt;
+      steerTo(this.p, this.v, circlePoint(t.x, t.y, t.z, f.circleRadius, f.circleHeight, this.angle), f.circleSpeed, f.steer, dt);
+      this.moveTimer -= dt;
+      if (this.moveTimer <= 0) this.advance();
+    } else if (this.move === 'flyover') {
+      if (steerTo(this.p, this.v, this.goal, f.flyoverSpeed, f.steer, dt) < 4) this.advance();
+    } else if (this.move === 'dive') {
+      const aim = { x: t.x, y: t.y + f.diveAt, z: t.z };
+      const d = steerTo(this.p, this.v, aim, f.diveSpeed, f.steer * 1.6, dt);
+      if (d < f.strikeRange) {
+        this.combat.hurtPlayer(f.strikeDamage, 1.5);
+        this.bus.emit('flyer:struck', { damage: f.strikeDamage });
+        this.begin('climb');
+      } else if (this.p.y < t.y + 0.3) {
+        this.begin('climb'); // missed, at the ground: pull up
+      }
+    } else if (this.move === 'climb') {
+      if (steerTo(this.p, this.v, this.goal, f.climbSpeed, f.steer, dt) < 4) this.advance();
+    } else if (this.move === 'leave') {
+      steerTo(this.p, this.v, this.goal, f.leaveSpeed, f.steer, dt);
+      if (Math.hypot(this.p.x - t.x, this.p.z - t.z) > f.leaveDistance) {
+        this.stop();
+        this.bus.emit('flyer:left', { hurt: this.hurt });
+      }
+    }
+  }
+
+  // A shot or a swing. It can't die: hurt enough, it leaves.
+  hit(amount) {
+    if (!this.active || this.move === 'leave') return false;
+    this.health -= amount;
+    this.flash = this.fc.hitFlashSeconds;
+    if (this.health <= this.fc.health * this.fc.fleeAt) {
+      this.hurt = true;
+      this.begin('leave');
+      this.notify?.('It shrieks and flies off, hurt');
+    }
+    return false;
+  }
+
+  // ---- debug -------------------------------------------------------------------------------------
+
+  addDebugItems(menu) {
+    const sp = menu.category(DEBUG.spikes);
+    sp.addItem(() => `Flyer: send one at me (${this.active ? `${this.move}, health ${Math.round(this.health)}` : 'none up'})`, () => this.send());
+    sp.addItem('Flyer: send it away', () => this.active && this.begin('leave'));
+  }
+
+  overlayLine() {
+    if (!this.active) return 'flyer -';
+    const t = this.player.position;
+    return `flyer ${this.move} ${this.index}/${this.fc.script.length} hp ${Math.round(this.health)} up ${(this.p.y - t.y).toFixed(0)}m off ${Math.hypot(this.p.x - t.x, this.p.z - t.z).toFixed(0)}m`;
+  }
+
+  dispose() {
+    this.group?.removeFromParent();
+    for (const x of this.owned ?? []) x.dispose();
+  }
+}

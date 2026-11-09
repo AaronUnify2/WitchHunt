@@ -74,6 +74,7 @@ import { InteriorHud } from '../ui/InteriorHud.js';
 import { MetaStore } from '../meta/MetaStore.js';
 import { DemoMode } from '../demo/DemoMode.js';
 import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
+import { Flyer } from '../ai/Flyer.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -617,6 +618,8 @@ export class Game {
     const notify = (text) => this.toast.show(text);
     this.placeBeyond = new PlaceBeyond(this.cfg, this.bus);
     this.placeBeyond.init({ world: this.world, player: this.player, interiors: this.interiors, sfx: this.combat.sfx, notify });
+    this.flyer = new Flyer(this.cfg, this.bus);
+    this.flyer.init({ scene: this.scene, player: this.player, combat: this.combat, sfx: this.combat.sfx, notify, rng: this.rng.fork('flyer') });
   }
 
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
@@ -729,7 +732,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -770,6 +773,7 @@ export class Game {
     for (const v of this.experimental) v.addDebugItems(menu); // the ute with a turret, the alien quad
     this.roadNorth.addDebugItems(menu); // Session 21
     this.placeBeyond.addDebugItems(menu); // Session 22: the spikes
+    this.flyer.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1513,6 +1517,7 @@ export class Game {
     if (story) this.witchEscape.update(dt, playing && this.combat.alive);
     if (story) this.homeStop.update(dt, playing && this.combat.alive);
     if (first) this.roadNorth.update(dt, playing && this.combat.alive);
+    if (first) this.flyer.update(dt, playing && this.combat.alive); // Session 22: the flyer spike
   }
 
   get phase() {
@@ -1556,6 +1561,7 @@ export class Game {
     this.card.dispose();
     this.pauseMenu.dispose();
     this.demo.dispose();
+    this.flyer.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();

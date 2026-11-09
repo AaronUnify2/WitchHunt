@@ -3652,6 +3652,45 @@ export const config = {
       callEvery: [3.5, 6], // seconds between Junie's calls (from one calling path, then the other)
       light: { ambientDay: 2.6, ambientNight: 1.5, ambientColor: 0xa0a8b4, fogColor: 0x5d6469, fogNear: 2, fogFar: 26 },
     },
+    // A flying enemy (the Mothman's flyovers and dives; DESIGN.md "The
+    // Mothman"). Its script: passes over Tom, circling between, then dives
+    // that strike if they reach him. It can't die out here: hurt enough, it
+    // flies off (the design: it only dies in its cave).
+    flyer: {
+      script: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive'], // then it leaves
+      circleSeconds: [2.5, 4.5], // circling between moves
+      circleRadius: 22,
+      circleHeight: 14, // metres above Tom
+      circleSpeed: 15, // m/s
+      flyoverHeight: 9,
+      flyoverPast: 45, // metres past Tom a pass carries on
+      flyoverSpeed: 24,
+      diveSpeed: 21,
+      diveAt: 1.3, // aims this high above Tom's feet (his chest)
+      strikeRange: 2.0, // a dive this close hits him...
+      strikeDamage: 22, // ...for this much
+      climbDistance: 28, // after a dive it pulls up and away this far
+      climbSpeed: 17,
+      steer: 3.2, // how fast its velocity turns toward where it's going (per second)
+      leaveSpeed: 26,
+      leaveDistance: 140, // gone once this far off
+      health: 260,
+      fleeAt: 0.35, // hurt below this fraction of its health, it leaves early
+      startDistance: 90, // it comes in from this far off
+      // Its hit shape (combat/hitscan.js), round its body's foot (y).
+      hitRadius: 0.75,
+      height: 2.4,
+      headBottom: 1.9,
+      headRadius: 0.32,
+      headshotMultiplier: 2,
+      // Its look (a rough placeholder): a tall dark body, wide wings, red eyes.
+      bodyColor: 0x17140f,
+      wingColor: 0x231d16,
+      eyeColor: 0xff2010,
+      wingspan: 5.2,
+      flapHz: [1.4, 3.2], // slow gliding to fast flapping (diving)
+      hitFlashSeconds: 0.12,
+    },
   },
 
   // The abandoned campsite (M9.2; encounters/Campsite.js, data/campsite.json).
