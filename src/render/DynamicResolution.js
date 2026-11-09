@@ -1,7 +1,11 @@
 // Dynamic resolution controller (pure logic). Averages frame times over a
 // window; drops the render scale one step after a slow window, and raises
 // it one step only after a sustained stretch on target, so it doesn't
-// flicker between two levels.
+// flicker between two levels. A raise that's dropped again soon after
+// (failedRaiseSeconds) doubles the wait before the next raise
+// (raiseBackoff, up to maxRaiseAfterSeconds), so a scene right on the edge
+// settles instead of resizing every few seconds (Session 22: each resize
+// rebuilds the post chain's targets, a hitch on the tablet).
 
 export class DynamicResolution {
   constructor(drConfig) {
@@ -14,12 +18,12 @@ export class DynamicResolution {
     this.max = max;
     this.scale = this.clamp(scale);
     this.targetFps = targetFps;
-    this.resetSample();
-    this.goodTime = 0;
+    this.resetBackoff();
   }
 
   update(dt) {
     if (!this.enabled || dt <= 0) return false;
+    this.sinceRaise += dt;
     this.sampleTime += dt;
     this.sampleFrames += 1;
     if (this.sampleTime < this.cfg.sampleSeconds) return false;
@@ -31,12 +35,18 @@ export class DynamicResolution {
 
     if (slow) {
       this.goodTime = 0;
-      return this.setScale(this.scale - this.cfg.step);
+      const dropped = this.setScale(this.scale - this.cfg.step);
+      if (dropped && this.sinceRaise <= (this.cfg.failedRaiseSeconds ?? 0)) {
+        this.raiseAfter = Math.min(this.cfg.maxRaiseAfterSeconds ?? this.raiseAfter, this.raiseAfter * (this.cfg.raiseBackoff ?? 1));
+      }
+      return dropped;
     }
     this.goodTime += window;
-    if (this.goodTime >= this.cfg.raiseAfterSeconds) {
+    if (this.goodTime >= this.raiseAfter) {
       this.goodTime = 0;
-      return this.setScale(this.scale + this.cfg.step);
+      const raised = this.setScale(this.scale + this.cfg.step);
+      if (raised) this.sinceRaise = 0;
+      return raised;
     }
     return false;
   }
@@ -55,17 +65,24 @@ export class DynamicResolution {
     this.min = min;
     this.max = max;
     this.scale = this.clamp(this.scale);
+    this.resetBackoff();
   }
 
   setTarget(fps) {
     this.targetFps = fps;
-    this.goodTime = 0;
-    this.resetSample();
+    this.resetBackoff();
   }
 
   setEnabled(enabled) {
     this.enabled = enabled;
+    this.resetBackoff();
+  }
+
+  // A fresh start (new quality, target or on/off): the base wait again.
+  resetBackoff() {
     this.goodTime = 0;
+    this.raiseAfter = this.cfg.raiseAfterSeconds;
+    this.sinceRaise = Infinity;
     this.resetSample();
   }
 

@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -298,6 +298,9 @@ Round 33 (Session 21, after your first look at round 32):
 - [ ] **The brush:** drive the dozer into it: the bushes and trunks go one at a time, tumbling off, as the blade reaches them; most of it gone, the rest comes down and the cave shows.
 - [ ] **No car markers** on the map or the minimap.
 - [ ] **All five optional encounters** every run ("Teleport: next optional encounter").
+
+Round 34 (Session 22: round 33 all good, Aaron):
+- [ ] **No black flicker:** play anywhere busy (the gas station, the outpost, the shelter's clearing) for a few minutes, on the tablet and on your work computer. The single black frame every 5-10 s should be gone. (It was dynamic resolution resizing the picture after it was drawn; it also settles now instead of stepping up and down every few seconds.) If you still see one, note where and how often.
 
 ## 1. The main menu
 

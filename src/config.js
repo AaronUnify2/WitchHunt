@@ -70,6 +70,13 @@ export const config = {
       sampleSeconds: 1, // frame times are averaged over this window
       slowTolerance: 0.12, // average frame time this far over target counts as slow
       raiseAfterSeconds: 4, // on-target time needed before raising the scale
+      // Session 22 (the flicker): a raise dropped again within this many
+      // seconds was too much; the wait before the next raise doubles
+      // (raiseBackoff) up to maxRaiseAfterSeconds. A new quality, frame
+      // cap or on/off goes back to raiseAfterSeconds.
+      failedRaiseSeconds: 3,
+      raiseBackoff: 2,
+      maxRaiseAfterSeconds: 60,
       step: 0.05, // render scale change per adjustment
     },
   },

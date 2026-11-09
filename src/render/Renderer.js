@@ -14,6 +14,7 @@ export class Renderer {
     this.bufferSize = new THREE.Vector2();
     this.scale = renderConfig.renderScale;
     this.postEnabled = false;
+    this.sizeDirty = false; // a scale change waiting for the next render()
     this.retro = false; // Session 10: the optional retro pixel filter (setRetro)
     this.preRender = []; // functions (webglRenderer, scene) drawn before the frame: the ute's rear-view mirror
   }
@@ -73,13 +74,17 @@ export class Renderer {
   setRetro(on) {
     this.retro = on;
     this.renderer.domElement.style.imageRendering = on ? 'pixelated' : '';
-    this.resize();
+    this.sizeDirty = true;
   }
 
-  // Render scale = fraction of native resolution.
+  // Render scale = fraction of native resolution. Applied at the start of
+  // the next render(): resizing clears the canvas, so a resize between a
+  // frame's draw and the browser showing it shows a black frame (Session 22,
+  // Aaron's flicker every 5-10 s, from dynamic resolution stepping).
   setScale(scale) {
+    if (scale === this.scale) return;
     this.scale = scale;
-    this.resize();
+    this.sizeDirty = true;
   }
 
   // M8: what's drawn from (a cutscene's camera, or the player's).
@@ -94,6 +99,7 @@ export class Renderer {
   }
 
   resize() {
+    this.sizeDirty = false;
     this.width = this.container.clientWidth;
     this.height = this.container.clientHeight;
     this.renderer.setPixelRatio(this.pixelRatio);
@@ -102,6 +108,7 @@ export class Renderer {
   }
 
   render(dt) {
+    if (this.sizeDirty) this.resize();
     const camera = this.camera;
     const aspect = this.width / this.height;
     if (camera.aspect !== aspect) {

@@ -65,3 +65,56 @@ describe('DynamicResolution', () => {
     expect(dr.scale).toBe(0.6);
   });
 });
+
+describe('DynamicResolution backoff (Session 22, the flicker)', () => {
+  const backoffCfg = { ...cfg, failedRaiseSeconds: 3, raiseBackoff: 2, maxRaiseAfterSeconds: 12 };
+  function makeBackoff() {
+    const dr = new DynamicResolution(backoffCfg);
+    dr.init({ scale: 0.65, min: 0.4, max: 0.8, targetFps: 60 });
+    return dr;
+  }
+  // On the edge: fine at 0.65, too slow at 0.7. Count scale changes.
+  function edge(dr, seconds) {
+    let changes = 0;
+    for (let t = 0; t < seconds; t += 1 / 60) {
+      const fps = dr.scale > 0.67 ? 40 : 60;
+      if (dr.update(1 / fps)) changes++;
+    }
+    return changes;
+  }
+
+  it('a raise dropped straight back doubles the wait, up to the cap', () => {
+    const dr = makeBackoff();
+    edge(dr, 4.5); // raised at 3 s, dropped at about 4 s
+    expect(dr.scale).toBe(0.65);
+    expect(dr.raiseAfter).toBe(6);
+    edge(dr, 60);
+    expect(dr.raiseAfter).toBe(12);
+  });
+
+  it('settles: far fewer resizes on the edge than without it', () => {
+    const plain = new DynamicResolution(cfg);
+    plain.init({ scale: 0.65, min: 0.4, max: 0.8, targetFps: 60 });
+    const withoutBackoff = edge(plain, 120);
+    const withBackoff = edge(makeBackoff(), 120);
+    expect(withoutBackoff).toBeGreaterThan(50);
+    expect(withBackoff).toBeLessThan(25);
+  });
+
+  it('a raise that holds keeps the base wait', () => {
+    const dr = makeBackoff();
+    run(dr, 60, 3.05);
+    expect(dr.scale).toBeCloseTo(0.7);
+    run(dr, 60, 5);
+    run(dr, 30, 1); // a slow patch long after the raise
+    expect(dr.raiseAfter).toBe(3);
+  });
+
+  it('a new quality goes back to the base wait', () => {
+    const dr = makeBackoff();
+    edge(dr, 20);
+    expect(dr.raiseAfter).toBeGreaterThan(3);
+    dr.setBounds(0.4, 0.6);
+    expect(dr.raiseAfter).toBe(3);
+  });
+});
