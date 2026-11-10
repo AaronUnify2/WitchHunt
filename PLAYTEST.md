@@ -343,7 +343,7 @@ Round 38 (Session 24, Graphics: the crashed plane's set; OPEN_QUESTIONS #398-402
 - [ ] It's also in the model viewer (**Models**, "The crashed plane's set"), but the world's the place to judge it.
 
 Round 39 (Session 24, Graphics: giant moths; OPEN_QUESTIONS #403-404). Model only: no AI yet.
-- [ ] **Giant moths in the model viewer:** debug menu, **Models**, "Giant moth". The variant button switches between **one** and **a swarm of 16**. Poses: flying, hovering, darting, settled (wings folded, as if on a wall), hit, dying, corpse. Dog sized (about 0.8 m long, 1.7 m across the wings), the Mothman's colours and eyes.
+- [ ] **Giant moths in the model viewer:** debug menu, **Models**, "Giant moth". The variant button switches between **one** and **a swarm of 24** (you said 16 to 32). Poses: flying, hovering, darting, settled (wings folded, as if on a wall), hit, dying, corpse. Dog sized (about 0.8 m long, 1.7 m across the wings), the Mothman's colours and eyes.
   - The swarm by moonlight (the light button): red eyes first, then the shapes. Does a swarm read as a threat, or do they want to be bigger or more of them?
   - **The frame rate** with the swarm up (it's one draw call however many there are).
 
@@ -354,13 +354,13 @@ Round 40 (Session 24, Graphics: Bigfoot and his cocoon; OPEN_QUESTIONS #405-407)
 
 Round 41 (Session 24, Graphics: Milo and his animals; OPEN_QUESTIONS #408-411). Models only.
 - [ ] **Milo in the model viewer:** debug menu, **Models**, "Milo". The variant button switches between **the clown** and **the man (the morning after)**. Tall and lanky, arms too long for him.
-  - **The clown:** grey greasepaint, a painted grin far wider than his mouth, black diamonds over his eyes, a red nose, a frizz of green wig, a ruff, a striped shirt under braces, patched trousers, long red shoes, a bandolier of knives and one in his hand. Poses: at rest (bouncing on his toes, the knife turning in his fingers), dancing, a bow, beckoning, throwing a knife, the car gates (one hand, not looking), "I was in character!", walking.
-  - **The man:** flannel shirt, jeans, clean face, short brown hair, the tin mug. Poses: at rest (the mug at his chest), offering the mug.
+  - **The clown** (as The Lone Clown has him): a fitted polka-dot suit (blue, white and red dots: the colour's my pick), white greasepaint, a red grin painted nearly to his ears, painted eyes, bright green curls, white gloves, oversized shoes, no red nose; a knife in his hand and two tucked into the suit. Poses: at rest (bouncing on his toes, the knife turning in his fingers), dancing, a bow, beckoning, throwing a knife, the car gates (one hand, not looking), "I was in character!", walking.
+  - **The man:** broader in the shoulders than the clown, dark hair, a clean face, flannel shirt, jeans, boots, the tin mug. Poses: at rest (the mug at his chest), offering the mug.
   - Is the clown funny, unsettling, or both? (The design wants both.)
 - [ ] **His animals:** four more entries after him: "Milo's donkey", "Milo's pony", "Milo's turkey", "Milo's python".
   - **The donkey:** its first pose is the stare. Orbit round it: the head follows you and nothing else moves, but for one ear now and then.
   - **The turkey:** drawn up tall, one eye on you, a slow tilt of the head (the Aunt June look); or fanned and strutting.
-  - The Shetland pony (round, shaggy, a forelock over its eyes); the python (coiled, its head up, as in its tank).
+  - The donkey is grey and the Shetland burnt caramel, as in the story. The Shetland pony (round, shaggy, a forelock over its eyes); the python (coiled, its head up, as in its tank).
 
 ## 1. The main menu
 

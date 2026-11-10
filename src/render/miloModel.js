@@ -1,13 +1,15 @@
 // Milo (Session 24; DESIGN.md "Milo's barn"): the knife thrower from
 // Aaron's story The Lone Clown, alive in his barn and permanently in
 // character. Tall and lanky with arms too long for him. Two looks:
-//  - the clown: greasepaint (gone grey with wear), a painted grin far wider
-//    than his mouth, black diamonds over his eyes, a red nose, a frizz of
-//    green wig, a ruff, a striped shirt under braces, baggy patched
-//    trousers, long shoes, gloves; a bandolier of throwing knives across
-//    his chest and one in his hand;
-//  - the man (the morning after): the same long frame in a flannel shirt
-//    and jeans, face scrubbed clean, short brown hair, a tin mug in his hand.
+//  - the clown (as the story has him): a polka-dot clown suit that fits
+//    him well, a white greasepaint face, a red grin painted so wide it
+//    nearly touches his ears, painted eyes, a bright green wig of curls,
+//    white gloves, oversized shoes; no red nose. His knives are a set of
+//    three: one in his hand, two tucked into a fold of the suit. In full
+//    kit his arms look too long and his frame narrower than the man's;
+//  - the man (the morning after): tall, broad-shouldered, dark-haired, in
+//    a flannel shirt, jeans and boots, his face washed clean, a tin mug of
+//    instant coffee in his hand.
 // He never attacks Tom and can't be hurt.
 //
 // The figure kit's specs and his poses (for render/PosedFigure.js). Model
@@ -76,7 +78,7 @@ function body(k) {
 // m: config.milo. look: 'clown' or 'man'.
 export function miloSpec(m, look = 'clown') {
   const clown = look === 'clown';
-  const { masses, limbs } = body(clown ? { baggy: 1.3, nose: 'nose', hand: 'gloves', forearm: 'shirt', shoe: 0.07 } : { baggy: 1.05, nose: 'face', hand: 'face', forearm: 'face', shoe: 0 });
+  const { masses, limbs } = body(clown ? { baggy: 1.08, nose: 'face', hand: 'gloves', forearm: 'shirt', shoe: 0.09 } : { baggy: 1.05, nose: 'face', hand: 'face', forearm: 'face', shoe: 0 });
   const tubes = [];
   const rings = [];
   if (clown) {
@@ -87,37 +89,23 @@ export function miloSpec(m, look = 'clown') {
       masses.push(['head', null, Math.sin(a) * 0.1, 1.67 + side * 0.01 - Math.cos(a) * 0.01, -0.02 + Math.cos(a) * 0.075, 0.05 + side * 0.025, 0.05, 0.05, 'wig']);
     }
     for (const [, s] of SIDES) masses.push(['head', null, s * 0.115, 1.6, -0.02, 0.05, 0.065, 0.06, 'wig']);
-    // The painted grin: far wider than a mouth, curling up to the cheekbones.
-    for (let i = -4; i <= 4; i++) {
-      const x = i * 0.017;
-      masses.push(['head', null, x, 1.535 + Math.abs(i) ** 1.6 * 0.0042, 0.1 - Math.abs(i) * 0.0045, 0.012, 0.01 + (4 - Math.abs(i)) * 0.0015, 0.006, 'grin']);
+    // The painted grin: so wide it nearly touches his ears, curling up over the cheekbones.
+    for (let i = -5; i <= 5; i++) {
+      const x = i * 0.0165;
+      masses.push(['head', null, x, 1.535 + Math.abs(i) ** 1.6 * 0.0042, 0.1 - Math.abs(i) ** 1.5 * 0.0042, 0.012, 0.01 + (5 - Math.abs(i)) * 0.0013, 0.006, 'grin']);
     }
-    // The ruff, and the braces.
-    rings.push(['neck', 0, 1.455, 0, 0.085, 0.03, 'ruff', [Math.PI / 2, 0, 0]]);
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2;
-      masses.push(['neck', 'chest', Math.sin(a) * 0.105, 1.45, Math.cos(a) * 0.1, 0.035, 0.022, 0.035, 'ruff']);
-    }
-    for (const [, s] of SIDES) {
-      tubes.push(['chest', s * 0.09, 1.44, 0.095, s * 0.1, 1.05, 0.105, 0.012, 0.012, 'braces']);
-      tubes.push(['chest', s * 0.09, 1.44, -0.095, s * 0.02, 1.05, -0.1, 0.012, 0.012, 'braces']);
-    }
-    // A bandolier of throwing knives, shoulder to hip, and one in his right hand.
-    tubes.push(['chest', -0.15, 1.4, 0.1, 0.14, 1.04, 0.115, 0.022, 0.022, 'leather', 0.4]);
-    for (let i = 0; i < 5; i++) {
-      const t = 0.15 + i * 0.17;
-      const x = -0.15 + 0.29 * t;
-      const y = 1.4 - 0.36 * t;
-      tubes.push(['chest', x, y + 0.035, 0.128, x - 0.012, y - 0.03, 0.13, 0.009, 0.008, 'leather']); // the handle
-      tubes.push(['chest', x - 0.012, y - 0.03, 0.13, x - 0.03, y - 0.1, 0.128, 0.011, 0.002, 'steel', 0.25]); // the blade
+    // His knives, a set of three: one in his right hand, two tucked into a fold of the suit at his chest.
+    for (const x of [-0.05, 0.0]) {
+      tubes.push(['chest', x, 1.37, 0.115, x + 0.02, 1.3, 0.122, 0.009, 0.008, 'leather']); // the handle
+      tubes.push(['chest', x + 0.02, 1.3, 0.122, x + 0.045, 1.2, 0.118, 0.011, 0.002, 'steel', 0.25]); // the blade
     }
     tubes.push(['wristR', -0.24, 0.66, 0.045, -0.24, 0.6, 0.06, 0.01, 0.009, 'leather']);
-    tubes.push(['wristR', -0.24, 0.6, 0.06, -0.24, 0.47, 0.085, 0.013, 0.002, 'steel', 0.25]);
+    tubes.push(['wristR', -0.24, 0.6, 0.06, -0.24, 0.45, 0.09, 0.014, 0.002, 'steel', 0.25]);
   } else {
-    // Short brown hair, a day's stubble, the flannel's collar, a belt.
+    // Dark hair, the flannel's collar, a belt.
     masses.push(['head', null, 0, 1.665, -0.01, 0.088, 0.075, 0.1, 'hair']);
     masses.push(['head', null, 0, 1.62, -0.07, 0.082, 0.09, 0.05, 'hair']);
-    masses.push(['head', null, 0, 1.52, 0.06, 0.06, 0.05, 0.05, 'stubble']);
+    masses.push(['head', null, 0, 1.675, 0.06, 0.07, 0.04, 0.04, 'hair']); // falling across his forehead
     rings.push(['neck', 0, 1.45, 0.005, 0.06, 0.016, 'shirt', [Math.PI / 2, 0, 0]]);
     rings.push(['hips', 0, 1.02, 0, 0.155, 0.014, 'leather', [Math.PI / 2, 0, 0]]);
     // The tin mug in his right hand: "Instant. Sorry."
@@ -132,20 +120,20 @@ export function miloSpec(m, look = 'clown') {
     tubes,
     rings,
     height: m.height,
-    width: m.width,
+    width: m.widths[look],
     head: 1.04,
     colours: m.looks[look],
     paint(key, q, out, colours) {
       if (clown) {
-        if (key === 'shirt') {
-          if (Math.sin(q.x * 48) > 0.1) out.copy(colours.stripe); // broad stripes
-        } else if (key === 'trousers') {
-          // Patches: squares of something else, sewn on.
-          const px = Math.floor(q.x * 9 + 20);
-          const py = Math.floor(q.y * 7);
-          if ((px * 7 + py * 13) % 9 === 0) out.copy(colours.patch);
+        if (key === 'shirt' || key === 'trousers') {
+          // The polka dots: big ones, two colours, all over the suit.
+          const cell = 0.115;
+          const ix = Math.round(q.x / cell);
+          const iy = Math.round(q.y / cell);
+          const iz = Math.round(q.z / cell);
+          if (Math.hypot(q.x - ix * cell, q.y - iy * cell, q.z - iz * cell) < 0.046) out.copy((ix + iy + iz) & 1 ? colours.dot : colours.dot2);
         } else if (key === 'face' && q.y > 1.5) {
-          // Black diamonds over his eyes; the paint worn thin along the jaw.
+          // Painted eyes: black diamonds; the white worn thin along the jaw.
           for (const s of [-1, 1]) if (q.z > 0.05 && Math.abs(q.x - s * 0.032) * 1.6 + Math.abs(q.y - 1.62) < 0.045) out.copy(colours.eyes);
           if (q.y < 1.53) out.lerp(colours.skin, 0.5);
         }

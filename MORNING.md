@@ -15,8 +15,7 @@ All of them are in the model viewer (debug menu, Models). Each is one draw call,
 ## What I'd like from you
 
 - **Rounds 39-41** (the moths, Bigfoot, Milo and the animals), and your glare list.
-- **#408: what does the clown wear in The Lone Clown?** I haven't read it; his costume past the wig, the grin and the knives is my guess.
-- **#404: how many moths is a swarm?** (A dozen, thirty?)
+- **The clown's suit colour:** corrected to the story (a fitted polka-dot suit, no nose, three knives; the man dark-haired; the donkey grey; the pony burnt caramel). The story gives the suit no colour: I made it blue with white and red dots. Yours to change.
 - The frame rate with the swarm up, with the Mothman flying, and standing at the wreck.
 
 Next on the plan is **Session 25**: the crashed plane's encounter (the grey, the quick draw) and the Mothman at the crash site.

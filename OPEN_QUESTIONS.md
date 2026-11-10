@@ -33,7 +33,7 @@ My calls (PLAYTEST round 38):
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
 | 403 | **Their size and look.** About 0.8 m long and 1.7 m across: a fat furred body, a banded abdomen, the Mothman's wings in small and his red eyes (unfogged). Bigger, smaller, plainer wings? | `scale: 1` | `config.moths.giant` (`scale`, `colours`, `eyeGlow`) |
-| 404 | **How many.** The renderer draws up to 32 at once; the viewer's swarm is 16. What's a swarm in the mineshaft: a dozen, thirty? (It decides their health and damage when their behaviour is designed.) | `poolSize: 32` | `config.moths.giant.poolSize` |
+| 404 | **Settled: 16 to 32.** How many. The renderer draws up to 32 at once; the viewer's swarm is 16. What's a swarm in the mineshaft: a dozen, thirty? (It decides their health and damage when their behaviour is designed.) | `poolSize: 32` | `config.moths.giant.poolSize` |
 
 **Built: Bigfoot and his cocoon** (`render/bigfootModel.js` on the new `render/PosedFigure.js`; `config.bigfoot`): one draw call for him, one for the cocoon. Model only.
 
@@ -43,14 +43,22 @@ My calls (PLAYTEST round 38):
 | 406 | **What he wears.** A necklace of bone, river-stone and red-seed beads with a carved tooth, and a woven band on his left wrist: his own handiwork (the design's "a person with a culture"). Right amount, or more (a belt, a carried tool)? | As described. | `bigfootSpec()` |
 | 407 | **The cocoon.** A 3 m pod of grey silk hung by ropes of it, a seam down the front laced with strands (his face and beads show through); cut, the front lies open. Should more of him show, or less (only a hand, or nothing until it's cut)? | `buildCocoon(c, 0 or 1)` | `render/bigfootModel.js`, `config.bigfoot.cocoon` |
 
+**Aaron's answers (Nov 10, after the models were pushed):** he attached **The Lone Clown** (#408-411 answered from it, below). **#404 settled: a swarm of moths is 16 to 32** (the renderer's 32 covers it; the viewer's swarm is now 24). The glare, the eyes at distance and the frame rates: he'll check in his big play-test.
+
+**Corrected from the story** (all in `config.milo`, `config.barnAnimals`, `render/miloModel.js`):
+- **The clown** wears **a polka-dot clown suit, fitted well** (not stripes, braces, patches or a ruff: those were my guesses, gone), **white greasepaint, a red grin painted so wide it nearly touches his ears, painted eyes, a bright green wig of curls, white gloves, oversized shoes. No red nose.** His knives are **a set of three** (one in his hand, two tucked into a fold of the suit; the bandolier is gone). In full kit his arms look too long and his frame narrower.
+- **The man** is tall, **broad-shouldered, dark-haired** and handsome (he was brown-haired and stubbled; now dark hair, clean jaw, a broader build than the clown's), in a flannel shirt, jeans and boots, with a tin mug of instant coffee.
+- **The donkey is grey** (it was grey-brown), calm and half-lidded, and **she** never looks away. **The Shetland is the colour of burnt caramel** (it was dark brown). The python is thick and patterned, **coiled round a branch** in its glass tank (mine is coiled on the ground: the branch and the tank are the barn's set, Session 28). The turkey is enormous.
+- The story gives the suit no colour: **I made it blue with white and red dots** (a cream suit read as bare skin under the torch). Aaron to say if he pictures another.
+
 **Built: Milo and his animals** (`render/miloModel.js`, `render/barnAnimals.js`, on `render/PosedFigure.js`; `config.milo`, `config.barnAnimals`): one draw call each. Models only: the barn is Session 28's.
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 408 | **The clown's look.** I haven't read The Lone Clown, so apart from what DESIGN.md gives (long arms, a green wig, the painted grin, knives) his costume is my guess: grey greasepaint, black diamonds over the eyes, a red nose, a ruff, a striped shirt under braces, patched trousers, long red shoes, a bandolier of knives. **What does the story say he wears?** | As described. | `miloSpec()`, `config.milo.looks.clown` |
-| 409 | **The man.** A red-and-black flannel shirt, jeans, boots, short brown hair, stubble, a tin mug of coffee. | As described. | `miloSpec()`, `config.milo.looks.man` |
-| 410 | **The donkey.** Grey-brown with the dark cross on its back, a pale muzzle and a pale ring round each eye (so the stare reads); in the stare, only its head moves, and an ear. What colour is the story's donkey? | As described. | `equineSpec()`, `config.barnAnimals.donkey` |
-| 411 | **The others.** A dark shaggy Shetland with a pale mane over its eyes; a bronze-black turkey, about 1.3 m to the top of its fan, with a blue-grey head and red wattle; a brown blotched python about 5 m long, coiled. Any of them wrong for the story? | As described. | `render/barnAnimals.js`, `config.barnAnimals` |
+| 408 | **The clown's look: answered from the story** (above). Still open: **the suit's colour** (blue, white and red dots: my pick), and the painted eyes' shape (black diamonds: my pick; the story says only "two painted eyes"). | As the story has him. | `miloSpec()`, `config.milo.looks.clown` |
+| 409 | **The man: answered from the story** (dark hair, broad shoulders, flannel, jeans, boots, the tin mug). The flannel's red-and-black check is my pick. | As the story has him. | `miloSpec()`, `config.milo.looks.man` |
+| 410 | **The donkey.** Grey-brown with the dark cross on its back, a pale muzzle and a pale ring round each eye (so the stare reads); in the stare, only its head moves, and an ear. **Answered: grey.** | Grey now. | `equineSpec()`, `config.barnAnimals.donkey` |
+| 411 | **The others: the pony answered (burnt caramel).** A caramel shaggy Shetland with a pale mane over its eyes; a bronze-black turkey, about 1.3 m to the top of its fan, with a blue-grey head and red wattle; a brown blotched python about 5 m long, coiled. Any of them wrong for the story? | As described. | `render/barnAnimals.js`, `config.barnAnimals` |
 
 ## Session 23 (QA & Balance: the opening with the new systems)
 

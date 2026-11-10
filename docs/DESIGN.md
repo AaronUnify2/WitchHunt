@@ -550,7 +550,7 @@ More grounds = a look, set dressing and one atmospheric twist.
 | Mutant zombie | Forest, level 3+; the gas station's authored first mutant | 3D | Giant, mutated, much more health. A mini-boss in the horde | Built |
 | Giant beetle | The military outpost's crates (built); mineshaft, Bigfoot cave's egg tunnels (designed) | 3D | Armoured shell (30% damage); the soft spot on its face takes 3x. Emerge, threat display, charge, rear and snap | Built (Session 17) |
 | The Mothman | The crashed plane (first meeting), the station (the bug-zapper night), Bigfoot cave (killed); the forest if flares are spammed | 3D | Flying dive attacks, disorienting screech, calls beetles | Model built (Session 24), worn by the flyer spike; encounters not built (flares are counted) |
-| Giant moths | The mineshaft (first met), the Mothman's lair in the Bigfoot cave | 3D: dog sized, in swarms (Aaron, Nov 10); one draw call for the swarm (Session 24) | Flying; the Mothman's kin. Behaviour to design | Model built (Session 24); behaviour not designed |
+| Giant moths | The mineshaft (first met), the Mothman's lair in the Bigfoot cave | 3D: dog sized, in swarms of 16 to 32 (Aaron, Nov 10); one draw call for the swarm (Session 24) | Flying; the Mothman's kin. Behaviour to design | Model built (Session 24); behaviour not designed |
 | New zombie types: the Hollow, the Screamer, the Hanged | Debut on the mega night, then the normal mix | Sprite or 3D (open) | Each with a job, Left 4 Dead style (see Zombies) | Designed (placeholders), not built |
 | The Caller | Wherever the forest is severed; the radio in the south | None: a voice only | Imitates the family's voices; can't be shot | Designed, not built |
 | Men in Black | The Car Armory (as zombies, and a few barricaded survivors), Ground Zero | 3D: the cutscenes' Man in Black with a pistol (most), an SMG or a sniper rifle (Session 13) | Armed agents using cover; stealth-aware squads | Model and poses built; no AI |
@@ -1613,6 +1613,8 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 - **The family's reactions over the radio:** Wyatt thinks it's the coolest thing ever; Ellen is quietly horrified.
 
 **The barn (from the story).** A donkey, a Shetland pony, a python in a glass tank under a heat lamp, an enormous turkey, and a wall full of knife holes in the outline of a person. Clean straw, full troughs: he loves these animals.
+
+**His look (from the story; the models are built, Session 24).** As the clown: a polka-dot clown suit that fits him well, white greasepaint, a red grin painted so wide it nearly touches his ears, painted eyes, a bright green wig of curls, white gloves, oversized shoes; no red nose. A set of three knives. In full kit his arms seem too long and his broad frame narrower. As the man: tall, broad-shouldered, dark-haired, in a flannel shirt, jeans and boots. The donkey is grey (a she; she never looks away); the Shetland is the colour of burnt caramel; the python is thick and patterned, coiled round a branch; the turkey is enormous. *(The suit's colour isn't in the story: blue with white and red dots as built, Aaron's to change.)*
 
 - **Open:** his killdozer part; the exact wording of his lines (the clown voice and the one warm line); the year (the story has a 2009 Civic and mentions 2019, and the game is set in 2003; *proposed:* Witch Hunt happens years before the story, so the donkey could be the same one); whether the family can imagine Milo in the realm of stories if Tom met him; where the barn sits (any band).
 
