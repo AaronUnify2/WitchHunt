@@ -1,5 +1,7 @@
 # Open questions
 
+**Aaron's full play-through notes (Nov 10, evening)** are in HANDOVER.md's top section ("DO THIS FIRST"), with his answers to the five questions asked (all: go with the default). **They change earlier answers:** every gun is carried (the Session 23 gun choice and the rack as storage go; #390 is moot); Milo's suit is white with dots after all (not blue), smaller smile, clown wig, baggy, shorter, big feet, long arms (#408).
+
 ## Session 24 (Graphics Engineer / Technical Artist: models for the next stretch)
 
 Aaron's answers at the start (Nov 10): round 36 and the glare list **not yet** (they can wait). The order is fine: **the Mothman first**, then the plane's set, giant moths, Bigfoot and the cocoon, Milo and his animals. The Mothman's look: **"go with your gut"**; push to `main` when he's done and Aaron plays him from the debug menu (PLAYTEST round 37).

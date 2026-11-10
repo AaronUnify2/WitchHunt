@@ -1,5 +1,7 @@
 # For Aaron (Session 24: Graphics, the models for the next stretch)
 
+**Your play-through list (Nov 10, evening) is written into HANDOVER.md, top section: 26 items in batches, the giant moths as a debug spike, then the crashed plane's beats. None of it is started: start a new chat and tell it to read HANDOVER.md and pick up from there.**
+
 Everything is on `main`. 912 tests pass and the build is clean. Nothing in the save moved. Everything on the session's list is built; the lists to play are PLAYTEST rounds 37-41.
 
 ## What's new
