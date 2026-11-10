@@ -3798,6 +3798,7 @@ export const config = {
     look: {
       tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
       dome: { radius: 1.25, height: 1.15 },
+      leanto: { width: 2.6, height: 1.45, depth: 2.0 }, // Session 25: the survival camp's tarp lean-tos
       trunkRadius: 0.32,
       // Dull and dark: pale props glare under the torch (Aaron).
       colors: {
@@ -3840,6 +3841,11 @@ export const config = {
         sleepingBag: 0x3a2a40,
         bagLining: 0x2a2420,
         paper: 0x5a564a,
+        // Session 25: the survival camp.
+        lashPole: 0x3a2e20,
+        cord: 0x4a4232,
+        bough: 0x24321e,
+        boughDark: 0x1a2616,
       },
       // The guy lines' pegs: how far out from a tent's ends and sides (m).
       guyOut: 0.9,

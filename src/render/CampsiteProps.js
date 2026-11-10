@@ -48,8 +48,11 @@ export class CampsiteProps {
     this.group.name = 'campsite';
     const d = this.data;
     const c = this.cfg.colors;
-    for (const t of d.tents) (t.kind === 'dome' ? this.dome(t) : this.aFrame(t));
+    // Session 25 (Aaron: a survival camp, "like Luke from Outdoor Boys", with the log wall round the fire):
+    // tarp-and-pole lean-tos with bough beds; the old tents' kinds still draw.
+    for (const t of d.tents) (t.kind === 'leanto' ? this.leanTo(t) : t.kind === 'dome' ? this.dome(t) : this.aFrame(t));
     this.fireRing(d.props.fire, c);
+    if (d.props.reflector) this.reflector(d.props.reflector, c);
     for (const ch of d.props.chairs) this.chair(ch, c);
     for (const p of d.props.packs) this.pack(p, c);
     this.cooler(d.props.cooler, c);
@@ -220,6 +223,94 @@ export class CampsiteProps {
     }
   }
 
+  // Session 25: a lean-to: two poles at the front, a ridge pole lashed across
+  // them, a tarp from the ridge back and down to the ground (pegged), sagging
+  // a little; a bed of fir boughs under it; guy lines off the ridge's ends.
+  // The open side faces the prop's -z (toward the fire). t.slashed: torn
+  // open from inside, the bough bed dragged out and blood behind it.
+  leanTo(t) {
+    const at = this.place(t.x, t.z, t.yaw);
+    const L = this.cfg.leanto;
+    const c = this.cfg.colors;
+    const W = L.width;
+    const H = L.height;
+    const D = L.depth;
+    const half = W / 2;
+    const zf = -D / 2; // the ridge (front)
+    const zb = D / 2; // where the tarp meets the ground (back)
+    // The poles and the ridge.
+    for (const s of [-1, 1]) this.barAt([s * half, 0, zf], [s * half * 0.98, H + 0.12, zf], 0.04, c.lashPole, at);
+    this.barAt([-half - 0.25, H, zf], [half + 0.25, H, zf], 0.045, c.lashPole, at);
+    for (const s of [-1, 1]) this.boxAt(0.1, 0.06, 0.1, s * half, H, zf, c.cord, at); // the lashings
+    // The tarp: a sagging sheet from the ridge to the ground.
+    const segX = 6;
+    const segZ = 4;
+    const pt = (u, v) => {
+      // u: 0..1 across; v: 0 at the ridge, 1 at the ground.
+      const x = (u - 0.5) * (W + 0.3);
+      const z = zf + v * D;
+      const sag = 0.12 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v);
+      return [x, H * (1 - v) - sag + 0.02, z - sag * 0.6];
+    };
+    const verts = [];
+    for (let i = 0; i < segX; i++) {
+      for (let j = 0; j < segZ; j++) {
+        if (t.slashed && i === 3 && j >= 1) continue; // the slash: a gap down the tarp
+        const a = pt(i / segX, j / segZ);
+        const b = pt((i + 1) / segX, j / segZ);
+        const cc = pt((i + 1) / segX, (j + 1) / segZ);
+        const d = pt(i / segX, (j + 1) / segZ);
+        verts.push(...a, ...b, ...cc, ...a, ...cc, ...d);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    g.computeVertexNormals();
+    this.add(g, t.color, at);
+    // Pegs along the back hem, and guy lines off the ridge's ends.
+    for (let i = 0; i <= 3; i++) this.boxAt(0.025, 0.16, 0.025, -half + (W * i) / 3, 0.05, zb + 0.08, c.peg, at, { tilt: 0.3 });
+    const out = this.cfg.guyOut;
+    for (const s of [-1, 1]) this.guy([s * (half + 0.2), H, zf], [s * (half + out), 0, zf - out * 0.7], at);
+    // The bough bed: fir boughs laid thick under the tarp.
+    const bed = t.slashed ? -0.55 : 0; // dragged half out of the slashed one
+    for (let k = 0; k < 9; k++) {
+      const u = (k % 3) / 2 - 0.5;
+      const v = Math.floor(k / 3) / 2;
+      const bough = new THREE.ConeGeometry(0.32, 0.9, 5, 1).rotateX(Math.PI / 2).scale(1, 0.22, 1);
+      bough.rotateY(this.range(-0.4, 0.4));
+      bough.translate(u * (W - 0.6), 0.07, zf + 0.35 + v * (D - 0.7) + bed);
+      this.add(bough, k % 2 ? c.bough : c.boughDark, at);
+    }
+    if (t.slashed) {
+      // Torn open from the inside: a dark slit where the gap is, the torn flaps hanging, a tatter on the ground.
+      const slit = new THREE.BufferGeometry();
+      const a = pt(3 / segX, 0.25);
+      const b = pt(4 / segX, 0.25);
+      const e = pt(3.5 / segX, 1);
+      slit.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b, ...e], 3));
+      slit.computeVertexNormals();
+      this.add(slit, c.slit, at, { dy: -0.03 });
+      this.boxAt(0.36, 0.02, 0.5, 0.25, H * 0.45, 0.05, t.color, at, { tilt: 0.9, turn: 0.3 });
+      this.boxAt(0.3, 0.02, 0.42, -0.2, H * 0.4, 0.15, t.color, at, { tilt: -1.0, turn: -0.2 });
+      this.boxAt(0.5, 0.015, 0.3, 0.6, 0.01, zb + 0.5, t.color, at, { turn: 0.6 });
+    }
+  }
+
+  // Session 25: the log reflector wall behind the fire (the survival camp's):
+  // logs stacked between pairs of stakes, throwing the heat back to the camp.
+  reflector(r, c) {
+    const at = this.place(r.x, r.z, r.yaw ?? 0);
+    const len = r.length;
+    for (let i = 0; i < r.logs; i++) {
+      const rad = 0.11 - (i % 2) * 0.012;
+      this.logAt(rad, len - (i % 2) * 0.18, (i % 2) * 0.06, rad + i * 0.2, 0, c.bark, at, { ends: c.cut, turn: (i % 2 ? 0.02 : -0.015) });
+    }
+    const top = r.logs * 0.2 + 0.15;
+    for (const s of [-1, 1]) {
+      for (const f of [-1, 1]) this.barAt([s * (len / 2 - 0.12), 0, f * 0.16], [s * (len / 2 - 0.1), top, f * 0.17], 0.035, c.stick, at);
+    }
+  }
+
   // A guy line from a to b (prop-local) and its peg at b.
   guy(a, b, at) {
     const c = this.cfg.colors;
@@ -296,6 +387,21 @@ export class CampsiteProps {
       const log = new THREE.CylinderGeometry(0.06, 0.07, l, 6).rotateZ(Math.PI / 2 - 0.12).rotateY(a);
       log.translate(Math.cos(a) * 0.1, 0.1, -Math.sin(a) * 0.1);
       this.add(log, c.char, at);
+    }
+    if (this.data.props.tripod) {
+      // Session 25: a tripod of poles over the fire, a pot hung from it on a chain.
+      const top = 1.35;
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2 + 0.3;
+        this.barAt([Math.sin(a) * (f.radius + 0.25), 0, Math.cos(a) * (f.radius + 0.25)], [0, top + 0.1, 0], 0.025, c.stick, at);
+      }
+      this.boxAt(0.12, 0.08, 0.12, 0, top, 0, c.cord, at); // the lashing
+      this.barAt([0, top, 0], [0, 0.62, 0], 0.006, c.grate, at); // the chain
+      const pot = new THREE.CylinderGeometry(0.15, 0.13, 0.2, 10).translate(0, 0.48, 0);
+      this.add(pot, c.pot, at);
+      this.barAt([-0.15, 0.58, 0], [0, 0.66, 0], 0.005, c.grate, at); // the bail
+      this.barAt([0, 0.66, 0], [0.15, 0.58, 0], 0.005, c.grate, at);
+      return;
     }
     // A grate across two stones and a coffee pot left on it.
     for (let i = -2; i <= 2; i++) this.boxAt(0.012, 0.012, f.radius * 1.5, i * 0.08, 0.24, 0.1, c.grate, at, { turn: 0.3 });

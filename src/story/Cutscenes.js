@@ -843,6 +843,16 @@ export function buildActor(spec, cc) {
       g.add(box(w, h, d, 0, 0, 0, spec.color ?? 0x55606a));
       break;
     }
+    case 'leanto': {
+      // Session 25: the survival camp's lean-to (a tarp from a ridge pole down to the ground; open toward -z).
+      const [w, h, d] = spec.dims ?? [2.6, 1.45, 2];
+      const tarp = new THREE.Mesh(new THREE.PlaneGeometry(w, Math.hypot(h, d)), new THREE.MeshLambertMaterial({ color: spec.color ?? 0x3a4028, side: THREE.DoubleSide }));
+      tarp.rotation.x = -Math.PI / 2 + Math.atan2(h, d);
+      tarp.position.set(0, h / 2, 0);
+      g.add(tarp);
+      for (const s of [-1, 1]) g.add(box(0.07, h, 0.07, (s * w) / 2, 0, -d / 2, 0x3a2e20));
+      break;
+    }
     case 'eyes': {
       for (const s of [-1, 1]) g.add(box(0.09, 0.06, 0.03, s * 0.14, 0, 0, spec.color ?? 0xff2010, true));
       break;

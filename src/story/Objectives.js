@@ -87,7 +87,7 @@ export class Objectives {
       if (!has('towerClimbed')) return step('tower', 'Go outside and climb the lookout tower. Ellen needs eyes on the woods.', L.tower.ladder);
       if (!has('campsiteVisited')) return step('campsite', 'Check on the campers at the campground, west of home.', clearing('campsite'));
       if (watching('camcorder')) return step('camcorder', "Watch the campers' camcorder (D-pad down).");
-      if (!cs.shotgunFound || !cs.camcorderFound) return step('search', "Search the campers' tents.", this.nearestTent());
+      if (!cs.shotgunFound || !cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
       if (cs.waveStarted && !cs.waveCleared) return step('wave', 'Fight off the dead at the campground.');
       if (!has('campsiteBattery') && g.combat.inventory.batteries <= 0 && !has('day1Battery')) return step('battery', "Take the battery from the campers' car for the fence.", cs.car);
       if (!has('day1Battery')) return step('fit', 'Take the battery home and fit it in the fence box, inside the gate.', L.fenceBox);

@@ -154,13 +154,33 @@ export class Campsite {
     return best;
   }
 
-  // The tents block bodies (shots pass them: they're canvas).
+  // The tents block bodies (shots pass them: they're canvas). Session 25: the log wall blocks both.
   buildColliders(grid) {
+    const r = this.data.props.reflector;
+    if (r) {
+      const at = frameToWorld(this.frame, r.x, r.z);
+      const y = this.ground.heightAt(at.x, at.z);
+      const yaw = frameYaw(this.frame, r.yaw ?? 0);
+      const ax = Math.cos(yaw) * (r.length / 2);
+      const az = -Math.sin(yaw) * (r.length / 2);
+      grid.insert(segmentCollider(at.x - ax, at.z - az, at.x + ax, at.z + az, 0.16, y - 0.5, y + r.logs * 0.2 + 0.1, true));
+    }
     const L = this.cc.look.tent;
     for (const t of this.data.tents) {
       const at = frameToWorld(this.frame, t.x, t.z);
       const y = this.ground.heightAt(at.x, at.z);
       const yaw = frameYaw(this.frame, t.yaw);
+      if (t.kind === 'leanto') {
+        // Session 25: a lean-to: solid along its width, toward its back (the open front faces the fire).
+        const lt = this.cc.look.leanto;
+        const half = lt.width / 2 - 0.3;
+        const ox = Math.sin(yaw) * 0.25;
+        const oz = Math.cos(yaw) * 0.25;
+        const ax = Math.cos(yaw);
+        const az = -Math.sin(yaw);
+        grid.insert(segmentCollider(at.x + ox - ax * half, at.z + oz - az * half, at.x + ox + ax * half, at.z + oz + az * half, lt.depth * 0.32, y - 0.5, y + lt.height, false));
+        continue;
+      }
       if (t.kind === 'dome') {
         const r = this.cc.look.dome.radius * 0.8;
         grid.insert(segmentCollider(at.x - 0.01, at.z, at.x + 0.01, at.z, r, y - 0.5, y + 1.2, false));

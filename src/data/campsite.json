@@ -1,5 +1,5 @@
 {
-  "_note": "Session 18 (Aaron: you had to stand on the right side of a tent to search it): the tents' search points are their centres, with a 3.2 m reach, so any side works. The abandoned campsite (M9.2; DESIGN.md \"Abandoned campsite\", agreed with Aaron in Session 15). Positions are in the campsite's own frame: from where the path from home enters the clearing, x metres to your right as you walk in, z metres ahead (the clearing's centre is z 0; the entrance is z = -radius). yaw: degrees, turning from facing ahead toward your right. car: the campers' car (vehicles.json types; the campsite's placement gives it a sure battery and no alarm), parked at the edge by the path. tents: kind a (an A-frame) or dome; slashed: torn open from the inside, the slit on its far side (found, not presented). searches: the hold-X search points, in the order a player meets them walking in: guaranteed items (camcorder: the lore item; shotgun: the gun, with `rounds` more shells; or a loot.json item with amount) and a rolled table (loot.json items, each rolled on its own). Session 16 (Aaron): the stick figures are gone (cluttered, and they floated); the dome tent's search point is its centre, reach 3 m, so any side works. Session 15b (Aaron): the camcorder is in the torn tent (deep in the camp) and the shotgun in the green dome tent; whichever comes first, the wave starts on the shotgun and the tape plays on the camcorder. props: set dressing (chairs, packs, the fire ring, blood, the ritual marks cut into trunks at the edge). wave: the zombies that burst from the treeline when the shotgun is taken: count, the spread of their arrival (seconds), and where they come from (arcs of the clearing's edge, in degrees in the campsite frame: 0 ahead, 90 to the right, -90 to the left; distance past the edge).",
+  "_note": "Session 18 (Aaron: you had to stand on the right side of a tent to search it): the tents' search points are their centres, with a 3.2 m reach, so any side works. The abandoned campsite (M9.2; DESIGN.md \"Abandoned campsite\", agreed with Aaron in Session 15). Positions are in the campsite's own frame: from where the path from home enters the clearing, x metres to your right as you walk in, z metres ahead (the clearing's centre is z 0; the entrance is z = -radius). yaw: degrees, turning from facing ahead toward your right. car: the campers' car (vehicles.json types; the campsite's placement gives it a sure battery and no alarm), parked at the edge by the path. tents: kind a (an A-frame) or dome; slashed: torn open from the inside, the slit on its far side (found, not presented). searches: the hold-X search points, in the order a player meets them walking in: guaranteed items (camcorder: the lore item; shotgun: the gun, with `rounds` more shells; or a loot.json item with amount) and a rolled table (loot.json items, each rolled on its own). Session 16 (Aaron): the stick figures are gone (cluttered, and they floated); the dome tent's search point is its centre, reach 3 m, so any side works. Session 15b (Aaron): the camcorder is in the torn tent (deep in the camp) and the shotgun in the green dome tent; whichever comes first, the wave starts on the shotgun and the tape plays on the camcorder. props: set dressing (chairs, packs, the fire ring, blood, the ritual marks cut into trunks at the edge). wave: the zombies that burst from the treeline when the shotgun is taken: count, the spread of their arrival (seconds), and where they come from (arcs of the clearing's edge, in degrees in the campsite frame: 0 ahead, 90 to the right, -90 to the left; distance past the edge). Session 25 (Aaron: \"more of a survival camping campsite, like Luke from Outdoor Boys would have, with the log wall around the fire\"): every story beat and search kept, re-skinned: the three tents are tarp-and-pole lean-tos with bough beds (kind leanto; their open sides face the fire; the torn tent is the slashed shelter), a log reflector wall behind the fire (props.reflector: x, z, yaw, length, logs; solid), a pot on a tripod over the fire ring (props.tripod), the woodpile as the firewood stack. No axe in a stump (Session 19, Aaron: an axe you can't pick up reads as a weapon you should be able to).",
   "car": {
     "x": -8,
     "z": -12.5,
@@ -8,27 +8,27 @@
   "tents": [
     {
       "id": "tent1",
-      "kind": "a",
+      "kind": "leanto",
       "x": 5.5,
       "z": -5.5,
-      "yaw": -20,
-      "color": 3818024
+      "yaw": 142,
+      "color": 4864552
     },
     {
       "id": "tent2",
-      "kind": "dome",
+      "kind": "leanto",
       "x": -6.5,
       "z": 3,
-      "yaw": 35,
-      "color": 3360806
+      "yaw": -77,
+      "color": 3817512
     },
     {
       "id": "tent3",
-      "kind": "a",
+      "kind": "leanto",
       "x": 4,
       "z": 9.5,
-      "yaw": 200,
-      "color": 5911100,
+      "yaw": 27,
+      "color": 3424330,
       "slashed": true
     }
   ],
@@ -56,7 +56,7 @@
     },
     {
       "id": "tent1",
-      "label": "search the tent",
+      "label": "search the shelter",
       "range": 3.2,
       "x": 5.5,
       "z": -5.5,
@@ -109,7 +109,7 @@
     },
     {
       "id": "tent2",
-      "label": "search the tent",
+      "label": "search the shelter",
       "range": 3.2,
       "x": -6.5,
       "z": 3,
@@ -124,7 +124,7 @@
     },
     {
       "id": "tent3",
-      "label": "search the torn tent",
+      "label": "search the slashed shelter",
       "range": 3.2,
       "x": 4,
       "z": 9.5,
@@ -168,9 +168,9 @@
         "fallen": true
       },
       {
-        "x": 0.9,
-        "z": 3.6,
-        "yaw": -10,
+        "x": 1.5,
+        "z": -0.9,
+        "yaw": -140,
         "fallen": false
       }
     ],
@@ -262,8 +262,8 @@
           "kind": "tin"
         },
         {
-          "x": -0.9,
-          "z": 2.8,
+          "x": -1.7,
+          "z": 2.0,
           "kind": "bottle"
         },
         {
@@ -297,7 +297,15 @@
           "kind": "plate"
         }
       ]
-    }
+    },
+    "reflector": {
+      "x": 0,
+      "z": 2.75,
+      "yaw": 0,
+      "length": 2.2,
+      "logs": 5
+    },
+    "tripod": true
   },
   "smoke": {
     "x": 0,

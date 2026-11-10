@@ -225,7 +225,7 @@ describe("Day 1's lines match the game (Session 15b)", () => {
   const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
   it("line 5 doesn't send Tom to the cars (they wait for the tape)", () => {
     expect(by['day1.05'].text).not.toMatch(/car and/i);
-    expect(by['day1.05'].text).toMatch(/tents/i);
+    expect(by['day1.05'].text).toMatch(/shelters/i); // Session 25: the survival camp's lean-tos
   });
   it('line 10 sends him for the battery, for the fence', () => {
     expect(by['day1.10'].text).toMatch(/battery/i);
