@@ -225,6 +225,25 @@ const RECIPES = {
   wingbeat(s, pos) {
     s.noiseBurst(s.out(pos?.x, pos?.z, 0.7, 70), { seconds: 0.35, type: 'lowpass', freq: 380, endFreq: 120, q: 0.8, gain: 0.7, attack: 0.06 });
   },
+  // Session 25: the giant moths. A swarm's soft, dusty flutter (one for them all);
+  // a nip; a hit one's dry squeal as it drops; its body landing.
+  mothFlutter(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.35, 40);
+    s.noiseBurst(o, { seconds: 0.16, type: 'bandpass', freq: 520 + Math.random() * 160, endFreq: 300, q: 1.4, gain: 0.35, attack: 0.03 });
+  },
+  mothNip(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 30);
+    s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 2400, endFreq: 1600, gain: 0.5, attack: 0.004 });
+  },
+  mothDie(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 60);
+    s.tone(o, { seconds: 0.25, wave: 'triangle', freq: 1500, endFreq: 700, gain: 0.08, attack: 0.01 });
+    s.noiseBurst(o, { seconds: 0.3, type: 'bandpass', freq: 900, endFreq: 400, q: 1.2, gain: 0.3 });
+  },
+  mothThud(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5, 40);
+    s.noiseBurst(o, { seconds: 0.12, freq: 400, endFreq: 120, gain: 0.4, attack: 0.005 });
+  },
   // Its screech as it dives.
   screech(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.6, 90);

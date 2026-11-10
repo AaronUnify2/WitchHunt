@@ -76,6 +76,7 @@ import { MetaStore } from '../meta/MetaStore.js';
 import { DemoMode } from '../demo/DemoMode.js';
 import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { Flyer } from '../ai/Flyer.js';
+import { Moths } from '../ai/Moths.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -628,6 +629,9 @@ export class Game {
     this.placeBeyond.init({ world: this.world, player: this.player, interiors: this.interiors, sfx: this.combat.sfx, notify });
     this.flyer = new Flyer(this.cfg, this.bus);
     this.flyer.init({ scene: this.scene, player: this.player, combat: this.combat, sfx: this.combat.sfx, notify, rng: this.rng.fork('flyer') });
+    // Session 25 (Aaron): giant moths to shoot (debug only).
+    this.moths = new Moths(this.cfg, this.bus);
+    this.moths.init({ scene: this.scene, player: this.player, combat: this.combat, ground: this.world.ground, sfx: this.combat.sfx, notify, rng: this.rng.fork('moths') });
   }
 
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
@@ -740,7 +744,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -782,6 +786,7 @@ export class Game {
     this.roadNorth.addDebugItems(menu); // Session 21
     this.placeBeyond.addDebugItems(menu); // Session 22: the spikes
     this.flyer.addDebugItems(menu);
+    this.moths.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -981,6 +986,7 @@ export class Game {
     this.combat.zombieRenderer.setThermal(on, t);
     this.combat.mutantRenderer.setThermal(on, t);
     this.flyer.renderer.setThermal(on, t); // Session 24: the Mothman
+    this.moths.renderer.setThermal(on, t); // Session 25
     this.viewer.setThermal(on, t);
     this.station.renderer.setThermal(on, t); // Session 13: the family
     if (!on) this.witch.renderer.setThermal(false);
@@ -1552,6 +1558,7 @@ export class Game {
     if (story) this.homeStop.update(dt, playing && this.combat.alive);
     if (first) this.roadNorth.update(dt, playing && this.combat.alive);
     if (first) this.flyer.update(dt, playing && this.combat.alive); // Session 22: the flyer spike
+    if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
   }
 
   get phase() {
@@ -1597,6 +1604,7 @@ export class Game {
     this.pauseMenu.dispose();
     this.demo.dispose();
     this.flyer.dispose();
+    this.moths.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();

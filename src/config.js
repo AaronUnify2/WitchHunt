@@ -3694,6 +3694,35 @@ export const config = {
     // Mothman"). Its script: passes over Tom, circling between, then dives
     // that strike if they reach him. It can't die out here: hurt enough, it
     // flies off (the design: it only dies in its cave).
+    // Session 25 (Aaron: "I'd really love to shoot some of them"): a swarm of giant moths (ai/Moths.js),
+    // debug only. A first guess at every number, to tune once he's played it.
+    moths: {
+      swarm: 16, // "send a swarm" (Aaron: a swarm is 16 to 32)
+      bigSwarm: 32, // "send a big swarm" (the renderer's pool: config.moths.giant.poolSize)
+      startDistance: 28, // metres off they come in from
+      cloudRadius: [2, 5], // each moth's orbit round the cloud's middle (metres)
+      cloudHeight: [3, 5], // ...and its height above Tom's feet
+      orbitSpeed: [0.25, 0.6], // radians a second round the cloud
+      follow: 0.6, // how fast the cloud's middle drifts after Tom (per second)
+      millSpeed: 5.5, // metres a second, milling
+      steer: 2.6, // how fast they turn (per second)
+      dartEvery: [1, 2], // seconds between darts
+      dartCount: [1, 2], // moths in each dart
+      dartSpeed: 11,
+      dartAt: 1.3, // metres up Tom they aim (his chest)
+      dartMax: 2.4, // seconds before a dart that hasn't reached him gives up
+      nipRange: 0.9,
+      nipDamage: 4, // a nip
+      peelSeconds: 1.3, // back up to the cloud after a dart
+      health: 16, // a service rifle round (25) drops one; three shotgun pellets (6 each) drop one
+      hitRadius: 0.35, // the hit shape: a small ball round its body
+      flinchSeconds: 0.3,
+      fallGravity: 9,
+      corpseSeconds: 6,
+      leaveSpeed: 9,
+      leaveDistance: 70,
+      flutterEvery: 0.32, // one quiet flutter for the whole swarm this often
+    },
     flyer: {
       script: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive'], // then it leaves
       circleSeconds: [2.5, 4.5], // circling between moves
