@@ -16,6 +16,18 @@ My calls (PLAYTEST round 37):
 | 396 | **How dark he is.** His colours are multiplied by 0.3 so the torch doesn't blow him pale up close; by moonlight he's a black shape. Right, or should the fur read more under the torch? | `albedo: 0.3` | `config.mothman.albedo` |
 | 397 | **His poses.** Twelve (stand, mantle, perch, cling, glide, fly, dive, strike, flinch, wounded, dying, corpse). The clinging one turns his head right round to look back at you. The dying one is a first sketch: the cave's fight will want its own. Any missing for Session 25's crash site (he knocks Tom out)? | As described. | `render/MothmanRenderer.js` `targetPose()` |
 
+**Built: the crashed plane's set** (Aaron: "start on the crashed plane set"; `render/crashedPlaneModel.js`, `world/CrashSite.js`, `config.crashedPlane`): one baked mesh, one draw call, about 19,000 triangles, no lights, in its clearing on every seed. Its placeholder signpost is gone. Only the set: the encounter is Session 25's.
+
+My calls (PLAYTEST round 38):
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 398 | **Which way it lies.** The plane was flying away from the checkpoint, so Tom walks up its gouge to the wreck (the destruction first, the plane last). Right, or should he come on it side-on? | `yaw: null` (away from the checkpoint) | `config.crashedPlane.yaw` |
+| 399 | **The layout.** Along the gouge: snapped trees, the sheared wing on a broken trunk, its burnt engine, the tail rolled over to the left, the front of the plane nose-down in a heap of earth, the kept wing out to the right as the workbench. | As described. | `buildCrashedPlane()` in `render/crashedPlaneModel.js` |
+| 400 | **The dissection.** The gun's parts in rows on a square of canvas on the wing, drawn 1.35x their size so they read from where Tom stands; the opened pod on the ground in front. Enough, or bigger, or more parts (the whole second pod)? | As described. | `dissection()` |
+| 401 | **The pilot.** In his seat, slumped in his straps, helmet on, head and shoulders above the hull. No blood, no face. | As described. | `pilot()`, `cockpit()` |
+| 402 | **The plane's look.** Plain dark grey, a faded star-in-a-disc on each side of the hull and on the tail, no numbers or lettering (a painted board would be one more draw call). Add a tail number? | As described. | `marking()`, `config.crashedPlane.look.colors` |
+
 ## Session 23 (QA & Balance: the opening with the new systems)
 
 Aaron's answers at the start (Nov 10):

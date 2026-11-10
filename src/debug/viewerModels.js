@@ -34,6 +34,8 @@ import { HutRenderer } from '../render/HutRenderer.js';
 import { buildUte } from '../render/uteModel.js';
 import { buildAlienQuad } from '../render/alienQuadModel.js';
 import { buildDozer } from '../render/dozerModel.js';
+import { buildCrashedPlane } from '../render/crashedPlaneModel.js';
+import { weatherFor } from '../render/propKit.js';
 import { Rng } from '../core/Rng.js';
 import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
@@ -290,6 +292,16 @@ export const VIEWER_MODELS = [
       { id: 'lights', name: 'Work lights' },
     ],
     create: dozerModel,
+  },
+  {
+    id: 'crashedPlane',
+    name: "The crashed plane's set",
+    note: 'Session 24: one draw call, no lights. In the world too: debug menu, Teleport, next story place. The encounter is Session 25.',
+    height: (cfg) => cfg.modelViewer.crashedPlane.height / cfg.modelViewer.start.heightScale,
+    startDistance: (cfg) => cfg.modelViewer.crashedPlane.distance,
+    variants: null,
+    poses: [{ id: 'still', name: 'As Tom finds it' }],
+    create: crashedPlaneModel,
   },
   {
     id: 'standIns',
@@ -873,6 +885,25 @@ function hutModel(ctx) {
     },
     setThermal() {}, // cold wood and stone
     dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- the crashed plane's set: one baked mesh ------------------------------------------------------------
+
+function crashedPlaneModel(ctx) {
+  const pc = ctx.cfg.crashedPlane;
+  const model = buildCrashedPlane(pc.look, { weather: weatherFor(ctx.cfg.props.weather, pc.look.weather) });
+  ctx.scene.add(model.group);
+  return {
+    objects: [model.group],
+    update(dt, s) {
+      // The wreck itself in the middle of the view (the model's origin is back in its gouge).
+      model.group.position.set(s.x, s.y, s.z);
+      model.group.rotation.y = s.facing + Math.PI * 0.75;
+      model.group.translateZ(-7);
+    },
+    setThermal() {}, // cold metal and wood
+    dispose: () => model.dispose(),
   };
 }
 

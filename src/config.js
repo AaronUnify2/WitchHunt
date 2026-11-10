@@ -711,7 +711,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost'], // Session 15b (and 16, 17): cluster sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane'], // Session 15b (and 16, 17; 24: the crashed plane): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -3957,6 +3957,44 @@ export const config = {
     },
   },
 
+  // The crashed plane's set (Session 24; render/crashedPlaneModel.js,
+  // world/CrashSite.js). Only the set: its encounter is Session 25's.
+  crashedPlane: {
+    yaw: null, // radians the plane was heading (null: away from the checkpoint, so Tom walks up its gouge)
+    radius: 28, // metres from its middle the set reaches (for drawing it)
+    look: {
+      weather: { rust: [0x24262a], grimeHeight: 0.5, keepBright: [] },
+      colors: {
+        body: 0x4a5052, // the plane's grey paint
+        bodyDark: 0x33383a,
+        frame: 0x34383a, // bare frames and spars
+        hollow: 0x0c0c0d, // inside the hull, the cockpit's tub
+        scorch: 0x151413,
+        prop: 0x1c1c1c,
+        gunmetal: 0x24262a,
+        steel: 0x4a4c4e,
+        brass: 0x8a6c28,
+        canvas: 0x5e5846, // the cloth the gun's laid out on
+        glass: 0x1c2a30,
+        marking: 0x6a6c68, // the star, faded
+        markingDark: 0x1c2638,
+        seat: 0x26241f,
+        flightSuit: 0x3a4030,
+        helmet: 0x4a4c44,
+        strap: 0x5a5444,
+        rubber: 0x141414,
+        kit: 0x7a3410, // the survival kit's orange, dulled
+        flare: 0x7a1c14,
+        paper: 0x6a6658,
+        earth: 0x54432f, // turned earth (the grime darkens it at the ground)
+        earthDark: 0x3e3022,
+        bark: 0x3e3024,
+        heartwood: 0x6a5434, // fresh-split wood
+        needles: 0x1a2a1a,
+      },
+    },
+  },
+
   // The Mothman (Session 24: the model; render/mothmanModel.js,
   // render/MothmanRenderer.js). His encounters' AI is Session 25 on; the
   // flyer spike (spikes.flyer) wears him meanwhile.
@@ -4254,6 +4292,7 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    crashedPlane: { distance: 16, height: 1.2 }, // the set's framed from as far out as the viewer goes
     mothman: { distance: 6.5, flyHeight: 1.8, clingHeight: 1.2, diveSeconds: 0.9 }, // metres out he's framed from (his wings), his middle's height flying, his feet's clinging; the dive before each strike
     witchGlideShare: 0.6, // her gliding pose, as a share of full speed (the cloak's trail)
     witch: { plantSeconds: 6, hexSeconds: 1.4, swipeUpSeconds: 1, swipeDownSeconds: 0.6, summonSeconds: 2.4, riseSeconds: 3 },

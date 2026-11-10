@@ -76,6 +76,7 @@ import { MetaStore } from '../meta/MetaStore.js';
 import { DemoMode } from '../demo/DemoMode.js';
 import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { Flyer } from '../ai/Flyer.js';
+import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
   SAVE_VERSION,
@@ -137,6 +138,8 @@ export class Game {
     this.initDirector();
     this.hut = new Hut(this.cfg, this.bus); // M7 step 4
     this.hut.init(this.scene, this.world, this.colliders);
+    this.crashSite = new CrashSite(this.cfg); // Session 24: the crashed plane's set
+    this.crashSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -1448,6 +1451,7 @@ export class Game {
     if (view !== this.drawDistance) this.setViewDistance(view);
     this.world.update(dt, camera.position);
     this.hut.update(dt, camera.position, this.drawDistance);
+    this.crashSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
     if (playing && this.combat.alive) this.stats.seconds += dt;
@@ -1582,6 +1586,7 @@ export class Game {
     this.explosives.dispose();
     this.witch.dispose();
     this.hut.dispose();
+    this.crashSite.dispose();
     this.director.dispose();
     this.combat.dispose();
     this.flashlight.dispose();

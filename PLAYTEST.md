@@ -331,6 +331,17 @@ Round 37 (Session 24, Graphics: the Mothman's model; OPEN_QUESTIONS #393-397). N
 - [ ] **The Mothman in flight:** debug menu, **Spikes (M10.3)**, **Flyer: send one at me**, best at night. The same script as before (circles, two passes, four dives), now wearing the model: he glides while circling, beats hard on a pass, sweeps his wings back to dive, rakes with both hands when a dive lands, and banks into his turns. Red eyes first, then the shape.
   - **The frame rate** with him up (the top-left corner): still about 57?
 
+Round 38 (Session 24, Graphics: the crashed plane's set; OPEN_QUESTIONS #398-402). Nothing in the save moved. Only the set: no grey, no fight yet (Session 25).
+- [ ] **Walk the crash site:** debug menu, **Teleport**, **next story place** (the first is the crashed plane), by day. You land in the gouge just behind the wreck. Walk back down the gouge and come up it the way Tom will from the checkpoint: the trench and its banks, trees snapped off either side (shorter the nearer the wreck), their tops lying where they fell, the wing it lost leaning on a broken trunk, its burnt engine, then the tail rolled on its side, then the front of the plane with its nose in a heap of earth.
+  - Does it read as a plane that came down hard, a few hours ago? Too tidy, too busy?
+  - **The wing it kept** stands waist to chest high (the engine under it holds it up): the grey's workbench, and its cover in the shootout. On it, on a square of canvas, the gun from one pod laid out in rows: barrel, receiver, bolt, springs, a belt of rounds, the spent cases stood up in ranks. The pod itself lies open on the ground in front. Does the "dissection" read?
+  - **The cockpit:** the canopy broken open, the pilot slumped in his straps. Too much, too little?
+  - **The survival kit** (dull orange, open, on the ground by the cockpit on the side with no wing): the flare pistol and three flares; his knee-board beside it (the log).
+  - **Solid things:** the hull, both wings, the tail, the engines and the stumps stop you; the hull and wings stop shots. Anything you snag on, or walk through that you shouldn't?
+- [ ] **By torch at night:** the same walk. **Glare:** is anything too pale (the canvas, the star markings, the split wood on the stumps)?
+- [ ] **The frame rate** standing in the clearing looking at the wreck.
+- [ ] It's also in the model viewer (**Models**, "The crashed plane's set"), but the world's the place to judge it.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

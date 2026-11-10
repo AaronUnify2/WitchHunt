@@ -70,7 +70,7 @@ describe('propKit', () => {
 });
 
 describe('the glare rule over the places (Aaron: pale props glare under the torch)', () => {
-  const places = ['campsite', 'gasStation', 'stormShelter', 'outpost'];
+  const places = ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane'];
   for (const place of places) {
     it(`${place}: every prop colour is dull enough, or kept bright on purpose`, () => {
       const look = config[place].look;
