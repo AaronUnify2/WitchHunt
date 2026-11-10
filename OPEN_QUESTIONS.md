@@ -7,6 +7,8 @@ Aaron's answers at the start (Nov 10):
 - **Round 35:** he can see over the armour plating from the dozer now.
 - **His glare list:** not yet.
 - **Push to `main` as you go.**
+**Aaron's answers (Nov 10):** **#391 settled:** he never ran short of ammo, so it stays as it is (the bot's aim, not the numbers). **#392 settled:** wandering into the outpost early is fine. #390 (the gun choice) and the rack: he'll check in play (round 36).
+
 **Found and fixed in the play-through** (headless, seeds 1234, 7, 4242: Day 1 to past the cordon, Save and quit at dawn 2, after the gas station, in the shelter's room, after the outpost and past the cordon):
 - **The dawn autosave missed dawn's own story flags** (`day2`, `shelterCall`'s back-up): it ran before the next frame's check set them, so Continue from it left the gas station trail shut for another day and night. Fixed (`StoryProgress.settle()` before the save; a run continued at dawn replays dawn's triggers, which mends older saves).
 - **The safe's hunting rifle went to the rack by itself every run**, so the outpost's dogfight (scope from the tower) was quietly skipped. **Aaron: let Tom choose.** Built: `ui/GunChoice.js`, for any gun found with its slot full.
