@@ -1,5 +1,13 @@
 # Open questions
 
+## Session 23 (QA & Balance: the opening with the new systems)
+
+Aaron's answers at the start (Nov 10):
+- **The spikes on the tablet:** the place beyond, the flyer and the dozer with its parts all hover at **about 57 fps**, dipping to 40 only when something hectic happens ("99.9% of the time we are at 57"). In DESIGN.md's spike table: **M10.3 closed**, every spike a go on the tablet.
+- **Round 35:** he can see over the armour plating from the dozer now.
+- **His glare list:** not yet.
+- **Push to `main` as you go.**
+
 ## Session 22 (Lead Engineer + AI Programmer: the spikes, M10.3; Demo mode)
 
 Aaron's answers first (Nov 9):
