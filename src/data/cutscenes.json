@@ -751,9 +751,9 @@
             -2.2
           ],
           "look": [
-            5.5,
+            3.1,
             1.0,
-            -5.5
+            3.3
           ],
           "shake": 0.35
         },
@@ -766,9 +766,9 @@
             -2.2
           ],
           "look": [
-            4,
+            0,
             1.1,
-            9.5
+            5.1
           ],
           "shake": 0.4
         },
@@ -840,9 +840,9 @@
           "kind": "leanto",
           "anchor": "campsite",
           "pos": [
-            5.5,
+            3.12,
             0,
-            -5.5
+            3.3
           ],
           "dims": [
             2.6,
@@ -850,16 +850,16 @@
             2.0
           ],
           "color": 4864552,
-          "yaw": 142
+          "yaw": 60
         },
         {
           "id": "tent2",
           "kind": "leanto",
           "anchor": "campsite",
           "pos": [
-            -6.5,
+            -3.12,
             0,
-            3
+            3.3
           ],
           "dims": [
             2.6,
@@ -867,16 +867,16 @@
             2.0
           ],
           "color": 3817512,
-          "yaw": -77
+          "yaw": -60
         },
         {
           "id": "tent3",
           "kind": "leanto",
           "anchor": "campsite",
           "pos": [
-            4,
+            0.0,
             0,
-            9.5
+            5.1
           ],
           "dims": [
             2.6,
@@ -884,7 +884,7 @@
             2.0
           ],
           "color": 3424330,
-          "yaw": 27
+          "yaw": 0
         },
         {
           "id": "fire",
@@ -930,11 +930,11 @@
           "pos": [
             0,
             0,
-            2.75
+            0.15
           ],
           "dims": [
-            2.2,
-            1.0,
+            2.4,
+            1.15,
             0.3
           ],
           "color": 3023898
@@ -1516,7 +1516,7 @@
       "id": "sweep.campsite",
       "name": "Arriving at the campsite (establishing sweep)",
       "style": "sweep",
-      "_note": "M9.2: the sweep round the campsite (anchor campsite: its frame, x right and z ahead from the path in), settling on the campers' car (campsite.json car at -8, -12.5). Wyatt's line 5. Deliberately calm: no music sting. Session 18 (Aaron: it ended on the car): on past the car to the torn tent where the camcorder is (tent3, 4, 9.5), then up over the whole camp.",
+      "_note": "M9.2: the sweep round the campsite (anchor campsite: its frame, x right and z ahead from the path in), settling on the campers' car (campsite.json car at -8, -12.5). Wyatt's line 5. Deliberately calm: no music sting. Session 18 (Aaron: it ended on the car): on past the car to the torn tent where the camcorder is (tent3, 4, 9.5), then up over the whole camp. Session 25: the torn shelter is now in the middle of the arc behind the fire (0, 5.1).",
       "camera": [
         {
           "at": 0,
@@ -1564,14 +1564,14 @@
           "at": 9.0,
           "anchor": "campsite",
           "pos": [
-            -5.5,
-            3.2,
-            2.5
+            -5,
+            2.6,
+            1.0
           ],
           "look": [
-            3.6,
+            0,
             0.8,
-            9.2
+            5.4
           ]
         },
         {

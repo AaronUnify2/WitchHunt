@@ -416,6 +416,11 @@ Round 49 (Session 25, batch 8: the crashed plane; #436-445). The story's next be
 - [ ] **Save and quit** at each step and Continue: a fight that was on starts again.
 
 
+Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
+- [ ] **RB / LB rotate through the kinds:** pistols, rifles, shotguns, then the shovel (and the detonator while charges are out). Kinds you have nothing of are skipped. Each kind brings out the one you last held, so pick the hunting rifle on the weapon cross and RB brings it back out from then on. The mouse wheel rotates too.
+- [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
+- [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

@@ -4,19 +4,23 @@
 // up (B at the top closes the menu). It reopens where you left it.
 // Systems add tools with menu.category('Name').addItem(label, onSelect);
 // categories show in the order they were first created.
+// Session 25 (Aaron: spawning had got lost across the menu): a category can
+// hold tabs, its own sub-lists (menu.tab(DEBUG.enemies, ENEMY_TABS.moths)):
+// A opens one, B comes back out a level.
 // Open: hold View + D-pad down, or the ` key. Navigate: D-pad / left stick / arrows.
 // Select: A / Enter. Back: B / Esc.
 // Emits 'debug:menuOpened' and 'debug:menuClosed'.
 
 // The categories, in the order the top level lists them.
 export const DEBUG = {
+  enemies: 'Enemies (spawn and send)', // Session 25: every enemy in one place, in tabs (ENEMY_TABS)
   time: 'Time & night',
   cutscenes: 'Cutscenes',
   models: 'Models',
   teleport: 'Teleport & map',
   witch: 'Witch',
   hut: 'Hut & explosives',
-  zombies: 'Sigils & zombies',
+  zombies: 'Sigils & marches',
   player: 'Player',
   station: 'Station & vehicles',
   experimental: 'Experimental vehicles', // the ute with a turret, the alien quad (debug only for now)
@@ -28,6 +32,16 @@ export const DEBUG = {
   day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',
+};
+
+// Session 25: the Enemies category's tabs, in order.
+export const ENEMY_TABS = {
+  zombies: 'Zombies',
+  witch: 'The witch',
+  beetles: 'Giant beetles',
+  moths: 'Giant moths',
+  mothman: 'The Mothman (the flyer)',
+  aliens: 'Aliens',
 };
 
 export class DebugMenu {
@@ -42,8 +56,11 @@ export class DebugMenu {
     this.el.className = 'debug-menu hidden';
     root.appendChild(this.el);
     this.categories = Object.values(DEBUG).map((name) => ({ name, items: [] })); // [{ name, items: [{ label, onSelect }] }]
-    this.current = null; // the open category, or null at the top level
+    this.current = null; // the open category (or tab), or null at the top level
+    this.stack = []; // Session 25: [{ cat, selected }] the levels above the open one
     this.selected = 0;
+    // Session 25: the Enemies tabs, in their order (empty ones don't show).
+    for (const tab of Object.values(ENEMY_TABS)) this.tabOf(DEBUG.enemies, tab);
     this.topSelected = 0; // remembered while inside a category
     this.isOpen = false;
     this.stickDir = 0;
@@ -64,6 +81,33 @@ export class DebugMenu {
     return { addItem: (label, onSelect) => this.addItem(label, onSelect, name) };
   }
 
+  // Session 25: tab `name` inside category `parent` (made on first use): { addItem(label, onSelect) }.
+  tab(parent, name) {
+    const t = this.tabOf(parent, name);
+    return {
+      addItem: (label, onSelect) => {
+        const item = { label, onSelect };
+        t.items.push(item);
+        this.render();
+        return () => {
+          t.items = t.items.filter((i) => i !== item);
+          this.render();
+        };
+      },
+    };
+  }
+
+  tabOf(parent, name) {
+    this.category(parent);
+    const cat = this.categories.find((c) => c.name === parent);
+    let row = cat.items.find((i) => i.sub?.name === name);
+    if (!row) {
+      row = { sub: { name, items: [] }, label: () => name };
+      cat.items.push(row);
+    }
+    return row.sub;
+  }
+
   // label is a string, or a function returning one (re-read after every
   // selection, e.g. "Quality: medium"). Without a category the item goes
   // in "Other". Returns a function that removes the item again.
@@ -82,8 +126,8 @@ export class DebugMenu {
 
   // What's listed now: the categories (top level) or the open one's items.
   rows() {
-    if (!this.current) return this.categories.filter((c) => c.items.length > 0);
-    return this.current.items;
+    if (!this.current) return this.categories.filter((c) => c.items.some(hasContent));
+    return this.current.items.filter(hasContent);
   }
 
   open() {
@@ -108,6 +152,7 @@ export class DebugMenu {
   }
 
   enter(cat) {
+    this.stack.push({ cat: this.current, selected: this.selected });
     this.topSelected = this.selected;
     this.current = cat;
     this.selected = 0;
@@ -119,8 +164,9 @@ export class DebugMenu {
       this.close();
       return;
     }
-    this.current = null;
-    this.selected = this.topSelected;
+    const up = this.stack.pop() ?? { cat: null, selected: this.topSelected };
+    this.current = up.cat;
+    this.selected = up.selected;
     this.render(true);
   }
 
@@ -133,6 +179,7 @@ export class DebugMenu {
     if (input.wasPressed('menuConfirm')) {
       const row = this.rows()[this.selected];
       if (row && !this.current) this.enter(row);
+      else if (row?.sub) this.enter(row.sub);
       else if (row) {
         row.onSelect();
         if (this.isOpen) this.render();
@@ -176,15 +223,17 @@ export class DebugMenu {
     const top = !this.current;
     const html = rows
       .map((row, i) => {
-        const text = top ? `${row.name}  ›` : labelOf(row);
-        const count = top ? `<span class="debug-menu-count">${row.items.length}</span>` : '';
+        const text = top ? `${row.name}  ›` : row.sub ? `${row.sub.name}  ›` : labelOf(row);
+        const n = top ? row.items.filter(hasContent).length : row.sub ? row.sub.items.length : 0;
+        const count = top || row.sub ? `<span class="debug-menu-count">${n}</span>` : '';
         return `<li class="${i === this.selected ? 'selected' : ''}">${escapeHtml(text)}${count}</li>`;
       })
       .join('');
     // Keep the list's scroll across the redraw, so moving up climbs the
     // highlight to the top before the list scrolls (Aaron, M5).
     const scroll = fresh ? 0 : (this.el.querySelector('ul')?.scrollTop ?? 0);
-    const title = top ? 'DEBUG MENU' : `DEBUG MENU &rsaquo; ${escapeHtml(this.current.name.toUpperCase())}`;
+    const path = [...this.stack.slice(1).map((l) => l.cat.name), this.current?.name].filter(Boolean);
+    const title = top ? 'DEBUG MENU' : `DEBUG MENU &rsaquo; ${path.map((n) => escapeHtml(n.toUpperCase())).join(' &rsaquo; ')}`;
     const help = top ? 'D-pad / stick: move &middot; A: open &middot; B: close' : 'D-pad / stick: move &middot; A: select &middot; B: back';
     this.el.innerHTML = `
       <h2>${title}</h2>
@@ -195,6 +244,13 @@ export class DebugMenu {
     if (list) list.scrollTop = scroll;
     this.el.querySelector('li.selected')?.scrollIntoView({ block: 'nearest' });
   }
+}
+
+// A row worth listing: an item, or a tab with something in it.
+function hasContent(row) {
+  if (row.sub) return row.sub.items.length > 0;
+  if (row.items) return row.items.some(hasContent);
+  return true;
 }
 
 function labelOf(item) {

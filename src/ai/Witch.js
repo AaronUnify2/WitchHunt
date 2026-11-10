@@ -72,7 +72,7 @@ import { Traps, placeHutTraps, pickTrapType } from './witchTraps.js';
 import { TrapRenderer } from '../render/TrapRenderer.js';
 import { resolveCircles } from '../world/collision.js';
 import { WitchRenderer } from '../render/WitchRenderer.js';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 
 // How many sigils she sets out to plant on night `night` (pure). share:
 // her health share (wounded, she plants less: step 2).
@@ -1036,7 +1036,7 @@ export class Witch {
   // ---- debug tools ------------------------------------------------------------------
 
   addDebugItems(menu, notify) {
-    const witch = menu.category(DEBUG.witch);
+    const witch = menu.tab(DEBUG.enemies, ENEMY_TABS.witch); // Session 25: the Enemies menu's tab
     witch.addItem(() => `Now: ${this.stateText()}`, () => notify(this.stateText()));
     witch.addItem('Send her out to plant now', () => {
       if (!this.alive) return notify('She is dead');

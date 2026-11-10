@@ -80,6 +80,14 @@ Your notes as given are in the old HANDOVER.md (git history, commit 7f5de33). Al
 | 444 | **The blackout.** Tom wakes at the survival kit at dawn with 10% health. The clock runs through the night he lost: night events happen, but the forecast is closed. "Dawn. Your radio's quiet" shows as a toast. If he drives the Mothman off, Ellen calls and the clock runs on. Either ending sets mothmanMet and planeDone. Junie taken is Session 26. | As described. | `CrashedPlane.wake()` |
 | 445 | **Saving.** Every beat is a story flag. A fight that was on when the run was saved starts again: the standoff replays, or the flare can be fired again. | As described. | `data/progress.json` |
 
+**Round 2 (your notes after playing; PLAYTEST round 50)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 446 | **The rotation's order.** It goes pistols, rifles, shotguns, the shovel, then the detonator while charges are out. LB goes the other way. The wheel turns like RB. The shovel isn't on the weapon cross (it's alone in its kind). Should it be? | `rotation` | `config.weapons.rotation` |
+| 447 | **The camp's arc.** The lean-tos are 3.6 m from the fire, at -60, 0 and +60 degrees on the warm side. The wall is 1.35 m from the fire on the entrance side, so you see its back as you walk in. Should the wall stand on the far side instead, so the camp faces you as you arrive? | As described. | `data/campsite.json` |
+| 448 | **The Enemies tabs.** Where an enemy has its own place-based tools (the outpost's crates, the gas station's mutant, the campsite's wave), those stay with the place. The tabs hold the spawn-anywhere tools. | As described. | `debug/DebugMenu.js` `ENEMY_TABS` |
+
 ## Session 24 (Graphics Engineer / Technical Artist: models for the next stretch)
 
 Aaron's answers at the start (Nov 10): round 36 and the glare list **not yet** (they can wait). The order is fine: **the Mothman first**, then the plane's set, giant moths, Bigfoot and the cocoon, Milo and his animals. The Mothman's look: **"go with your gut"**; push to `main` when he's done and Aaron plays him from the debug menu (PLAYTEST round 37).

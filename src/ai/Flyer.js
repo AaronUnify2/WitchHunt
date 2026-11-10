@@ -13,7 +13,7 @@
 //
 // Events: 'flyer:struck' { damage }, 'flyer:left' { hurt }.
 
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { MothmanRenderer } from '../render/MothmanRenderer.js';
 import { steerTo, circlePoint, passEnd, climbEnd, nextMove } from './flyerPath.js';
 
@@ -206,7 +206,7 @@ export class Flyer {
   // ---- debug -------------------------------------------------------------------------------------
 
   addDebugItems(menu) {
-    const sp = menu.category(DEBUG.spikes);
+    const sp = menu.tab(DEBUG.enemies, ENEMY_TABS.mothman); // Session 25: the Enemies menu
     sp.addItem(() => `Flyer: send one at me (${this.active ? `${this.move}, health ${Math.round(this.health)}` : 'none up'})`, () => this.send());
     sp.addItem('Flyer: send it away', () => this.active && this.begin('leave'));
   }

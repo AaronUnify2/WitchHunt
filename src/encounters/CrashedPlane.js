@@ -35,7 +35,7 @@
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { rayBlockers } from '../combat/hitscan.js';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 
 // ---- the pure parts (tested) ----------------------------------------------------------------
 
@@ -503,7 +503,7 @@ export class CrashedPlane {
   // ---- debug ----------------------------------------------------------------------------------
 
   addDebugItems(menu) {
-    const cat = menu.category(DEBUG.story ?? DEBUG.spikes);
+    const cat = menu.tab(DEBUG.enemies, ENEMY_TABS.aliens); // Session 25: the Enemies menu (the grey's at the plane)
     cat.addItem(() => `Crashed plane: take me there (${this.state})`, () => {
       if (!this.ready) return;
       const w = this.spot('work');

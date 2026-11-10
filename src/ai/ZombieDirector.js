@@ -34,7 +34,7 @@ import { Digging } from '../player/Digging.js';
 import { Revisits } from './revisits.js';
 import { SigilRenderer } from '../render/SigilRenderer.js';
 import { SigilGroundMarkers } from '../render/SigilGroundMarkers.js';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 
 // The chance a raising is a marching group of `size`, so that `share`
 // of the zombies raised march (the rest are single wanderers):
@@ -376,10 +376,21 @@ export class ZombieDirector {
     });
     zombies.addItem('Remove all sigils', () => this.removeAll());
     zombies.addItem(() => `Sigils on the map: ${this.showOnMap ? 'on' : 'off'}`, () => (this.showOnMap = !this.showOnMap));
-    zombies.addItem('Spawn a horde near me', () => this.enemies.spawnTypeNear(this.player.position, 'horde'));
-    zombies.addItem(() => `Spawn a mutant near me (${this.enemies.mutantCount}/${this.cfg.mutant.poolSize})`, () => {
+    const spawn = menu.tab(DEBUG.enemies, ENEMY_TABS.zombies); // Session 25: the Enemies menu
+    spawn.addItem('Spawn a horde near me', () => this.enemies.spawnTypeNear(this.player.position, 'horde'));
+    spawn.addItem(() => `Spawn a mutant near me (${this.enemies.mutantCount}/${this.cfg.mutant.poolSize})`, () => {
       if (this.enemies.spawnTypeNear(this.player.position, 'mutant') === 0) this.notify('Mutant cap reached');
     });
+    // Session 25: one of each kind, 10 m in front of Tom, coming for him.
+    for (const [variant, name] of [['citizen', 'a citizen'], ['police', 'a police officer'], ['army', 'a soldier (helmet)'], ['mib', 'a Man in Black']]) {
+      spawn.addItem(`Spawn ${name} in front of me`, () => {
+        const p = this.player.position;
+        const yaw = this.player.yaw;
+        const x = p.x - Math.sin(yaw) * 10;
+        const z = p.z - Math.cos(yaw) * 10;
+        if (!this.enemies.spawnZombie(x, z, { variant, mode: 'chase', rise: false, facing: Math.atan2(p.x - x, p.z - z) })) this.notify('Zombie cap reached');
+      });
+    }
   }
 
   // "at the Scarecrow field" or "in the woods near Bog clearing".

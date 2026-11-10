@@ -33,7 +33,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { segmentCollider } from '../world/collision.js';
 import { StationRenderer } from '../render/StationRenderer.js';
 import { Ledger } from '../ui/Ledger.js';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { buildFencePlan } from './fencePlan.js';
 
 const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells', alienShells: 'alien shells' };
@@ -1083,7 +1083,7 @@ export class Station {
       s.damage(seg, 1e9);
       this.onBreak(seg);
     });
-    station.addItem(() => `Siege wave (${d.siegeWave} zombies outside the fence)`, () => this.siegeWave(d.siegeWave));
+    menu.tab(DEBUG.enemies, ENEMY_TABS.zombies).addItem(() => `Siege wave (${d.siegeWave} zombies outside the fence)`, () => this.siegeWave(d.siegeWave));
     station.addItem(() => `Overrun ends the run: ${this.overrunEnabled ? 'on' : 'off'}`, () => (this.overrunEnabled = !this.overrunEnabled));
     menu.category(DEBUG.teleport).addItem('Teleport: into the compound', () => {
       const pad = this.layout.turretPad;

@@ -27,7 +27,7 @@ import { rollLoot, lootTableFor, pickupLabel } from './loot.js';
 import { Hud } from '../ui/Hud.js';
 import { Sfx } from '../audio/Sfx.js';
 import lootData from '../data/loot.json';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 
 export class Combat {
   constructor(cfg, rng, bus) {
@@ -421,7 +421,7 @@ export class Combat {
 
   addDebugItems(menu) {
     const d = this.cfg.debug;
-    const zombies = menu.category(DEBUG.zombies);
+    const zombies = menu.tab(DEBUG.enemies, ENEMY_TABS.zombies); // Session 25: the Enemies menu
     const player = menu.category(DEBUG.player);
     zombies.addItem(() => `Spawn ${this.cfg.zombies.spawnCount} zombies near me (${this.enemies.activeCount} on the map)`, () =>
       this.enemies.spawnAround(this.player.position),

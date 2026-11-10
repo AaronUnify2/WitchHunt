@@ -21,7 +21,7 @@
 //
 // config.spikes.moths. Events: 'moths:nipped' { damage }, 'moths:killed' { left }, 'moths:gone'.
 
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { MothRenderer } from '../render/MothRenderer.js';
 import { steerTo } from './flyerPath.js';
 
@@ -338,7 +338,7 @@ export class Moths {
   // ---- debug -----------------------------------------------------------------------------------
 
   addDebugItems(menu) {
-    const sp = menu.category(DEBUG.spikes);
+    const sp = menu.tab(DEBUG.enemies, ENEMY_TABS.moths); // Session 25: the Enemies menu
     sp.addItem(() => `Moths: send a swarm at me (${this.mc.swarm}; ${this.living} up)`, () => this.send(this.mc.swarm));
     sp.addItem(() => `Moths: send a big swarm (${this.mc.bigSwarm})`, () => this.send(this.mc.bigSwarm));
     sp.addItem('Moths: send them away', () => this.dismiss());

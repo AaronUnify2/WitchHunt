@@ -58,7 +58,7 @@ import { rollLoot } from '../combat/loot.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { OutpostProps, CONTAINER, CRATE } from '../render/OutpostProps.js';
 import { Rng } from '../core/Rng.js';
-import { DEBUG } from '../debug/DebugMenu.js';
+import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { Beetles } from '../ai/Beetles.js';
 
 export class Outpost {
@@ -1282,7 +1282,7 @@ export class Outpost {
   addDebugItems(menu) {
     if (!this.frame) return;
     // Session 18 (Aaron): beetles anywhere, for testing.
-    menu.category(DEBUG.zombies).addItem('Spawn 3 giant beetles near me', () => {
+    menu.tab(DEBUG.enemies, ENEMY_TABS.beetles).addItem('Spawn 3 giant beetles near me', () => {
       const p = this.player.position;
       for (let i = 0; i < 3; i++) {
         const a = this.player.yaw + Math.PI + (i - 1) * 0.6;

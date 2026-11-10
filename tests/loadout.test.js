@@ -42,19 +42,40 @@ describe('carrying every gun (Session 25, Aaron)', () => {
     expect(w.found).toEqual(['rifle', 'shotgun', 'sniper', 'pistol', 'smg', 'thermal', 'autoShotgun']);
   });
 
-  it('the swap button flips between the last two used; LB goes to the shovel and back', () => {
+  it('RB / LB rotate through the kinds (pistols, rifles, shotguns, the shovel), each bringing out the one last held of it', () => {
     const w = weapons();
-    for (const id of ['shovel', 'rifle', 'shotgun', 'sniper']) w.take(id);
-    w.selectId('rifle');
-    w.selectId('sniper');
-    expect(w.swapLast()).toBe(true);
+    for (const id of ['shovel', 'rifle', 'shotgun', 'sniper', 'pistol', 'smg']) w.take(id);
+    w.selectId('pistol');
+    w.rotate(1);
     expect(w.id).toBe('rifle');
-    w.swapLast();
-    expect(w.id).toBe('sniper');
-    w.toggleShovel();
+    w.rotate(1);
+    expect(w.id).toBe('shotgun');
+    w.rotate(1);
     expect(w.id).toBe('shovel');
-    w.toggleShovel();
+    w.rotate(1);
+    expect(w.id).toBe('pistol'); // no detonator (no charges): round to the pistols
+    w.rotate(-1);
+    expect(w.id).toBe('shovel');
+    // The cross picks the hunting rifle: the rifles bring it out from now on.
+    w.selectId('sniper');
+    w.selectId('smg');
+    w.rotate(1);
     expect(w.id).toBe('sniper');
+    w.rotate(-1);
+    expect(w.id).toBe('smg');
+  });
+
+  it('skips kinds Tom has nothing of, and starts from empty hands', () => {
+    const w = weapons();
+    expect(w.id).toBe('hands');
+    w.take('shovel');
+    w.selectId('shovel');
+    w.take('shotgun');
+    w.selectId('shotgun');
+    w.rotate(1);
+    expect(w.id).toBe('shovel');
+    w.rotate(1);
+    expect(w.id).toBe('shotgun');
   });
 
   it('saves what Tom carries; an older save with guns on the rack gives them back', () => {

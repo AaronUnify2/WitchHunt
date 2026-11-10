@@ -1,6 +1,8 @@
-// The player's weapons: switching (Session 25: RB flips between the last two
-// used, LB the shovel and back; the weapon cross on D-pad down; keys 1-8 and
-// the mouse wheel cycle on a keyboard), firing
+// The player's weapons: switching (Session 25, Aaron: RB / LB rotate through
+// the kinds of weapon, the pistols, the rifles, the shotguns, then the shovel
+// (and the detonator while charges are out), each kind bringing out the one
+// last picked of it; the weapon cross on D-pad down picks which of a kind;
+// the mouse wheel rotates too and keys 1-8 pick on a keyboard), firing
 // (RT), aiming down sights (LT: zoom, tighter spread, stronger aim
 // assist), reloading (B), the aim and fire slowdown, and aim assist.
 // Hits are resolved here with combat/hitscan.js and applied through the
@@ -68,7 +70,7 @@ export class Weapons {
     for (const id of this.order) this.addState(id);
     this.index = Math.max(0, this.order.indexOf(this.cfg.startingWeapon));
     this.switchTimer = 0;
-    this.lastId = null; // Session 25: the swap button's other weapon
+    this.picks = {}; // Session 25: the weapon last held of each kind (config.weapons.rotation)
     this.aiming = false;
     this.zoom = 0;
     this.fireSlow = 0;
@@ -110,13 +112,14 @@ export class Weapons {
   select(index) {
     const next = (index + this.order.length) % this.order.length;
     if (next === this.index) return;
-    this.lastId = this.id; // Session 25: for the swap button
     this.state.cancelReload();
     this.index = next;
     this.reloadHeld = null;
     this.choosing = null;
     this.switchTimer = this.cfg.switchSeconds;
     this.meleeTimer = -1;
+    const kind = this.kindOf(this.id);
+    if (kind) this.picks[kind] = this.id; // Session 25: the one this kind brings out next time
     this.bus.emit('weapon:switched', { id: this.id });
   }
 
@@ -226,9 +229,8 @@ export class Weapons {
     this.switchTimer = Math.max(0, this.switchTimer - dt);
     // Session 25 (Aaron): every gun's carried; the weapon cross picks one. RB flips
     // between the last two used, LB to the shovel and back; the wheel still cycles.
-    if (input.wasPressed('weaponNext')) this.swapLast();
-    if (input.wasPressed('weaponPrev')) this.toggleShovel();
-    if (input.wasPressed('weaponCycle')) this.select(this.index + 1);
+    if (input.wasPressed('weaponNext') || input.wasPressed('weaponCycle')) this.rotate(1);
+    if (input.wasPressed('weaponPrev')) this.rotate(-1);
     SLOT_ACTIONS.forEach((action, i) => {
       if (i < this.order.length && input.wasPressed(action)) this.select(i);
     });
@@ -465,18 +467,31 @@ export class Weapons {
     return true;
   }
 
-  // The swap button: back to the last weapon used (if he still has it).
-  swapLast() {
-    const last = this.lastId;
-    if (!last || last === this.id || !this.order.includes(last)) return false;
-    return this.selectId(last);
+  // Session 25: which kind (config.weapons.rotation) a weapon is, or null.
+  kindOf(id) {
+    return this.cfg.rotation?.find((k) => k.weapons.includes(id))?.id ?? null;
   }
 
-  // LB: the shovel, and back to what was in hand.
-  toggleShovel() {
-    if (!this.order.includes('shovel')) return false;
-    if (this.id === 'shovel') return this.swapLast();
-    return this.selectId('shovel');
+  // The weapon a kind brings out: the one last held of it, else the first
+  // of it Tom carries (null: none of that kind).
+  pickOf(kind) {
+    const k = this.cfg.rotation.find((x) => x.id === kind);
+    const last = this.picks[kind];
+    if (last && this.order.includes(last)) return last;
+    return k.weapons.find((id) => this.order.includes(id)) ?? null;
+  }
+
+  // RB / LB: on to the next (dir 1) or previous (-1) kind Tom carries anything of.
+  rotate(dir) {
+    const kinds = this.cfg.rotation ?? [];
+    if (!kinds.length) return this.select(this.index + dir);
+    const here = kinds.findIndex((k) => k.id === this.kindOf(this.id));
+    for (let step = 1; step <= kinds.length; step++) {
+      const i = (((here < 0 ? (dir > 0 ? -1 : 0) : here) + dir * step) % kinds.length + kinds.length) % kinds.length;
+      const id = this.pickOf(kinds[i].id);
+      if (id && id !== this.id) return this.selectId(id);
+    }
+    return false;
   }
 
   // Was the detonator's trigger pulled since the last call? (M7)

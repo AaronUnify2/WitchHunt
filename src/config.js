@@ -1137,6 +1137,15 @@ export const config = {
       tools: ['shovel'],
       rackName: "the comms room's gun rack",
     },
+    // Session 25 (Aaron, after playing it): RB / LB rotate through the kinds, in this order; each brings
+    // out the one last held of it (the weapon cross picks which). Kinds Tom has nothing of are skipped.
+    rotation: [
+      { id: 'pistol', weapons: ['pistol', 'smg'] },
+      { id: 'rifle', weapons: ['rifle', 'sniper', 'thermal'] },
+      { id: 'shotgun', weapons: ['shotgun', 'autoShotgun'] },
+      { id: 'melee', weapons: ['shovel'] },
+      { id: 'explosive', weapons: ['detonator'] }, // while charges are out or in hand
+    ],
     // Session 25 (Aaron): Tom carries every gun; the weapon cross (ui/WeaponCross.js, D-pad down
     // with nothing to watch) lays them out, nearest the middle first. flareGun, dynamite and charges
     // are its specials (always to hand on Y; not built yet; the detonator).
@@ -4575,6 +4584,6 @@ export const config = {
       attack: [0],
       aim: [2],
     },
-    wheelAction: 'weaponCycle', // mouse wheel fires this action (Session 25: it cycles; RB is the swap button now)
+    wheelAction: 'weaponCycle', // mouse wheel fires this action (Session 25: it rotates through the kinds, as RB does)
   },
 };
