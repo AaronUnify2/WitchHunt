@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-49 Session 25 (your play-through notes, the moths, the crashed plane)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -362,6 +362,60 @@ Round 41 (Session 24, Graphics: Milo and his animals; OPEN_QUESTIONS #408-411). 
   - **The turkey:** drawn up tall, one eye on you, a slow tilt of the head (the Aunt June look); or fanned and strutting.
   - The donkey is grey and the Shetland burnt caramel, as in the story. The Shetland pony (round, shaggy, a forelock over its eyes); the python (coiled, its head up, as in its tank).
 
+Round 42 (Session 25, batch 1: your quick fixes; OPEN_QUESTIONS #412-414).
+- [ ] **No first aid prompt at the start:** a new game opens beside the comms room's aid box with no prompt. Get hurt, and the box offers its kits.
+- [ ] **The night forecast:** still up for 14 s, with "Press A to dismiss" in its corner. A closes it early, and Tom doesn't jump.
+- [ ] **The gas station's mutant** wakes only when you're within about 2 m (about 3 m coming down its aisle).
+- [ ] **No zombies notice you in a cutscene:** ride the quad up to the storm shelter. The dead that were coming for you from afar go back to what they were doing as the sweep starts, and the engine doesn't call them while it plays.
+- [ ] **The shelter's ceiling:** jump in the room: your head stays inside.
+- [ ] **The donkey's ears** sit on its head (Models, "Milo's donkey", from the side and the front; the pony too).
+
+Round 43 (Session 25, batch 2: cameras, sound, set dressing; #415-419).
+- [ ] **The tower (Day 1):** the craft hangs over the far south for about 2 s, lights on, then zips off up and away. Then the pan to the smoke and lines 3-4. Wyatt now asks "Dad, what is that?" Too quick, too slow, too small?
+- [ ] **The gas station's sweep** goes round the west side and ends on the HOME OF BIGFOOT sign, which no longer has the power lines through it.
+- [ ] **The witch at the treeline** leaves on a rush of wind, not the boing. (Her other sounds are unchanged.)
+- [ ] **Earl's tape is in the VCR:** in the shelter's room, the tape sticks half out of the VCR under the TV; "take the tape out of the VCR". The loose box of tapes is gone.
+- [ ] **Earl's signs on the cave road:** HOME OF BIGFOOT fits the board, and your torch doesn't glare off either sign.
+- [ ] **Nothing on the roads:** the road's wrecks are on the shoulder (the army truck before the outpost was on the centre line), and the outpost's C-7 container sits off the asphalt. Can the witch still snag anywhere?
+
+Round 44 (Session 25, batch 3: the experimental vehicles; #420-423).
+- [ ] **The ute's gun** dips much further over the sides and the back: shoot the dead right at the tray. Over the cab it dips as before. Does the barrel poke through the tray side too much?
+- [ ] **No arms** on the ute's wheel; it turns on its own.
+- [ ] **The ute's headlamps and the dozer's work lights** are duller and wider. Still too much glare, or now too dark?
+- [ ] **The dozer breaks rocks:** drive into a forest boulder: it holds the blade a moment (a big one about a second), cracks apart in dust and is gone, and stays gone after Save and quit. The cliffs and the rock round Bigfoot's cave don't break.
+- [ ] **The winch:** reel a car in: it stops short of the dozer and can't shove it along.
+
+Round 45 (Session 25, batch 4: carry every gun; #424-427).
+- [ ] **Every gun found goes straight to you.** No "which gun to leave" panel any more.
+- [ ] **The weapon cross:** D-pad down when there's nothing to watch (G or V on a keyboard). The world pauses. Up: shotgun, auto shotgun; left: pistol, SMG; right: service rifle, hunting rifle, semi-auto rifle; down: flare gun, dynamite, military explosives. Guns not found yet are empty slots. D-pad or stick moves along an arm, A takes it, B closes. Do the icons read?
+- [ ] **RB** flips between the last two guns you used; **LB** goes to the shovel and back; Y still fires a flare.
+- [ ] **A tape waiting** still plays first on D-pad down.
+- [ ] **The gun rack** shows the guns you've found (just to look at).
+- [ ] **An old save** with guns on the rack gives them back to you on Continue.
+
+Round 46 (Session 25, batch 5: Milo and the belted grey; #428-430).
+- [ ] **Milo the clown** (Models, "Milo"): a baggy grey-white suit with sparse red and blue dots, a small red mouth, a green bob of a wig, a red collar, very big red shoes, very long arms, 1.75 m. Closer to your picture? Less creepy?
+- [ ] **The grey alien** (Models, "Grey alien", Y to the gun belt): loose trousers from the belt on.
+
+Round 47 (Session 25, batch 6: the survival camp; #431-432).
+- [ ] **The campsite:** three tarp lean-tos with bough beds facing the fire, a log wall behind the fire, a pot on a tripod. The shotgun's in the green one, the camcorder in the slashed one (blood behind it). Every search, the sweep, the camcorder clip and the wave as before. "Like Luke from Outdoor Boys"?
+
+Round 48 (Session 25, batch 7: giant moths to shoot; #433-435). Debug only.
+- [ ] **Spikes, "Moths: send a swarm at me"** (16) and **"send a big swarm"** (32). They mill in a cloud 3 to 5 m up and keep darting at you (a nip each). A service rifle round drops one; a shotgun blast can drop a couple. Shot ones tumble down and lie there. "Send them away" sends them off.
+  - Fun to shoot? Too many darts, too few? Too hard to hit?
+  - **The frame rate** with a big swarm up.
+
+Round 49 (Session 25, batch 8: the crashed plane; #436-445). The story's next beats.
+- [ ] Clear the outpost, go through the checkpoint, and follow the map's NEXT to the plane (or the debug menu: **Story, radio & trail cams**, "Crashed plane: take me there").
+- [ ] **The standoff:** up the gouge, the view holds on the grey at its bench; it turns, sees you and lifts its gun.
+- [ ] **The quick draw:** you get control back with about half a second: one hit drops it (aim with LT). Did you get it? Too tight, too generous?
+- [ ] **Miss it:** its first shot goes wide, it hops over the wing, and a shootout begins: it steps out past the wing's tip to shoot and ducks back.
+- [ ] **Its drops:** hold X on it: the pilot's pistol, alien shells (hold B to choose them), an alien med kit, the alien power cell. **The pilot's log:** his knee-board on the ground by the cockpit.
+- [ ] **The power cell:** at home, hold X at the fence box to fit it.
+- [ ] **The flare:** a bit later Wyatt suggests the pilot's signal flare; fire it from the survival kit. The Mothman answers: two flyovers, then dives. **Hurt him enough** and he flies off. **Or let him win:** your health stops at 10%, you black out, red eyes over you, and you wake at the wreck at dawn, the radio quiet. The story stops there for now.
+- [ ] **Save and quit** at each step and Continue: a fight that was on starts again.
+
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
@@ -378,8 +432,8 @@ Round 41 (Session 24, Graphics: Milo and his animals; OPEN_QUESTIONS #408-411). 
 ## 3. The tower (Day 1)
 
 - [ ] Climb the lookout tower (east side of the yard; the ladder is on its south side).
-- [ ] The view lingers south over the fog, where a small **red light blinks at the edge of sight** and is never explained. Then it turns west-southwest to **a wisp of smoke** over the trees: Wyatt's line 3, then Junie's line 4.
-- [ ] Is the light too subtle, too obvious, or the right "what is that?"
+- [ ] The view lingers south over the fog, where **the craft hangs at the edge of sight, then zips off** (Session 25: it was a red light). Then it turns west-southwest to **a wisp of smoke** over the trees: Wyatt's line 3, then Junie's line 4.
+- [ ] Is the craft too subtle, too obvious, or the right "what is that?"
 - [ ] Does the smoke read as the last of a campfire?
 - [ ] If you don't climb the tower for a minute or so, Wyatt nudges you toward it.
 

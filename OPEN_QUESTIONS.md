@@ -1,6 +1,84 @@
 # Open questions
 
-**Aaron's full play-through notes (Nov 10, evening)** are in HANDOVER.md's top section ("DO THIS FIRST"), with his answers to the five questions asked (all: go with the default). **They change earlier answers:** every gun is carried (the Session 23 gun choice and the rack as storage go; #390 is moot); Milo's suit is white with dots after all (not blue), smaller smile, clown wig, baggy, shorter, big feet, long arms (#408).
+**Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 25 (your play-through notes, the giant moths, the crashed plane)
+
+Your notes as given are in the old HANDOVER.md (git history, commit 7f5de33). All 26 items are built, then the moths and the plane's beats. Where I had to choose:
+
+**Batch 1 (PLAYTEST round 42)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 412 | **The aid box at the start.** Its prompt is hidden while Tom is at full health; once he is hurt it offers its kits as before. | As described. | `base/Station.js` `pickInteraction()` |
+| 413 | **The mutant waking.** It wakes within 2 m. Down its aisle the trigger is 3.2 m: the old trigger fired at the aisle mouth, about 6 m away. | `wake.near: 2`, `wake.aisle: 3.2` | `data/gasStation.json` |
+| 414 | **The dead and cutscenes.** While any cutscene plays no noise carries (the quad engine, gunfire). When one starts, every zombie chasing Tom from more than 10 m away forgets him and goes back to what it was doing. Zombies closer than 10 m keep coming, but they cannot hurt him until it ends. | `cutsceneForgetBeyond: 10` | `config.detection`, `EnemyManager.forgetPlayer()` |
+
+**Batch 2 (round 43)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 415 | **The tower craft.** It hangs at the light's old spot (24 m up, at the edge of sight) for about 2.4 s, drifting a little, then zips **up and away to the east**. It is gone 1.1 s later and speeds up all the way. Ellen's line ("the military, a training exercise") still follows. Wyatt's line now asks what it is. Should it zip south (toward its crash) instead? | Its size is 0.6 of the dogfight's craft. | `data/cutscenes.json` `day1.tower` |
+| 416 | **The gas station sign moved.** The pole sign moved from (11.5, 10.4) to (12.2, 5.8) in the frame: in off the power line, toward the store, still clear of the canopy. A test checks it against the pole line. The sweep's last shot frames it from the road side. | As described. | `data/gasStation.json` `sign`, `sweep.gasStation` |
+| 417 | **Earl's tape.** There is one tape, labelled CAM 4, which is his trail camera four clip. Wyatt's line is now "It was still in his VCR? Then it's off his trail cams..." (draft). The card's line says it was still in the VCR. | As described. | `data/dialogue.json` `shelter.tapes`, `data/lore.json` |
+| 418 | **Wrecks on the shoulder.** The police car and the army truck (the one on the centre line before the outpost) moved onto the road's south shoulder. No placed vehicle may have a corner within half the road's width plus 0.3 m of the road or the road north, so cars nosed onto a path crossing are moved too. C-7 moved 2 m off the road. Tests cover four seeds and the outpost's and the gas station's colliders. The experimental vehicles have no parking spots (they are brought to Tom), so there was nothing to move. | `roadKeep: 0.3` | `data/openingCluster.json`, `config.vehicles.placement`, `data/outpost.json` |
+| 419 | **The witch fly-away sound.** Only the gas station cutscene uses the new rush of wind. Her shriek when she notices Tom or is hit is unchanged. Should those change too? | `witchRush` | `audio/Sfx.js` |
+
+**Batch 3 (round 44)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 420 | **The ute gun dip.** Over the sides and the back it dips to -0.8 rad (-46 degrees). Over the cab it stays at -0.38, blending between the two. At its steepest the barrel can pass through the tray side. The round's ray already ran from Tom's eye, which is behind the breech. A tracer now only shows when the hit is past the muzzle. | `pitchMinSide: -0.8` | `config.ute.gun` |
+| 421 | **Lamp numbers.** Ute headlamps: 1600 cd at 24 degrees, now 850 at 30. Gun lamp: 1100 at 13, now 650 at 16. Dozer work lights: 1300 at 26, now 600 at 32. Only numbers changed. | As described. | `config.ute`, `config.dozer` |
+| 422 | **Rocks the dozer breaks.** Every loose rock and boulder from the terrain scatter breaks. The cliffs and the cave road's spur do not. A rock holds the blade for 0.35 s plus 1.1 s per metre of size over 0.4 m, so a 1 m boulder holds about 1 s. Broken rocks are saved as an optional list, so the save version is unchanged. | `clearing.rocks` | `config.dozer.clearing`, `world/LandClearing.js` |
+| 423 | **The winch gap.** A winched car stops 0.6 m short of the dozer. The cable just holds it there. | `winch.carGap: 0.6` | `config.dozer.winch` |
+
+**Batch 4 (round 45)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 424 | **The swap button.** RB flips between the last two weapons used. LB is the shovel, and pressing it again goes back. I took this as the shovel's own button. On a keyboard the wheel still cycles and keys 1-8 still select. | As described. | `player/Weapons.js` `swapLast()`, `toggleShovel()` |
+| 425 | **The cross's down arm.** The flare gun is always marked found, with the flare count. Picking it closes the cross and says Y fires a flare, because it is never held. Dynamite is always an empty slot (not built yet). Military explosives is the detonator, found while charges are out or in hand. | As described. | `ui/WeaponCross.js` `extras()` |
+| 426 | **Where the cross opens.** It does not open while riding a vehicle. Its icons are drawn in code, from the rack's shapes. | As described. | `core/Game.js`, `ui/WeaponCross.js` `drawIcon()` |
+| 427 | **#390 (the gun choice's default)** is moot: the panel is gone. | n/a | n/a |
+
+**Batch 5 (round 46)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 428 | **Milo's heights.** The clown is 1.75 m. The man the morning after is 1.85 m: same skeleton, out of costume, and the story calls him tall. | `height: 1.75`, `manHeight: 1.85` | `config.milo` |
+| 429 | **Milo's dots.** About one sphere cell in two has a dot, red or blue, 5.5 cm across. On the low-poly suit they blur into short dabs. | `dotAt()` | `render/miloModel.js` |
+| 430 | **The grey's trousers** are dusty brown-grey. In the gunslinger stage its boots sit under the trouser cuffs. Should they be tucked in? | `colours.trousers` | `config.aliens.grey`, `render/alienModel.js` |
+
+**Batch 6 (round 47)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 431 | **No axe in a stump.** You took it out in Session 19, because an axe Tom cannot pick up reads as a weapon he should be able to. The camp table and stove, the clothesline, chairs, cooler and lantern stay. Should more go for a purer bushcraft camp? | As described. | `data/campsite.json` |
+| 432 | **Lean-to colours.** Brown, olive (the shotgun's, still green), and grey-blue (the slashed one). | As described. | `data/campsite.json` `tents` |
+
+**Batch 7 (round 48)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 433 | **Moth numbers (first guesses).** Health is 16: one service rifle round (25) kills, or three shotgun pellets (6 each). A dart comes every 1-2 s with 1-2 moths. Each nip does 4 damage, about 24 a minute from a full swarm. The hit shape is 0.35 m. The cloud is 2-5 m across and 3-5 m up. | As described. | `config.spikes.moths` |
+| 434 | **No aim assist** on moths, so the aim does not stick to the cloud. Too hard to hit? | `noAssist` | `ai/Moths.js` |
+| 435 | **Flutter sound.** One quiet flutter about every 0.3 s for the whole swarm, from its middle. | `flutterEvery` | `config.spikes.moths` |
+
+**Batch 8 (round 49): the crashed plane, my reading of DESIGN.md**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 436 | **When it starts.** The standoff needs `outpostCleared` and fires 16 m from the grey: close enough for a quick draw. The cutscene is the world running with the view held on the grey. It cannot be skipped and lasts 2.9 s. | `needs`, `triggerDistance: 16` | `config.crashedPlane.encounter` |
+| 437 | **The quick draw.** The window is 0.55 s after control returns, and any hit kills. In tests an aimed rifle shot made it, an unaimed one at 22 m did not. | `quickDraw: 0.55` | same |
+| 438 | **The grey's gun.** Its model still holds the shotgun from Session 24, but what it drops is the pilot's pistol. Should the model hold a pistol? | As described. | `render/alienModel.js` `KIT_STAGES` |
+| 439 | **The shootout.** The grey has 70 health. It hides for 1.4-2.6 s, steps 3.8 m out past the wing tip, aims for 0.6 s and fires: 40% chance to hit, 9 damage, line of sight needed. It hops over the wing into cover. In the headless runs Tom lost 10-35 health. | `greyHealth`, `shootout` | same |
+| 440 | **The drops.** All four come from one hold-X search. Where the healing pool is full, the med kit goes home to the aid box. The power cell is carried as a flag and fitted at the fence box. Should each drop have its own card? | `drops` | `encounters/CrashedPlane.js` `loot()` |
+| 441 | **The pilot's log** is a two-page draft, signed LT. D. HALE. Its name and words are yours to change. | As described. | `data/papers.json` `pilotLog` |
+| 442 | **The flare.** Wyatt suggests it 10 s after the drops are taken. Tom fires it from the survival kit; it climbs about 50 m. | `flareAfter: 10` | `config.crashedPlane.encounter`, `plane.flare` |
+| 443 | **The Mothman.** He uses the flyer spike's numbers: 260 health, leaves hurt below 35% (about 7 service rifle hits), 22 damage a strike. The script is two flyovers, then dives until one ending. | `mothmanScript`, `config.spikes.flyer` | same |
+| 444 | **The blackout.** Tom wakes at the survival kit at dawn with 10% health. The clock runs through the night he lost: night events happen, but the forecast is closed. "Dawn. Your radio's quiet" shows as a toast. If he drives the Mothman off, Ellen calls and the clock runs on. Either ending sets mothmanMet and planeDone. Junie taken is Session 26. | As described. | `CrashedPlane.wake()` |
+| 445 | **Saving.** Every beat is a story flag. A fight that was on when the run was saved starts again: the standoff replays, or the flare can be fired again. | As described. | `data/progress.json` |
 
 ## Session 24 (Graphics Engineer / Technical Artist: models for the next stretch)
 

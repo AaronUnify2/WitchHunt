@@ -1,23 +1,44 @@
-# For Aaron (Session 24: Graphics, the models for the next stretch)
+# For Aaron (Session 25: your play-through list, the moths, the crashed plane)
 
-**Your play-through list (Nov 10, evening) is written into HANDOVER.md, top section: 26 items in batches, the giant moths as a debug spike, then the crashed plane's beats. None of it is started: start a new chat and tell it to read HANDOVER.md and pick up from there.**
+**I built everything on your list overnight, then the giant moths and the crashed plane's beats.** It's on `main` in eight pushes, one per batch. 936 tests pass and the build is clean. I checked it headless, but none of it has been played on the tablet yet.
 
-Everything is on `main`. 912 tests pass and the build is clean. Nothing in the save moved. Everything on the session's list is built; the lists to play are PLAYTEST rounds 37-41.
+## What to play
 
-## What's new
+**PLAYTEST rounds 42-49**, in the batch order:
 
-1. **The Mothman:** 2.3 m, furred like a moth, dusty wings with eye-spots, red eyes that glow through the fog. Twelve poses. The flyer spike wears him (Spikes, "Flyer: send one at me").
-2. **The crashed plane's set**, in its clearing on every seed (Teleport, "next story place"): the gouge, the snapped trees, the sheared wing, the tail, the front of the plane with the pilot in it, the wing as the grey's workbench with the gun laid out, the survival kit.
-3. **Giant moths:** dog sized, and a whole swarm is one draw call.
-4. **Bigfoot** (2.6 m, shaggy, wearing his own beadwork) **and his cocoon** (sealed, or cut open).
-5. **Milo:** the clown and the man the morning after. **His animals:** the donkey (it stares), the Shetland pony, the turkey (it judges), the python.
+1. **Quick fixes:** the aid box, A closes the forecast, the mutant at 2 m, the dead ignore you in cutscenes, the shelter's ceiling, the donkey's ears.
+2. **Cameras, sound, dressing:**
+   - the UFO from the tower;
+   - the west-side gas station sweep;
+   - the witch's wind;
+   - the tape in the VCR;
+   - the sign clear of the wires;
+   - Earl's signs;
+   - nothing parked on the roads.
+3. **Vehicles:** the ute's gun and arms, the lamps, the dozer breaking rocks, the winch.
+4. **Every gun carried, and the weapon cross:**
+   - D-pad down opens it.
+   - RB swaps between your last two guns.
+   - LB takes you to the shovel and back.
+5. **Milo** to your picture, and the belted grey's trousers.
+6. **The survival camp.**
+7. **Giant moths:** debug menu, Spikes, "Moths: send a swarm at me", then shoot.
+8. **The crashed plane:**
+   - Get there past the outpost, or use the debug menu (Story, "Crashed plane: take me there").
+   - The grey at its bench, then the quick draw (aim with LT).
+   - The shootout, its drops, the pilot's log.
+   - The signal flare, then the Mothman. Drive him off, or let him knock you out and wake at dawn.
 
-All of them are in the model viewer (debug menu, Models). Each is one draw call, no lights, and every colour passes the glare test.
+## Calls I made (OPEN_QUESTIONS #412-445)
 
-## What I'd like from you
+The ones I'd most like your eye on:
 
-- **Rounds 39-41** (the moths, Bigfoot, Milo and the animals), and your glare list.
-- **The clown's suit colour:** corrected to the story (a fitted polka-dot suit, no nose, three knives; the man dark-haired; the donkey grey; the pony burnt caramel). The story gives the suit no colour: blue with white and red dots (you said that's fine).
-- The frame rate with the swarm up, with the Mothman flying, and standing at the wreck.
+- **RB / LB:** I made LB the shovel's own button.
+- **The quick draw:** a 0.55 s window, from 16 m.
+- **The grey's model** still holds a shotgun, but it drops the pilot's pistol.
+- **The tower's UFO** zips off up and away to the east.
+- **No axe** at the camp, since you'd taken it out before.
+- **The moths' numbers** are first guesses.
+- **After the blackout** the night passes; you wake with 10% health.
 
-Next on the plan is **Session 25**: the crashed plane's encounter (the grey, the quick draw) and the Mothman at the crash site.
+Next is **Session 26**: Junie taken, and the Caller.
