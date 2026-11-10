@@ -3974,6 +3974,7 @@ export const config = {
         bandana: 0x8a1c18,
         leather: 0x4a2c18,
         buckle: 0x9a9890,
+        trousers: 0x3e3a34, // Session 25: dusty, worn (the belt stage on)
         vest: 0x3a2418,
         boots: 0x3a2214,
         spur: 0x8a8a84,
@@ -4014,8 +4015,10 @@ export const config = {
   // render/PosedFigure.js). He never attacks Tom and can't be hurt. His barn
   // is Session 28's.
   milo: {
-    height: 1.9,
-    widths: { clown: 0.9, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
+    height: 1.75, // Session 25 (Aaron: "a little too tall"): 1.9 was
+    manHeight: 1.85, // the man the morning after (tall, broad)
+    widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
+    clown: { baggy: 1.4, top: 1.12, shoe: 0.2 }, // Session 25: loose and baggy (not skin tight), the shoes about twice as long
     albedo: 0.34, // the torch is strong up close
     poseRate: 14, // quick
     throwSeconds: 0.9, // the wind-up, the throw and its follow-through (for the viewer's loop)
@@ -4024,13 +4027,14 @@ export const config = {
       clown: {
         skin: 0x6a4e40,
         face: 0x706c64, // white greasepaint
-        grin: 0x7a1c14,
+        grin: 0x7a1c14, // Session 25: a small red mouth
         eyes: 0x0e0d0c,
-        wig: 0x2a6a26, // bright green curls
-        shirt: 0x24405a, // the polka-dot suit: blue (the story gives no colour; Aaron: blue is fine; skin tones read as bare under the torch)...
-        trousers: 0x24405a,
-        dot: 0x6e6a5c, // ...and its dots, white and red
-        dot2: 0x7a1c14,
+        wig: 0x2e7a2a, // Session 25: a green bob, like a cap (the reference)
+        shirt: 0x6c6a64, // Session 25 (Aaron, seeing the reference): the white suit with dots; a grey-white (an off-white read as bare skin under the torch)...
+        trousers: 0x6c6a64,
+        dot: 0x7a1c14, // ...and its dots, red and blue, sparse
+        dot2: 0x24405a,
+        collar: 0x7a1c14, // the red collar
         shoes: 0x5e1c16,
         gloves: 0x6c6860, // white gloves
         leather: 0x2e2218,

@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { config } from '../src/config.js';
 import { lumaOf } from '../src/render/propKit.js';
 import { PosedFigure } from '../src/render/PosedFigure.js';
-import { miloSpec, miloPose, MILO_LOOKS, MILO_JOINTS } from '../src/render/miloModel.js';
+import { miloSpec, miloPose, MILO_LOOKS, MILO_JOINTS, dotAt } from '../src/render/miloModel.js';
 import { ANIMALS, BARN_ANIMALS } from '../src/render/barnAnimals.js';
 
 const mc = config.milo;
@@ -42,6 +42,41 @@ describe('Milo', () => {
       expect(scene.children.length).toBe(0);
     });
   }
+
+  // Session 25 (Aaron, with the reference picture): less creepy, baggier, shorter, big feet, long arms.
+  it('the clown as Aaron corrected him: shorter, very long arms, very big shoes, a small mouth, baggy', () => {
+    expect(mc.height).toBeLessThanOrEqual(1.8);
+    const spec = miloSpec(mc, 'clown');
+    const J = Object.fromEntries(spec.joints.map(([n, , x, y, z]) => [n, { x, y, z }]));
+    expect(J.wristR.y).toBeLessThanOrEqual(J.kneeR.y); // wrists at or below the knees
+    const shoe = spec.masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
+    const manShoe = miloSpec(mc, 'man').masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
+    expect(shoe[7]).toBeGreaterThan(manShoe[7] * 2.5); // the clown's shoes: about twice his old ones, far past a man's
+    const mouth = spec.masses.filter((q) => q[8] === 'grin');
+    const xs = mouth.map((q) => q[2]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(0.06); // a normal width (it was ear to ear)
+    const thigh = spec.limbs.find((l) => l[0] === 'hipR');
+    const sleeve = spec.limbs.find((l) => l[0] === 'elbowR');
+    expect(thigh[2]).toBeGreaterThan(0.11); // baggy, not skin tight
+    expect(sleeve[3]).toBeGreaterThan(0.05); // wide straight sleeves
+    expect(spec.masses.filter((q) => q[8] === 'wig').length).toBeLessThan(6); // one rounded bob, not a frizz of balls
+    expect(spec.rings.some((r) => r[6] === 'collar')).toBe(true);
+    // The dots: sparse, red and blue.
+    let dots = 0;
+    let n = 0;
+    const seen = new Set();
+    for (let x = -0.3; x <= 0.3; x += 0.01) for (let y = 0.5; y <= 1.5; y += 0.01) {
+      n++;
+      const d = dotAt({ x, y, z: 0.14 }); // on a plane of cells (a surface passes through them)
+      if (d) {
+        dots++;
+        seen.add(d);
+      }
+    }
+    expect(dots / n).toBeLessThan(0.25);
+    expect(dots / n).toBeGreaterThan(0.01);
+    expect([...seen].sort()).toEqual([1, 2]);
+  });
 
   it('throws: the knife hand goes back, then forward', () => {
     const { f } = build(miloSpec(mc, 'clown'), miloPose);

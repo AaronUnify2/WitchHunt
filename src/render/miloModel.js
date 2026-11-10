@@ -1,12 +1,17 @@
 // Milo (Session 24; DESIGN.md "Milo's barn"): the knife thrower from
 // Aaron's story The Lone Clown, alive in his barn and permanently in
-// character. Tall and lanky with arms too long for him. Two looks:
-//  - the clown (as the story has him): a polka-dot clown suit that fits
-//    him well, a white greasepaint face, a red grin painted so wide it
-//    nearly touches his ears, painted eyes, a bright green wig of curls,
-//    white gloves, oversized shoes; no red nose. His knives are a set of
-//    three: one in his hand, two tucked into a fold of the suit. In full
-//    kit his arms look too long and his frame narrower than the man's;
+// character. Two looks:
+//  - the clown. Session 25 (Aaron, after seeing him: "a little too creepy;
+//    the smile's too wide; the green wig less clown-like and more its own
+//    thing; the white suit with polka dots; not skin tight; a little too
+//    tall, his clothing's too tight; make the feet really big and the arms
+//    really long"; his reference: docs/reference/milo-lone-clown.jpg): a
+//    loose, baggy off-white suit with sparse red and blue dots, a short
+//    rounded green bob of a wig sitting on his head like a cap, a white face
+//    with a small red mouth (normal width), a red collar, white gloves, very
+//    big red shoes, very long thin arms (his wrists below his knees); no red
+//    nose. His knives are a set of three: one in his hand, two tucked into a
+//    fold of the suit;
 //  - the man (the morning after): tall, broad-shouldered, dark-haired, in
 //    a flannel shirt, jeans and boots, his face washed clean, a tin mug of
 //    instant coffee in his hand.
@@ -23,8 +28,13 @@ const SIDES = [
   ['L', 1],
 ];
 
-// The human skeleton with his arms: the wrists hang near his knees.
-function joints() {
+// Where his wrists hang (the kit's scale), by look: the clown's below his
+// knees (0.5); the man's near them.
+const WRIST = { clown: 0.44, man: 0.74 };
+
+// The human skeleton with his arms.
+function joints(look = 'clown') {
+  const w = WRIST[look];
   const j = [
     ['root', null, 0, 0, 0],
     ['hips', 'root', 0, 0.95, 0],
@@ -35,8 +45,8 @@ function joints() {
   ];
   for (const [n, s] of SIDES) {
     j.push([`shoulder${n}`, 'chest', s * 0.19, 1.42, 0]);
-    j.push([`elbow${n}`, `shoulder${n}`, s * 0.23, 1.08, 0]);
-    j.push([`wrist${n}`, `elbow${n}`, s * 0.24, 0.74, 0.02]);
+    j.push([`elbow${n}`, `shoulder${n}`, s * 0.23, (1.42 + w) / 2 + 0.01, 0]);
+    j.push([`wrist${n}`, `elbow${n}`, s * 0.24, w, 0.02]);
     j.push([`hip${n}`, 'hips', s * 0.1, 0.92, 0]);
     j.push([`knee${n}`, `hip${n}`, s * 0.1, 0.5, 0.01]);
     j.push([`ankle${n}`, `knee${n}`, s * 0.1, 0.08, -0.02]);
@@ -44,63 +54,90 @@ function joints() {
   return j;
 }
 
-export const MILO_JOINTS = joints();
+export const MILO_JOINTS = joints('clown');
 export const MILO_LOOKS = ['clown', 'man'];
 
-// The body both looks share. keys: what each part is painted as.
+// The body both looks share. keys: what each part is painted as. k.top: the
+// top's width (a baggy top hangs straight from the chest); k.sleeve: the
+// sleeves' radius (wide straight tubes when baggy); k.w: the wrist's height.
 function body(k) {
+  const W = k.w;
+  const top = k.top ?? 1;
   const masses = [
     ['hips', null, 0, 0.95, 0, 0.15 * k.baggy, 0.12, 0.11 * k.baggy, 'trousers'],
-    ['spine', 'chest', 0, 1.14, 0.005, 0.15, 0.13, 0.1, 'shirt'],
-    ['chest', 'spine', 0, 1.31, 0.005, 0.175, 0.13, 0.11, 'shirt'],
+    ['spine', 'chest', 0, 1.14, 0.005, 0.15 * top * (k.hang ?? 1), 0.13, 0.1 * top, 'shirt'],
+    ['chest', 'spine', 0, 1.31, 0.005, 0.175 * top, 0.13, 0.11 * top, 'shirt'],
     ['neck', 'chest', 0, 1.475, 0, 0.042, 0.05, 0.042, 'face'],
-    ['chest', null, -0.08, 1.43, -0.012, 0.08, 0.034, 0.055, 'shirt', [0, 0, 0.42]],
-    ['chest', null, 0.08, 1.43, -0.012, 0.08, 0.034, 0.055, 'shirt', [0, 0, -0.42]],
+    ['chest', null, -0.08, 1.43, -0.012, 0.08 * top, 0.034, 0.055 * top, 'shirt', [0, 0, 0.42]],
+    ['chest', null, 0.08, 1.43, -0.012, 0.08 * top, 0.034, 0.055 * top, 'shirt', [0, 0, -0.42]],
     // A long head: a lantern jaw.
     ['head', null, 0, 1.6, 0.012, 0.082, 0.128, 0.098, 'face'],
     ['head', null, 0, 1.59, 0.106, 0.014, 0.022, 0.018, k.nose],
   ];
   const limbs = [];
+  const sl = k.sleeve ?? [0.05, 0.042, 0.042, 0.032];
   for (const [n, s] of SIDES) {
-    masses.push(['chest', `shoulder${n}`, s * 0.165, 1.405, 0, 0.062, 0.056, 0.062, 'shirt']);
+    masses.push(['chest', `shoulder${n}`, s * 0.165, 1.405, 0, 0.062 * top, 0.056 * top, 0.062 * top, 'shirt']);
     masses.push(['head', null, s * 0.086, 1.6, 0, 0.012, 0.028, 0.018, 'face']); // an ear
     masses.push(['head', null, s * 0.032, 1.62, 0.092, 0.012, 0.011, 0.006, 'eyes']);
-    masses.push([`wrist${n}`, null, s * 0.24, 0.69, 0.03, 0.026, 0.05, 0.018, k.hand]);
-    masses.push([`ankle${n}`, null, s * 0.1, 0.045, 0.05 + k.shoe * 0.5, 0.055, 0.045, 0.12 + k.shoe, 'shoes']);
-    limbs.push([`shoulder${n}`, `elbow${n}`, 0.05, 0.042, 'shirt', 0.1]);
-    limbs.push([`elbow${n}`, `wrist${n}`, 0.042, 0.032, k.forearm, 0.08]);
-    limbs.push([`hip${n}`, `knee${n}`, 0.082 * k.baggy, 0.066 * k.baggy, 'trousers', 0.1]);
-    limbs.push([`knee${n}`, `ankle${n}`, 0.066 * k.baggy, 0.056 * k.baggy, 'trousers', 0.05]);
+    masses.push([`wrist${n}`, null, s * 0.24, W - 0.05, 0.03, 0.026, 0.05, 0.018, k.hand]);
+    // The shoes: k.shoe makes them longer (forward), k.shoeWide wider and taller.
+    const wide = k.shoeWide ?? 1;
+    masses.push([`ankle${n}`, null, s * (0.1 + (wide - 1) * 0.03), 0.045 * wide, 0.05 + k.shoe * 0.5, 0.055 * wide, 0.045 * wide, 0.12 + k.shoe, 'shoes']);
+    limbs.push([`shoulder${n}`, `elbow${n}`, sl[0], sl[1], 'shirt', 0.1]);
+    limbs.push([`elbow${n}`, `wrist${n}`, sl[2], sl[3], k.forearm, 0.08]);
+    limbs.push([`hip${n}`, `knee${n}`, 0.082 * k.baggy, 0.075 * k.baggy, 'trousers', 0.1]);
+    limbs.push([`knee${n}`, `ankle${n}`, 0.075 * k.baggy, 0.072 * k.baggy, 'trousers', 0.05]);
   }
   return { masses, limbs };
+}
+
+// The clown's dots: sparse (most cells have none), red and blue. Pure (the tests).
+export function dotAt(q, cell = 0.14, r = 0.055) {
+  const ix = Math.round(q.x / cell);
+  const iy = Math.round(q.y / cell);
+  const iz = Math.round(q.z / cell);
+  const h = Math.abs(Math.sin(ix * 12.9898 + iy * 78.233 + iz * 37.719) * 43758.5453) % 1;
+  if (h > 0.5) return 0;
+  if (Math.hypot(q.x - ix * cell, q.y - iy * cell, q.z - iz * cell) >= r) return 0;
+  return h < 0.25 ? 1 : 2;
 }
 
 // m: config.milo. look: 'clown' or 'man'.
 export function miloSpec(m, look = 'clown') {
   const clown = look === 'clown';
-  const { masses, limbs } = body(clown ? { baggy: 1.08, nose: 'face', hand: 'gloves', forearm: 'shirt', shoe: 0.09 } : { baggy: 1.05, nose: 'face', hand: 'face', forearm: 'face', shoe: 0 });
+  const W = WRIST[look];
+  const c = m.clown ?? {};
+  const { masses, limbs } = body(
+    clown
+      ? { baggy: c.baggy ?? 1.4, top: c.top ?? 1.12, hang: 1.18, nose: 'face', hand: 'gloves', forearm: 'shirt', shoe: c.shoe ?? 0.2, shoeWide: 1.3, w: W, sleeve: [0.066, 0.064, 0.062, 0.06] }
+      : { baggy: 1.05, nose: 'face', hand: 'face', forearm: 'face', shoe: 0, w: W },
+  );
   const tubes = [];
   const rings = [];
   if (clown) {
-    // The wig: a frizz of green, thin on top, wild at the sides.
-    for (let i = 0; i < 11; i++) {
-      const a = (i / 11) * Math.PI * 2;
-      const side = Math.abs(Math.sin(a));
-      masses.push(['head', null, Math.sin(a) * 0.1, 1.67 + side * 0.01 - Math.cos(a) * 0.01, -0.02 + Math.cos(a) * 0.075, 0.05 + side * 0.025, 0.05, 0.05, 'wig']);
+    // The suit's top hangs straight from his chest to his hips (one smooth smock, no waist: not skin tight).
+    masses.push(['spine', 'chest', 0, 1.15, 0.005, 0.2, 0.25, 0.128, 'shirt']);
+    // The wig: a short rounded bob sitting on his head like a cap: one smooth dome, a fringe, its sides and back.
+    masses.push(['head', null, 0, 1.685, -0.01, 0.112, 0.08, 0.118, 'wig']);
+    masses.push(['head', null, 0, 1.672, 0.07, 0.098, 0.04, 0.05, 'wig']); // the fringe
+    for (const [, s] of SIDES) masses.push(['head', null, s * 0.088, 1.615, -0.012, 0.042, 0.078, 0.092, 'wig']);
+    masses.push(['head', null, 0, 1.612, -0.072, 0.098, 0.08, 0.05, 'wig']);
+    // A small red mouth, a normal width, turned up a little at the corners.
+    for (let i = -2; i <= 2; i++) {
+      masses.push(['head', null, i * 0.011, 1.54 + Math.abs(i) * 0.0035, 0.101 - Math.abs(i) * 0.002, 0.009, 0.0075 - Math.abs(i) * 0.0008, 0.005, 'grin']);
     }
-    for (const [, s] of SIDES) masses.push(['head', null, s * 0.115, 1.6, -0.02, 0.05, 0.065, 0.06, 'wig']);
-    // The painted grin: so wide it nearly touches his ears, curling up over the cheekbones.
-    for (let i = -5; i <= 5; i++) {
-      const x = i * 0.0165;
-      masses.push(['head', null, x, 1.535 + Math.abs(i) ** 1.6 * 0.0042, 0.1 - Math.abs(i) ** 1.5 * 0.0042, 0.012, 0.01 + (5 - Math.abs(i)) * 0.0013, 0.006, 'grin']);
-    }
+    // The red collar: a band round his neck and the scarf's ends hanging at his chest.
+    rings.push(['neck', 0, 1.455, 0.004, 0.064, 0.022, 'collar', [Math.PI / 2, 0, 0]]);
+    masses.push(['chest', null, -0.03, 1.4, 0.1, 0.03, 0.05, 0.016, 'collar', [0, 0, 0.2]]);
+    masses.push(['chest', null, 0.02, 1.38, 0.105, 0.028, 0.06, 0.016, 'collar', [0, 0, -0.15]]);
     // His knives, a set of three: one in his right hand, two tucked into a fold of the suit at his chest.
-    for (const x of [-0.05, 0.0]) {
-      tubes.push(['chest', x, 1.37, 0.115, x + 0.02, 1.3, 0.122, 0.009, 0.008, 'leather']); // the handle
-      tubes.push(['chest', x + 0.02, 1.3, 0.122, x + 0.045, 1.2, 0.118, 0.011, 0.002, 'steel', 0.25]); // the blade
+    for (const x of [-0.07, -0.02]) {
+      tubes.push(['chest', x, 1.37, 0.13, x + 0.02, 1.3, 0.137, 0.009, 0.008, 'leather']); // the handle
+      tubes.push(['chest', x + 0.02, 1.3, 0.137, x + 0.045, 1.2, 0.133, 0.011, 0.002, 'steel', 0.25]); // the blade
     }
-    tubes.push(['wristR', -0.24, 0.66, 0.045, -0.24, 0.6, 0.06, 0.01, 0.009, 'leather']);
-    tubes.push(['wristR', -0.24, 0.6, 0.06, -0.24, 0.45, 0.09, 0.014, 0.002, 'steel', 0.25]);
+    tubes.push(['wristR', -0.24, W - 0.08, 0.045, -0.24, W - 0.14, 0.06, 0.01, 0.009, 'leather']);
+    tubes.push(['wristR', -0.24, W - 0.14, 0.06, -0.24, W - 0.29, 0.09, 0.014, 0.002, 'steel', 0.25]);
   } else {
     // Dark hair, the flannel's collar, a belt.
     masses.push(['head', null, 0, 1.665, -0.01, 0.088, 0.075, 0.1, 'hair']);
@@ -109,33 +146,30 @@ export function miloSpec(m, look = 'clown') {
     rings.push(['neck', 0, 1.45, 0.005, 0.06, 0.016, 'shirt', [Math.PI / 2, 0, 0]]);
     rings.push(['hips', 0, 1.02, 0, 0.155, 0.014, 'leather', [Math.PI / 2, 0, 0]]);
     // The tin mug in his right hand: "Instant. Sorry."
-    tubes.push(['wristR', -0.24, 0.6, 0.075, -0.24, 0.69, 0.075, 0.036, 0.038, 'tin']);
-    masses.push(['wristR', null, -0.24, 0.683, 0.075, 0.032, 0.004, 0.032, 'coffee']);
-    rings.push(['wristR', -0.24, 0.645, 0.118, 0.022, 0.006, 'tin', [0, Math.PI / 2, 0]]);
+    tubes.push(['wristR', -0.24, W - 0.14, 0.075, -0.24, W - 0.05, 0.075, 0.036, 0.038, 'tin']);
+    masses.push(['wristR', null, -0.24, W - 0.057, 0.075, 0.032, 0.004, 0.032, 'coffee']);
+    rings.push(['wristR', -0.24, W - 0.095, 0.118, 0.022, 0.006, 'tin', [0, Math.PI / 2, 0]]);
   }
   return {
-    joints: MILO_JOINTS,
+    joints: joints(look),
     masses,
     limbs,
     tubes,
     rings,
-    height: m.height,
+    height: clown ? m.height : (m.manHeight ?? m.height),
     width: m.widths[look],
     head: 1.04,
     colours: m.looks[look],
     paint(key, q, out, colours) {
       if (clown) {
         if (key === 'shirt' || key === 'trousers') {
-          // The polka dots: big ones, two colours, all over the suit.
-          const cell = 0.115;
-          const ix = Math.round(q.x / cell);
-          const iy = Math.round(q.y / cell);
-          const iz = Math.round(q.z / cell);
-          if (Math.hypot(q.x - ix * cell, q.y - iy * cell, q.z - iz * cell) < 0.046) out.copy((ix + iy + iz) & 1 ? colours.dot : colours.dot2);
+          // The polka dots: sparse, red and blue, on the off-white suit.
+          const d = dotAt(q);
+          if (d) out.copy(d === 1 ? colours.dot : colours.dot2);
         } else if (key === 'face' && q.y > 1.5) {
-          // Painted eyes: black diamonds; the white worn thin along the jaw.
-          for (const s of [-1, 1]) if (q.z > 0.05 && Math.abs(q.x - s * 0.032) * 1.6 + Math.abs(q.y - 1.62) < 0.045) out.copy(colours.eyes);
-          if (q.y < 1.53) out.lerp(colours.skin, 0.5);
+          // Painted eyes: small black marks; the white worn thin along the jaw.
+          for (const s of [-1, 1]) if (q.z > 0.05 && Math.abs(q.x - s * 0.032) * 1.6 + Math.abs(q.y - 1.62) < 0.03) out.copy(colours.eyes);
+          if (q.y < 1.52) out.lerp(colours.skin, 0.4);
         }
       } else if (key === 'shirt') {
         // Flannel: a check.

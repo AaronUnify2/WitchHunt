@@ -128,3 +128,17 @@ describe('the tower (Session 25)', () => {
     expect(pan.at).toBeGreaterThan(keys[keys.length - 1].at);
   });
 });
+
+describe('the belted grey (Session 25)', async () => {
+  const { alienSpec, KIT_STAGES } = await import('../src/render/alienModel.js');
+  it('wears loose trousers from the belt on (not skin tight)', () => {
+    for (const kit of KIT_STAGES) {
+      const spec = alienSpec(config.aliens.grey, kit);
+      const legs = spec.limbs.filter((l) => l[4] === 'trousers');
+      expect(legs.length > 0, kit.id).toBe(Boolean(kit.belt));
+      const skin = spec.limbs.find((l) => l[0] === 'hipR' && l[4] === 'skin');
+      for (const l of legs) expect(l[2]).toBeGreaterThan(skin[2] * 1.4);
+    }
+    expect(lumaOf(config.aliens.grey.colours.trousers)).toBeLessThan(0.45);
+  });
+});

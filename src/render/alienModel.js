@@ -61,8 +61,9 @@ function hand(side, bone, wx, wy, wz) {
 export const KIT_STAGES = [
   { id: 'plain', name: 'Plain, with a shotgun (the crashed plane)', shotgun: true },
   { id: 'hat', name: 'Hat and bandana', shotgun: true, hat: true, bandana: true },
-  { id: 'belt', name: 'Gun belt and holster', shotgun: true, hat: true, bandana: true, belt: true, holsters: 1 },
-  { id: 'gunslinger', name: 'Full saloon gunslinger', shotgun: true, hat: true, bandana: true, belt: true, holsters: 2, vest: true, boots: true },
+  // Session 25 (Aaron: "a bit weird to wear a belt without pants; just make sure they're not skin tight"): trousers from the belt on.
+  { id: 'belt', name: 'Gun belt, holster and trousers', shotgun: true, hat: true, bandana: true, belt: true, holsters: 1, trousers: true },
+  { id: 'gunslinger', name: 'Full saloon gunslinger', shotgun: true, hat: true, bandana: true, belt: true, holsters: 2, vest: true, boots: true, trousers: true },
 ];
 
 // The figure-kit spec. alien: config.aliens.grey; kit: one of KIT_STAGES.
@@ -144,6 +145,16 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
     // A red bandana knotted at the neck, its point hanging down the chest.
     rings.push(['neck', 0, 1.37, 0.012, 0.038, 0.016, 'bandana', flat]);
     masses.push(['chest', null, 0, 1.325, 0.05, 0.045, 0.045, 0.012, 'bandana', [0.25, 0, Math.PI / 4]]);
+  }
+  if (kit.trousers) {
+    // Session 25: loose trousers, standing well off its spindly legs (wide straight tubes), the seat
+    // round its narrow hips, cuffs above the ankle (the gunslinger's boots go over them).
+    masses.push(['hips', null, 0, 0.88, -0.004, 0.105, 0.085, 0.082, 'trousers']);
+    for (const side of [-1, 1]) {
+      const n = side < 0 ? 'R' : 'L';
+      limbs.push([`hip${n}`, `knee${n}`, 0.062, 0.058, 'trousers', 0.05]);
+      tubes.push([`knee${n}`, side * 0.08, 0.48, 0.02, side * 0.08, 0.11, -0.015, 0.058, 0.056, 'trousers', 1, 0.02]);
+    }
   }
   if (kit.belt) {
     // A gun belt with a buckle, a holstered revolver on each hip it wears one.
