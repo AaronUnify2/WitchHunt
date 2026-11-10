@@ -13,6 +13,8 @@ Aaron's answers at the start (Nov 10):
 - **The dawn autosave missed dawn's own story flags** (`day2`, `shelterCall`'s back-up): it ran before the next frame's check set them, so Continue from it left the gas station trail shut for another day and night. Fixed (`StoryProgress.settle()` before the save; a run continued at dawn replays dawn's triggers, which mends older saves).
 - **The safe's hunting rifle went to the rack by itself every run**, so the outpost's dogfight (scope from the tower) was quietly skipped. **Aaron: let Tom choose.** Built: `ui/GunChoice.js`, for any gun found with its slot full.
 
+**Built after (Aaron: "do the rack"):** **#343 resolved:** the rack shows its guns (placeholder shapes on its shelf against the pegs; `render/rackGuns.js`, `config.station.gunRack.show`). Their looks are placeholders for an art session.
+
 My calls and questions (PLAYTEST round 36):
 
 | # | Question | What it does now | Where to change it |

@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -318,6 +318,7 @@ Round 35 (Session 22, after your round 34 notes: 150 zombies at 57 fps; the capt
 
 Round 36 (Session 23, QA: the opening played through headless on seeds 1234, 7 and 4242):
 - [ ] **The gun choice at the safe:** open Earl's safe with the combination. With the shotgun and service rifle carried, a panel asks: **Take it, leave the shotgun**, **Take it, leave the service rifle**, or **Send it to the comms room's gun rack** (B sends it to the rack). The world and clock wait while it's up. The gun you leave goes to the rack with its rounds kept. (Before, the hunting rifle went to the rack by itself every run, so you reached the outpost without the scope the dogfight needs.) Any gun found later with its slot full asks the same way.
+- [ ] **The rack shows its guns:** leave a gun at the safe (or put one up from the ledger), then look at the rack on the comms room's east wall: each gun on it stands on the shelf against a peg (placeholder shapes: the scope, pump and magazine show).
 - [ ] **The dogfight with the hunting rifle carried:** at the outpost, once the barricade's down, climb the watchtower: the hint to switch to the hunting rifle and look through its scope, then the dogfight.
 - [ ] **Continue from a dawn save:** play through Night 1 to the dawn ("Game saved"), then close the browser (don't use Save and quit) and Continue. The gas station trail should be open (the fallen oak gone). Before, the dawn save missed dawn's own story flags, so the trail stayed shut for another whole day.
 - [ ] **Ammo through the opening** (your feel matters more than my bot's aim): did you run short anywhere? My bot came out of the shelter's horde with about 5 shells and 14 service rifle rounds, and struggled at the outpost's approach without topping up.
