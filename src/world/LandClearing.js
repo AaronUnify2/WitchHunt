@@ -37,6 +37,7 @@ export class LandClearing {
     this.ground = ctx.world.ground;
     this.terrain = ctx.world.terrain;
     this.felled = []; // tree indices, in order
+    this.broken = []; // Session 25: loose rocks broken (Terrain's indices)
     this.stamps = []; // [x, z, r, dirt] the ground carved, thinned (for the save)
     this.box = null; // mask cells waiting to be sent
     this.flushTimer = 0;
@@ -319,12 +320,54 @@ export class LandClearing {
   // ---- saving -------------------------------------------------------------------------------
 
   saveState() {
-    if (!this.felled.length && !this.stamps.length) return undefined;
-    return { felled: [...this.felled], stamps: this.stamps.map((s) => [...s]) };
+    if (!this.felled.length && !this.stamps.length && !this.broken.length) return undefined;
+    const out = { felled: [...this.felled], stamps: this.stamps.map((s) => [...s]) };
+    if (this.broken.length) out.rocks = [...this.broken]; // Session 25 (older saves have none)
+    return out;
+  }
+
+  // ---- rocks (Session 25) ------------------------------------------------------------------------
+
+  // The loose rocks whose edge is within r of (x, z): [{ rock, index, d }].
+  rocksNear(x, z, r, out = []) {
+    out.length = 0;
+    const rocks = this.terrain?.rocks;
+    if (!rocks) return out;
+    for (const c of this.colliders.query(x, z, r, this.near)) {
+      if (c.rock === undefined || c.off) continue;
+      const d = Math.hypot(c.x - x, c.z - z);
+      if (d <= r + c.r) out.push({ rock: rocks[c.rock], index: c.rock, d });
+    }
+    return out;
+  }
+
+  // How long a rock holds against the blade (seconds): the big ones longest.
+  rockStrain(rock) {
+    const c = this.cfg.rocks;
+    return c.base + Math.max(0, rock.size - c.freeSize) * c.perMetre;
+  }
+
+  // Rock `index` breaks apart: a crack, dust and chips, and it's gone (saved).
+  breakRock(index, quiet = false) {
+    const k = this.terrain?.breakRock(index);
+    if (!k) return false;
+    this.broken.push(index);
+    if (quiet) return true;
+    this.sfx?.play('rockBreak', { x: k.x, z: k.z });
+    const fx = this.fx;
+    if (fx?.emit) {
+      const dust = new THREE.Color(this.cfg.look.dust);
+      const chips = new THREE.Color(this.cfg.rocks.chips);
+      const y = this.ground.heightAt(k.x, k.z) + k.size * 0.5;
+      fx.emit(k.x, y, k.z, 10, dust, 3.2);
+      fx.emit(k.x, y, k.z, 8, chips, 5);
+    }
+    return true;
   }
 
   loadState(d) {
     if (!d) return;
+    for (const i of d.rocks ?? []) if (Number.isInteger(i)) this.breakRock(i, true);
     for (const i of d.felled ?? []) {
       if (Number.isInteger(i) && this.forest.trees[i] && !this.forest.trees[i].felled) this.fell(i, Math.cos(i), Math.sin(i), true);
     }

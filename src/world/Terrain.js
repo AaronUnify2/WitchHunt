@@ -278,6 +278,7 @@ export class Terrain {
     const position = new THREE.Vector3();
     const scale = new THREE.Vector3();
     this.rockCount = 0;
+    this.rocks = []; // Session 25: { mesh, i, x, z, size, col, matrix } (the dozer breaks them: breakRock)
     for (const list of groups.values()) {
       const mesh = new THREE.InstancedMesh(this.rockGeometry, this.rockMaterial, list.length);
       let cx = 0;
@@ -289,14 +290,17 @@ export class Terrain {
         rotation.setFromEuler(euler.set(rng.range(0, Math.PI), rng.range(0, Math.PI), 0));
         scale.set(s.size * rng.range(1, 1 + r.stretch), height, s.size * rng.range(1, 1 + r.stretch));
         mesh.setMatrixAt(i, matrix.compose(position, rotation, scale));
-        colliders.insert({
+        const col = {
           x: s.x,
           z: s.z,
           r: s.size * r.colliderScale,
           vr: s.size, // visual radius, for the torch's close-range glare check
           base: ground - height * r.sink,
           top: position.y + height * 0.5, // height of the rock's top
-        });
+          rock: this.rocks.length, // Session 25: a loose rock the dozer can break (the cliffs and the cave's spur aren't)
+        };
+        colliders.insert(col);
+        this.rocks.push({ mesh, i, x: s.x, z: s.z, size: s.size, col, broken: false });
         cx += s.x / list.length;
         cz += s.z / list.length;
       });
@@ -309,6 +313,19 @@ export class Terrain {
       this.culler.add(mesh, cx, cz, radius);
       this.rockCount += list.length;
     }
+  }
+
+  // Session 25 (Aaron: the dozer stopped at rocks): loose rock `index` is
+  // gone: not drawn, not solid. Returns it, or null.
+  breakRock(index) {
+    const k = this.rocks?.[index];
+    if (!k || k.broken) return null;
+    k.broken = true;
+    k.col.off = true;
+    const m = new THREE.Matrix4().makeScale(0, 0, 0);
+    k.mesh.setMatrixAt(k.i, m);
+    k.mesh.instanceMatrix.needsUpdate = true;
+    return k;
   }
 
   // A smooth sphere pushed in and out by a few overlapping waves, so the

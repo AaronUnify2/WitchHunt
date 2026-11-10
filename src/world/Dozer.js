@@ -74,6 +74,8 @@ export class Dozer extends Quad {
     this.climbing = new Map(); // zombie -> seconds held on
     this.climbers = new Set();
     this.strain = new Map(); // tree index -> seconds pushed
+    this.rockHold = new Map(); // Session 25: rock index -> seconds pushed
+    this.rocksAt = [];
     this.initCable();
     this.initSmoke();
     // Session 22 (M10.3 spike): parts bolted on (world/dozerParts.js, render/dozerParts.js).
@@ -420,6 +422,7 @@ export class Dozer extends Quad {
     const want = { x: this.x + dx, z: this.z + dz };
     // What the blade and the body meet: trees (pushed over, or holding), cars (shoved), then everything else solid.
     this.fellTrees(dt, want);
+    this.breakRocks(dt, want);
     const pushed = this.pushCars(dt, want, this.speed * dt);
     const pos = { x: want.x, z: want.z };
     this.resolve(pos, pushed);
@@ -515,6 +518,47 @@ export class Dozer extends Quad {
     for (const k of [...this.strain.keys()]) if (!seen.has(k)) this.strain.delete(k);
   }
 
+  // Session 25 (Aaron): loose rocks the blade (or the body's front) runs into
+  // hold it a moment, the big ones longer, then break apart (LandClearing).
+  breakRocks(dt, want) {
+    const q = this.qc;
+    const c = this.clearing;
+    if (!c?.rocksNear) return;
+    const moving = Math.abs(this.speed) > q.fell.minSpeed || this.rockHold.size > 0;
+    if (!moving || this.speed < -0.05) {
+      this.rockHold.clear();
+      return;
+    }
+    const fx = -Math.sin(this.heading);
+    const fz = -Math.cos(this.heading);
+    const rx = Math.cos(this.heading);
+    const rz = -Math.sin(this.heading);
+    const seen = new Set();
+    for (const { rock, index } of c.rocksNear(want.x, want.z, 4.6, this.rocksAt)) {
+      const dx = rock.x - want.x;
+      const dz = rock.z - want.z;
+      const lx = dx * rx + dz * rz;
+      const lz = -(dx * fx + dz * fz);
+      const r = rock.col.r;
+      // Before the blade (as the trees' test), its edge reaching it.
+      if (!(Math.abs(lx) < q.bladeHalf + r && lz < q.bladeFront + 0.7 + r && lz > q.bladeFront - 0.45 - r)) continue;
+      seen.add(index);
+      const held = (this.rockHold.get(index) ?? 0) + dt;
+      this.rockHold.set(index, held);
+      const need = c.rockStrain(rock) * this.mods.strainScale;
+      this.straining = Math.max(this.straining, Math.min(1, held / Math.max(need, 1e-3)));
+      this.player.shake(0.1);
+      if (held >= need) {
+        c.breakRock(index);
+        this.rockHold.delete(index);
+        seen.delete(index);
+        this.lurch = 1;
+        this.player.shake(0.45);
+      }
+    }
+    for (const k of [...this.rockHold.keys()]) if (!seen.has(k)) this.rockHold.delete(k);
+  }
+
   fell(index, dx, dz) {
     this.clearing.fell(index, dx, dz);
     this.strain.delete(index);
@@ -539,7 +583,7 @@ export class Dozer extends Quad {
       for (const [lx, lz, r] of shapes) {
         const c = { x: pos.x + rx * lx - fx * lz, z: pos.z + rz * lx - fz * lz };
         const b = { x: c.x, z: c.z };
-        const list = this.colliders.query(c.x, c.z, r, this.nearby).filter((k) => !(k.tree !== undefined && this.strain.has(k.tree)) && !(pushed && k.vehicle === pushed) && !k.dozer);
+        const list = this.colliders.query(c.x, c.z, r, this.nearby).filter((k) => !(k.tree !== undefined && this.strain.has(k.tree)) && !(k.rock !== undefined && this.rockHold.has(k.rock)) && !(pushed && k.vehicle === pushed) && !k.dozer);
         resolveCircles(c, r, list, true);
         const len = Math.hypot(c.x - b.x, c.z - b.z);
         if (len > bestLen) {
@@ -900,6 +944,12 @@ export class Dozer extends Quad {
       if (Math.abs(dy) > Math.PI / 2) dy = wrapAngle(dy - Math.PI);
       const nx = v.x + dx * pull;
       const nz = v.z + dz * pull;
+      // Session 25 (Aaron: a winched car shoved the dozer along, fast): it stops short of the
+      // dozer (it never touches it, so it can't push it); the cable just holds it there.
+      if (!this.carClear(v, nx, nz, v.yaw + dy * Math.min(1, dt * 1.5), w.carGap ?? 0.6)) {
+        W.length = Math.max(W.length, d);
+        return;
+      }
       for (const { tree, index } of this.clearing?.treesNear(nx, nz, v.def.size[0] / 2, this.trees) ?? []) {
         if (this.clearing.strainOf(tree) <= 0) this.clearing.fell(index, dx, dz);
       }
@@ -916,6 +966,36 @@ export class Dozer extends Quad {
       z.z += dz * pull;
       this.enemies.damage(z, w.zombieDamage * dt, 'body', { id: 'winch', stagger: 1, knockback: 0 }, { x: z.x, y: (z.y ?? 0) + 0.4, z: z.z }, fair);
     }
+  }
+
+  // Session 25: would car v at (x, z) facing yaw stay `gap` metres clear of
+  // the dozer's body and blade? (Its length as a capsule; the dozer's circles.)
+  carClear(v, x, z, yaw, gap) {
+    const q = this.qc;
+    const [length, width] = v.def.size;
+    const core = Math.max(0, length - width) / 2;
+    const s = Math.sin(yaw);
+    const c = Math.cos(yaw);
+    const ax = x - s * core;
+    const az = z - c * core;
+    const bx = x + s * core;
+    const bz = z + c * core;
+    const fx = -Math.sin(this.heading);
+    const fz = -Math.cos(this.heading);
+    const rx = Math.cos(this.heading);
+    const rz = -Math.sin(this.heading);
+    const shapes = q.circles.map((o) => [0, o, q.radius]);
+    for (const lx of [-1.1, 0, 1.1]) shapes.push([lx, q.bladeFront + 0.42, 0.6]);
+    for (const [lx, lz, r] of shapes) {
+      const px = this.x + rx * lx - fx * lz;
+      const pz = this.z + rz * lx - fz * lz;
+      const ex = bx - ax;
+      const ez = bz - az;
+      const len2 = ex * ex + ez * ez;
+      const t = len2 > 1e-9 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / len2)) : 0;
+      if (Math.hypot(px - (ax + ex * t), pz - (az + ez * t)) < r + width / 2 + gap) return false;
+    }
+    return true;
   }
 
   // The cable from the fairlead to the hook, sagging when it's slack.

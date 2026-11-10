@@ -615,6 +615,9 @@ function buildSteeringWheel(colours, look) {
   }
   parts.push(tone(new THREE.CylinderGeometry(0.065, 0.075, 0.05, 14).rotateX(Math.PI / 2).toNonIndexed(), 'wheelHub', colours));
   parts.push(tone(box(0.04, 0.02, 0.01, 0, 0.012, 0.028, 0.004), 'steel', colours));
+  // Session 25 (Aaron: "remove the player arms when driving the ute; it's okay if the
+  // steering wheel just moves on its own"): no hands on it any more.
+  if (!look.driverHands) return merge(parts);
   // Tom's gloved hands at ten and two, his jacket's cuffs going back toward him.
   for (const sx of [-1, 1]) {
     const a = sx > 0 ? Math.PI / 6 : Math.PI - Math.PI / 6;

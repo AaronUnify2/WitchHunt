@@ -771,6 +771,14 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 1800, gain: 1 });
     setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 900, endFreq: 300, q: 1, gain: 0.5 }), 60);
   },
+  // Session 25: the dozer's blade breaks a rock apart: a crack, a grinding crunch, stones settling.
+  rockBreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 120);
+    s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 2200, endFreq: 1200, gain: 0.7, attack: 0.002 });
+    s.noiseBurst(o, { seconds: 0.6, freq: 900, endFreq: 140, gain: 0.7, attack: 0.01 });
+    s.tone(o, { seconds: 0.35, freq: 70, endFreq: 38, gain: 0.6 });
+    s.noiseBurst(o, { seconds: 0.9, type: 'bandpass', freq: 3200, endFreq: 1800, q: 2, gain: 0.12, attack: 0.25 });
+  },
   treeFall(s, pos) {
     const o = s.out(pos?.x, pos?.z, 1.2, pos?.range ?? 140);
     s.noiseBurst(o, { seconds: 1.0, freq: 1600, endFreq: 80, gain: 0.8, attack: 0.01 });

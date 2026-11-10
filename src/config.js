@@ -3362,7 +3362,8 @@ export const config = {
       kick: 0.35, // degrees of camera kick per round
       shake: 0.12,
       traverse: 9, // rad/s the gun can swing (the mount's weight; the view rides the gun)
-      pitchMin: -0.38,
+      pitchMin: -0.38, // over the cab
+      pitchMinSide: -0.8, // Session 25 (Aaron: the dead got too close to shoot): over the sides and the back it dips far enough for one at the tray's side
       pitchMax: 0.62,
       tracerEvery: 2, // every second round's a tracer
       noise: 90, // metres the dead hear it
@@ -3376,10 +3377,11 @@ export const config = {
     horn: { alert: 120, seconds: 0.5 }, // B / R in the cab: the dead within this come
     strikeScale: { cab: 0.5, gunner: 0.85 }, // the dead's swipes through the door, up at the tray
     witchSpeedScale: 1.6,
-    headlamp: { autoBelow: 0.35, color: 0xfff1d8, intensity: 1600, distance: 110, decay: 1.4, angle: 24, penumbra: 0.55, y: 1.05, front: -2.6, aimDistance: 32, aimDrop: 1.1, lens: 0xfff2c8,
+    // Session 25 (Aaron: "a bit bright, everything reflects more than it should; a little wider, but duller"): 1600 cd at 24 deg was.
+    headlamp: { autoBelow: 0.35, color: 0xfff1d8, intensity: 850, distance: 100, decay: 1.4, angle: 30, penumbra: 0.7, y: 1.05, front: -2.6, aimDistance: 32, aimDrop: 1.1, lens: 0xfff2c8,
       glare: { fullDistance: 7, minFactor: 0.3, response: 8, spread: 0.1 } }, // dims up close (as the quad's), but the roadside trees don't kill it
     // The gun's lamp, on the shield: it looks where the gun looks (on with the headlamps, D-pad right / H).
-    gunLamp: { color: 0xfff0d8, intensity: 1100, distance: 85, decay: 1.4, angle: 13, penumbra: 0.45, aimDistance: 30, aimDrop: 0.4 },
+    gunLamp: { color: 0xfff0d8, intensity: 650, distance: 80, decay: 1.4, angle: 16, penumbra: 0.55, aimDistance: 30, aimDrop: 0.4 }, // Session 25: duller too (1100 at 13 deg was)
     snare: { presses: 8, decay: 0.15, shake: 1.1, range: 2.6 },
     // The windscreen: the dead's blood on it; the wipers come on by themselves.
     splats: { pool: 8, minSpeed: 6, size: [0.07, 0.14], wipeDelay: 0.7, sweepSeconds: 1.1, sweeps: 2, fade: 3 },
@@ -3594,12 +3596,13 @@ export const config = {
     climb: { seconds: 1.4, slowBelow: 1.4, throwAbove: 2.4, throwTurn: 0.7, spot: [1.12, 0.55] },
     strikeScale: 0.9,
     // The winch: its hook, its cable, the pull.
-    winch: { range: 30, cone: 0.22, hookSpeed: 40, reel: 2.6, minLength: 2.5, drag: 7, carPull: 1, zombieDamage: 14, segments: 10, sag: 0.08 },
+    winch: { range: 30, cone: 0.22, hookSpeed: 40, reel: 2.6, minLength: 2.5, drag: 7, carPull: 1, carGap: 0.6, zombieDamage: 14, segments: 10, sag: 0.08 }, // carGap (Session 25): a winched car stops this far short of the dozer
     noise: { every: 1.0, idle: 70, full: 150 },
     horn: { alert: 160 },
     witchSpeedScale: 1.3,
     // The work lights: on the radiator guard, over the blade, lighting the ground before it.
-    headlamp: { autoBelow: 0.35, color: 0xfff2dc, intensity: 1300, distance: 70, decay: 1.4, angle: 26, penumbra: 0.6, y: 1.8, front: -2.2, aimDistance: 24, aimDrop: 1.6, lens: 0xfff2c8,
+    // Session 25 (Aaron: "huge glare when you shine it on anything"): 1300 cd at 26 deg was; wider and much duller.
+    headlamp: { autoBelow: 0.35, color: 0xfff2dc, intensity: 600, distance: 65, decay: 1.4, angle: 32, penumbra: 0.7, y: 1.8, front: -2.2, aimDistance: 24, aimDrop: 1.6, lens: 0xfff2c8,
       glare: { fullDistance: 7, minFactor: 0.08, response: 8, spread: 0.16 } },
     snare: { presses: 6, decay: 0.15, shake: 0.9, range: 2.8 },
     // The ground it works, the trees it fells (world/LandClearing.js).
@@ -3615,6 +3618,10 @@ export const config = {
       fallingPool: 6,
       // How long a tree holds: past freeHeight metres tall (and freeRadius thick).
       strain: { freeHeight: 14, perMetre: 0.12, freeRadius: 0.55, perRadius: 1.2 },
+      // Session 25 (Aaron: "the bulldozer gets stopped by the rocks, and that's not very fun"): loose
+      // rocks and boulders break (the cliffs and the rock round Bigfoot's cave don't): a rock holds the
+      // blade base seconds, plus perMetre for each metre of size past freeSize, then breaks apart.
+      rocks: { base: 0.35, freeSize: 0.4, perMetre: 1.1, chips: 0x5a5852 },
       fall: { gravity: 3.2, push: 0.3, lie: 2.2, sink: 2.2, shake: 0.8 },
       look: { bark: 0x2e261e, cut: 0x6a5a40, dust: 0x5a4a34, needles: 0x2a3a22, stumpHeight: 0.45 },
     },

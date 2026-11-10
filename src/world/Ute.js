@@ -8,7 +8,7 @@
 //  - The cab (the driver's seat, on the right): the view from inside, the
 //    gauges working (speed in km/h, the revs through five gears, fuel,
 //    temperature, the odometer), the radio's clock, the rear-view mirror
-//    showing what's behind, his hands on the wheel turning it.
+//    showing what's behind, the wheel turning (no hands on it: Session 25, Aaron).
 //    Left stick: drive (up: the gas; down: brake, then reverse); left /
 //    right steers. A / Space: the handbrake (the back steps out: slide it
 //    round). B / R: the horn (the dead come). D-pad right / H: headlamps.
@@ -939,7 +939,7 @@ export class Ute extends Quad {
   // His look swings the gun (as fast as the mount lets it).
   steerGun(dt, player) {
     const g = this.qc.gun;
-    player.pitch = clamp(player.pitch, g.pitchMin, g.pitchMax);
+    player.pitch = clamp(player.pitch, this.pitchFloor(player.yaw), g.pitchMax);
     // The gun swings toward where he's looking as fast as the mount lets it;
     // a flick further than that is caught up over the next few frames (never lost).
     const d = wrapAngle(player.yaw - this.gunYaw);
@@ -949,6 +949,16 @@ export class Ute extends Quad {
     const lead = wrapAngle(player.yaw - this.gunYaw);
     if (Math.abs(lead) > Math.PI * 0.75) player.yaw = this.gunYaw + Math.sign(lead) * Math.PI * 0.75;
     this.aimGun();
+  }
+
+  // Session 25 (Aaron): how far the gun dips, looking `yaw`: a little over
+  // the cab, much further over the sides and the back (the dead close in).
+  pitchFloor(yaw) {
+    const g = this.qc.gun;
+    const off = Math.abs(wrapAngle(yaw - this.heading));
+    const k = Math.min(1, Math.max(0, (off - 0.5) / 0.6));
+    const s = k * k * (3 - 2 * k);
+    return g.pitchMin + ((g.pitchMinSide ?? g.pitchMin) - g.pitchMin) * s;
   }
 
   // The gun's mount, turned to its yaw and pitch in the world (the ute may stand on a slope).
@@ -1065,9 +1075,12 @@ export class Ute extends Quad {
       this.bus.emit('weapon:impact', { x: eye.x + dir.x * blocked, y: eye.y + dir.y * blocked, z: eye.z + dir.z * blocked, damage, id: 'uteGun' });
     }
     // The muzzle: the flash, the light, the tracer, the brass, the kick.
+    // Session 25 (Aaron: shots should come from the gun's body, not its tip): the round's ray
+    // runs from his eye behind the breech, so the dead inside the barrel's reach are hit; a
+    // tracer only shows for a hit past the muzzle.
     this.model.turret.muzzle.getWorldPosition(v.muzzle);
     this.rounds++;
-    if (this.rounds % g.tracerEvery === 0) {
+    if (this.rounds % g.tracerEvery === 0 && end > eye.distanceTo(v.muzzle) + 0.5) {
       v.to.copy(dir).multiplyScalar(Math.min(end, 140)).add(eye);
       this.combat.fx?.tracer?.(v.muzzle, v.to);
     }
