@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { FamilyRenderer } from './FamilyRenderer.js';
 import { buildInterior } from './stationInterior.js';
+import { rackGunParts, rackSlot } from './rackGuns.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { pillowGeometry } from './propKit.js';
 
@@ -62,6 +63,7 @@ export class StationRenderer {
     this.buildFamily();
     this.buildTowerRifle();
     this.buildShovel();
+    this.buildRackGuns();
     // Instanced meshes measure their bounds once, on the first frame: built
     // later (barricades, spikes, floodlights) they'd stay culled forever.
     // The whole compound is hidden by distance instead (update()).
@@ -373,6 +375,36 @@ export class StationRenderer {
     mesh.visible = false;
     this.shovelMesh = mesh;
     this.group.add(mesh);
+  }
+
+  // Session 23 (#343): a mesh for each gun that can go on the rack, hidden until it's there.
+  buildRackGuns() {
+    const show = this.cfg.gunRack?.show;
+    this.rackMeshes = new Map();
+    this.rackGuns = [];
+    if (!show || !this.interior?.rack) return;
+    for (const [id, look] of Object.entries(show.guns)) {
+      const parts = rackGunParts(look, show, (...a) => this.box(...a));
+      const mesh = new THREE.Mesh(this.keep(mergeGeometries(parts)), this.lambert);
+      parts.forEach((g) => g.dispose());
+      mesh.visible = false;
+      this.rackMeshes.set(id, mesh);
+      this.group.add(mesh);
+    }
+  }
+
+  // The rack's guns where they stand, in the order they went up (Station sets rackGuns).
+  updateRackGuns() {
+    if (!this.rackMeshes?.size) return;
+    const pegs = this.cfg.gunRack.show.pegs;
+    for (const mesh of this.rackMeshes.values()) mesh.visible = false;
+    this.rackGuns.slice(0, pegs).forEach((id, i) => {
+      const mesh = this.rackMeshes.get(id);
+      if (!mesh) return;
+      const at = rackSlot(this.interior.rack, i);
+      mesh.position.set(at.x, at.y, at.z);
+      mesh.visible = true;
+    });
   }
 
   buildDoors() {
@@ -730,6 +762,7 @@ export class StationRenderer {
     this.updateGateAndDoors();
     if (this.towerRifle) this.towerRifle.visible = Boolean(this.towerRifleVisible);
     if (this.shovelMesh) this.shovelMesh.visible = Boolean(this.shovelVisible);
+    this.updateRackGuns();
     if (this.gateChain) this.gateChain.visible = Boolean(this.gateLocked) && this.state.gate.health > 0;
     this.updateTurret(turret);
     const night = 1 - daylight;

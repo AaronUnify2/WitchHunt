@@ -563,6 +563,7 @@ export class Station {
     this.ledger.update(dt, input, playing);
     this.renderer.towerRifleVisible = this.rifleOnTower;
     this.renderer.shovelVisible = this.shovelAtDoor;
+    this.renderer.rackGuns = this.combat.weapons.rack; // Session 23 (#343): the rack shows its guns
     this.renderer.gateLocked = this.gateLocked;
     this.renderer.update(dt, cameraPosition, daylight, this.turret);
   }

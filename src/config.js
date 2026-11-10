@@ -2399,7 +2399,21 @@ export const config = {
     // Session 20 (Aaron): it's where kits go that don't fit in the healing pool.
     aidBox: { kits: { firstAid: 2 } },
     // Session 20 (Aaron): the gun rack on the comms room's east wall (z: metres from the cabin's centre; standOff: where Tom stands, in from the wall).
-    gunRack: { z: -2.2, standOff: 0.9 },
+    gunRack: { z: -2.2, standOff: 0.9,
+      // Session 23 (#343): the guns on the rack show, standing on its shelf against the pegs, in the
+      // order they went up (render/rackGuns.js). Placeholder looks: length in metres; a pump fore-end, a
+      // scope, a box magazine; dark colours (the torch glares off pale ones).
+      show: { pegs: 5,
+        stock: 0x3a2416, steel: 0x1c1e20,
+        guns: {
+          rifle: { length: 1.0, mag: true },
+          shotgun: { length: 1.05, pump: true, stock: 0x4a2c18 },
+          sniper: { length: 1.15, scope: true, stock: 0x3e2a1a },
+          thermal: { length: 1.1, scope: true, mag: true, stock: 0x232526 },
+          autoShotgun: { length: 1.0, mag: true, stock: 0x2a2a2a },
+          smg: { length: 0.55, mag: true, stock: 0x2a2a2a },
+          pistol: { length: 0.26, stock: 0x2a2a2a },
+        } } },
     // Session 20 (Aaron): Save and quit's safe point: the cabin's main room (metres from its centre), facing the front door.
     safePoint: { at: [1, 1.2], yaw: Math.PI },
     shovelByDoor: { weapon: 'shovel', at: [1.15, 0.55], lean: 0.24, // Session 16 (Aaron): its grip went into the wall: further out, more upright

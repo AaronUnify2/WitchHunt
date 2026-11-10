@@ -218,6 +218,9 @@ export function buildInterior(cabin, fy, k, box, rng) {
   add(0.3, 0.05, 1.5, eastX - 0.15, 0.55, rz, k.rackBoard);
   add(0.06, 0.06, 1.5, eastX - 0.06, 1.55, rz, k.rackPeg);
   for (let i = 0; i < 5; i++) add(0.18, 0.04, 0.04, eastX - 0.1, 1.5, rz - 0.6 + i * 0.3, k.rackPeg);
+  // Session 23 (#343): where the guns on it stand (world): on the shelf, against peg i (render/rackGuns.js).
+  const [rackX, rackZ0] = at(eastX - 0.11, rz - 0.6);
+  const rack = { x: rackX, z0: rackZ0, dz: 0.3, y: fy + 0.6 };
 
   // ---- the main room ----
   // The woodstove: a cast-iron box on legs, its door (the fire shows
@@ -298,5 +301,5 @@ export function buildInterior(cabin, fy, k, box, rng) {
     { x: c.x, y: fy + H - 0.85, z: c.z + 1.6 }, // the main room's bulb
     { x: c.desk.x + 0.7, y: fy + 1.05, z: c.desk.z + 0.22 }, // the desk lamp
   ];
-  return { parts, glow, fire, screens, lamps };
+  return { parts, glow, fire, screens, lamps, rack };
 }
