@@ -3707,6 +3707,9 @@ export const config = {
         name: 'Armour plating (the railway cutting)',
         mount: 'body',
         noClimbers: true,
+        sideTop: 2.1, // metres up the body: waist high on the seat (the eye is at 2.6)
+        frontBottom: 1.5,
+        frontTop: 1.95, // under the eye's line down to the blade
         color: 0x3b3e38,
       },
       saw: {

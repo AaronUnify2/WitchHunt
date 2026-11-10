@@ -39,3 +39,17 @@ describe('Parts bolted onto the dozer (Session 22 spike)', () => {
     expect(toggledParts(P, fitted, 'jetpack')).toEqual(['ram']);
   });
 });
+
+describe('Armour plating keeps the driver\'s view (round 34, Aaron)', () => {
+  it('sits below the eye, and under the line from the eye to the blade', () => {
+    const p = P.plating;
+    const eye = config.dozer.eye;
+    expect(p.sideTop).toBeLessThan(eye.y - 0.3);
+    // The plate in front of the seat (just ahead of the cab's front, z about -0.13) against the
+    // line from the eye down to the blade's top edge (z about -2.5, y about 1.4).
+    const plateZ = -0.13;
+    const blade = { z: -2.5, y: 1.4 };
+    const lineAtPlate = eye.y + ((blade.y - eye.y) * (eye.z - plateZ)) / (eye.z - blade.z);
+    expect(p.frontTop).toBeLessThan(lineAtPlate);
+  });
+});

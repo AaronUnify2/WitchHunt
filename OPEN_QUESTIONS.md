@@ -10,6 +10,16 @@ Aaron's answers first (Nov 9):
 - **Demo mode** (his idea: "if it runs in demo mode, it'll run on your device"): the station, sliders to spawn heaps at once, weapons to try. My four recommendations taken: no touch controls yet (the demo says it needs a controller or keyboard); early weapons and basic zombies only (no spoilers); the fence on, with a toggle; the verdict line, and the preset it settles on kept for real runs.
 - **Overnight:** "work through this entire session on your own recommendations; flag anything for the morning." Built: Demo mode, then the three other spikes (DESIGN.md "Build plan: the M10.3 spikes").
 
+**Round 34, Aaron (Nov 10):**
+- **150 zombies at night in Demo mode: 57 fps on the tablet, "Runs great".** The spike's tablet number (DESIGN.md's table).
+- **#379 settled:** ear only is what he imagined, but it isn't very accessible: **keep the caption for now.**
+- **#377 settled:** going back from the first clearing takes you out: good.
+- **#381 settled:** Demo mode's three weapons are good.
+- **#384 settled:** the aim shouldn't stick to the flyer ("it's fun").
+- **#389 settled:** touch controls **at the very end** of the project.
+- **His glare list** soon; a full playthrough at some point.
+- **The armour plating blocked the view from the dozer:** fixed. Its upper band sat across the driver's eyes (2.6 m) and the front plate cut the line down to the blade; now the sides stop at 2.1 m and the front plate at 1.95 m (`config.spikes.dozerParts.plating` `sideTop`, `frontBottom`, `frontTop`; a test keeps them under the eye and the blade's sightline).
+
 My calls in the build (PLAYTEST round 34):
 
 | # | Question | What it does now | Where to change it |

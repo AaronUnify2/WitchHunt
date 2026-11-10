@@ -313,6 +313,9 @@ Round 34 (Session 22: round 33 all good, Aaron):
   - **Flyer: send one at me.** It comes in from far off, circles, makes two passes overhead, then four dives that hurt if they reach you, then leaves. Shoot it: hurt enough, it shrieks and flies off (it can't die out here). Readable? Too easy or hard to hit (#384)?
   - **Dozer part: ...** Bolt on the spiked ram, the armour plating and the head saw (each on or off; it brings the dozer). Drive into a crowd (Demo mode's panel sends one) and into big trees. Does each part feel different?
 
+Round 35 (Session 22, after your round 34 notes: 150 zombies at 57 fps; the caption stays; aim doesn't stick):
+- [ ] **The armour plating doesn't block the view:** bolt it on and ride the dozer. The plates now stop at waist height on the seat; you should see over the front plate to the blade's top edge and its corners, and out over the sides.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

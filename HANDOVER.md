@@ -25,7 +25,8 @@
 
 ### Unfinished
 
-- **Aaron's round 34** (the flicker on both devices, Demo mode, the spikes) and **the tablet's numbers**: fps with 150 zombies at night (Demo mode), in the place beyond, with the flyer, with the dozer's parts. Write them into DESIGN.md's spike table; a spike that fails on the tablet changes the design (M10's "done when").
+- **Aaron's round 34 is in** (OPEN_QUESTIONS "Session 22"): **150 zombies at night: 57 fps on the tablet, Runs great** (in DESIGN.md's table); the caption stays (#379); the way back leads out (#377); Demo mode's weapons are right (#381); no aim assist on the flyer (#384); **touch controls at the very end** (#389). The armour plating blocked the dozer's view: fixed (waist high), PLAYTEST round 35.
+- **Still wanted on the tablet:** the frame rate in the place beyond, with the flyer and with the dozer's parts (the spikes' other numbers); and whether the flicker is gone on both devices.
 - **His glare list**, and Save and quit at more points, the health floor (he says they seem fine).
 - **From before:** the cave doesn't load yet (M12); the south's biome (below); the trail behind the gas station's draw calls (#302); the rack shows no guns (#343); the common pickups' first-time introductions (#348); the card's turning item is a CSS placeholder (#346).
 
@@ -45,7 +46,7 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 
 **Goal** (DESIGN.md "Build plan", the Session 23 row): play-test the opening (Day 1 to the frontier) with everything M10 added: the healing pool, the loadout and rack, ammo types, inspect cards, one power unit, no flares, the health floor, Save and quit (on the tablet, at several points), the map (spine, road north, railway, optional encounters), interiors (the shelter). Full runs through the opening on two or three seeds; pacing, ammo and loot, bugs. Close M10: its "done when" (the opening plays through on every seed; a save mid-run quits and continues; each spike has a measured answer).
 
-Not this session: any encounter's content (the crashed plane is Session 25); touch controls (#389: their own session, when Aaron says).
+Not this session: any encounter's content (the crashed plane is Session 25); touch controls (#389: at the very end of the project).
 
 ### Gotchas and decisions to carry
 
@@ -61,7 +62,7 @@ Not this session: any encounter's content (the crashed plane is Session 25); tou
 
 ### Open questions for Aaron
 
-- **Session 22:** #377-389, in particular #379 (Junie's caption), #377 (the way back), #382 (the verdict's lines), #381 (Demo mode's weapons), #384 (the flyer), #389 (touch controls: when).
+- **Session 22:** #377-389 (#377, #379, #381, #384 and #389 settled), in particular #382 (the verdict's lines; 57 fps reads Runs great), #378 (the place beyond's look), #385-386 (the flyer's and the parts' looks and numbers).
 - **Session 21:** #353-376 (#354, #357, #367, #368 and #370 settled), in particular #353 (the spine's places), #363/#365 (the cave's hints), #371 (the clock inside), #375 (the Day 1 red light), and the south's biome (above).
 - **Session 20:** #340-352 (#344, #345, #347 and #349 settled), and his glare list.
 - **Session 19:** #282-320, to check in play (#300, #308, #311, #317 and #319 are settled). In particular #302, the draw calls.

@@ -58,15 +58,16 @@ export function buildPart(id, p) {
     }
     root = mesh(merged(parts));
   } else if (id === 'plating') {
-    // Steel round the open cab: the sides with a slit to see through, a plate in front of the seat.
+    // Steel round the open cab, waist high (Aaron, round 34: the first version's upper band sat
+    // across the driver's eyes): the sides up to p.sideTop, a plate in front of the seat up to
+    // p.frontTop, under the line from the eye (config.dozer.eye) down to the blade.
     const R = DOZER.rops;
     const parts = [];
     const len = R.back - R.front;
-    for (const sx of [-1, 1]) {
-      parts.push(box(0.08, 0.85, len, sx * (R.half + 0.12), DOZER.deck + 0.45, R.front + len / 2, p.color));
-      parts.push(box(0.08, 0.5, len, sx * (R.half + 0.12), DOZER.deck + 1.55, R.front + len / 2, p.color));
-    }
-    parts.push(box(R.half * 2, 0.55, 0.08, 0, DOZER.deck + 1.0, R.front - 0.08, p.color));
+    const side = p.sideTop - DOZER.deck;
+    for (const sx of [-1, 1]) parts.push(box(0.08, side, len, sx * (R.half + 0.12), DOZER.deck + side / 2, R.front + len / 2, p.color));
+    const front = p.frontTop - p.frontBottom;
+    parts.push(box(R.half * 2, front, 0.08, 0, p.frontBottom + front / 2, R.front - 0.08, p.color));
     root = mesh(merged(parts));
   } else if (id === 'saw') {
     // A boom off the blade's middle, a big flat disc at its end, low and out in front.

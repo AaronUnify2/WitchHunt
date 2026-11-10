@@ -73,6 +73,8 @@ Aaron's notes first (OPEN_QUESTIONS "Session 22"): round 32's fixes all good; Sa
 - **Spike: dozer parts** (`world/dozerParts.js`, `render/dozerParts.js`; `config.spikes.dozerParts`): a spiked ram, armour plating, a head saw; blade parts ride the blade arm; effects as multipliers on the crush numbers and the tree strain. **Go.**
 - **Debug:** a new **Spikes (M10.3)** category.
 
+**Aaron's round 34** (Nov 10): 150 zombies at night in Demo mode run at **57 fps on the tablet** ("Runs great"); Junie's caption stays; going back leads out; Demo mode's weapons are right; no aim assist on the flyer; touch controls at the very end. **Fixed after it:** the armour plating blocked the dozer's view (now waist high: `sideTop` 2.1, `frontTop` 1.95, under the eye at 2.6). PLAYTEST round 35.
+
 **Checked headless** (seed 1234; New Run and Skip intro seed 7): Demo mode end to end (the menu, the panel, 150 sent, night, a death and respawn, the device test, the preset kept, no save touched); the place beyond walked (a calling path loops, three silent find Junie, out); the flyer through its passes and dives (two strikes landed) and driven off by damage; the three parts bolted on and photographed. No page errors. **Not measured on the tablet yet** (round 34).
 
 ### Session 21 (Lead Engineer): the map (M10.2)
