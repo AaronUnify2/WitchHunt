@@ -30,6 +30,7 @@ import { FinalBattle } from '../encounters/FinalBattle.js';
 import { RunEndScreen } from '../ui/RunEndScreen.js';
 import { NoReturnNotice } from '../ui/NoReturnNotice.js';
 import { InspectCard } from '../ui/InspectCard.js';
+import { GunChoice } from '../ui/GunChoice.js';
 import { lootGate } from '../combat/loot.js';
 import { PauseMenu } from '../ui/PauseMenu.js';
 import { PaperNote } from '../ui/PaperNote.js';
@@ -151,6 +152,10 @@ export class Game {
     // Session 20 (Aaron): special items get an inspect card (watch, read, or keep for later).
     this.card = new InspectCard(this.bus);
     this.card.init(root, this.combat.sfx);
+    // Session 23 (Aaron): a gun found with its slot full asks which to leave (it went to the rack by itself).
+    this.gunChoice = new GunChoice(cfg.weapons);
+    this.gunChoice.init(root, { weapons: this.combat.weapons, notify: (text) => this.combat.hud.pickup(text), sfx: this.combat.sfx });
+    this.combat.chooseGun = (id) => this.gunChoice.ask(id);
     // Session 20 (Aaron): the pause menu: Resume, Save and quit, Settings (greyed).
     this.pauseMenu = new PauseMenu({
       resume: () => this.resumeFromPause(),
@@ -1050,7 +1055,7 @@ export class Game {
 
     // Re-lock the mouse when the canvas is clicked (desktop only).
     this.onCanvasClick = () => {
-      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && !this.demo.panel?.isOpen && hasFinePointer()) {
+      if (this.state === 'running' && !this.debugMenu.isOpen && !this.station.ledger.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.gunChoice.isOpen && !this.pauseMenu.isOpen && !this.demo.panel?.isOpen && hasFinePointer()) {
         this.input.requestPointerLock();
       }
     };
@@ -1148,7 +1153,7 @@ export class Game {
       !this.mapUi.isOpen &&
       !this.station.ledger.isOpen &&
       !this.paper.isOpen &&
-      !this.card.isOpen &&
+      !this.card.isOpen && !this.gunChoice.isOpen &&
       !this.noReturn.isOpen &&
       !this.runEnd.isOpen &&
       !this.cutscenes.active &&
@@ -1382,10 +1387,12 @@ export class Game {
     dp?.update(this.input, !wasPanel);
     const held = viewing || viewer.active || wasPaused || pm.isOpen || wasPanel || Boolean(dp?.isOpen);
     // Session 16: a paper in close-up holds the game too (open at the start of the frame counts).
-    const reading = this.paper.isOpen || this.card.isOpen;
+    const reading = this.paper.isOpen || this.card.isOpen || this.gunChoice.isOpen;
     this.paper.update(dt, this.input);
     this.card.update(dt, this.input); // Session 20: after the paper's (a card can open one)
-    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen || this.card.isOpen;
+    // Session 23: after the card's (the safe's rifle can come with one), and never over a cutscene.
+    this.gunChoice.update(this.input, running && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !cs.active && !held && this.combat.alive);
+    const noticeOpen = this.noReturn.update(dt, this.input, running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !cs.active && !held) || reading || this.paper.isOpen || this.card.isOpen || this.gunChoice.isOpen;
     const playing = running && !this.debugMenu.isOpen && !this.mapUi.isOpen && !noticeOpen && !cs.freezesWorld && !held;
     // Session 19 (Aaron: the dead stood frozen in the shelter's sweep): a cutscene marked "unseen" lets the world
     // run on while it plays, but nothing notices Tom (detection.playerSenses).
@@ -1467,10 +1474,10 @@ export class Game {
     this.demo.update(dt, running && !held && !this.debugMenu.isOpen && !this.mapUi.isOpen && this.combat.alive);
     if (this.state === 'running' && this.demo.active) this.mapUi.setObjective(null); // Session 22: no story to point at
     else if (this.state === 'running') {
-      this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && this.combat.alive);
+      this.objectives.update(dt, !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.gunChoice.isOpen && this.combat.alive);
       this.mapUi.setObjective(this.objectives.current);
     }
-    this.watch.update(dt, this.input, this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.noReturn.isOpen && this.combat.alive);
+    this.watch.update(dt, this.input, this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.gunChoice.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.overlay.update(dt);
   }
 
@@ -1478,7 +1485,7 @@ export class Game {
   // fast-forward steps have them locked).
   step(dt, running, playing, first) {
     const ledgerPause = this.station.ledger.isOpen && this.cfg.ledger.pausesClock;
-    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.pauseMenu.isOpen && !ledgerPause) this.clock.update(dt);
+    if (running && !this.mapUi.isOpen && !this.noReturn.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.gunChoice.isOpen && !this.pauseMenu.isOpen && !ledgerPause) this.clock.update(dt);
     const daylight = daylightLevel(this.clock.phase, this.clock.phaseProgress);
     // The ledger takes the controls while it's open (the world carries on).
     const cinematic = this.finalBattle.cinematic || this.cutscenes.locksControls;
@@ -1564,6 +1571,7 @@ export class Game {
     this.noReturn.dispose();
     this.paper.dispose();
     this.card.dispose();
+    this.gunChoice.dispose();
     this.pauseMenu.dispose();
     this.demo.dispose();
     this.flyer.dispose();

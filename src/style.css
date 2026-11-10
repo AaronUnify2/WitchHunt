@@ -2116,3 +2116,9 @@ body.in-cutscene .vhud {
   border: 1px solid rgba(220, 200, 150, 0.25);
   pointer-events: none;
 }
+
+/* ---- Session 23: a gun found with its slot full (ui/GunChoice.js) ---- */
+.gun-choice-line {
+  margin: 0 0 0.3rem;
+  color: var(--dim);
+}
