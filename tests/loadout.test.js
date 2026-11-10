@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hasRoom, swapCandidates, slotOf } from '../src/player/loadout.js';
+import { slotOf } from '../src/player/loadout.js';
 import { Weapons } from '../src/player/Weapons.js';
 import { savePlayer, loadPlayer } from '../src/core/saveData.js';
 import { Health } from '../src/player/Health.js';
@@ -26,73 +26,53 @@ function combat(w) {
   return { health, armour, inventory, weapons: w, kills: 0 };
 }
 
-describe('the loadout (Session 20)', () => {
-  it('two long guns, a sidearm (the pistol or the SMG), one melee', () => {
-    expect(L.slots).toEqual({ long: 2, sidearm: 1, melee: 1 });
+describe('carrying every gun (Session 25, Aaron)', () => {
+  it('the slots still name each gun (the weapon cross and the rack use them)', () => {
     for (const id of ['rifle', 'shotgun', 'sniper', 'thermal', 'autoShotgun']) expect(slotOf(L, id)).toBe('long');
     for (const id of ['pistol', 'smg']) expect(slotOf(L, id)).toBe('sidearm');
     expect(slotOf(L, 'shovel')).toBe('melee');
-    expect(hasRoom(L, ['rifle', 'shotgun'], 'sniper')).toBe(false);
-    expect(hasRoom(L, ['rifle', 'shotgun'], 'pistol')).toBe(true);
-    expect(hasRoom(L, ['hands', 'detonator'], 'rifle')).toBe(true);
-    expect(swapCandidates(L, ['shovel', 'rifle', 'shotgun', 'pistol'], 'sniper')).toEqual(['rifle', 'shotgun']);
   });
 
-  it('a gun found with its slot full goes to the rack by itself', () => {
+  it('every gun found goes straight to Tom: no rack, no belt', () => {
     const w = weapons();
-    expect(w.take('shovel')).toBe('carried');
-    expect(w.order).toEqual(['shovel']); // empty hands gone
-    expect(w.take('rifle')).toBe('carried');
-    expect(w.take('shotgun')).toBe('carried');
-    expect(w.take('sniper')).toBe('rack');
-    expect(w.take('pistol')).toBe('carried');
-    expect(w.take('smg')).toBe('rack');
-    expect(w.order).toEqual(['shovel', 'rifle', 'shotgun', 'pistol']);
-    expect(w.rack).toEqual(['sniper', 'smg']);
-    expect(w.has('sniper')).toBe(true);
-    expect(w.addAmmo('sniper', 5)).toBe(true); // its rounds still go to its pool
+    for (const id of ['shovel', 'rifle', 'shotgun', 'sniper', 'pistol', 'smg', 'thermal', 'autoShotgun']) expect(w.take(id)).toBe('carried');
+    expect(w.order).toEqual(['shovel', 'rifle', 'shotgun', 'sniper', 'pistol', 'smg', 'thermal', 'autoShotgun']);
+    expect(w.rack).toEqual([]);
+    expect(w.belt).toEqual([]);
+    expect(w.found).toEqual(['rifle', 'shotgun', 'sniper', 'pistol', 'smg', 'thermal', 'autoShotgun']);
   });
 
-  it('swaps at the rack in the same slot and the same place in the cycle, keeping magazines', () => {
+  it('the swap button flips between the last two used; LB goes to the shovel and back', () => {
     const w = weapons();
     for (const id of ['shovel', 'rifle', 'shotgun', 'sniper']) w.take(id);
-    w.states.rifle.mag = 2;
-    expect(w.swap('sniper', 'pistol')).toBe(false); // not carried
-    expect(w.swap('sniper', 'rifle')).toBe(true);
-    expect(w.order).toEqual(['shovel', 'sniper', 'shotgun']);
-    expect(w.rack).toEqual(['rifle']);
-    expect(w.swap('rifle', 'sniper')).toBe(true);
-    expect(w.states.rifle.mag).toBe(2);
-    expect(w.stow('shotgun')).toBe(true);
-    expect(w.draw('sniper')).toBe(true);
-    expect(w.order).toEqual(['shovel', 'rifle', 'sniper']);
+    w.selectId('rifle');
+    w.selectId('sniper');
+    expect(w.swapLast()).toBe(true);
+    expect(w.id).toBe('rifle');
+    w.swapLast();
+    expect(w.id).toBe('sniper');
+    w.toggleShovel();
+    expect(w.id).toBe('shovel');
+    w.toggleShovel();
+    expect(w.id).toBe('sniper');
   });
 
-  it('the shovel goes on the belt and still digs once something takes the melee slot', () => {
-    const w = weapons();
-    w.take('shovel');
-    w.take('rifle');
-    expect(w.stow('shovel')).toBe(true);
-    expect(w.belt).toEqual(['shovel']);
-    expect(w.has('shovel')).toBe(true);
-    expect(w.draw('shovel')).toBe(true);
-    expect(w.belt).toEqual([]);
-    w.stow('rifle');
-    expect(w.stow('shovel')).toBe(true); // the last thing in hand: empty hands come back
-    expect(w.order).toEqual(['hands']);
-  });
-
-  it('saves the loadout, the rack and the belt', () => {
+  it('saves what Tom carries; an older save with guns on the rack gives them back', () => {
     const a = weapons();
-    for (const id of ['shovel', 'rifle', 'shotgun', 'sniper', 'pistol']) a.take(id);
-    a.stow('shovel');
-    a.states.sniper.mag = 1;
+    for (const id of ['shovel', 'rifle', 'shotgun', 'pistol']) a.take(id);
+    a.states.shotgun.mag = 1;
     const d = JSON.parse(JSON.stringify(savePlayer({ position: { x: 0, z: 0 }, yaw: 0 }, combat(a))));
+    // As a Session 20-24 save had it: the sniper on the rack, the shovel on the belt.
+    d.carried = ['rifle', 'shotgun', 'pistol'];
+    d.rack = ['sniper'];
+    d.belt = ['shovel'];
+    d.weapons.sniper = { mag: 2, reserve: 0 };
     const b = weapons();
     loadPlayer(combat(b), d);
-    expect(b.order).toEqual(['rifle', 'shotgun', 'pistol']);
-    expect(b.rack).toEqual(['sniper']);
-    expect(b.belt).toEqual(['shovel']);
-    expect(b.states.sniper.mag).toBe(1);
+    expect(b.order).toEqual(['rifle', 'shotgun', 'pistol', 'sniper', 'shovel']);
+    expect(b.rack).toEqual([]);
+    expect(b.belt).toEqual([]);
+    expect(b.states.shotgun.mag).toBe(1);
+    expect(b.states.sniper.mag).toBe(2);
   });
 });

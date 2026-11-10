@@ -100,9 +100,11 @@ export function loadPlayer(combat, d) {
   if (d.carried) {
     for (const id of d.carried) if (!w.order.includes(id) && id !== 'detonator') w.setSlot(id, true);
     for (const id of [...w.order]) if (!d.carried.includes(id) && id !== 'detonator') w.setSlot(id, false);
-    w.rack = [...(d.rack ?? [])];
-    w.belt = [...(d.belt ?? [])];
-    for (const id of [...w.rack, ...w.belt]) if (!w.states[id]) w.addState(id);
+    // Session 25 (Aaron: Tom carries every gun): a save with guns on the rack (or the shovel
+    // on the belt) gives them back to him.
+    w.rack = [];
+    w.belt = [];
+    for (const id of [...(d.rack ?? []), ...(d.belt ?? [])]) if (w.cfg[id]) w.take(id);
   } else {
     for (const id of Object.keys(d.weapons ?? {})) {
       if (!w.order.includes(id) && w.cfg[id]?.kind === 'hitscan') w.setSlot(id, true);

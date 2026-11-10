@@ -1,4 +1,6 @@
-// The player's weapons: switching (RB next, LB previous, keys 1-4), firing
+// The player's weapons: switching (Session 25: RB flips between the last two
+// used, LB the shovel and back; the weapon cross on D-pad down; keys 1-8 and
+// the mouse wheel cycle on a keyboard), firing
 // (RT), aiming down sights (LT: zoom, tighter spread, stronger aim
 // assist), reloading (B), the aim and fire slowdown, and aim assist.
 // Hits are resolved here with combat/hitscan.js and applied through the
@@ -15,7 +17,7 @@
 
 import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
-import { hasRoom, isTool, slotOf } from './loadout.js';
+import { slotOf } from './loadout.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
 import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind, helmetPart } from '../combat/hitscan.js';
 
@@ -66,6 +68,7 @@ export class Weapons {
     for (const id of this.order) this.addState(id);
     this.index = Math.max(0, this.order.indexOf(this.cfg.startingWeapon));
     this.switchTimer = 0;
+    this.lastId = null; // Session 25: the swap button's other weapon
     this.aiming = false;
     this.zoom = 0;
     this.fireSlow = 0;
@@ -107,6 +110,7 @@ export class Weapons {
   select(index) {
     const next = (index + this.order.length) % this.order.length;
     if (next === this.index) return;
+    this.lastId = this.id; // Session 25: for the swap button
     this.state.cancelReload();
     this.index = next;
     this.reloadHeld = null;
@@ -220,8 +224,11 @@ export class Weapons {
 
   updateSwitching(input, dt) {
     this.switchTimer = Math.max(0, this.switchTimer - dt);
-    if (input.wasPressed('weaponNext')) this.select(this.index + 1);
-    if (input.wasPressed('weaponPrev')) this.select(this.index - 1);
+    // Session 25 (Aaron): every gun's carried; the weapon cross picks one. RB flips
+    // between the last two used, LB to the shovel and back; the wheel still cycles.
+    if (input.wasPressed('weaponNext')) this.swapLast();
+    if (input.wasPressed('weaponPrev')) this.toggleShovel();
+    if (input.wasPressed('weaponCycle')) this.select(this.index + 1);
     SLOT_ACTIONS.forEach((action, i) => {
       if (i < this.order.length && input.wasPressed(action)) this.select(i);
     });
@@ -424,74 +431,52 @@ export class Weapons {
     }
   }
 
-  // ---- the loadout (Session 20; player/loadout.js) ----------------------------
+  // ---- what Tom carries (Session 20; Session 25: everything) -------------------
 
-  // Does Tom own it (carried, on the belt or on the rack)?
+  // Does Tom own it? (Session 25: everything found is carried. `rack` and
+  // `belt` are kept empty, for older saves: loadPlayer hands their guns back.)
   has(id) {
     return this.order.includes(id) || this.rack.includes(id) || this.belt.includes(id);
   }
 
-  // A weapon found: carried if its slot has room, else a tool goes on the
-  // belt and a gun to the rack. Returns 'carried', 'belt' or 'rack'.
+  // A weapon found: Tom carries it (Session 25, Aaron: "I think the player
+  // should be able to carry every gun"). Returns 'carried'.
   take(id) {
-    const L = this.cfg.loadout;
+    for (const list of [this.rack, this.belt]) {
+      const i = list.indexOf(id);
+      if (i >= 0) list.splice(i, 1);
+    }
     if (this.order.includes(id)) return 'carried';
-    if (this.rack.includes(id)) return 'rack';
-    if (this.belt.includes(id)) return 'belt';
-    if (hasRoom(L, this.order, id)) {
-      this.setSlot(id, true);
-      if (id !== 'hands') this.setSlot('hands', false);
-      return 'carried';
-    }
-    if (!this.states[id]) this.addState(id);
-    if (isTool(L, id)) {
-      this.belt.push(id);
-      return 'belt';
-    }
-    this.rack.push(id);
-    return 'rack';
-  }
-
-  // Off the rack (or belt) into a free slot. False if there's no room.
-  draw(id) {
-    const from = this.rack.includes(id) ? this.rack : this.belt.includes(id) ? this.belt : null;
-    if (!from || !hasRoom(this.cfg.loadout, this.order, id)) return false;
-    from.splice(from.indexOf(id), 1);
     this.setSlot(id, true);
-    this.setSlot('hands', false);
+    if (id !== 'hands') this.setSlot('hands', false);
+    return 'carried';
+  }
+
+  // The guns Tom has found (for the comms room's rack, which shows them).
+  get found() {
+    return this.order.filter((id) => slotOf(this.cfg.loadout, id) && slotOf(this.cfg.loadout, id) !== 'melee');
+  }
+
+  // Into Tom's hands, by id (the weapon cross). False if he hasn't got it.
+  selectId(id) {
+    const i = this.order.indexOf(id);
+    if (i < 0) return false;
+    this.select(i);
     return true;
   }
 
-  // A carried weapon onto the rack (a tool onto the belt). Tom is never left
-  // with nothing in hand: empty hands come back if it was the last.
-  stow(id) {
-    if (!this.order.includes(id) || !slotOf(this.cfg.loadout, id)) return false;
-    if (this.order.length === 1) this.setSlot('hands', true);
-    this.setSlot(id, false);
-    (isTool(this.cfg.loadout, id) ? this.belt : this.rack).push(id);
-    if (!this.order.includes(this.id)) this.index = 0;
-    return true;
+  // The swap button: back to the last weapon used (if he still has it).
+  swapLast() {
+    const last = this.lastId;
+    if (!last || last === this.id || !this.order.includes(last)) return false;
+    return this.selectId(last);
   }
 
-  // Take `inId` off the rack (or belt) in place of the carried `outId`, in
-  // the same slot and the same place in the cycle.
-  swap(inId, outId) {
-    const from = this.rack.includes(inId) ? this.rack : this.belt.includes(inId) ? this.belt : null;
-    const at = this.order.indexOf(outId);
-    const L = this.cfg.loadout;
-    if (!from || at < 0 || slotOf(L, inId) !== slotOf(L, outId)) return false;
-    from.splice(from.indexOf(inId), 1);
-    (isTool(L, outId) ? this.belt : this.rack).push(outId);
-    const holding = this.index === at;
-    if (holding) this.state.cancelReload();
-    this.order[at] = inId;
-    if (!this.states[inId]) this.addState(inId);
-    if (holding) {
-      this.switchTimer = this.cfg.switchSeconds;
-      this.meleeTimer = -1;
-      this.bus.emit('weapon:switched', { id: this.id });
-    }
-    return true;
+  // LB: the shovel, and back to what was in hand.
+  toggleShovel() {
+    if (!this.order.includes('shovel')) return false;
+    if (this.id === 'shovel') return this.swapLast();
+    return this.selectId('shovel');
   }
 
   // Was the detonator's trigger pulled since the last call? (M7)

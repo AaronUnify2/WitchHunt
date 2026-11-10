@@ -4,7 +4,7 @@
 //  - Planting: hold X. At the hut a charge goes on its wall ("1 of 2");
 //    anywhere else you plant one at your feet with the detonator in hand
 //    (a trap on a path, or dropped while chased).
-//  - Detonating: the detonator is a weapon slot (RB / LB) while you have
+//  - Detonating: the detonator is a weapon (the weapon cross, Session 25) while you have
 //    charges out or in hand; RT sets off every planted charge at once.
 //    Always by hand, never by proximity.
 //  - A blast kills zombies, hurts the witch, breaks traps and hurts you

@@ -243,11 +243,10 @@ export class Combat {
 
   // Session 10b: a gun found in the world (the hunting rifle). Any of its
   // rounds picked up before it (kept in the inventory) load into it.
-  // Session 20: into the loadout if its slot has room, else to the comms
-  // room's gun rack (a tool to the belt). Returns where it went.
+  // Session 25 (Aaron): Tom carries every gun: it goes straight to him (into
+  // his hands). Returns where it went ('carried').
   giveWeapon(id, rounds = 0) {
     const w = this.weapons;
-    const had = w.has(id);
     const where = w.take(id);
     const type = w.ammoType(id);
     w.addAmmo(type, rounds);
@@ -257,8 +256,6 @@ export class Combat {
       if (stored > 0 && w.addAmmo(t, stored)) delete this.inventory.ammo[t];
     }
     if (where === 'carried') w.select(w.order.indexOf(id));
-    else if (where === 'rack' && !had && this.chooseGun) this.chooseGun(id); // Session 23 (Aaron): ask which gun to leave (ui/GunChoice.js)
-    else if (where === 'rack') this.hud.pickup(`${w.cfg[id].name}: sent to ${w.cfg.loadout.rackName}`);
     return where;
   }
 

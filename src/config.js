@@ -1137,6 +1137,15 @@ export const config = {
       tools: ['shovel'],
       rackName: "the comms room's gun rack",
     },
+    // Session 25 (Aaron): Tom carries every gun; the weapon cross (ui/WeaponCross.js, D-pad down
+    // with nothing to watch) lays them out, nearest the middle first. flareGun, dynamite and charges
+    // are its specials (always to hand on Y; not built yet; the detonator).
+    cross: {
+      up: ['shotgun', 'autoShotgun'],
+      left: ['pistol', 'smg'],
+      right: ['rifle', 'sniper', 'thermal'],
+      down: ['flareGun', 'dynamite', 'charges'],
+    },
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
     // Session 15b: empty-handed (no model, no attack).
@@ -4488,7 +4497,8 @@ export const config = {
       map: ['KeyM'],
       flashlight: ['KeyL'],
       headlamp: ['KeyH'], // Session 16: the quad's headlamp (riding; first aid's off in the saddle)
-      watch: ['KeyV'], // Session 16: play a tape or a feed that's waiting
+      watch: ['KeyV'], // Session 16: play a tape or a feed that's waiting (Session 25: else the weapon cross)
+      weaponCross: ['KeyG'], // Session 25: the weapon cross
       inventory: ['Tab'],
       pause: ['Escape'],
       menuUp: ['ArrowUp'],
@@ -4507,6 +4517,6 @@ export const config = {
       attack: [0],
       aim: [2],
     },
-    wheelAction: 'weaponNext', // mouse wheel fires this action
+    wheelAction: 'weaponCycle', // mouse wheel fires this action (Session 25: it cycles; RB is the swap button now)
   },
 };

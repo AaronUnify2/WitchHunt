@@ -2130,3 +2130,81 @@ body.in-cutscene .vhud {
   margin: 0 0 0.3rem;
   color: var(--dim);
 }
+
+/* ---- Session 25: the weapon cross (ui/WeaponCross.js): D-pad down, icons in a cross ---- */
+.wcross {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 8, 16, 0.62);
+  touch-action: none;
+}
+.wcross.hidden { display: none; }
+.wcross-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.wcross-grid {
+  display: grid;
+  grid-template-columns: repeat(7, var(--wx-cell));
+  grid-template-rows: repeat(7, var(--wx-cell));
+  gap: 6px;
+  --wx-cell: min(11vmin, 72px);
+}
+.wcross-slot,
+.wcross-mid {
+  width: var(--wx-cell);
+  height: var(--wx-cell);
+  padding: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 22, 26, 0.85);
+  border: 2px solid #4a4434;
+  cursor: pointer;
+}
+.wcross-mid {
+  border-radius: 50%;
+  border-color: #6a5a3a;
+  background: rgba(30, 26, 18, 0.9);
+  cursor: default;
+}
+.wcross-slot img,
+.wcross-mid img {
+  width: 88%;
+  height: 88%;
+  image-rendering: auto;
+}
+.wcross-slot.empty {
+  background: rgba(14, 14, 16, 0.5);
+  border-style: dashed;
+  border-color: #3a3630;
+}
+.wcross-slot.held { border-color: #8a7a4a; }
+.wcross-slot.focus {
+  border-color: var(--accent, #e8c878);
+  box-shadow: 0 0 0 2px rgba(232, 200, 120, 0.35);
+  background: rgba(40, 36, 24, 0.95);
+}
+.wcross-name {
+  min-height: 1.4em;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: #e0d6c0;
+}
+.wcross-name span {
+  color: var(--dim, #8a8470);
+  font-size: 0.85rem;
+}
+.wcross-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--dim, #8a8470);
+}
+body.in-cutscene .wcross { display: none; }

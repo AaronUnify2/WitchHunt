@@ -1,5 +1,8 @@
 // The loadout (pure; DESIGN.md "Loadout" and "Tools vs weapons", Aaron
-// Nov 8; Session 20). Tom carries two long guns, a sidearm and one melee
+// Nov 8; Session 20). Session 25 (Aaron, after playing it: "I think the
+// player should be able to carry every gun"): Tom carries everything he
+// finds (Weapons.take), and the weapon cross picks one (ui/WeaponCross.js);
+// the slots below now only say what kind of weapon each is. As it was: Tom carries two long guns, a sidearm and one melee
 // weapon (the flare gun is always to hand on Y, outside the loadout).
 // Whatever doesn't fit waits on the comms room's gun rack: a gun picked up
 // with its slot full goes to the rack by itself (Aaron: carrying isn't a
