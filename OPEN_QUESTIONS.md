@@ -43,6 +43,15 @@ My calls (PLAYTEST round 38):
 | 406 | **What he wears.** A necklace of bone, river-stone and red-seed beads with a carved tooth, and a woven band on his left wrist: his own handiwork (the design's "a person with a culture"). Right amount, or more (a belt, a carried tool)? | As described. | `bigfootSpec()` |
 | 407 | **The cocoon.** A 3 m pod of grey silk hung by ropes of it, a seam down the front laced with strands (his face and beads show through); cut, the front lies open. Should more of him show, or less (only a hand, or nothing until it's cut)? | `buildCocoon(c, 0 or 1)` | `render/bigfootModel.js`, `config.bigfoot.cocoon` |
 
+**Built: Milo and his animals** (`render/miloModel.js`, `render/barnAnimals.js`, on `render/PosedFigure.js`; `config.milo`, `config.barnAnimals`): one draw call each. Models only: the barn is Session 28's.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 408 | **The clown's look.** I haven't read The Lone Clown, so apart from what DESIGN.md gives (long arms, a green wig, the painted grin, knives) his costume is my guess: grey greasepaint, black diamonds over the eyes, a red nose, a ruff, a striped shirt under braces, patched trousers, long red shoes, a bandolier of knives. **What does the story say he wears?** | As described. | `miloSpec()`, `config.milo.looks.clown` |
+| 409 | **The man.** A red-and-black flannel shirt, jeans, boots, short brown hair, stubble, a tin mug of coffee. | As described. | `miloSpec()`, `config.milo.looks.man` |
+| 410 | **The donkey.** Grey-brown with the dark cross on its back, a pale muzzle and a pale ring round each eye (so the stare reads); in the stare, only its head moves, and an ear. What colour is the story's donkey? | As described. | `equineSpec()`, `config.barnAnimals.donkey` |
+| 411 | **The others.** A dark shaggy Shetland with a pale mane over its eyes; a bronze-black turkey, about 1.3 m to the top of its fan, with a blue-grey head and red wattle; a brown blotched python about 5 m long, coiled. Any of them wrong for the story? | As described. | `render/barnAnimals.js`, `config.barnAnimals` |
+
 ## Session 23 (QA & Balance: the opening with the new systems)
 
 Aaron's answers at the start (Nov 10):

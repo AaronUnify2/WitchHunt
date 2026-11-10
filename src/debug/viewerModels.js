@@ -31,6 +31,8 @@ import { MothmanRenderer, FLYING } from '../render/MothmanRenderer.js';
 import { MothRenderer } from '../render/MothRenderer.js';
 import { PosedFigure } from '../render/PosedFigure.js';
 import { bigfootSpec, bigfootPose, buildCocoon } from '../render/bigfootModel.js';
+import { miloSpec, miloPose, MILO_LOOKS } from '../render/miloModel.js';
+import { ANIMALS, BARN_ANIMALS } from '../render/barnAnimals.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
@@ -227,6 +229,36 @@ export const VIEWER_MODELS = [
     ],
     create: bigfootModel,
   },
+  {
+    id: 'milo',
+    name: 'Milo',
+    note: "Session 24: the knife thrower from The Lone Clown. Y: the clown, or the man the morning after. One draw call. He can't be hurt. His barn: Session 28.",
+    height: (cfg) => cfg.milo.height,
+    startDistance: (cfg) => cfg.modelViewer.milo.distance,
+    variants: () => ['The clown', 'The man (the morning after)'],
+    poses: [
+      { id: 'idle', name: 'At rest (the clown: bouncing; the man: standing with his mug)' },
+      { id: 'dance', name: 'Dancing (the clown)' },
+      { id: 'bow', name: 'A bow' },
+      { id: 'beckon', name: 'Beckoning you in' },
+      { id: 'throw', name: 'Throwing a knife' },
+      { id: 'push', name: 'The car gates (one hand)' },
+      { id: 'indignant', name: '"I was in character!"' },
+      { id: 'offer', name: 'Offering the mug (the man)' },
+      { id: 'walk', name: 'Walking' },
+    ],
+    create: miloModel,
+  },
+  ...BARN_ANIMALS.map((kind) => ({
+    id: kind,
+    name: `Milo's ${kind}`,
+    note: "Session 24: one of the animals in Milo's barn. One draw call. Harmless. It watches you.",
+    height: () => ANIMALS[kind].height,
+    startDistance: () => ANIMALS[kind].height * 1.6 + 2,
+    variants: null,
+    poses: ANIMALS[kind].states,
+    create: (ctx) => animalModel(ctx, kind),
+  })),
   {
     id: 'mib',
     name: 'Man in Black',
@@ -780,6 +812,54 @@ function bigfootModel(ctx) {
       figure.dispose();
       for (const c of cocoons) c.dispose();
     },
+  };
+}
+
+// ---- Milo, and his animals --------------------------------------------------------------------------
+
+function lookAt(s) {
+  return s.camera ? wrapAngle(Math.atan2(s.camera.position.x - s.x, s.camera.position.z - s.z) - s.facing) : 0;
+}
+
+function miloModel(ctx) {
+  const mc = ctx.cfg.milo;
+  const vm = ctx.cfg.modelViewer.milo;
+  const figures = MILO_LOOKS.map((look) => {
+    const f = new PosedFigure({ spec: miloSpec(mc, look), pose: miloPose, albedo: mc.albedo, poseRate: mc.poseRate });
+    f.init(ctx.scene);
+    return f;
+  });
+  const m = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, look: 0 };
+  return {
+    objects: figures.map((f) => f.mesh),
+    update(dt, s) {
+      const man = s.variant === 1;
+      Object.assign(m, { x: s.x, y: s.y, z: s.z, facing: s.facing, state: s.pose, timer: s.poseTime, look: lookAt(s) });
+      if (s.pose === 'idle' && man) m.state = 'stand';
+      if (s.pose === 'walk') m.walked += dt * vm.walkSpeed;
+      if (s.pose === 'throw') m.timer = loopTime(s.poseTime, mc.throwSeconds + ctx.cfg.modelViewer.holdSeconds);
+      if (s.pose === 'bow') m.timer = Math.min(loopTime(s.poseTime, vm.bowSeconds * 2), vm.bowSeconds * 2 - loopTime(s.poseTime, vm.bowSeconds * 2));
+      figures.forEach((f, i) => f.update({ ...m, active: i === s.variant }, dt));
+    },
+    setThermal: (on, t) => figures.forEach((f) => f.setThermal(on, t)),
+    dispose: () => figures.forEach((f) => f.dispose()),
+  };
+}
+
+function animalModel(ctx, kind) {
+  const ac = ctx.cfg.barnAnimals;
+  const figure = new PosedFigure({ spec: ANIMALS[kind].spec(ac[kind]), pose: ANIMALS[kind].pose, albedo: ac.albedo, poseRate: ac.poseRate });
+  figure.init(ctx.scene);
+  const m = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'stand', timer: 0, walked: 0, look: 0 };
+  return {
+    objects: [figure.mesh],
+    update(dt, s) {
+      Object.assign(m, { x: s.x, y: s.y, z: s.z, facing: s.facing, state: s.pose, timer: s.poseTime, look: lookAt(s) });
+      if (s.pose === 'walk') m.walked += dt * ctx.cfg.modelViewer.barnAnimals.walkSpeed;
+      figure.update(m, dt);
+    },
+    setThermal: (on, t) => figure.setThermal(on, t),
+    dispose: () => figure.dispose(),
   };
 }
 

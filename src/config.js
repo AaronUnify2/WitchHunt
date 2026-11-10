@@ -3986,6 +3986,50 @@ export const config = {
     },
   },
 
+  // Milo (Session 24: the model; render/miloModel.js on
+  // render/PosedFigure.js). He never attacks Tom and can't be hurt. His barn
+  // is Session 28's.
+  milo: {
+    height: 1.9,
+    width: 0.9, // lanky
+    albedo: 0.34, // the torch is strong up close
+    poseRate: 14, // quick
+    throwSeconds: 0.9, // the wind-up, the throw and its follow-through (for the viewer's loop)
+    looks: {
+      // All dull enough for the torch (the glare rule): the greasepaint has gone grey.
+      clown: {
+        skin: 0x6a4e40,
+        face: 0x6e6a62, // greasepaint
+        nose: 0x7a1c14,
+        grin: 0x7a1c14,
+        eyes: 0x0e0d0c,
+        wig: 0x2e5e2a,
+        ruff: 0x66625a,
+        shirt: 0x565044,
+        stripe: 0x6a2018,
+        braces: 0x1c1a18,
+        trousers: 0x2a2c3a,
+        patch: 0x5a4a1e,
+        shoes: 0x5e1c16,
+        gloves: 0x66625a,
+        leather: 0x2e2218,
+        steel: 0x5a5c5e,
+      },
+      man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x2e2218, stubble: 0x4e3a30, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x2e2218, leather: 0x2e2218, tin: 0x5a5c5c, coffee: 0x1a120c },
+    },
+  },
+
+  // The animals in Milo's barn (Session 24: the models; render/barnAnimals.js).
+  // Harmless. The donkey stares.
+  barnAnimals: {
+    albedo: 0.32,
+    poseRate: 6,
+    donkey: { colours: { coat: 0x3e3932, belly: 0x524c40, muzzle: 0x625c4e, leg: 0x2e2a25, hoof: 0x161412, mane: 0x1e1a16, eyes: 0x0c0a08, eyeRing: 0x625c4e, earIn: 0x2a2520 } },
+    pony: { colours: { coat: 0x3a2618, belly: 0x33221a, muzzle: 0x2a1e18, leg: 0x2e2018, hoof: 0x161412, mane: 0x564c38, eyes: 0x0c0a08, eyeRing: 0x2a1e18, earIn: 0x1e1612 } },
+    turkey: { colours: { feather: 0x241c16, breast: 0x1c1612, wing: 0x33291e, dark: 0x100e0c, sheen: 0x5a3e1e, fan: 0x33241a, fanTip: 0x4e4638, bald: 0x3a4a5a, wattle: 0x6e1e18, beak: 0x66583a, shank: 0x5a4a3e, eyes: 0x0c0a08 } },
+    python: { colours: { scales: 0x4a4028, saddle: 0x241c12, belly: 0x66603e, eyes: 0x0c0a08, tongue: 0x3a1210 } },
+  },
+
   // Giant moths (Session 24: the model; render/mothModel.js,
   // render/MothRenderer.js): dog sized, in swarms (Aaron). One draw call for
   // the lot. Their behaviour is still to design (the mineshaft, the cave).
@@ -4341,6 +4385,8 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    milo: { distance: 5, walkSpeed: 1.4, bowSeconds: 2.4 }, // the camera's start; the walk's pace; a bow, held, then again
+    barnAnimals: { walkSpeed: 0.9 },
     bigfoot: { distance: 6.5, walkSpeed: 1.3, cocoonBack: 0.15, slumpAhead: 1.7 }, // the camera's start; the walk's pace; where the cocoon stands behind him bound, and how far out of it he's fallen
     moths: { swarm: 16, swarmRadius: 2.6, height: 1.5, distance: 4, swarmDistance: 9 }, // the swarm's size and how wide it mills; a moth's height off the ground; the camera's start
     crashedPlane: { distance: 16, height: 1.2 }, // the set's framed from as far out as the viewer goes

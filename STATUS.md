@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 10, 2026: **Session 24 (Graphics Engineer), in progress: the Mothman's model and the crashed plane's set are built.** The Mothman: one skinned mesh, one draw call, no lights; 12 poses; in the model viewer, and worn by the flyer spike. The crashed plane's set: one baked mesh in its clearing on every seed (the gouge, snapped trees, the sheared wing, the tail, the front of the plane, the grey's workbench with the gun laid out, the pilot, the survival kit), solid, with the encounter's places marked. Giant moths: one instanced mesh, a whole swarm in one draw call. The build is clean; on `main`. Aaron played rounds 36-38: no issues (Nov 10). Bigfoot and his cocoon are built. Next: Milo and his animals.
+Last updated: Nov 10, 2026: **Session 24 (Graphics Engineer): the models for the next stretch, all built** (the Mothman, the crashed plane's set, giant moths, Bigfoot and his cocoon, Milo and his animals). 912 tests pass. The Mothman: one skinned mesh, one draw call, no lights; 12 poses; in the model viewer, and worn by the flyer spike. The crashed plane's set: one baked mesh in its clearing on every seed (the gouge, snapped trees, the sheared wing, the tail, the front of the plane, the grey's workbench with the gun laid out, the pilot, the survival kit), solid, with the encounter's places marked. Giant moths: one instanced mesh, a whole swarm in one draw call. The build is clean; on `main`. Aaron played rounds 36-38: no issues (Nov 10). Bigfoot and his cocoon, then Milo (the clown and the man) and his donkey, pony, turkey and python: one draw call each. Next: Session 25, the crashed plane's encounter.
 
 Before that: Nov 10, 2026: **Session 23 (QA & Balance): the opening with the new systems; M10 closed.** The spikes' tablet numbers are in (about 57 fps in the place beyond, with the flyer and with the dozer's parts; dips to 40 only when hectic), so M10.3 is closed. The opening played through headless on seeds 1234, 7 and 4242, Day 1 to past the cordon, with Save and quit and Continue at five points. Two bugs fixed: **the dawn autosave missed dawn's own story flags** (Continue left the gas station trail shut another day), and **the safe's hunting rifle went to the rack by itself every run** (so the outpost's dogfight was skipped); now **a gun found with its slot full asks which gun to leave** (Aaron's pick). **The gun rack shows its guns.** 858 tests pass; the build is clean; everything is on `main`. Waiting on Aaron's PLAYTEST round 36 and his glare list.
 
@@ -66,7 +66,7 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
-### Session 24 (Graphics Engineer / Technical Artist): models for the next stretch (in progress)
+### Session 24 (Graphics Engineer / Technical Artist): models for the next stretch
 
 Aaron at the start: round 36 and the glare list not yet; the Mothman first, "go with your gut"; push to `main` and he plays him from the debug menu.
 
@@ -84,7 +84,10 @@ Aaron at the start: round 36 and the glare list not yet; the Mothman first, "go 
 - **Bigfoot** (`render/bigfootModel.js`, `config.bigfoot`): 2.6 m, shaggy dark red-brown hair (80 hanks, the surface lumped), a domed head, a heavy brow, a dark bare face, arms to his knees, big hands and feet; a bead necklace with a carved pendant and a woven wrist band (his own work). One draw call. Poses: stand, bound (in the cocoon), slump (cut free), kneel, walk, give (the Blessing), thanks, sit; his head turns to look. **His cocoon** (`buildCocoon`): a 3 m pod of grey silk on ropes, a laced seam down the front (sealed) or laid open (cut); one mesh, both sides drawn.
 - **`render/PosedFigure.js`** (new): one figure-kit character posed by a function (`pose(h, m, t)`), blended, one draw call; with `legsWalk`, `legsKneel` and `arm` for the two-legged. Bigfoot uses it; Milo and the animals will.
 - `tests/bigfoot.test.js` (7).
-- **Not done yet:** Milo and his animals. Aaron's rounds 36-40; his glare list.
+- **Milo** (`render/miloModel.js`, `config.milo`): tall, lanky, his wrists near his knees. Two looks on one skeleton: **the clown** (greasepaint, the painted grin, black diamonds, a red nose, a green wig, a ruff, a striped shirt and braces, patched trousers, long shoes, a bandolier of knives and one in his hand) and **the man** (flannel, jeans, a clean face, the tin mug). One draw call each. Poses: idle (bouncing), dance, bow, beckon, throw (the wind-up and the knife away), push (the car gates), indignant, stand and offer (the man's), walk.
+- **The barn's animals** (`render/barnAnimals.js`, `config.barnAnimals`): the donkey (the stare: only its head and an ear move; tested), the Shetland pony (the same horse-shape, another build), the turkey (judging, or fanned and strutting), the python (coiled). One draw call each; each looks at you.
+- `tests/milo.test.js` (10). All in the model viewer (22 entries now).
+- **Everything on Session 24's list is built.** Aaron's rounds 36-38 came back with no issues (Nov 10); rounds 39-41 and his glare list are still to come.
 
 ### Session 23 (QA & Balance): the opening with the new systems; M10 closed
 

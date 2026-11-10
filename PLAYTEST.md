@@ -352,6 +352,16 @@ Round 40 (Session 24, Graphics: Bigfoot and his cocoon; OPEN_QUESTIONS #405-407)
   - Friendly, or frightening? He should read as a gentle giant the moment you see his face.
   - **Glare:** the cocoon's silk is the palest thing; too pale under the torch?
 
+Round 41 (Session 24, Graphics: Milo and his animals; OPEN_QUESTIONS #408-411). Models only.
+- [ ] **Milo in the model viewer:** debug menu, **Models**, "Milo". The variant button switches between **the clown** and **the man (the morning after)**. Tall and lanky, arms too long for him.
+  - **The clown:** grey greasepaint, a painted grin far wider than his mouth, black diamonds over his eyes, a red nose, a frizz of green wig, a ruff, a striped shirt under braces, patched trousers, long red shoes, a bandolier of knives and one in his hand. Poses: at rest (bouncing on his toes, the knife turning in his fingers), dancing, a bow, beckoning, throwing a knife, the car gates (one hand, not looking), "I was in character!", walking.
+  - **The man:** flannel shirt, jeans, clean face, short brown hair, the tin mug. Poses: at rest (the mug at his chest), offering the mug.
+  - Is the clown funny, unsettling, or both? (The design wants both.)
+- [ ] **His animals:** four more entries after him: "Milo's donkey", "Milo's pony", "Milo's turkey", "Milo's python".
+  - **The donkey:** its first pose is the stare. Orbit round it: the head follows you and nothing else moves, but for one ear now and then.
+  - **The turkey:** drawn up tall, one eye on you, a slow tilt of the head (the Aunt June look); or fanned and strutting.
+  - The Shetland pony (round, shaggy, a forelock over its eyes); the python (coiled, its head up, as in its tank).
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

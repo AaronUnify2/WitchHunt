@@ -1,20 +1,22 @@
-# For Aaron (Session 23: QA & Balance, the opening; M10 closed)
+# For Aaron (Session 24: Graphics, the models for the next stretch)
 
-Everything is on `main`. 858 tests pass and the build is clean. Your saved run is fine (nothing in the save format moved; an older dawn save is mended on Continue). The list to play is PLAYTEST round 36; my calls are OPEN_QUESTIONS #390-392 (#391 and #392 settled).
+Everything is on `main`. 912 tests pass and the build is clean. Nothing in the save moved. Everything on the session's list is built; the lists to play are PLAYTEST rounds 37-41.
 
 ## What's new
 
-1. **The spikes are closed**: your 57 fps numbers are in DESIGN.md's spike table.
-2. **I played the opening through headless** on three seeds, Day 1 to past the cordon, with Save and quit and Continue at five points. Two bugs found and fixed:
-   - **Continue from a dawn save** left the gas station trail shut (the dawn save missed dawn's own story flags). Fixed.
-   - **Earl's hunting rifle went to the rack by itself** every run, so the outpost's dogfight was skipped. Now **a gun found with its slot full asks**: leave the shotgun, leave the service rifle, or send it to the rack (B). Your pick.
-3. **The gun rack shows its guns**: placeholder shapes standing on its shelf against the pegs.
+1. **The Mothman:** 2.3 m, furred like a moth, dusty wings with eye-spots, red eyes that glow through the fog. Twelve poses. The flyer spike wears him (Spikes, "Flyer: send one at me").
+2. **The crashed plane's set**, in its clearing on every seed (Teleport, "next story place"): the gouge, the snapped trees, the sheared wing, the tail, the front of the plane with the pilot in it, the wing as the grey's workbench with the gun laid out, the survival kit.
+3. **Giant moths:** dog sized, and a whole swarm is one draw call.
+4. **Bigfoot** (2.6 m, shaggy, wearing his own beadwork) **and his cocoon** (sealed, or cut open).
+5. **Milo:** the clown and the man the morning after. **His animals:** the donkey (it stares), the Shetland pony, the turkey (it judges), the python.
 
-## When you can play
+All of them are in the model viewer (debug menu, Models). Each is one draw call, no lights, and every colour passes the glare test.
 
-- The gun choice at the safe, then the outpost's tower and the dogfight.
-- The rack with a gun or two on it.
-- Close the browser after Night 1's dawn (don't Save and quit), then Continue: the gas station trail should be open.
-- Your glare list, whenever it's ready.
+## What I'd like from you
 
-Next on the plan is **Session 24 (Graphics Engineer / Technical Artist)**: the models for the next stretch (the Mothman, giant moths, Bigfoot, Milo, the crashed plane). HANDOVER.md has it.
+- **Rounds 39-41** (the moths, Bigfoot, Milo and the animals), and your glare list.
+- **#408: what does the clown wear in The Lone Clown?** I haven't read it; his costume past the wig, the grin and the knives is my guess.
+- **#404: how many moths is a swarm?** (A dozen, thirty?)
+- The frame rate with the swarm up, with the Mothman flying, and standing at the wreck.
+
+Next on the plan is **Session 25**: the crashed plane's encounter (the grey, the quick draw) and the Mothman at the crash site.

@@ -1,8 +1,8 @@
 # Handover
 
-## In progress: Session 24, Graphics Engineer / Technical Artist: models for the next stretch
+## Just finished: Session 24, Graphics Engineer / Technical Artist: models for the next stretch
 
-**Status: on `main` (live)** and on `ccr-970e6328-5u9z1d`. 880 tests pass (was 858); the build is clean.
+**Status: everything is on `main` (live)** and on `ccr-970e6328-5u9z1d`. 912 tests pass (was 858); the build is clean. **Everything on the session's list is built.** All of it was checked headless (the model viewer under the torch, the crash site by day on two seeds); none of it on the tablet by me.
 
 **Aaron at the start:** round 36 and his glare list not yet (still owed). The order: the Mothman, then the plane's set, giant moths, Bigfoot and the cocoon, Milo and his animals. The Mothman: "go with your gut", pushed to `main` for him to play from the debug menu (**PLAYTEST round 37**; OPEN_QUESTIONS #393-397).
 
@@ -16,7 +16,14 @@
 
 **Done: Bigfoot and his cocoon** (`render/bigfootModel.js` on `render/PosedFigure.js`, `config.bigfoot`; **PLAYTEST round 40**; #405-407). Model only.
 
-**Still to do this session:** Milo and his animals.
+**Done: Milo and his animals** (`render/miloModel.js`, `render/barnAnimals.js`, `config.milo`, `config.barnAnimals`; **PLAYTEST round 41**; #408-411). The clown and the man; the donkey (the stare), the pony, the turkey, the python. Models only. **I haven't read The Lone Clown:** the clown's costume beyond DESIGN.md's few words is a guess (#408).
+
+### Unfinished
+
+- **Aaron's play-test notes:** rounds 36-38 came back clean; **rounds 39-41** (giant moths, Bigfoot, Milo and the animals) and **his glare list** are still to come (a big play-test with notes, he said, before bed). Ask first; fix the small ones.
+- **Not checked by me:** the crash site by torch at night in the world; any of it on the tablet (frame rate).
+- **Models only:** the moths have no behaviour designed (#404: how many is a swarm); Bigfoot's cave is M12; Milo's barn is Session 28.
+- **From before:** the cave doesn't load yet (M12); the south's biome (below); the trail behind the gas station's draw calls (#302); the common pickups' first-time introductions (#348); the card's turning item is a CSS placeholder (#346).
 
 **For Session 25 (the crashed plane's encounter):**
 - `game.crashSite.spots` (world space): `work` (where the grey stands, in front of the wing, facing it), `cover` (behind the wing), `bench` (the wing's top, with the gun laid out), `cockpit`, `kit` (the flare pistol: the signal flare), `log` (the knee-board: the pilot's log). `game.crashSite.place` is `{ x, z, yaw }`; `toWorld(place, x, z)` turns model coordinates into the world's.
@@ -64,19 +71,17 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 - **Where it touches the code:** `world/forestLayout.js` (tree and undergrowth density by a south factor; a burnt-snag tree kind; stumps in rows), `render/treeSprites.js` (blackened trunks, new growth), `world/GroundField.js` and the terrain shader's floor (ash and churned ground by region), `config.forest` and `config.terrain.floor`, `render/Atmosphere.js` (low fog in the open), detection (sight further where it's open?), the map image's colours. Keep the cluster's land untouched (fixed seed north of the cordon) and **mind the draw-call and sprite budgets on the tablet**.
 - Open: whether it's open enough to change how fights and the witch play (sight lines), whether the government tracks become pathways on the map, and which session builds it (an art/graphics session after the spikes fits).
 
-## Next: Session 24, Graphics Engineer / Technical Artist: models for the next stretch
+## Next: Session 25, Level & Encounter Designer + AI Programmer: the crashed plane and the Mothman at the crash site (M11, part 1)
 
-**First:** ask Aaron for round 36 and his glare list; fix the small ones (each tested and pushed to `main`).
+**First:** ask Aaron for his play-test notes (rounds 39-41, anything more on 36-38) and his glare list; fix the small ones (each tested and pushed to `main`).
 
-**Goal** (DESIGN.md "Build plan", the Session 24 row; part of M17): the models the next stretch needs, ready for the encounter sessions that use them (Session 25: the crashed plane and the Mothman):
-- **The Mothman** (DESIGN.md "The Mothman"; the flyer spike's placeholder is `ai/Flyer.js` `build()`, #385): a tall winged figure, glowing red eyes (unfogged, no lights), wings that flap, a dive pose, landing or clinging between swoops.
-- **Giant moths** (the mineshaft and the cave; behaviour still to design: model only).
-- **Bigfoot** (friendly, can't be harmed; found in a silk cocoon in the cave: the cocoon too).
-- **Milo and his animals** (Milo's barn, optional; DESIGN.md "Milo's barn"; the staring donkey).
-- **The crashed plane's set** (the spine's first beat, just past the checkpoint; DESIGN.md "The Mothman at the crash site" and the crashed plane; the grey alien who took the pilot's pistol).
-- Workshop the looks with Aaron first (rule 10), one at a time, in the model viewer (Session 13's `ModelViewer`, debug); mind the **draw calls and the glare rule** (props under a luma of 0.45; `tests/session19style.test.js`) and the tablet.
+**Goal** (DESIGN.md "Build plan", the Session 25 row; "Crashed plane"; "The Mothman at the crash site"):
+- **The crashed plane (beat 1):** the grey at its workbench (the camera on it, absorbed; it turns, sees Tom, lifts the pilot's pistol); **the quick draw** (about half a second: one good shot drops it); otherwise its first shot misses, it scrambles behind the wing and a shootout begins. Its drops: the pilot's pistol, alien shells, an alien med kit, the small power cell. The pilot's log.
+- **The Mothman at the crash site (beat 2):** Wyatt suggests the signal flare (a cutscene); a flyover, a second, then the full attack; hurt enough, it flies off early, or Tom drops to the 10% health floor and blacks out, red eyes over him.
+- **What's ready:** the set and its places (`game.crashSite.spots`: `work`, `cover`, `bench`, `cockpit`, `kit`, `log`; see "To carry"); the grey's model and poses (`render/AlienRenderer.js`: examine, ambush, aim, fire); the Mothman's model and the flyer spike's flight (`ai/Flyer.js`, `ai/flyerPath.js`: flyover, dive, strike; `render/MothmanRenderer.js` has `perch`, `mantle` and `cling` for between swoops); the health floor (`Combat.setHealthFloor`); the pistol, alien shells, the alien med kit and the plane's cell as debug items; `flares` gated on `mothmanMet` in `loot.json`.
+- Workshop the encounter's beats with Aaron first (rule 10), one idea at a time.
 
-Not this session: the encounters' content and AI (Sessions 25-28); touch controls (#389: at the very end).
+Not this session: Junie taken and the Caller (Session 26); touch controls (#389: at the very end).
 
 ### Gotchas and decisions to carry
 
@@ -95,7 +100,8 @@ Not this session: the encounters' content and AI (Sessions 25-28); touch control
 
 ### Open questions for Aaron
 
-- **Session 23:** #390 (the gun choice's default), and round 36 on the tablet (the gun choice, the rack, Continue after closing at dawn). #391-392 settled.
+- **Session 24:** #393-411: the Mothman (#393-397), the crashed plane's set (#398-402), giant moths (#403-404), Bigfoot and his cocoon (#405-407), Milo and his animals (#408-411; **#408: what does the story's clown wear?**).
+- **Session 23:** #390 (the gun choice's default). #391-392 settled; round 36 played, no issues.
 
 - **Session 22:** #377-389 (#377, #379, #381, #384 and #389 settled), in particular #382 (the verdict's lines; 57 fps reads Runs great), #378 (the place beyond's look), #385-386 (the flyer's and the parts' looks and numbers).
 - **Session 21:** #353-376 (#354, #357, #367, #368 and #370 settled), in particular #353 (the spine's places), #363/#365 (the cave's hints), #371 (the clock inside), #375 (the Day 1 red light), and the south's biome (above).
@@ -108,11 +114,9 @@ Not this session: the encounters' content and AI (Sessions 25-28); touch control
 ## Session kickoff prompt for the next session
 
 ```
-You are the Graphics Engineer / Technical Artist on Witch Hunt, Session 24: the models for the next stretch (the Mothman, giant moths, Bigfoot and his cocoon, Milo and his animals, the crashed plane's set), ready for Session 25's crashed plane.
-Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": Session 24; "The Mothman"; "Enemies"; the crashed plane and the Mothman at the crash site; the Bigfoot cave; Milo's barn; the art direction), STATUS.md (Sessions 22-23) and OPEN_QUESTIONS.md (#390, #377-389, then the older open ones).
-First ask Aaron for PLAYTEST round 36 (the gun choice, the rack, Continue after closing at dawn) and his glare list; fix the small ones, pushing each to main.
-Then workshop each model's look with Aaron (rule 10), one at a time, and build it in the model viewer; mind the draw calls, the glare rule and the tablet.
+You are the Level & Encounter Designer + AI Programmer on Witch Hunt, Session 25: the crashed plane (the grey's AI, the quick draw, its drops) and the Mothman at the crash site (the flare, the flyovers, the attack, the 10% floor and the blackout). M11, part 1.
+Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": Session 25; "Crashed plane"; "The Mothman at the crash site"; "The Mothman"; "Aliens"; Weapons: the pistol and ammo types; Health: the health floor), STATUS.md (Session 24) and OPEN_QUESTIONS.md (#393-411, then the older open ones).
+First ask Aaron for his play-test notes (rounds 39-41) and his glare list; fix the small ones, pushing each to main.
+Then workshop the encounter's beats with Aaron (rule 10), one at a time, and build them on the set that's there (game.crashSite.spots) with the models that are there (the grey, the Mothman).
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
-Then confirm your role and ask Aaron for his notes.
-When he's happy, follow the handover protocol: update STATUS.md, OPEN_QUESTIONS.md and HANDOVER.md for the next session (Session 25), and end with the HANDOVER READY signal.
 ```

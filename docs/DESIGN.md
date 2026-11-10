@@ -558,7 +558,7 @@ More grounds = a look, set dressing and one atmospheric twist.
 | The witch | Forest and hut | 3D | See The witch | Built |
 | The outpost's machine gun | The military outpost's gun pit | 3D | Not an enemy: Tom's. Dead until a battery's fitted, then fires 25 rounds at the nearest dead, overheats and blows up | Built (Session 17) |
 
-**Friendly:** Bigfoot (can't be harmed; **his model and his cocoon are built, Session 24**; his cave isn't); **Sheriff**, the friendly grey (designed, not built); **Milo**, who never attacks Tom and can't be hurt (designed, not built). Harmless: the animals in Milo's barn, the staring donkey (designed, not built).
+**Friendly:** Bigfoot (can't be harmed; **his model and his cocoon are built, Session 24**; his cave isn't); **Sheriff**, the friendly grey (designed, not built); **Milo**, who never attacks Tom and can't be hurt (**his models are built, Session 24**: the clown and the man; his barn isn't). Harmless: the animals in Milo's barn, the staring donkey (**models built, Session 24**: the donkey, the pony, the turkey, the python).
 
 ### Enemy targeting
 
@@ -2193,7 +2193,7 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 21 | Lead Engineer | The map: the fixed story spine, the railway line, the road north and ROAD CLOSED, the seed dealing optional encounters; the interior system *(built)* | M10.2 |
 | 22 | Lead Engineer + AI Programmer | The spikes: 150 zombies, the procedural four-path forest, a flying enemy, a dozer part; the performance gate. **Built** (each a go, headless; the tablet's numbers still to come), and **Demo mode** on the main menu (Aaron's idea); the flicker frame fixed | M10.3 |
 | 23 | QA & Balance | Play-test the opening with the new systems; save and quit on the tablet. **Done** (headless on seeds 1234, 7, 4242, Day 1 to past the cordon, Save and quit at five points; two bugs fixed: the dawn save's missing flags, the safe's rifle racked by itself, now a choice; the rack shows its guns). **M10 closed**, Aaron's round 36 to confirm on the tablet | QA |
-| 24 | Graphics Engineer / Technical Artist | Models for the next stretch: the Mothman, giant moths, Bigfoot, Milo (and his animals), the crashed plane's set | Part of M17 |
+| 24 | Graphics Engineer / Technical Artist | Models for the next stretch: the Mothman, giant moths, Bigfoot, Milo (and his animals), the crashed plane's set. **Done (Nov 10)** | Part of M17 |
 | 25 | Level & Encounter Designer + AI Programmer | The crashed plane (the grey's AI, the quick draw) and the Mothman at the crash site | M11 (part 1) |
 | 26 | Level & Encounter Designer + Narrative Designer | Junie taken, the Caller, comms in the south, the old church and the time capsule; their lines | M11 (part 2) |
 | 27 | Level & Encounter Designer | The stairs and the place beyond; Junie home | M11 (part 3) |
