@@ -85,7 +85,7 @@ describe('model viewer catalogue', () => {
 
   // The zombie needs a canvas (its atlas), so it's checked in the
   // browser; the rest build and pose here.
-  for (const id of ['mutant', 'witch', 'family', 'grey', 'beetle', 'mothman', 'moth', 'mib', 'agent', 'vehicle', 'hut', 'standIns', 'crashedPlane', 'ute', 'alienQuad', 'dozer']) {
+  for (const id of ['mutant', 'witch', 'family', 'grey', 'beetle', 'mothman', 'moth', 'bigfoot', 'mib', 'agent', 'vehicle', 'hut', 'standIns', 'crashedPlane', 'ute', 'alienQuad', 'dozer']) {
     it(`builds the ${id} and plays every pose and variant`, () => {
       const entry = VIEWER_MODELS.find((e) => e.id === id);
       const scene = new THREE.Scene();

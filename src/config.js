@@ -3957,6 +3957,35 @@ export const config = {
     },
   },
 
+  // Bigfoot (Session 24: the model; render/bigfootModel.js on
+  // render/PosedFigure.js). Friendly; he can't be harmed. His cave's story is M12.
+  bigfoot: {
+    height: 2.6,
+    width: 1.12, // broad for his height
+    albedo: 0.36, // the torch is strong up close
+    poseRate: 6, // he moves slowly
+    eyeGlint: 0.25, // a little warmth in his eyes, so they read in the dark of the cave
+    thermalGlow: 1, // warm: he's of this world
+    colours: {
+      hair: 0x30221a, // dark red-brown
+      hairDark: 0x1e1610,
+      skin: 0x2a211c, // his face, palms and soles
+      mouth: 0x1c1412,
+      eyes: 0x6a4420,
+      bone: 0x6e6652, // his beads: bone, river stone, red seed
+      stone: 0x2e5650,
+      seed: 0x6a2a1c,
+      weave: 0x5a4a2a,
+    },
+    // The silk cocoon the Mothman keeps him in.
+    cocoon: {
+      height: 3.0,
+      radius: 0.95,
+      albedo: 0.28,
+      colours: { silk: 0x56534b, silkDark: 0x2a2824, rope: 0x4e4b44 }, // grey silk (dull: the glare rule)
+    },
+  },
+
   // Giant moths (Session 24: the model; render/mothModel.js,
   // render/MothRenderer.js): dog sized, in swarms (Aaron). One draw call for
   // the lot. Their behaviour is still to design (the mineshaft, the cave).
@@ -4312,6 +4341,7 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    bigfoot: { distance: 6.5, walkSpeed: 1.3, cocoonBack: 0.15, slumpAhead: 1.7 }, // the camera's start; the walk's pace; where the cocoon stands behind him bound, and how far out of it he's fallen
     moths: { swarm: 16, swarmRadius: 2.6, height: 1.5, distance: 4, swarmDistance: 9 }, // the swarm's size and how wide it mills; a moth's height off the ground; the camera's start
     crashedPlane: { distance: 16, height: 1.2 }, // the set's framed from as far out as the viewer goes
     mothman: { distance: 6.5, flyHeight: 1.8, clingHeight: 1.2, diveSeconds: 0.9 }, // metres out he's framed from (his wings), his middle's height flying, his feet's clinging; the dive before each strike

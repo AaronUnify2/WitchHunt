@@ -29,6 +29,8 @@ import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { MothmanRenderer, FLYING } from '../render/MothmanRenderer.js';
 import { MothRenderer } from '../render/MothRenderer.js';
+import { PosedFigure } from '../render/PosedFigure.js';
+import { bigfootSpec, bigfootPose, buildCocoon } from '../render/bigfootModel.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
@@ -205,6 +207,25 @@ export const VIEWER_MODELS = [
       { id: 'corpse', name: 'Corpse' },
     ],
     create: mothModel,
+  },
+  {
+    id: 'bigfoot',
+    name: 'Bigfoot',
+    note: 'Session 24: friendly, he can\'t be harmed. One draw call (the cocoon is its own). He wears what he\'s made: beads, a woven band. His cave is M12.',
+    height: (cfg) => cfg.bigfoot.height,
+    startDistance: (cfg) => cfg.modelViewer.bigfoot.distance,
+    variants: null,
+    poses: [
+      { id: 'stand', name: 'Standing (he looks at you)' },
+      { id: 'bound', name: 'In the cocoon (as Tom finds him)' },
+      { id: 'slump', name: 'Cut free (on his hands and knees)' },
+      { id: 'kneel', name: 'Kneeling (getting his breath)' },
+      { id: 'walk', name: 'Walking' },
+      { id: 'give', name: 'Giving the Blessing (both hands held out)' },
+      { id: 'thanks', name: 'Thanks (a hand to his chest)' },
+      { id: 'sit', name: 'Sitting, working at something (at home)' },
+    ],
+    create: bigfootModel,
   },
   {
     id: 'mib',
@@ -718,6 +739,47 @@ function beetleModel(ctx) {
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- Bigfoot, and his cocoon ----------------------------------------------------------------------
+
+function bigfootModel(ctx) {
+  const bc = ctx.cfg.bigfoot;
+  const vb = ctx.cfg.modelViewer.bigfoot;
+  const figure = new PosedFigure({ spec: bigfootSpec(bc), pose: bigfootPose, albedo: bc.albedo, poseRate: bc.poseRate, thermalGlow: bc.thermalGlow });
+  figure.init(ctx.scene);
+  const cocoons = [buildCocoon(bc.cocoon, 0), buildCocoon(bc.cocoon, 1)];
+  for (const c of cocoons) ctx.scene.add(c.group);
+  const m = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'stand', timer: 0, walked: 0, look: 0 };
+  let last = null;
+  return {
+    objects: [figure.mesh, ...cocoons.map((c) => c.group)],
+    update(dt, s) {
+      Object.assign(m, { x: s.x, y: s.y, z: s.z, facing: s.facing, state: s.pose, timer: s.poseTime, look: 0 });
+      if (s.camera) m.look = wrapAngle(Math.atan2(s.camera.position.x - s.x, s.camera.position.z - s.z) - s.facing);
+      if (s.pose === 'walk') m.walked += dt * vb.walkSpeed;
+      const fx = Math.sin(s.facing);
+      const fz = Math.cos(s.facing);
+      // The cocoon: sealed round him, or cut open behind him.
+      cocoons[0].group.visible = s.pose === 'bound';
+      cocoons[1].group.visible = s.pose === 'slump';
+      for (const c of cocoons) {
+        c.group.position.set(s.x - fx * vb.cocoonBack, s.y, s.z - fz * vb.cocoonBack);
+        c.group.rotation.y = s.facing;
+      }
+      if (s.pose === 'slump') {
+        m.x += fx * vb.slumpAhead;
+        m.z += fz * vb.slumpAhead;
+      }
+      figure.update(m, dt, last !== null && last !== s.pose && (s.pose === 'bound' || last === 'bound'));
+      last = s.pose;
+    },
+    setThermal: (on, t) => figure.setThermal(on, t),
+    dispose() {
+      figure.dispose();
+      for (const c of cocoons) c.dispose();
+    },
   };
 }
 

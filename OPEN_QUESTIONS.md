@@ -35,6 +35,14 @@ My calls (PLAYTEST round 38):
 | 403 | **Their size and look.** About 0.8 m long and 1.7 m across: a fat furred body, a banded abdomen, the Mothman's wings in small and his red eyes (unfogged). Bigger, smaller, plainer wings? | `scale: 1` | `config.moths.giant` (`scale`, `colours`, `eyeGlow`) |
 | 404 | **How many.** The renderer draws up to 32 at once; the viewer's swarm is 16. What's a swarm in the mineshaft: a dozen, thirty? (It decides their health and damage when their behaviour is designed.) | `poolSize: 32` | `config.moths.giant.poolSize` |
 
+**Built: Bigfoot and his cocoon** (`render/bigfootModel.js` on the new `render/PosedFigure.js`; `config.bigfoot`): one draw call for him, one for the cocoon. Model only.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 405 | **His look.** 2.6 m, broad, dark red-brown shaggy hair, a domed head with a heavy brow and no neck, a dark bare face, small warm eyes (a faint glint so they read in the cave), arms to his knees. | As described. | `bigfootSpec()`, `config.bigfoot.colours` |
+| 406 | **What he wears.** A necklace of bone, river-stone and red-seed beads with a carved tooth, and a woven band on his left wrist: his own handiwork (the design's "a person with a culture"). Right amount, or more (a belt, a carried tool)? | As described. | `bigfootSpec()` |
+| 407 | **The cocoon.** A 3 m pod of grey silk hung by ropes of it, a seam down the front laced with strands (his face and beads show through); cut, the front lies open. Should more of him show, or less (only a hand, or nothing until it's cut)? | `buildCocoon(c, 0 or 1)` | `render/bigfootModel.js`, `config.bigfoot.cocoon` |
+
 ## Session 23 (QA & Balance: the opening with the new systems)
 
 Aaron's answers at the start (Nov 10):

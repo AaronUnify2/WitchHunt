@@ -347,6 +347,11 @@ Round 39 (Session 24, Graphics: giant moths; OPEN_QUESTIONS #403-404). Model onl
   - The swarm by moonlight (the light button): red eyes first, then the shapes. Does a swarm read as a threat, or do they want to be bigger or more of them?
   - **The frame rate** with the swarm up (it's one draw call however many there are).
 
+Round 40 (Session 24, Graphics: Bigfoot and his cocoon; OPEN_QUESTIONS #405-407). Model only.
+- [ ] **Bigfoot in the model viewer:** debug menu, **Models**, "Bigfoot". 2.6 m, dark red-brown and shaggy, a domed head with a heavy brow, arms to his knees. He wears a necklace of beads with a carved pendant and a woven band on one wrist. His head turns to watch you. Poses: standing, **in the cocoon** (as Tom finds him: laced in, his face and beads showing through the seam), **cut free** (on his hands and knees in front of the opened cocoon), kneeling, walking, giving the Blessing (both hands out), thanks (a hand to his chest), sitting and working at something.
+  - Friendly, or frightening? He should read as a gentle giant the moment you see his face.
+  - **Glare:** the cocoon's silk is the palest thing; too pale under the torch?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

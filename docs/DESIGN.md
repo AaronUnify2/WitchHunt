@@ -54,7 +54,7 @@ A snapshot for redesigning the mid-game and end-game: what a run is today, what'
 | Station | Fence (12 panels and a gate), doors, comms room, barricades (outside the fence), spike traps, floodlights, the fence box and charge, the turret (debug-given), the ledger (plan of the compound, upgrades, security, forecast, monitors, papers), real and simulated nights, alarm, dawn autosave |
 | Combat | Shovel, service rifle, shotgun, hunting rifle (scope, helmet-piercing), flare gun (lure, conk); pistol, SMG, heat-scope semi-auto and auto shotgun exist but only from the debug menu. Health, three armour bars, first aid. Explosive charges and the detonator. Exploding cars and gas pumps |
 | Enemies with AI | Zombies (citizen, police, army with helmets, Men in Black, Earl), mutants (incl. the gas station's authored one), hordes and marches, giant beetles (crates, the shell and the face), the witch (roam, plant, fight, flee, traps, hexes, wounds), the outpost's machine gun |
-| Models without AI yet | The grey alien (four cowboy-drift kit stages), the armed Men in Black. the Mothman (Session 24: worn by the flyer spike). **Not modelled:** Bigfoot, the miner zombie |
+| Models without AI yet | The grey alien (four cowboy-drift kit stages), the armed Men in Black. the Mothman (Session 24: worn by the flyer spike). Giant moths and Bigfoot (Session 24). **Not modelled:** the miner zombie |
 | Story systems | Dialogue from data (158 lines), radio with rate limits, face-to-face talk, subtitles with blips, trail cameras, cutscenes from data (69, every one in the debug menu) with camera looks, lore hand-ins (17 items) and the monitors, papers in close-up, tapes on D-pad down, story flags, objectives with breadcrumbs, the ESCAPE THE WITCH alert |
 | Vehicles | Abandoned cars (search, bonnet, battery, alarms, wear, explosions); **Earl's quad bike**; three **experimental vehicles** in the debug menu (the ute with a turret, the alien quad, the forestry dozer) |
 | Look | Style passes 1 and 2: ground blend, six tree kinds with solid trunks near, mist, fog nights, the grade, fireflies, beam dust, light shafts, the props kit (weathered, glare-capped meshes), dressed opening cluster, camera looks |
@@ -558,7 +558,7 @@ More grounds = a look, set dressing and one atmospheric twist.
 | The witch | Forest and hut | 3D | See The witch | Built |
 | The outpost's machine gun | The military outpost's gun pit | 3D | Not an enemy: Tom's. Dead until a battery's fitted, then fires 25 rounds at the nearest dead, overheats and blows up | Built (Session 17) |
 
-**Friendly:** Bigfoot (can't be harmed; designed, not built, no model); **Sheriff**, the friendly grey (designed, not built); **Milo**, who never attacks Tom and can't be hurt (designed, not built). Harmless: the animals in Milo's barn, the staring donkey (designed, not built).
+**Friendly:** Bigfoot (can't be harmed; **his model and his cocoon are built, Session 24**; his cave isn't); **Sheriff**, the friendly grey (designed, not built); **Milo**, who never attacks Tom and can't be hurt (designed, not built). Harmless: the animals in Milo's barn, the staring donkey (designed, not built).
 
 ### Enemy targeting
 
