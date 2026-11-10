@@ -26,6 +26,14 @@ import { notices } from './detection.js';
 const ERRANDS = new Set(['wander', 'march', 'linger', 'held']);
 
 export class ZombieBrain {
+  // Session 25: a chasing zombie drops it and goes back to its errand.
+  giveUp(z) {
+    if (z.mode !== 'chase') return;
+    z.memory = 0;
+    this.setMode(z, z.errand ?? (z.marcher ? 'march' : 'wander'));
+    if (z.horde) z.horde.alertTime = undefined;
+  }
+
   // routes: PathRoutes (wandering). marches: MarchRoutes (M6). ground:
   // for line of sight over the hills.
   constructor(detectionConfig, wanderConfig, routes, ground, rng, marches = null) {
@@ -57,6 +65,7 @@ export class ZombieBrain {
     z.marchLink = null;
     z.marchDone = false;
     z.marcher = mode === 'march'; // marches on after a chase
+    z.errand = ERRANDS.has(mode) ? mode : null;
     z.hasGoal = false;
     z.followX = this.rng.range(-1, 1);
     z.followZ = this.rng.range(-1, 1);
@@ -82,6 +91,7 @@ export class ZombieBrain {
   // Go for the player, remembering them for `memory` seconds.
   chase(z, x, zz, memory) {
     if (z.mode !== 'chase') {
+      if (ERRANDS.has(z.mode)) z.errand = z.mode; // Session 25: what to go back to (EnemyManager.forgetPlayer)
       this.setMode(z, 'chase');
       z.noticed?.(); // the mutant charges
     }

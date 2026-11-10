@@ -452,7 +452,9 @@ export class GasStation {
     // mouth in the centre aisle (it's in plain view down it then), or gets close any other way.
     const w = this.data.wake;
     const m = this.data.mutant;
-    const inAisle = this.inside(l) && l.z < w.z && l.z > this.data.building.partitionZ && l.x > w.x0 && l.x < w.x1;
+    // Session 25 (Aaron): it wakes closer: about 2 m (wake.near), or, down
+    // its aisle, within wake.aisle of it (no longer at the aisle's mouth).
+    const inAisle = this.inside(l) && l.z < w.z && l.z > this.data.building.partitionZ && l.x > w.x0 && l.x < w.x1 && Math.hypot(l.x - m.x, l.z - m.z) < (w.aisle ?? Infinity);
     // (Inside only: it woke through the wall from the forecourt; Aaron.)
     const near = this.inside(l) && l.z > this.data.building.partitionZ && Math.hypot(l.x - m.x, l.z - m.z) < w.near;
     if (!(inAisle || near) || this.cutscenes?.active) return;

@@ -356,6 +356,7 @@ export class Game {
       clock: this.clock,
       dialogue: this.dialogue,
       notify: (text) => this.toast.show(text),
+      dismissHint: () => (this.input.activeDevice === 'gamepad' ? 'Press A to dismiss' : 'Press Enter to dismiss'), // Session 25
     });
   }
 
@@ -1403,6 +1404,12 @@ export class Game {
     // Session 21 (Aaron: rode the quad into the shelter's horde as the sweep began and died in it): every
     // cutscene now: the dead keep moving, but none can notice or hurt Tom, and the quad brakes to a stop.
     this.combat.unseen = Boolean(cs.active);
+    // Session 25 (Aaron: the shelter's dead came for the quad as its sweep played): no noise
+    // carries while a cutscene plays, and as one starts the dead chasing Tom from afar forget him.
+    const dead = this.combat.enemies;
+    if (cs.active && !this.wasCutscene) dead.forgetPlayer(this.player.position, this.cfg.detection.cutsceneForgetBeyond ?? 10);
+    dead.quiet = Boolean(cs.active);
+    this.wasCutscene = Boolean(cs.active);
     this.combat.shielded = Boolean(cs.active);
     if (this.player.riding) {
       this.player.riding.halting = Boolean(cs.active);
@@ -1497,6 +1504,8 @@ export class Game {
     const locked = this.station.ledger.isOpen || !first || cinematic;
     const input = first && !cinematic ? this.input : this.lockedInput;
     const controls = locked ? this.lockedInput : this.input;
+    // Session 25: A closes the night's forecast (before the player reads it as a jump).
+    if (first && !locked && !this.demo.active) this.nightWatch.handleDismiss(controls);
     if (first && playing && this.combat.alive) this.player.update(dt, controls);
     // Session 15b: on the quad bike the gun's slung (no firing, no charges, no digging), and the witch is faster.
     const riding = Boolean(this.player.riding);

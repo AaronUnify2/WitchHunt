@@ -196,6 +196,7 @@ export class NightWatch {
         <div><h3>DANGER (zombie level ${f.level})</h3><ul>${danger}</ul></div>
       </div>
       ${warnings}
+      <div class="dismiss">${this.dismissHint ? escapeHtml(this.dismissHint()) : 'Press A to dismiss'}</div>
     `;
     this.el.classList.remove('hidden');
     this.forecastTimer = this.nc.forecastSeconds;
@@ -222,6 +223,25 @@ export class NightWatch {
     if (f.danger.parts.length === 0) rows.push({ label: '   No sigils planted', value: 'a quiet night', action: null });
     for (const w of f.warnings) rows.push({ label: w, value: '', action: null });
     return { id: 'forecast', title: 'Forecast', rows };
+  }
+
+  // Session 25 (Aaron): A (or Enter) closes the forecast early. Called
+  // before the player reads the controls, and the press is swallowed, so
+  // it doesn't also jump.
+  get forecastShowing() {
+    return this.forecastTimer > 0;
+  }
+
+  handleDismiss(input) {
+    if (!this.forecastShowing || !input?.wasPressed('menuConfirm')) return false;
+    input.swallowHeld?.();
+    this.closeForecast();
+    return true;
+  }
+
+  closeForecast() {
+    this.forecastTimer = 0;
+    this.el.classList.add('hidden');
   }
 
   // ---- each frame ----------------------------------------------------------------------

@@ -580,11 +580,27 @@ export class EnemyManager {
   // A loud noise at (x, z), e.g. a gunshot: every living zombie within
   // `radius` (times the level's notice) comes for the player.
   alert(x, z, radius) {
+    if (this.quiet) return 0; // Session 25 (Aaron): nothing hears Tom while a cutscene plays
     const r = radius * this.stats.notice;
     let n = 0;
     for (const zb of this.living) {
       if (zb.state === 'rise' || zb.mode === 'held' || Math.hypot(zb.x - x, zb.z - z) > r) continue;
       this.brain.chase(zb, x, z, this.detCfg.gunfireMemory);
+      n++;
+    }
+    return n;
+  }
+
+  // Session 25 (Aaron: the shelter's dead came for the quad through the
+  // arrival sweep): as a cutscene starts, every zombie chasing Tom from
+  // further than `beyond` metres forgets him and goes back to its errand.
+  // An encounter's own (authored) are left alone.
+  forgetPlayer(player, beyond) {
+    let n = 0;
+    for (const zb of this.living) {
+      if (zb.mode !== 'chase' || zb.authored) continue;
+      if (Math.hypot(zb.x - player.x, zb.z - player.z) <= beyond) continue;
+      this.brain.giveUp(zb);
       n++;
     }
     return n;

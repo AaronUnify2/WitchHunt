@@ -247,6 +247,16 @@ export class Player {
         this.jetFuel = Math.max(0, this.jetFuel - dt);
       }
       this.position.y += this.verticalSpeed * dt;
+      // Session 25 (Aaron: jumping in the storm shelter put his head through its
+      // ceiling): inside a room the head stays under its roof (every interior).
+      const pl = this.platform;
+      if (pl?.room && pl.roofY !== undefined) {
+        const top = Math.max(floor, pl.y + pl.roofY - this.eyeHeight - (c.headroom ?? 0.15));
+        if (this.position.y > top) {
+          this.position.y = top;
+          this.verticalSpeed = Math.min(0, this.verticalSpeed);
+        }
+      }
       if (this.position.y <= floor) {
         this.position.y = floor;
         this.verticalSpeed = 0;

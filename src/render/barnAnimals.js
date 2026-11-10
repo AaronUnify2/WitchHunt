@@ -23,6 +23,9 @@ const BUILDS = {
   pony: { leg: 0.44, back: 0.86, girth: 0.3, neck: 0.4, head: 0.3, ear: 0.09, mane: 0.2, tail: 0.75, forelock: 1 },
 };
 
+// How far above the head's joint an ear's root sits: its base inside the skull.
+export const EAR_ROOT = 0.02;
+
 function equineJoints(s) {
   const top = s.leg + s.girth; // the body's centre line
   const half = s.back / 2;
@@ -34,7 +37,7 @@ function equineJoints(s) {
     ['tail', 'body', 0, top + s.girth * 0.6, -half - 0.02],
   ];
   for (const [n, k] of SIDES) {
-    j.push([`ear${n}`, 'head', k * 0.06, top + s.girth * 0.5 + s.neck * 0.8 + 0.1, half + s.neck * 0.55 - 0.03]);
+    j.push([`ear${n}`, 'head', k * 0.06, top + s.girth * 0.5 + s.neck * 0.8 + 0.04, half + s.neck * 0.55 - 0.03]); // Session 25: at the skull's top (they floated)
     for (const [e, z] of [
       ['F', half - 0.12],
       ['B', -half + 0.1],
@@ -73,8 +76,9 @@ function equineSpec(kind, c) {
     masses.push(['head', null, k * 0.084, hy + 0.005, hz + 0.065, 0.014, 0.016, 0.017, 'eyes']);
     masses.push(['head', null, k * 0.03, hy - 0.15, hz + s.head * 0.85 + 0.068, 0.012, 0.014, 0.008, 'eyes']);
     // The ears: a donkey's are most of the donkey.
-    masses.push([`ear${n}`, null, k * 0.065, hy + 0.1 + s.ear * 0.5, hz - 0.03, 0.035, s.ear * 0.55, 0.018, 'coat']);
-    masses.push([`ear${n}`, null, k * 0.065, hy + 0.1 + s.ear * 0.5, hz - 0.018, 0.02, s.ear * 0.42, 0.01, 'earIn']);
+    // Session 25 (Aaron: they weren't attached): their roots sunk into the skull.
+    masses.push([`ear${n}`, null, k * 0.06, hy + EAR_ROOT + s.ear * 0.5, hz - 0.03, 0.035, s.ear * 0.55, 0.018, 'coat']);
+    masses.push([`ear${n}`, null, k * 0.06, hy + EAR_ROOT + s.ear * 0.5, hz - 0.018, 0.02, s.ear * 0.42, 0.01, 'earIn']);
     for (const e of ['F', 'B']) {
       limbs.push([`leg${e}${n}`, `knee${e}${n}`, 0.085, 0.052, 'coat', 0.2]);
       limbs.push([`knee${e}${n}`, `hoof${e}${n}`, 0.046, 0.04, 'leg', 0]);

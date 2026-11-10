@@ -2559,6 +2559,7 @@ export const config = {
   // and stealth"): distance, line of sight, light, the torch, crouching and
   // noise. The level's `notice` multiplies every range.
   detection: {
+    cutsceneForgetBeyond: 10, // Session 25: as a cutscene starts, the dead chasing Tom from further than this forget him
     thinkSeconds: 0.5, // each zombie looks and listens this often (staggered)
     sight: { night: 13, day: 38 }, // metres: a standing player, torch off
     torchNight: 2.3, // torch on: seen this many times further away at night...

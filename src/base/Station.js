@@ -612,7 +612,11 @@ export class Station {
     const c = L.cabin;
     // Session 15b (Aaron): it can't be taken until the witch has been seen burying (Night 1's clip).
     if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
-    if (this.state.aidBoxCount > 0) {
+    // Session 25 (Aaron): no prompt for the box while Tom's at full health
+    // (the game starts beside it); he can take from it once he's hurt.
+    const hp = this.combat.health;
+    const hurt = !hp || hp.value < hp.cfg.max;
+    if (this.state.aidBoxCount > 0 && hurt) {
       // Session 20: the box keeps what didn't fit in the healing pool.
       const first = this.progress && !this.progress.has('aidBoxTaken');
       const what = this.aidBoxText();

@@ -84,6 +84,22 @@ describe("the animals in Milo's barn", () => {
     });
   }
 
+  // Session 25 (Aaron): the donkey's ears floated over its head.
+  for (const kind of ['donkey', 'pony']) {
+    it(`the ${kind}'s ears are rooted in its skull`, () => {
+      const spec = ANIMALS[kind].spec(ac[kind]);
+      const skull = spec.masses.filter((m) => m[0] === 'head' && m[8] === 'coat')[0];
+      const [, , , sy, sz, rx, ry, rz] = skull;
+      const ears = spec.masses.filter((m) => String(m[0]).startsWith('ear') && m[8] === 'coat');
+      expect(ears.length).toBe(2);
+      for (const [, , x, y, z, , ery] of ears) {
+        const root = y - ery * 0.85; // a little up the ear: still inside the skull
+        const inside = (x / rx) ** 2 + ((root - sy) / ry) ** 2 + ((z - sz) / rz) ** 2;
+        expect(inside, kind).toBeLessThan(1);
+      }
+    });
+  }
+
   it('the donkey stares: its head follows you and nothing else moves', () => {
     const a = ANIMALS.donkey;
     const { f } = build(a.spec(ac.donkey), a.pose);
