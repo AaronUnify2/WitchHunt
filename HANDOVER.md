@@ -100,7 +100,7 @@ Not this session: Junie taken and the Caller (Session 26); touch controls (#389:
 
 ### Open questions for Aaron
 
-- **Session 24:** #393-411: the Mothman (#393-397), the crashed plane's set (#398-402), giant moths (#403-404), Bigfoot and his cocoon (#405-407), Milo and his animals (#408-411: answered from the story; the suit's colour is still his to pick). #404 settled (16 to 32).
+- **Session 24:** #393-411: the Mothman (#393-397), the crashed plane's set (#398-402), giant moths (#403-404), Bigfoot and his cocoon (#405-407), Milo and his animals (#408-411: answered from the story; the blue suit settled). #404 settled (16 to 32).
 - **Session 23:** #390 (the gun choice's default). #391-392 settled; round 36 played, no issues.
 
 - **Session 22:** #377-389 (#377, #379, #381, #384 and #389 settled), in particular #382 (the verdict's lines; 57 fps reads Runs great), #378 (the place beyond's look), #385-386 (the flyer's and the parts' looks and numbers).

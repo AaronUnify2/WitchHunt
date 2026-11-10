@@ -49,13 +49,13 @@ My calls (PLAYTEST round 38):
 - **The clown** wears **a polka-dot clown suit, fitted well** (not stripes, braces, patches or a ruff: those were my guesses, gone), **white greasepaint, a red grin painted so wide it nearly touches his ears, painted eyes, a bright green wig of curls, white gloves, oversized shoes. No red nose.** His knives are **a set of three** (one in his hand, two tucked into a fold of the suit; the bandolier is gone). In full kit his arms look too long and his frame narrower.
 - **The man** is tall, **broad-shouldered, dark-haired** and handsome (he was brown-haired and stubbled; now dark hair, clean jaw, a broader build than the clown's), in a flannel shirt, jeans and boots, with a tin mug of instant coffee.
 - **The donkey is grey** (it was grey-brown), calm and half-lidded, and **she** never looks away. **The Shetland is the colour of burnt caramel** (it was dark brown). The python is thick and patterned, **coiled round a branch** in its glass tank (mine is coiled on the ground: the branch and the tank are the barn's set, Session 28). The turkey is enormous.
-- The story gives the suit no colour: **I made it blue with white and red dots** (a cream suit read as bare skin under the torch). Aaron to say if he pictures another.
+- The story gives the suit no colour: **I made it blue with white and red dots** (a cream suit read as bare skin under the torch). **Settled (Aaron, Nov 10): the blue suit is fine.**
 
 **Built: Milo and his animals** (`render/miloModel.js`, `render/barnAnimals.js`, on `render/PosedFigure.js`; `config.milo`, `config.barnAnimals`): one draw call each. Models only: the barn is Session 28's.
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 408 | **The clown's look: answered from the story** (above). Still open: **the suit's colour** (blue, white and red dots: my pick), and the painted eyes' shape (black diamonds: my pick; the story says only "two painted eyes"). | As the story has him. | `miloSpec()`, `config.milo.looks.clown` |
+| 408 | **The clown's look: answered from the story** (above). **The suit's colour is settled: blue** (Aaron). Still open: the painted eyes' shape (black diamonds: my pick; the story says only "two painted eyes"). | As the story has him. | `miloSpec()`, `config.milo.looks.clown` |
 | 409 | **The man: answered from the story** (dark hair, broad shoulders, flannel, jeans, boots, the tin mug). The flannel's red-and-black check is my pick. | As the story has him. | `miloSpec()`, `config.milo.looks.man` |
 | 410 | **The donkey.** Grey-brown with the dark cross on its back, a pale muzzle and a pale ring round each eye (so the stare reads); in the stare, only its head moves, and an ear. **Answered: grey.** | Grey now. | `equineSpec()`, `config.barnAnimals.donkey` |
 | 411 | **The others: the pony answered (burnt caramel).** A caramel shaggy Shetland with a pale mane over its eyes; a bronze-black turkey, about 1.3 m to the top of its fan, with a blue-grey head and red wattle; a brown blotched python about 5 m long, coiled. Any of them wrong for the story? | As described. | `render/barnAnimals.js`, `config.barnAnimals` |

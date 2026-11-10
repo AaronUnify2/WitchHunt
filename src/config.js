@@ -4003,7 +4003,7 @@ export const config = {
         grin: 0x7a1c14,
         eyes: 0x0e0d0c,
         wig: 0x2a6a26, // bright green curls
-        shirt: 0x24405a, // the polka-dot suit: blue (the story gives no colour; skin tones read as bare under the torch)...
+        shirt: 0x24405a, // the polka-dot suit: blue (the story gives no colour; Aaron: blue is fine; skin tones read as bare under the torch)...
         trousers: 0x24405a,
         dot: 0x6e6a5c, // ...and its dots, white and red
         dot2: 0x7a1c14,
