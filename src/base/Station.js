@@ -311,6 +311,15 @@ export class Station {
     return null;
   }
 
+  // Session 25: the plane's cell into the fence box (the fence holds more, and it charges).
+  fitPlaneCell() {
+    const added = this.state.fitPowerCell('planeCell');
+    this.progress?.setFlag('planeCellFitted');
+    this.renderer.pulseWire();
+    this.combat.sfx.play('pickup');
+    return `The alien cell hums in the fence box: capacity ${this.state.capacity}, +${Math.round(added)} charge`;
+  }
+
   // Session 20 (Aaron): where Save and quit puts Tom back: in the cabin's
   // main room, facing the front door (config.station.safePoint: from the cabin's centre).
   safePoint() {
@@ -598,6 +607,10 @@ export class Station {
 
     const box = L.fenceBox;
     const chargeText = `charge ${Math.round(s.charge)}/${s.capacity}`;
+    // Session 25: the crashed plane's small alien power cell, carried home.
+    if (this.progress?.has('planeCellTaken') && !this.progress.has('planeCellFitted')) {
+      offer(dist(box), { key: 'cell', prompt: `Hold ${X}: fit the plane's alien power cell to the fence box`, busy: 'Fitting the cell…', seconds: h.battery, act: () => this.fitPlaneCell() }, -1);
+    }
     if (inv.batteries > 0 && !s.chargeFull) {
       offer(dist(box), { key: 'battery', prompt: `Hold ${X}: fit a battery in the fence box (${chargeText})`, busy: 'Fitting the battery…', seconds: h.battery, act: () => this.fitBattery() });
     } else {

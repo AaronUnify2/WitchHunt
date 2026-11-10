@@ -77,6 +77,7 @@ import { DemoMode } from '../demo/DemoMode.js';
 import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { Flyer } from '../ai/Flyer.js';
 import { Moths } from '../ai/Moths.js';
+import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -632,6 +633,34 @@ export class Game {
     // Session 25 (Aaron): giant moths to shoot (debug only).
     this.moths = new Moths(this.cfg, this.bus);
     this.moths.init({ scene: this.scene, player: this.player, combat: this.combat, ground: this.world.ground, sfx: this.combat.sfx, notify, rng: this.rng.fork('moths') });
+    // Session 25: the crashed plane's story beats (the grey, the quick draw, the Mothman).
+    this.plane = new CrashedPlane(this.cfg, this.bus);
+    this.plane.init({
+      scene: this.scene,
+      crashSite: this.crashSite,
+      player: this.player,
+      combat: this.combat,
+      ground: this.world.ground,
+      colliders: this.colliders,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      card: this.card,
+      station: this.station,
+      flyer: this.flyer,
+      demo: this.demo,
+      // He wakes at dawn: the clock runs on through the night he lost (no forecast over his waking).
+      skipToDawn: () => {
+        this.skipToPhase('dawn');
+        this.nightWatch.forecastDue = false;
+        this.nightWatch.closeForecast();
+      },
+      notify,
+    });
+    this.combat.promptSources.push(this.plane.hud);
+    this.vehicles.busy?.push(this.plane.hud);
   }
 
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
@@ -744,7 +773,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -787,6 +816,7 @@ export class Game {
     this.placeBeyond.addDebugItems(menu); // Session 22: the spikes
     this.flyer.addDebugItems(menu);
     this.moths.addDebugItems(menu);
+    this.plane.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1299,6 +1329,7 @@ export class Game {
     this.clearing.loadState(d.clearing);
     this.homeStop.loadState(d.homeStop);
     this.roadNorth.loadState(d.roadNorth);
+    this.plane.reset(); // Session 25: the crashed plane, as its flags say (a fight that was on starts again)
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1559,6 +1590,7 @@ export class Game {
     if (first) this.roadNorth.update(dt, playing && this.combat.alive);
     if (first) this.flyer.update(dt, playing && this.combat.alive); // Session 22: the flyer spike
     if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
+    if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
   }
 
   get phase() {
@@ -1605,6 +1637,7 @@ export class Game {
     this.demo.dispose();
     this.flyer.dispose();
     this.moths.dispose();
+    this.plane.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();

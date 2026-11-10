@@ -186,6 +186,14 @@ export class Objectives {
       if (list.filter(Boolean).length) return steps('outpostCompound', "Explore the outpost's compound: the crates, the containers, the lockers, the comms hut, and the view from the watchtower.", list);
       return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);
     }
+    // ---- the crashed plane (Session 25) ----
+    const pl = g.plane;
+    if (pl?.ready && has('crossedCordon') && !has('planeDone')) {
+      if (!has('planeGreyDown')) return step('plane', 'Find where the plane came down, just past the checkpoint.', pl.spot('work'));
+      if (!has('planeLooted')) return step('planeLoot', 'Search the grey: it had the pilot\'s gun.', pl.grey);
+      return step('planeFlare', "Fire the pilot's signal flare from his survival kit.", pl.spot('kit'));
+    }
+    if (has('planeCellTaken') && !has('planeCellFitted')) return step('planeCell', "Fit the plane's alien power cell to the fence box at home.", L.fenceBox);
     return step('free', 'Keep the station running, and dig up her sigils.');
   }
 

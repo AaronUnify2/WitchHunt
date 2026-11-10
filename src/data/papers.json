@@ -64,6 +64,20 @@
           "text": "C-3   BIO SAMPLES (CHILLED)      12 CS\nC-4   SPECIMEN, INTACT, RESIN     1 U\nC-7   ██████████████████     1 U\nC-9   BROOD, LIVE                  6 CRT\n\nORIGIN:  SITE 4 (MINE WORKINGS)\nDEST:    ██████████\n\nHANDLING:\n- NO LIGHT IN C-7.\n- NO NOISE NEAR C-9.\n- C-4 DOES NOT LEAVE THE RESIN.\n\nRECEIVED CP-7: ___________"
         }
       ]
+    },
+    {
+      "id": "pilotLog",
+      "kind": "report",
+      "head": "KNEE-BOARD · PATROL 2 · LT. D. HALE",
+      "pages": [
+        {
+          "date": "OCT 2003 · 0118",
+          "text": "Scrambled to intercept. Contact low over the ridge, south of CP-7. No transponder. Lights: green, purple, moving like nothing with wings.\n\nOrdered to force it down. (draft)"
+        },
+        {
+          "text": "0124. It fired first. A beam, not tracer. Port engine gone.\n\nHit it twice with the guns. It's trailing something, losing height, limping south.\n\nWe're going in. If anyone finds this: it came down south of the cordon, and it's not one of ours. (draft)"
+        }
+      ]
     }
   ]
 }

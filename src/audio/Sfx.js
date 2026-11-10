@@ -225,6 +225,16 @@ const RECIPES = {
   wingbeat(s, pos) {
     s.noiseBurst(s.out(pos?.x, pos?.z, 0.7, 70), { seconds: 0.35, type: 'lowpass', freq: 380, endFreq: 120, q: 0.8, gain: 0.7, attack: 0.06 });
   },
+  // Session 25: the grey's shot with the pilot's pistol (a sharp crack), and a round going wide past Tom.
+  greyShot(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 200);
+    s.noiseBurst(o, { seconds: 0.18, freq: 3200, endFreq: 400, gain: 0.9, attack: 0.001 });
+    s.tone(o, { seconds: 0.08, freq: 180, endFreq: 90, gain: 0.4 });
+  },
+  ricochet(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5, 40);
+    s.tone(o, { seconds: 0.3, wave: 'triangle', freq: 2400, endFreq: 900, gain: 0.08, attack: 0.005 });
+  },
   // Session 25: the giant moths. A swarm's soft, dusty flutter (one for them all);
   // a nip; a hit one's dry squeal as it drops; its body landing.
   mothFlutter(s, pos) {

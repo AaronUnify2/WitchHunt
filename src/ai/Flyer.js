@@ -62,9 +62,11 @@ export class Flyer {
 
   // ---- starting and stopping ----------------------------------------------------------------------
 
-  // In from far off, on its script.
-  send() {
+  // In from far off, on its script. Session 25: opts { script } (the crashed plane's Mothman, story: true).
+  send(opts = {}) {
     const f = this.fc;
+    this.script = opts.script ?? f.script;
+    this.story = Boolean(opts.story);
     const t = this.player.position;
     const a = this.rng.range(0, Math.PI * 2);
     this.p.x = t.x + Math.sin(a) * f.startDistance;
@@ -111,7 +113,7 @@ export class Flyer {
   // The script's next move, with a circle between each.
   advance() {
     if (this.move === 'circle') {
-      this.begin(nextMove(this.fc.script, this.index++));
+      this.begin(nextMove(this.script ?? this.fc.script, this.index++));
     } else {
       this.begin('circle');
     }
@@ -212,7 +214,7 @@ export class Flyer {
   overlayLine() {
     if (!this.active) return 'flyer -';
     const t = this.player.position;
-    return `flyer ${this.move} ${this.index}/${this.fc.script.length} hp ${Math.round(this.health)} up ${(this.p.y - t.y).toFixed(0)}m off ${Math.hypot(this.p.x - t.x, this.p.z - t.z).toFixed(0)}m`;
+    return `flyer ${this.move} ${this.index}/${(this.script ?? this.fc.script).length} hp ${Math.round(this.health)} up ${(this.p.y - t.y).toFixed(0)}m off ${Math.hypot(this.p.x - t.x, this.p.z - t.z).toFixed(0)}m`;
   }
 
   dispose() {

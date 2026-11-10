@@ -57,7 +57,14 @@
       "id": "pilotLog",
       "name": "The pilot's log",
       "from": "crashedPlane",
-      "kind": "item"
+      "kind": "document",
+      "paper": "pilotLog",
+      "card": {
+        "look": "report",
+        "color": "#b8b4a0",
+        "label": "#2a2a2a",
+        "line": "His knee-board, the log clipped to it in grease pencil. He wrote it going down. (draft)"
+      }
     },
     {
       "id": "foremanLog",

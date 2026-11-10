@@ -4115,6 +4115,25 @@ export const config = {
   crashedPlane: {
     yaw: null, // radians the plane was heading (null: away from the checkpoint, so Tom walks up its gouge)
     radius: 28, // metres from its middle the set reaches (for drawing it)
+    // Session 25: its story beats (encounters/CrashedPlane.js; DESIGN.md "Crashed plane", "The Mothman at
+    // the crash site"). Straight from the design: every number a first guess, to tune after Aaron plays it.
+    encounter: {
+      needs: 'outpostCleared', // the outpost's barricade down (the dogfight brought the plane down)
+      triggerDistance: 16, // metres from the grey as Tom comes up the gouge: the standoff (close enough for a quick draw)
+      drawDistance: 120, // the grey's drawn within this
+      standoff: { turnAt: 1.3, aimAt: 2.3 }, // seconds into the standoff: it turns; it lifts its gun
+      quickDraw: 0.55, // seconds after control comes back: one good hit drops it
+      greyHealth: 70, // after the quick draw: a service rifle round is 25 (x3 on the head)
+      hit: { hitRadius: 0.3, height: 1.4, headBottom: 1.06, headRadius: 0.22, headshotMultiplier: 3 }, // a little generous: it's small
+      scrambleSeconds: 0.9, // its hop over the wing into cover
+      scrambleHeight: 1.5,
+      shootout: { hideSeconds: [1.4, 2.6], stepSeconds: 0.45, aimSeconds: 0.6, afterShot: 0.35, peekOut: 3.8, hitChance: 0.4, damage: 9, range: 45 },
+      interactRange: 1.8,
+      drops: { pistolRounds: 12, alienShells: 6 },
+      flareAfter: 10, // seconds after its drops are taken, Wyatt suggests the signal flare
+      floor: 0.1, // the Mothman's fight: Tom can't drop below 10% health; reaching it, he blacks out
+      mothmanScript: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive'],
+    },
     look: {
       weather: { rust: [0x24262a], grimeHeight: 0.5, keepBright: [] },
       colors: {

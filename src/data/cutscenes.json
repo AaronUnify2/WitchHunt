@@ -2916,6 +2916,165 @@
         }
       ],
       "duration": 9
+    },
+    {
+      "id": "plane.standoff",
+      "name": "The crashed plane: the grey at its bench (first person)",
+      "style": "firstPerson",
+      "_note": "Session 25 (DESIGN.md 'Crashed plane', the standoff): as Tom comes up the gouge. The world runs (the grey is the encounter's own, posed by encounters/CrashedPlane.js: absorbed in its work, it turns, sees him and lifts its gun); the view holds on it. Control comes back just before it fires: the quick draw. Anchor grey (the encounter's).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "grey",
+          "rate": 2.6
+        }
+      ],
+      "duration": 2.9,
+      "world": "run",
+      "unseen": true,
+      "skippable": false
+    },
+    {
+      "id": "plane.flare",
+      "name": "The crashed plane: the pilot's signal flare (first person)",
+      "style": "firstPerson",
+      "_note": "Session 25 (DESIGN.md 'The Mothman at the crash site'): Tom fires the pilot's signal flare from the wreck (anchor wreck: the survival kit); it climbs red over the trees and hangs there. What answers isn't a rescue: the encounter sends the Mothman as it ends.",
+      "actors": [
+        {
+          "id": "flare",
+          "kind": "glow",
+          "anchor": "wreck",
+          "pos": [
+            0,
+            1.6,
+            0
+          ],
+          "size": 0.3,
+          "color": 16726564
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "fly",
+          "actor": "flare",
+          "path": [
+            {
+              "at": 0,
+              "p": [
+                0,
+                1.6,
+                0
+              ]
+            },
+            {
+              "at": 0.8,
+              "p": [
+                2,
+                22,
+                4
+              ]
+            },
+            {
+              "at": 2.2,
+              "p": [
+                4,
+                48,
+                8
+              ]
+            },
+            {
+              "at": 4.2,
+              "p": [
+                5,
+                52,
+                9
+              ]
+            }
+          ]
+        },
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "wreck",
+          "rate": 1.2,
+          "pitch": 0.9
+        },
+        {
+          "at": 2.8,
+          "do": "line",
+          "line": "plane.mothman.ellen"
+        }
+      ],
+      "duration": 4.4,
+      "world": "run",
+      "unseen": true
+    },
+    {
+      "id": "plane.blackout",
+      "name": "The crashed plane: Tom blacks out (first person)",
+      "style": "firstPerson",
+      "_note": "Session 25 (DESIGN.md: the 10% health floor): Tom falls; a brief shot lying in the leaves, red eyes over him, then they lift away into the dark. Why it leaves is never explained. Anchor downed (where Tom fell). Then he wakes at the wreck at dawn (the encounter skips the clock), the radio quiet.",
+      "actors": [
+        {
+          "id": "eyes",
+          "kind": "eyes",
+          "anchor": "downed",
+          "pos": [
+            0,
+            1.9,
+            1.2
+          ],
+          "color": 16718352
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "fade",
+          "to": 1,
+          "seconds": 0.25
+        },
+        {
+          "at": 0.3,
+          "do": "shake",
+          "amount": 1.2,
+          "seconds": 0.4
+        },
+        {
+          "at": 1.2,
+          "do": "fade",
+          "to": 0.55,
+          "seconds": 1.0
+        },
+        {
+          "at": 1.2,
+          "do": "lookAt",
+          "target": "downedEyes",
+          "rate": 3
+        },
+        {
+          "at": 3.4,
+          "do": "move",
+          "actor": "eyes",
+          "anchor": "downed",
+          "to": [
+            0,
+            9,
+            4
+          ],
+          "seconds": 1.6
+        },
+        {
+          "at": 4.4,
+          "do": "fade",
+          "to": 1,
+          "seconds": 0.8
+        }
+      ],
+      "duration": 5.6,
+      "skippable": false
     }
   ]
 }
