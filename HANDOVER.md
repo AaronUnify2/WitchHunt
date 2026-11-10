@@ -22,7 +22,7 @@
 4. **Every gun carried:**
    - `Weapons.take` always carries; `rack` and `belt` are kept empty, and old saves hand their guns back.
    - The gun-choice panel is deleted.
-   - **The weapon cross** (`ui/WeaponCross.js`, `config.weapons.cross`): RB is `swapLast`, LB is `toggleShovel`, the wheel is `weaponCycle`.
+   - **The weapon cross** (`ui/WeaponCross.js`, `config.weapons.cross`). Round 2, after Aaron played it: RB / LB / the wheel rotate through the kinds (`Weapons.rotate`, `config.weapons.rotation`), each kind bringing out its last pick. The camp now sits round its heat shield, and the debug menu has an Enemies section with tabs (PLAYTEST round 50).
    - The rack is decoration (`weapons.found`).
 5. **Models:** Milo redone to `docs/reference/milo-lone-clown.jpg` (`WRIST`, `dotAt`, the smock, the wig dome, the collar, the shoes; 1.75 m); trousers for the belted grey (`KIT_STAGES.trousers`).
 6. **The survival camp:** the `leanto` kind in `CampsiteProps`, `props.reflector`, `props.tripod`; colliders for both; "shelters" in the lines.
@@ -56,6 +56,7 @@
 - The `plane:done` event and the `planeDone` flag are the hooks.
 
 **To carry (Session 25):**
+- **The debug menu has tabs** (`menu.tab(DEBUG.enemies, ENEMY_TABS.x)`). Every spawn-anywhere enemy tool goes in the Enemies section's tab for it.
 - **A new encounter** on a spine place: copy `CrashedPlane`'s shape. That means `init(ctx)` with a `hud`; `update(dt, controls, playing, canInteract)`; flags for every beat; `reset()` from the flags, called in `init`, on `player:respawned` and after `Game.applySave` (Game calls `plane.reset()` there).
 - **Named cutscene anchors** an encounter sets: `cutscenes.namedAnchors.set(name, () => ({ x, z, yaw, dy }))`. A first-person cutscene with `"world": "run"` lets the encounter's own actors move while it plays.
 - **Skipping the clock** (`Game.skipToPhase`) runs every phase event on the way, so close the forecast after it (see `skipToDawn`).
