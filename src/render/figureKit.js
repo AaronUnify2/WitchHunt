@@ -44,8 +44,11 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // 1.01, none for a trunk)]], tubes: [[bone, ax,
 // ay, az, bx, by, bz, r0, r1, key, flat, bulge (optional, as limbs': a
 // garment's shell)]], rings: [[bone, x, y, z, radius, tube,
-// key, turn (optional, as masses')]] (facing +z unturned), paint(key, p, out) (optional: patterns; p in the
-// built space), deform(p, n, bone) (optional: how far to push a vertex out
+// key, turn (optional, as masses')]] (facing +z unturned), sheets: [{ bone,
+// other (optional), geometry (yours: positions and, for painting, uv), key,
+// from, to ([x, y, z]: skinned to `bone` at from, blending to `other` by
+// to) }] (thin membranes: wings), paint(key, p, out, colours, uv) (optional:
+// patterns; p in the built space; uv only for a sheet), deform(p, n, bone) (optional: how far to push a vertex out
 // along its normal, in metres: one smooth field moves every surface there
 // together, so shapes reshape without creases), glow: { key: 0..1 }
 // (optional: an aGlow attribute, how much each part glows in its own colour,
@@ -78,6 +81,9 @@ export function buildFigure(spec) {
     const g = new THREE.TorusGeometry(radius, thickness, 6, 20);
     if (turn) g.rotateX(turn[0]).rotateY(turn[1]).rotateZ(turn[2]);
     add(g.translate(x, y, z), { bone, key });
+  }
+  for (const sh of spec.sheets ?? []) {
+    add(sh.geometry, { bone: sh.bone, other: sh.other ?? null, gradient: !!sh.other, sheet: true, from: new THREE.Vector3(...sh.from), to: new THREE.Vector3(...sh.to), key: sh.key });
   }
   let geometry = mergeGeometries(parts);
   for (const p of parts) p.dispose();
@@ -172,16 +178,18 @@ const tmp = new THREE.Vector3();
 const nrm = new THREE.Vector3();
 const along = new THREE.Vector3();
 const colour = new THREE.Color();
+const uvAt = new THREE.Vector2();
 
 // Paint and skin weights for one part, its seams welded first (smooth
 // shading). o: { bone, other, share, blendStart (a limb: its first quarter
 // bends in from the parent bone), from, to, key, joints, colours, paint }.
 function finish(g, o) {
-  g.deleteAttribute('uv');
+  if (!o.sheet) g.deleteAttribute('uv');
   g.deleteAttribute('normal');
   const welded = mergeVertices(g, 1e-5);
   g.dispose();
   welded.computeVertexNormals();
+  const uvs = o.sheet ? welded.getAttribute('uv') : null;
   const pos = welded.attributes.position;
   const nor = welded.attributes.normal;
   const count = pos.count;
@@ -196,12 +204,15 @@ function finish(g, o) {
     tmp.fromBufferAttribute(pos, i);
     nrm.fromBufferAttribute(nor, i);
     colour.copy(o.colours[o.key] ?? o.colours.skin);
-    o.paint?.(o.key, tmp, colour, o.colours);
+    o.paint?.(o.key, tmp, colour, o.colours, uvs ? uvAt.fromBufferAttribute(uvs, i) : undefined);
     // Soft shading baked in: a touch darker underneath (an ambient-occlusion stand-in).
     colour.multiplyScalar(0.7 + 0.3 * (nrm.y * 0.5 + 0.5));
     colour.toArray(colours, i * 3);
     let w = 1 - (o.share ?? 0);
-    if (o.blendStart && span) {
+    if (o.gradient) {
+      const t = Math.max(0, Math.min(1, along.subVectors(tmp, o.from).dot(span) / spanLen2));
+      w = 1 - t * t * (3 - 2 * t);
+    } else if (o.blendStart && span) {
       const t = Math.max(0, Math.min(1, along.subVectors(tmp, o.from).dot(span) / spanLen2));
       w = t >= 0.25 ? 1 : 0.5 + (t / 0.25) * 0.5;
     }
@@ -213,6 +224,7 @@ function finish(g, o) {
   welded.setAttribute('color', new THREE.BufferAttribute(colours, 3));
   welded.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndex, 4));
   welded.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
+  if (uvs) welded.deleteAttribute('uv');
   if (o.glow) welded.setAttribute('aGlow', new THREE.BufferAttribute(new Float32Array(count).fill(o.glow[o.key] ?? 0), 1));
   return welded;
 }

@@ -1,5 +1,21 @@
 # Open questions
 
+## Session 24 (Graphics Engineer / Technical Artist: models for the next stretch)
+
+Aaron's answers at the start (Nov 10): round 36 and the glare list **not yet** (they can wait). The order is fine: **the Mothman first**, then the plane's set, giant moths, Bigfoot and the cocoon, Milo and his animals. The Mothman's look: **"go with your gut"**; push to `main` when he's done and Aaron plays him from the debug menu (PLAYTEST round 37).
+
+**Built: the Mothman** (`render/mothmanModel.js`, `render/MothmanRenderer.js`, `config.mothman`): one skinned mesh, one draw call, about 19,000 triangles, no lights. The flyer spike wears him (#385's look is resolved by this; its numbers stay open).
+
+My calls (PLAYTEST round 37):
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 393 | **His look.** A gaunt dark man-shape, 2.3 m, furred like a moth: a ragged ruff with the head sunk into it, feathery antennae, long arms with three claws, clawed feet. | As described. | `render/mothmanModel.js` (shapes), `config.mothman.colours` |
+| 394 | **His wings.** Two pairs of dusty moth wings, about 5.3 m across, with a faint rust-and-ash eye-spot on each (they show when he mantles). Closed, they hang down his back in a moth's delta, the tips trailing behind him. Moth wings, or would you rather leathery ones? Are the eye-spots too much? | As described. | `forewingPoint`, `hindwingPoint`, `FORE_SPOT`, `HIND_SPOT` in `render/mothmanModel.js` |
+| 395 | **His eyes.** Big, round, red, the only bright thing on him: they glow in their own colour, bloom, and aren't fogged. A slow swell (12%, every 3 s). Brighter, dimmer, bigger? | `eyeGlow: 3`, `eyePulse`, `colours.eyes` | `config.mothman` |
+| 396 | **How dark he is.** His colours are multiplied by 0.3 so the torch doesn't blow him pale up close; by moonlight he's a black shape. Right, or should the fur read more under the torch? | `albedo: 0.3` | `config.mothman.albedo` |
+| 397 | **His poses.** Twelve (stand, mantle, perch, cling, glide, fly, dive, strike, flinch, wounded, dying, corpse). The clinging one turns his head right round to look back at you. The dying one is a first sketch: the cave's fight will want its own. Any missing for Session 25's crash site (he knocks Tom out)? | As described. | `render/MothmanRenderer.js` `targetPose()` |
+
 ## Session 23 (QA & Balance: the opening with the new systems)
 
 Aaron's answers at the start (Nov 10):

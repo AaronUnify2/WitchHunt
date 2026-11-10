@@ -8,13 +8,13 @@
 //    it leaves. Its steering is ai/flyerPath.js (tested).
 //  - It's one of the weapons' extra targets (the zombies' hit shape, high
 //    up). It can't die out here: below fleeAt of its health it flies off.
-//  - Its look: a tall dark body, two flapping wings and red eyes that
-//    aren't fogged (they show in the treeline). Four meshes, no lights.
+//  - Its look: the Mothman's model (Session 24; render/MothmanRenderer.js):
+//    one draw call, no lights, red eyes that aren't fogged.
 //
 // Events: 'flyer:struck' { damage }, 'flyer:left' { hurt }.
 
-import * as THREE from 'three';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { MothmanRenderer } from '../render/MothmanRenderer.js';
 import { steerTo, circlePoint, passEnd, climbEnd, nextMove } from './flyerPath.js';
 
 export class Flyer {
@@ -50,41 +50,14 @@ export class Flyer {
     this.combat.weapons.extraTargets.push(this.target);
   }
 
+  // Its look: the Mothman's model (render/MothmanRenderer.js), posed by what it's doing.
   build() {
-    const f = this.fc;
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.5, 3, 8), new THREE.MeshLambertMaterial({ color: f.bodyColor, emissive: 0x000000 }));
-    g.add(body);
-    // Each wing a flat, ragged triangle hinged at the shoulder.
-    const wingGeo = new THREE.BufferGeometry();
-    const span = f.wingspan / 2;
-    wingGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.5, 0, span, 0.2, -0.3, 0, -0.6, 0, span, 0.2, -0.3, span * 0.7, -0.5, -0.4, 0, -0.6, 0], 3));
-    wingGeo.computeVertexNormals();
-    const wingMat = new THREE.MeshLambertMaterial({ color: f.wingColor, side: THREE.DoubleSide });
-    this.wings = [1, -1].map((side) => {
-      const pivot = new THREE.Group();
-      pivot.position.set(0.25 * side, 0.45, -0.1);
-      const w = new THREE.Mesh(wingGeo, wingMat);
-      w.scale.x = side;
-      pivot.add(w);
-      g.add(pivot);
-      return pivot;
-    });
-    // The eyes: unfogged, so they show far off in the dark.
-    const eyeGeo = new THREE.SphereGeometry(0.07, 6, 4);
-    const eyeMat = new THREE.MeshBasicMaterial({ color: f.eyeColor, fog: false });
-    for (const side of [1, -1]) {
-      const eye = new THREE.Mesh(eyeGeo, eyeMat);
-      eye.position.set(0.13 * side, 1.05, 0.33);
-      g.add(eye);
-    }
-    g.visible = false;
-    this.scene.add(g);
-    this.group = g;
-    this.body = body;
-    this.owned = [body.geometry, body.material, wingGeo, wingMat, eyeGeo, eyeMat];
+    this.renderer = new MothmanRenderer(this.cfg.mothman);
+    this.renderer.init(this.scene, 1);
+    this.look = { active: false, x: 0, y: 0, z: 0, facing: 0, state: 'glide', timer: 0, flap: 0, pitch: 0, roll: 0, flash: 0 };
     this.flap = 0;
     this.flash = 0;
+    this.strikeShow = 0;
   }
 
   // ---- starting and stopping ----------------------------------------------------------------------
@@ -103,7 +76,8 @@ export class Flyer {
     this.active = true;
     this.hurt = false;
     this.target.targetable = true;
-    this.group.visible = true;
+    this.look.active = true;
+    this.look.mothPose = null;
     this.begin('circle');
     this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]) + 3;
   }
@@ -111,7 +85,8 @@ export class Flyer {
   stop() {
     this.active = false;
     this.target.targetable = false;
-    this.group.visible = false;
+    this.look.active = false;
+    this.renderer.update([this.look], 0);
   }
 
   begin(move) {
@@ -148,21 +123,32 @@ export class Flyer {
     if (!this.active) return;
     const f = this.fc;
     if (playing) this.fly(dt);
-    // The look: facing where it's going, banked into its turns, the wings beating faster in a dive.
-    const g = this.group;
-    g.position.set(this.p.x, this.p.y, this.p.z);
+    // The look: facing where it's going, banked into its turns, nose up
+    // or down with its climb, the wings beating faster in a dive.
+    const k = this.look;
     const heading = Math.atan2(this.v.x, this.v.z);
-    g.rotation.set(Math.max(-0.6, Math.min(0.6, -this.v.y * 0.04)), heading, 0, 'YXZ');
+    let turned = heading - k.facing;
+    turned -= Math.round(turned / (Math.PI * 2)) * Math.PI * 2;
+    const bank = dt > 0 ? Math.max(-f.bankMax, Math.min(f.bankMax, (-turned / dt) * f.bank)) : k.roll;
+    k.roll += (bank - k.roll) * Math.min(1, dt * 4);
+    k.x = this.p.x;
+    k.y = this.p.y;
+    k.z = this.p.z;
+    k.facing = heading;
+    k.pitch = Math.max(-0.6, Math.min(0.6, -this.v.y * 0.04));
+    this.strikeShow = Math.max(0, this.strikeShow - dt);
+    k.state = this.strikeShow > 0 ? 'strike' : this.move === 'dive' ? 'dive' : this.move === 'circle' ? 'glide' : 'fly';
+    k.timer = f.strikeShowSeconds - this.strikeShow;
     const fast = this.move === 'dive' ? 1 : this.move === 'flyover' ? 0.5 : 0.15;
     const hz = f.flapHz[0] + (f.flapHz[1] - f.flapHz[0]) * fast;
     const before = Math.sin(this.flap);
     this.flap += dt * hz * Math.PI * 2;
     const beat = Math.sin(this.flap);
-    this.wings[0].rotation.z = beat * 0.7;
-    this.wings[1].rotation.z = -beat * 0.7;
+    k.flap = this.flap;
     if (before > 0 && beat <= 0 && playing) this.sfx?.play('wingbeat', this.p);
     this.flash = Math.max(0, this.flash - dt);
-    this.body.material.emissive.setHex(this.flash > 0 ? 0x552211 : 0x000000);
+    k.flash = this.flash * (this.cfg.mothman.hitFlashSeconds / f.hitFlashSeconds);
+    this.renderer.update([k], dt);
     // The hit shape follows the body (its foot a little under the body's middle).
     const tg = this.target;
     tg.x = this.p.x;
@@ -186,6 +172,7 @@ export class Flyer {
       if (d < f.strikeRange) {
         this.combat.hurtPlayer(f.strikeDamage, 1.5);
         this.bus.emit('flyer:struck', { damage: f.strikeDamage });
+        this.strikeShow = f.strikeShowSeconds;
         this.begin('climb');
       } else if (this.p.y < t.y + 0.3) {
         this.begin('climb'); // missed, at the ground: pull up
@@ -229,7 +216,6 @@ export class Flyer {
   }
 
   dispose() {
-    this.group?.removeFromParent();
-    for (const x of this.owned ?? []) x.dispose();
+    this.renderer?.dispose();
   }
 }

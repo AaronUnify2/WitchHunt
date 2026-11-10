@@ -3697,11 +3697,10 @@ export const config = {
       headBottom: 1.9,
       headRadius: 0.32,
       headshotMultiplier: 2,
-      // Its look (a rough placeholder): a tall dark body, wide wings, red eyes.
-      bodyColor: 0x17140f,
-      wingColor: 0x231d16,
-      eyeColor: 0xff2010,
-      wingspan: 5.2,
+      // Its look is the Mothman's (config.mothman; Session 24).
+      strikeShowSeconds: 0.45, // the rake's pose holds this long after a dive lands
+      bank: 0.35, // radians of bank per radian a second it's turning...
+      bankMax: 0.7, // ...up to this
       flapHz: [1.4, 3.2], // slow gliding to fast flapping (diving)
       hitFlashSeconds: 0.12,
     },
@@ -3955,6 +3954,41 @@ export const config = {
         boots: 0x3a2214,
         spur: 0x8a8a84,
       },
+    },
+  },
+
+  // The Mothman (Session 24: the model; render/mothmanModel.js,
+  // render/MothmanRenderer.js). His encounters' AI is Session 25 on; the
+  // flyer spike (spikes.flyer) wears him meanwhile.
+  mothman: {
+    poolSize: 1,
+    height: 2.3, // metres, standing (as the model's built)
+    middle: 0.6, // x his height: the point he pitches and banks about in flight
+    albedo: 0.3, // his colours x this (the torch is strong up close)
+    eyeGlow: 3, // the eyes' glow, in their own colour (unfogged: they show far off)
+    eyePulse: 0.12, // the glow swells and sinks by this share...
+    eyePulseHz: 0.35, // ...this often
+    poseRate: 10,
+    flapHz: 2.2, // the wingbeat when nothing drives it (the model viewer)
+    flightPitch: 1.2, // radians he's tipped forward, flying level
+    lookMax: 1.1, // radians his head turns to watch something
+    clingLook: 2.55, // radians the head is turned back over his shoulder, clinging
+    strikeSeconds: 0.3, // the rake
+    deathSeconds: 2.6,
+    hitFlashSeconds: 0.12,
+    hitFlash: [1.6, 0.7, 0.5], // his colour while flashing
+    thermalGlow: 0.5, // x the heat scope's glow
+    // All dull (the glare rule), but the eyes.
+    colours: {
+      fur: 0x1c1a18,
+      furDark: 0x121110,
+      ruff: 0x26221f,
+      belly: 0x262220,
+      wing: 0x1f1c1b,
+      dust: 0x4a443c, // the wings' pale bands and the eye-spots' rings
+      spot: 0x4a1c12, // the eye-spots' rust
+      claw: 0x0b0b0c,
+      eyes: 0xff0a04,
     },
   },
 
@@ -4220,6 +4254,7 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    mothman: { distance: 6.5, flyHeight: 1.8, clingHeight: 1.2, diveSeconds: 0.9 }, // metres out he's framed from (his wings), his middle's height flying, his feet's clinging; the dive before each strike
     witchGlideShare: 0.6, // her gliding pose, as a share of full speed (the cloak's trail)
     witch: { plantSeconds: 6, hexSeconds: 1.4, swipeUpSeconds: 1, swipeDownSeconds: 0.6, summonSeconds: 2.4, riseSeconds: 3 },
     familyGap: 0.75, // metres between them side by side

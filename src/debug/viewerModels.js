@@ -27,6 +27,7 @@ import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
+import { MothmanRenderer, FLYING } from '../render/MothmanRenderer.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
@@ -38,7 +39,7 @@ import vehicleData from '../data/vehicles.json';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { hash01 } from '../render/zombieLook.js';
 import { buildActor } from '../story/Cutscenes.js';
-import { loopTime } from './viewerOrbit.js';
+import { loopTime, wrapAngle } from './viewerOrbit.js';
 
 const TITLES = { mib: 'Men in Black', earl: 'Earl Pruitt' };
 const title = (s) => TITLES[s] ?? s.charAt(0).toUpperCase() + s.slice(1);
@@ -160,6 +161,29 @@ export const VIEWER_MODELS = [
       { id: 'corpse', name: 'Corpse' },
     ],
     create: beetleModel,
+  },
+  {
+    id: 'mothman',
+    name: 'The Mothman',
+    note: 'Session 24: one draw call, no lights. The eyes glow through the fog. His head turns to watch you. AI: Session 25 on (the flyer spike wears him).',
+    height: (cfg) => cfg.mothman.height,
+    startDistance: (cfg) => cfg.modelViewer.mothman.distance,
+    variants: null,
+    poses: [
+      { id: 'stand', name: 'Standing (wings closed, watching you)' },
+      { id: 'mantle', name: 'Mantling (wings wide, the screech)' },
+      { id: 'perch', name: 'Landed (crouched)' },
+      { id: 'cling', name: 'Clinging (to a wall or trunk, looking back)' },
+      { id: 'glide', name: 'Gliding (circling)' },
+      { id: 'fly', name: 'Flying' },
+      { id: 'dive', name: 'Diving' },
+      { id: 'strike', name: 'Strike (the dive lands)' },
+      { id: 'hit', name: 'Hit (flash and flinch)' },
+      { id: 'wounded', name: 'Wounded (the cave)' },
+      { id: 'dying', name: 'Dying' },
+      { id: 'corpse', name: 'Corpse' },
+    ],
+    create: mothmanModel,
   },
   {
     id: 'mib',
@@ -660,6 +684,54 @@ function beetleModel(ctx) {
           break;
       }
       renderer.update([b], dt);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- the Mothman: his own renderer ---------------------------------------------------------------
+
+function mothmanModel(ctx) {
+  const mc = ctx.cfg.mothman;
+  const vc = ctx.cfg.modelViewer;
+  const renderer = new MothmanRenderer(mc);
+  renderer.init(ctx.scene, 1);
+  const m = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'stand', timer: 0, flash: 0, look: 0 };
+  return {
+    objects: renderer.meshes,
+    update(dt, s) {
+      Object.assign(m, { x: s.x, y: s.y, z: s.z, facing: s.facing, flash: 0, state: s.pose, timer: s.poseTime, look: 0 });
+      const t = s.poseTime;
+      // His head turns to the camera.
+      if (s.camera) m.look = wrapAngle(Math.atan2(s.camera.position.x - s.x, s.camera.position.z - s.z) - s.facing);
+      switch (s.pose) {
+        case 'cling':
+          // Up a wall, his back to you.
+          m.y += vc.mothman.clingHeight;
+          m.facing += Math.PI;
+          break;
+        case 'strike': {
+          const k = loopTime(t, vc.mothman.diveSeconds + mc.strikeSeconds + vc.holdSeconds);
+          m.state = k < vc.mothman.diveSeconds ? 'dive' : 'strike';
+          m.timer = k - vc.mothman.diveSeconds;
+          break;
+        }
+        case 'hit': {
+          const k = loopTime(t, vc.hitLoopSeconds);
+          m.flash = Math.max(0, mc.hitFlashSeconds - k);
+          m.state = k < vc.staggerSeconds ? 'flinch' : 'stand';
+          break;
+        }
+        case 'dying':
+          m.timer = Math.min(mc.deathSeconds, loopTime(t, mc.deathSeconds + vc.holdSeconds));
+          break;
+        default:
+          break;
+      }
+      // Flying, he's placed by his middle: hung in the air in front of you.
+      if (FLYING.has(m.state)) m.y += vc.mothman.flyHeight;
+      renderer.update([m], dt);
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),

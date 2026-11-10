@@ -977,6 +977,7 @@ export class Game {
     this.renderer.postFX.setBloom(on ? t.bloom : this.cfg.quality.presets[this.qualityName].bloom);
     this.combat.zombieRenderer.setThermal(on, t);
     this.combat.mutantRenderer.setThermal(on, t);
+    this.flyer.renderer.setThermal(on, t); // Session 24: the Mothman
     this.viewer.setThermal(on, t);
     this.station.renderer.setThermal(on, t); // Session 13: the family
     if (!on) this.witch.renderer.setThermal(false);

@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Nov 10, 2026: **Session 23 (QA & Balance): the opening with the new systems; M10 closed.** The spikes' tablet numbers are in (about 57 fps in the place beyond, with the flyer and with the dozer's parts; dips to 40 only when hectic), so M10.3 is closed. The opening played through headless on seeds 1234, 7 and 4242, Day 1 to past the cordon, with Save and quit and Continue at five points. Two bugs fixed: **the dawn autosave missed dawn's own story flags** (Continue left the gas station trail shut another day), and **the safe's hunting rifle went to the rack by itself every run** (so the outpost's dogfight was skipped); now **a gun found with its slot full asks which gun to leave** (Aaron's pick). **The gun rack shows its guns.** 858 tests pass; the build is clean; everything is on `main`. Waiting on Aaron's PLAYTEST round 36 and his glare list.
+Last updated: Nov 10, 2026: **Session 24 (Graphics Engineer), in progress: the Mothman's model is built** (one skinned mesh, one draw call, no lights; 12 poses; in the model viewer, and worn by the flyer spike). 869 tests pass; the build is clean; on `main`. Waiting on Aaron's PLAYTEST round 37 (the Mothman), round 36 and his glare list. Next: the crashed plane's set, giant moths, Bigfoot and his cocoon, Milo and his animals.
+
+Before that: Nov 10, 2026: **Session 23 (QA & Balance): the opening with the new systems; M10 closed.** The spikes' tablet numbers are in (about 57 fps in the place beyond, with the flyer and with the dozer's parts; dips to 40 only when hectic), so M10.3 is closed. The opening played through headless on seeds 1234, 7 and 4242, Day 1 to past the cordon, with Save and quit and Continue at five points. Two bugs fixed: **the dawn autosave missed dawn's own story flags** (Continue left the gas station trail shut another day), and **the safe's hunting rifle went to the rack by itself every run** (so the outpost's dogfight was skipped); now **a gun found with its slot full asks which gun to leave** (Aaron's pick). **The gun rack shows its guns.** 858 tests pass; the build is clean; everything is on `main`. Waiting on Aaron's PLAYTEST round 36 and his glare list.
 
 Before that: Nov 9, 2026 (overnight): **Session 22 (Lead Engineer + AI Programmer): the spikes (M10.3), and Demo mode.** The black flicker frame every 5-10 s is fixed (dynamic resolution resized the canvas after the frame was drawn). **Demo mode** on the main menu (Aaron's idea: "if it runs in demo mode, it'll run on your device"): the station on its own, no story or saving, a panel to send up to 150 zombies, set the time and graphics, and a device test with a verdict whose preset is kept for real runs. Then the spikes, each with a go answer in DESIGN.md ("Build plan: the M10.3 spikes"): **150 zombies** (one draw call for all of them; about 2.5 ms of AI headless), **the place beyond** (the four-path forest on the interior system, 4 draw calls), **a flyer** (flyovers and dives, shot in the air), **dozer parts** (a ram, plating, a head saw). 844 tests pass; the build is clean; everything is on `main`. **Waiting on Aaron's morning review** (`MORNING.md`; play-test: `PLAYTEST.md` round 34; calls: OPEN_QUESTIONS #377-389). The tablet's numbers for each spike are still wanted.
 
@@ -63,6 +65,18 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### Session 24 (Graphics Engineer / Technical Artist): models for the next stretch (in progress)
+
+Aaron at the start: round 36 and the glare list not yet; the Mothman first, "go with your gut"; push to `main` and he plays him from the debug menu.
+
+- **The Mothman's model** (`render/mothmanModel.js`, `render/MothmanRenderer.js`, `config.mothman`; DESIGN.md "The Mothman"): a gaunt dark man-shape, 2.3 m, furred like a moth (a ragged ruff, the head sunk into it, feathery antennae, clawed hands and feet), two pairs of dusty moth wings about 5.3 m across with faint eye-spots. **One skinned mesh, one draw call, about 19,000 triangles, no lights.** His eyes glow in their own colour and aren't fogged (the shader, not a second mesh). Every colour but the eyes is under the glare ceiling (tested), and `albedo` 0.3 keeps the torch from blowing him pale.
+- **Twelve poses**, blended: stand (wings closed down his back; his head turns to watch), mantle, perch, cling, glide, fly, dive, strike, flinch, wounded, dying, corpse. Standing poses are placed by his feet; flying ones by his middle, which he pitches and banks about.
+- **The figure kit has sheets** (`render/figureKit.js` `spec.sheets`): thin membranes (wings) with their own uv for painting, skinned from one bone to another along a span. Ready for the giant moths.
+- **The flyer spike wears him** (`ai/Flyer.js`): gliding while it circles, beating on a pass, wings swept in a dive, the rake when a dive lands, banking into turns (`config.spikes.flyer.bank`). Its placeholder look and its colours in config are gone. The heat scope dims him.
+- **In the model viewer** ("The Mothman"; `config.modelViewer.mothman`).
+- **Tested:** `tests/mothman.test.js` (10), and he's in `tests/modelViewer.test.js`. Checked headless in the viewer (every pose, torch and day) and in flight on seed 1234 (a full script: no page errors).
+- **Not done yet:** the crashed plane's set, giant moths, Bigfoot and his cocoon, Milo and his animals. Aaron's rounds 36 and 37; his glare list.
 
 ### Session 23 (QA & Balance): the opening with the new systems; M10 closed
 

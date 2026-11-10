@@ -323,6 +323,14 @@ Round 36 (Session 23, QA: the opening played through headless on seeds 1234, 7 a
 - [ ] **Continue from a dawn save:** play through Night 1 to the dawn ("Game saved"), then close the browser (don't use Save and quit) and Continue. The gas station trail should be open (the fallen oak gone). Before, the dawn save missed dawn's own story flags, so the trail stayed shut for another whole day.
 - [ ] **Ammo through the opening** (your feel matters more than my bot's aim): did you run short anywhere? My bot came out of the shelter's horde with about 5 shells and 14 service rifle rounds, and struggled at the outpost's approach without topping up.
 
+Round 37 (Session 24, Graphics: the Mothman's model; OPEN_QUESTIONS #393-397). Nothing in the save moved.
+- [ ] **The Mothman in the model viewer:** debug menu, **Models**, then left/right to **The Mothman**. Up/down steps through his 12 poses: standing (wings closed down his back, his head turning to watch you as you orbit), mantling (wings thrown wide: the eye-spots), landed, clinging (his back to you, the head turned right round), gliding, flying, diving, the strike, hit, wounded (the cave), dying, corpse. The light button cycles torch, moonlight, dusk, day and the heat scope.
+  - Is he the Mothman you pictured? Height (2.3 m), the ruff, the antennae, the claws, the wings' shape and their eye-spots.
+  - **Glare:** under the torch up close, is any part of him too pale? (He's meant to stay a dark shape with the eyes the only bright thing.)
+  - **The eyes:** by moonlight from far out (zoom right back): do they carry?
+- [ ] **The Mothman in flight:** debug menu, **Spikes (M10.3)**, **Flyer: send one at me**, best at night. The same script as before (circles, two passes, four dives), now wearing the model: he glides while circling, beats hard on a pass, sweeps his wings back to dive, rakes with both hands when a dive lands, and banks into his turns. Red eyes first, then the shape.
+  - **The frame rate** with him up (the top-left corner): still about 57?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
