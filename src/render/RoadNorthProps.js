@@ -556,7 +556,7 @@ export class RoadNorthProps {
       const holder = new THREE.Group();
       holder.position.set(s.x, sy, s.z);
       holder.rotation.y = s.yaw;
-      const face = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(1.8, 1.35)), this.hold(new THREE.MeshLambertMaterial({ map: tex })));
+      const face = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(1.8, 1.35)), this.hold(new THREE.MeshLambertMaterial({ map: tex, color: k.earlTint ?? 0xffffff })));
       face.position.set(0, 2.1, 0.05);
       holder.add(face);
       const back = new THREE.Mesh(this.hold(new THREE.BoxGeometry(1.86, 1.41, 0.04)), this.hold(new THREE.MeshLambertMaterial({ color: k.signBack })));
@@ -792,22 +792,36 @@ function grime(ctx, w, h, n) {
   }
 }
 
+// Session 25: text at `size` px, or smaller until it fits `maxWidth`.
+export function fitText(ctx, text, x, y, maxWidth, size, weight, family) {
+  let px = size;
+  ctx.font = `${weight} ${px}px ${family}`;
+  while (px > 8 && ctx.measureText(text).width > maxWidth) {
+    px -= 2;
+    ctx.font = `${weight} ${px}px ${family}`;
+  }
+  ctx.fillText(text, x, y);
+  return px;
+}
+
 // Earl's hand-painted signs: wobbly lettering on a board, and on the
 // crossing sign the figure striding (the famous film still, his way).
 function earlSign(ctx, w, h, s, k) {
-  ctx.fillStyle = css(s.art === 'bigfoot' ? k.boardYellow : k.earlBoard);
+  const ink = s.art === 'bigfoot' ? (k.earlYellowInk ?? k.earlInk) : k.earlInk;
+  ctx.fillStyle = css(s.art === 'bigfoot' ? (k.earlYellow ?? k.boardYellow) : k.earlBoard);
   ctx.fillRect(0, 0, w, h);
   for (let y = 0; y < h; y += 48) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
     ctx.fillRect(0, y, w, 3);
   }
-  ctx.strokeStyle = css(k.earlInk);
+  ctx.strokeStyle = css(ink);
   ctx.lineWidth = 10;
   ctx.strokeRect(12, 12, w - 24, h - 24);
-  ctx.fillStyle = css(k.earlInk);
+  ctx.fillStyle = css(ink);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   let top = h * 0.2;
+  const room = w - 80; // Session 25 (Aaron: the H and the T of BIGFOOT were off the board): inside the border, with a margin
   if (s.art === 'bigfoot') {
     // Striding, mid-turn, one arm swinging: a dark silhouette.
     ctx.save();
@@ -823,7 +837,7 @@ function earlSign(ctx, w, h, s, k) {
     ctx.closePath();
     ctx.fill(); // body
     ctx.lineCap = 'round';
-    ctx.strokeStyle = css(k.earlInk);
+    ctx.strokeStyle = css(ink);
     ctx.lineWidth = 18;
     ctx.beginPath();
     ctx.moveTo(-30, -26);
@@ -837,15 +851,11 @@ function earlSign(ctx, w, h, s, k) {
     ctx.stroke();
     ctx.restore();
     top = h * 0.78;
-    ctx.font = 'bold 54px serif';
-    ctx.fillText(s.title, w / 2, top);
-    ctx.font = 'italic 28px serif';
-    s.lines.forEach((line, i) => ctx.fillText(line, w / 2 + (i % 2 ? 30 : -20), top + 46 + i * 30));
+    fitText(ctx, s.title, w / 2, top, room, 54, 'bold', 'serif');
+    s.lines.forEach((line, i) => fitText(ctx, line, w / 2 + (i % 2 ? 30 : -20), top + 46 + i * 30, room - 60, 28, 'italic', 'serif'));
   } else {
-    ctx.font = 'bold 64px serif';
-    ctx.fillText(s.title, w / 2, top + 10);
-    ctx.font = 'bold 34px serif';
-    s.lines.forEach((line, i) => ctx.fillText(line, w / 2 + Math.sin(i * 2.3) * 8, top + 90 + i * 52));
+    fitText(ctx, s.title, w / 2, top + 10, room, 64, 'bold', 'serif');
+    s.lines.forEach((line, i) => fitText(ctx, line, w / 2 + Math.sin(i * 2.3) * 8, top + 90 + i * 52, room - 20, 34, 'bold', 'serif'));
   }
   grime(ctx, w, h, 200);
 }

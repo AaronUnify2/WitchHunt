@@ -307,13 +307,13 @@
       "id": "sweep.gasStation",
       "name": "Arriving at the gas station (establishing sweep)",
       "style": "sweep",
-      "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (11.5, 10.4, 6.5 m up). Wyatt: no lights, their truck's gone. Session 18 (Aaron: Tom comes in from behind the store, on the campsite trail): from up behind the store, round its side, across the pumps to the sign.",
+      "_note": "Session 15b (M9.3): anchor gasStation: its frame (x right, z toward the road; data/gasStation.json). From up over the road, across the pumps and the car bonnets, up to the HOME OF BIGFOOT sign (12.2, 5.8, 6.5 m up; Session 25: moved in off the power line). Wyatt: no lights, their truck's gone. Session 18 (Aaron: Tom comes in from behind the store, on the campsite trail): from up behind the store, round its side, across the pumps to the sign. Session 25 (Aaron: that's the way Tom walks round): round the west side (+x) instead, staying west of the store (x past 8) and north of the canopy (z past 6.4) to end on the sign.",
       "camera": [
         {
           "at": 0,
           "anchor": "gasStation",
           "pos": [
-            3,
+            -3,
             7,
             -32
           ],
@@ -327,7 +327,7 @@
           "at": 3.0,
           "anchor": "gasStation",
           "pos": [
-            -16,
+            16,
             6,
             -14
           ],
@@ -341,9 +341,9 @@
           "at": 6.0,
           "anchor": "gasStation",
           "pos": [
-            -12,
+            17,
             4.5,
-            10
+            9
           ],
           "look": [
             0,
@@ -355,14 +355,14 @@
           "at": 8.8,
           "anchor": "gasStation",
           "pos": [
-            5,
+            5.5,
             2.2,
-            6.5
+            11
           ],
           "look": [
-            11.5,
-            7.2,
-            10.4
+            12.2,
+            7.4,
+            5.8
           ]
         }
       ],
@@ -535,7 +535,7 @@
       "id": "gas.witch",
       "name": "The gas station: the witch at the treeline (first person)",
       "style": "firstPerson",
-      "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read).",
+      "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read). Session 25 (Aaron): as she goes, a rush of wind (witchRush), not the shriek.",
       "actors": [
         {
           "id": "her",
@@ -583,7 +583,7 @@
         {
           "at": 2.9,
           "do": "sfx",
-          "sfx": "witchShriek"
+          "sfx": "witchRush"
         }
       ],
       "duration": 4.6,
@@ -593,19 +593,18 @@
       "id": "day1.tower",
       "name": "Day 1: the view from the lookout tower (first person)",
       "style": "firstPerson",
-      "_note": "M9.2: the first climb on Day 1 (FirstDay). Anchors from FirstDay: southLight (a small red light blinking far to the south, toward Ground Zero, at the edge of sight: Session 16 (Aaron), Wyatt asks and Ellen says it's the military, a training exercise, so they've been told; it isn't), campsite / smoke (the thin wisp over the campsite's trees, drawn along the line to it at the edge of the fog). Tom steps clear of the platform's corner posts first. The view lingers on the fog and the far light, then turns to the smoke: Wyatt spots the campers' car and Junie the smoke (lines 3-4).",
+      "_note": "M9.2: the first climb on Day 1 (FirstDay). Anchors from FirstDay: southLight (far to the south, toward Ground Zero, at the edge of sight), campsite / smoke (the thin wisp over the campsite's trees, drawn along the line to it at the edge of the fog). Session 25 (Aaron): the red light is now the craft itself: the UFO hangs over the far south for about 2 s, lights on, then zips off (up and away east, accelerating, gone in under a second); Wyatt asks, Ellen says it's the military (it isn't). Then the pan to the smoke: Wyatt spots the campers' car and Junie the smoke (lines 3-4). Tom steps clear of the platform's corner posts first.",
       "actors": [
         {
-          "id": "light",
-          "kind": "glow",
+          "id": "ufo",
+          "kind": "ufo",
           "anchor": "southLight",
           "pos": [
             0,
             0,
             0
           ],
-          "size": 0.55,
-          "color": 16734780
+          "size": 0.6
         },
         {
           "id": "smoke",
@@ -629,108 +628,104 @@
           "rate": 0.6
         },
         {
-          "at": 0.9,
-          "do": "hide",
-          "actor": "light"
+          "at": 0,
+          "do": "fly",
+          "actor": "ufo",
+          "path": [
+            {
+              "at": 0,
+              "p": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "at": 0.8,
+              "p": [
+                1.2,
+                0.1,
+                0
+              ]
+            },
+            {
+              "at": 1.6,
+              "p": [
+                2.4,
+                0,
+                0
+              ]
+            },
+            {
+              "at": 2.4,
+              "p": [
+                3.6,
+                0.1,
+                0
+              ]
+            },
+            {
+              "at": 2.75,
+              "p": [
+                7,
+                1.8,
+                0
+              ]
+            },
+            {
+              "at": 3.05,
+              "p": [
+                40,
+                18,
+                0
+              ]
+            },
+            {
+              "at": 3.3,
+              "p": [
+                180,
+                80,
+                0
+              ]
+            },
+            {
+              "at": 3.5,
+              "p": [
+                520,
+                240,
+                0
+              ]
+            }
+          ]
         },
         {
-          "at": 1.4,
+          "at": 0.6,
           "do": "line",
           "line": "tower.light.wyatt"
         },
         {
-          "at": 1.45,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 2.3,
+          "at": 3.5,
           "do": "hide",
-          "actor": "light"
+          "actor": "ufo"
         },
         {
-          "at": 2.85,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 3.7,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 4.25,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 4.6,
+          "at": 4.0,
           "do": "line",
           "line": "tower.light.ellen"
         },
         {
-          "at": 5.1,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 5.65,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 6.5,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 7.05,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 7.9,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 8.45,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 9.3,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 9.85,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 10.4,
+          "at": 10.0,
           "do": "lookAt",
           "target": "campsite",
           "rate": 0.8
         },
         {
-          "at": 10.7,
-          "do": "hide",
-          "actor": "light"
-        },
-        {
-          "at": 11.25,
-          "do": "show",
-          "actor": "light"
-        },
-        {
-          "at": 11.6,
+          "at": 11.2,
           "do": "line",
           "line": "day1.03"
         }
       ],
-      "duration": 14.5
+      "duration": 14.2
     },
     {
       "id": "clip.camcorder",

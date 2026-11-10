@@ -42,7 +42,7 @@
     },
     {
       "id": "pruittTapes",
-      "name": "Earl Pruitt's trail-cam tapes",
+      "name": "Earl Pruitt's trail-cam tape",
       "from": "stormShelter",
       "kind": "tape",
       "clip": "clip.pruittTape",
@@ -50,7 +50,7 @@
         "look": "tape",
         "color": "#3e3b36",
         "label": "#d8d0b0",
-        "line": "A shoebox of VHS-C tapes, each labelled in Earl's hand: a camera number and a date. (draft)"
+        "line": "Still in Earl's VCR, where he left it. The label's in his hand: CAM 4 and a date. (draft)"
       }
     },
     {

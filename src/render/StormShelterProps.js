@@ -15,7 +15,7 @@
 //    joisted ceiling with the shaft up to the hatch, the ladder, a bunk
 //    bed made up, a folded cot, shelves of tins and water jugs, a small
 //    table (the diary, a board game, a colouring book, a lamp) and a stool,
-//    a TV and VCR on the shelves with a box of tapes, a corkboard of trail-
+//    a TV and VCR on the shelves (Earl's tape still in it: Session 25), a corkboard of trail-
 //    cam photos, a stuffed toy on the bunk.
 // Session 19 (style pass 2): up top, sod and grass tufts on the mound,
 // roots breaking out of its sides, stones round its foot, an old tarp
@@ -647,6 +647,9 @@ export class StormShelterProps {
     this.box(0.4, 0.34, 0.38, this.rx(tv.x - 0.02), this.rz(tv.z), f + tv.y + 0.08, k.tv);
     this.box(0.02, 0.26, 0.3, this.rx(tv.x - 0.22), this.rz(tv.z), f + tv.y + 0.12, k.screen);
     this.box(0.36, 0.08, 0.32, this.rx(tv.x - 0.02), this.rz(tv.z), f + tv.y, k.vcr);
+    // Session 25: its slot (a dark line across the front) and a red power light.
+    this.box(0.004, 0.012, 0.2, this.rx(tv.x - 0.201), this.rz(tv.z), f + tv.y + 0.03, k.screen);
+    this.box(0.004, 0.01, 0.025, this.rx(tv.x - 0.201), this.rz(tv.z - 0.13), f + tv.y + 0.05, k.vcrLight);
     // A stuffed toy on the bottom bunk (a bear: lumps).
     const toy = r.toy;
     const ty = f + 0.48;
@@ -658,7 +661,7 @@ export class StormShelterProps {
     this.box(0.62, 1.1, 0.08, this.rx(cot.x), this.rz(cot.z - 0.2), f, k.cot, 0, { rotX: -0.15 });
   }
 
-  // The things Tom takes: the diary on the table, the box of tapes by the VCR.
+  // The things Tom takes: the diary on the table, the tape in the VCR.
   buildFinds() {
     const r = this.data.room;
     const k = this.cfg.colors;
@@ -666,8 +669,12 @@ export class StormShelterProps {
     const t = r.table;
     this.box(0.15, 0.03, 0.21, this.rx(t.x + 0.05), this.rz(t.z - 0.05), f + t.h, k.diary, 8);
     this.diaryMesh = this.own('diary');
-    this.box(0.26, 0.12, 0.16, this.rx(r.tv.x - 0.05), this.rz(r.tv.z - 0.42), f + r.tv.y, k.tapeBox);
-    for (let i = 0; i < 4; i++) this.box(0.03, 0.11, 0.12, this.rx(r.tv.x - 0.16 + i * 0.065), this.rz(r.tv.z - 0.42), f + r.tv.y + 0.05, k.tape);
+    // Session 25 (Aaron: trail-cam footage has to come out of the player): one tape, half out of the VCR's slot
+    // (its front faces into the room, -x), its label toward Tom.
+    const tv = r.tv;
+    const front = tv.x - 0.2;
+    this.box(0.1, 0.024, 0.18, this.rx(front), this.rz(tv.z), f + tv.y + 0.026, k.tape);
+    this.box(0.004, 0.016, 0.12, this.rx(front - 0.051), this.rz(tv.z), f + tv.y + 0.03, k.tapeLabel);
     this.tapesMesh = this.own('tapes');
   }
 

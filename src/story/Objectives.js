@@ -133,12 +133,12 @@ export class Objectives {
       if (sig) return step('shelterSigil', "Dig up the sigil beside the shelter's hatch.", sig);
       if (!sh.keysTaken) return step('keys', sh.earlDown ? "Take Earl's keys from where he fell." : 'Put Earl down. His keys have the combination.', sh.earlDown ? sh.keysAt : (sh.earl ?? sh.hatchAt));
       if (sh.hatch !== 'open') return step('hatch', "Dig the shelter's hatch clear and open it.", sh.hatchAt);
-      if (!sh.searched.has('diary') || !sh.searched.has('tapes')) return step('room', "Go down into the shelter. Find Earl's diary and his tapes.", sh.hatchAt);
+      if (!sh.searched.has('diary') || !sh.searched.has('tapes')) return step('room', "Go down into the shelter. Find Earl's diary and the tape in his VCR.", sh.hatchAt);
     }
 
     // ---- home with the tapes; the safe ----
     // Session 17 (Aaron): tapes are watched on D-pad down; handing them in (for the monitors) isn't a step.
-    if (watching('pruittTapes')) return step('tapes', "Watch Earl's tapes (D-pad down).");
+    if (watching('pruittTapes')) return step('tapes', "Watch Earl's tape (D-pad down).");
     // Session 18 (Aaron): home's on the way back from the shelter: stop in and see to the fence.
     if (has('earlCombination') && !has('rifleClaimed') && !has('homeStop')) {
       return step('homeStop', "Stop at home on the way back: spend your scrap on the fence at the ledger, and top up the fence box with a battery.", g.combat.inventory.batteries > 0 ? L.fenceBox : L.cabin.frontDoor);

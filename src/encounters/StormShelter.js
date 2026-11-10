@@ -544,7 +544,7 @@ export class StormShelter {
   // Session 17 (Aaron): the tapes wait for D-pad down, wherever Tom is (camera four; the clip has the family's lines).
   offerTapes() {
     if (this.tapesWatched) return;
-    if (!this.watch?.offer({ id: 'pruittTapes', pad: "D-pad down: watch Earl's tapes", key: "V: watch Earl's tapes", play: () => this.playTapes() })) {
+    if (!this.watch?.offer({ id: 'pruittTapes', pad: "D-pad down: watch Earl's tape", key: "V: watch Earl's tape", play: () => this.playTapes() })) {
       if (!this.watch) this.playTapes();
     }
   }

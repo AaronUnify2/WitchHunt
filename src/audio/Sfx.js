@@ -569,6 +569,13 @@ const RECIPES = {
     s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 520, endFreq: 1240, gain: 0.18, attack: 0.03, vibrato: 22 });
     s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 2600, endFreq: 3800, q: 3, gain: 0.25, attack: 0.02 });
   },
+  // Session 25 (Aaron: the gas station's fly-away "boing" was off-putting): she's gone,
+  // a rush of wind: noise swept up and away, no pitch to it, about 0.8 s.
+  witchRush(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, pos?.range);
+    s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 380, endFreq: 2600, q: 0.9, gain: 0.42, attack: 0.12 });
+    s.noiseBurst(o, { seconds: 0.55, type: 'lowpass', freq: 900, endFreq: 260, q: 0.5, gain: 0.3, attack: 0.04 });
+  },
   // M7: she throws a hex: a hissing whoosh.
   witchHex(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.8);

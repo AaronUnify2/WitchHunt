@@ -17,7 +17,7 @@
 // (cos yaw, -sin yaw). North is -z.
 
 import { Rng } from '../core/Rng.js';
-import { roadFrame } from './road.js';
+import { roadFrame, roadDistance } from './road.js';
 
 // Weighted pick from { id: weight }.
 export function pickWeighted(weights, rng) {
@@ -106,6 +106,22 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
   const placed = [];
   const quads = [];
 
+  // Session 25 (Aaron): nothing parked on the asphalt, where the witch and the dead run.
+  const roads = map.road ? [map.road, map.road.north].filter(Boolean) : [];
+  const keep = (map.road?.width ?? 0) / 2 + (pc.roadKeep ?? 0.3);
+  const offRoad = roads.length
+    ? (v, quad, length) => {
+        for (const r of roads) {
+          if (roadDistance(r, v.x, v.z).distance > keep + length) continue;
+          for (const p of [...quad, v]) {
+            const d = roadDistance(r, p.x, p.z);
+            if (d.distance < keep && d.along > 0.5 && d.along < r.length - 0.5) return false;
+          }
+        }
+        return true;
+      }
+    : null;
+
   const fits = (v, place) => {
     const type = data.types[v.type];
     const [length, width] = type.size;
@@ -120,6 +136,7 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
       for (const c of map.clearings) if (Math.hypot(v.x - c.x, v.z - c.z) < pc.centreClearance + length / 2) return false;
     }
     const corners = footprint(v, length, width, 0.3);
+    if (offRoad && !offRoad(v, footprint(v, length, width, 0), length)) return false;
     for (const p of corners) if (ground.openAt(p.x, p.z) < pc.openNeeded) return false;
     if (ground.openAt(v.x, v.z) < pc.openNeeded) return false;
     // The boot and bonnet must be reachable, and at least one front door

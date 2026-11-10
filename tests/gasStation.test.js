@@ -7,6 +7,7 @@ import gas from '../src/data/gasStation.json';
 import vehicleData from '../src/data/vehicles.json';
 import { createRequire } from 'node:module';
 import { makeMap, config } from './mapFixture.js';
+import { roadProps } from '../src/world/road.js';
 const require = createRequire(import.meta.url);
 
 describe('the gas station set', () => {
@@ -22,6 +23,22 @@ describe('the gas station set', () => {
     const ahead = frameToWorld(f, 0, best);
     const near = map.road.points.reduce((a, p) => Math.min(a, Math.hypot(p.x - ahead.x, p.z - ahead.z)), Infinity);
     expect(near).toBeLessThan(2);
+  });
+
+  // Session 25 (Aaron): the road's power line ran through the HOME OF BIGFOOT board.
+  it('keeps the pole sign clear of the road\'s poles and wires', () => {
+    const poles = roadProps(map.road, config.map.road).poles;
+    const s = frameToWorld(f, gas.sign.x, gas.sign.z);
+    const half = config.gasStation.look.sign.width / 2;
+    for (let i = 0; i + 1 < poles.length; i++) {
+      const a = poles[i];
+      const b = poles[i + 1];
+      const dx = b.x - a.x;
+      const dz = b.z - a.z;
+      const t = Math.max(0, Math.min(1, ((s.x - a.x) * dx + (s.z - a.z) * dz) / (dx * dx + dz * dz)));
+      const d = Math.hypot(s.x - (a.x + dx * t), s.z - (a.z + dz * t));
+      expect(d).toBeGreaterThan(half + 1); // the board turns along the road, so its half-width reaches toward the wire
+    }
   });
 
   it('keeps the store inside the clearing and off the road', () => {

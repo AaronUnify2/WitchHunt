@@ -645,8 +645,13 @@ export const config = {
         stencil: 0x1e1a14,
         plaque: 0x4a463c,
         plaqueInk: 0x1e1c18,
-        earlBoard: 0x5c4630,
-        earlInk: 0xb8a67e,
+        // Session 25 (Aaron: the torch glared off Earl's signs): dulled, every paint under luma 0.45
+        // (lumaOf), and the board's material darkened too (earlTint).
+        earlBoard: 0x3e2e1e,
+        earlInk: 0x7a6e54,
+        earlYellow: 0x6e6226, // the crossing sign's board
+        earlYellowInk: 0x241c12, // its figure and lettering
+        earlTint: 0xa0a0a0,
         signBack: 0x2e261c,
         leafDark: 0x1c2614,
         leaf: 0x26341a,
@@ -2209,6 +2214,7 @@ export const config = {
       cliffMargin: 6, // metres from the cliff's walkable line
       avoidRadius: 8, // metres beyond the station's fence kept clear
       signClearance: 3, // metres from a clearing's signpost
+      roadKeep: 0.3, // Session 25 (Aaron: the witch snagged on a truck on the road): no corner within half the road's width plus this of the road or the road north
       centreClearance: 2.5, // metres (plus half its length) from a clearing's centre (pathways meet there)
       tries: 12, // attempts to fit each clearing car
       maxVehicles: 55,
@@ -3219,8 +3225,9 @@ export const config = {
         tv: 0x1e1c1a,
         screen: 0x0a0e0c,
         vcr: 0x161616,
-        tapeBox: 0x3a3024,
-        tape: 0x121212,
+        tape: 0x2a2826, // Session 25: one tape, half out of the VCR (it was a box of them)
+        tapeLabel: 0x6a6450,
+        vcrLight: 0x8a2018,
         toy: 0x4a3420,
         cot: 0x2a3020,
         diary: 0x3a1410,
