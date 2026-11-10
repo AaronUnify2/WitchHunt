@@ -342,6 +342,11 @@ Round 38 (Session 24, Graphics: the crashed plane's set; OPEN_QUESTIONS #398-402
 - [ ] **The frame rate** standing in the clearing looking at the wreck.
 - [ ] It's also in the model viewer (**Models**, "The crashed plane's set"), but the world's the place to judge it.
 
+Round 39 (Session 24, Graphics: giant moths; OPEN_QUESTIONS #403-404). Model only: no AI yet.
+- [ ] **Giant moths in the model viewer:** debug menu, **Models**, "Giant moth". The variant button switches between **one** and **a swarm of 16**. Poses: flying, hovering, darting, settled (wings folded, as if on a wall), hit, dying, corpse. Dog sized (about 0.8 m long, 1.7 m across the wings), the Mothman's colours and eyes.
+  - The swarm by moonlight (the light button): red eyes first, then the shapes. Does a swarm read as a threat, or do they want to be bigger or more of them?
+  - **The frame rate** with the swarm up (it's one draw call however many there are).
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

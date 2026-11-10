@@ -3957,6 +3957,26 @@ export const config = {
     },
   },
 
+  // Giant moths (Session 24: the model; render/mothModel.js,
+  // render/MothRenderer.js): dog sized, in swarms (Aaron). One draw call for
+  // the lot. Their behaviour is still to design (the mineshaft, the cave).
+  moths: {
+    giant: {
+      poolSize: 32, // most drawn at once
+      scale: 1, // the model's about 0.8 m long, 1.7 m across the wings
+      albedo: 0.3, // the torch is strong up close
+      eyeGlow: 2.2,
+      flapHz: 3.4, // the wingbeat when nothing drives it
+      foldRate: 5, // how fast the wings fold and open (per second)
+      deathSeconds: 1.4,
+      hitFlashSeconds: 0.12,
+      hitFlash: [1.6, 0.7, 0.5],
+      thermalGlow: 0.25,
+      // The Mothman's colours, a little paler (the glare rule holds).
+      colours: { fur: 0x201d1b, furDark: 0x131211, ruff: 0x2c2723, belly: 0x26211e, wing: 0x242120, dust: 0x3c362f, spot: 0x3c170f, claw: 0x0b0b0c, eyes: 0xff0a04 },
+    },
+  },
+
   // The crashed plane's set (Session 24; render/crashedPlaneModel.js,
   // world/CrashSite.js). Only the set: its encounter is Session 25's.
   crashedPlane: {
@@ -4292,6 +4312,7 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
+    moths: { swarm: 16, swarmRadius: 2.6, height: 1.5, distance: 4, swarmDistance: 9 }, // the swarm's size and how wide it mills; a moth's height off the ground; the camera's start
     crashedPlane: { distance: 16, height: 1.2 }, // the set's framed from as far out as the viewer goes
     mothman: { distance: 6.5, flyHeight: 1.8, clingHeight: 1.2, diveSeconds: 0.9 }, // metres out he's framed from (his wings), his middle's height flying, his feet's clinging; the dive before each strike
     witchGlideShare: 0.6, // her gliding pose, as a share of full speed (the cloak's trail)

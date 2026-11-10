@@ -28,6 +28,7 @@ import { AlienRenderer } from '../render/AlienRenderer.js';
 import { KIT_STAGES } from '../render/alienModel.js';
 import { BeetleRenderer } from '../render/BeetleRenderer.js';
 import { MothmanRenderer, FLYING } from '../render/MothmanRenderer.js';
+import { MothRenderer } from '../render/MothRenderer.js';
 import { MibRenderer } from '../render/MibRenderer.js';
 import { VehicleRenderer } from '../render/VehicleRenderer.js';
 import { HutRenderer } from '../render/HutRenderer.js';
@@ -186,6 +187,24 @@ export const VIEWER_MODELS = [
       { id: 'corpse', name: 'Corpse' },
     ],
     create: mothmanModel,
+  },
+  {
+    id: 'moth',
+    name: 'Giant moth',
+    note: "Session 24: the Mothman's kin, dog sized, in swarms. The whole swarm is one draw call. Y: one, or a swarm. Behaviour: still to design.",
+    height: (cfg) => cfg.modelViewer.moths.height * 1.6,
+    startDistance: (cfg, variant) => (variant === 1 ? cfg.modelViewer.moths.swarmDistance : cfg.modelViewer.moths.distance),
+    variants: (cfg) => ['One', `A swarm of ${cfg.modelViewer.moths.swarm}`],
+    poses: [
+      { id: 'fly', name: 'Flying' },
+      { id: 'hover', name: 'Hovering (nose up)' },
+      { id: 'dart', name: 'Darting (the lunge)' },
+      { id: 'rest', name: 'Settled (wings folded)' },
+      { id: 'hit', name: 'Hit (flash, knocked askew)' },
+      { id: 'dying', name: 'Dying (falls)' },
+      { id: 'corpse', name: 'Corpse' },
+    ],
+    create: mothModel,
   },
   {
     id: 'mib',
@@ -696,6 +715,74 @@ function beetleModel(ctx) {
           break;
       }
       renderer.update([b], dt);
+    },
+    setThermal: (on, t) => renderer.setThermal(on, t),
+    dispose: () => renderer.dispose(),
+  };
+}
+
+// ---- giant moths: one instanced mesh ----------------------------------------------------------------
+
+function mothModel(ctx) {
+  const mc = ctx.cfg.moths.giant;
+  const vc = ctx.cfg.modelViewer;
+  const vm = vc.moths;
+  const renderer = new MothRenderer(mc);
+  renderer.init(ctx.scene, vm.swarm);
+  const moths = Array.from({ length: vm.swarm }, (_, i) => ({ active: false, x: 0, y: 0, z: 0, facing: 0, pitch: 0, roll: 0, state: 'fly', timer: 0, flash: 0, seed: i }));
+  return {
+    objects: renderer.meshes,
+    update(dt, s) {
+      const swarm = s.variant === 1;
+      const t = s.poseTime;
+      moths.forEach((m, i) => {
+        m.active = swarm || i === 0;
+        if (!m.active) return;
+        Object.assign(m, { x: s.x, y: s.y + vm.height, z: s.z, facing: s.facing, pitch: 0, roll: 0, flash: 0, state: s.pose, timer: t });
+        const moving = s.pose === 'fly' || s.pose === 'dart';
+        if (swarm) {
+          // Milling about: each on its own loop round the middle (or hanging where it is).
+          const a = i * 2.399;
+          const speed = moving ? (s.pose === 'dart' ? 1.6 : 0.8) : 0;
+          const u = a + t * speed * (0.7 + (i % 5) * 0.12) * (i % 2 ? 1 : -1);
+          const r = vm.swarmRadius * (0.35 + 0.65 * ((i * 0.618) % 1));
+          m.x += Math.cos(u) * r;
+          m.z += Math.sin(u) * r * 0.8;
+          m.y += Math.sin(u * 1.7 + a) * 0.7 + ((i * 0.37) % 1) * 0.8;
+          if (moving) {
+            const dir = i % 2 ? 1 : -1;
+            m.facing = Math.atan2(-Math.sin(u) * dir, Math.cos(u) * 0.8 * dir);
+            m.roll = -0.35 * dir;
+          } else {
+            m.facing = s.facing + Math.sin(a) * 0.8;
+          }
+        }
+        switch (s.pose) {
+          case 'rest':
+            // As if on a wall behind it: head up, its back to you.
+            m.pitch = -Math.PI / 2;
+            m.facing += Math.PI;
+            break;
+          case 'hit': {
+            const k = loopTime(t + i * 0.13, vc.hitLoopSeconds);
+            m.flash = Math.max(0, mc.hitFlashSeconds - k);
+            m.state = k < vc.staggerSeconds ? 'flinch' : 'hover';
+            break;
+          }
+          case 'dying': {
+            const k = Math.min(mc.deathSeconds, loopTime(t + i * 0.11, mc.deathSeconds + vc.holdSeconds));
+            m.timer = k;
+            m.y = s.y + 0.12 + (m.y - s.y - 0.12) * (1 - (k / mc.deathSeconds) ** 2);
+            break;
+          }
+          case 'corpse':
+            m.y = s.y + 0.12;
+            break;
+          default:
+            break;
+        }
+      });
+      renderer.update(moths, dt);
     },
     setThermal: (on, t) => renderer.setThermal(on, t),
     dispose: () => renderer.dispose(),

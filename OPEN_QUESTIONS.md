@@ -28,6 +28,13 @@ My calls (PLAYTEST round 38):
 | 401 | **The pilot.** In his seat, slumped in his straps, helmet on, head and shoulders above the hull. No blood, no face. | As described. | `pilot()`, `cockpit()` |
 | 402 | **The plane's look.** Plain dark grey, a faded star-in-a-disc on each side of the hull and on the tail, no numbers or lettering (a painted board would be one more draw call). Add a tail number? | As described. | `marking()`, `config.crashedPlane.look.colors` |
 
+**Built: giant moths** (Aaron: "dog sized swarm"; `render/mothModel.js`, `render/MothRenderer.js`, `config.moths.giant`): one instanced mesh, so a whole swarm is **one draw call**; about 1,900 triangles each; the wings beat in the vertex shader. Model only.
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 403 | **Their size and look.** About 0.8 m long and 1.7 m across: a fat furred body, a banded abdomen, the Mothman's wings in small and his red eyes (unfogged). Bigger, smaller, plainer wings? | `scale: 1` | `config.moths.giant` (`scale`, `colours`, `eyeGlow`) |
+| 404 | **How many.** The renderer draws up to 32 at once; the viewer's swarm is 16. What's a swarm in the mineshaft: a dozen, thirty? (It decides their health and damage when their behaviour is designed.) | `poolSize: 32` | `config.moths.giant.poolSize` |
+
 ## Session 23 (QA & Balance: the opening with the new systems)
 
 Aaron's answers at the start (Nov 10):

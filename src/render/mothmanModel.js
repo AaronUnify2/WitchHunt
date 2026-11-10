@@ -117,7 +117,7 @@ const smooth = (a, b, x) => {
 
 // A wing's pattern: veins fanning from the root, a darker trailing edge, a
 // dusty band, and the eye-spot (a dark pupil, a rust iris, an ash ring).
-function paintWing(out, colours, uv, spot) {
+export function paintWing(out, colours, uv, spot) {
   const { x: u, y: v } = uv;
   const vein = Math.abs(Math.sin(u * Math.PI * spot.veins));
   if (vein < 0.16) out.multiplyScalar(0.72);
@@ -132,8 +132,8 @@ function paintWing(out, colours, uv, spot) {
   }
 }
 
-const FORE_SPOT = { u: 0.6, v: 0.55, size: 0.15, stretch: 2.5, veins: 9, band: 0.74 };
-const HIND_SPOT = { u: 0.42, v: 0.6, size: 0.2, stretch: 1.0, veins: 7, band: 0.86 };
+export const FORE_SPOT = { u: 0.6, v: 0.55, size: 0.15, stretch: 2.5, veins: 9, band: 0.74 };
+export const HIND_SPOT = { u: 0.42, v: 0.6, size: 0.2, stretch: 1.0, veins: 7, band: 0.86 };
 
 // The figure-kit spec. m: config.mothman.
 export function mothmanSpec(m) {
