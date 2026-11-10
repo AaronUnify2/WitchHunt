@@ -18,6 +18,7 @@ Aaron's answers first (Nov 9):
 - **#384 settled:** the aim shouldn't stick to the flyer ("it's fun").
 - **#389 settled:** touch controls **at the very end** of the project.
 - **His glare list** soon; a full playthrough at some point.
+- **The flicker is gone**, and no discernible frame-rate drops anywhere in the game (Nov 10).
 - **The armour plating blocked the view from the dozer:** fixed. Its upper band sat across the driver's eyes (2.6 m) and the front plate cut the line down to the blade; now the sides stop at 2.1 m and the front plate at 1.95 m (`config.spikes.dozerParts.plating` `sideTop`, `frontBottom`, `frontTop`; a test keeps them under the eye and the blade's sightline).
 
 My calls in the build (PLAYTEST round 34):

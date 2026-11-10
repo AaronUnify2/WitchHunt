@@ -26,7 +26,8 @@
 ### Unfinished
 
 - **Aaron's round 34 is in** (OPEN_QUESTIONS "Session 22"): **150 zombies at night: 57 fps on the tablet, Runs great** (in DESIGN.md's table); the caption stays (#379); the way back leads out (#377); Demo mode's weapons are right (#381); no aim assist on the flyer (#384); **touch controls at the very end** (#389). The armour plating blocked the dozer's view: fixed (waist high), PLAYTEST round 35.
-- **Still wanted on the tablet:** the frame rate in the place beyond, with the flyer and with the dozer's parts (the spikes' other numbers); and whether the flicker is gone on both devices.
+- **The flicker is gone** (Aaron, Nov 10), and "0 discernible drops in frame rate for anything in the game".
+- **Still wanted on the tablet (Session 23):** the frame rate in the place beyond, with the flyer and with the dozer's parts (the spikes' other numbers, for DESIGN.md's table); and PLAYTEST round 35 (the plating's view).
 - **His glare list**, and Save and quit at more points, the health floor (he says they seem fine).
 - **From before:** the cave doesn't load yet (M12); the south's biome (below); the trail behind the gas station's draw calls (#302); the rack shows no guns (#343); the common pickups' first-time introductions (#348); the card's turning item is a CSS placeholder (#346).
 
@@ -42,7 +43,7 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 
 ## Next: Session 23, QA & Balance: the opening with the new systems
 
-**First:** ask Aaron for his round 34 notes (the flicker, Demo mode, the spikes) and **the tablet's numbers**; fix the small things first, one at a time, pushing each to `main`. Then his glare list if it's ready.
+**First:** ask Aaron for **the tablet's numbers** for the other three spikes (the place beyond, the flyer, the dozer's parts) and round 35 (the plating's view); write the numbers into DESIGN.md's spike table to close M10. Then his glare list if it's ready.
 
 **Goal** (DESIGN.md "Build plan", the Session 23 row): play-test the opening (Day 1 to the frontier) with everything M10 added: the healing pool, the loadout and rack, ammo types, inspect cards, one power unit, no flares, the health floor, Save and quit (on the tablet, at several points), the map (spine, road north, railway, optional encounters), interiors (the shelter). Full runs through the opening on two or three seeds; pacing, ammo and loot, bugs. Close M10: its "done when" (the opening plays through on every seed; a save mid-run quits and continues; each spike has a measured answer).
 
@@ -75,7 +76,7 @@ Not this session: any encounter's content (the crashed plane is Session 25); tou
 ```
 You are QA & Balance on Witch Hunt, Session 23: play-test the opening (Day 1 to the frontier) with everything M10 added, Save and quit on the tablet, and close M10 (each spike's tablet number in DESIGN.md).
 Read HANDOVER.md first, then docs/DESIGN.md ("Build plan": M10 and Session 23; "Build plan: the M10.3 spikes"; "Demo mode"; "Performance and simulation LOD"), STATUS.md (Sessions 21-22) and OPEN_QUESTIONS.md (#377-389, then #353-376 and the older open ones).
-First ask Aaron for his notes on PLAYTEST round 34 (the flicker fix, Demo mode, the spikes) and the tablet's numbers for each spike, and his glare list; fix the small ones, pushing each to main.
+First ask Aaron for the tablet's numbers for the place beyond, the flyer and the dozer's parts (DESIGN.md's spike table), PLAYTEST round 35, and his glare list; fix the small ones, pushing each to main.
 Then full runs through the opening on two or three seeds (headless, and Aaron's on the tablet): pacing, ammo and loot, Save and quit at several points, bugs; fix one at a time, each tested and pushed to main.
 Keep Aaron's rules: config and data first, complete files, no lights added at runtime, one idea at a time over the radio.
 Then confirm your role and ask Aaron for his notes.
