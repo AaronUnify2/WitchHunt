@@ -1240,6 +1240,7 @@ export class Game {
 
   autosave() {
     if (this.pastNoReturn) return false;
+    this.progress.settle(); // Session 23: dawn's own flags (day2, shelterCall) go into the dawn save
     return this.saves.save(this.collectSaveOutside());
   }
 
@@ -1273,6 +1274,7 @@ export class Game {
     this.dialogue.loadState(d.story);
     this.lore.loadState(d.lore);
     this.progress.loadState(d.progress);
+    if (this.clock.phase === 'dawn') this.progress.replay('dawn', this.clock.day); // Session 23: a dawn save made before dawn's flags ran
     this.campsite.loadState(d.campsite);
     this.gasStation.loadState(d.gasStation);
     this.shelter.loadState(d.shelter);

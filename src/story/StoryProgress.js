@@ -43,6 +43,24 @@ export class StoryProgress {
     if (!playing) return;
     this.timer -= dt;
     if (this.timer > 0 && !this.pending) return;
+    this.check();
+  }
+
+  // Session 23: a dusk or dawn still waiting for its check runs now. The dawn
+  // autosave calls this first (it ran before the next frame's check, so a flag
+  // dawn sets, day2 or shelterCall, was missing from the save).
+  settle() {
+    if (this.pending) this.check();
+  }
+
+  // Session 23: a run continued at dawn (from the dawn autosave) runs dawn's
+  // triggers again, in case the save was made before they ran (an older save).
+  // Setting a flag twice does nothing, so this is safe either way.
+  replay(event, day) {
+    this.pending = { event, day };
+  }
+
+  check() {
     this.timer = CHECK_EVERY;
     const p = this.player.position;
     const here = this.world.clearingAt(p.x, p.z);
