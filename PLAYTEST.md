@@ -316,6 +316,12 @@ Round 34 (Session 22: round 33 all good, Aaron):
 Round 35 (Session 22, after your round 34 notes: 150 zombies at 57 fps; the caption stays; aim doesn't stick):
 - [ ] **The armour plating doesn't block the view:** bolt it on and ride the dozer. The plates now stop at waist height on the seat; you should see over the front plate to the blade's top edge and its corners, and out over the sides.
 
+Round 36 (Session 23, QA: the opening played through headless on seeds 1234, 7 and 4242):
+- [ ] **The gun choice at the safe:** open Earl's safe with the combination. With the shotgun and service rifle carried, a panel asks: **Take it, leave the shotgun**, **Take it, leave the service rifle**, or **Send it to the comms room's gun rack** (B sends it to the rack). The world and clock wait while it's up. The gun you leave goes to the rack with its rounds kept. (Before, the hunting rifle went to the rack by itself every run, so you reached the outpost without the scope the dogfight needs.) Any gun found later with its slot full asks the same way.
+- [ ] **The dogfight with the hunting rifle carried:** at the outpost, once the barricade's down, climb the watchtower: the hint to switch to the hunting rifle and look through its scope, then the dogfight.
+- [ ] **Continue from a dawn save:** play through Night 1 to the dawn ("Game saved"), then close the browser (don't use Save and quit) and Continue. The gas station trail should be open (the fallen oak gone). Before, the dawn save missed dawn's own story flags, so the trail stayed shut for another whole day.
+- [ ] **Ammo through the opening** (your feel matters more than my bot's aim): did you run short anywhere? My bot came out of the shelter's horde with about 5 shells and 14 service rifle rounds, and struggled at the outpost's approach without topping up.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

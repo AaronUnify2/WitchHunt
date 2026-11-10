@@ -7,6 +7,18 @@ Aaron's answers at the start (Nov 10):
 - **Round 35:** he can see over the armour plating from the dozer now.
 - **His glare list:** not yet.
 - **Push to `main` as you go.**
+**Found and fixed in the play-through** (headless, seeds 1234, 7, 4242: Day 1 to past the cordon, Save and quit at dawn 2, after the gas station, in the shelter's room, after the outpost and past the cordon):
+- **The dawn autosave missed dawn's own story flags** (`day2`, `shelterCall`'s back-up): it ran before the next frame's check set them, so Continue from it left the gas station trail shut for another day and night. Fixed (`StoryProgress.settle()` before the save; a run continued at dawn replays dawn's triggers, which mends older saves).
+- **The safe's hunting rifle went to the rack by itself every run**, so the outpost's dogfight (scope from the tower) was quietly skipped. **Aaron: let Tom choose.** Built: `ui/GunChoice.js`, for any gun found with its slot full.
+
+My calls and questions (PLAYTEST round 36):
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 390 | **The gun choice's wording and default:** the panel names the gun, "No room for it: you're carrying two long guns already", then one row per gun in that slot ("Take it, leave the shotgun") and "Send it to the comms room's gun rack"; the first row is highlighted; B sends it to the rack. The new gun comes to hand when taken. Right default, or should the rack be first? | As described. | `ui/GunChoice.js` |
+| 391 | **Ammo through the opening:** my bot (a poor shot, aiming at the chest) came out of the shelter's horde (12, Earl, and the risen: 18 kills for 20 shells) with about 5 shells and 14 service rifle rounds, and ran dry at the outpost's approach (2, 4, 6 army zombies) before it reached the gun pit's rounds and the machine gun. A player who aims for heads, uses the shovel and searches the roadside cars will do better. Worth a little more ammo (the shelter's room, or a crate on the road to the outpost), or leave it tight? | Unchanged. | `data/stormShelter.json` `searches`; `data/loot.json` |
+| 392 | **Wandering into the outpost early** (the gates are soft): only sets `outpostEntered`; the approach waits for Ellen's call. Fine as is? | As described. | `Outpost.update()` |
+
 
 ## Session 22 (Lead Engineer + AI Programmer: the spikes, M10.3; Demo mode)
 
