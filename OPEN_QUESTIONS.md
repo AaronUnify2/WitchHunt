@@ -84,7 +84,7 @@ Your notes as given are in the old HANDOVER.md (git history, commit 7f5de33). Al
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
-| 446 | **The rotation's order.** It goes pistols, rifles, shotguns, the shovel, then the detonator while charges are out. LB goes the other way. The wheel turns like RB. Aaron: melee goes in a bar along the bottom of the weapon cross (built: the shovel, plus empty slots for the spike maul and the chainsaw). He's happy with the wall where it is (#447). | `rotation` | `config.weapons.rotation` |
+| 446 | **Settled (Aaron: "yes, it's right").** **The rotation's order.** It goes pistols, rifles, shotguns, the shovel, then the detonator while charges are out. LB goes the other way. The wheel turns like RB. Aaron: melee goes in a bar along the bottom of the weapon cross (built: the shovel, plus empty slots for the spike maul and the chainsaw). He's happy with the wall where it is (#447). | `rotation` | `config.weapons.rotation` |
 | 447 | **The camp's arc.** The lean-tos are 3.6 m from the fire, at -60, 0 and +60 degrees on the warm side. The wall is 1.35 m from the fire on the entrance side, so you see its back as you walk in. Aaron: good as it is. | As described. | `data/campsite.json` |
 | 448 | **The Enemies tabs.** Where an enemy has its own place-based tools (the outpost's crates, the gas station's mutant, the campsite's wave), those stay with the place. The tabs hold the spawn-anywhere tools. | As described. | `debug/DebugMenu.js` `ENEMY_TABS` |
 
