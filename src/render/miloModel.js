@@ -12,7 +12,7 @@
 //    big red shoes, very long thin arms (his wrists below his knees); no red
 //    nose. His knives are a set of three: one in his hand, two tucked into a
 //    fold of the suit;
-//  - the man (the morning after): tall, broad-shouldered, dark-haired, in
+//  - the man (the morning after): short (after Session 26: a foot down, Aaron: funnier), broad-shouldered, dark-haired, in
 //    a flannel shirt, jeans and boots, his face washed clean, a tin mug of
 //    instant coffee in his hand.
 // Session 26 (Aaron: the suit read skin tight, the wig wasn't clowny; a

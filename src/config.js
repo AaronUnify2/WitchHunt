@@ -4064,8 +4064,8 @@ export const config = {
   // render/PosedFigure.js). He never attacks Tom and can't be hurt. His barn
   // is Session 28's.
   milo: {
-    height: 1.75, // Session 25 (Aaron: "a little too tall"): 1.9 was
-    manHeight: 1.85, // the man the morning after (tall, broad)
+    height: 1.45, // Aaron (after Session 26): about a foot shorter ("it's funnier if he's short"); 1.75 was (Session 25), 1.9 before that
+    manHeight: 1.55, // the man the morning after, a foot down too (1.85 was): short, broad, a little taller without the clown's crouch
     widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
     clown: { top: 1, shoe: 0.2 }, // Session 26: the baggy suit is built in (render/miloModel.js clownBody); top widens the smock; the shoes about twice as long
     eyeGlow: 1.3, // Session 26: how strongly his eyes glow in their own colour (seen in the dark; no light added)
@@ -4607,7 +4607,7 @@ export const config = {
     hitLoopSeconds: 1.2, // a hit, then a pause, round again
     staggerSeconds: 0.35,
     holdSeconds: 1.5, // a one-off (rising, dying) holds its end this long before it loops
-    milo: { distance: 5, walkSpeed: 1.4, bowSeconds: 2.4 }, // the camera's start; the walk's pace; a bow, held, then again
+    milo: { distance: 4.2, walkSpeed: 1.4, bowSeconds: 2.4 }, // the camera's start; the walk's pace; a bow, held, then again
     barnAnimals: { walkSpeed: 0.9 },
     bigfoot: { distance: 6.5, walkSpeed: 1.3, cocoonBack: 0.15, slumpAhead: 1.7 }, // the camera's start; the walk's pace; where the cocoon stands behind him bound, and how far out of it he's fallen
     moths: { swarm: 24, swarmRadius: 2.6, height: 1.5, distance: 4, swarmDistance: 9 }, // the swarm's size and how wide it mills; a moth's height off the ground; the camera's start
