@@ -43,24 +43,40 @@ describe('Milo', () => {
     });
   }
 
-  // Session 25 (Aaron, with the reference picture): less creepy, baggier, shorter, big feet, long arms.
-  it('the clown as Aaron corrected him: shorter, very long arms, very big shoes, a small mouth, baggy', () => {
+  // Session 25 (Aaron, with the reference picture): shorter, big feet, long arms.
+  // Session 26 (Aaron): the suit read skin tight and the wig wasn't clowny; a green-haired
+  // creepy killer clown for inspiration, a little supernatural; the man's clothes too tight, his belt too loose.
+  it('the clown: shorter, very long arms, very big shoes, baggy and ruffled', () => {
     expect(mc.height).toBeLessThanOrEqual(1.8);
     const spec = miloSpec(mc, 'clown');
     const J = Object.fromEntries(spec.joints.map(([n, , x, y, z]) => [n, { x, y, z }]));
     expect(J.wristR.y).toBeLessThanOrEqual(J.kneeR.y); // wrists at or below the knees
     const shoe = spec.masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
     const manShoe = miloSpec(mc, 'man').masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
-    expect(shoe[7]).toBeGreaterThan(manShoe[7] * 2.5); // the clown's shoes: about twice his old ones, far past a man's
-    const mouth = spec.masses.filter((q) => q[8] === 'grin');
-    const xs = mouth.map((q) => q[2]);
-    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(0.06); // a normal width (it was ear to ear)
+    expect(shoe[7]).toBeGreaterThan(manShoe[7] * 2); // the clown's shoes, far past a man's
+    // Not skin tight: the sleeves and the pantaloons puff out (bulge), the legs balloon.
     const thigh = spec.limbs.find((l) => l[0] === 'hipR');
-    const sleeve = spec.limbs.find((l) => l[0] === 'elbowR');
-    expect(thigh[2]).toBeGreaterThan(0.11); // baggy, not skin tight
-    expect(sleeve[3]).toBeGreaterThan(0.05); // wide straight sleeves
-    expect(spec.masses.filter((q) => q[8] === 'wig').length).toBeLessThan(6); // one rounded bob, not a frizz of balls
-    expect(spec.rings.some((r) => r[6] === 'collar')).toBe(true);
+    const upper = spec.limbs.find((l) => l[0] === 'shoulderR');
+    const shin = spec.limbs.find((l) => l[0] === 'kneeR');
+    expect(thigh[2]).toBeGreaterThan(0.12);
+    expect(upper[2]).toBeGreaterThan(0.08);
+    for (const l of [thigh, upper, shin]) expect(l[5]).toBeGreaterThanOrEqual(0.3);
+    expect(shin[3]).toBeLessThan(shin[2] * 0.6); // gathered at the ankle
+    // Ruffles: the ruff (two rows), the peplum, the cuffs; pom-poms.
+    expect(spec.masses.filter((q) => q[8] === 'ruffle' || q[8] === 'ruffle2').length).toBeGreaterThan(60);
+    expect(spec.masses.filter((q) => q[8] === 'pom').length).toBeGreaterThanOrEqual(5);
+    // Clown hair: wild tufts bursting from the sides (tapered locks), round a bald crown, not a cap.
+    expect(spec.tubes.filter((t) => t[10 - 1] === 'wig').length).toBeGreaterThanOrEqual(20);
+    const top = spec.masses.filter((q) => q[8] === 'wig' && Math.abs(q[2]) < 0.03 && q[3] > 1.64);
+    expect(top.length).toBe(0); // nothing over the crown: it's bald
+    // The mouth itself a normal width (Session 25), the painted lines reaching up from it.
+    const lips = spec.masses.filter((q) => q[8] === 'grin' && Math.abs(q[3] - 1.545) < 0.01);
+    const xs = lips.map((q) => q[2]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(0.06);
+    expect(spec.masses.filter((q) => q[8] === 'socket').length).toBe(2);
+    // A little supernatural: his eyes glow (no light added: the figure's own shader).
+    expect(spec.glow.eyes).toBeGreaterThan(0);
+    expect(miloSpec(mc, 'man').glow).toBeUndefined();
     // The dots: sparse, red and blue.
     let dots = 0;
     let n = 0;
@@ -76,6 +92,23 @@ describe('Milo', () => {
     expect(dots / n).toBeLessThan(0.25);
     expect(dots / n).toBeGreaterThan(0.01);
     expect([...seen].sort()).toEqual([1, 2]);
+  });
+
+  it('the man: loose clothes, and a belt that fits his waist', () => {
+    const spec = miloSpec(mc, 'man');
+    const hips = spec.masses.find((q) => q[0] === 'hips' && q[8] === 'trousers');
+    const belt = spec.masses.find((q) => q[0] === 'hips' && q[8] === 'leather');
+    expect(spec.rings.some((r) => r[6] === 'leather')).toBe(false); // the old hoop is gone
+    // The jeans' half-widths at the belt's height (an ellipsoid), and the belt just proud of them.
+    const k = Math.sqrt(1 - ((belt[3] - hips[3]) / hips[6]) ** 2);
+    expect(belt[5] - hips[5] * k).toBeGreaterThan(0);
+    expect(belt[5] - hips[5] * k).toBeLessThan(0.02);
+    expect(belt[7] - hips[7] * k).toBeGreaterThan(0);
+    expect(belt[7] - hips[7] * k).toBeLessThan(0.02);
+    const thigh = spec.limbs.find((l) => l[0] === 'hipR');
+    const upper = spec.limbs.find((l) => l[0] === 'shoulderR');
+    expect(thigh[2]).toBeGreaterThanOrEqual(0.095); // roomy jeans
+    expect(upper[2]).toBeGreaterThanOrEqual(0.062); // a loose sleeve
   });
 
   it('throws: the knife hand goes back, then forward', () => {

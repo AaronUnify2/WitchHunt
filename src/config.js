@@ -4067,8 +4067,9 @@ export const config = {
     height: 1.75, // Session 25 (Aaron: "a little too tall"): 1.9 was
     manHeight: 1.85, // the man the morning after (tall, broad)
     widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
-    clown: { baggy: 1.4, top: 1.12, shoe: 0.2 }, // Session 25: loose and baggy (not skin tight), the shoes about twice as long
-    albedo: 0.34, // the torch is strong up close
+    clown: { top: 1, shoe: 0.2 }, // Session 26: the baggy suit is built in (render/miloModel.js clownBody); top widens the smock; the shoes about twice as long
+    eyeGlow: 1.3, // Session 26: how strongly his eyes glow in their own colour (seen in the dark; no light added)
+    albedo: 0.3, // the torch is strong up close (Session 26: the baggier white suit catches more of it: 0.34 was)
     poseRate: 14, // quick
     throwSeconds: 0.9, // the wind-up, the throw and its follow-through (for the viewer's loop)
     looks: {
@@ -4077,10 +4078,14 @@ export const config = {
         skin: 0x6a4e40,
         face: 0x706c64, // white greasepaint
         grin: 0x7a1c14, // Session 25: a small red mouth
-        eyes: 0x0e0d0c,
-        wig: 0x2e7a2a, // Session 25: a green bob, like a cap (the reference)
-        shirt: 0x6c6a64, // Session 25 (Aaron, seeing the reference): the white suit with dots; a grey-white (an off-white read as bare skin under the torch)...
-        trousers: 0x6c6a64,
+        eyes: 0x6a5a22, // Session 26: a dull yellow that glows faintly of its own (eyeGlow): a little supernatural
+        socket: 0x161214, // Session 26: the dark diamonds painted through his eyes
+        wig: 0x2e7a2a, // Session 26: wild clown hair, green, bursting from the sides of a bald crown
+        ruffle: 0x7a1c14, // Session 26: the ruff's, the cuffs' and the peplum's pleats, red...
+        ruffle2: 0x62605a, // ...and off-white
+        pom: 0x7a1c14, // the pom-poms down his front and on his toes
+        shirt: 0x62605a, // Session 26: a shade duller (the bigger suit caught the torch). Session 25 (Aaron, seeing the reference): the white suit with dots; a grey-white (an off-white read as bare skin under the torch)...
+        trousers: 0x62605a,
         dot: 0x7a1c14, // ...and its dots, red and blue, sparse
         dot2: 0x24405a,
         collar: 0x7a1c14, // the red collar
@@ -4089,7 +4094,7 @@ export const config = {
         leather: 0x2e2218,
         steel: 0x5e6062,
       },
-      man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x16130f, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x2e2218, leather: 0x2e2218, tin: 0x5a5c5c, coffee: 0x1a120c },
+      man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x16130f, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x3a2a1c, leather: 0x1c140e, tin: 0x5a5c5c, coffee: 0x1a120c }, // Session 26: the belt darker than the boots, so it reads against the jeans
     },
   },
 

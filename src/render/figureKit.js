@@ -38,7 +38,8 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // spec: { joints (default HUMAN_JOINTS), height (metres), width (x and z
 // scale), head (the head's own scale, about the neck), colours: { key: hex },
 // masses: [[bone, other bone or null, x, y, z, rx, ry, rz, key, turn (optional:
-// [x, y, z] radians, the ellipsoid turned before it's placed)]],
+// [x, y, z] radians, the ellipsoid turned before it's placed), lo (optional:
+// true for a coarser sphere, for many small pieces such as a ruff's pleats)]],
 // limbs: [[from joint, to joint, r0, r1, key, bulge, flat (depth / width:
 // an oval, for a trunk), knob (the joint's knob, as a share of r0: default
 // 1.01, none for a trunk)]], tubes: [[bone, ax,
@@ -59,8 +60,8 @@ export function buildFigure(spec) {
   const colours = Object.fromEntries(Object.entries(spec.colours).map(([k, hex]) => [k, new THREE.Color(hex)]));
   const parts = [];
   const add = (g, o) => parts.push(finish(g, { ...o, joints, colours, paint: spec.paint, glow: spec.glow }));
-  for (const [bone, other, x, y, z, rx, ry, rz, key, turn] of spec.masses) {
-    const g = new THREE.SphereGeometry(1, 16, 12);
+  for (const [bone, other, x, y, z, rx, ry, rz, key, turn, lo] of spec.masses) {
+    const g = lo ? new THREE.SphereGeometry(1, 8, 6) : new THREE.SphereGeometry(1, 16, 12); // Session 26: lo for many small pieces (pleats)
     g.scale(rx, ry, rz);
     if (turn) g.rotateX(turn[0]).rotateY(turn[1]).rotateZ(turn[2]);
     g.translate(x, y, z);

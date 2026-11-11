@@ -4,6 +4,16 @@
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
 
+## After Session 26: Milo redone (Aaron's notes)
+
+Aaron: the clown's outfit read skin tight and the wig wasn't clowny ("use a green-haired creepy killer clown for your inspiration; he can be a little supernatural"); the man's clothes were skin tight and his belt super loose. Built (`render/miloModel.js` `clownBody`, `manBody`; in the model viewer). Where I had to choose:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 476 | **How creepy, given Session 25's "too creepy, the smile's too wide".** | The creep comes from the eyes and the hair, not the mouth: the mouth stays a normal width (Session 25), with thin painted lines running up from its corners into the cheeks; tall dark diamonds through the eyes; wild green tufts round a bald crown. No red nose (the story's Milo has none). The archetype, not any one film's clown. Say if the painted lines are too much. | `clownBody` (the `socket` and `grin` shapes) |
+| 477 | **"A little supernatural."** | His eyes glow faintly, a dull yellow of their own: by torch it's a glint, in the dark it's all you see of his face (no light added: the figure's own shader). His gloved fingers are too long. Nothing he does changes yet: the impossible things are the barn's (Session 28: the car gates, the deflected bullet). | `config.milo.eyeGlow`; `clownBody` (the fingers) |
+| 478 | **The suit.** | A baggy smock with puffed sleeves, balloon pantaloons, ruffled cuffs, ankles and peplum, a wide pleated ruff (it replaces the red collar), red pom-poms; the dots kept. About 30,000 triangles at most (the pleats use coarser spheres: a new `lo` flag in the figure kit). The suit is a shade duller and he's lit a little less (albedo 0.3), because the bigger white suit caught the torch. | `clownBody`; `config.milo` |
+
 ## Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home)
 
 You were at work and the session ran on its own, from HANDOVER's defaults. All four batches are built (Session 27's batch 4 included). Where I had to choose:

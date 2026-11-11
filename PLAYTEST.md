@@ -422,6 +422,10 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
 
+**Milo redone (after Session 26, your notes; OPEN_QUESTIONS #476-478):** debug menu, **Models**, Milo (Y: the clown or the man; X: the lighting).
+- [ ] **The clown:** the baggy ruffled suit, the ruff, the pom-poms, the balloon pantaloons, the wild green hair round a bald crown, the diamond eyes and painted grin lines. Try "Night, moonlight only": his eyes glow faintly in the dark. Creepy enough, too creepy?
+- [ ] **The man:** a loose flannel tucked in over a belt that fits, rolled sleeves, roomy jeans, boots.
+
 **New debug shortcut (after Session 26, your ask):** the debug menu's first section, **Start from a story point**, jumps a fresh run (New Run or Skip intro) to the morning of day 3 with **the outpost cleared**: everything before it done, the shovel, service rifle, shotgun and hunting rifle (with the gun pit's rounds) carried, the papers handed in, Tom in the compound. "The compound still to explore" leaves the crates, the containers, C-7, the lockers and the dogfight for you; "cleared and explored" does those too, so the checkpoint and the plane are next. Save and quit works from there as normal.
 - [ ] Try both from a New Run, mid-opening. Anything that looks half done (a gate shut, a line from the opening, a missing gun)?
 

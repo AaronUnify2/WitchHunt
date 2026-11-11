@@ -15,6 +15,10 @@
 //  - the man (the morning after): tall, broad-shouldered, dark-haired, in
 //    a flannel shirt, jeans and boots, his face washed clean, a tin mug of
 //    instant coffee in his hand.
+// Session 26 (Aaron: the suit read skin tight, the wig wasn't clowny; a
+// green-haired creepy killer clown for inspiration, a little supernatural;
+// the man's clothes skin tight and his belt far too loose): both looks
+// redone (clownBody, manBody below).
 // He never attacks Tom and can't be hurt.
 //
 // The figure kit's specs and his poses (for render/PosedFigure.js). Model
@@ -57,39 +61,157 @@ function joints(look = 'clown') {
 export const MILO_JOINTS = joints('clown');
 export const MILO_LOOKS = ['clown', 'man'];
 
-// The body both looks share. keys: what each part is painted as. k.top: the
-// top's width (a baggy top hangs straight from the chest); k.sleeve: the
-// sleeves' radius (wide straight tubes when baggy); k.w: the wrist's height.
-function body(k) {
-  const W = k.w;
-  const top = k.top ?? 1;
+// A ring of `n` pleats round a centre (the kit's masses): a ruff, a peplum, a
+// cuff. Each pleat is a flattened ellipsoid standing out from the centre,
+// tilted out by `flare` (radians), its colour alternating between keys.
+// rx, rz: the ring's radii (an oval for a body); size: [width, height, depth].
+function pleats(out, bone, other, cx, cy, cz, rx, rz, n, size, keys, flare = 0.5, offset = 0) {
+  for (let i = 0; i < n; i++) {
+    const a = ((i + offset) / n) * Math.PI * 2;
+    const sx = Math.sin(a);
+    const sz = Math.cos(a);
+    // turn: about y to face out along (sx, sz), then tipped outward.
+    out.push([bone, other, cx + sx * rx, cy, cz + sz * rz, size[0], size[1], size[2], keys[i % keys.length], [flare, a, 0], true]); // coarse: there are many
+  }
+}
+
+// The man's body. Session 26 (Aaron: "his human form is in skin tight
+// clothing and his belt is super loose"): a loose flannel shirt tucked in and
+// bloused over the belt, its sleeves rolled to the elbow, roomy jeans,
+// work boots, and a belt that sits snug on his waist (an oval band the shape
+// of his hips there, not a hoop) with its buckle.
+function manBody(W) {
   const masses = [
-    ['hips', null, 0, 0.95, 0, 0.15 * k.baggy, 0.12, 0.11 * k.baggy, 'trousers'],
-    ['spine', 'chest', 0, 1.14, 0.005, 0.15 * top * (k.hang ?? 1), 0.13, 0.1 * top, 'shirt'],
-    ['chest', 'spine', 0, 1.31, 0.005, 0.175 * top, 0.13, 0.11 * top, 'shirt'],
-    ['neck', 'chest', 0, 1.475, 0, 0.042, 0.05, 0.042, 'face'],
-    ['chest', null, -0.08, 1.43, -0.012, 0.08 * top, 0.034, 0.055 * top, 'shirt', [0, 0, 0.42]],
-    ['chest', null, 0.08, 1.43, -0.012, 0.08 * top, 0.034, 0.055 * top, 'shirt', [0, 0, -0.42]],
-    // A long head: a lantern jaw.
+    // Jeans: a straight, roomy seat.
+    ['hips', null, 0, 0.97, 0, 0.17, 0.15, 0.125, 'trousers'], // its top at the belt, near full width
+    // The shirt: loose, hanging straight from his chest, its tail out over the hips.
+    ['spine', 'chest', 0, 1.15, 0.005, 0.185, 0.2, 0.13, 'shirt'],
+    ['chest', 'spine', 0, 1.32, 0.008, 0.195, 0.14, 0.13, 'shirt'],
+    ['hips', 'spine', 0, 1.06, 0.004, 0.18, 0.05, 0.132, 'shirt'], // bloused out over the belt
+    ['chest', null, -0.085, 1.43, -0.012, 0.085, 0.036, 0.06, 'shirt', [0, 0, 0.42]],
+    ['chest', null, 0.085, 1.43, -0.012, 0.085, 0.036, 0.06, 'shirt', [0, 0, -0.42]],
+    // A button placket and two chest pockets.
+    ['chest', 'spine', 0, 1.25, 0.136, 0.012, 0.2, 0.006, 'check'],
+    ['neck', null, 0, 1.475, 0, 0.044, 0.05, 0.044, 'face'],
     ['head', null, 0, 1.6, 0.012, 0.082, 0.128, 0.098, 'face'],
-    ['head', null, 0, 1.59, 0.106, 0.014, 0.022, 0.018, k.nose],
+    ['head', null, 0, 1.59, 0.106, 0.014, 0.022, 0.018, 'face'],
+    // The belt: just above the shirt's tail at the front, where it's tucked in at the buckle;
+    // an oval band a hair proud of the jeans (it's inside them but for its rim), and the buckle.
+    ['hips', null, 0, 1.03, 0, 0.166, 0.02, 0.124, 'leather'],
+    ['hips', null, 0, 1.03, 0.13, 0.03, 0.024, 0.008, 'tin'],
+    // Dark hair.
+    ['head', null, 0, 1.665, -0.01, 0.088, 0.075, 0.1, 'hair'],
+    ['head', null, 0, 1.62, -0.07, 0.082, 0.09, 0.05, 'hair'],
+    ['head', null, 0, 1.675, 0.06, 0.07, 0.04, 0.04, 'hair'], // falling across his forehead
   ];
   const limbs = [];
-  const sl = k.sleeve ?? [0.05, 0.042, 0.042, 0.032];
   for (const [n, s] of SIDES) {
-    masses.push(['chest', `shoulder${n}`, s * 0.165, 1.405, 0, 0.062 * top, 0.056 * top, 0.062 * top, 'shirt']);
-    masses.push(['head', null, s * 0.086, 1.6, 0, 0.012, 0.028, 0.018, 'face']); // an ear
+    masses.push(['chest', `shoulder${n}`, s * 0.17, 1.405, 0, 0.068, 0.06, 0.068, 'shirt']);
+    masses.push(['head', null, s * 0.086, 1.6, 0, 0.012, 0.028, 0.018, 'face']);
     masses.push(['head', null, s * 0.032, 1.62, 0.092, 0.012, 0.011, 0.006, 'eyes']);
-    masses.push([`wrist${n}`, null, s * 0.24, W - 0.05, 0.03, 0.026, 0.05, 0.018, k.hand]);
-    // The shoes: k.shoe makes them longer (forward), k.shoeWide wider and taller.
-    const wide = k.shoeWide ?? 1;
-    masses.push([`ankle${n}`, null, s * (0.1 + (wide - 1) * 0.03), 0.045 * wide, 0.05 + k.shoe * 0.5, 0.055 * wide, 0.045 * wide, 0.12 + k.shoe, 'shoes']);
-    limbs.push([`shoulder${n}`, `elbow${n}`, sl[0], sl[1], 'shirt', 0.1]);
-    limbs.push([`elbow${n}`, `wrist${n}`, sl[2], sl[3], k.forearm, 0.08]);
-    limbs.push([`hip${n}`, `knee${n}`, 0.082 * k.baggy, 0.075 * k.baggy, 'trousers', 0.1]);
-    limbs.push([`knee${n}`, `ankle${n}`, 0.075 * k.baggy, 0.072 * k.baggy, 'trousers', 0.05]);
+    masses.push([`wrist${n}`, null, s * 0.24, W - 0.05, 0.03, 0.028, 0.052, 0.02, 'face']);
+    masses.push(['chest', null, s * 0.085, 1.36, 0.13, 0.045, 0.045, 0.012, 'shirt']); // a pocket
+    // Work boots: chunky, with a heel.
+    masses.push([`ankle${n}`, null, s * 0.1, 0.05, 0.05, 0.06, 0.055, 0.13, 'shoes']);
+    // The sleeves: loose to the elbow, rolled there in a fat cuff; bare forearms.
+    limbs.push([`shoulder${n}`, `elbow${n}`, 0.066, 0.062, 'shirt', 0.18]);
+    masses.push([`elbow${n}`, null, s * 0.235, (1.42 + W) / 2 - 0.02, 0, 0.064, 0.03, 0.064, 'shirt']);
+    limbs.push([`elbow${n}`, `wrist${n}`, 0.042, 0.032, 'face', 0.08]);
+    // Jeans: a roomy straight leg, a little bagged at the knee, breaking over the boot.
+    limbs.push([`hip${n}`, `knee${n}`, 0.1, 0.088, 'trousers', 0.12]);
+    limbs.push([`knee${n}`, `ankle${n}`, 0.088, 0.084, 'trousers', 0.06]);
+    masses.push([`ankle${n}`, null, s * 0.1, 0.13, 0.0, 0.088, 0.04, 0.09, 'trousers']);
   }
   return { masses, limbs };
+}
+
+// The clown. Session 26 (Aaron: "his clown outfit appears skin tight, and his
+// wig is not quite clowny; use a green-haired creepy killer clown for your
+// inspiration; he can be a little supernatural"): the archetype, made his own.
+//  - The suit: a big baggy smock with puffed shoulders and sleeves gathered
+//    into ruffled cuffs; balloon pantaloons gathered at the ankle into
+//    ruffles; a ruffled peplum at the waist; three red pom-poms down the
+//    front; a pleated ruff at the neck, red and off-white. The red and blue
+//    dots stay (his own suit, from the story's picture).
+//  - The hair: a bald white crown, and wild green hair bursting out at the
+//    sides in two big puffs with tufts sticking out every way, and a little
+//    tuft over the brow. Clown hair, not a cap.
+//  - The face: white greasepaint, dark diamonds through the eyes,
+//    a red mouth of a normal width with thin red lines painted up from its
+//    corners into the cheeks (a painted grin over a small one), no red nose
+//    (the story's Milo has none).
+//  - A little supernatural: his eyes give off a faint, dull yellow light of
+//    their own (they show in the dark: no light is added), and his gloved
+//    fingers are too long.
+function clownBody(W, c) {
+  const masses = [];
+  const limbs = [];
+  const tubes = [];
+  // The seat of the pantaloons, ballooning.
+  masses.push(['hips', null, 0, 0.9, 0, 0.215, 0.17, 0.17, 'trousers']);
+  // The smock: hangs from the chest to below the waist, wide and full.
+  masses.push(['spine', 'chest', 0, 1.17, 0.012, 0.235 * (c.top ?? 1), 0.26, 0.165, 'shirt']);
+  masses.push(['chest', 'spine', 0, 1.33, 0.01, 0.215 * (c.top ?? 1), 0.14, 0.145, 'shirt']);
+  masses.push(['neck', null, 0, 1.475, 0, 0.042, 0.05, 0.042, 'face']);
+  // The ruffled peplum where the smock ends, over the pantaloons.
+  pleats(masses, 'hips', 'spine', 0, 0.99, 0.008, 0.225, 0.17, 18, [0.06, 0.07, 0.022], ['ruffle', 'ruffle2'], 0.55);
+  // Three pom-poms down the front.
+  for (const [y, z] of [[1.37, 0.152], [1.24, 0.172], [1.11, 0.175]]) masses.push(['chest', y < 1.3 ? 'spine' : null, 0, y, z, 0.034, 0.034, 0.03, 'pom']);
+  // The ruff: two rows of pleats round his neck, wide and stiff.
+  // (Above the smock's top, which comes up to about 1.47, under his jaw.)
+  pleats(masses, 'neck', 'chest', 0, 1.48, 0.0, 0.13, 0.12, 18, [0.055, 0.035, 0.085], ['ruffle', 'ruffle2'], 0.22);
+  pleats(masses, 'neck', 'chest', 0, 1.505, 0.0, 0.085, 0.08, 16, [0.042, 0.028, 0.055], ['ruffle2', 'ruffle'], 0.1, 0.5);
+  // The head: long, white.
+  masses.push(['head', null, 0, 1.6, 0.012, 0.082, 0.128, 0.098, 'face']);
+  // The hair: the bald crown is the head's own white; the sides burst.
+  for (const [, s] of SIDES) {
+    // A small core (hidden by the tufts), then the tufts: thick at the root, bursting out every way, so it's hair, not a ball.
+    masses.push(['head', null, s * 0.1, 1.635, -0.025, 0.055, 0.06, 0.075, 'wig']);
+    masses.push(['head', null, s * 0.075, 1.6, -0.06, 0.055, 0.065, 0.055, 'wig']);
+    const tufts = [
+      [0.14, 0.13, 0.03], [0.19, 0.06, -0.01], [0.18, -0.03, 0.04], [0.13, 0.08, -0.12], [0.18, 0.0, -0.09], [0.08, 0.16, -0.05],
+      [0.1, -0.09, -0.1], [0.15, 0.12, 0.08], [0.16, -0.08, -0.02], [0.06, 0.12, 0.06], [0.12, 0.02, 0.1], [0.09, -0.02, -0.15],
+      [0.2, 0.1, -0.05], [0.11, 0.17, 0.0],
+    ];
+    for (const [dx, dy, dz] of tufts) {
+      tubes.push(['head', s * 0.095, 1.635, -0.025, s * (0.095 + dx), 1.635 + dy, -0.025 + dz, 0.042, 0.005, 'wig']);
+    }
+  }
+  masses.push(['head', null, 0, 1.6, -0.085, 0.1, 0.07, 0.04, 'wig']); // round the back, below the crown
+  for (const [dx, dy, dz] of [[0, 0.07, 0.05], [0.03, 0.06, 0.06], [-0.03, 0.06, 0.06]]) tubes.push(['head', 0, 1.715, 0.03, dx, 1.715 + dy, 0.03 + dz, 0.016, 0.003, 'wig']); // a little tuft over the brow
+  // The mouth: red, a normal width, a little turned up.
+  for (let i = -2; i <= 2; i++) {
+    masses.push(['head', null, i * 0.011, 1.54 + Math.abs(i) * 0.0035, 0.101 - Math.abs(i) * 0.002, 0.009, 0.0075 - Math.abs(i) * 0.0008, 0.005, 'grin']);
+  }
+  for (const [n, s] of SIDES) {
+    masses.push(['head', null, s * 0.086, 1.6, 0, 0.012, 0.028, 0.018, 'face']); // an ear
+    // The greasepaint, as thin shapes on the face (it's too coarse to paint fine lines on): a tall dark
+    // diamond through each eye, brow to cheekbone, and a thin red line from each corner of the mouth up into the cheek.
+    masses.push(['head', null, s * 0.032, 1.622, 0.093, 0.017, 0.058, 0.009, 'socket', [-0.12, 0, 0]]);
+    masses.push(['head', null, s * 0.045, 1.57, 0.097, 0.0045, 0.03, 0.006, 'grin', [-0.1, 0, s * 0.62]]);
+    masses.push(['head', null, s * 0.032, 1.62, 0.1, 0.011, 0.01, 0.006, 'eyes']); // they glow (glow.eyes)
+    // Puffed shoulders and sleeves, gathered at the wrist into a ruffled cuff.
+    masses.push(['chest', `shoulder${n}`, s * 0.2, 1.39, 0, 0.095, 0.085, 0.095, 'shirt']);
+    limbs.push([`shoulder${n}`, `elbow${n}`, 0.085, 0.078, 'shirt', 0.4]);
+    limbs.push([`elbow${n}`, `wrist${n}`, 0.078, 0.05, 'shirt', 0.35]);
+    pleats(masses, `wrist${n}`, null, s * 0.24, W + 0.005, 0.02, 0.05, 0.05, 9, [0.032, 0.03, 0.016], ['ruffle', 'ruffle2'], 1.0);
+    // The gloved hand, and fingers too long for it.
+    masses.push([`wrist${n}`, null, s * 0.24, W - 0.05, 0.03, 0.03, 0.05, 0.02, 'gloves']);
+    for (let f = 0; f < 4; f++) {
+      const fx = s * (0.226 + f * 0.009);
+      const fz = 0.012 + f * 0.012;
+      tubes.push([`wrist${n}`, fx, W - 0.085, fz, fx + s * 0.004, W - 0.2 - (f === 1 || f === 2 ? 0.02 : 0), fz + 0.015, 0.008, 0.005, 'gloves']);
+    }
+    // Balloon pantaloons, gathered at the ankle into ruffles.
+    limbs.push([`hip${n}`, `knee${n}`, 0.13, 0.125, 'trousers', 0.4]);
+    limbs.push([`knee${n}`, `ankle${n}`, 0.125, 0.06, 'trousers', 0.45]);
+    pleats(masses, `ankle${n}`, null, s * 0.1, 0.13, -0.01, 0.065, 0.065, 10, [0.04, 0.035, 0.016], ['ruffle', 'ruffle2'], 1.1);
+    // The shoes: very long, rounded, a pom-pom on each toe.
+    const shoe = c.shoe ?? 0.2;
+    masses.push([`ankle${n}`, null, s * 0.11, 0.06, 0.05 + shoe * 0.5, 0.075, 0.06, 0.12 + shoe, 'shoes']);
+    masses.push([`ankle${n}`, null, s * 0.11, 0.12, 0.2 + shoe * 0.7, 0.03, 0.03, 0.03, 'pom']);
+  }
+  return { masses, limbs, tubes };
 }
 
 // The clown's dots: sparse (most cells have none), red and blue. Pure (the tests).
@@ -108,44 +230,21 @@ export function miloSpec(m, look = 'clown') {
   const clown = look === 'clown';
   const W = WRIST[look];
   const c = m.clown ?? {};
-  const { masses, limbs } = body(
-    clown
-      ? { baggy: c.baggy ?? 1.4, top: c.top ?? 1.12, hang: 1.18, nose: 'face', hand: 'gloves', forearm: 'shirt', shoe: c.shoe ?? 0.2, shoeWide: 1.3, w: W, sleeve: [0.066, 0.064, 0.062, 0.06] }
-      : { baggy: 1.05, nose: 'face', hand: 'face', forearm: 'face', shoe: 0, w: W },
-  );
-  const tubes = [];
+  const built = clown ? clownBody(W, c) : manBody(W);
+  const { masses, limbs } = built;
+  const tubes = built.tubes ?? [];
   const rings = [];
   if (clown) {
-    // The suit's top hangs straight from his chest to his hips (one smooth smock, no waist: not skin tight).
-    masses.push(['spine', 'chest', 0, 1.15, 0.005, 0.2, 0.25, 0.128, 'shirt']);
-    // The wig: a short rounded bob sitting on his head like a cap: one smooth dome, a fringe, its sides and back.
-    masses.push(['head', null, 0, 1.685, -0.01, 0.112, 0.08, 0.118, 'wig']);
-    masses.push(['head', null, 0, 1.672, 0.07, 0.098, 0.04, 0.05, 'wig']); // the fringe
-    for (const [, s] of SIDES) masses.push(['head', null, s * 0.088, 1.615, -0.012, 0.042, 0.078, 0.092, 'wig']);
-    masses.push(['head', null, 0, 1.612, -0.072, 0.098, 0.08, 0.05, 'wig']);
-    // A small red mouth, a normal width, turned up a little at the corners.
-    for (let i = -2; i <= 2; i++) {
-      masses.push(['head', null, i * 0.011, 1.54 + Math.abs(i) * 0.0035, 0.101 - Math.abs(i) * 0.002, 0.009, 0.0075 - Math.abs(i) * 0.0008, 0.005, 'grin']);
-    }
-    // The red collar: a band round his neck and the scarf's ends hanging at his chest.
-    rings.push(['neck', 0, 1.455, 0.004, 0.064, 0.022, 'collar', [Math.PI / 2, 0, 0]]);
-    masses.push(['chest', null, -0.03, 1.4, 0.1, 0.03, 0.05, 0.016, 'collar', [0, 0, 0.2]]);
-    masses.push(['chest', null, 0.02, 1.38, 0.105, 0.028, 0.06, 0.016, 'collar', [0, 0, -0.15]]);
     // His knives, a set of three: one in his right hand, two tucked into a fold of the suit at his chest.
-    for (const x of [-0.07, -0.02]) {
-      tubes.push(['chest', x, 1.37, 0.13, x + 0.02, 1.3, 0.137, 0.009, 0.008, 'leather']); // the handle
-      tubes.push(['chest', x + 0.02, 1.3, 0.137, x + 0.045, 1.2, 0.133, 0.011, 0.002, 'steel', 0.25]); // the blade
+    for (const x of [-0.11, -0.065]) {
+      tubes.push(['chest', x, 1.38, 0.15, x + 0.02, 1.31, 0.158, 0.009, 0.008, 'leather']); // the handle
+      tubes.push(['chest', x + 0.02, 1.31, 0.158, x + 0.045, 1.21, 0.16, 0.011, 0.002, 'steel', 0.25]); // the blade
     }
     tubes.push(['wristR', -0.24, W - 0.08, 0.045, -0.24, W - 0.14, 0.06, 0.01, 0.009, 'leather']);
     tubes.push(['wristR', -0.24, W - 0.14, 0.06, -0.24, W - 0.29, 0.09, 0.014, 0.002, 'steel', 0.25]);
   } else {
-    // Dark hair, the flannel's collar, a belt.
-    masses.push(['head', null, 0, 1.665, -0.01, 0.088, 0.075, 0.1, 'hair']);
-    masses.push(['head', null, 0, 1.62, -0.07, 0.082, 0.09, 0.05, 'hair']);
-    masses.push(['head', null, 0, 1.675, 0.06, 0.07, 0.04, 0.04, 'hair']); // falling across his forehead
-    rings.push(['neck', 0, 1.45, 0.005, 0.06, 0.016, 'shirt', [Math.PI / 2, 0, 0]]);
-    rings.push(['hips', 0, 1.02, 0, 0.155, 0.014, 'leather', [Math.PI / 2, 0, 0]]);
-    // The tin mug in his right hand: "Instant. Sorry."
+    // The flannel's collar; the tin mug in his right hand: "Instant. Sorry."
+    rings.push(['neck', 0, 1.45, 0.005, 0.062, 0.017, 'shirt', [Math.PI / 2, 0, 0]]);
     tubes.push(['wristR', -0.24, W - 0.14, 0.075, -0.24, W - 0.05, 0.075, 0.036, 0.038, 'tin']);
     masses.push(['wristR', null, -0.24, W - 0.057, 0.075, 0.032, 0.004, 0.032, 'coffee']);
     rings.push(['wristR', -0.24, W - 0.095, 0.118, 0.022, 0.006, 'tin', [0, Math.PI / 2, 0]]);
@@ -158,18 +257,17 @@ export function miloSpec(m, look = 'clown') {
     rings,
     height: clown ? m.height : (m.manHeight ?? m.height),
     width: m.widths[look],
-    head: 1.04,
+    head: clown ? 1.12 : 1.04, // Session 26: the clown's a touch bigger, or the suit swallows it
     colours: m.looks[look],
+    // Session 26: the clown's eyes give off a faint light of their own (no light is added: the
+    // figure's shader shows their colour in the dark).
+    glow: clown ? { eyes: m.eyeGlow ?? 1 } : undefined,
     paint(key, q, out, colours) {
       if (clown) {
         if (key === 'shirt' || key === 'trousers') {
           // The polka dots: sparse, red and blue, on the off-white suit.
           const d = dotAt(q);
           if (d) out.copy(d === 1 ? colours.dot : colours.dot2);
-        } else if (key === 'face' && q.y > 1.5) {
-          // Painted eyes: small black marks; the white worn thin along the jaw.
-          for (const s of [-1, 1]) if (q.z > 0.05 && Math.abs(q.x - s * 0.032) * 1.6 + Math.abs(q.y - 1.62) < 0.03) out.copy(colours.eyes);
-          if (q.y < 1.52) out.lerp(colours.skin, 0.4);
         }
       } else if (key === 'shirt') {
         // Flannel: a check.
