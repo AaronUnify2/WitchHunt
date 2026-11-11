@@ -15,6 +15,9 @@
 
 import * as THREE from 'three';
 import { makeNoiseTexture } from './noiseTexture.js';
+import { puffVelocity } from './wrongFog.js';
+
+const vel = { x: 0, z: 0 };
 
 const VERTEX = /* glsl */ `
   attribute vec3 aCentre;
@@ -188,6 +191,26 @@ export class GroundMist {
     p.placed = true;
   }
 
+  // Session 26: a share (pull.gather) of the puffs that are out of the way move to
+  // within a few metres of the Caller's voice, faded out, and fade in there.
+  gather(pull, cx, cz, nearFade) {
+    const share = pull.gather ?? 0;
+    for (let i = 0; i < this.count; i++) {
+      const p = this.puffs[i];
+      if (this.rng.range(0, 1) >= share) continue;
+      if (Math.hypot(p.x - pull.x, p.z - pull.z) < pull.radius * 0.5) continue;
+      const a = this.rng.range(0, Math.PI * 2);
+      const r = this.rng.range(0, pull.spread ?? 9);
+      const x = pull.x + Math.cos(a) * r;
+      const z = pull.z + Math.sin(a) * r;
+      if (Math.hypot(x - cx, z - cz) < nearFade) continue;
+      p.x = x;
+      p.z = z;
+      p.alpha = 0;
+      p.placed = true;
+    }
+  }
+
   inAvoided(x, z) {
     for (const a of this.avoid) if (x > a.x0 && x < a.x1 && z > a.z0 && z < a.z1) return true;
     return false;
@@ -196,8 +219,9 @@ export class GroundMist {
   // camera: the THREE camera. amount: the mist's strength now (0 hides
   // them). color: the mist's colour. fogFar: the fog's end (they stay
   // inside it). wind: { x, z } direction. torch: { on, position, aim,
-  // color, range, cosOuter, cosInner, strength }.
-  update(dt, camera, amount, color, fogFar, wind, torch) {
+  // color, range, cosOuter, cosInner, strength }. pull (Session 26): the
+  // Caller's fog that moves wrong, or null (render/wrongFog.js).
+  update(dt, camera, amount, color, fogFar, wind, torch, pull = null) {
     const visible = this.enabled && this.count > 0 && amount > 0.01;
     this.mesh.visible = visible;
     if (!visible) return;
@@ -224,15 +248,20 @@ export class GroundMist {
 
     const cx = camera.position.x;
     const cz = camera.position.z;
-    const step = c.drift * dt;
+    // Session 26: a new call from the trees gathers a bank where the voice is.
+    if (pull && pull.id !== this.pullId) this.gather(pull, cx, cz, fadeEnd);
+    this.pullId = pull ? pull.id : null;
     const fadeStep = dt / c.fadeIn;
     for (let i = 0; i < this.count; i++) {
       const p = this.puffs[i];
       if (!p.placed) this.place(p, cx, cz, false);
-      p.x += wind.x * step;
-      p.z += wind.z * step;
+      puffVelocity(p.x, p.z, wind, c.drift, pull, vel);
+      p.x += vel.x * dt;
+      p.z += vel.z * dt;
       if (Math.hypot(p.x - cx, p.z - cz) > this.radius) this.place(p, cx, cz, true);
-      const target = this.inAvoided(p.x, p.z) ? 0 : 1;
+      let target = this.inAvoided(p.x, p.z) ? 0 : 1;
+      // Session 26: thicker round the Caller's voice while it calls (a bank where nothing should be).
+      if (pull && target > 0 && Math.hypot(p.x - pull.x, p.z - pull.z) < pull.radius) target += (pull.bank ?? 0) * Math.max(pull.inhale, pull.exhale);
       p.alpha += Math.max(-fadeStep, Math.min(fadeStep, target - p.alpha));
       const y = this.ground.heightAt(p.x, p.z) - c.sink;
 

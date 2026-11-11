@@ -4204,6 +4204,30 @@ export const config = {
     hud: { deadText: 'RADIO DEAD', southText: 'NO SIGNAL' },
   },
 
+  // Session 26: the Caller (DESIGN.md "The Caller", "Comms in the south";
+  // story/Caller.js). Never seen: a voice, and fog that moves wrong. South
+  // of the comms line, with the family cut off, it speaks in their voices:
+  // over the radio (begging, lying) and from the trees (calling Tom by name,
+  // positional, with which way under the line). Every number a first guess.
+  caller: {
+    needs: 'junieTaken', // it has her voice now
+    firstAfter: [9, 16], // seconds south of the line before the first call
+    every: { day: [50, 85], dusk: [36, 60], night: [26, 46], dawn: [40, 70] }, // seconds between calls, by phase (more at night)
+    positionalShare: { day: 0.35, dusk: 0.5, night: 0.6, dawn: 0.45 }, // of its calls, those from the trees (the rest over the radio)
+    distance: [26, 44], // metres from Tom a voice in the trees comes from
+    behindBias: 0.6, // chance a voice comes from behind him (else anywhere round)
+    voiceRange: 120, // metres the voice carries (the sound)
+    voices: { junie: 1.6, ellen: 1.22, wyatt: 1.04, tom: 0.84 }, // the callerVoice sound's pitch for whose voice it wears
+    avoidRepeat: 9, // the last this many lines aren't picked again
+    backCooldown: 150, // seconds: the family's "we've got you again" isn't said more often than this
+    // The fog that moves wrong round a call from the trees (render/GroundMist.js pull):
+    // first the mist near Tom streams toward the voice, against the wind (inhale); then
+    // a bank rolls from it toward him (exhale). Seconds for each, and how strongly.
+    // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
+    // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
+    fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
   // The Mothman (Session 24: the model; render/mothmanModel.js,
   // render/MothmanRenderer.js). His encounters' AI is Session 25 on; the
   // flyer spike (spikes.flyer) wears him meanwhile.

@@ -37,6 +37,7 @@ export class Atmosphere {
     this.force = 'auto';
     this.amount = 0; // the fog night's thickness now
     this.drift = { x: 0, z: 0 };
+    this.wrongFog = null; // Session 26: the Caller's pull on the mist (story/Caller.js sets it), or null
     this.windDir = new THREE.Vector2(fogCfg.mist.drift.x, fogCfg.mist.drift.z).normalize();
     this.foggyCache = new Map();
     this.uniforms = atmosphereUniforms; // the shader's shared values (handy in the console)
@@ -116,8 +117,11 @@ export class Atmosphere {
     }
     const m = this.cfg.mist;
     const n = this.cfg.nights;
-    this.drift.x += m.drift.x * dt;
-    this.drift.z += m.drift.z * dt;
+    // Session 26: while the Caller's fog moves wrong, the low mist's flow slows, stops and runs backward.
+    const wrong = this.wrongFog;
+    const flow = wrong ? 1 - Math.max(wrong.inhale, wrong.exhale) * (wrong.reverse ?? 2) : 1;
+    this.drift.x += m.drift.x * dt * flow;
+    this.drift.z += m.drift.z * dt * flow;
     const strength = this.heightMist ? sky.mistAmount * this.quality * (1 + (n.mistBoost - 1) * this.amount) : 0;
     const p = camera.position;
     const u = atmosphereUniforms;
@@ -141,8 +145,9 @@ export class Atmosphere {
       t.cosInner = Math.cos(fc.angle * (1 - fc.penumbra) * (Math.PI / 180));
       t.strength = f.glareFactor;
     }
-    const puffAmount = sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount);
-    this.mist.update(dt, camera, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t);
+    // Session 26: the Caller's call brings the mist up even in clear weather (wrongFog.amount).
+    const puffAmount = Math.max(sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount), wrong ? wrong.amount * Math.max(wrong.inhale, wrong.exhale) : 0);
+    this.mist.update(dt, camera, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t, wrong);
     const groundY = u.uMistShape.value.z;
     const ff = this.cfg.fireflies;
     const fireflies = sky.night * (1 - sky.blood) * (1 - ff.fogNightCut * this.amount);

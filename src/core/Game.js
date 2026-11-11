@@ -80,6 +80,7 @@ import { Moths } from '../ai/Moths.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
 import { Comms } from '../story/Comms.js';
+import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
@@ -692,6 +693,9 @@ export class Game {
       sfx: this.combat.sfx,
       notify,
     });
+    // The Caller: south of the comms line, a voice in the family's (story/Caller.js).
+    this.caller = new Caller(this.cfg, this.bus);
+    this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo });
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -808,7 +812,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -853,6 +857,7 @@ export class Game {
     this.moths.addDebugItems(menu);
     this.plane.addDebugItems(menu);
     this.junieTaken.addDebugItems(menu); // Session 26
+    this.caller.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1367,6 +1372,7 @@ export class Game {
     this.roadNorth.loadState(d.roadNorth);
     this.plane.reset(); // Session 25: the crashed plane, as its flags say (a fight that was on starts again)
     this.comms.reset(); // Session 26: which side of the comms line Tom's on, the radio as the flags say
+    this.caller.reset();
     this.junieTaken.reset();
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
@@ -1574,6 +1580,9 @@ export class Game {
     }
     this.watch.update(dt, this.input, this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.weaponCross.isOpen && !this.noReturn.isOpen && this.combat.alive);
     this.radioStatus.update(this.comms.state, this.state === 'running' && !this.demo.active); // Session 26
+    // Session 26: the Caller, never over a cutscene, a paper, a card or a menu.
+    const worldUp = this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.weaponCross.isOpen && !this.noReturn.isOpen;
+    if (!this.demo.active) this.caller.update(worldUp ? dt : 0, worldUp && this.combat.alive);
     this.overlay.update(dt);
   }
 
