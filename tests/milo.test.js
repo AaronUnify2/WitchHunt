@@ -29,8 +29,9 @@ describe('Milo', () => {
   for (const look of MILO_LOOKS) {
     it(`the ${look}: tall, long armed, one mesh, every pose`, () => {
       const { f, scene, box } = build(miloSpec(mc, look), miloPose);
-      expect(box.max.y).toBeGreaterThan(mc.height * 0.95);
-      expect(box.max.y).toBeLessThan(mc.height * 1.12);
+      const h = look === 'man' ? mc.manHeight : mc.height; // the man stands a head taller than the clown (Aaron)
+      expect(box.max.y).toBeGreaterThan(h * 0.95);
+      expect(box.max.y).toBeLessThan(h * 1.12);
       expect(f.joints.wristR.p.y).toBeLessThan(f.joints.hipR.p.y * 0.85); // well below his hips
       expect(scene.children.length).toBe(1);
       expect(f.geometry.index.count / 3).toBeLessThan(30000); // the clown's the heaviest (the wig, the ruff, the knives)

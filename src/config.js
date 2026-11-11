@@ -4065,7 +4065,7 @@ export const config = {
   // is Session 28's.
   milo: {
     height: 1.45, // Aaron (after Session 26): about a foot shorter ("it's funnier if he's short"); 1.75 was (Session 25), 1.9 before that
-    manHeight: 1.55, // the man the morning after, a foot down too (1.85 was): short, broad, a little taller without the clown's crouch
+    manHeight: 1.75, // the man the morning after (Aaron: he stays 1.75 m, a head taller than the clown: "it'll be funnier, trust me")
     widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
     clown: { top: 1, shoe: 0.2 }, // Session 26: the baggy suit is built in (render/miloModel.js clownBody); top widens the smock; the shoes about twice as long
     eyeGlow: 1.3, // Session 26: how strongly his eyes glow in their own colour (seen in the dark; no light added)
