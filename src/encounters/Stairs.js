@@ -128,18 +128,25 @@ export class Stairs {
     }
   }
 
+  // Only while Junie's up there: before she's taken they lead nowhere he'd go; once she's home, never again.
   updateInteraction(dt, input) {
     const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
+    const open = this.has('junieTaken') && !this.has('junieFound');
+    if (!open) {
+      this.hold.update(dt, null, false, 1);
+      this.hud.progress = 0;
+      this.hud.prompt = this.has('junieHome') ? "You're not going up there again" : this.following ? '' : 'A staircase up to nothing. Clean, as if someone dusts it';
+      return;
+    }
     const done = this.hold.update(dt, 'climb', input.isDown('interact'), this.ec.climbSeconds);
     if (done) this.climb();
-    this.hud.prompt = this.following ? '' : this.hold.active ? 'Climbing…' : `Hold ${X}: climb the stairs`;
+    this.hud.prompt = this.hold.active ? 'Climbing…' : `Hold ${X}: climb the stairs`;
     this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
-    if (this.following) this.hold.update(dt, null, false, 1);
   }
 
   // 2: up the stairs, into the place beyond.
   climb() {
-    if (this.following) return;
+    if (this.following || !this.has('junieTaken')) return;
     this.state = 'climbing';
     this.set('stairsClimbed');
     this.bus.emit('stairs:climbed');

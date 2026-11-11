@@ -116,7 +116,9 @@ export class OldChurch {
 
   updateStory(dt, d) {
     this.timer += dt;
-    // 1: the arrival sweep, once, as he comes up to it on the story's way.
+    // 1: the arrival sweep, once, as he comes up to it on the story's way (looking for Junie: before
+    // then it's only a ruin; the plaque and the dig are there for anyone).
+    if (!this.has(this.ec.needs)) return;
     if (!this.has('churchVisited') && d < this.ec.sweepDistance && !this.cutscenes?.active) {
       this.arrive();
       return;

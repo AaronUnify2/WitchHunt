@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-49 Session 25 (your play-through notes, the moths, the crashed plane)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,44 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+Round 51 (Session 26, batch 1: Junie is taken; OPEN_QUESTIONS #449-456). The story picks up at the crashed plane. Shortcut: debug menu, **Story, radio & trail cams**, "Junie taken: start it now".
+- [ ] **Let the Mothman win:** blackout, dawn at the wreck. A few seconds later Ellen gets through: the account (Ellen frantic, Wyatt guilty), Ellen trying Junie's channel, and JUNIE "..." with no sound.
+- [ ] **Or drive him off:** his last pass rakes you, Ellen's call cuts off mid-word, static, black. Dawn in the wreck, **RADIO DEAD** on the HUD (bottom left, struck through). Walk home: near the fence Wyatt shouts from the porch, the account plays face to face, then he hands you the spare handset ("your radio works again").
+- [ ] **The south path camera** (D-pad down): night, three torches coming out to the treeline, Tom's voice from the dark (its caption looks wrong: the red double), from both sides, then ahead; Junie goes to it; her torch goes out. Then the empty trees, and "Shh."
+  - Does it land? Too long (54 s)? Can you see the torches?
+- [ ] After it: Ellen ("it learns how we sound"), Wyatt (her torch went south), Ellen (find our girl; they won't leave the fence after dark). The goal: **Find Junie. Head south.**
+- [ ] **At home:** Junie's gone from the comms room. Her rabbit's on the bottom bunk (hold X). Ellen and Wyatt have new things to say.
+- [ ] Save and quit before the account, and after the clip, and Continue.
+
+Round 52 (Session 26, batch 2: the Caller and comms in the south; #457-461). Shortcut: Story, "Comms: take me just south of the comms line".
+- [ ] Heading south from the plane: Ellen warns you once that you're breaking up.
+- [ ] Crossing the line: her call breaks up mid-word, a burst of static, **NO SIGNAL** on the HUD (its dot flickering).
+- [ ] **The Caller over the radio:** the family's voices, Junie's most, begging and lying, with the tell (red double, a breath instead of the crackle). Did you learn the tell? Too obvious, not enough?
+- [ ] **The Caller from the trees:** your name called from behind you or to one side (a real sound you can place), "From the trees, behind you" under it. **Watch the mist:** it streams toward the voice against the wind, thickens there, then rolls toward you. Best by day in the open; by torch at night. Too subtle?
+- [ ] More of it at night. Never over a cutscene, a paper, a card or a menu.
+- [ ] Back north: "Whatever you heard down there, it wasn't us."
+- [ ] The 25 lines are drafts (`dialogue.json`, `caller.*`): rewrite any.
+
+Round 53 (Session 26, batch 3: the old church and the time capsule; #462-468). Shortcut: Story, "Old church: take me there".
+- [ ] **The arrival sweep:** over the lychgate, the leaning steeple and its bell, the crooked stones and the row of eleven, in up the path to the door.
+- [ ] **The set:** walk round it and in through the steeple door. Boards missing, the east wall fallen in at the back under a caved roof, boarded and broken windows, the pews, the bell's lip in the grass. **Glare** by torch at night?
+- [ ] **The Caller at its worst:** Junie from inside the church, then the cracked bell, then her again ("Everyone's here").
+- [ ] **The plaque** (the granite block by the path): read it. **The row of small stones:** read them.
+- [ ] **Dig** in front of the plaque stone with the shovel; the box; open it; the card; **the 1903 account** (six pages; Amos Pruitt's drawing of the stairs on page IV). The texts are drafts: are they good?
+- [ ] Read, the stairs go on the map ("Find Amos Pruitt's staircase"). Or keep it and read it at the ledger at home.
+- [ ] Hand it in: Ellen and Wyatt on it.
+
+Round 54 (Session 26, batch 4: the stairs, the place beyond, Junie home; #469-475). Shortcut: Story, "Stairs: take me there".
+- [ ] **The first sight:** a house's staircase standing alone, clean, with a thin glassy tone. It looks the same at noon and at midnight (lit by nothing). Is that eerie, or does it just look unlit?
+- [ ] **Climb it** (hold X at the foot): the creaks, the fade.
+- [ ] **The place beyond:** closer fog, grey trunks, the trees leaning in. Junie's voice down two paths ("Down the north path"), with the tell. Take a calling path: back to the start ("Back again, Daddy?"). Take the silent one three times running.
+- [ ] **The find:** Junie kneeling, hands over her ears; she turns; she never answered it; she runs to you.
+- [ ] **Bring her home:** she follows, keeps up, never gets hurt, rides along on a vehicle, says a few things. Through the gate: **the homecoming** by the cabin door. The family are three again in the comms room, and her rabbit's gone from the bunk.
+- [ ] Save and quit with her following, and Continue (she's beside you at home, and the homecoming plays).
+- [ ] **Frame rate** in the place beyond with the new look (it was 57 fps as a spike).
+
+Round 55 (Session 26: the whole stretch in one go). From the plane's end to Junie home, on a new run: the plane, the account and clip, south past the line, the church and the capsule, the stairs, the place beyond, the walk home. Note anywhere you weren't sure what to do next.
 
 ## 1. The main menu
 
