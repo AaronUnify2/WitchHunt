@@ -13,11 +13,14 @@
 //  - Taps: the left / right half of the page turns it; outside the page,
 //    or the ×, puts it down.
 // The press that closes it is swallowed (it doesn't reach the game).
-// Text is in src/data/papers.json.
+// Text is in src/data/papers.json. Session 26: kinds plaque (cast bronze),
+// rubbing (charcoal on paper) and letter1903 (an old letter in a careful
+// hand); a page's "drawing" shows a pencil drawing (ui/paperDrawings.js).
 //
 // Events: 'paper:opened' { id }, 'paper:closed' { id }.
 
 import papersData from '../data/papers.json';
+import { drawingSvg } from './paperDrawings.js';
 
 // The line under the sheet (exported for the tests).
 export function promptText({ take = false, pad = true, many = false, last = true, turn = '' } = {}) {
@@ -134,6 +137,14 @@ export class PaperNote {
     this.headEl.textContent = this.page === 0 || p.kind === 'diary' || p.kind === 'report' ? (p.head ?? '') : ''; // Session 17: a report's form head on every page
     this.dateEl.textContent = pg.date ?? '';
     this.textEl.replaceChildren(...this.lines(pg.text ?? ''));
+    // Session 26: a drawing on the page (ui/paperDrawings.js), after its first paragraph.
+    if (pg.drawing) {
+      const fig = document.createElement('div');
+      fig.className = 'paper-figure';
+      fig.innerHTML = drawingSvg(pg.drawing);
+      const first = this.textEl.querySelector('.paper-gap');
+      this.textEl.insertBefore(fig, first ? first.nextSibling : null);
+    }
     const many = p.pages.length > 1;
     this.pageEl.textContent = many ? `${this.page + 1} / ${p.pages.length}` : '';
     const pad = this.device !== 'keyboardMouse';

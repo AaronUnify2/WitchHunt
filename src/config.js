@@ -716,7 +716,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane'], // Session 15b (and 16, 17; 24: the crashed plane): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4226,6 +4226,56 @@ export const config = {
     // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
     // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
+  // Session 26: the old church and the time capsule (story spine, beat 4;
+  // DESIGN.md "Time capsule and the old church"). The set: render/oldChurchModel.js,
+  // world/OldChurchSite.js; the beat: encounters/OldChurch.js.
+  oldChurch: {
+    radius: 26, // metres from its middle the set reaches (for drawing it)
+    encounter: {
+      needs: 'junieClipSeen', // the clip's been watched: Find Junie. Head south
+      sweepDistance: 34, // metres from the church's middle: the arrival sweep (once)
+      visitDistance: 20, // metres: churchVisited
+      insideCall: { distance: 36, after: 3 }, // within this of the church, this many seconds after the sweep: the Caller calls from inside it
+      bellAfter: 1.4, // seconds after that call: the cracked bell sounds once, as if brushed
+      interactRange: 1.7,
+      digSeconds: 4.5, // the capsule's dig (hold X with the shovel)
+      stairsReveal: 30, // metres of the map revealed round the stairs once the account is read
+    },
+    look: {
+      weather: { rust: [0x26241f], grimeHeight: 0.6, keepBright: [] },
+      colors: {
+        clap: 0x6a675c, // clapboard, its whitewash long gone grey
+        clapDark: 0x524f46,
+        trim: 0x3e3a32,
+        boards: 0x4c4234, // the planks nailed over the windows (newer than the walls)
+        boardsDark: 0x3a3228,
+        shingle: 0x2e2c28,
+        shingleDark: 0x242220,
+        rafter: 0x3a3026,
+        hollow: 0x0d0c0b, // the dark inside
+        glass: 0x1e262a,
+        floor: 0x2c251c,
+        floorDark: 0x241e17,
+        pew: 0x3c2e20,
+        pewDark: 0x2e2318,
+        stone: 0x5a5a54,
+        stoneDark: 0x46463f,
+        stoneNew: 0x606058, // the eleven, cut the same winter
+        granite: 0x55524c,
+        moss: 0x34402a,
+        bronze: 0x3e4c3c, // the plaque, gone to verdigris
+        bronzeDark: 0x283026,
+        bell: 0x4c3e26,
+        iron: 0x26241f,
+        flag: 0x4a4842,
+        bark: 0x3a2e24,
+        earth: 0x3e3022,
+        capsule: 0x4a5a48, // copper, green with a century underground
+        capsuleDark: 0x2e3a2e,
+      },
+    },
   },
 
   // The Mothman (Session 24: the model; render/mothmanModel.js,

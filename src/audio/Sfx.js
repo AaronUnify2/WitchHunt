@@ -713,6 +713,11 @@ const RECIPES = {
     s.tone(o, { seconds: 1.4, wave: 'square', freq: 493, endFreq: 470, gain: 0.025, attack: 0.004 });
     s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1400, q: 2, gain: 0.25 });
   },
+  // Wind through a clearing: a slow swell of filtered noise, rising and falling away.
+  windGust(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 3.6, type: 'bandpass', freq: 380, endFreq: 260, q: 0.6, gain: 0.22, attack: 1.4 });
+  },
   // The capsule's lid coming off: a corroded scrape and a seal giving.
   capsuleOpen(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.8, 30);

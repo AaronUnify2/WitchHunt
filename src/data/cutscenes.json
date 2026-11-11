@@ -3624,6 +3624,85 @@
         }
       ],
       "duration": 53.7
+    },
+    {
+      "id": "sweep.oldChurch",
+      "name": "Arriving at the old church (establishing sweep)",
+      "style": "sweep",
+      "world": "run",
+      "unseen": true,
+      "_note": "Session 26 (DESIGN.md: an arrival sweep): anchor oldChurch (encounters/OldChurch.js: ahead is up the path to the door; x right as you walk in, the model's -x). High over the lychgate, the leaning steeple against the sky; down over the crooked stones and the row of eleven; in along the path to the door's black opening. No one on the radio: the church is south of the comms line. The wind, and the bell's yoke creaking once.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "oldChurch",
+          "pos": [
+            4,
+            8.5,
+            -23
+          ],
+          "look": [
+            0,
+            6.0,
+            -4
+          ]
+        },
+        {
+          "at": 3.2,
+          "anchor": "oldChurch",
+          "pos": [
+            11.5,
+            3.2,
+            -17
+          ],
+          "look": [
+            6,
+            0.6,
+            -11
+          ]
+        },
+        {
+          "at": 6.0,
+          "anchor": "oldChurch",
+          "pos": [
+            2.2,
+            2.0,
+            -15.5
+          ],
+          "look": [
+            0,
+            1.8,
+            -7
+          ]
+        },
+        {
+          "at": 8.6,
+          "anchor": "oldChurch",
+          "pos": [
+            0.4,
+            1.7,
+            -11.5
+          ],
+          "look": [
+            0,
+            1.4,
+            -6.5
+          ]
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0.3,
+          "do": "sfx",
+          "sfx": "windGust"
+        },
+        {
+          "at": 5.6,
+          "do": "sfx",
+          "sfx": "windGust"
+        }
+      ],
+      "duration": 9.2
     }
   ]
 }

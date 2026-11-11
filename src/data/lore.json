@@ -102,7 +102,14 @@
       "id": "timeCapsule",
       "name": "The time capsule (1903)",
       "from": "timeCapsule",
-      "kind": "item"
+      "kind": "document",
+      "paper": "capsuleAccount",
+      "card": {
+        "look": "capsule",
+        "color": "#4a5a48",
+        "label": "#c8c0a0",
+        "line": "A copper box gone green, soldered shut a hundred years ago. Inside, wrapped in oilcloth, a bundle of pages in a careful hand. (draft)"
+      }
     },
     {
       "id": "doc1",

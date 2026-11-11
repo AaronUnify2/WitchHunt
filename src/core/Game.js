@@ -79,6 +79,8 @@ import { Flyer } from '../ai/Flyer.js';
 import { Moths } from '../ai/Moths.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
+import { OldChurchSite } from '../world/OldChurchSite.js';
+import { OldChurch } from '../encounters/OldChurch.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -146,6 +148,8 @@ export class Game {
     this.hut.init(this.scene, this.world, this.colliders);
     this.crashSite = new CrashSite(this.cfg); // Session 24: the crashed plane's set
     this.crashSite.init(this.scene, this.world, this.colliders);
+    this.churchSite = new OldChurchSite(this.cfg); // Session 26: the old church's set
+    this.churchSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -696,6 +700,29 @@ export class Game {
     // The Caller: south of the comms line, a voice in the family's (story/Caller.js).
     this.caller = new Caller(this.cfg, this.bus);
     this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo });
+    // The old church and the time capsule (encounters/OldChurch.js).
+    this.church = new OldChurch(this.cfg, this.bus);
+    this.church.init({
+      scene: this.scene,
+      site: this.churchSite,
+      player: this.player,
+      combat: this.combat,
+      ground: this.world.ground,
+      world: this.world,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      caller: this.caller,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      card: this.card,
+      mapUi: this.mapUi,
+      demo: this.demo,
+      notify,
+    });
+    this.combat.promptSources.push(this.church.hud);
+    this.vehicles.busy?.push(this.church.hud);
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -812,7 +839,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -858,6 +885,7 @@ export class Game {
     this.plane.addDebugItems(menu);
     this.junieTaken.addDebugItems(menu); // Session 26
     this.caller.addDebugItems(menu);
+    this.church.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1374,6 +1402,7 @@ export class Game {
     this.comms.reset(); // Session 26: which side of the comms line Tom's on, the radio as the flags say
     this.caller.reset();
     this.junieTaken.reset();
+    this.church.reset();
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1514,7 +1543,7 @@ export class Game {
     // Session 15b (Aaron): Tom's gun hides in a cutscene (it floated in the
     // campsite's sweep). After the step, so one starting this frame hides it too.
     this.combat.viewModel.root.visible = !cs.active && !viewer.active && !this.player.riding;
-    this.combat.viewModel.digging = Boolean(this.director.digging?.active || this.shelter.digging); // Session 15b: the dig's animation (Session 16: the shelter's hatch too)
+    this.combat.viewModel.digging = Boolean(this.director.digging?.active || this.shelter.digging || this.church?.digging); // Session 15b: the dig's animation (Session 16: the shelter's hatch too)
     if (playing) {
       this.flashlight.platform = this.player.platform;
       this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
@@ -1548,6 +1577,7 @@ export class Game {
     this.world.update(dt, camera.position);
     this.hut.update(dt, camera.position, this.drawDistance);
     this.crashSite.update(camera.position, this.drawDistance);
+    this.churchSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
     if (playing && this.combat.alive) this.stats.seconds += dt;
@@ -1641,6 +1671,7 @@ export class Game {
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
     if (first) this.comms.update(); // Session 26: the radio's reach
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
+    if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
   }
 
   get phase() {
@@ -1689,6 +1720,8 @@ export class Game {
     this.moths.dispose();
     this.plane.dispose();
     this.junieTaken.dispose();
+    this.church.dispose();
+    this.churchSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();

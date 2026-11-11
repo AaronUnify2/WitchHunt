@@ -202,7 +202,18 @@ export class Objectives {
     if (has('planeCellTaken') && !has('planeCellFitted')) return step('planeCell', "Fit the plane's alien power cell to the fence box at home.", L.fenceBox);
     if (has('junieClipSeen') && !has('junieHome')) {
       const spine = (key) => g.world.map.clearings.find((c) => c.key === key);
-      return step('findJunie', 'Find Junie. Head south.', spine('timeCapsule'));
+      const ch = g.church;
+      // ---- the old church and the time capsule (Session 26) ----
+      if (!has('churchVisited') || !ch?.ready) return step('findJunie', 'Find Junie. Head south.', spine('timeCapsule'));
+      if (!has('plaqueRead')) return step('churchLook', 'Look round the old church. There\'s a plaque on a stone by the path.', ch.spot('plaque'));
+      if (!has('capsuleDug')) {
+        if (!g.combat.weapons.has('shovel')) return step('capsuleShovel', 'Something is buried in front of the plaque stone. Fetch the shovel.', st.shovelSpot());
+        return step('capsuleDig', 'Dig in front of the plaque stone.', ch.spot('capsule'));
+      }
+      if (!has('capsuleOpened')) return step('capsuleOpen', 'Open the copper box.', ch.spot('capsule'));
+      if (!has('capsuleRead')) return step('capsuleRead', 'Read the 1903 account. Hand it in at the ledger at home to read it there.', L.cabin.frontDoor);
+      if (has('stairsKnown') && !has('stairsClimbed')) return step('stairs', "Find Amos Pruitt's staircase, a half day east of the church.", spine('stairs'));
+      return step('findJunie', 'Find Junie.', spine('stairs'));
     }
     return step('free', 'Keep the station running, and dig up her sigils.');
   }
