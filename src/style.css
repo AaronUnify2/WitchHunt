@@ -2152,9 +2152,9 @@ body.in-cutscene .vhud {
 .wcross-grid {
   display: grid;
   grid-template-columns: repeat(7, var(--wx-cell));
-  grid-template-rows: repeat(7, var(--wx-cell));
+  grid-template-rows: repeat(7, var(--wx-cell)) calc(var(--wx-cell) * 0.25) var(--wx-cell); /* Session 25: a gap, then the melee bar */
   gap: 6px;
-  --wx-cell: min(11vmin, 72px);
+  --wx-cell: min(8.6vmin, 68px); /* Session 25: smaller, to fit the melee bar */
 }
 .wcross-slot,
 .wcross-mid {
@@ -2208,3 +2208,23 @@ body.in-cutscene .vhud {
   color: var(--dim, #8a8470);
 }
 body.in-cutscene .wcross { display: none; }
+
+/* Session 25: the melee bar under the weapon cross */
+.wcross-bar {
+  align-self: stretch;
+  margin: -4px 0;
+  border-radius: 8px;
+  background: rgba(40, 34, 24, 0.7);
+  border: 1px solid #5a4e34;
+  position: relative;
+}
+.wcross-bar span {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: #8a7a54;
+}
+.wcross-slot.melee { position: relative; z-index: 1; }

@@ -5,7 +5,7 @@ import { Weapons } from '../src/player/Weapons.js';
 import { config } from '../src/config.js';
 
 const cross = config.weapons.cross;
-const lengths = Object.fromEntries(ARMS.map((a) => [a, cross[a].length]));
+const lengths = Object.fromEntries([...ARMS, 'melee'].map((a) => [a, cross[a].length]));
 
 describe('the weapon cross', () => {
   it('lays the guns out as Aaron asked', () => {
@@ -60,5 +60,29 @@ describe('the weapon cross', () => {
     expect(w.id).toBe('sniper');
     c.update(press('menuBack'));
     expect(c.isOpen).toBe(false);
+  });
+
+  it('has a melee bar along the bottom: down past the down arm onto it, along it, back up', () => {
+    expect(cross.melee[0]).toBe('shovel');
+    let f = { arm: 'down', i: cross.down.length - 1 };
+    f = moveFocus(f, 'down', lengths);
+    expect(f).toEqual({ arm: 'melee', i: 0 });
+    f = moveFocus(f, 'right', lengths);
+    expect(f).toEqual({ arm: 'melee', i: 1 });
+    f = moveFocus(f, 'up', lengths);
+    expect(f).toEqual({ arm: 'down', i: cross.down.length - 1 });
+  });
+
+  it('A on the shovel puts it in his hands', () => {
+    const w = new Weapons(config.weapons, config.aiming, config.aimAssist, config.player, null, { emit() {} });
+    w.init({}, {}, {}, null);
+    for (const id of ['rifle', 'shovel']) w.take(id);
+    w.selectId('rifle');
+    const c = new WeaponCross(config.weapons);
+    c.init(null, { weapons: w, inventory: { flares: 0 } });
+    c.open('gamepad');
+    c.focus = { arm: 'melee', i: 0 };
+    c.pick();
+    expect(w.id).toBe('shovel');
   });
 });

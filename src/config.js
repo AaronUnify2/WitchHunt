@@ -1143,7 +1143,7 @@ export const config = {
       { id: 'pistol', weapons: ['pistol', 'smg'] },
       { id: 'rifle', weapons: ['rifle', 'sniper', 'thermal'] },
       { id: 'shotgun', weapons: ['shotgun', 'autoShotgun'] },
-      { id: 'melee', weapons: ['shovel'] },
+      { id: 'melee', weapons: ['shovel', 'spikeMaul', 'chainsaw'] }, // the maul and chainsaw when they're built
       { id: 'explosive', weapons: ['detonator'] }, // while charges are out or in hand
     ],
     // Session 25 (Aaron): Tom carries every gun; the weapon cross (ui/WeaponCross.js, D-pad down
@@ -1154,6 +1154,7 @@ export const config = {
       left: ['pistol', 'smg'],
       right: ['rifle', 'sniper', 'thermal'],
       down: ['flareGun', 'dynamite', 'charges'],
+      melee: ['shovel', 'spikeMaul', 'chainsaw'], // Session 25 (Aaron): the melee bar along the bottom (the maul and chainsaw: designed, not built)
     },
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing

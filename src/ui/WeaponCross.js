@@ -24,7 +24,17 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 
 // Where a press of `dir` takes the focus ({ arm, i } or null: the middle).
 // Pure (the tests). lengths: { [arm]: slots on it }.
+// Session 25 (Aaron): the melee bar under the cross: down past the end of
+// the down arm onto it, left / right along it, up back to the arm.
 export function moveFocus(focus, dir, lengths) {
+  const bar = lengths.melee ?? 0;
+  if (focus?.arm === 'melee') {
+    if (dir === 'left') return { arm: 'melee', i: Math.max(0, focus.i - 1) };
+    if (dir === 'right') return { arm: 'melee', i: Math.min(bar - 1, focus.i + 1) };
+    if (dir === 'up') return lengths.down > 0 ? { arm: 'down', i: lengths.down - 1 } : null;
+    return focus;
+  }
+  if (focus?.arm === 'down' && dir === 'down' && focus.i === lengths.down - 1 && bar > 0) return { arm: 'melee', i: 0 };
   if (!focus) return lengths[dir] > 0 ? { arm: dir, i: 0 } : null;
   if (focus.arm === dir) return { arm: dir, i: Math.min(focus.i + 1, lengths[dir] - 1) };
   if (OPPOSITE[focus.arm] === dir) return focus.i > 0 ? { arm: focus.arm, i: focus.i - 1 } : null;
@@ -34,7 +44,7 @@ export function moveFocus(focus, dir, lengths) {
 // Each slot's state: { id, name, owned, held, count }. Pure (the tests).
 export function crossSlots(cross, wcfg, has, heldId, extra = {}) {
   const out = {};
-  for (const arm of ARMS) {
+  for (const arm of [...ARMS, 'melee']) {
     out[arm] = (cross[arm] ?? []).map((id) => {
       const special = extra[id];
       const owned = special ? special.owned : has(id);
@@ -90,6 +100,9 @@ export class WeaponCross {
     return {
       flareGun: { owned: true, name: 'Flare gun', weapon: null, note: `${flares} flare${flares === 1 ? '' : 's'} · always to hand on Y` },
       dynamite: { owned: false, name: 'Dynamite' },
+      // The melee bar (Session 25): the shovel now; the railroad spike maul and the chainsaw are designed, not built.
+      spikeMaul: { owned: Boolean(this.weapons?.has('spikeMaul')), name: 'Railroad spike maul', note: 'melee' },
+      chainsaw: { owned: Boolean(this.weapons?.has('chainsaw')), name: 'Chainsaw', note: 'melee' },
       charges: { owned: Boolean(this.weapons?.order.includes('detonator')), name: 'Military explosives', weapon: 'detonator', note: 'the detonator' },
     };
   }
@@ -100,7 +113,7 @@ export class WeaponCross {
   }
 
   lengths() {
-    return Object.fromEntries(ARMS.map((a) => [a, (this.cross[a] ?? []).length]));
+    return Object.fromEntries([...ARMS, 'melee'].map((a) => [a, (this.cross[a] ?? []).length]));
   }
 
   open(device = 'gamepad') {
@@ -112,7 +125,7 @@ export class WeaponCross {
     // Start on the weapon in hand, if it's on the cross.
     this.focus = null;
     const s = this.slots();
-    for (const arm of ARMS) s[arm].forEach((slot, i) => slot.held && (this.focus = { arm, i }));
+    for (const arm of [...ARMS, 'melee']) s[arm].forEach((slot, i) => slot.held && (this.focus = { arm, i }));
     this.render();
     this.el?.classList.remove('hidden');
     this.sfx?.play('reload');
@@ -196,6 +209,16 @@ export class WeaponCross {
         const row = 4 + dy * (i + 1);
         const cls = ['wcross-slot', slot.owned ? 'owned' : 'empty', slot.held ? 'held' : '', this.focus?.arm === arm && this.focus.i === i ? 'focus' : ''].join(' ');
         cells.push(`<button class="${cls}" data-arm="${arm}" data-i="${i}" style="grid-column:${col};grid-row:${row}" aria-label="${slot.owned ? slot.name : 'not found yet'}">${slot.owned ? this.iconHtml(slot.id) : ''}</button>`);
+      });
+    }
+    // The melee bar along the bottom (Session 25, Aaron): every melee weapon, side by side.
+    const bar = s.melee ?? [];
+    if (bar.length) {
+      const c0 = 4 - Math.floor(bar.length / 2);
+      cells.push(`<div class="wcross-bar" style="grid-column:${c0 - 1} / ${c0 + bar.length + 1};grid-row:9"><span>MELEE</span></div>`);
+      bar.forEach((slot, i) => {
+        const cls = ['wcross-slot', 'melee', slot.owned ? 'owned' : 'empty', slot.held ? 'held' : '', this.focus?.arm === 'melee' && this.focus.i === i ? 'focus' : ''].join(' ');
+        cells.push(`<button class="${cls}" data-arm="melee" data-i="${i}" style="grid-column:${c0 + i};grid-row:9" aria-label="${slot.owned ? slot.name : 'not found yet'}">${slot.owned ? this.iconHtml(slot.id) : ''}</button>`);
       });
     }
     this.gridEl.innerHTML = cells.join('');

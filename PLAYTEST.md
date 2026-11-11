@@ -418,6 +418,7 @@ Round 49 (Session 25, batch 8: the crashed plane; #436-445). The story's next be
 
 Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **RB / LB rotate through the kinds:** pistols, rifles, shotguns, then the shovel (and the detonator while charges are out). Kinds you have nothing of are skipped. Each kind brings out the one you last held, so pick the hunting rifle on the weapon cross and RB brings it back out from then on. The mouse wheel rotates too.
+- [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
 
