@@ -76,6 +76,7 @@ export class JunieTaken {
     this.cutscenes?.namedAnchors?.set('junieWoods', () => this.woods());
     this.bus.on('radio:smashed', () => this.subtitles?.clear()); // the line cut off mid-word
     this.bus.on('player:respawned', () => this.reset());
+    this.bus.on('junie:home', () => this.refreshHome()); // Session 26: her rabbit goes back with her
     this.reset();
   }
 

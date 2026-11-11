@@ -94,7 +94,7 @@ export class Caller {
     this.fog = null; // the pull on the mist while a call from the trees plays (Atmosphere.wrongFog)
   }
 
-  // ctx: { dialogue, subtitles, comms, progress, player, clock, sfx, atmosphere, demo, rng() }.
+  // ctx: { dialogue, subtitles, comms, progress, player, clock, sfx, atmosphere, demo, interiors, rng() }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
@@ -122,7 +122,8 @@ export class Caller {
   }
 
   get active() {
-    return this.comms?.state === 'south' && this.has(this.kc.needs) && !this.demo?.active;
+    // Not inside an interior (the place beyond has its own voice).
+    return this.comms?.state === 'south' && this.has(this.kc.needs) && !this.demo?.active && !this.interiors?.inside;
   }
 
   // ---- crossing the line ----------------------------------------------------------------------

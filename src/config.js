@@ -716,7 +716,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -3699,6 +3699,10 @@ export const config = {
       sizeJitter: 0.35, // each tree's size, up or down by this fraction
       callEvery: [3.5, 6], // seconds between Junie's calls (from one calling path, then the other)
       light: { ambientDay: 2.6, ambientNight: 1.5, ambientColor: 0xa0a8b4, fogColor: 0x5d6469, fogNear: 2, fogFar: 26 },
+      // Session 26: its look in the story (encounters/PlaceBeyond.js applyLook): the forest slightly off.
+      // Bone-grey trunks, blue-black crowns, a dead floor, the fog closer (storyLight), every tree leaning in (radians).
+      story: { trunkColor: 0x55534c, canopyColor: 0x1a2226, floorColor: 0x30322c, fogColor: 0x4c5356, lean: 0.07 },
+      storyLight: { ambientDay: 2.2, ambientNight: 1.4, ambientColor: 0x98a4b0, fogColor: 0x4c5356, fogNear: 1, fogFar: 19 },
     },
     // A flying enemy (the Mothman's flyovers and dives; DESIGN.md "The
     // Mothman"). Its script: passes over Tom, circling between, then dives
@@ -4275,6 +4279,29 @@ export const config = {
         capsule: 0x4a5a48, // copper, green with a century underground
         capsuleDark: 0x2e3a2e,
       },
+    },
+  },
+
+  // Session 26: the stairs in the woods and the place beyond (story spine,
+  // beat 5; DESIGN.md "Stairs in the woods"). The set: render/stairsModel.js,
+  // world/StairsSite.js; the beat: encounters/Stairs.js (the climb, the
+  // find, Junie following Tom home, the homecoming); the place beyond:
+  // encounters/PlaceBeyond.js (config.spikes.placeBeyond, its story look below).
+  stairs: {
+    radius: 14,
+    look: {
+      // Unlit (MeshBasicMaterial): these show as they are, day or night, so they're kept darker than a lit set's.
+      colors: { paint: 0x4c4a44, paintDark: 0x3a3936, tread: 0x382a1e, carpet: 0x3c1c20, brass: 0x584826 },
+    },
+    encounter: {
+      needs: 'stairsKnown',
+      arriveDistance: 15, // metres from the foot: the first sight of it (a held look, once), inside its clearing so no trunk's in the way
+      climbRange: 1.8, // metres from the foot: hold X to climb
+      climbSeconds: 1.2,
+      follow: { gap: 1.7, speed: 4.6, catchUp: 9, snap: 28 }, // Junie behind Tom on the way home: metres behind, her walk (m/s), faster beyond catchUp metres, put beside him past snap
+      homeRadius: 0, // metres past the fence's radius: inside it, the homecoming (0: at the fence)
+      lineEvery: [40, 70], // seconds between Junie's lines on the walk home
+      findDistance: 6.5, // metres from her Tom comes into the last clearing of the place beyond
     },
   },
 

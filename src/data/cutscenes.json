@@ -3703,6 +3703,326 @@
         }
       ],
       "duration": 9.2
+    },
+    {
+      "id": "stairs.sight",
+      "name": "The stairs in the woods: the first sight (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Session 26 (DESIGN.md 'Stairs in the woods'): Tom comes out of the trees and there it is: a house's staircase, standing alone in the clearing, clean, lit by nothing. A long held look, the view drawn to it. No one on the radio down here; a thin, wrong tone.",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "stairsTop",
+          "rate": 1.2
+        },
+        {
+          "at": 0.2,
+          "do": "sfx",
+          "sfx": "stairsHum"
+        },
+        {
+          "at": 3.2,
+          "do": "sfx",
+          "sfx": "windGust"
+        }
+      ],
+      "duration": 5.5
+    },
+    {
+      "id": "stairs.climb",
+      "name": "The stairs in the woods: climbing them (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Session 26: Tom climbs. The steps creak under him like a house's at night; the view tips up toward the top step and the air past it, the fog closes to grey, and he's somewhere else (the place beyond).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "stairsTop",
+          "rate": 2,
+          "pitch": 0.35
+        },
+        {
+          "at": 0.3,
+          "do": "sfx",
+          "sfx": "stairCreak"
+        },
+        {
+          "at": 1.0,
+          "do": "sfx",
+          "sfx": "stairCreak"
+        },
+        {
+          "at": 1.7,
+          "do": "sfx",
+          "sfx": "stairCreak"
+        },
+        {
+          "at": 1.8,
+          "do": "fade",
+          "to": 1,
+          "seconds": 1.6
+        },
+        {
+          "at": 2.6,
+          "do": "sfx",
+          "sfx": "stairsHum"
+        }
+      ],
+      "duration": 3.8,
+      "skippable": false
+    },
+    {
+      "id": "beyond.find",
+      "name": "The place beyond: Junie found (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Session 26 (DESIGN.md: take the silent path three times in a row to find Junie): the last clearing, wider, quiet. Junie in its middle with her back to him, kneeling, hands over her ears, saying she isn't listening. She turns. It did everyone's voice all night and she never answered. She runs to him. Anchor beyondFind (PlaceBeyond's 'beyond:found': the clearing's middle, ahead the way Tom faces). Then they go down the stairs (encounters/Stairs.js).",
+      "actors": [
+        {
+          "id": "junie",
+          "kind": "figure",
+          "look": "junie",
+          "anchor": "beyondFind",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 180
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "pose",
+          "actor": "junie",
+          "pose": "kneel"
+        },
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "beyondFind",
+          "rate": 1.6,
+          "pitch": -0.25
+        },
+        {
+          "at": 0.6,
+          "do": "line",
+          "line": "find.1",
+          "radio": false
+        },
+        {
+          "at": 6.01,
+          "do": "pose",
+          "actor": "junie",
+          "pose": "stand"
+        },
+        {
+          "at": 6.51,
+          "do": "move",
+          "actor": "junie",
+          "to": [
+            0,
+            0,
+            -0.4
+          ],
+          "seconds": 0.7
+        },
+        {
+          "at": 6.91,
+          "do": "line",
+          "line": "find.2",
+          "radio": false
+        },
+        {
+          "at": 9.0,
+          "do": "line",
+          "line": "find.3",
+          "radio": false
+        },
+        {
+          "at": 16.91,
+          "do": "line",
+          "line": "find.4",
+          "radio": false
+        },
+        {
+          "at": 24.29,
+          "do": "move",
+          "actor": "junie",
+          "to": [
+            0,
+            0,
+            -6.5
+          ],
+          "seconds": 1.6
+        },
+        {
+          "at": 24.89,
+          "do": "line",
+          "line": "find.5",
+          "radio": false
+        },
+        {
+          "at": 28.82,
+          "do": "fade",
+          "to": 1,
+          "seconds": 1.5
+        }
+      ],
+      "duration": 30.5,
+      "skippable": false
+    },
+    {
+      "id": "junie.homecoming",
+      "name": "Junie comes home (the compound, by the cabin door)",
+      "style": "sweep",
+      "_note": "Session 26: Tom brings Junie through the gate. Ellen and Wyatt come out of the cabin door at a run; Ellen goes down on her knees to her; Wyatt says sorry; Junie says Dad came and didn't follow it either; Ellen to Tom. Anchor homeDoor (ahead is away from the door, toward the gate). The family are three at home again afterwards (encounters/Stairs.js: junieHome).",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "homeDoor",
+          "pos": [
+            5.4,
+            2.0,
+            6.4
+          ],
+          "look": [
+            0.6,
+            1.0,
+            2.6
+          ],
+          "fov": 55
+        },
+        {
+          "at": 23.080000000000002,
+          "anchor": "homeDoor",
+          "pos": [
+            3.6,
+            1.7,
+            5.4
+          ],
+          "look": [
+            0.6,
+            1.0,
+            3.2
+          ],
+          "fov": 50
+        }
+      ],
+      "actors": [
+        {
+          "id": "ellen",
+          "kind": "figure",
+          "look": "ellen",
+          "anchor": "homeDoor",
+          "pos": [
+            -0.2,
+            0,
+            -0.6
+          ],
+          "yaw": 0
+        },
+        {
+          "id": "wyatt",
+          "kind": "figure",
+          "look": "wyatt",
+          "anchor": "homeDoor",
+          "pos": [
+            0.6,
+            0,
+            -0.9
+          ],
+          "yaw": 0
+        },
+        {
+          "id": "junie",
+          "kind": "figure",
+          "look": "junie",
+          "anchor": "homeDoor",
+          "pos": [
+            1.6,
+            0,
+            10
+          ],
+          "yaw": 180
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0.4,
+          "do": "move",
+          "actor": "ellen",
+          "to": [
+            0.2,
+            0,
+            3.1
+          ],
+          "seconds": 2.0
+        },
+        {
+          "at": 0.6,
+          "do": "move",
+          "actor": "wyatt",
+          "to": [
+            1.2,
+            0,
+            3.3
+          ],
+          "seconds": 2.0
+        },
+        {
+          "at": 0.2,
+          "do": "move",
+          "actor": "junie",
+          "to": [
+            0.8,
+            0,
+            4.0
+          ],
+          "seconds": 2.4
+        },
+        {
+          "at": 2.4,
+          "do": "line",
+          "line": "home.1",
+          "radio": false
+        },
+        {
+          "at": 5.37,
+          "do": "pose",
+          "actor": "ellen",
+          "pose": "kneel"
+        },
+        {
+          "at": 6.37,
+          "do": "line",
+          "line": "home.2",
+          "radio": false
+        },
+        {
+          "at": 12.61,
+          "do": "line",
+          "line": "home.3",
+          "radio": false
+        },
+        {
+          "at": 17.84,
+          "do": "line",
+          "line": "home.4",
+          "radio": false
+        },
+        {
+          "at": 23.08,
+          "do": "fade",
+          "to": 1,
+          "seconds": 1.6
+        }
+      ],
+      "duration": 24.9
     }
   ]
 }

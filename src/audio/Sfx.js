@@ -718,6 +718,18 @@ const RECIPES = {
     const o = s.out(undefined, undefined, 0.5);
     s.noiseBurst(o, { seconds: 3.6, type: 'bandpass', freq: 380, endFreq: 260, q: 0.6, gain: 0.22, attack: 1.4 });
   },
+  // The stairs in the woods: a thin, high, too-steady tone, as if something were ringing a glass far off.
+  stairsHum(s) {
+    const o = s.out(undefined, undefined, 0.35);
+    s.tone(o, { seconds: 3.4, wave: 'sine', freq: 1318, endFreq: 1312, gain: 0.05, attack: 1.2 });
+    s.tone(o, { seconds: 3.4, wave: 'sine', freq: 1975, endFreq: 1983, gain: 0.025, attack: 1.4 });
+  },
+  // A stair taking Tom's weight: a house's creak at night.
+  stairCreak(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.tone(o, { seconds: 0.35, wave: 'sawtooth', freq: 140 + Math.random() * 40, endFreq: 95, gain: 0.05, attack: 0.04 });
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 700, endFreq: 420, q: 4, gain: 0.18, attack: 0.03 });
+  },
   // The capsule's lid coming off: a corroded scrape and a seal giving.
   capsuleOpen(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.8, 30);

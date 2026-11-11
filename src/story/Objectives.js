@@ -212,9 +212,14 @@ export class Objectives {
       }
       if (!has('capsuleOpened')) return step('capsuleOpen', 'Open the copper box.', ch.spot('capsule'));
       if (!has('capsuleRead')) return step('capsuleRead', 'Read the 1903 account. Hand it in at the ledger at home to read it there.', L.cabin.frontDoor);
+      // ---- the stairs, the place beyond, Junie home (Session 26) ----
+      if (has('junieFound')) return step('junieHome', 'Take Junie home.', L.cabin.frontDoor);
+      if (g.placeBeyond?.inside) return step('beyond', 'Never follow the voice. Take the silent path.');
       if (has('stairsKnown') && !has('stairsClimbed')) return step('stairs', "Find Amos Pruitt's staircase, a half day east of the church.", spine('stairs'));
+      if (has('stairsKnown')) return step('climb', 'Climb the stairs. Take the silent way, every time.', spine('stairs'));
       return step('findJunie', 'Find Junie.', spine('stairs'));
     }
+    if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }
 

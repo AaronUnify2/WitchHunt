@@ -81,6 +81,8 @@ import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
 import { OldChurchSite } from '../world/OldChurchSite.js';
 import { OldChurch } from '../encounters/OldChurch.js';
+import { StairsSite } from '../world/StairsSite.js';
+import { Stairs } from '../encounters/Stairs.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -150,6 +152,8 @@ export class Game {
     this.crashSite.init(this.scene, this.world, this.colliders);
     this.churchSite = new OldChurchSite(this.cfg); // Session 26: the old church's set
     this.churchSite.init(this.scene, this.world, this.colliders);
+    this.stairsSite = new StairsSite(this.cfg); // Session 26: the stairs in the woods
+    this.stairsSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -699,7 +703,7 @@ export class Game {
     });
     // The Caller: south of the comms line, a voice in the family's (story/Caller.js).
     this.caller = new Caller(this.cfg, this.bus);
-    this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo });
+    this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo, interiors: this.interiors });
     // The old church and the time capsule (encounters/OldChurch.js).
     this.church = new OldChurch(this.cfg, this.bus);
     this.church.init({
@@ -723,6 +727,27 @@ export class Game {
     });
     this.combat.promptSources.push(this.church.hud);
     this.vehicles.busy?.push(this.church.hud);
+    // The stairs, the place beyond (the Session 22 spike, promoted), Junie home (encounters/Stairs.js).
+    this.placeBeyond.dialogue = this.dialogue;
+    this.stairs = new Stairs(this.cfg, this.bus);
+    this.stairs.init({
+      scene: this.scene,
+      site: this.stairsSite,
+      beyond: this.placeBeyond,
+      player: this.player,
+      ground: this.world.ground,
+      station: this.station,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      progress: this.progress,
+      interiors: this.interiors,
+      demo: this.demo,
+      sfx: this.combat.sfx,
+      notify,
+    });
+    this.combat.promptSources.push(this.stairs.hud);
+    this.vehicles.busy?.push(this.stairs.hud);
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -839,7 +864,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}  ${this.stairs.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -886,6 +911,7 @@ export class Game {
     this.junieTaken.addDebugItems(menu); // Session 26
     this.caller.addDebugItems(menu);
     this.church.addDebugItems(menu);
+    this.stairs.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1403,6 +1429,7 @@ export class Game {
     this.caller.reset();
     this.junieTaken.reset();
     this.church.reset();
+    this.stairs.reset();
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1578,6 +1605,7 @@ export class Game {
     this.hut.update(dt, camera.position, this.drawDistance);
     this.crashSite.update(camera.position, this.drawDistance);
     this.churchSite.update(camera.position, this.drawDistance);
+    this.stairsSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
     if (playing && this.combat.alive) this.stats.seconds += dt;
@@ -1672,6 +1700,7 @@ export class Game {
     if (first) this.comms.update(); // Session 26: the radio's reach
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
+    if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
   }
 
   get phase() {
@@ -1722,6 +1751,8 @@ export class Game {
     this.junieTaken.dispose();
     this.church.dispose();
     this.churchSite.dispose();
+    this.stairs.dispose();
+    this.stairsSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();

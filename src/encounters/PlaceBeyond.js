@@ -17,6 +17,19 @@
 //    the two calling paths in turn (a placeholder sound, and a caption).
 //
 // Debug (Spikes): enter it; show which path is silent.
+//
+// Session 26 (story spine, beat 5): promoted to the story. Climbing the
+// stairs (encounters/Stairs.js) enters it with enter({ story: true }):
+//  - its look (config.spikes.placeBeyond.story): thicker fog, bone-grey
+//    trunks under blue-black crowns, and every tree leaning a little in
+//    toward the clearing's middle, as if they were watching it;
+//  - Junie's voice comes down the two calling paths, a positional sound
+//    with a subtitle that says which path (the Caller's tell on it: it
+//    isn't her). Back at the start after a calling path, it says so;
+//  - the silent path, three times in a row: the last clearing is empty but
+//    for her, and 'beyond:found' { x, z, yaw, dy } lets the beat stage the
+//    find (Stairs plays it, then leave() takes them both down the stairs).
+// Events: 'beyond:entered', 'beyond:found', 'beyond:out'.
 
 import * as THREE from 'three';
 import { DEBUG } from '../debug/DebugMenu.js';
@@ -34,29 +47,37 @@ export class PlaceBeyond {
     this.showSilent = false;
   }
 
-  // ctx: { world, player, interiors, sfx, notify }.
+  // ctx: { world, player, interiors, sfx, notify }; Session 26, set after
+  // init: dialogue (Junie's voice's subtitles), stairsSite (the foot of the stairs: in and out).
   init(ctx) {
     Object.assign(this, ctx);
     this.stairs = this.world.map.clearings.find((c) => c.spine && c.key === 'stairs') ?? null;
     this.rng = new Rng(`${this.world.seed ?? 'beyond'}:placeBeyond`);
     if (!this.stairs) return;
     const pc = this.pc;
+    const self = this;
     this.interiors.define({
       id: ID,
       name: 'The place beyond',
-      entrance: () => ({ x: this.stairs.x, z: this.stairs.z }),
+      entrance: () => this.foot(),
       surfaceY: () => this.world.ground.heightAt(this.stairs.x, this.stairs.z),
       load: (scene, floorY) => this.load(scene, floorY),
       platform: (floorY) => this.platformAt(floorY),
       spawn: () => this.arrival('south'),
-      exit: () => ({ x: this.stairs.x, z: this.stairs.z + 6, yaw: 0 }),
-      light: pc.light,
+      exit: () => this.exitPoint(),
+      // Session 26: the story's closer fog and colder light, or the spike's.
+      get light() {
+        return self.story ? pc.storyLight : pc.light;
+      },
       onEnter: () => {
         this.walk = startWalk(this.rng, pc.needed);
+        this.found = null;
+        this.applyLook();
         this.deal(0);
         this.callTimer = 1.5;
         this.callNext = 0;
-        this.notify?.('The place beyond (spike): four paths. Never follow the voice.');
+        this.bus.emit('beyond:entered', { story: this.story });
+        if (!this.story) this.notify?.('The place beyond (spike): four paths. Never follow the voice.');
       },
       onLeave: () => (this.walk = null),
     });
@@ -64,6 +85,45 @@ export class PlaceBeyond {
 
   get inside() {
     return this.interiors?.id === ID;
+  }
+
+  // Session 26: the stairs' foot (the set's spot), else the clearing's middle.
+  foot() {
+    const f = this.stairsSite?.spots?.foot;
+    return f ? { x: f.x, z: f.z } : { x: this.stairs.x, z: this.stairs.z };
+  }
+
+  // Out: a step back from the foot of the stairs, facing them.
+  exitPoint() {
+    const f = this.stairsSite?.spots?.foot;
+    const p = this.stairsSite?.place;
+    if (!f || !p) return { x: this.stairs.x, z: this.stairs.z + 6, yaw: 0 };
+    const bx = -Math.sin(p.yaw) * 1.4;
+    const bz = -Math.cos(p.yaw) * 1.4;
+    return { x: f.x + bx, z: f.z + bz, yaw: p.yaw + Math.PI };
+  }
+
+  // In, for the story (the spike's debug item goes in without).
+  enter({ story = false } = {}) {
+    if (!this.stairs) return false;
+    this.story = story;
+    this.interiors.enter(ID);
+    return true;
+  }
+
+  leave() {
+    if (this.inside) this.interiors.leave();
+  }
+
+  // Session 26: the story's look (or the spike's), set as Tom goes in.
+  applyLook() {
+    const pc = this.pc;
+    const look = this.story ? { ...pc, ...pc.story } : pc;
+    this.lean = this.story ? pc.story.lean : 0;
+    if (this.trunks) this.trunks.material.color.setHex(look.trunkColor ?? pc.trunk.color);
+    if (this.canopies) this.canopies.material.color.setHex(look.canopyColor ?? pc.canopy.color);
+    if (this.floorMesh) this.floorMesh.material.color.setHex(look.floorColor ?? pc.floor.color);
+    if (this.dome) this.dome.material.color.setHex(look.fogColor ?? pc.light.fogColor);
   }
 
   // ---- the space ---------------------------------------------------------------------------------
@@ -81,6 +141,7 @@ export class PlaceBeyond {
     const floor = new THREE.Mesh(own(new THREE.PlaneGeometry(pc.half * 2, pc.half * 2)), own(new THREE.MeshLambertMaterial({ color: pc.floor.color })));
     floor.rotation.x = -Math.PI / 2;
     group.add(floor);
+    this.floorMesh = floor;
     // A fog-coloured dome round Tom, just past the fog (the camera's far
     // plane closes in to it in here): no sky shows past the trees (one draw call).
     const dome = new THREE.Mesh(own(new THREE.SphereGeometry(pc.light.fogFar + 2, 16, 8)), own(new THREE.MeshBasicMaterial({ color: pc.light.fogColor, side: THREE.BackSide, fog: false })));
@@ -129,6 +190,8 @@ export class PlaceBeyond {
     const up = new THREE.Vector3(0, 1, 0);
     const pos = new THREE.Vector3();
     const scl = new THREE.Vector3();
+    const lean = new THREE.Quaternion();
+    const axis = new THREE.Vector3();
     this.blocks = [];
     let i = 0;
     for (const sp of this.spots) {
@@ -136,9 +199,15 @@ export class PlaceBeyond {
       const z = sp.z + rng.range(-pc.treeJitter, pc.treeJitter);
       const keep = rng.next() < pc.treeKeep;
       const onPath = Math.abs(x) < pc.pathHalf + 0.8 || Math.abs(z) < pc.pathHalf + 0.8;
-      if (!keep || onPath || Math.hypot(x, z) < pc.clearingRadius) continue;
+      if (!keep || onPath || Math.hypot(x, z) < pc.clearingRadius * (this.wide ? 1.5 : 1)) continue;
       const k = 1 + rng.range(-pc.sizeJitter, pc.sizeJitter);
       q.setFromAxisAngle(up, rng.range(0, Math.PI * 2));
+      // Session 26 (the story's look): every tree leans a little in toward the clearing's middle.
+      if (this.lean) {
+        const d = Math.hypot(x, z) || 1;
+        lean.setFromAxisAngle(axis.set(-z / d, 0, x / d), -this.lean);
+        q.premultiply(lean);
+      }
       m.compose(pos.set(x, 0, z), q, scl.set(k, k, k));
       this.trunks.setMatrixAt(i, m);
       this.canopies.setMatrixAt(i, m);
@@ -161,9 +230,9 @@ export class PlaceBeyond {
   }
 
   // Where Tom stands coming in from `side`: at that edge, on its path, facing the middle.
-  arrival(side) {
+  arrival(side, dist = null) {
     const v = sideVector(side);
-    const d = this.pc.half - this.pc.entryInset;
+    const d = dist ?? this.pc.half - this.pc.entryInset;
     return { x: this.stairs.x + v.x * d, z: this.stairs.z + v.z * d, yaw: Math.atan2(v.x, v.z), pitch: 0 };
   }
 
@@ -186,7 +255,8 @@ export class PlaceBeyond {
       const v = sideVector(dir);
       const at = { x: this.stairs.x + v.x * pc.half, z: this.stairs.z + v.z * pc.half };
       this.sfx?.play('junieCall', at);
-      this.notify?.(`"Dad?" (down the ${dir} path)`);
+      if (this.story) this.voice(dir);
+      else this.notify?.(`"Dad?" (down the ${dir} path)`);
       this.callTimer = this.rng.range(pc.callEvery[0], pc.callEvery[1]);
     }
   }
@@ -196,13 +266,27 @@ export class PlaceBeyond {
     this.walk = walk;
     if (outcome === 'out') {
       this.interiors.leave();
-      this.notify?.('Back down the stairs');
+      this.bus.emit('beyond:out');
+      if (!this.story) this.notify?.('Back down the stairs');
       return;
     }
     if (outcome === 'found') {
-      this.interiors.leave();
-      this.notify?.('Junie! You found her (spike: she comes home with you)');
-      this.bus.emit('spike:junieFound');
+      if (!this.story) {
+        this.interiors.leave();
+        this.notify?.('Junie! You found her (spike: she comes home with you)');
+        this.bus.emit('spike:junieFound');
+        return;
+      }
+      // Session 26: the last clearing, wider, empty but for her; the beat stages the find.
+      this.wide = true;
+      this.deal(walk.step + 7);
+      this.wide = false;
+      const s = this.arrival(opposite(side), this.findDistance ?? 6.5);
+      this.player.setPlatform(this.platform, s.x, s.z);
+      this.player.yaw = s.yaw;
+      this.walk = null;
+      this.found = { x: this.stairs.x, z: this.stairs.z, yaw: s.yaw, dy: this.floorY - this.world.ground.heightAt(this.stairs.x, this.stairs.z) };
+      this.bus.emit('beyond:found', this.found);
       return;
     }
     // On to a clearing: in from the side opposite the path taken (a loop: from the stairs' side, the start again).
@@ -211,7 +295,31 @@ export class PlaceBeyond {
     this.player.setPlatform(this.platform, s.x, s.z);
     this.player.yaw = s.yaw;
     this.callTimer = 1.5;
+    if (this.story) {
+      if (outcome === 'loop') {
+        this.callTimer = 4;
+        this.dialogue?.play(this.pickLine('loop'), { dir: 'All round you' }, false);
+      } else this.notify?.(`It's quiet this way. (${walk.step} of ${walk.needed})`);
+      return;
+    }
     this.notify?.(outcome === 'loop' ? 'The path bends back… the first clearing again' : `Quiet. (${walk.step} of ${walk.needed})`);
+  }
+
+  // ---- Session 26: Junie's voice, down a calling path ---------------------------------------------
+
+  // A line from the pool (dialogue.json's callerPool 'beyond' / 'beyondLoop'), not the last one.
+  pickLine(kind) {
+    const pool = (this.dialogue?.lines ?? []).filter((l) => l.callerPool === (kind === 'loop' ? 'beyondLoop' : 'beyond')).map((l) => l.id);
+    if (!pool.length) return null;
+    let id = pool[this.rng.int(0, pool.length - 1)];
+    if (id === this.lastLine && pool.length > 1) id = pool[(pool.indexOf(id) + 1) % pool.length];
+    this.lastLine = id;
+    return id;
+  }
+
+  voice(dir) {
+    const id = this.pickLine('call');
+    if (id && !this.dialogue?.subtitles?.busy) this.dialogue?.play(id, { dir: `Down the ${dir} path` }, false);
   }
 
   // ---- debug -------------------------------------------------------------------------------------
@@ -220,7 +328,7 @@ export class PlaceBeyond {
     const sp = menu.category(DEBUG.spikes);
     sp.addItem('Place beyond: go in (from the stairs)', () => {
       if (!this.stairs) return this.notify?.('No stairs on this map');
-      this.interiors.enter(ID);
+      this.enter({ story: false });
     });
     sp.addItem(() => `Place beyond: which path is silent? (${this.walk ? this.walk.clearing.silent : 'not inside'})`, () => {
       if (this.walk) this.notify?.(`Silent: ${this.walk.clearing.silent}; calling: ${this.walk.clearing.calling.join(' and ')}; ${this.walk.step} of ${this.walk.needed}`);
