@@ -31,6 +31,8 @@ export class Dialogue {
 
   // ctx: { subtitles, clock, withFamily() (Tom is in the cabin with them),
   // stateFlags() (a list of flags from the world now), notify(text) }.
+  // Session 26, set after init: comms (story/Comms.js: what the radio can
+  // carry), absent(speaker) (someone who isn't there: Junie, taken).
   init(ctx) {
     Object.assign(this, ctx);
     this.byId = new Map(this.lines.map((l) => [l.id, l]));
@@ -132,6 +134,10 @@ export class Dialogue {
   // away from the family); null works it out. force: past the rate limit.
   deliver(line, vars = {}, force = false, radio = null) {
     const overRadio = radio ?? (line.channel === 'radio' || (line.channel === 'face' && !this.withFamily()));
+    // Session 26: a smashed radio, or the south past the comms line, carries no family voice (story/Comms.js);
+    // and someone who isn't there (Junie, taken) says nothing (captions on a clip still show).
+    if (overRadio && this.comms?.blocks(line)) return false;
+    if (line.channel !== 'caption' && !line.caller && this.absent?.(line.speaker)) return false;
     if (overRadio && !force) {
       if (!this.gate.canSend(this.time, line.kind ?? null, line.urgent)) {
         if (line.repeatable) return false;
@@ -148,7 +154,7 @@ export class Dialogue {
   show(line, vars, radio) {
     const chain = [line];
     const facts = this.facts();
-    for (let l = this.byId.get(line.next); l && chain.length < 8; l = this.byId.get(l.next)) {
+    for (let l = this.byId.get(line.next); l && chain.length < 12; l = this.byId.get(l.next)) { // Session 26: up to twelve (the family's account)
       if (!playable({ ...l, script: undefined }, facts, this.heard)) break;
       chain.push(l);
     }
@@ -159,6 +165,8 @@ export class Dialogue {
         radio,
         urgent: i === 0 && Boolean(line.urgent),
         line: l,
+        caller: Boolean(l.caller || vars.caller), // Session 26: the Caller's tell
+        dir: vars.dir ?? null, // Session 26: which way a call from the trees came from
         onStart: () => {
           if (!l.repeatable) this.heard.add(l.id);
           this.bus.emit('dialogue:line', { id: l.id, speaker: l.speaker, radio });

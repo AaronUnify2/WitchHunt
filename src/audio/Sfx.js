@@ -668,6 +668,63 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.2, freq: 1800, endFreq: 300, gain: 0.6 });
     s.tone(o, { seconds: 0.6, wave: 'triangle', freq: 600, endFreq: 150, gain: 0.15 });
   },
+  // ---- Session 26: Junie taken, the Caller ----
+  // The Mothman's last strike takes the radio on Tom's chest: a crunch of
+  // plastic, a squeal of feedback, then static that thins away to nothing.
+  radioSmash(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.noiseBurst(o, { seconds: 0.22, freq: 2600, endFreq: 500, gain: 0.85, attack: 0.001 });
+    s.tone(o, { seconds: 0.5, wave: 'square', freq: 2900, endFreq: 1200, gain: 0.07, attack: 0.002 });
+    s.noiseBurst(o, { seconds: 2.6, type: 'bandpass', freq: 1900, endFreq: 900, q: 0.9, gain: 0.3, attack: 0.05 });
+  },
+  // The Caller on the radio: no crackle. The line opens on a hush, and a
+  // breath, too close to the microphone.
+  callerOpen(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 0.9, type: 'bandpass', freq: 520, endFreq: 380, q: 2.2, gain: 0.22, attack: 0.35 });
+    s.tone(o, { seconds: 1.2, wave: 'sine', freq: 58, endFreq: 52, gain: 0.08, attack: 0.3 });
+  },
+  // The Caller close by, in the open (no radio): the breath alone, and the cold hum under it.
+  callerNear(s) {
+    const o = s.out(undefined, undefined, 0.4);
+    s.tone(o, { seconds: 1.6, wave: 'sine', freq: 46, endFreq: 41, gain: 0.1, attack: 0.4 });
+  },
+  // A voice from the trees: the Caller calling Tom from a direction. Two
+  // breathy falling notes (a name, "To-om"), formant-filtered noise over a
+  // faint tone, panned to where it comes from, carrying a long way. pos.pitch:
+  // whose voice (a child's is higher).
+  callerVoice(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.75, pos?.range ?? 110);
+    const f = pos?.pitch ?? 1;
+    const note = (delay, from, to, len) =>
+      setTimeout(() => {
+        if (!s.ready) return;
+        s.noiseBurst(o, { seconds: len, type: 'bandpass', freq: 900 * f, endFreq: 650 * f, q: 3.5, gain: 0.42, attack: 0.08 });
+        s.tone(o, { seconds: len, wave: 'triangle', freq: from * f, endFreq: to * f, gain: 0.07, attack: 0.07, vibrato: 4 });
+      }, delay);
+    note(0, 330, 300, 0.42);
+    note(520, 280, 210, 0.75);
+  },
+  // The bell in the old church's ruined steeple: one dull, cracked note
+  // (a struck pot more than a bell), as if something brushed it.
+  crackedBell(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 160);
+    s.tone(o, { seconds: 3.2, wave: 'triangle', freq: 196, endFreq: 188, gain: 0.2, attack: 0.004 });
+    s.tone(o, { seconds: 1.4, wave: 'square', freq: 493, endFreq: 470, gain: 0.025, attack: 0.004 });
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1400, q: 2, gain: 0.25 });
+  },
+  // The capsule's lid coming off: a corroded scrape and a seal giving.
+  capsuleOpen(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 30);
+    s.noiseBurst(o, { seconds: 0.7, type: 'bandpass', freq: 1200, endFreq: 700, q: 2.5, gain: 0.4, attack: 0.05 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.35, freq: 600, endFreq: 150, gain: 0.5, attack: 0.002 }), 700);
+  },
+  // The shovel's blade hits something that isn't stone: hollow tin.
+  capsuleClunk(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 30);
+    s.tone(o, { seconds: 0.4, wave: 'triangle', freq: 340, endFreq: 260, gain: 0.25, attack: 0.002 });
+    s.noiseBurst(o, { seconds: 0.12, freq: 1800, endFreq: 400, gain: 0.4 });
+  },
   // M7 step 6: the defeat screen's radio static.
   radioStatic(s) {
     const o = s.out(undefined, undefined, 0.5);

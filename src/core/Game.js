@@ -78,6 +78,9 @@ import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { Flyer } from '../ai/Flyer.js';
 import { Moths } from '../ai/Moths.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
+import { JunieTaken } from '../encounters/JunieTaken.js';
+import { Comms } from '../story/Comms.js';
+import { RadioStatus } from '../ui/RadioStatus.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -180,6 +183,7 @@ export class Game {
     this.roadNorth.init({ world: this.world, colliders: this.colliders, player: this.player, progress: this.progress, notify: (text) => this.toast.show(text), sfx: this.combat.sfx, fx: this.combat.fx, clearing: this.clearing, dozer: this.dozer });
     this.combat.promptSources.push(this.roadNorth.hud);
     this.initSpikes();
+    this.initSouth(root); // Session 26: Junie taken, the radio's reach
     // Session 16 (Aaron): what to do next, on the map and the minimap.
     this.objectives = new Objectives(cfg, this.bus);
     this.objectives.init(this);
@@ -663,6 +667,37 @@ export class Game {
     this.vehicles.busy?.push(this.plane.hud);
   }
 
+  // Session 26: after the crashed plane. The radio's reach (story/Comms.js:
+  // smashed, or the south past the comms line), and Junie taken.
+  initSouth(root) {
+    const notify = (text) => this.toast.show(text);
+    this.comms = new Comms(this.cfg, this.bus);
+    this.comms.init({ progress: this.progress, player: this.player, homeZ: this.station.layout.centre.z, demo: this.demo });
+    this.dialogue.comms = this.comms;
+    this.radioStatus = new RadioStatus(this.cfg.comms);
+    this.radioStatus.init(root);
+    this.junieTaken = new JunieTaken(this.cfg, this.bus);
+    this.junieTaken.init({
+      scene: this.scene,
+      player: this.player,
+      station: this.station,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      cutscenes: this.cutscenes,
+      watch: this.watch,
+      progress: this.progress,
+      comms: this.comms,
+      plane: this.plane,
+      demo: this.demo,
+      sfx: this.combat.sfx,
+      notify,
+    });
+    // Someone who isn't there says nothing (Junie, taken).
+    this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
+    this.combat.promptSources.push(this.junieTaken.hud);
+    this.station.blockers.push(this.junieTaken.hud);
+  }
+
   // M9.2: the main menu over its live feed, or "Tap to begin" after the
   // reload a new map needed.
   showMenu() {
@@ -773,7 +808,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -817,6 +852,7 @@ export class Game {
     this.flyer.addDebugItems(menu);
     this.moths.addDebugItems(menu);
     this.plane.addDebugItems(menu);
+    this.junieTaken.addDebugItems(menu); // Session 26
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1330,6 +1366,8 @@ export class Game {
     this.homeStop.loadState(d.homeStop);
     this.roadNorth.loadState(d.roadNorth);
     this.plane.reset(); // Session 25: the crashed plane, as its flags say (a fight that was on starts again)
+    this.comms.reset(); // Session 26: which side of the comms line Tom's on, the radio as the flags say
+    this.junieTaken.reset();
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1535,6 +1573,7 @@ export class Game {
       this.mapUi.setObjective(this.objectives.current);
     }
     this.watch.update(dt, this.input, this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.weaponCross.isOpen && !this.noReturn.isOpen && this.combat.alive);
+    this.radioStatus.update(this.comms.state, this.state === 'running' && !this.demo.active); // Session 26
     this.overlay.update(dt);
   }
 
@@ -1591,6 +1630,8 @@ export class Game {
     if (first) this.flyer.update(dt, playing && this.combat.alive); // Session 22: the flyer spike
     if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
+    if (first) this.comms.update(); // Session 26: the radio's reach
+    if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
   }
 
   get phase() {
@@ -1638,6 +1679,8 @@ export class Game {
     this.flyer.dispose();
     this.moths.dispose();
     this.plane.dispose();
+    this.junieTaken.dispose();
+    this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
     this.finalBattle.dispose();

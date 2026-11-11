@@ -2228,3 +2228,80 @@ body.in-cutscene .wcross { display: none; }
   color: #8a7a54;
 }
 .wcross-slot.melee { position: relative; z-index: 1; }
+
+/* ---- Session 26: the radio on the HUD (ui/RadioStatus.js) ---- */
+.radio-status {
+  position: absolute;
+  left: var(--safe);
+  bottom: calc(var(--safe) + 5.2em);
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.2em 0.55em;
+  background: rgba(0, 0, 0, 0.5);
+  color: #9a9a8c;
+  font-size: clamp(11px, 1.9vmin, 15px);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+.radio-status.hidden,
+body.in-cutscene .radio-status {
+  display: none;
+}
+.radio-status-icon {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: #4a4a44;
+}
+.radio-status.dead .radio-status-text {
+  text-decoration: line-through;
+  color: #7c6a60;
+}
+.radio-status.dead .radio-status-icon {
+  background: #5a2a24;
+}
+.radio-status.south .radio-status-icon {
+  background: #3a4438;
+  animation: radio-nosignal 3.1s steps(1) infinite;
+}
+@keyframes radio-nosignal {
+  0%, 100% { opacity: 1; }
+  31% { opacity: 0.3; }
+  33% { opacity: 1; }
+  71% { opacity: 0.5; }
+  72% { opacity: 1; }
+}
+
+/* Session 26: the Caller's tell (story/Caller.js). It speaks in the family's
+   voices with their names and colours, but a faint dull-red double trails
+   every letter, the name sits a hair out of true, and the strip's flicker
+   is slower and wrong. No crackle opens it (the Sfx's callerOpen). */
+.subtitles.caller .subtitle-text {
+  background: rgba(10, 4, 4, 0.78);
+  color: #e6e0dc;
+  text-shadow: 0 1px 1px #000, 1.5px 0 0 rgba(120, 28, 24, 0.55), -1px 0 0 rgba(40, 70, 60, 0.25);
+  animation: caller-flicker 3.7s steps(1) infinite;
+}
+.subtitles.caller .subtitle-name {
+  display: inline-block;
+  filter: saturate(0.55);
+  transform: translateX(1px) skewX(-4deg);
+  text-shadow: 1.5px 0 0 rgba(120, 28, 24, 0.6);
+}
+@keyframes caller-flicker {
+  0%, 100% { opacity: 1; }
+  12% { opacity: 0.8; }
+  13% { opacity: 1; }
+  58% { opacity: 0.7; transform: translateX(1px); }
+  60% { opacity: 1; transform: none; }
+}
+/* A call from somewhere in the trees: which way, under the line. */
+.subtitle-dir {
+  display: block;
+  margin-top: 0.25em;
+  color: #8a8478;
+  font-size: 0.8em;
+  font-style: italic;
+  letter-spacing: 0.05em;
+}

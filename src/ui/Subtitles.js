@@ -22,18 +22,20 @@ export class Subtitles {
   init(root) {
     this.el = document.createElement('div');
     this.el.className = 'subtitles hidden';
-    this.el.innerHTML = '<div class="subtitle-speaker"><span class="subtitle-name"></span><span class="subtitle-tag"></span></div><div class="subtitle-text"></div>';
+    this.el.innerHTML = '<div class="subtitle-speaker"><span class="subtitle-name"></span><span class="subtitle-tag"></span></div><div class="subtitle-text"></div><div class="subtitle-dir"></div>';
     root.appendChild(this.el);
     this.nameEl = this.el.querySelector('.subtitle-name');
     this.tagEl = this.el.querySelector('.subtitle-tag');
     this.textEl = this.el.querySelector('.subtitle-text');
+    this.dirEl = this.el.querySelector('.subtitle-dir'); // Session 26: a call from the trees: which way
     this.queue = [];
     this.current = null;
     this.gap = 0;
   }
 
   // entry: { speaker (id), text, radio, urgent, line (the data line, if
-  // any), onStart(), onDone() }. Urgent entries go to the front.
+  // any), onStart(), onDone(), caller (Session 26: the Caller's tell), dir
+  // (Session 26: words under the line, e.g. "From the trees, behind you") }. Urgent entries go to the front.
   show(entry) {
     const e = { ...entry, done: false, shown: 0, hold: 0, blipCount: 0 };
     if (e.urgent) this.queue.unshift(e);
@@ -111,8 +113,14 @@ export class Subtitles {
     this.textEl.textContent = '';
     const words = e.text.split(/\s+/).filter(Boolean).length;
     e.hold = Math.min(this.cfg.holdMax, this.cfg.holdBase + words * this.cfg.holdPerWord);
-    this.el.className = `subtitles${e.radio ? ' radio' : ''}`;
-    if (e.radio) this.sfx?.play(e.urgent ? 'radioAlarm' : 'radioCrackle');
+    this.el.className = `subtitles${e.radio ? ' radio' : ''}${e.caller ? ' caller' : ''}`;
+    if (this.dirEl) {
+      this.dirEl.textContent = e.dir ?? '';
+      this.dirEl.style.display = e.dir ? '' : 'none';
+    }
+    // Session 26: the Caller opens with no crackle, just a breath on an open line (its tell, to the ear).
+    if (e.caller) this.sfx?.play(e.radio ? 'callerOpen' : 'callerNear');
+    else if (e.radio) this.sfx?.play(e.urgent ? 'radioAlarm' : 'radioCrackle');
     e.onStart?.(e);
   }
 
@@ -133,7 +141,8 @@ export class Subtitles {
     const s = this.story.speakers[e.speaker];
     if (!s || !this.sfx || s.silent) return; // Session 15b: a note is read, not heard
     const jitter = 1 + (Math.random() * 2 - 1) * this.story.blipJitter; // cosmetic: not gameplay
-    this.sfx.blip(s.blipFreq * jitter, this.story.blipSeconds, this.story.blipGain * (e.radio ? 0.7 : 1));
+    // Session 26: the Caller's blips sit a little flat and quiet, as if the voice were remembered rather than heard.
+    this.sfx.blip(s.blipFreq * jitter * (e.caller ? 0.9 : 1), this.story.blipSeconds, this.story.blipGain * (e.radio ? 0.7 : 1) * (e.caller ? 0.7 : 1));
   }
 
   dispose() {

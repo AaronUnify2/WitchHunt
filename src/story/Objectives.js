@@ -193,7 +193,17 @@ export class Objectives {
       if (!has('planeLooted')) return step('planeLoot', 'Search the grey: it had the pilot\'s gun.', pl.grey);
       return step('planeFlare', "Fire the pilot's signal flare from his survival kit.", pl.spot('kit'));
     }
+    // ---- Junie taken (Session 26) ----
+    if (has('junieTaken') && !has('familyAccount')) {
+      if (g.comms?.state === 'dead') return step('radioHome', "Your radio's smashed. Nobody could reach you all night. Get home.", L.cabin.frontDoor);
+      return step('radioWait', "Your radio's quiet. Head home.", L.cabin.frontDoor);
+    }
+    if (watching('junieClip')) return step('junieClip', 'Watch the south path camera (D-pad down).');
     if (has('planeCellTaken') && !has('planeCellFitted')) return step('planeCell', "Fit the plane's alien power cell to the fence box at home.", L.fenceBox);
+    if (has('junieClipSeen') && !has('junieHome')) {
+      const spine = (key) => g.world.map.clearings.find((c) => c.key === key);
+      return step('findJunie', 'Find Junie. Head south.', spine('timeCapsule'));
+    }
     return step('free', 'Keep the station running, and dig up her sigils.');
   }
 

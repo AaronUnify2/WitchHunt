@@ -21,7 +21,9 @@
 //     the full attack. Hurt enough, he flies off early. Otherwise Tom drops
 //     to a 10% health floor (Combat.setHealthFloor) and blacks out: red eyes
 //     over him ('plane.blackout'), and he wakes at the wreck at dawn with
-//     the radio quiet. The story stops there for now (Junie taken: Session 26).
+//     the radio quiet. Session 26: driven off, its last strike smashes Tom's
+//     radio and the night passes all the same (plane.radioSmashed): Junie is
+//     taken in both endings (encounters/JunieTaken.js).
 //     Either way mothmanMet is set: flares join the drop tables.
 //
 // Saved through story flags (data/progress.json): planeStandoff, planeGreyDown,
@@ -455,14 +457,26 @@ export class CrashedPlane {
     this.dialogue?.play('plane.mothman.ellen');
   }
 
-  // Hurt enough, it flew off: the story stops here for now.
+  // Hurt enough, it flew off. Session 26 (HANDOVER default 1: Junie is taken
+  // either way): its last low pass on the way out smashes Tom's radio mid-line,
+  // and the night passes with nobody able to reach him.
   mothmanGone(drivenOff) {
     this.offLeft?.();
     this.offLeft = null;
     if (this.state !== 'mothman') return;
     this.combat.clearHealthFloor('crashedPlane');
-    this.finish(drivenOff);
-    this.dialogue?.play(drivenOff ? 'plane.drivenOff.ellen' : 'plane.left.ellen');
+    this.state = 'smashed';
+    this.drivenOff = drivenOff;
+    this.progress?.setFlag('radioSmashed');
+    const night = () => this.nightPasses();
+    if (!this.cutscenes?.play('plane.radioSmashed', { onDone: night })) night();
+  }
+
+  // Dazed, the radio in pieces: he sits the dark out in the wreck. Dawn.
+  nightPasses() {
+    this.skipToDawn?.();
+    this.finish(this.drivenOff);
+    this.notify?.("Dawn. You sat the night out in the wreck. The radio's in pieces. Home's north");
   }
 
   // The floor held: he blacks out; red eyes over him; he wakes at the wreck at dawn.

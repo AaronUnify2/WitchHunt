@@ -57,6 +57,7 @@ export class FamilyTalk {
     let best = -1;
     let bestD = Infinity;
     this.figures.forEach((f, i) => {
+      if (!f.visible) return; // Session 26: someone who isn't there (Junie, taken)
       const dx = f.position.x - p.x;
       const dz = f.position.z - p.z;
       const d = Math.hypot(dx, dz);
@@ -116,7 +117,7 @@ export class FamilyTalk {
     this.checkTimer -= dt;
     if (this.checkTimer <= 0) {
       this.checkTimer = m.checkEvery;
-      this.markers.forEach((mk, i) => (mk.visible = this.dialogue.hasNew(this.ids[i]) && this.talkingTo !== this.ids[i]));
+      this.markers.forEach((mk, i) => (mk.visible = this.figures[i].visible && this.dialogue.hasNew(this.ids[i]) && this.talkingTo !== this.ids[i]));
     }
     this.markers.forEach((mk, i) => {
       if (!mk.visible) return;

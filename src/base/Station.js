@@ -231,7 +231,12 @@ export class Station {
     grid.insert(ladder);
     const box = this.layout.fenceBox;
     solid(box.x, box.z, 0.35, 1.3);
-    for (const f of c.family) grid.insert({ x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7 });
+    // Session 26: kept, so someone who isn't there (Junie, taken) can be walked through (setPresent).
+    this.familyColliders = c.family.map((f) => {
+      const col = { x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7, off: false };
+      grid.insert(col);
+      return col;
+    });
     this.syncColliders();
   }
 
@@ -461,6 +466,15 @@ export class Station {
       }
       z.lit = best;
     }
+  }
+
+  // Session 26: is this family member (config.story.family's index) at home?
+  // Junie, taken: her figure and her body's collider go until she's back.
+  setPresent(i, present) {
+    const fig = this.renderer.family?.[i];
+    if (fig) fig.visible = present;
+    const col = this.familyColliders?.[i];
+    if (col) col.off = !present;
   }
 
   // A zombie in the comms room: the family are lost.

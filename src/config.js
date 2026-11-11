@@ -4177,6 +4177,33 @@ export const config = {
     },
   },
 
+  // Session 26: Junie is taken (story spine, beat 3; DESIGN.md "Junie is taken";
+  // encounters/JunieTaken.js). The night Tom lost at the crashed plane, the
+  // Caller spoke on the family's radio in Tom's voice; they went out after him
+  // and Junie didn't come back. Every number a first guess, to tune after play.
+  junieTaken: {
+    needs: 'planeDone', // the Mothman at the crash site is over (either ending)
+    accountDelay: 5, // seconds of play after the wake before Ellen gets through
+    homeRange: 75, // metres from home's centre: with the radio smashed, the family's account waits until Tom's this near (they see him from the tower)
+    clipFrom: 7, // metres past the fence, toward the crashed plane: where the south path camera stands (at the clearing's edge, looking out to the trees)
+    rabbit: { y: 0.56, offsetX: -0.3, color: 0x9a9080, eyes: 0x141010 }, // Junie's rabbit, left on the bottom bunk (metres above the floor; along the bunk from its middle); her rabbit's colours
+    holdRange: 1.6, // metres: hold X at the rabbit
+  },
+
+  // Session 26: the radio's reach (story/Comms.js; DESIGN.md "The radio",
+  // "Comms in the south"). The family reach Tom unless his radio's smashed
+  // (the drive-off at the plane, until he's home), or he's south of the
+  // comms line (Session 26 batch 2: there every voice is the Caller's).
+  comms: {
+    family: ['ellen', 'wyatt', 'junie'], // the speakers who can't get through when the radio can't reach
+    // The comms line: a world z (metres south of home's centre) about halfway from the crashed plane to the old
+    // church. Hysteresis: cut south of z + band, back north of z - band, so a step either way can't flicker it.
+    line: { dz: 480, band: 14 },
+    warnBefore: 45, // metres north of the line: Ellen's warning, once
+    until: 'blessingBuried', // a later session's flag: once it's set, the family reach Tom anywhere
+    hud: { deadText: 'RADIO DEAD', southText: 'NO SIGNAL' },
+  },
+
   // The Mothman (Session 24: the model; render/mothmanModel.js,
   // render/MothmanRenderer.js). His encounters' AI is Session 25 on; the
   // flyer spike (spikes.flyer) wears him meanwhile.
