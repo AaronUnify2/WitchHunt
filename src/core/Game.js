@@ -86,6 +86,7 @@ import { Stairs } from '../encounters/Stairs.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
+import { startFromOutpostCleared } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -872,6 +873,14 @@ export class Game {
   addDebugMenuItems() {
     const menu = this.debugMenu;
     const cfg = this.cfg;
+    // Aaron (after Session 26): begin playing from the outpost cleared (debug/storyStart.js).
+    const start = menu.category(DEBUG.start);
+    const jump = (explored) => () => {
+      startFromOutpostCleared(this, { explored });
+      this.debugMenu.close();
+    };
+    start.addItem('Outpost cleared: the compound still to explore', jump(false));
+    start.addItem('Outpost cleared and explored: the checkpoint next', jump(true));
     const time = menu.category(DEBUG.time);
     time.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     time.addItem('Skip to night', () => this.skipToPhase('night'));

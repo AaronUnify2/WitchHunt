@@ -13,6 +13,7 @@
 
 // The categories, in the order the top level lists them.
 export const DEBUG = {
+  start: 'Start from a story point', // Aaron (after Session 26): jump a fresh run to a point in the story, for testing
   enemies: 'Enemies (spawn and send)', // Session 25: every enemy in one place, in tabs (ENEMY_TABS)
   time: 'Time & night',
   cutscenes: 'Cutscenes',
