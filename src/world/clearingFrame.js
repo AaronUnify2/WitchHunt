@@ -82,3 +82,30 @@ export function frameEdge(f, degrees, out = 0) {
   const r = f.radius + out;
   return frameToWorld(f, Math.sin(a) * r, Math.cos(a) * r);
 }
+
+// Session 26 (Milo's barn): the same frame for any clearing by key (not only
+// the cluster's): walked into along the first pathway that reaches it. null
+// if there's no such clearing.
+export function pathFrame(map, key) {
+  const ci = map.clearings.findIndex((c) => c.key === key);
+  if (ci < 0) return null;
+  const c = map.clearings[ci];
+  const path = map.paths.find((p) => p.a === ci || p.b === ci);
+  let entrance = null;
+  if (path?.points?.length) {
+    const pts = path.a === ci ? [...path.points].reverse() : path.points;
+    for (let i = 1; i < pts.length; i++) {
+      if (Math.hypot(pts[i].x - c.x, pts[i].z - c.z) <= c.radius) {
+        entrance = edgeCrossing(pts[i - 1], pts[i], c);
+        break;
+      }
+    }
+  }
+  if (!entrance) entrance = { x: c.x, z: c.z - c.radius };
+  const dx = c.x - entrance.x;
+  const dz = c.z - entrance.z;
+  const len = Math.hypot(dx, dz) || 1;
+  const fx = dx / len;
+  const fz = dz / len;
+  return { x: c.x, z: c.z, radius: c.radius, yaw: Math.atan2(fx, fz), fx, fz, rx: -fz, rz: fx, entrance };
+}

@@ -112,6 +112,18 @@
       }
     },
     {
+      "id": "calliopeHorn",
+      "name": "Milo's calliope horn",
+      "from": "milosBarn",
+      "kind": "item",
+      "card": {
+        "look": "device",
+        "color": "#7a1c14",
+        "label": "#d8c8a0",
+        "line": "A brass horn with a red rubber bulb and a little brass organ pipe. It plays the first four notes of his tune whether you squeeze it or not. For the dozer, he says. (draft)"
+      }
+    },
+    {
       "id": "doc1",
       "name": "Classified 1: the funding memo",
       "from": "carArmory",

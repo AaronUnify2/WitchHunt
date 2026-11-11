@@ -730,6 +730,54 @@ const RECIPES = {
     s.tone(o, { seconds: 0.35, wave: 'sawtooth', freq: 140 + Math.random() * 40, endFreq: 95, gain: 0.05, attack: 0.04 });
     s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 700, endFreq: 420, q: 4, gain: 0.18, attack: 0.03 });
   },
+  // ---- Milo's barn ----
+  // A knife leaving his hand: a short whip of air.
+  knifeThrow(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 40);
+    s.noiseBurst(o, { seconds: 0.18, type: 'bandpass', freq: 2400, endFreq: 900, q: 2, gain: 0.35, attack: 0.01 });
+  },
+  // Each knife hums a note as it flies (the story): pos.note 0, 1, 2 rising, a little out of tune.
+  knifeHum(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 40);
+    const notes = [392, 494, 587];
+    const f = notes[Math.max(0, Math.min(2, pos?.note ?? 0))];
+    s.tone(o, { seconds: 0.5, wave: 'sine', freq: f * 0.98, endFreq: f * 1.01, gain: 0.12, attack: 0.04, vibrato: 6 });
+    s.tone(o, { seconds: 0.5, wave: 'triangle', freq: f * 2, endFreq: f * 2.02, gain: 0.03, attack: 0.05 });
+  },
+  // Into the board: a hard wooden thunk and the blade's shiver.
+  knifeThunk(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 50);
+    s.noiseBurst(o, { seconds: 0.08, freq: 900, endFreq: 200, gain: 0.7, attack: 0.001 });
+    s.tone(o, { seconds: 0.35, wave: 'triangle', freq: 1250, endFreq: 1190, gain: 0.05, attack: 0.002, vibrato: 18 });
+  },
+  // A bullet knocked aside with a knife: a bright clang and a whine.
+  knifeDeflect(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 80);
+    s.tone(o, { seconds: 0.6, wave: 'square', freq: 1800, endFreq: 1700, gain: 0.06, attack: 0.001 });
+    s.tone(o, { seconds: 0.25, wave: 'triangle', freq: 3600, endFreq: 1400, gain: 0.08, attack: 0.002 });
+    s.noiseBurst(o, { seconds: 0.06, type: 'highpass', freq: 3000, gain: 0.5, attack: 0.001 });
+  },
+  // A car dragged round on dead tyres: a long metal groan and grit.
+  carGroan(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 70);
+    s.tone(o, { seconds: 1.3, wave: 'sawtooth', freq: 70, endFreq: 52, gain: 0.08, attack: 0.1, vibrato: 3 });
+    s.noiseBurst(o, { seconds: 1.3, type: 'bandpass', freq: 500, endFreq: 260, q: 1.2, gain: 0.25, attack: 0.1 });
+  },
+  // His chuckle: wet, rounded, bouncing (the story): quick falling notes.
+  miloChuckle(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 40);
+    for (let i = 0; i < 5; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.11, wave: 'sine', freq: 620 - i * 40, endFreq: 520 - i * 40, gain: 0.1, attack: 0.01, vibrato: 25 }), i * 120);
+  },
+  // The calliope horn: the first four notes of his tune, wheezy.
+  calliope(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    [523, 659, 784, 659].forEach((f, i) => setTimeout(() => s.ready && (s.tone(o, { seconds: 0.26, wave: 'square', freq: f, gain: 0.05, attack: 0.02, vibrato: 5 }), s.tone(o, { seconds: 0.26, wave: 'sine', freq: f * 2, gain: 0.03, attack: 0.02 })), i * 230));
+  },
+  // Thrown out: a heave and the dirt.
+  thrownOut(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.4, freq: 300, endFreq: 80, gain: 0.7, attack: 0.005 });
+  },
   // The capsule's lid coming off: a corroded scrape and a seal giving.
   capsuleOpen(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.8, 30);

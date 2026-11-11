@@ -70,6 +70,12 @@ Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole m
 
 ## What exists
 
+### After Session 26 (Aaron's asks): a debug story start, Milo redone, Milo's barn
+
+- **Start from a story point** (debug menu; `debug/storyStart.js`): the outpost cleared, with the compound to explore or explored.
+- **Milo redone** (`render/miloModel.js`): the clown a baggy, ruffled, wild-green-haired creepy clown with glowing eyes and too-long fingers, 1.45 m; the man in loose clothes and a belt that fits, 1.75 m.
+- **Milo's barn** (`render/miloBarnModel.js`, `world/MiloBarnSite.js`, `encounters/MiloBarn.js`, `config.milosBarn`): the barn, yard and animals; the siege with his thrown knives; the car gates; the act (three knives, hold still); shoot him and you're thrown out; the morning after; the donkey's stare. `tests/miloBarn.test.js` (9). Checked headless on seeds 1234 and 7 (siege to horn, the shoot path, the morning). 988 tests pass.
+
 ### Session 26 (Narrative + Level & Encounter Designer, on its own): Junie taken, the Caller, the old church, the stairs, Junie home
 
 Aaron at work; the session ran from HANDOVER's defaults without stopping to ask (calls: OPEN_QUESTIONS #449-475). Six commits (one per batch, then the write-up), each batch each tested, checked headless and pushed to `main`. Session 27's batch (the stairs, the place beyond, Junie home) is done too.

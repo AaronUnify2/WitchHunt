@@ -4,6 +4,21 @@
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
 
+## After Session 26: Milo's barn (Aaron: "can it pretty please be the Milo encounter?")
+
+Built ahead of the railway cutting (Session 28's other half). Where I had to choose:
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 480 | **Where the barn is.** | In the milosBarn clearing the seed already deals (all five optionals are dealt every run), its lane along the first pathway into it. The map didn't move (no new radius), so saves keep. The layout fits the smallest clearing (16 m). | `world/MiloBarnSite.js`; `config.milosBarn` |
+| 481 | **The cars as a gate.** | A split-rail fence rings the yard and the two cars across the lane are its gate (otherwise you'd walk round them). They swing about their back ends; after the gates scene they open for Tom whenever he's near (Milo bounds over to do it), never once he's been thrown out. | `config.milosBarn.gate`, `fence` |
+| 482 | **The siege.** | Nine dead round the barn the first time Tom comes within 48 m, an arrival sweep over it, Milo throwing a knife every 1.3-2 s at the nearest within 24 m (one knife, one dead). Tom can help. | `config.milosBarn.encounter.siege`, `throwEvery` |
+| 483 | **The act's rules.** | Hold X on the X: the knives at 2.2, 4.8 and 7.4 s. Drifting more than 30 cm off the mark, or firing, is a flinch: "A flincher! From the top!" and you go again. | `config.milosBarn.encounter.act` |
+| 484 | **His killdozer part** (open in DESIGN). | His **calliope horn** (an inspect card and a lore item for now; the killdozer isn't built). My idea for later: bolted to the dozer, it plays his tune and draws every dead thing to it. | `lore.json` `calliopeHorn` |
+| 485 | **Shooting him.** | Any hit on him is knocked aside (a clang, a ricochet), any time: during the siege too, so mind your aim. "I was in character!" and Tom's thrown out (milo.thrownOut) if he's inside the fence. The show's closed for good. The man the morning after just isn't hit. | `MiloBarn.shotAt` |
+| 486 | **The morning after.** | The first dawn after the act (a dawn-triggered flag), and every morning after until Tom takes the mug: the man by his van, the gates left open. The subtitles call him "Milo" for the first time (in character he's "The clown"). | `progress.json` `miloMorning`; `config.story.speakers` |
+| 487 | **Light inside the barn.** | The barn doesn't take the sun's shadow (under its own roof the act was in the dark), the board and stage are lantern-lit (drawn unlit in warm wood, two hurricane lanterns as glows), and the knives glint (unlit). No light is added. | `render/miloBarnModel.js` |
+
 ## After Session 26: Milo redone (Aaron's notes)
 
 Aaron: the clown's outfit read skin tight and the wig wasn't clowny ("use a green-haired creepy killer clown for your inspiration; he can be a little supernatural"); the man's clothes were skin tight and his belt super loose. Built (`render/miloModel.js` `clownBody`, `manBody`; in the model viewer). Where I had to choose:

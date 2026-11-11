@@ -4023,6 +4023,151 @@
         }
       ],
       "duration": 24.9
+    },
+    {
+      "id": "sweep.milosBarn",
+      "name": "Arriving at Milo's barn: the siege (establishing sweep)",
+      "style": "sweep",
+      "world": "run",
+      "unseen": true,
+      "_note": "Milo's barn (encounters/MiloBarn.js): anchor milosBarn (its frame: x right as you walk up the lane, z ahead). Over the lane: the red barn ringed by the dead, the fence, the cars across the lane; down onto the yard where a clown is bounding about, throwing knives (the world runs: he's really doing it). His chuckle.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "milosBarn",
+          "pos": [
+            -9,
+            9,
+            -30
+          ],
+          "look": [
+            0,
+            2,
+            4
+          ]
+        },
+        {
+          "at": 3.4,
+          "anchor": "milosBarn",
+          "pos": [
+            6,
+            4.5,
+            -19
+          ],
+          "look": [
+            0,
+            1.2,
+            -4
+          ]
+        },
+        {
+          "at": 6.6,
+          "anchor": "milosBarn",
+          "pos": [
+            2,
+            2.2,
+            -17
+          ],
+          "look": [
+            0,
+            1.2,
+            -6
+          ]
+        }
+      ],
+      "tracks": [
+        {
+          "at": 2.4,
+          "do": "sfx",
+          "sfx": "miloChuckle"
+        }
+      ],
+      "duration": 7.4
+    },
+    {
+      "id": "milo.gates",
+      "name": "Milo opens the car gates with one hand (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Milo's barn (DESIGN.md: the car gates): the dead down, Tom at the cars. Milo bounds over, grabs a bonnet in one hand and swings the car aside like a gate, then the other; bows, beckons. Polite, welcoming and impossible. The encounter moves him and the cars (emitted events: milo:gatesOpen, milo:bow, milo:beckon); the view follows him (anchor milo).",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "milo",
+          "rate": 2.5,
+          "pitch": -0.05
+        },
+        {
+          "at": 0.3,
+          "do": "line",
+          "line": "milo.gates.1",
+          "radio": false
+        },
+        {
+          "at": 2.2,
+          "do": "emit",
+          "event": "milo:gatesOpen"
+        },
+        {
+          "at": 4.4,
+          "do": "emit",
+          "event": "milo:bow",
+          "sfx": "miloChuckle"
+        },
+        {
+          "at": 5.8,
+          "do": "emit",
+          "event": "milo:beckon"
+        },
+        {
+          "at": 6.0,
+          "do": "line",
+          "line": "milo.gates.2",
+          "radio": false
+        }
+      ],
+      "duration": 9.0
+    },
+    {
+      "id": "milo.thrownOut",
+      "name": "Thrown out of Milo's barn (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "_note": "Milo's barn: Tom shot at him. After 'I was in character!', a shove, the world tips, black; Tom's put down outside the cars (milo:out) and the picture comes back on the gate shut in his face.",
+      "tracks": [
+        {
+          "at": 0,
+          "do": "shake",
+          "amount": 1.4,
+          "seconds": 0.5,
+          "sfx": "thrownOut"
+        },
+        {
+          "at": 0.2,
+          "do": "fade",
+          "to": 1,
+          "seconds": 0.5
+        },
+        {
+          "at": 1.0,
+          "do": "emit",
+          "event": "milo:out"
+        },
+        {
+          "at": 1.6,
+          "do": "fade",
+          "to": 0,
+          "seconds": 0.9
+        },
+        {
+          "at": 2.0,
+          "do": "sfx",
+          "sfx": "carGroan"
+        }
+      ],
+      "duration": 3.2,
+      "skippable": false
     }
   ]
 }

@@ -716,7 +716,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -2749,6 +2749,8 @@ export const config = {
       junie: { name: 'Junie', color: '#e6a0c4', blipFreq: 760 },
       tom: { name: 'Tom', color: '#c8d0b8', blipFreq: 300 },
       radio: { name: 'Radio', color: '#a8b0a0', blipFreq: 440 },
+      clown: { name: 'The clown', color: '#d8b8c8', blipFreq: 880 }, // Milo in character: high, musical, bouncing (the story)
+      milo: { name: 'Milo', color: '#c8b49a', blipFreq: 250 }, // Milo out of character: his own voice, warm
       scanner: { name: 'Scanner', color: '#8fb08a', blipFreq: 260 }, // Session 15b: Earl's scanner at the gas station
       note: { name: "Earl's note", color: '#d8ccaa', blipFreq: 0, silent: true }, // read, not heard
     },
@@ -4095,6 +4097,82 @@ export const config = {
         steel: 0x5e6062,
       },
       man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x16130f, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x3a2a1c, leather: 0x1c140e, tin: 0x5a5c5c, coffee: 0x1a120c }, // Session 26: the belt darker than the boots, so it reads against the jeans
+    },
+  },
+
+  // Milo's barn (Session 28's optional encounter, built after Session 26 on
+  // Aaron's ask; DESIGN.md "Milo's barn"; the story: The Lone Clown).
+  // The set: render/miloBarnModel.js, world/MiloBarnSite.js; the beat:
+  // encounters/MiloBarn.js. Layout in the barn's frame (metres: x to your
+  // right as you walk in up the lane, z ahead; the clearing's middle at 0, 0).
+  milosBarn: {
+    barn: { z: 7, halfW: 5.2, depth: 12, wallH: 3.6, ridge: 3.4 }, // centre z, half width, depth (z), the walls' height, the gambrel roof's rise
+    gate: { z: -10.5, carLength: 4.5, gap: 0.12, openAngle: 1.42, seconds: 1.4 }, // the two cars nose to nose across the lane, the fence's gate; each swings about its back end
+    fence: { x: 0, z: 2, rx: 11, rz: 12.5, posts: 34 }, // a split-rail fence round the yard (an oval), the cars its gate: fits the smallest clearing (16 m)
+    board: { z: 12.4, width: 2.6, height: 2.5 }, // the knife board against the back wall (its face's z)
+    mark: { z: 11.6 }, // where Tom stands for the act (on the platform)
+    throwFrom: { z: 2.6 }, // twelve paces back (9 m): where Milo throws from, just inside the doors
+    van: { x: 7.6, z: -2.5, yaw: 165 },
+    sign: { x: -4.6, z: -12.5, yaw: 25 },
+    signText: { title: 'SHOW TONIGHT', lines: ['ALL WELCOME', 'NO FLINCHING'] },
+    rows: { x: -7.6, z: -6.5, count: 4, perRow: 5 }, // the dead he's laid out, in neat rows (the yard's left)
+    animals: { donkey: [-3.7, 4.6, 90], pony: [-3.7, 8.6, 90], turkey: [2.8, 9.8, -120], python: [3.9, 5.4, -90] }, // [x, z, yaw degrees] in the frame; the donkey's and pony's stalls on the left
+    tank: { x: 3.9, z: 5.4 }, // the python's glass tank on its table, the heat lamp's amber glow over it
+    encounter: {
+      siegeDistance: 48, // metres from the barn: the dead round it, and Milo at them with his knives (once a visit)
+      siege: { count: 9, ring: [9, 17] }, // how many, and how far round the barn they stand
+      throwEvery: [1.3, 2.0], // seconds between his knives at the dead
+      throwReach: 24, // metres: the dead he'll throw at
+      knifeSpeed: 26, // metres a second
+      gatesDistance: 8, // metres from the cars: the gates scene (once the dead are down)
+      throwSeconds: 0.62, // his wind-up, to the knife leaving his hand
+      act: { first: 2.2, between: 2.6, flinchMove: 0.3, landAt: [[-0.42, 1.38], [0.42, 1.38], [0, 1.98]] }, // seconds to the first knife and between; metres Tom may drift; where they land (x, height): right shoulder, left shoulder, over the head
+      deflectSeconds: 4.5, // "I was in character!", then out
+      chatterEvery: [14, 26], // seconds between his chatter while Tom's near
+      donkeyFrom: 40, // metres: after the act, by day, the donkey stares from the station's treeline until Tom comes this near
+    },
+    look: {
+      weather: { rust: [0x3a2a20], grimeHeight: 0.5, keepBright: [] },
+      colors: {
+        plank: 0x5a3426, // barn red, faded
+        plankDark: 0x44271e,
+        trim: 0x5e5a50, // the white trim, gone grey
+        roof: 0x3a3a38, // tin, dull
+        roofRust: 0x4a3426,
+        beam: 0x3e3024,
+        straw: 0x6a5e3a, // clean straw
+        hay: 0x5e5634,
+        floor: 0x3a3226,
+        board: 0x5e4e38, // the knife board (lighter than the walls, so its holes and the knives show)
+        hole: 0x0e0c0a, // its knife holes
+        boardLit: 0x4e3c28, // the board and the stage as the lanterns light them (drawn unlit: these are their final colours)
+        boardLit2: 0x44341f,
+        stageLit: 0x3a3022,
+        stall: 0x4a3a28,
+        trough: 0x3e3832,
+        water: 0x1e2a2c,
+        table: 0x3a2c1e,
+        glass: 0x283234,
+        branch: 0x3a2e22,
+        blanket: 0x4a2228,
+        chest: 0x3e2c1c,
+        van: 0x62605c, // his white van, dull
+        vanDark: 0x2a2a2a,
+        crucifix: 0x4a3a26,
+        carA: 0x3a4a5a, // the two cars across the lane
+        carB: 0x5a4a32,
+        carDark: 0x1a1a1a,
+        rust: 0x4a3020,
+        tyre: 0x161616,
+        glassCar: 0x1c2428,
+        corpse: 0x4a4436, // the dead, tidied
+        corpseDark: 0x2e2a22,
+        cloth: 0x3a3a40,
+        broom: 0x5a4a30,
+        sign: 0x6a5e44,
+        signInk: 0x3a1410,
+        lampGlow: 0x8a5a1c, // the heat lamp's amber (unlit: a glow, no light added)
+      },
     },
   },
 

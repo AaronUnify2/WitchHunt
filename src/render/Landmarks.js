@@ -56,7 +56,7 @@ export class Landmarks {
       // Session 15b: so do the sets that are built (config.landmarks.built).
       // Session 24: and the story spine's (the crashed plane).
       // Session 21: nor does a secret place (the Bigfoot cave: the sign would give it away).
-      if (cl.kind === 'hut' || cl.hiddenAs || ((cl.cluster || cl.spine) && (c.built ?? []).includes(cl.key))) {
+      if (cl.kind === 'hut' || cl.hiddenAs || ((cl.cluster || cl.spine || cl.optional) && (c.built ?? []).includes(cl.key))) {
         matrix.makeScale(0, 0, 0);
         this.posts.setMatrixAt(i, matrix);
         return;

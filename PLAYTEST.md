@@ -422,6 +422,16 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
 
+**Round 56: Milo's barn (your ask; OPEN_QUESTIONS #480-487).** Debug menu, **Story, radio & trail cams**, "Milo's barn: take me to the lane".
+- [ ] **The siege:** the sweep over the barn ringed by the dead; Milo in the yard throwing knives, bounding, chuckling. Help him or watch. Wyatt and Ellen on the radio (north of the comms line).
+- [ ] **The car gates:** walk up to the cars: he swings each aside with one hand, bows, beckons; once you're in he shuts them.
+- [ ] **The barn:** the donkey staring (she never stops), the pony, the turkey judging, the python under the heat lamp, the dead in rows, his van, the sign.
+- [ ] **The act:** stand on the X (hold X) and hold still: three knives, each humming. Move and you're a flincher. Hold still and he breaks character for one line. The calliope horn.
+- [ ] **Or shoot him** (a new run, or "start it again"): "I was in character!", thrown out, closed for good.
+- [ ] **The morning after** (or "the next morning now"): the man by his van with a mug.
+- [ ] **The donkey** at home's treeline by day, after the act.
+- [ ] Funny? Is the act tense enough? The frame rate at the barn.
+
 **Milo redone (after Session 26, your notes; OPEN_QUESTIONS #476-478):** debug menu, **Models**, Milo (Y: the clown or the man; X: the lighting).
 - [ ] **The clown:** the baggy ruffled suit, the ruff, the pom-poms, the balloon pantaloons, the wild green hair round a bald crown, the diamond eyes and painted grin lines. Try "Night, moonlight only": his eyes glow faintly in the dark. Creepy enough, too creepy?
 - [ ] **The man:** a loose flannel tucked in over a belt that fits, rolled sleeves, roomy jeans, boots.

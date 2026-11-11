@@ -83,6 +83,8 @@ import { OldChurchSite } from '../world/OldChurchSite.js';
 import { OldChurch } from '../encounters/OldChurch.js';
 import { StairsSite } from '../world/StairsSite.js';
 import { Stairs } from '../encounters/Stairs.js';
+import { MiloBarnSite } from '../world/MiloBarnSite.js';
+import { MiloBarn } from '../encounters/MiloBarn.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -155,6 +157,8 @@ export class Game {
     this.churchSite.init(this.scene, this.world, this.colliders);
     this.stairsSite = new StairsSite(this.cfg); // Session 26: the stairs in the woods
     this.stairsSite.init(this.scene, this.world, this.colliders);
+    this.barnSite = new MiloBarnSite(this.cfg); // Milo's barn (an optional encounter)
+    this.barnSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -749,6 +753,28 @@ export class Game {
     });
     this.combat.promptSources.push(this.stairs.hud);
     this.vehicles.busy?.push(this.stairs.hud);
+    // Milo's barn (an optional encounter: encounters/MiloBarn.js).
+    this.milo = new MiloBarn(this.cfg, this.bus);
+    this.milo.init({
+      scene: this.scene,
+      site: this.barnSite,
+      player: this.player,
+      combat: this.combat,
+      enemies: this.combat.enemies,
+      ground: this.world.ground,
+      station: this.station,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      progress: this.progress,
+      lore: this.lore,
+      card: this.card,
+      clock: this.clock,
+      demo: this.demo,
+      notify,
+    });
+    this.combat.promptSources.push(this.milo.hud);
+    this.vehicles.busy?.push(this.milo.hud);
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -865,7 +891,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}  ${this.stairs.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}  ${this.stairs.overlayLine()}  ${this.milo.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -921,6 +947,7 @@ export class Game {
     this.caller.addDebugItems(menu);
     this.church.addDebugItems(menu);
     this.stairs.addDebugItems(menu);
+    this.milo.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1439,6 +1466,7 @@ export class Game {
     this.junieTaken.reset();
     this.church.reset();
     this.stairs.reset();
+    this.milo.reset();
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1615,6 +1643,7 @@ export class Game {
     this.crashSite.update(camera.position, this.drawDistance);
     this.churchSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
+    this.barnSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
     if (playing && this.combat.alive) this.stats.seconds += dt;
@@ -1710,6 +1739,7 @@ export class Game {
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
+    if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
   }
 
   get phase() {
@@ -1761,7 +1791,9 @@ export class Game {
     this.church.dispose();
     this.churchSite.dispose();
     this.stairs.dispose();
+    this.milo.dispose();
     this.stairsSite.dispose();
+    this.barnSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);
     this.watch.dispose();
