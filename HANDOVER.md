@@ -1,5 +1,103 @@
 # Handover
 
+## DO THIS FIRST: Session 26 (+27 if there's room): Junie taken, the Caller, the old church, the place beyond, Junie home
+
+**How to work this session (Aaron, Nov 11):** Aaron is at work and the session runs on its own. **Don't stop to ask anything.** Every open design question below already has a default; take it, build it, and log the call as a numbered row in OPEN_QUESTIONS (from #449). Work through the batches in order. Each batch is **tested (`npx vitest run`, `npx vite build`), checked headless (screenshots of anything visual), and pushed to `main`** (and to the session's branch) before the next. Write up at the end. If you run out of room, say exactly where you stopped at the top of this file.
+
+**Aaron's standing direction: "minimum viable product is the enemy of fun."** Build each beat as the scene it should be, not the least that technically works:
+- a real set, not a signpost;
+- a cutscene with staging and timing, not a toast;
+- sound for every moment that matters;
+- lines that carry the dread;
+- the radio used as a weapon against the player.
+
+Spend the effort where the player feels it. Take a screenshot, look at it critically, and fix what reads badly before moving on, as Session 25 did.
+
+**Aaron's notes on Session 25 (Nov 11):**
+- The giant moths and the vehicle fixes worked great.
+- The crashed plane's alien cutscene is a good placeholder. He'll direct it better later; leave it alone this session.
+- The rotation order (pistols, rifles, shotguns, the shovel) is right.
+- The fire wall stays where it is.
+- Melee weapons live in the weapon cross's bottom bar.
+- Nothing else came back: treat PLAYTEST rounds 42-50 as passed unless something breaks.
+
+### Where the story stands
+
+Tom fights the Mothman at the crashed plane (`encounters/CrashedPlane.js`) and either:
+- **blacks out** at the 10% health floor and wakes at the wreck at dawn with "Dawn. Your radio's quiet"; or
+- **drives him off** (Ellen's line; the clock runs on).
+
+Both set `mothmanMet` and `planeDone` and emit `plane:done`. The story stops there today.
+
+### Defaults taken for this session (the design's open points)
+
+1. **Junie is taken in both endings.** In the drive-off ending, make the Mothman's last strike smash Tom's radio on the way out: static, a line cut off, and the HUD's radio dead. Tom heads home in silence and the night passes: skip to dawn as `wake()` does, or play the night if he's home before dusk. Either way the family couldn't reach him, so Junie taken plays the same.
+2. **The Caller is never seen.** Its only signs are a voice and fog that moves when it shouldn't. It has no model and can't be shot.
+3. **The comms line.** Comms in the south cut out on a config line south of the cordon (about halfway from the crashed plane to the old church), with hysteresis. Ellen warns once as Tom nears it.
+   - South of the line, family radio lines don't play.
+   - Instead the Caller speaks over the radio, in the family's voices: the same speakers and subtitles, with a **visible tell the player learns**, such as a faint wrongness in the subtitle colour or a glitch.
+   - North of the line the family are back.
+   - Until the Blessing is buried (a later session), every voice down south is the Caller.
+4. **The spirit's name.** The 1903 town's name for the nature spirit (Bigfoot) is yours to invent. Mark it draft. The time capsule's texts are drafts too: write them well.
+5. **The stairs follow the capsule.** Tom learns of the stairs from the capsule: the 1903 account says where their people were taken, a staircase in the woods. The stairs' clearing goes on the map then.
+
+### The batches
+
+**Batch 1: Junie is taken** (DESIGN.md "Junie is taken").
+- **The wake:** after either ending, the family's account.
+  - The radio comes back once Tom's near home, or at once if he's within range. Ellen is frantic, Wyatt guilty, and Junie's line slot is silent.
+  - Then a **trail-camera clip** of what happened (patched through on D-pad down, like Earl's tape). Night, the family in the trees with torches calling for Tom. Tom's voice answers from the dark, wrong. They split up, one torch goes out, and Junie is gone. Use the existing CCTV look and camera anchors near home.
+- **At home:** Junie isn't in the station any more (the family renderer shows two). Her face-to-face lines are gated off, and her room or bed is empty.
+- **New goal:** the objective reads "Find Junie. Head south." The family's lines move to "never leave the compound at night again".
+- **Flags:** `junieTaken` and `familyAccount`, saved, with `reset()` from flags (the `CrashedPlane` pattern).
+- **Tests:** the flags, the gating, the clip's data.
+
+**Batch 2: the Caller and comms in the south** (DESIGN.md "The Caller", "Comms in the south").
+- **The comms line** (config; `story/` or `world/`, a pure tested function for north / south with hysteresis). Ellen's warning, once.
+- **The Caller's lines:** about 25 draft taunts in the family's voices, Junie's most of all, begging, then calling Tom by name from the trees. Some come over the radio; some are **positional**, a voice from a direction in the woods (3D sound, subtitled with a direction hint).
+  - **Rate:** a config rate, more at night.
+  - **Never** while a cutscene, paper or menu is up.
+- **Fog that moves wrong:** a cheap, eerie effect near a positional call. The ground mist drifts against the wind toward the voice, or a fog bank rolls in from it. No lights added.
+- **Visible tell:** the subtitle tell from default 3.
+- **Tests:** the comms line, rate limits, never two at once, gating by flags.
+
+**Batch 3: the old church and the time capsule** (DESIGN.md "Time capsule and the old church"; spine key `timeCapsule`, a graveyard clearing at dx -230, dz 565).
+- **The set:** one baked mesh with `crashedPlaneModel.js`'s `Builder`.
+  - A ruined 1890s clapboard church: a leaning steeple, a broken bell, collapsed pews visible through the gaps, boarded and broken windows, a lychgate.
+  - A crooked graveyard: headstones with 1903 dates for the taken, all with the same death date.
+  - The plaque on a stone by the capsule's spot.
+  - Solid colliders; the glare rule; add it to `config.landmarks.built` so its signpost goes.
+- **The beat:**
+  - an arrival sweep;
+  - the comms cut out on the way;
+  - the Caller at its worst here (a positional call from inside the church);
+  - read the plaque (a paper);
+  - dig the capsule up with the shovel (the existing dig);
+  - open it: an inspect card;
+  - the 1903 account as a multi-page paper (`papers.json`), with a photograph or a drawing of the staircase. That puts the stairs on the map.
+- **Lore:** the capsule is handed in at the ledger, for family lines once comms allow.
+- **Flags:** `churchVisited`, `plaqueRead`, `capsuleDug`, `capsuleRead`; `stairsKnown`.
+
+**Batch 4 (Session 27's work; do it if there's room): the stairs and the place beyond, Junie home** (DESIGN.md "Stairs in the woods").
+- **The stairs set:** a lone staircase in its off-path clearing (spine key `stairs`), attached to nothing, carpeted and painted like a house's stairs. That's the ranger legend: wrong, clean, lit by nothing.
+- **Climbing it** enters the place beyond. Promote the Session 22 spike (`encounters/PlaceBeyond.js`, `world/placeBeyond.js`) from debug to story:
+  - **an art pass:** thicker fog, wrongness, the forest slightly off;
+  - **Junie's voice** calling down two paths as real positional sound with subtitles;
+  - **the silent path:** take it three times in a row to find her; a calling path loops Tom to the start;
+  - **the find:** a cutscene;
+  - **bringing her home:** she follows Tom back down the stairs (a simple follow, she can't be hurt), and a homecoming cutscene; the family are three again.
+- **Flags:** `stairsClimbed`, `junieFound`, `junieHome`.
+
+**Batch 5: check and write up.**
+- **Headless play-throughs** on two seeds: from the plane's end, through every new beat, with Save and Continue at each step. No page errors.
+- **The docs:**
+  - STATUS;
+  - PLAYTEST, a round per batch from 51;
+  - OPEN_QUESTIONS, a Session 26 section with your calls from #449;
+  - DESIGN as built;
+  - MORNING;
+  - this file, rewritten for the session after: Session 28, Milo's barn and the railway cutting, per DESIGN's build plan.
+
 ## Just finished: Session 25, Aaron's play-through list, the giant moths, the crashed plane
 
 **Status:** all of it is on `main` and on `ccr-c4151e90-199ypg`, in eight commits (one per batch). 936 tests pass and the build is clean. I checked it headless, but **none of it has been played on the tablet**. For Aaron: PLAYTEST rounds 42-49; my calls: OPEN_QUESTIONS #412-445; MORNING.md. Aaron's notes as he gave them are in this file's previous version (commit 7f5de33).
@@ -43,17 +141,6 @@
 - **A full opening play-through** like Session 23's: this session's was a smoke run (arrivals by teleport).
 - **The grey's model** holds a shotgun but drops the pilot's pistol (#438).
 - **Pistol sounds:** there's no own sound for the pistol in Tom's hands (it uses the existing gun sounds).
-
-## Next: Session 26, Level & Encounter Designer + Narrative Designer: Junie taken and the Caller (M11, part 2)
-
-**First:** ask Aaron for his notes on PLAYTEST rounds 42-49 and fix them (each tested and pushed to `main`). Rounds 39-41 and his glare list were folded into his Nov 10 list. Then workshop the session's beats with him, one idea at a time (rule 10).
-
-**Goal** (DESIGN.md "Build plan", the Session 26 row; "Junie is taken"; "The Caller"): Junie taken, the Caller, comms in the south, the old church and the time capsule, and their lines.
-
-**Where Session 25 leaves the story:**
-- **The blackout ending:** Tom wakes at the wreck at dawn, the radio quiet (`CrashedPlane.wake()`). This is where Junie taken picks up: the time cut and the family's account.
-- **The driven-off ending:** Tom sets `planeDone` and the clock runs on. DESIGN's open question, whether Junie is still taken, needs Aaron.
-- The `plane:done` event and the `planeDone` flag are the hooks.
 
 **To carry (Session 25):**
 - **The debug menu has tabs** (`menu.tab(DEBUG.enemies, ENEMY_TABS.x)`). Every spawn-anywhere enemy tool goes in the Enemies section's tab for it.
@@ -166,9 +253,10 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 ## Session kickoff prompt for the next session
 
 ```
-You are picking up Witch Hunt where Session 24 stopped. Read HANDOVER.md first: its top section, "DO THIS FIRST", is Aaron's full play-through list (26 items in 9 batches, with his answers) plus the giant moths as a debug spike and then the crashed plane's story beats. None of it is started.
-Aaron is asleep: work through the batches in order without stopping to ask, each batch tested (npx vitest run, npx vite build) and pushed to main before the next. His reference picture for Milo is docs/reference/milo-lone-clown.jpg.
-Then read docs/DESIGN.md ("Crashed plane"; "The Mothman at the crash site"; "Giant moths"; Weapons), STATUS.md (Session 24) and OPEN_QUESTIONS.md (the top sections) as each batch needs them.
-Keep Aaron's rules: config and data first, complete files, small modules, no lights added or removed while playing, dull colours (the glare rule), one draw call where you can, tests for what you build.
-Finish with the write-up (STATUS, PLAYTEST rounds 42 on, OPEN_QUESTIONS, DESIGN as built, MORNING, HANDOVER). If you run out of room, say at the top of HANDOVER.md exactly where you stopped.
+You are picking up Witch Hunt where Session 25 stopped. Read HANDOVER.md first: its top section, "DO THIS FIRST", is this session's whole plan (Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home if there's room), with every open design question already given a default.
+Aaron is at work: this session runs on its own. Don't stop to ask anything. Take the defaults, log each call as a numbered row in OPEN_QUESTIONS (from #449), and work through the batches in order. Test each batch (npx vitest run, npx vite build), check it headless (look at screenshots critically and fix what reads badly), and push it to main before the next.
+Aaron's direction: "minimum viable product is the enemy of fun." Build each beat as the scene it should be: real sets, staged cutscenes, sound for every moment that matters, lines that carry the dread.
+Read docs/DESIGN.md ("Junie is taken", "The Caller", "Time capsule and the old church", "Stairs in the woods", "The radio"), STATUS.md (Session 25) and the code HANDOVER.md points to, as each batch needs them.
+Keep Aaron's rules: config and data first, complete files, small modules, no lights added or removed while playing, dull colours (the glare rule), one draw call where you can, tests for what you build, saves through story flags.
+Finish with the write-up (STATUS, PLAYTEST rounds from 51, OPEN_QUESTIONS, DESIGN as built, MORNING, HANDOVER rewritten for the session after). If you run out of room, say at the top of HANDOVER.md exactly where you stopped.
 ```
