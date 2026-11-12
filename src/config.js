@@ -724,7 +724,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4453,6 +4453,85 @@ export const config = {
   // Hemlock Gap, October 13, 1903, stopped in the cut and left there: the engine (its cowcatcher
   // and boiler plate: the killdozer's armour), the tender, two coaches and the baggage car off the
   // rails, the belongings of a town still aboard; the powder store up the bank.
+  // Session 28: the sawmill (an optional encounter; DESIGN.md "The sawmill"; the set:
+  // render/sawmillModel.js, world/SawmillSite.js; the beat: encounters/Sawmill.js). Harlan Stover's
+  // mill (a draft name): the crew the government hired to clear ground for the portal programme,
+  // paid off on their last payday by the Men in Black. The layout's measurements are in the model
+  // (SAWMILL); the colours are here.
+  sawmill: {
+    radius: 30, // metres from its middle the set reaches (for drawing it)
+    look: {
+      weather: { rust: [0x34302a, 0x2a2622, 0x3a3630, 0x2c2a28], grimeHeight: 0.5, keepBright: [] },
+      colors: {
+        post: 0x3e3428, // the shed's timbers
+        postDark: 0x2e261e,
+        plank: 0x4a4234, // sawn boards, weathered
+        plankDark: 0x383024,
+        plankNew: 0x6a5c40, // fresh-sawn lumber (the stacks, the cut face of the log)
+        plankNewDark: 0x564a34,
+        tin: 0x3a3630, // the roof's corrugated iron
+        tinDark: 0x2c2a28,
+        bark: 0x2e2820,
+        barkDark: 0x241f19,
+        endGrain: 0x5e5038, // a log's cut end
+        sawdust: 0x6a5a3c,
+        sawdustDark: 0x54462e,
+        iron: 0x34302a, // the head rig, the carriage, the rails
+        ironDark: 0x2a2622,
+        blade: 0x5a5c5c, // the head saw's plate
+        bladeDark: 0x3e4040,
+        belt: 0x1c1a18,
+        engine: 0x2e3a30, // the power unit's faded green
+        clap: 0x5c574a, // the bunkhouse's boards
+        clapDark: 0x3a362e,
+        trim: 0x2e2a24,
+        hollow: 0x0d0c0b, // the dark inside a window, the pit
+        glass: 0x1e262a,
+        floor: 0x2c251c,
+        blanket: 0x3a3e34, // army-surplus bunk blankets
+        blanketDark: 0x2c3028,
+        mattress: 0x56524a,
+        stove: 0x1c1b1a,
+        tarp: 0x2a3440, // the blue tarps, gone dull
+        tarpDark: 0x1e2630,
+        lime: 0x6a6a62, // the bags of quicklime
+        dirt: 0x30281e,
+        dirtDark: 0x221c15,
+        blood: 0x2a0e0c, // dried
+        bloodDark: 0x1c0a09,
+        brass: 0x6a5a2a, // spent cases
+        paper: 0x6a665a,
+        car: 0x1e1e23, // the agents' sedans
+        carDark: 0x121215,
+        carGlass: 0x2a323a,
+        chrome: 0x4a4c4c,
+        tyre: 0x0c0c0c,
+        case: 0x1a1612, // the payroll case
+        caseFoam: 0x2a2a2c,
+        // The dead. Loggers in flannel and work trousers; the agents in their suits.
+        skin: 0x5c5a4c,
+        skinDark: 0x4a4a40,
+        flannelRed: 0x4a1a16,
+        flannelGreen: 0x26321e,
+        flannelMustard: 0x4a3a14,
+        denim: 0x1c2638,
+        workBrown: 0x2e2418,
+        boot: 0x1a1410,
+        hair: 0x1e140c,
+        hairGrey: 0x4a4a46,
+        hardHat: 0x5a4a14, // dull yellow
+        suit: 0x1c1c22,
+        shirt: 0x6a665c,
+        tie: 0x08080a,
+        shoe: 0x0e0e0e,
+        saw: 0x4a2010, // the chainsaw's faded orange body
+        sawDark: 0x1c1a18,
+        sawBar: 0x4a4c4c,
+        axe: 0x3a3a3a,
+        handle: 0x4a3a24,
+      },
+    },
+  },
   railwayCutting: {
     radius: 34, // metres from its middle the set reaches (for drawing it)
     // The train along the line (metres along it from the clearing's middle, toward the engine's

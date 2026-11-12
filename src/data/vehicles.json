@@ -252,7 +252,7 @@
     "_optional": "Session 21: the optional encounters (placeholders until each is built).",
     "railwayCutting": {"count": [0, 0], "chance": 0},
     "moonshinersHoller": {"count": [0, 1], "chance": 0.5, "weights": {"pickup": 1}},
-    "sawmill": {"count": [1, 2], "chance": 1, "weights": {"pickup": 1}},
+    "sawmill": {"count": [0, 0], "chance": 0},
     "milosBarn": {"count": [0, 0], "chance": 0},
     "mineshaft": {
       "count": [0, 1],
