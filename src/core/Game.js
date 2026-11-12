@@ -1889,7 +1889,7 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.player.riding.hud?.prompt);
-    const rideFree = !locked && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt);
+    const rideFree = !locked && !this.holler?.traps?.held && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt);
     this.quad.update(dt, controls, playing && first, rideFree && !(this.player.riding && this.player.riding !== this.quad) && !this.experimental.some((v) => v.hud.prompt), daylight);
     let offered = Boolean(this.quad.hud.prompt) && !this.player.riding;
     for (const v of this.experimental) {

@@ -19,6 +19,7 @@ import * as THREE from 'three';
 import { bakeParts, noise3, weatherFor } from './propKit.js';
 import { makeCanvas, toTexture, css } from './proceduralTextures.js';
 import { ChunkCuller } from './ChunkCuller.js';
+import { fitText } from './RoadNorthProps.js';
 import { railFrame, railCrossings } from '../world/railway.js';
 import { Rng } from '../core/Rng.js';
 
@@ -212,11 +213,12 @@ export class Railway {
       ctx.fillStyle = css(k.boardPaint);
       ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = css(k.boardInk);
-      ctx.font = 'bold 58px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('RAILROAD', w * 0.27, h * 0.55);
-      ctx.fillText('CROSSING', w * 0.75, h * 0.55);
+      // Session 32 (Aaron: the text ran off the sign): each word fitted to its own half of the board, clear
+      // of the middle where the two boards cross and of the ends.
+      fitText(ctx, 'RAILROAD', w * 0.25, h * 0.55, w * 0.36, 50, 'bold', 'serif');
+      fitText(ctx, 'CROSSING', w * 0.75, h * 0.55, w * 0.36, 50, 'bold', 'serif');
       weather(ctx, w, h);
     }));
     const warnTex = this.hold(paintTexture(384, 192, (ctx, w, h) => {
@@ -228,10 +230,8 @@ export class Railway {
       ctx.fillStyle = css(k.boardInk);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 44px serif';
-      ctx.fillText('LOOK OUT', w / 2, h * 0.32);
-      ctx.font = 'bold 34px serif';
-      ctx.fillText('FOR THE CARS', w / 2, h * 0.68);
+      fitText(ctx, 'LOOK OUT', w / 2, h * 0.32, w - 56, 44, 'bold', 'serif');
+      fitText(ctx, 'FOR THE CARS', w / 2, h * 0.68, w - 56, 34, 'bold', 'serif');
       weather(ctx, w, h);
     }));
     const wTex = this.hold(paintTexture(128, 128, (ctx, w, h) => {

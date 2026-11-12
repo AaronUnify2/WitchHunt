@@ -120,7 +120,8 @@ export class HollerTraps {
       const airborne = !this.player.onGround;
       if (this.last && !this.held) {
         for (const t of this.list) {
-          if (steppedIn(t, this.rules, this.last.x, this.last.z, p.x, p.z, airborne)) this.spring(t, 'tom', null);
+          // Session 32 (Aaron: caught on the quad with no way out): riding, it's the machine that sets it off.
+          if (steppedIn(t, this.rules, this.last.x, this.last.z, p.x, p.z, airborne)) this.spring(t, this.player.riding ? 'ride' : 'tom', null);
         }
       }
       this.hints(p);
@@ -185,6 +186,10 @@ export class HollerTraps {
         this.player.rooted = true;
         this.combat.hurtPlayer(r.damage, r.shake);
         const txt = this.texts?.[t.kind]?.caught;
+        if (txt) this.notify?.(txt);
+      } else if (by === 'ride') {
+        // Under a wheel: it goes off and holds nothing.
+        const txt = this.texts?.[t.kind]?.wheel;
         if (txt) this.notify?.(txt);
       } else if (zombie) {
         this.enemies.damage(zombie, r.deadDamage, 'body', { stagger: 0.8, knockback: 0 }, { x: zombie.x, y: zombie.y + 0.4, z: zombie.z }, t);

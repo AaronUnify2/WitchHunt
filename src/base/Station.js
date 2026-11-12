@@ -39,6 +39,17 @@ import { sharpenOffer, edgeWord } from '../combat/chainsawState.js';
 
 const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells', alienShells: 'alien shells' };
 
+// Session 32: is the first aid box offered? Once Tom's hurt, or once he's been away from it (not while he
+// still stands where the game put him, beside it). Pure.
+export function aidBoxOffered(hurt, beenAway) {
+  return Boolean(hurt || beenAway);
+}
+
+// How far from the box counts as having stepped away (metres): well past its own reach.
+export function aidBoxClear(sc) {
+  return (sc.interactRange ?? 1.6) + 1.2;
+}
+
 export class Station {
   constructor(cfg, rng, bus) {
     this.cfg = cfg;
@@ -642,9 +653,13 @@ export class Station {
     if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
     // Session 25 (Aaron): no prompt for the box while Tom's at full health
     // (the game starts beside it); he can take from it once he's hurt.
+    // Session 32 (Aaron: "now I can't interact with the first aid kit at all"): that hid it for good at full
+    // health. It's only kept quiet until he's stepped away from where he woke; after that it offers whenever
+    // there's something in it (and says so when his healing's full).
     const hp = this.combat.health;
     const hurt = !hp || hp.value < hp.cfg.max;
-    if (this.state.aidBoxCount > 0 && hurt) {
+    if (dist(this.aidBoxSpot()) > aidBoxClear(sc)) this.aidBoxAway = true;
+    if (this.state.aidBoxCount > 0 && aidBoxOffered(hurt, this.aidBoxAway)) {
       // Session 20: the box keeps what didn't fit in the healing pool.
       const first = this.progress && !this.progress.has('aidBoxTaken');
       const what = this.aidBoxText();

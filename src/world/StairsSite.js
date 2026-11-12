@@ -1,18 +1,28 @@
 // The stairs in the woods in the world (Session 26; DESIGN.md "Stairs in the
 // woods"; the model: render/stairsModel.js). In the story spine's off-path
-// clearing (stairs), every run: the flight climbs away from the old church,
-// so its foot is the first thing Tom reaches. Solid at its sides and back.
+// clearing (stairs), every run: its foot faces the way into the clearing (a
+// pathway's end, else the old church's side), so it's the first thing Tom reaches. Solid at its sides and back.
 //
 // Only the set: the climb, the place beyond and Junie are the beat's
 // (encounters/Stairs.js), which finds its places in `spots` (world space).
 
 import { buildStairs } from '../render/stairsModel.js';
 import { toWorld } from './CrashSite.js';
+import { pathFrame } from './clearingFrame.js';
 
-// Where it stands (pure): in the stairs clearing, climbing away from `from`. null if there's no such clearing.
+// Where it stands (pure): in the stairs clearing, its foot toward the way in. Session 32 (Aaron: "the bottom
+// of the stairs pointing towards the entrance to the clearing"): where a pathway comes into the clearing it
+// climbs away from that; with none (it's dealt off the paths) it climbs away from `from` (the old church,
+// the way Tom walks in). null if there's no such clearing.
 export function stairsPlacement(map, from) {
-  const c = map.clearings.find((k) => k.key === 'stairs');
-  if (!c) return null;
+  const ci = map.clearings.findIndex((k) => k.key === 'stairs');
+  if (ci < 0) return null;
+  const c = map.clearings[ci];
+  const onPath = (map.paths ?? []).some((p) => p.a === ci || p.b === ci);
+  if (onPath) {
+    const f = pathFrame(map, 'stairs');
+    return { x: c.x, z: c.z, yaw: f.yaw, entrance: f.entrance };
+  }
   const yaw = from ? Math.atan2(c.x - from.x, c.z - from.z) : 0;
   return { x: c.x, z: c.z, yaw };
 }

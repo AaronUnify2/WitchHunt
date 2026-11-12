@@ -28,6 +28,7 @@
     "text": "The jaws slam shut on the stick. A bear trap, an old one, chained to a stake."
    },
    "caught": "Bear trap. Your leg's in it.",
+   "wheel": "A bear trap goes off under the quad and bites on nothing.",
    "free": {
     "prompt": "prise the jaws open",
     "busy": "Prising…"
@@ -41,6 +42,7 @@
     "text": "The sapling whips up empty, the noose swinging off the top of it."
    },
    "caught": "The snare. It's got you by the ankle.",
+   "wheel": "A snare whips up past the wheel and hangs there, empty.",
    "free": {
     "prompt": "work the noose off",
     "busy": "Working it off…"

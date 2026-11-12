@@ -167,7 +167,9 @@ export class Holler {
     const d = this.distance();
     if (d < this.site.place.radius + 30) this.traps.update(dt, playing);
     if (playing) this.updateStory(dt, d);
-    if (canInteract && input && playing && d < this.site.place.radius + 8) this.updateInteraction(dt, input);
+    // Session 32: a trap holding him always offers the way out, whatever else is on the screen and wherever he stands.
+    const held = Boolean(this.traps.held) && !this.player.riding;
+    if (input && playing && (held || (canInteract && d < this.site.place.radius + 8))) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
       this.hud.progress = 0;
