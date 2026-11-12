@@ -1331,6 +1331,18 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 1.6, type: 'lowpass', freq: 300, endFreq: 90, gain: 0.9, attack: 0.1 });
     for (let i = 0; i < 5; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 700 + Math.random() * 600, q: 2, gain: 0.5 }), 200 + i * 230); // cosmetic only
   },
+  // A roost waking: forty wings opening at once, a dry rush.
+  mothWake(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 70);
+    s.noiseBurst(o, { seconds: 1.1, type: 'bandpass', freq: 380, endFreq: 900, q: 1.2, gain: 0.7, attack: 0.25 });
+    for (let i = 0; i < 6; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 500 + Math.random() * 300, q: 1.6, gain: 0.3, attack: 0.02 }), 150 + i * 110); // cosmetic only
+  },
+  // The cart into one of the dead: a wet, heavy thump, the tub ringing.
+  cartHit(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.noiseBurst(o, { seconds: 0.2, type: 'lowpass', freq: 300, endFreq: 90, gain: 1.0 });
+    s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 210, endFreq: 200, gain: 0.1 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

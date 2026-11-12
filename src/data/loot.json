@@ -36,6 +36,11 @@
       { "item": "shotgunAmmo", "chance": 0.1, "min": 1, "max": 2 },
       { "item": "firstAid", "chance": 0.04 }
     ],
+    "miner": [
+      { "item": "scrap", "chance": 0.4, "min": 1, "max": 3 },
+      { "item": "pistolAmmo", "chance": 0.08, "min": 1, "max": 3 },
+      { "item": "firstAid", "chance": 0.04 }
+    ],
     "moonshiner": [
       { "item": "shotgunAmmo", "chance": 0.3, "min": 1, "max": 3 },
       { "item": "scrap", "chance": 0.25, "min": 1, "max": 2 },

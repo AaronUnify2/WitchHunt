@@ -96,6 +96,8 @@ import { Holler } from '../encounters/Holler.js';
 import { MineshaftSite } from '../world/MineshaftSite.js';
 import { Mineshaft } from '../encounters/Mineshaft.js';
 import { MineRide } from '../encounters/MineRide.js';
+import { MineFight } from '../encounters/MineFight.js';
+import { Beetles } from '../ai/Beetles.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -890,6 +892,12 @@ export class Game {
       hud: this.mineshaft.hud,
       notify,
     });
+    // What comes at him down there (encounters/MineFight.js): miners, the mine's own beetles, the moths.
+    this.mineBeetles = new Beetles(this.cfg, this.bus);
+    this.mineBeetles.init(this.scene, { player: this.player, combat: this.combat, colliders: null, ground: this.world.ground });
+    this.mineFight = new MineFight(this.cfg, this.bus);
+    this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
+    this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
       scene: this.scene,
       site: this.mineSite,
@@ -1960,6 +1968,7 @@ export class Game {
     this.sawmill.dispose();
     this.holler.dispose();
     this.mineshaft.dispose();
+    this.mineBeetles.dispose();
     this.stairsSite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();

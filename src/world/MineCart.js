@@ -262,9 +262,9 @@ export class MineCart {
   }
 
   glowBarrel() {
-    const k = Math.max(0, (this.heat - 0.35) / 0.65);
+    const k = Math.max(0, (this.heat - 0.6) / 0.4);
     // The gun's own material: a dull red, then orange (the sight's arc says the rest).
-    this.model.gunMaterial?.emissive?.setRGB(0.3 * k * k, 0.07 * k * k, 0);
+    this.model.gunMaterial?.emissive?.setRGB(0.16 * k * k, 0.03 * k * k, 0);
   }
 
   // One round: from his eye down the sights, a tracer from the muzzle.

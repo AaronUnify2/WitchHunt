@@ -1640,6 +1640,7 @@ export const config = {
       army: { health: 1.6, helmet: 25 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 25 damage (Session 17, Aaron: a long fight: one service rifle round to the head knocks it off), or the hunting rifle punches straight through it
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       logger: { health: 1.25 }, // Session 28: the sawmill's crew: big men (render: the citizens' shapes in flannel)
+      miner: { health: 1.3, helmet: 18 }, // Session 30: the Black Laurel's last shift (render: the army's shapes, hard hats for helmets, in pit black)
       moonshiner: { health: 1.15 }, // Session 29: the Rigsbys, turned round their still (render: the citizens' shapes in overalls)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
@@ -1790,6 +1791,9 @@ export const config = {
         // Session 29: a dead moonshiner (the Rigsbys of the holler): the citizens' shapes, faded work
         // shirts under denim overalls (the vest block, in the trousers' denim, is the bib).
         moonshiner: { as: 'citizen', hairs: ['long', 'balding', 'trucker', 'short'], shirt: [0x4a4234, 0x3a3e40, 0x5a4a34, 0x3a2a22], trousers: [0x24303e], vest: 0x24303e, longSleeves: 0.6, plaid: 0.25 },
+        // Session 30: a dead miner (the mineshaft's last shift): the army's shapes (the helmet's his hard
+        // hat; bare-headed once it's knocked off), work clothes black with coal, no camouflage.
+        miner: { as: 'army', shirt: [0x2a2622, 0x34302a, 0x2e2a30, 0x3a3226], trousers: [0x1e1c1a, 0x26221e, 0x22262c], longSleeves: 1, plaid: 0, camo: 0 },
         // Session 13: a dead Man in Black. The shirt is its white shirt (so
         // the blood shows), under a torn black suit (jacket: open down the
         // front, a rip across the back), a black tie, the body armour's
@@ -4846,7 +4850,7 @@ export const config = {
       ],
       clackEvery: 3.2, // metres between rail joints (a clack each)
       eye: { back: 0.8, up: 0.5 }, // his eye behind and above the gun's pivot (standing at it, as on the ute)
-      strikeScale: 0.7, // the dead's swipes reach up at him in the tub
+      strikeScale: 0.6, // the dead's swipes reach up at him in the tub
       mountSeconds: 0.8,
       // The old gun on its pedestal: it never runs dry (a belt box as long as the ride), it overheats.
       gun: {
@@ -4874,6 +4878,44 @@ export const config = {
         pitchMax: 0.95,
         tracerEvery: 2,
       },
+    },
+    // What comes at Tom on the way down (encounters/MineFight.js). Everything's placed by s along the
+    // track and lat across it; each entry fires when the cart's reached `at`. After the cart's been to
+    // the bottom once, the mine's quiet (the dead stay dead).
+    fight: {
+      aware: 30, // metres along the track: a miner this near Tom comes for him
+      awareEvery: 0.4, // seconds between looks
+      behind: 34, // metres behind the cart: what's left back there is dropped
+      ram: { speed: 2.2, reach: 1.5, half: 0.95, damage: 400, knock: 5, beetle: 90 }, // the cart into the dead on the rails: faster than `speed`, within `reach` of its nose (a beetle takes `beetle` and is shouldered aside)
+      beetleSpeed: 0.8, // x their charge: a little slower than the cart at a cruise, so it draws away (they catch up at a stop)
+      script: [
+        { at: 14, miners: [[50, 0.2]] }, // one on the rails, his back to the cart: the gun's first target
+        { at: 38, miners: [[74, -1.0], [79, 0.9]] },
+        { at: 60, miners: [[95, 0.5], [99, -0.8], [102, 0.2]] },
+        { at: 116, beetles: [[142, 1.1], [146, -1.0]] },
+        { at: 128, roost: { id: 'a', s: [158, 178], count: 12 } },
+        { at: 150, miners: [[186, -0.6], [190, 0.8]] },
+        { at: 176, beetles: [[204, 0.9], [209, -1.1]] },
+        { at: 200, miners: [[226, 0.4], [229, -1.2], [232, 1.5]] },
+        { at: 246, beetles: [[272, 1.0], [276, -0.9]] },
+        { at: 256, roost: { id: 'c', s: [288, 322], count: 20 } },
+        { at: 272, miners: [[300, 0.1], [308, -0.3], [316, 0.3], [324, 0], [332, -0.2]] }, // on the rails down the steep: shoot them or hit them
+        { at: 334, miners: [[368, 0.6], [374, -0.9]], beetles: [[382, 1.0]] },
+        { at: 376, miners: [[402, -0.5], [407, 0.8], [411, 0]] },
+      ],
+      // The two stops: who comes while Tom's down off the cart (seconds after it halts; `ahead` and
+      // `behind`: [s, lat] spots), and the roost over the fall that wakes when he starts on the rock.
+      stops: {
+        points: { waves: [{ after: 5, miners: [[127, 1.5], [130, -0.5]] }, { after: 17, miners: [[96, 0.6], [133, 0]] }] },
+        fall: { roost: { id: 'b', s: [243, 251], count: 10, wakeAfter: 9 }, waves: [{ after: 4, miners: [[250.5, 2.4], [252, -2.2]] }, { after: 15, miners: [[229, 0.5], [227, -1.0], [252, 1.2]] }] },
+      },
+      // The giant moths' real behaviour (ai/Moths.js, with config.spikes.moths for the rest). They hang
+      // folded under the roof timbers; the cart's noise and Tom's light wake a roost when it's within
+      // `wake` metres (along the track), and they come after it in a stream: each holds a place `along`
+      // the track from Tom (mostly behind), `up` under the roof, drifting; one or two dive at him every
+      // `dartEvery` seconds. Shot at from further off than `scatterBeyond`, a roost scatters: `scatter` of
+      // them flee down the drift instead. speedOver: how much faster than the cart they fly.
+      moths: { wake: 20, scatterBeyond: 24, scatter: 0.6, along: [-13, 4], up: [1.7, 2.7], speedOver: 5, dartSpeedOver: 9, dartEvery: [2.0, 3.6], dartCount: [1, 2], nipDamage: 2, leaveSeconds: 3.5 },
     },
     // The mine's own light and fog (world/Interiors.js): black beyond the torch.
     light: { ambientDay: 0.55, ambientNight: 0.55, ambientColor: 0x8a8478, fogColor: 0x040404, fogNear: 3, fogFar: 44 },

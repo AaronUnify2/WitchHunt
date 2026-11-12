@@ -177,7 +177,7 @@ export class Beetles {
       this.go(b, 'attack');
       return;
     }
-    const speed = b.cooldown > 0 || safe ? a.walkSpeed : a.speed;
+    const speed = (b.cooldown > 0 || safe ? a.walkSpeed : a.speed) * (b.room?.speedScale ?? 1);
     b.state = b.cooldown > 0 || safe ? 'walk' : 'charge';
     // Don't climb onto him: stop just short.
     const stop = safe ? 1.6 : a.attackRange * 0.7;

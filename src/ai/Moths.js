@@ -19,7 +19,20 @@
 //    the swarm, not one per moth per beat.
 // Off in Demo mode (Game doesn't run it there).
 //
-// config.spikes.moths. Events: 'moths:nipped' { damage }, 'moths:killed' { left }, 'moths:gone'.
+// Session 30 (the mineshaft: their real behaviour, built on the spike):
+//  - They roost: hung folded under the roof timbers, eyes lit, in a group
+//    (roost(points, group)); still, and a target.
+//  - They wake (wake(group, scatter)): they drop, open, and come after Tom
+//    in a stream. Woken by a shot from far off they scatter instead: most
+//    flee, a few come.
+//  - Where they fly is their habitat's say (setHabitat(h)): the mine gives
+//    each its place along the track from Tom, keeps them inside the tunnel,
+//    tells them how fast the cart's going (they keep up), where the floor
+//    is under one that's shot, and which way is away. With no habitat they
+//    behave as the spike did, out in the open.
+//
+// config.spikes.moths (and the habitat's own numbers). Events: 'moths:nipped' { damage },
+// 'moths:killed' { left }, 'moths:gone', 'moths:roostHit' { group }, 'moths:woke' { group, count, fled }.
 
 import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { MothRenderer } from '../render/MothRenderer.js';
@@ -57,6 +70,18 @@ export function hurtMoth(m, amount) {
 
 const FLYING = new Set(['fly', 'dart', 'peel', 'flinch', 'leave']);
 
+// Session 30: how many of a roost of `count` flee when it's scattered (the rest come): pure.
+export function scatterSplit(count, share) {
+  const fled = Math.min(count, Math.round(count * share));
+  return { fled, come: count - fled };
+}
+
+// A roosting moth's place in the stream once it wakes: rolled from the habitat's ranges with r() (0..1).
+export function streamSlot(hc, r) {
+  const mix = (a, b, k) => a + (b - a) * k;
+  return { along: mix(hc.along[0], hc.along[1], r()), lat: r() * 2 - 1, up: mix(hc.up[0], hc.up[1], r()), speed: mix(0.5, 1.4, r()) * (r() < 0.5 ? 1 : -1), phase: r() * 6.28 };
+}
+
 export class Moths {
   constructor(cfg, bus) {
     this.cfg = cfg;
@@ -64,6 +89,7 @@ export class Moths {
     this.bus = bus;
     this.active = false;
     this.leaving = false;
+    this.habitat = null; // Session 30: the mine (encounters/MineFight.js), or null out in the open
   }
 
   // ctx: { scene, player, combat, ground, sfx, notify, rng }.
@@ -147,6 +173,73 @@ export class Moths {
     return n;
   }
 
+  // ---- Session 30: roosts ------------------------------------------------------------------------
+
+  // h: { hc (config: along, up, dartEvery, dartCount, nipDamage, leaveSeconds), slot(m, t, out), clamp(m),
+  // floorAt(m), speed(), dartSpeed(), away(m, out) }, or null for the open air.
+  setHabitat(h) {
+    this.habitat = h;
+  }
+
+  // Hang moths at `points` ([{ x, y, z, facing }]) as the roost `group`. Returns how many (the pool may be short).
+  roost(points, group) {
+    const c = this.mc;
+    let n = 0;
+    for (const pt of points) {
+      const m = this.moths.find((q) => !q.active);
+      if (!m) break;
+      m.x = pt.x;
+      m.y = pt.y;
+      m.z = pt.z;
+      m.facing = pt.facing ?? 0;
+      m.pitch = 0;
+      m.roll = Math.PI; // hung by its feet
+      m.v.x = m.v.y = m.v.z = 0;
+      m.health = c.health;
+      m.flash = 0;
+      m.state = 'rest';
+      m.timer = 0;
+      m.group = group;
+      m.active = true;
+      m.leaveTo = null;
+      m.slot = this.habitat ? streamSlot(this.habitat.hc, () => this.rng.next()) : { angle: this.rng.range(0, Math.PI * 2), radius: this.rng.range(c.cloudRadius[0], c.cloudRadius[1]), height: this.rng.range(c.cloudHeight[0], c.cloudHeight[1]), speed: this.rng.range(c.orbitSpeed[0], c.orbitSpeed[1]), bob: 0.4 };
+      m.target.targetable = true;
+      n++;
+    }
+    if (n) {
+      this.active = true;
+      this.leaving = false;
+    }
+    return n;
+  }
+
+  // How many of `group` still hang (all roosts if left out).
+  roosting(group = null) {
+    let n = 0;
+    for (const m of this.moths) if (m.active && m.state === 'rest' && (group === null || m.group === group)) n++;
+    return n;
+  }
+
+  // The roost `group` wakes: they drop and come (scatter: most flee instead). Returns { count, fled }.
+  wake(group, scatter = false) {
+    const list = this.moths.filter((m) => m.active && m.state === 'rest' && m.group === group);
+    if (!list.length) return { count: 0, fled: 0 };
+    const { fled } = scatter ? scatterSplit(list.length, this.habitat?.hc.scatter ?? 0.6) : { fled: 0 };
+    list.forEach((m, i) => {
+      m.roll = 0;
+      m.v.y = -2.5; // it lets go
+      m.timer = 0;
+      m.state = i < fled ? 'leave' : 'fly';
+      m.leaveTo = null;
+    });
+    const hc = this.habitat?.hc;
+    const every = hc?.dartEvery ?? this.mc.dartEvery;
+    this.dartTimer = Math.max(this.dartTimer, 0) + this.rng.range(every[0], every[1]) + 1.2;
+    this.sfx?.play('mothWake', list[0]);
+    this.bus?.emit('moths:woke', { group, count: list.length, fled });
+    return { count: list.length, fled };
+  }
+
   // The rest fly off.
   dismiss() {
     if (!this.active) return;
@@ -155,6 +248,11 @@ export class Moths {
     for (const m of this.moths) {
       if (!m.active || !FLYING.has(m.state)) continue;
       m.state = 'leave';
+      m.timer = 0;
+      if (this.habitat) {
+        m.leaveTo = null; // the habitat says which way's away
+        continue;
+      }
       const a = Math.atan2(m.x - t.x, m.z - t.z) + this.rng.range(-0.4, 0.4);
       m.leaveTo = { x: t.x + Math.sin(a) * this.mc.leaveDistance * 1.5, y: t.y + 30, z: t.z + Math.cos(a) * this.mc.leaveDistance * 1.5 };
     }
@@ -193,6 +291,8 @@ export class Moths {
   step(dt) {
     const c = this.mc;
     const t = this.player.position;
+    const hab = this.habitat;
+    const mill = hab ? hab.speed() : c.millSpeed;
     this.time += dt;
     // The cloud's middle drifts after Tom (it lags, so he can step out from under it).
     const k = Math.min(1, dt * c.follow);
@@ -204,9 +304,11 @@ export class Moths {
     if (!this.leaving) {
       this.dartTimer -= dt;
       if (this.dartTimer <= 0) {
-        this.dartTimer = this.rng.range(c.dartEvery[0], c.dartEvery[1]);
+        const every = hab?.hc.dartEvery ?? c.dartEvery;
+        const each = hab?.hc.dartCount ?? c.dartCount;
+        this.dartTimer = this.rng.range(every[0], every[1]);
         const milling = this.moths.filter((m) => m.active && m.state === 'fly');
-        const n = Math.min(milling.length, this.rng.int(c.dartCount[0], c.dartCount[1]));
+        const n = Math.min(milling.length, this.rng.int(each[0], each[1]));
         for (let i = 0; i < n; i++) {
           const m = milling.splice(this.rng.int(0, milling.length - 1), 1)[0];
           m.state = 'dart';
@@ -221,17 +323,21 @@ export class Moths {
       anyActive = true;
       m.timer += dt;
       switch (m.state) {
+        case 'rest':
+          break; // hung under a timber, still
         case 'fly':
-          cloudPoint(this.centre.x, this.centre.y, this.centre.z, m.slot, this.time, this.goal);
-          steerTo(m, m.v, this.goal, c.millSpeed, c.steer, dt);
+          if (hab) hab.slot(m, this.time, this.goal);
+          else cloudPoint(this.centre.x, this.centre.y, this.centre.z, m.slot, this.time, this.goal);
+          steerTo(m, m.v, this.goal, mill, c.steer * (hab ? 1.6 : 1), dt);
           break;
         case 'dart': {
           const ty = t.y + c.dartAt;
           const target = { x: t.x, y: ty, z: t.z };
-          steerTo(m, m.v, target, c.dartSpeed, c.steer * 2.2, dt);
+          steerTo(m, m.v, target, hab ? hab.dartSpeed() : c.dartSpeed, c.steer * 2.2, dt);
           if (dartReached(m, t.x, ty, t.z, c.nipRange)) {
-            this.combat.hurtPlayer?.(c.nipDamage, 0.4);
-            this.bus?.emit('moths:nipped', { damage: c.nipDamage });
+            const nip = hab?.hc.nipDamage ?? c.nipDamage;
+            this.combat.hurtPlayer?.(nip, 0.4);
+            this.bus?.emit('moths:nipped', { damage: nip });
             this.sfx?.play('mothNip', m);
             m.state = 'peel';
             m.timer = 0;
@@ -243,9 +349,12 @@ export class Moths {
         }
         case 'peel':
           // Back up and away to its slot, quickly, then milling again.
-          cloudPoint(this.centre.x, this.centre.y, this.centre.z, m.slot, this.time, this.goal);
-          this.goal.y += 1.5;
-          steerTo(m, m.v, this.goal, c.millSpeed * 1.4, c.steer, dt);
+          if (hab) hab.slot(m, this.time, this.goal);
+          else {
+            cloudPoint(this.centre.x, this.centre.y, this.centre.z, m.slot, this.time, this.goal);
+            this.goal.y += 1.5;
+          }
+          steerTo(m, m.v, this.goal, mill * 1.4, c.steer, dt);
           if (m.timer > c.peelSeconds) m.state = 'fly';
           break;
         case 'flinch':
@@ -257,6 +366,15 @@ export class Moths {
           if (m.timer > c.flinchSeconds) m.state = this.leaving ? 'leave' : 'fly';
           break;
         case 'leave': {
+          if (hab) {
+            // Away down the drift, and gone.
+            steerTo(m, m.v, hab.away(m, this.goal), mill + 3, c.steer, dt);
+            if (m.timer > hab.hc.leaveSeconds) {
+              m.active = false;
+              m.target.targetable = false;
+            }
+            break;
+          }
           if (!m.leaveTo) {
             const a = Math.atan2(m.x - t.x, m.z - t.z);
             m.leaveTo = { x: t.x + Math.sin(a) * c.leaveDistance * 1.5, y: t.y + 30, z: t.z + Math.cos(a) * c.leaveDistance * 1.5 };
@@ -276,7 +394,7 @@ export class Moths {
           m.x += m.v.x * dt;
           m.y += m.v.y * dt;
           m.z += m.v.z * dt;
-          const g = (this.ground?.heightAt(m.x, m.z) ?? t.y) + 0.12;
+          const g = (hab ? hab.floorAt(m) : this.ground?.heightAt(m.x, m.z) ?? t.y) + 0.12;
           if (m.y <= g) {
             m.y = g;
             m.state = 'corpse';
@@ -294,11 +412,14 @@ export class Moths {
       }
       if (FLYING.has(m.state)) {
         flying++;
-        // Never down into the ground.
-        const floor = (this.ground?.heightAt(m.x, m.z) ?? t.y) + 0.5;
-        if (m.y < floor) {
-          m.y = floor;
-          if (m.v.y < 0) m.v.y = 0;
+        if (hab) hab.clamp(m); // inside the tunnel
+        else {
+          // Never down into the ground.
+          const floor = (this.ground?.heightAt(m.x, m.z) ?? t.y) + 0.5;
+          if (m.y < floor) {
+            m.y = floor;
+            if (m.v.y < 0) m.v.y = 0;
+          }
         }
       }
     }
@@ -306,7 +427,7 @@ export class Moths {
     this.flutterTimer -= dt;
     if (flying > 0 && this.flutterTimer <= 0) {
       this.flutterTimer = c.flutterEvery;
-      this.sfx?.play('mothFlutter', { x: this.centre.x, z: this.centre.z });
+      this.sfx?.play('mothFlutter', hab ? { x: t.x, z: t.z } : { x: this.centre.x, z: this.centre.z });
     }
     if (!anyActive) {
       this.active = false;
@@ -319,6 +440,12 @@ export class Moths {
   hit(m, amount) {
     if (!m.active || m.health <= 0) return false;
     m.flash = this.cfg.moths.giant.hitFlashSeconds;
+    // Session 30: a shot into a roost: it knows (the habitat's owner decides whether it wakes or scatters).
+    const roosting = m.state === 'rest';
+    if (roosting) {
+      m.roll = 0;
+      this.bus?.emit('moths:roostHit', { group: m.group });
+    }
     if (hurtMoth(m, amount)) {
       m.state = 'dying';
       m.timer = 0;
@@ -327,7 +454,7 @@ export class Moths {
       this.sfx?.play('mothDie', m);
       const left = this.living;
       this.bus?.emit('moths:killed', { left });
-      if (left === 0) this.notify?.('The last of them drops');
+      if (left === 0 && !this.habitat) this.notify?.('The last of them drops');
       return true;
     }
     m.state = 'flinch';
