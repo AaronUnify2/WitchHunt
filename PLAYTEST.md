@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still); rounds 67-70 Session 30 (the mineshaft: the surface, the cage, the turret cart, the ride's fight); rounds 71-73 Session 31 (the mineshaft: the bottom, the way out, the family's lines)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still); rounds 67-70 Session 30 (the mineshaft: the surface, the cage, the turret cart, the ride's fight); rounds 71-73 Session 31 (the mineshaft: the bottom, the way out, the family's lines); round 74 Session 32 (your play-through notes, part 1)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,22 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 74: your play-through notes, part 1, as built (Session 32; OPEN_QUESTIONS #646-668).**
+- [ ] **The first aid box:** no prompt where you wake. Step out of the room and come back: it offers.
+- [ ] **The crossing sign:** RAILROAD and CROSSING sit inside the boards.
+- [ ] **The holler on the quad:** ride over a bear trap or a snare. It snaps under the wheel and you ride on. On foot it still catches you, and "prise the jaws open" shows even with the quad right beside you.
+- [ ] **The stairs** stand with their foot toward the path you arrive by.
+- [ ] **The plane, arriving:** at the clearing's edge a sweep: the gouge from above, then over the shoulder of something small at the wing. Then Wyatt and Ellen on the radio. Is the hint enough, too much?
+- [ ] **The standoff:** walk up. The grey looks up, vaults the wing, stands looking at you, lifts the pistol and fires twice (it misses). Your view closes in on it while this plays. About seven and a half seconds. Long enough now? Too long?
+- [ ] **The quick draw** is still there the moment you get control back: one hit in the first half second drops it.
+- [ ] **The pistol** is in its hand.
+- [ ] **The Mothman:** shoot him as much as you like. He doesn't leave. He knocks you out.
+- [ ] **The power cell** is in the drops' line with no instruction, and no goal points at it. The fence box still takes it.
+- [ ] **Waking at the wreck:** two seconds later Ellen's on the radio with the whole account (you can move while it plays); when Wyatt patches the camera through, the clip plays by itself (A skips it); then "Find Junie. Head south." No trip home. The account is about 40 seconds and the clip 54: too long for one sitting?
+- [ ] **The church:** the door's shut, with a beam across it. Walk at it: you don't get in, and it says so. The plaque stone is at the foot of the steps beside it, the dig in front of the stone.
+- [ ] **The stairs:** a moment after you walk into the clearing, eight moths drop out of the treetops. The stairs won't take you until they're dead. Is eight right? Are moths right?
+- [ ] **Old growth:** the stairs' clearing has giants round it, taller than the forest, with ferns under them. Up the stairs, the place beyond is the same trees in bone grey: far fewer than before, each one huge. Does it match the rest of the game now?
 
 **Round 71: the bottom of the mine (Session 31; OPEN_QUESTIONS #605-619).** Ride down, or debug menu, **Story, radio & trail cams**: "Mineshaft: to the bottom" (the bulkhead shut) or "to the bottom, the bulkhead open".
 - [ ] **The bulkhead:** hold X at it for about three seconds (the pinch bar from the fall). The bar comes out, the leaf's dragged back against the wall, the silk hangs torn.

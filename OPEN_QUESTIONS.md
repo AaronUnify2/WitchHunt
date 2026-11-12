@@ -1,5 +1,7 @@
 # Open questions
 
+**Session 32 (Nov 12):** your play-through notes, part 1 (the opening to the place beyond), all fourteen built, with your five answers. What they settled, and my calls in building them, are #646-668 below.
+
 **Session 31 (Nov 12):** the abandoned mineshaft, the bottom and the way out (the cavern, the seam, the cocoon, the charges and the plunger, the logbook, the dynamite, the rock drill's head, the fuse, the cart back up with the fire behind it, the closing cutscene, the family's lines). Your answers at the start: a glowing crack; a 4 m hung cocoon; a 20 second fuse that kills; a played ride up ending in a cutscene. No play-test notes yet, so nothing from before changed. My calls are #605-645 below.
 
 **Session 30 (Nov 12):** the abandoned mineshaft, the way down (the surface, the battery and the cage, the mine below, the turret cart, the ride's fight, the giant moths' real behaviour). Your answers at the start: two sessions, the way down first; an ordinary car battery; my other defaults. No play-test notes yet, so nothing from before changed. My calls are #565-604 below.
@@ -13,6 +15,40 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 32: your play-through notes, part 1
+
+Your notes as you played, and your answers: the first aid box's prompt back is enough; keep the quick draw; the power cell is a quiet drop; moths at the stairs, eight; the clip inside the wake-up scene.
+
+**Settled by your notes** (earlier questions these close): #436-438 (the standoff, the quick draw, the pistol), #440 (the drops: the cell isn't pointed at), #443 (the Mothman can't be driven off), #449-450 (one ending; the account always over the radio, where he wakes), #452 (the clip plays by itself), #466 (the church: the door's shut), #469 (the stairs face the way in), #471 (the place beyond is old growth), #550 (a trap never holds you with no way out).
+
+**My calls in building them (PLAYTEST round 74)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 646 | **The first aid box.** | Quiet until you've stepped about 3 m away from it once, then it offers whenever it holds a kit (and says your healing's full if it is). It was already how you remembered: it holds two kits plus anything that didn't fit your pool (cap 270). | `Station.js` `aidBoxOffered`, `aidBoxClear` |
+| 647 | **The crossing sign.** | Each word is shrunk to fit its half of the board, clear of the middle where the boards cross. Both boards still read RAILROAD CROSSING. | `render/Railway.js` |
+| 648 | **Why the bear trap had no prompt.** | Traps were catching you while you rode. On the quad you were held, the quad wouldn't move, and prompts are off while riding. Now a bear trap or snare goes off under the wheel and holds nothing (a stump gun still fires, cans still rattle). On foot the way out always shows. | `combat/hollerTraps.js` |
+| 649 | **Save and quit put you at the compound.** | Unchanged: Continue has always put you at home (your ask, Session 20). Say if you want it to put you where you were. | `Game.saveAndQuit` |
+| 650 | **The stairs' facing.** | Toward the pathway into their clearing. They used to face the church, which on real maps was a different direction. | `world/StairsSite.js` |
+| 651 | **The plane's sweep.** | Ten seconds, 46 m out, once: high over the gouge, down along it, then a cut to over the grey's shoulder at its bench. It's a silhouette in poor light; that's the hint. | `sweep.crashedPlane`, `encounter.sweepDistance` |
+| 652 | **The radio lines after it** (drafts). | Wyatt: "Dad. By the wing. There's something there, and it's too small to be the pilot." Ellen: "That's not one of ours, Tom. It's got the guns in pieces. Go slow, and don't let it see you first." | `dialogue.json` `plane.sweep.*` |
+| 653 | **The standoff's timing.** | 7.6 s: it works (1.2), looks up, vaults the wing (at 2.0), stands in the open 2.5 s, lifts the pistol (5.3), fires at 6.2 and 7.0, both wide. Then control. | `encounter.standoff` |
+| 654 | **Your view zooms on it** while the scene holds. | From 16 m it was a speck, so the view narrows to less than half and opens again as control comes back. Say if that's jarring. | `standoff.zoom` |
+| 655 | **The quick draw, kept** (your call). | Unchanged: the first 0.55 s after control comes back, one hit drops it. After that its third shot goes wide, it hops into cover and the shootout begins. With two shots already fired at you, is half a second still fair? | `encounter.quickDraw` |
+| 656 | **Only the plane's grey has the pistol.** | The later cowboy stages (hat, belt, gunslinger) still carry the shotgun. | `render/alienModel.js` `KIT_STAGES` |
+| 657 | **The Mothman at the plane.** | He takes hits and flinches but his health won't fall far enough for him to leave, and his dives repeat until you're down to 10% and black out. Elsewhere (the debug spike) he can still be driven off. | `Flyer` `unbeatable` |
+| 658 | **The smashed radio is gone from the story,** | with the night sat out in the wreck, the face-to-face account at the gate and Wyatt's spare handset. I left their code, lines and cutscene in place so an old save with the radio smashed still works. They can be deleted later. | `JunieTaken.js`, `plane.radioSmashed` |
+| 659 | **The power cell** (your call: a quiet drop). | Still in the drops (the line just names it), still fits the fence box, no goal. You mentioned finding it another place in the story; nothing's done about that. | `CrashedPlane.loot`, `Objectives.js` |
+| 660 | **The wake-up scene's length.** | The account is nine lines, about 40 s, over the radio with you free to move. The clip is 54 s (A skips it). Then three more lines. It's about two minutes in all. I didn't cut any of your lines; say which should go if it drags. | `dialogue.json` `junie.account.*`, `clip.junieTaken` |
+| 661 | **Home isn't needed, but it's still there.** | Junie's rabbit is on her bunk and Ellen and Wyatt have their lines if you go. Nothing sends you. |  |
+| 662 | **The church door** (a draft). | "The church door. Shut, swollen into its frame, a beam spiked across it a long time ago. It doesn't move." You can still see into the church through the fallen corner at the back, but not get in. | `config.oldChurch.encounter.doorText` |
+| 663 | **Where the capsule is now.** | The plaque stone is about 3 m from the door, at the foot of the steps to one side; the dig is in front of the stone. | `render/oldChurchModel.js` |
+| 664 | **The moths at the stairs** (your call: eight). | They come 1.5 s after you're within 22 m, only while Junie's up there, once. The stairs say "Not with those things on you" until the last is dead. Leave mid-fight and they come again next time. | `config.stairs.encounter.moths` |
+| 665 | **What an old-growth tree is here.** | A trunk 22 m tall and about 2 m through at the ground, six buttress roots, moss on the north side, dead stubs, limbs from 13 m up, a crown of flat dark masses with moss hanging. The crowns are flat pads like the forest's own pines, much bigger. | `render/oldGrowth.js` |
+| 666 | **The place beyond, thinned.** | About 70 giants a clearing where there were about 250 poles, so you see further between them into the fog. 260 ferns on the floor, which barely show in that light. | `config.spikes.placeBeyond` (`treeSpacing`, `ferns`, `oldGrowth`) |
+| 667 | **The stairs' clearing.** | Sixteen giants in a ring 1.5 to 12 m outside the clearing's edge, the way in left open, 80 ferns. They stand among the ordinary forest, and their crowns show over it from a distance, so the stairs can be found by them. | `config.stairs.oldGrowth` |
+| 668 | **Cost.** | Three more draw calls at the stairs and one more in the place beyond; a few thousand triangles each. Not measured on the tablet. |  |
 
 ## Session 31: the abandoned mineshaft, the bottom and the way out
 

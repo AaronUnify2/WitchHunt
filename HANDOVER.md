@@ -1,60 +1,16 @@
 # Handover
 
-## DO THIS FIRST: Session 32: Aaron's play-through notes, part 1 (the work list below), then back to the story
+## DO THIS FIRST: Session 33: more of Aaron's play-test, then back to the story
 
-**Where things stand:** everything to date is on `main` (and `ccr-2ebd0b15-khy2cs`). 1222 tests pass and the build is clean. All five designed optional encounters are built. **Aaron has started the big play-test.** His first sitting was a narrated play-through from the opening to the place beyond; the list below is what it produced. He said: **start on these now; more play-testing will follow.** Nothing in the game was changed from these notes (his instruction: write the list, don't build).
+**Where things stand:** everything to date is on `main` (and `ccr-2ebd0b15-khy2cs`). 1241 tests pass and the build is clean. **Aaron is partway through the big play-test.** His first sitting (a narrated play-through, the opening to the place beyond) gave fourteen notes; Session 32 built all of them (below). He is past the stairs; the optional places and the mine are still to play.
 
-He also has every open question since his last play-test (#436-645) on a page with answer boxes: https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2. He'll paste answers back as "#612: ..." lines. Log each settled call in OPEN_QUESTIONS when they come.
+**1. His notes first** (rule 10). Ask for the next sitting's notes if they aren't in the conversation. He narrates as he plays and changes his mind as he goes: take his last word, and ask where two notes pull apart. He may also paste answers from the questions page (https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2, #436-645) as "#612: ..." lines: log each in OPEN_QUESTIONS. Fix the small things first. **Still open from Session 32** (ask him): Save and quit putting him at home (#649); the wake-up scene's length (#660); the standoff's zoom (#654); the quick draw's half second (#655); another place in the story for the power cell (#659).
 
-**Confirm in one short message first** (role, the list as you read it, and the questions at the end of it), then work in batches: test, check headless, push each to `main`.
-
-### The work list (Aaron's notes, Nov 12; in the order he played)
-
-His words are quoted. "Where" is where I'd start looking, read from the code but not tried.
-
-**A. Small fixes**
-
-1. **The first aid box can't be used at all.** "From the very beginning of the game, I can no longer interact with the first aid kit." *Why:* Session 25's fix for "don't spawn me on a prompt" hides the box whenever Tom is at full health (`base/Station.js`, the `hurt` test above the `aid-box` offer). So with full health it never offers, even with room in the healing pool. *Fix:* offer it whenever a kit would fit (`inv.canTakeKit()`), but not while he's still stood where he woke (for example, not until he's left the cabin once, or stepped a metre or two from the spawn). *His later thought:* "the first aid kit is probably redundant because we've added the health pool, but maybe once the health pool is above 150 or so, you can collect excess packs from the first aid kit. I'm kind of starting to remember it might already be that way." It nearly is: the box holds two kits plus whatever didn't fit the pool (cap 270, `config.inventory.healing.poolCap`), and taking from it fills the pool. Tell him that, and ask whether he wants anything more than the prompt back.
-2. **The railway crossing sign's text doesn't fit.** "The text doesn't fit on the sign properly. Could you please reduce the text size?" *Where:* `render/Railway.js` (the crossbuck's RAILROAD CROSSING and the warning board). Earl's signs got `fitText` in Session 25: use the same.
-3. **Stuck in a bear trap with no prompt** (the moonshiners' holler). "I got off the quad bike and landed straight in the bear trap, and then I have no prompt on the screen in order to get out." He had to Save and quit. *Two likely causes, check both:* (a) the holler only offers its prompts within `site.place.radius + 8` of its middle (`encounters/Holler.js` `update`), but the traps run out to `radius + 30`, so a trap near the mouth can hold him where nothing is offered; (b) `canInteract` is false while another prompt is up, and he'd just stepped off the quad, so the quad's "ride" prompt may have been winning. *Fix:* while a trap holds him (`traps.held`), the free-yourself prompt must always show, wherever he is and whatever else is offering, and nothing else should offer. Add a test. Also worth stopping a dismount from landing him in a trap, or at least checking a held player can't mount.
-4. **Save and quit put him back at the compound.** Not a bug: Continue has put Tom at home since Session 20 (his ask). He noted it without asking for a change. Mention it; change nothing unless he says.
-5. **The stairs should face the way in.** "It should probably always be rotated so that the bottom of the stairs is pointing towards the entrance to the clearing." *Where:* `world/StairsSite.js` placement (`yaw` comes from the church's direction now, "climbing away from the church"). Turn it so the foot faces the pathway Tom arrives by, as the other sets do.
-
-**B. The crashed plane, reworked** (`encounters/CrashedPlane.js`, `config.crashedPlane.encounter`, `cutscenes.json` `plane.*`; OPEN_QUESTIONS #436-448)
-
-6. **An arrival sweep.** "At the edge of the crashed plane clearing, could we get a sweep just showing the crashed plane from a little bit of a higher vantage point... Maybe a little hint at the alien being there during the sweep. It would be good to have them reference the alien from the radio." A `sweep.crashedPlane` like the other sets' (see `sweep.mineshaft`), with the grey glimpsed at its bench, and a family line over the radio about it. There's none now: the standoff fires 16 m from the grey.
-7. **The standoff is too rushed.** "We need the alien to jump out, be visible for a few seconds. Then we need to see him raise up the pistol... and we need him to start taking shots at Tom. Then we give the control back to the player, so that it's very clear that the alien is hostile." Now it's 2.9 s and control comes back just before the first shot (`standoff: { turnAt: 1.3, aimAt: 2.3 }`, `quickDraw: 0.55`). Lengthen it, have the first shots land in the cutscene (missing him), then hand back. This changes the quick draw (#437): one clean hit in half a second no longer fits. Ask him whether the quick draw goes, or stays as a window after the shots start.
-8. **He should hold a pistol, not the shotgun.** "Currently, he's holding the shotgun, so we need him to be holding the pistol." *Where:* `render/alienModel.js` `KIT_STAGES` (`plain` has `shotgun: true`). Settles #438.
-9. **The Mothman can't be beaten there.** "Could we make it that the Mothman can't be defeated in that battle? He has to knock you unconscious. The game plays a lot better." Remove the driven-off ending: no leaving when hurt (`fleeAt`), no `mothmanGone(drivenOff)` path, no `plane.radioSmashed`, no night sat out in the wreck. Only the 10% floor and the blackout. That retires `radioSmashed` / `radioMended`, Wyatt's spare handset and the face-to-face account (#449, #450), and the tests for them. Check a save made with `radioSmashed` set still loads sensibly.
-10. **The power cell: keep it, don't point at it.** He changed his mind as he talked; the last word was: "We'll keep it that the alien drops the shard, but we won't call attention to it." His reason: "we don't actually make it back to the compound until after we've been knocked unconscious by the Mothman, which means the alien shard beat doesn't land at all." So: it still drops and can still be fitted at the fence box, but take it out of the pickup line's instruction ("fit it at the fence box at home"), any objective and any nudge. He also said "we're going to find a different spot in the story for it": ask whether he still wants that, since he then kept the drop.
-
-**C. Junie taken, without the trip home** (`encounters/JunieTaken.js`, `story/Objectives.js`; #449-456)
-
-11. **Wake at the wreck and go looking, no need to go home.** "This whole section can be condensed to Mothman knocks Tom unconscious, he wakes up, goes looking for Junie. No need to go back to the compound... you wouldn't have to drive halfway across the map to have a quick chat and back." Before that he'd asked for the talk at home to be one cutscene ("when you enter the room, quick cutscene begins, all that dialogue that they both say is put through, and then it's back on the quad bike"); the no-trip-home version replaces it. So: when he wakes at the wreck, one short scene delivers everything the family have to say (the account, over the radio), the trail camera's clip plays in it or straight after (it's on D-pad down now, and the church needs `junieClipSeen`), and the goal is "Find Junie. Head south" from where he stands. Nothing may need home: check the quad (is it at the wreck when he wakes?), the rabbit on the bunk (now optional colour), and that talking to Ellen and Wyatt at home later doesn't replay it all.
-
-**D. The old church** (`render/oldChurchModel.js`, `world/OldChurchSite.js`, `encounters/OldChurch.js`; #462-468)
-
-12. **A door he can't open, and the capsule beside it.** "Junie is calling from the inside. This is a great story beat, but I can walk through the door, go inside and see she's not there, which is a little bit confusing. Instead, I think we need a big impassable door at the front of the building, and then we need to have the time capsule next to it. So just move the time capsule a little closer to the church." Shut the doorway with a heavy door (model and collider; the east wall's fallen in at the back, so make sure that isn't a way in either), give it a prompt that says it won't move, and move the plaque stone and the dig spot up near the door so he finds them while he's trying it.
-
-**E. The stairs and the place beyond** (`render/stairsModel.js`, `encounters/Stairs.js`, `encounters/PlaceBeyond.js`; #469-475)
-
-13. **The stairs are anticlimactic.** "The staircase, it looks good... but it's also a little bit anticlimactic. Maybe we should just chuck in a swarm of moths or something just to give the player a little something extra to do." A fight at the stairs' clearing before he climbs. The moths have a pool of 32 (`ai/Moths.js`; `send(count)` for a swarm in the open). Ask: moths, or something that fits the Caller better? He said "or something".
-14. **An old-growth look for the place beyond and the stairs' clearing.** "The trees are inconsistent styling with the rest of the game. They're kind of placeholder trees. What if we give this area a more old growth forest kind of look? And then apply that same style to the forest clearing where the stair in the woods is." The place beyond's trunks are the spike's instanced cylinders, recoloured (`PlaceBeyond.js`). Build proper old-growth trees (huge boles, buttressed roots, high crowns, deadfall, moss) for both, within the tablet's budget; this is the big one. Settles #471.
-
-**F. Questions to put to Aaron before building** (one message)
-- The first aid box: is the prompt back enough (item 1)?
-- The quick draw: gone, or kept after the alien's first shots (item 7)?
-- The power cell: leave it as a quiet drop, or move it somewhere else in the story (item 10)?
-- At the stairs: moths, or something else (item 13)?
-- The trail camera's clip: play it inside the wake-up scene, or keep it on D-pad down (item 11)?
-
-**Open questions these notes settle or change** (log them in OPEN_QUESTIONS as you build): #436-437 (the standoff, the quick draw), #438 (the pistol), #440 (the drops), #443 (the Mothman's ending), #449-450 and #453 (both endings, the account, the rabbit), #465-466 (the church's set and order), #469 and #471 (the stairs, the place beyond's look), #550 (caught by a bear trap).
-
-**Then:** more play-test notes as they come (he's past the stairs; the optional encounters and the mine are still to play). After those, the story's next stretch, **confirmed with Aaron first**: DESIGN.md "Build plan" M12, Bigfoot (beats 6-7), its first part: the family's plan and Earl's maps, and the military's dozer on the cordon strip. Where it plugs in:
+**2. Then the story's next stretch**, confirmed with him first: DESIGN.md "Build plan" M12, Bigfoot (beats 6-7), its first part: the family's plan and Earl's maps, and the military's dozer on the cordon strip. Where it plugs in:
 - **The dozer exists as a spike** (`world/Dozer.js`, `world/dozerParts.js`; debug menu): it drives, shoves cars and trees, and has a winch. It needs its place in the story.
 - **Its clearing is on the map:** `data/storySpine.json` `cordonDozer` (beat 7), a placeholder on the cordon strip (`world/cordon.js`).
 - **The family's plan** is a scene at home once Junie's back (`junieHome`).
-- **Start points for testing:** `debug/storyStart.js` has "Outpost cleared" only. Add "the plane done" and "Junie home" starts: they'd also save a lot of walking for the work list above.
+- **Start points for testing:** `debug/storyStart.js` has "Outpost cleared" only. Add "the plane done" and "Junie home".
 
 **How to work** (as Sessions 26 to 31 did):
 - Config and data first: an encounter's texts go in its own `data/<place>.json`, and new JSON entries go in each data file's own one-line style, so the diff stays small.
@@ -69,7 +25,39 @@ His words are quoted. "Where" is where I'd start looking, read from the code but
 - Check every batch headless, look at the screenshots critically, then push it to `main`.
 - Write it up at the end: STATUS, PLAYTEST from round 74, OPEN_QUESTIONS from #646, DESIGN as built, MORNING, and this file.
 
-## Just finished: Session 31 (Level & Encounter Designer + AI Programmer): the mineshaft, the bottom and the way out
+## Just finished: Session 32 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 1
+
+**Status:** all of it is on `main` and on `ccr-2ebd0b15-khy2cs`, in five batch commits and the write-up. 1241 tests pass and the build is clean. Checked headless; **none of it played on the tablet**. For Aaron: PLAYTEST round 74; OPEN_QUESTIONS #646-668; MORNING.md. His notes as he gave them are in this file's previous version (commit 30b81cc).
+
+**Done, by batch** (STATUS "Session 32" has the detail):
+1. **Small fixes:** the first aid box's prompt, the crossing sign, traps and the quad, the stairs' facing.
+2. **The crashed plane:** the arrival sweep and its radio lines, the longer standoff, the pistol, the Mothman who can't be driven off, the power cell a quiet drop.
+3. **Junie taken** told where Tom wakes: the account, then the clip by itself, no trip home.
+4. **The old church:** the door shut, the capsule beside it.
+5. **The stairs:** eight moths keep them; old growth round the clearing and in the place beyond (`render/oldGrowth.js`).
+
+**Not done or not checked:**
+- **The tablet**, and any of it played by hand.
+- **The smashed radio's code and data** (`radioSmashed`, `plane.radioSmashed`, the face-to-face account, the spare handset) are left in for old saves; nothing triggers them now. Delete them when it's safe to.
+- **The ferns in the place beyond** barely show.
+
+**To carry (Session 32):**
+- **A prompt hidden where the player spawns:** hide it until he's stepped away once (`aidBoxOffered(hurt, beenAway)`), not by a condition that may never come true.
+- **Anything that tests Tom's steps** (traps, lines) must ask whether he's riding (`player.riding`): on a vehicle he can't answer a prompt.
+- **A prompt that must never be blocked** (the way out of a trap): call the interaction even when `canInteract` is false, and keep the vehicles from offering (`rideFree` in `Game`).
+- **Text on a painted board:** `fitText(ctx, text, x, y, maxWidth, size, weight, family)` (`render/RoadNorthProps.js`).
+- **A set that should face the way in:** `pathFrame(map, key)` (`world/clearingFrame.js`) gives the pathway's entrance and yaw. The unit tests' map isn't the game's: check the facing headless on a real seed.
+- **A model's spots aren't where its comments suggest:** print them in the model's own frame from the running game before writing camera keys (the plane's bench is at z 7 to 9, not at the origin).
+- **A first-person scene on something far off:** set `player.fovMultiplier` from the encounter while it plays (the standoff's `zoom`), and give the cutscene a live target (`cutscenes.liveTargets.set(name, () => ({ x, y, z }))`) if the thing moves.
+- **A scene's clock in config, its length in the cutscene:** keep them equal and test it (`standoff.end` and `plane.standoff`'s duration).
+- **A boss that can't be beaten here:** `flyer.send({ script, story: true, unbeatable: true })`: his health stops above the point he'd leave, and the script's last move repeats.
+- **Something that plays by itself after lines finish:** `whenQuiet(fn)` then a short countdown (`JunieTaken.clipIn`).
+- **Shutting a doorway in a baked set:** a wall across the gap in the colliders and a prompt at the door's spot; moving a thing means moving its `pushOnGround` frame (its spots go with it) and the graveyard's keep-clear box.
+- **A fight that gates a prompt:** a flag for "dealt with", a `guarded` getter, send the swarm once per visit, and treat `moths.living === 0` after sending as done (`Stairs.updateMoths`).
+- **Trees for more than one place:** `render/oldGrowth.js`: geometry with a `role` per vertex, `paint(geometry, palette)` for the place, drawn instanced. `ringStand` puts a ring of them round a clearing with the way in left open.
+- **My headless harness:** as Session 31's. New: `game.plane` is the crashed plane's encounter, `game.church` the old church's, `game.stairs`, `game.stairsSite`, `game.crashSite`, `game.world.railway`. `skipToPhase('day')` in the harness still looks like dawn.
+
+## Before that: Session 31 (Level & Encounter Designer + AI Programmer): the mineshaft, the bottom and the way out
 
 **Status:** all of it is on `main` and on `ccr-2ebd0b15-khy2cs`, in four commits (one per batch, then the write-up). 1222 tests pass and the build is clean. Checked headless on three seeds; **none of it played on the tablet**. Aaron's answers at the start: no notes yet; the seam a glowing crack; the cocoon hung, split, 4 m; a 20 second fuse that kills; the ride up played, then a cutscene. For Aaron: PLAYTEST rounds 71-73; OPEN_QUESTIONS #605-645; MORNING.md.
 
