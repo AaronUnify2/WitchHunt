@@ -291,6 +291,7 @@ export class ViewModel {
       shovel: this.buildShovel(),
       spikeMaul: this.buildSpikeMaul(), // Session 27
       dynamite: this.buildDynamite(), // Session 27
+      chainsaw: this.buildChainsaw(), // Session 28
       detonator: this.buildDetonator(),
       hands: { group: new THREE.Group() }, // Session 15b: nothing in hand
     };
@@ -629,6 +630,54 @@ export class ViewModel {
     return { group };
   }
 
+  // Session 28: the chainsaw (the sawmill's): a logger's saw, its orange gone dull under oil and
+  // sawdust, a long bar out front (along -z), the wrap handle over the top, the rear handle and
+  // trigger behind. The chain's teeth are two little runs that slide along the bar (top forward,
+  // bottom back) while it's running: updateSaw moves them.
+  buildChainsaw() {
+    const group = new THREE.Group();
+    const ORANGE = 0x6a3014;
+    const ORANGE_DARK = 0x4e240e;
+    this.mesh([
+      [box(0.1, 0.105, 0.21, ORANGE), 0, 0, 0.03], // the engine housing
+      [box(0.085, 0.03, 0.15, ORANGE_DARK), 0, 0.065, 0.05], // the top cover
+      [box(0.03, 0.025, 0.07, RUBBER), 0, 0.09, 0.075], // the air filter's knob
+      [shade(new THREE.CylinderGeometry(0.046, 0.046, 0.022, 12).rotateZ(Math.PI / 2), 0x2a2c2e), -0.06, -0.005, 0.03], // the starter housing
+      [box(0.012, 0.02, 0.03, RUBBER), -0.075, 0.03, 0.03], // the pull cord's grip
+      [box(0.03, 0.075, 0.1, 0x26282a), 0.06, -0.01, -0.03], // the clutch cover
+      [box(0.012, 0.03, 0.04, 0x3a3c3e), 0.05, 0.03, -0.09], // the muffler
+      // The wrap handle: up one side, across the top, down the other.
+      [box(0.014, 0.014, 0.012, RUBBER), 0, 0, 0],
+      [box(0.016, 0.13, 0.016, RUBBER), -0.068, 0.075, -0.05],
+      [box(0.15, 0.016, 0.016, RUBBER), 0, 0.14, -0.05],
+      [box(0.016, 0.1, 0.016, RUBBER), 0.068, 0.09, -0.05],
+      // The rear handle and its guard.
+      [box(0.03, 0.03, 0.14, RUBBER), 0, 0.02, 0.2],
+      [box(0.03, 0.06, 0.02, RUBBER), 0, -0.005, 0.265],
+      [box(0.026, 0.014, 0.16, ORANGE_DARK), 0, -0.04, 0.19],
+      [box(0.008, 0.02, 0.012, STEEL), 0, 0.0, 0.17], // the trigger
+      [box(0.02, 0.06, 0.012, RUBBER), 0, 0.085, -0.085], // the chain brake's hand guard
+      // The bar, and the chain's band round it.
+      [box(0.006, 0.062, 0.44, 0x6a7076), 0, -0.012, -0.3],
+      [shade(new THREE.CylinderGeometry(0.031, 0.031, 0.006, 10, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateX(-Math.PI / 2), 0x6a7076), 0, -0.012, -0.52],
+      [box(0.011, 0.01, 0.45, DARK_STEEL), 0, 0.024, -0.3],
+      [box(0.011, 0.01, 0.45, DARK_STEEL), 0, -0.048, -0.3],
+      [box(0.011, 0.07, 0.01, DARK_STEEL), 0, -0.012, -0.552],
+      [box(0.004, 0.03, 0.2, 0x4a4e52), 0, -0.012, -0.24], // the maker's name, worn off
+    ], group);
+    // The teeth: nine on each run, one spacing apart.
+    const spacing = 0.05;
+    const run = (y, up) => {
+      const g = new THREE.Group();
+      const parts = [];
+      for (let i = 0; i < 9; i++) parts.push([box(0.013, 0.012, 0.018, 0x8a8e90), 0, y + (up ? 0.008 : -0.008), -0.1 - i * spacing]);
+      this.mesh(parts, g);
+      group.add(g);
+      return g;
+    };
+    return { group, top: run(0.024, true), bottom: run(-0.048, false), spacing };
+  }
+
   // Session 27: a stick of dynamite held up in the right hand: waxed red paper, the ends crimped,
   // the fuse out of the top (its own mesh: it burns down), and the spark at its end (additive, its
   // own material: no light).
@@ -743,6 +792,7 @@ export class ViewModel {
     g.rotation.set(this.kick * c.kickRotate - dipHold, 0, 0);
 
     if (id === 'dynamite') this.updateDynamite(model, g);
+    if (id === 'chainsaw') this.updateSaw(model, g);
     if (melee && weapons.weapon.swing === 'smash') this.updateSmash(g, weapons);
     else if (melee) this.updateSwing(g, weapons);
     else this.slash.visible = false;
@@ -872,6 +922,30 @@ export class ViewModel {
     model.spark.position.y = 0.105 + 0.09 * model.fuse.scale.y;
     const flick = 0.8 + 0.7 * Math.abs(Math.sin(now * 41)) + (d.fuse < 0.3 ? 0.8 : 0);
     model.spark.scale.setScalar(flick);
+  }
+
+  // Session 28: the chainsaw in hand (this.saw, from combat/Chainsaw.js: { rev 0..1, cutting,
+  // stalled, running, time }). It hangs across the body at rest, the engine shaking it a little;
+  // revved it comes up level and forward; in a cut it bucks and digs in; stalled it sags.
+  updateSaw(model, g) {
+    const c = this.cfg.saw;
+    const v = this.saw ?? { rev: 0, cutting: false, stalled: false, running: false, time: 0 };
+    const k = smooth(v.rev);
+    g.rotation.y = c.rest.yaw + (c.revved.yaw - c.rest.yaw) * k;
+    g.rotation.x += c.rest.pitch + (c.revved.pitch - c.rest.pitch) * k;
+    g.rotation.z = c.rest.roll + (c.revved.roll - c.rest.roll) * k;
+    g.position.x += c.revved.x * k;
+    g.position.y += c.revved.y * k - (v.stalled ? c.stallDrop : 0);
+    g.position.z += c.revved.z * k - (v.cutting ? c.cutPush : 0);
+    const amp = !v.running ? 0 : v.cutting ? c.cutShake : c.idleShake + (c.shake - c.idleShake) * k;
+    const t = v.time * 60;
+    g.position.x += Math.sin(t * 1.7) * amp;
+    g.position.y += Math.sin(t * 2.3 + 1) * amp;
+    if (v.cutting) g.rotation.x += Math.sin(t * 0.9) * 0.03;
+    // The chain: the top run forward, the bottom run back.
+    const slide = v.running ? (v.time * c.chainSpeed * 0.44 * (0.15 + 0.85 * k)) % model.spacing : 0;
+    model.top.position.z = -slide;
+    model.bottom.position.z = slide - model.spacing;
   }
 
   // Session 27: the spike maul's overhead smash: lifted slowly over the right shoulder, dropped

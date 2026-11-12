@@ -1140,7 +1140,7 @@ export const config = {
       slotOf: {
         rifle: 'long', shotgun: 'long', sniper: 'long', thermal: 'long', autoShotgun: 'long',
         pistol: 'sidearm', smg: 'sidearm',
-        shovel: 'melee', spikeMaul: 'melee',
+        shovel: 'melee', spikeMaul: 'melee', chainsaw: 'melee',
       },
       tools: ['shovel'],
       rackName: "the comms room's gun rack",
@@ -1151,7 +1151,7 @@ export const config = {
       { id: 'pistol', weapons: ['pistol', 'smg'] },
       { id: 'rifle', weapons: ['rifle', 'sniper', 'thermal'] },
       { id: 'shotgun', weapons: ['shotgun', 'autoShotgun'] },
-      { id: 'melee', weapons: ['shovel', 'spikeMaul', 'chainsaw'] }, // the maul and chainsaw when they're built
+      { id: 'melee', weapons: ['shovel', 'spikeMaul', 'chainsaw'] }, // the maul (Session 27), the chainsaw (Session 28)
       { id: 'explosive', weapons: ['dynamite', 'detonator'] }, // while there are sticks (Session 27), while charges are out or in hand
     ],
     // Session 25 (Aaron): Tom carries every gun; the weapon cross (ui/WeaponCross.js, D-pad down
@@ -1162,7 +1162,7 @@ export const config = {
       left: ['pistol', 'smg'],
       right: ['rifle', 'sniper', 'thermal'],
       down: ['flareGun', 'dynamite', 'charges'],
-      melee: ['shovel', 'spikeMaul', 'chainsaw'], // Session 25 (Aaron): the melee bar along the bottom (the maul and chainsaw: designed, not built)
+      melee: ['shovel', 'spikeMaul', 'chainsaw'], // Session 25 (Aaron): the melee bar along the bottom
     },
     headshotMultiplier: 3, // Aaron: x2 at least, open to x3-4
     fireSlowSeconds: 0.35, // movement stays slowed this long after a shot or swing
@@ -1208,6 +1208,9 @@ export const config = {
       recoilDegrees: 0,
       noise: 9, // metres: a sledge's thump carries further than a shovel's
     },
+    // Session 28: the chainsaw (the sawmill; DESIGN.md "Weapons"; config.chainsaw; combat/Chainsaw.js revs
+    // it and cuts with it: this slot only puts it in hand).
+    chainsaw: { name: 'Chainsaw', kind: 'saw', magSize: 0, fireInterval: 0.1, recoilDegrees: 0, noise: 0 },
     // Session 27: a stick of dynamite in hand (combat/Dynamite.js does the lighting and throwing; the
     // slot's there while there are sticks: config.dynamite).
     dynamite: { name: 'Dynamite', kind: 'thrown', magSize: 0, fireInterval: 0.5, recoilDegrees: 0, noise: 0 },
@@ -1508,6 +1511,20 @@ export const config = {
       down: { yaw: 0.04, pitch: -0.2, roll: 0.03, x: -0.17, y: 0.03 }, // the head on the ground just below the middle of the view
       jolt: 0.05, // metres the view model jumps on the impact
     },
+    // Session 28: the chainsaw in hand (player/ViewModel.js updateSaw). At rest it hangs low, the bar
+    // angled across the view; revving it comes up and forward and levels out; it shakes with the
+    // revs (shake, metres) and harder in a cut (cutShake), and digs forward into what it's cutting
+    // (cutPush). Overheated, it drops (stallDrop) and smoke comes off it.
+    saw: {
+      rest: { yaw: 0.5, pitch: -0.2, roll: 0.25 },
+      revved: { yaw: 0.3, pitch: 0.03, roll: 0.1, x: -0.06, y: 0.04, z: -0.08 },
+      idleShake: 0.0012,
+      shake: 0.004,
+      cutShake: 0.011,
+      cutPush: 0.06,
+      stallDrop: 0.07,
+      chainSpeed: 9, // the chain's teeth: lengths of the bar a second at full revs
+    },
     muzzleFlashSeconds: 0.05,
     muzzleFlashColor: 0xffd890,
     scopeHideAt: 0.8, // Session 10b: the scope view replaces the gun once the zoom is this far in
@@ -1532,6 +1549,7 @@ export const config = {
     offsets: {
       pistol: { hip: { x: 0.17, y: -0.2, z: -0.38 }, aim: { x: 0, y: -0.075, z: -0.32 } },
       smg: { hip: { x: 0.19, y: -0.225, z: -0.42 }, aim: { x: 0, y: -0.098, z: -0.34 } },
+      chainsaw: { hip: { x: 0.2, y: -0.27, z: -0.4 }, aim: { x: 0.2, y: -0.27, z: -0.4 } }, // Session 28: held low across the body, both hands
     },
   },
 
@@ -4453,6 +4471,37 @@ export const config = {
   // Hemlock Gap, October 13, 1903, stopped in the cut and left there: the engine (its cowcatcher
   // and boiler plate: the killdozer's armour), the tender, two coaches and the baggage car off the
   // rails, the belongings of a town still aboard; the powder store up the bank.
+  // Session 28: the chainsaw (DESIGN.md "Weapons"; combat/Chainsaw.js, combat/chainsawState.js; found
+  // at the sawmill). No fuel. Hold RT: it spins up (spinUp), then cuts whatever's in front of it
+  // every `tick` seconds for as long as it's held. Four things balance it (Aaron, Nov 8):
+  //  - noise: revving, every zombie within `noise.rev` metres hears it, again and again (idling
+  //    in hand it only putters: `noise.idle`);
+  //  - it slows Tom while it revs (move), and more in a cut (cutMove);
+  //  - heat: it climbs while the trigger's held (faster in a cut) and falls when it isn't. At 1 it
+  //    stalls and won't start again until it's cooled to `restartAt`;
+  //  - the chain dulls with cutting (wear). Dull, it cuts at `dullDamage` of its damage and
+  //    staggers less; it's sharpened at the station's workbench for scrap (config.station.workbench).
+  chainsaw: {
+    spinUp: 0.45, // seconds from the trigger to the chain biting
+    spinDown: 0.7,
+    tick: 0.1, // seconds between bites
+    damagePerSecond: 170, // at a sharp chain: a level 1 citizen (60) in about a third of a second
+    dullDamage: 0.35, // the share of that with the chain worn right down
+    reach: 2.0, // metres from the eye
+    arcDegrees: 46,
+    cleave: 2, // how many it can be in at once
+    stagger: 0.3, // each bite holds them (the dull chain: x dullStagger)
+    dullStagger: 0.35,
+    knockback: 0.04,
+    kickback: 0.12, // degrees the bar kicks up on each bite
+    shake: 0.05, // the camera, per bite
+    move: 0.6, // Tom's speed while it revs
+    cutMove: 0.42, // and while it's in something
+    heat: { rev: 0.11, cut: 0.19, cool: 0.2, coolInHand: 0.12, restartAt: 0.4, warnAt: 0.75 }, // per second: about 9 s of revving, 5 s of solid cutting
+    wear: { cut: 0.02, foundAt: 0.55, warnAt: 0.25 }, // per second in a cut: about 50 s of cutting from sharp to dull; how sharp it's found (it's been in a man)
+    noise: { rev: 55, idle: 10, every: 0.6 }, // metres; how often the revving's heard
+    smoke: { every: 0.12 }, // seconds between puffs while it's stalled hot
+  },
   // Session 28: the sawmill (an optional encounter; DESIGN.md "The sawmill"; the set:
   // render/sawmillModel.js, world/SawmillSite.js; the beat: encounters/Sawmill.js). Harlan Stover's
   // mill (a draft name): the crew the government hired to clear ground for the portal programme,

@@ -127,6 +127,10 @@ export class Combat {
         if (melee && id === 'spikeMaul') {
           if (first !== false) this.sfx.play(killed ? 'maulKill' : 'maulHit');
           if (x !== undefined) this.fx.dust(x, this.player.position.y + 1.0, z);
+        } else if (melee && id === 'chainsaw') {
+          // Session 28: the chain in something (one sound per bite, however many it's in); blood off the bar.
+          if (first !== false) this.sfx.play(killed ? 'chainsawKill' : 'chainsawBite');
+          if (x !== undefined) this.fx.blood?.(x, this.player.position.y + 1.1, z);
         } else if (melee) this.sfx.play('shovelHit');
       }),
       bus.on('weapon:thud', ({ x, z }) => {
@@ -386,6 +390,7 @@ export class Combat {
       dig: this.alive && !locked ? this.activePrompt() : null,
       hidden: this.alive && this.enemies.senses.hidden,
       chargesPlaced: this.chargesPlaced ?? 0, // M7: set by Explosives
+      saw: this.chainsaw?.gauges ?? null, // Session 28: set by Game (combat/Chainsaw.js)
     });
   }
 

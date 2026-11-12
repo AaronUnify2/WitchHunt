@@ -39,6 +39,7 @@ export class Hud {
         <div class="hud-weapon-name"></div>
         <div class="hud-ammo"></div>
         <div class="hud-reload"><span></span></div>
+        <div class="hud-saw"><div class="hud-saw-row"><em>HEAT</em><i class="hud-saw-heat"><span></span></i></div><div class="hud-saw-row"><em>EDGE</em><i class="hud-saw-edge"><span></span></i></div></div>
         <div class="hud-kits"></div>
       </div>
       <div class="hud-death hidden">
@@ -73,6 +74,9 @@ export class Hud {
     this.ammoEl = q('.hud-ammo');
     this.reloadEl = q('.hud-reload');
     this.reloadBarEl = q('.hud-reload span');
+    this.sawEl = q('.hud-saw'); // Session 28: the chainsaw's heat and edge
+    this.sawHeatEl = q('.hud-saw-heat span');
+    this.sawEdgeEl = q('.hud-saw-edge span');
     this.kitsEl = q('.hud-kits');
     this.deathEl = q('.hud-death');
     this.deathStatsEl = q('.hud-death-stats');
@@ -194,8 +198,17 @@ export class Hud {
     const chosenDef = st.usesAmmo && st.chosen !== st.loaded ? w.cfg.ammoTypes?.[st.chosen] : null;
     const typeText = typeDef ? `  \u25AE ${typeDef.name}` : '';
     const nextText = st.usesAmmo && st.chosen !== st.loaded ? `  (next: ${chosenDef?.name ?? 'normal'})` : '';
+    // Session 28: the chainsaw in hand: how hot it is, how sharp the chain is.
+    const saw = s.saw ?? null;
+    this.set('saw', Boolean(saw), (on) => this.sawEl.classList.toggle('on', on));
+    if (saw) {
+      this.set('sawHeat', Math.round(saw.heat * 50), (v) => (this.sawHeatEl.style.width = `${v * 2}%`));
+      this.set('sawEdge', Math.round(saw.sharp * 50), (v) => (this.sawEdgeEl.style.width = `${v * 2}%`));
+      this.set('sawState', `${saw.stalled ? 'stalled' : saw.heat > 0.75 ? 'hot' : ''} ${saw.sharp <= 0.25 ? 'dull' : ''}`, (c) => (this.sawEl.dataset.state = c.trim()));
+    }
+    const sawText = saw ? (saw.stalled ? 'OVERHEATED' : `chain: ${saw.edge}`) : '';
     const thrown = w.weapon.kind === 'thrown' ? `${s.inventory.dynamite ?? 0} stick${(s.inventory.dynamite ?? 0) === 1 ? '' : 's'}` : ''; // Session 27: dynamite
-    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}${typeText}${nextText}` : thrown, (text) => {
+    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}${typeText}${nextText}` : thrown || sawText, (text) => {
       this.ammoEl.textContent = text;
       this.ammoEl.style.color = typeDef?.hudColor ?? '';
     });

@@ -509,6 +509,58 @@ body.in-viewer .final-battle {
   background: var(--accent);
 }
 
+.hud-saw {
+  display: none;
+  margin: 2px 0 3px auto;
+  width: 150px;
+}
+
+.hud-saw.on {
+  display: block;
+}
+
+.hud-saw-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.hud-saw-row em {
+  font-style: normal;
+  font-size: 0.7em;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+
+.hud-saw-row i {
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.hud-saw-row span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #8a8676;
+}
+
+.hud-saw-heat span {
+  background: #8a5a2a;
+}
+
+.hud-saw[data-state~='hot'] .hud-saw-heat span,
+.hud-saw[data-state~='stalled'] .hud-saw-heat span {
+  background: #9a3a22;
+}
+
+.hud-saw[data-state~='dull'] .hud-saw-edge span {
+  background: #6a4a3a;
+}
+
 .hud-kits {
   color: var(--dim);
   font-size: 0.85em;

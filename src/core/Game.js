@@ -87,6 +87,7 @@ import { MiloBarnSite } from '../world/MiloBarnSite.js';
 import { MiloBarn } from '../encounters/MiloBarn.js';
 import { RailwayCuttingSite } from '../world/RailwayCuttingSite.js';
 import { Dynamite } from '../combat/Dynamite.js';
+import { Chainsaw } from '../combat/Chainsaw.js';
 import { RailwayCutting } from '../encounters/RailwayCutting.js';
 import { SawmillSite } from '../world/SawmillSite.js';
 import { Comms } from '../story/Comms.js';
@@ -300,6 +301,11 @@ export class Game {
     this.dynamite.init(this.scene, { combat: this.combat, player: this.player, explosives: this.explosives, ground: this.world.ground, colliders: this.colliders, notify: (text) => this.toast?.show(text) });
     this.combat.promptSources.unshift(this.dynamite.hud); // the fuse first: nothing else matters while it's lit
     this.bus.on('player:respawned', () => this.dynamite.reset());
+    // Session 28: the chainsaw (combat/Chainsaw.js): hold RT; loud, slow, hot, and it dulls.
+    this.chainsaw = new Chainsaw(this.cfg, this.bus);
+    this.chainsaw.init({ combat: this.combat, player: this.player, enemies: this.combat.enemies, fx: this.combat.fx, notify: (text) => this.toast?.show(text) });
+    this.combat.chainsaw = this.chainsaw;
+    this.combat.promptSources.unshift(this.chainsaw.hud);
     this.vehicles.explosives = this.explosives; // Session 14: cars go up with the same blast
   }
 
@@ -956,6 +962,7 @@ export class Game {
     this.director.addDebugItems(menu);
     this.combat.addDebugItems(menu);
     this.dynamite.addDebugItems(menu, DEBUG.player); // Session 27
+    this.chainsaw.addDebugItems(menu, DEBUG.player); // Session 28
     this.witch.addDebugItems(menu, (text) => this.toast.show(text));
     this.addHutDebugItems(menu);
     this.station.addDebugItems(menu);
@@ -1425,6 +1432,7 @@ export class Game {
       witch: this.witch.saveState(), // M7: her wounds and traps (optional: older saves have none)
       explosives: this.explosives.saveState(), // M7: charges carried and planted
       dynamite: this.dynamite.saveState(), // Session 27: sticks carried (optional: older saves have none)
+      chainsaw: this.chainsaw.saveState(), // Session 28: the chain's edge (optional)
       stats: { ...this.stats }, // M7: for the run summary
       story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
       lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
@@ -1486,6 +1494,7 @@ export class Game {
     this.witch.loadState(d.witch);
     this.explosives.loadState(d.explosives);
     this.dynamite.loadState(d.dynamite);
+    this.chainsaw.loadState(d.chainsaw);
     this.stats = loadStats(d.stats);
     this.dialogue.loadState(d.story);
     this.lore.loadState(d.lore);
@@ -1748,6 +1757,8 @@ export class Game {
     if (!this.demo.active) this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
     this.explosives.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
     this.dynamite.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
+    this.chainsaw.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding); // Session 28
+    this.combat.viewModel.saw = this.chainsaw.view;
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
     // M8: the family (before the station, whose prompts wait while theirs shows).
     if (first) this.familyTalk.update(dt, controls, playing && this.combat.alive && !locked);
@@ -1848,6 +1859,7 @@ export class Game {
     this.finalBattle.dispose();
     this.explosives.dispose();
     this.dynamite.dispose();
+    this.chainsaw.dispose();
     this.witch.dispose();
     this.hut.dispose();
     this.crashSite.dispose();

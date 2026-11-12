@@ -127,21 +127,21 @@ export class Sfx {
   // voice (the experimental vehicles): 'quad' (Earl's), 'ute' (a diesel's
   // low knock, speed being its revs), 'alien' (a whining drive, a sub hum;
   // boost 0..1 opens it up into a roar).
-  engine(on, speed = 0, throttle = 0, voice = 'quad', boost = 0) {
+  engine(on, speed = 0, throttle = 0, voice = 'quad', boost = 0, channel = 'engineNodes') {
     if (!this.ready) return;
     if (this.engineMuted) on = false; // Session 17 (Aaron): cut while a cutscene plays
     const ctx = this.ctx;
-    if (on && this.engineNodes && this.engineNodes.voice !== voice) this.engine(false);
+    if (on && this[channel] && this[channel].voice !== voice) this.engine(false, 0, 0, voice, 0, channel);
     if (!on) {
-      if (this.engineNodes) {
-        const { oscs, gain } = this.engineNodes;
+      if (this[channel]) {
+        const { oscs, gain } = this[channel];
         gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08);
         for (const o of oscs) o.stop(ctx.currentTime + 0.4);
-        this.engineNodes = null;
+        this[channel] = null;
       }
       return;
     }
-    if (!this.engineNodes) {
+    if (!this[channel]) {
       const V = ENGINE_VOICES[voice] ?? ENGINE_VOICES.quad;
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
@@ -174,9 +174,9 @@ export class Sfx {
         filter.connect(gain);
       }
       gain.connect(this.master);
-      this.engineNodes = { voice, oscs, filter, gain, lfo };
+      this[channel] = { voice, oscs, filter, gain, lfo };
     }
-    const n = this.engineNodes;
+    const n = this[channel];
     const V = ENGINE_VOICES[voice] ?? ENGINE_VOICES.quad;
     const t = ctx.currentTime;
     const f = V.base + speed * V.range + throttle * V.gas + boost * (V.boost ?? 0);
@@ -185,8 +185,14 @@ export class Sfx {
       o.frequency.setTargetAtTime(f * V.ratios[i], t, 0.12);
     });
     if (n.lfo) n.lfo.frequency.setTargetAtTime(f * 0.5, t, 0.1);
-    n.filter.frequency.setTargetAtTime(V.filter + speed * V.open + throttle * 200 + boost * 1800, t, 0.15);
+    n.filter.frequency.setTargetAtTime(V.filter + speed * V.open + throttle * 200 + boost * (V.boostOpen ?? 1800), t, 0.15);
     n.gain.gain.setTargetAtTime((V.level + throttle * 0.05 + speed * 0.04 + boost * 0.06) * 0.8, t, 0.1); // Session 16 (Aaron): 20% quieter
+  }
+
+  // Session 28: the chainsaw's engine, a held note of its own (so a vehicle's engine and the saw
+  // never fight over one voice). rev 0..1: idling to flat out; load 0..1: bogged down in a cut.
+  saw(on, rev = 0, load = 0) {
+    this.engine(on, rev, 0, 'chainsaw', load, 'sawNodes');
   }
 
   // M8: a dialogue blip (a short square pip at the speaker's pitch).
@@ -208,6 +214,8 @@ const ENGINE_VOICES = {
   quad: { waves: ['sawtooth', 'square'], ratios: [1, 0.502], base: 38, range: 62, gas: 8, filter: 380, open: 700, level: 0.09 },
   ute: { waves: ['sawtooth', 'sawtooth', 'square'], ratios: [1, 1.006, 0.5], base: 24, range: 46, gas: 5, filter: 260, open: 520, level: 0.1, knock: 0.45, q: 1.2 },
   dozer: { waves: ['sawtooth', 'square', 'sawtooth'], ratios: [1, 0.5, 1.51], base: 17, range: 22, gas: 6, boost: 9, filter: 200, open: 380, level: 0.12, knock: 0.6, q: 1.6 },
+  // Session 28: a two-stroke: a ragged putter at idle (the knock), a howl flat out; in a cut (boost) it bogs down and growls.
+  chainsaw: { waves: ['sawtooth', 'square', 'sawtooth'], ratios: [1, 2.02, 3.01], base: 46, range: 118, gas: 0, boost: -34, boostOpen: -500, filter: 520, open: 2100, level: 0.05, knock: 0.55, q: 2.2 },
   alien: { waves: ['sine', 'triangle', 'sawtooth'], ratios: [1, 2.01, 4.02], base: 70, range: 120, gas: 20, boost: 140, filter: 900, open: 1600, level: 0.07, q: 4 },
 };
 
@@ -1053,6 +1061,67 @@ const RECIPES = {
     const o = s.out(pos?.x, pos?.z, 0.5);
     s.tone(o, { seconds: 0.06, wave: 'triangle', freq: 420, endFreq: 260, gain: 0.25 });
     s.noiseBurst(o, { seconds: 0.04, type: 'bandpass', freq: 1400, q: 2, gain: 0.3 });
+  },
+  // Session 28: the chainsaw. The trigger squeezed: the revs climbing out of the idle.
+  chainsawRev(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.tone(o, { seconds: 0.4, wave: 'sawtooth', freq: 70, endFreq: 240, gain: 0.07, attack: 0.03 });
+    s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 900, endFreq: 2600, q: 1.5, gain: 0.3, attack: 0.05 });
+  },
+  // The chain in something that isn't wood: a wet tearing under the engine.
+  chainsawBite(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.noiseBurst(o, { seconds: 0.16, type: 'bandpass', freq: 500 + Math.random() * 500, endFreq: 260, q: 1.2, gain: 0.7, attack: 0.01 }); // cosmetic only
+    s.tone(o, { seconds: 0.12, wave: 'square', freq: 96, endFreq: 60, gain: 0.08 });
+  },
+  // It finishes one: the chain through and out, the revs jumping free.
+  chainsawKill(s) {
+    const o = s.out(undefined, undefined, 0.75);
+    s.noiseBurst(o, { seconds: 0.3, type: 'lowpass', freq: 900, endFreq: 180, gain: 0.8 });
+    s.tone(o, { seconds: 0.22, wave: 'sawtooth', freq: 150, endFreq: 260, gain: 0.07 });
+  },
+  // Running hot: the note going thin, a tick-tick of metal.
+  chainsawHot(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.04, wave: 'triangle', freq: 2400 - i * 120, gain: 0.12 }), i * 110);
+  },
+  // Too hot: it coughs twice, chokes and dies, and the heat ticks out of it.
+  chainsawStall(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 130, endFreq: 28, gain: 0.14 });
+    for (const t of [120, 300]) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.09, type: 'lowpass', freq: 500, gain: 0.7 }), t);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 1.2, type: 'highpass', freq: 5200, gain: 0.16, attack: 0.1 }), 480); // the hiss off the bar
+    for (let i = 0; i < 5; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.03, wave: 'triangle', freq: 1900 + Math.random() * 500, gain: 0.08 }), 700 + i * 260);
+  },
+  // The trigger on a stalled saw: the starter turning over on nothing.
+  chainsawDead(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 380, q: 2, gain: 0.5 }), i * 90);
+  },
+  // Cool enough: it catches again.
+  chainsawReady(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 0.1, type: 'bandpass', freq: 420, q: 2, gain: 0.45 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.25, wave: 'sawtooth', freq: 40, endFreq: 62, gain: 0.1, attack: 0.02 }), 110);
+  },
+  // Worked out of what it was left in.
+  chainsawPull(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.5, type: 'lowpass', freq: 600, endFreq: 220, gain: 0.7, attack: 0.08 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 1300, q: 2, gain: 0.4 }), 430);
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.2, wave: 'triangle', freq: 300, endFreq: 180, gain: 0.12 }), 520);
+  },
+  // The workbench: a round file down each tooth, one stroke.
+  fileStroke(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.noiseBurst(o, { seconds: 0.22, type: 'bandpass', freq: 3400, endFreq: 4600, q: 3.5, gain: 0.45, attack: 0.02 });
+    s.tone(o, { seconds: 0.2, wave: 'triangle', freq: 1250, endFreq: 1400, gain: 0.03 });
+  },
+  // The edge done: the chain run round the bar by hand, a ring off the vise.
+  sharpened(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7);
+    for (let i = 0; i < 6; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.025, wave: 'square', freq: 2100, gain: 0.06 }), i * 45);
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.7, wave: 'triangle', freq: 1760, endFreq: 1740, gain: 0.1 }), 330);
   },
   death(s) {
     const o = s.out();

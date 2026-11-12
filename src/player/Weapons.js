@@ -246,6 +246,7 @@ export class Weapons {
     const s = this.state;
     if (w.kind === 'none') return; // Session 15b: empty-handed
     if (w.kind === 'thrown') return; // Session 27: dynamite: combat/Dynamite.js lights and throws it
+    if (w.kind === 'saw') return; // Session 28: the chainsaw: combat/Chainsaw.js revs it and cuts
     // Session 10b: automatic guns keep firing while the trigger is held.
     const wants = w.kind === 'melee' || w.auto ? input.isDown('attack') : input.wasPressed('attack');
     if (!wants) return;

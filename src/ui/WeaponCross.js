@@ -102,7 +102,7 @@ export class WeaponCross {
       dynamite: { owned: (this.inventory?.dynamite ?? 0) > 0, name: 'Dynamite', weapon: 'dynamite', note: `${this.inventory?.dynamite ?? 0} stick${this.inventory?.dynamite === 1 ? '' : 's'} · hold RT to light, let go to throw` }, // Session 27
       // The melee bar (Session 25): the shovel, the railroad spike maul (Session 27: the railway cutting); the chainsaw's designed, not built.
       spikeMaul: { owned: Boolean(this.weapons?.has('spikeMaul')), name: 'Railroad spike maul', weapon: 'spikeMaul', note: 'melee · heavy: slow, cleaves' },
-      chainsaw: { owned: Boolean(this.weapons?.has('chainsaw')), name: 'Chainsaw', note: 'melee' },
+      chainsaw: { owned: Boolean(this.weapons?.has('chainsaw')), name: 'Chainsaw', weapon: 'chainsaw', note: 'melee · hold RT · loud, runs hot, dulls' }, // Session 28: the sawmill
       charges: { owned: Boolean(this.weapons?.order.includes('detonator')), name: 'Military explosives', weapon: 'detonator', note: 'the detonator' },
     };
   }
@@ -343,6 +343,19 @@ function drawIcon(id, wcfg) {
     g.moveTo(80, 66);
     g.quadraticCurveTo(84, 80, 88, 72);
     g.stroke();
+  } else if (id === 'chainsaw') {
+    // Session 28: the body and its wrap handle, the long bar out front.
+    rect(14, 52, 40, 28); // the engine housing
+    rect(6, 58, 10, 10); // the rear handle
+    g.lineWidth = 4;
+    g.strokeRect(26, 40, 22, 14); // the wrap handle
+    g.beginPath(); // the bar, round nosed
+    g.moveTo(54, 58);
+    g.lineTo(104, 58);
+    g.arc(104, 66, 8, -Math.PI / 2, Math.PI / 2);
+    g.lineTo(54, 74);
+    g.closePath();
+    g.fill();
   } else if (id === 'spikeMaul') {
     // Session 27: the long handle, the long slender head across its end.
     rect(14, 62, 78, 6); // the handle
