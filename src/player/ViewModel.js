@@ -290,6 +290,7 @@ export class ViewModel {
       autoShotgun: this.buildAutoShotgun(),
       shovel: this.buildShovel(),
       spikeMaul: this.buildSpikeMaul(), // Session 27
+      dynamite: this.buildDynamite(), // Session 27
       detonator: this.buildDetonator(),
       hands: { group: new THREE.Group() }, // Session 15b: nothing in hand
     };
@@ -628,6 +629,31 @@ export class ViewModel {
     return { group };
   }
 
+  // Session 27: a stick of dynamite held up in the right hand: waxed red paper, the ends crimped,
+  // the fuse out of the top (its own mesh: it burns down), and the spark at its end (additive, its
+  // own material: no light).
+  buildDynamite() {
+    const group = new THREE.Group();
+    const stick = new THREE.Group();
+    stick.rotation.set(0.25, 0, -0.35); // tipped toward the middle, fuse up and away
+    group.add(stick);
+    this.mesh([
+      [shade(new THREE.CylinderGeometry(0.021, 0.021, 0.2, 10), 0x6a2620), 0, 0, 0], // the paper
+      [shade(new THREE.CylinderGeometry(0.022, 0.022, 0.012, 10), 0x5a4a34), 0, 0.1, 0], // the crimped ends
+      [shade(new THREE.CylinderGeometry(0.022, 0.022, 0.012, 10), 0x5a4a34), 0, -0.1, 0],
+      [shade(new THREE.CylinderGeometry(0.0225, 0.0225, 0.05, 10), 0x4a4236), 0, 0.02, 0], // a paper band (the maker's)
+    ], stick);
+    const fuse = new THREE.Mesh(shade(new THREE.CylinderGeometry(0.004, 0.004, 0.09, 5).translate(0, 0.045, 0), 0x8a8070), this.material);
+    fuse.position.y = 0.105;
+    stick.add(fuse);
+    const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffc070, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+    const spark = new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 4), sparkMat);
+    spark.visible = false;
+    stick.add(spark);
+    this.sparkMaterial = sparkMat;
+    return { group, stick, fuse, spark };
+  }
+
   // M7: the remote detonator: a grey box, a stubby aerial and a red button.
   buildDetonator() {
     const group = new THREE.Group();
@@ -716,13 +742,14 @@ export class ViewModel {
     g.position.set(base.x + swayX, base.y + swayY - drop, base.z + this.kick * c.kickBack);
     g.rotation.set(this.kick * c.kickRotate - dipHold, 0, 0);
 
+    if (id === 'dynamite') this.updateDynamite(model, g);
     if (melee && weapons.weapon.swing === 'smash') this.updateSmash(g, weapons);
     else if (melee) this.updateSwing(g, weapons);
     else this.slash.visible = false;
     if (model.pump) model.pump.position.z = -0.3 + Math.max(0, Math.sin(Math.min(1, weapons.shotTime / weapons.weapon.fireInterval) * Math.PI)) * 0.08;
 
     // Muzzle flash: a quick additive card at the barrel's end.
-    const flashOn = !melee && weapons.shotTime < c.muzzleFlashSeconds;
+    const flashOn = !melee && Boolean(model.muzzle) && weapons.shotTime < c.muzzleFlashSeconds; // Session 27: not off a stick of dynamite
     this.flash.visible = flashOn;
     if (flashOn) {
       // Session 20: alien shells flash purple.
@@ -818,6 +845,35 @@ export class ViewModel {
     this.slashUniforms.uFade.value = 1 - smooth(after) * 0.6;
   }
 
+  // Session 27: the stick in hand (this.dyn, from combat/Dynamite.js: { lit, fuse 0..1, thrownAgo,
+  // cooldown, empty }). Lit: held up, a tremble, the fuse burning down to the spark. Thrown: flung
+  // forward out of view, then the next one comes up from below.
+  updateDynamite(model, g) {
+    const d = this.dyn ?? { lit: false, fuse: 1, thrownAgo: Infinity, cooldown: 0.6, empty: false };
+    const t = d.thrownAgo;
+    const now = performance.now() / 1000; // cosmetic only
+    g.visible = !d.empty || t < 0.25;
+    if (t < 0.22) {
+      const k = t / 0.22;
+      g.position.z -= 0.35 * k;
+      g.position.y += 0.18 * Math.sin(k * Math.PI) + 0.1 * k;
+      g.rotation.x -= 1.4 * k;
+      if (k > 0.85) g.visible = false;
+    } else if (t < d.cooldown) {
+      const k = smooth((t - 0.22) / Math.max(0.05, d.cooldown - 0.22));
+      g.position.y -= 0.3 * (1 - k);
+    }
+    if (d.lit) {
+      g.position.y += 0.05;
+      g.position.x += Math.sin(now * 31) * 0.002 * (2 - d.fuse);
+    }
+    model.fuse.scale.y = Math.max(0.05, d.lit ? d.fuse : 1);
+    model.spark.visible = d.lit && t >= 0.22;
+    model.spark.position.y = 0.105 + 0.09 * model.fuse.scale.y;
+    const flick = 0.8 + 0.7 * Math.abs(Math.sin(now * 41)) + (d.fuse < 0.3 ? 0.8 : 0);
+    model.spark.scale.setScalar(flick);
+  }
+
   // Session 27: the spike maul's overhead smash: lifted slowly over the right shoulder, dropped
   // fast to the middle, held a beat where it landed (a jolt on the impact), hauled back to rest. No
   // trail and no mirroring: every swing is the same blow.
@@ -841,5 +897,6 @@ export class ViewModel {
     this.grain.dispose();
     this.flashMaterial.dispose();
     this.slash.material.dispose();
+    this.sparkMaterial?.dispose();
   }
 }

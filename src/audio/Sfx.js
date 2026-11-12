@@ -1015,6 +1015,31 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 3000, gain: 0.9 });
     s.tone(o, { seconds: 0.3, wave: 'square', freq: 900, endFreq: 300, gain: 0.08 });
   },
+  // Session 27: dynamite. A match struck on a box: a scrape, the flare catching.
+  matchStrike(s) {
+    const o = s.out(undefined, undefined, 0.7);
+    s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 3200, endFreq: 1800, q: 1.2, gain: 0.6 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 900, endFreq: 1500, q: 0.8, gain: 0.45, attack: 0.03 }), 110);
+  },
+  // The fuse burning: a fizzing hiss (and a faster, higher one near the end).
+  fuseHiss(s) {
+    s.noiseBurst(s.out(undefined, undefined, 0.4), { seconds: 0.45, type: 'bandpass', freq: 5200, endFreq: 4800, q: 2.5, gain: 0.35, attack: 0.02 });
+  },
+  fuseHissFast(s) {
+    const o = s.out(undefined, undefined, 0.55);
+    s.noiseBurst(o, { seconds: 0.2, type: 'bandpass', freq: 6800, endFreq: 7400, q: 3, gain: 0.5, attack: 0.01 });
+    s.tone(o, { seconds: 0.08, wave: 'square', freq: 1800, gain: 0.03 }); // the crackle
+  },
+  // The throw: a quick whoosh off the hand.
+  dynamiteThrow(s) {
+    s.noiseBurst(s.out(undefined, undefined, 0.5), { seconds: 0.2, type: 'bandpass', freq: 700, endFreq: 1800, q: 1.4, gain: 0.5, attack: 0.02 });
+  },
+  // A stick landing and bouncing: a light wooden knock.
+  stickBounce(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5);
+    s.tone(o, { seconds: 0.06, wave: 'triangle', freq: 420, endFreq: 260, gain: 0.25 });
+    s.noiseBurst(o, { seconds: 0.04, type: 'bandpass', freq: 1400, q: 2, gain: 0.3 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

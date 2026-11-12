@@ -86,6 +86,7 @@ import { Stairs } from '../encounters/Stairs.js';
 import { MiloBarnSite } from '../world/MiloBarnSite.js';
 import { MiloBarn } from '../encounters/MiloBarn.js';
 import { RailwayCuttingSite } from '../world/RailwayCuttingSite.js';
+import { Dynamite } from '../combat/Dynamite.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -290,6 +291,11 @@ export class Game {
       busy: [this.director.hud, this.station.hud, this.vehicles.hud],
     });
     this.combat.promptSources.push(this.explosives.hud);
+    // Session 27: dynamite (combat/Dynamite.js): lit with RT, cooked, thrown; its blast is the explosives'.
+    this.dynamite = new Dynamite(this.cfg, this.bus);
+    this.dynamite.init(this.scene, { combat: this.combat, player: this.player, explosives: this.explosives, ground: this.world.ground, colliders: this.colliders, notify: (text) => this.toast?.show(text) });
+    this.combat.promptSources.unshift(this.dynamite.hud); // the fuse first: nothing else matters while it's lit
+    this.bus.on('player:respawned', () => this.dynamite.reset());
     this.vehicles.explosives = this.explosives; // Session 14: cars go up with the same blast
   }
 
@@ -922,6 +928,7 @@ export class Game {
     this.addMapDebugItems(menu);
     this.director.addDebugItems(menu);
     this.combat.addDebugItems(menu);
+    this.dynamite.addDebugItems(menu, DEBUG.player); // Session 27
     this.witch.addDebugItems(menu, (text) => this.toast.show(text));
     this.addHutDebugItems(menu);
     this.station.addDebugItems(menu);
@@ -1389,6 +1396,7 @@ export class Game {
       revisits: saveRevisits(this.director.revisits),
       witch: this.witch.saveState(), // M7: her wounds and traps (optional: older saves have none)
       explosives: this.explosives.saveState(), // M7: charges carried and planted
+      dynamite: this.dynamite.saveState(), // Session 27: sticks carried (optional: older saves have none)
       stats: { ...this.stats }, // M7: for the run summary
       story: this.dialogue.saveState(), // M8: lines heard, milestones (optional: older saves have none)
       lore: this.lore.saveState(), // M8: lore carried and handed in, the monitors' clips
@@ -1449,6 +1457,7 @@ export class Game {
     loadRevisits(this.director.revisits, d.revisits ?? []);
     this.witch.loadState(d.witch);
     this.explosives.loadState(d.explosives);
+    this.dynamite.loadState(d.dynamite);
     this.stats = loadStats(d.stats);
     this.dialogue.loadState(d.story);
     this.lore.loadState(d.lore);
@@ -1708,6 +1717,7 @@ export class Game {
     // Session 22: no witch in Demo mode (she stays in her hut, far off).
     if (!this.demo.active) this.witch.update(dt, playing, this.player.camera.position, first && !riding ? controls : this.lockedInput);
     this.explosives.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
+    this.dynamite.update(dt, first && !riding ? controls : this.lockedInput, playing && first && !locked && !riding);
     if (playing) this.finalBattle.update(dt, this.player.camera.position);
     // M8: the family (before the station, whose prompts wait while theirs shows).
     if (first) this.familyTalk.update(dt, controls, playing && this.combat.alive && !locked);
@@ -1804,6 +1814,7 @@ export class Game {
     this.watch.dispose();
     this.finalBattle.dispose();
     this.explosives.dispose();
+    this.dynamite.dispose();
     this.witch.dispose();
     this.hut.dispose();
     this.crashSite.dispose();

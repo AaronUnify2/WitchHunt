@@ -19,6 +19,7 @@ export class Inventory {
     this.ammo = { ...(this.cfg.startAmmo ?? {}) };
     this.batteries = this.cfg.startBatteries ?? 0;
     this.charges = 0; // M7: explosive charges in hand (combat/Explosives.js)
+    this.dynamite = 0; // Session 27: sticks of dynamite (combat/Dynamite.js)
     this.maxFlares = this.cfg.maxFlares ?? 3; // M9.1: the flare gun's (combat/Flares.js)
     this.flares = Math.min(this.maxFlares, this.cfg.startFlares ?? 0);
   }

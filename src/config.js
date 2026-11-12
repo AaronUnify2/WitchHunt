@@ -1152,7 +1152,7 @@ export const config = {
       { id: 'rifle', weapons: ['rifle', 'sniper', 'thermal'] },
       { id: 'shotgun', weapons: ['shotgun', 'autoShotgun'] },
       { id: 'melee', weapons: ['shovel', 'spikeMaul', 'chainsaw'] }, // the maul and chainsaw when they're built
-      { id: 'explosive', weapons: ['detonator'] }, // while charges are out or in hand
+      { id: 'explosive', weapons: ['dynamite', 'detonator'] }, // while there are sticks (Session 27), while charges are out or in hand
     ],
     // Session 25 (Aaron): Tom carries every gun; the weapon cross (ui/WeaponCross.js, D-pad down
     // with nothing to watch) lays them out, nearest the middle first. flareGun, dynamite and charges
@@ -1208,6 +1208,9 @@ export const config = {
       recoilDegrees: 0,
       noise: 9, // metres: a sledge's thump carries further than a shovel's
     },
+    // Session 27: a stick of dynamite in hand (combat/Dynamite.js does the lighting and throwing; the
+    // slot's there while there are sticks: config.dynamite).
+    dynamite: { name: 'Dynamite', kind: 'thrown', magSize: 0, fireInterval: 0.5, recoilDegrees: 0, noise: 0 },
     // M7: the remote for planted charges (combat/Explosives.js). A slot only
     // while charges are out or in hand; RT sets them all off.
     detonator: {
@@ -2187,6 +2190,36 @@ export const config = {
     shake: 1.4,
     alert: 160, // metres: every zombie this close hears it
     look: { charge: 0x4a5040, led: 0xff2010, blinkPerSecond: 1.5, core: 0xfff0c0, fire: 0xff6a18, fireSeconds: 1.1 },
+  },
+
+  // Session 27: dynamite (combat/Dynamite.js; DESIGN.md "Weapons"): the first handheld throwable,
+  // old and sweating, from the railway cutting's powder store (and the mineshaft, later). Scarce
+  // (Aaron). With it in hand: press RT to strike a match and light the fuse; hold, and the fuse
+  // burns (it's lit the moment you press: cook it to land it short); release to throw. Hold too long
+  // and it goes off in your hand (Aaron: "Yes blow up in hand"). Thrown, it arcs, bounces and rolls,
+  // and goes off when its fuse runs out; a lit stick lying there goes off at once if it's shot
+  // (a hard knock). The arc's drawn while it's lit, so the throw reads.
+  dynamite: {
+    carryMax: 8,
+    fuseSeconds: 3.4, // from the match to the bang
+    hurryAt: 1.1, // seconds left: the prompt says throw it, the hiss climbs
+    throwSpeed: 15, // m/s
+    throwLift: 0.17, // radians above the look direction it leaves the hand
+    minHold: 0.12, // a tap still lights it and throws it
+    cooldown: 0.65, // seconds before the next stick's in hand after a throw
+    gravity: 18, // m/s² (a little heavier than the world's, so the arc's short and readable)
+    restitution: 0.32, // of the speed into the ground kept as bounce
+    friction: 0.5, // of the speed along the ground kept on a bounce
+    rollDrag: 6, // per second, rolling
+    restSpeed: 0.35, // m/s: below this it lies still
+    radius: 0.05, // the stick's, for walls and trunks
+    hitBox: 0.28, // metres round a lying stick a shot (or a swing) catches it
+    arcDots: 70,
+    arcStep: 0.025, // seconds of flight between dots
+    // The blast: smaller than a military charge, rougher (config.explosives' shape).
+    blast: { radius: 6.5, damage: 180, playerDamage: 110, edge: 0.2, knockback: 4.2, shake: 1.2, alert: 130 },
+    inHandDamage: 70, // gone off in his hand: it hurts a great deal (armour first), but needn't end the run
+    look: { stick: 0x7a2a22, cap: 0x5a4a34, fuse: 0x8a8070, spark: 0xffc070, arc: 0xc08048, ring: 0xc08048 },
   },
 
   // The final battle (M7 step 5; DESIGN.md "Final battle"): the blood night.

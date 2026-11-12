@@ -94,12 +94,12 @@ export class WeaponCross {
     this.el.addEventListener('pointerup', this.onPointerUp);
   }
 
-  // The specials: the flare gun (always to hand on Y), dynamite (not built), the charges (the detonator).
+  // The specials: the flare gun (always to hand on Y), dynamite (Session 27), the charges (the detonator).
   extras() {
     const flares = this.inventory?.flares ?? 0;
     return {
       flareGun: { owned: true, name: 'Flare gun', weapon: null, note: `${flares} flare${flares === 1 ? '' : 's'} · always to hand on Y` },
-      dynamite: { owned: false, name: 'Dynamite' },
+      dynamite: { owned: (this.inventory?.dynamite ?? 0) > 0, name: 'Dynamite', weapon: 'dynamite', note: `${this.inventory?.dynamite ?? 0} stick${this.inventory?.dynamite === 1 ? '' : 's'} · hold RT to light, let go to throw` }, // Session 27
       // The melee bar (Session 25): the shovel, the railroad spike maul (Session 27: the railway cutting); the chainsaw's designed, not built.
       spikeMaul: { owned: Boolean(this.weapons?.has('spikeMaul')), name: 'Railroad spike maul', weapon: 'spikeMaul', note: 'melee · heavy: slow, cleaves' },
       chainsaw: { owned: Boolean(this.weapons?.has('chainsaw')), name: 'Chainsaw', note: 'melee' },

@@ -194,7 +194,8 @@ export class Hud {
     const chosenDef = st.usesAmmo && st.chosen !== st.loaded ? w.cfg.ammoTypes?.[st.chosen] : null;
     const typeText = typeDef ? `  \u25AE ${typeDef.name}` : '';
     const nextText = st.usesAmmo && st.chosen !== st.loaded ? `  (next: ${chosenDef?.name ?? 'normal'})` : '';
-    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}${typeText}${nextText}` : '', (text) => {
+    const thrown = w.weapon.kind === 'thrown' ? `${s.inventory.dynamite ?? 0} stick${(s.inventory.dynamite ?? 0) === 1 ? '' : 's'}` : ''; // Session 27: dynamite
+    this.set('ammo', st.usesAmmo ? `${st.mag} / ${st.reserve}${typeText}${nextText}` : thrown, (text) => {
       this.ammoEl.textContent = text;
       this.ammoEl.style.color = typeDef?.hudColor ?? '';
     });
@@ -202,12 +203,13 @@ export class Hud {
     if (st.reloading) this.reloadBarEl.style.width = `${Math.round(st.reloadProgress * 100)}%`;
     const pad = s.device === 'gamepad';
     const inv = s.inventory;
-    this.set('kits', `${inv.healing}|${pad}|${inv.scrap}|${inv.batteries}|${inv.charges}|${s.chargesPlaced ?? 0}|${inv.flares}`, () => {
+    this.set('kits', `${inv.healing}|${pad}|${inv.scrap}|${inv.batteries}|${inv.charges}|${s.chargesPlaced ?? 0}|${inv.flares}|${inv.dynamite ?? 0}`, () => {
       const battery = inv.batteries > 0 ? `   Battery ×${inv.batteries}` : '';
       const placed = s.chargesPlaced ? ` (${s.chargesPlaced} planted)` : '';
       const charges = inv.charges > 0 || s.chargesPlaced ? `   Charges ×${inv.charges}${placed}` : '';
       const flares = `   Flares ×${inv.flares} (${pad ? 'Y' : 'F'})`; // M9.1
-      this.kitsEl.textContent = `Healing: ${inv.healing}  (${pad ? 'D-pad →' : 'H'})   Scrap ${inv.scrap}${battery}${flares}${charges}`;
+      const dynamite = inv.dynamite > 0 ? `   Dynamite ×${inv.dynamite}` : ''; // Session 27
+      this.kitsEl.textContent = `Healing: ${inv.healing}  (${pad ? 'D-pad →' : 'H'})   Scrap ${inv.scrap}${battery}${flares}${charges}${dynamite}`;
     });
 
     let prompt = '';
