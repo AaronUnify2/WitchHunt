@@ -4466,6 +4466,7 @@ export const config = {
       bellAfter: 1.4, // seconds after that call: the cracked bell sounds once, as if brushed
       interactRange: 1.7,
       digSeconds: 4.5, // the capsule's dig (hold X with the shovel)
+      doorText: "The church door. Shut, swollen into its frame, a beam spiked across it a long time ago. It doesn't move", // Session 32: nobody goes in (draft)
       stairsReveal: 30, // metres of the map revealed round the stairs once the account is read
     },
     look: {

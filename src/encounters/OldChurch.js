@@ -190,6 +190,8 @@ export class OldChurch {
       if (!this.has('capsuleOpened')) return { key: 'open', prompt: `Hold ${X}: open the copper box`, busy: 'Prising the lid…', seconds: 1.6, act: () => this.openCapsule() };
     }
     if (dist(this.spot('plaque')) < r + 0.3) return { key: 'plaque', prompt: `Hold ${X}: read the plaque`, busy: 'Rubbing the verdigris off…', seconds: 0.8, act: () => this.readPlaque() };
+    // Session 32: the door doesn't open (she's calling from behind it; the stone beside it says why not to answer).
+    if (dist(this.spot('door')) < r) return { key: 'door', prompt: this.ec.doorText, act: null };
     if (dist(this.spot('taken')) < r + 1.2) return { key: 'stones', prompt: `Hold ${X}: read the row of small stones`, busy: 'Reading…', seconds: 0.6, act: () => this.readStones() };
     return null;
   }

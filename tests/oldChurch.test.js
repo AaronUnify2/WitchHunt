@@ -50,9 +50,17 @@ describe("the old church's set", () => {
     expect(Math.abs(model.spots.taken.z - (TAKEN_ROW.z - 1.3))).toBeLessThan(0.01);
   });
 
-  it('is solid: walls with the door the way in, and the eleven stones in their row', () => {
+  it('is solid: walls all round, the door shut (Session 32), and the eleven stones in their row', () => {
     const segs = model.colliders.filter((c) => c.seg);
-    expect(segs.length).toBeGreaterThanOrEqual(9); // both sides, the back, the front either side of the tower, the tower's walls
+    expect(segs.length).toBeGreaterThanOrEqual(8); // both sides, the back, the front either side of the tower, the tower's walls (its door wall whole)
+    // Nothing gets through the doorway: a wall runs right across it.
+    const T = CHURCH.tower;
+    const across = segs.some((c) => Math.abs(c.az - c.bz) < 0.3 && Math.min(c.ax, c.bx) < -0.6 && Math.max(c.ax, c.bx) > 0.6 && Math.abs((c.az + c.bz) / 2 - (T.z - T.half)) < 0.4);
+    expect(across).toBe(true);
+    // The plaque stone and the capsule are by the door now, a few steps from it.
+    const d = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+    expect(d(model.spots.plaque, model.spots.door)).toBeLessThan(4);
+    expect(d(model.spots.capsule, model.spots.door)).toBeLessThan(5);
     const row = model.colliders.filter((c) => !c.seg && Math.abs(c.z - TAKEN_ROW.z) < 0.01 && c.x <= TAKEN_ROW.x0 + 10 * TAKEN_ROW.step + 0.01);
     expect(row.length).toBe(TAKEN_ROW.count);
     expect(TAKEN_ROW.count).toBe(11);

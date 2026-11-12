@@ -306,14 +306,20 @@ export function buildOldChurch(look, { weather = null, heightAt = null } = {}) {
     clapboards(b, th * 2, 0.3, T.h, (t, y) => doorFace && Math.abs(t - th) < 0.72 && y < 2.55, c.clap, c.clapDark, 0.05);
     b.pop();
   }
-  // The door: one leaf hanging off its top hinge, the other gone (it's on the steps); the frame.
+  // The door. Session 32 (Aaron: he could walk in and see she wasn't there): shut. Two heavy leaves of plank,
+  // strap hinges, swollen into the frame, a beam spiked across them from outside long ago: nobody's going in.
   b.box(1.44, 2.5, 0.03, c.hollow, 0, 1.25, -th + 0.12);
   b.box(0.1, 2.6, 0.1, c.trim, -0.74, 1.3, -th - 0.03);
   b.box(0.1, 2.6, 0.1, c.trim, 0.74, 1.3, -th - 0.03);
   b.box(1.6, 0.12, 0.12, c.trim, 0, 2.6, -th - 0.03);
-  b.push(-0.7, 2.35, -th - 0.02, -0.9, 0, 0.18);
-  b.box(0.7, 2.2, 0.05, c.boardsDark, 0.35, -1.1, 0);
-  b.pop();
+  for (const sx of [-1, 1]) {
+    b.box(0.7, 2.46, 0.07, sx < 0 ? c.boardsDark : c.boards ?? c.boardsDark, sx * 0.355, 1.25, -th - 0.01, 0, 0, sx * 0.006);
+    for (let i = 0; i < 3; i++) b.box(0.02, 2.4, 0.012, c.hollow, sx * (0.13 + i * 0.2), 1.25, -th - 0.05); // the planks' joints
+    for (const y of [0.45, 1.3, 2.15]) b.box(0.56, 0.07, 0.02, c.iron, sx * 0.4, y, -th - 0.055); // strap hinges
+  }
+  b.box(1.7, 0.2, 0.09, c.rafter, 0, 1.2, -th - 0.1, 0, 0, 0.05); // the beam across both
+  for (const sx of [-1, 1]) b.box(0.05, 0.05, 0.03, c.iron, sx * 0.78, 1.2 + sx * 0.04, -th - 0.15); // its spikes
+  b.box(0.16, 0.2, 0.05, c.iron, 0.02, 1.02, -th - 0.07); // the lock plate under it
   // The belfry: four posts, the louvres half gone, open to the weather.
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) b.box(0.18, T.belfry, 0.18, c.trim, sx * (th - 0.09), T.h + T.belfry / 2, sz * (th - 0.09));
   for (const [yaw, ox, oz] of [[0, 0, -th], [Math.PI, 0, th], [Math.PI / 2, -th, 0], [-Math.PI / 2, th, 0]]) {
@@ -340,19 +346,17 @@ export function buildOldChurch(look, { weather = null, heightAt = null } = {}) {
   b.spot('bell', 0, -0.4, 0);
   b.pop();
   // Its walls as colliders (with the door gap), in the leaning frame.
-  b.wall(-th, -th, -0.72, -th, 0, 0.15, T.h);
-  b.wall(0.72, -th, th, -th, 0, 0.15, T.h);
+  b.wall(-th, -th, th, -th, 0, 0.15, T.h); // Session 32: no door gap: it's shut
   b.wall(-th, -th, -th, th, 0, 0.15, T.h);
   b.wall(th, -th, th, th, 0, 0.15, T.h);
   b.spot('door', 0, 0, -th - 0.6);
   b.pop();
-  // The lip of the bell, broken off, in the grass at the tower's foot; the door's other leaf on the steps.
+  // The lip of the bell, broken off, in the grass at the tower's foot.
   b.pushOnGround(1.9, 0.05, T.z - 1.2, 0.8, 0.3, 1.1);
   b.put(new THREE.CylinderGeometry(0.36, 0.42, 0.18, 8, 1, true, 0, 1.4), c.bell, 0, 0, 0);
   b.pop();
   // The steps: three of stone, sunk and cracked.
   for (let i = 0; i < 3; i++) b.box(2.0 - i * 0.2, 0.18, 0.42, i === 1 ? c.stoneDark : c.stone, (b.rand() - 0.5) * 0.06, fy - 0.12 - i * 0.12 + 0.09, T.z - th - 0.25 - i * 0.4, (b.rand() - 0.5) * 0.06);
-  b.box(0.75, 0.05, 2.1, c.boardsDark, -0.55, fy - 0.2, T.z - th - 0.85, 0.3, 0.12, 0.05);
 
   // ---- the path and the lychgate ----
   for (let i = 0; i < 11; i++) {
@@ -380,7 +384,9 @@ export function buildOldChurch(look, { weather = null, heightAt = null } = {}) {
   b.pop();
 
   // ---- the plaque stone (the capsule lies under the turf in front of it) ----
-  b.pushOnGround(4.4, 0, -10.2, 0.18);
+  // Session 32 (Aaron: "move the time capsule a little closer to the church", beside the door he's trying): by
+  // the foot of the steps, on the right, turned a little toward the path.
+  b.pushOnGround(2.7, 0, T.z - T.half - 1.7, -0.3);
   b.box(1.0, 0.72, 0.6, c.granite, 0, 0.32, 0);
   b.box(1.06, 0.1, 0.66, c.stoneDark, 0, 0.0, 0);
   b.push(0, 0.42, -0.31, 0, -0.18, 0);
@@ -413,7 +419,7 @@ export function buildOldChurch(look, { weather = null, heightAt = null } = {}) {
     const x = side * (5 + b.rand() * 10.5);
     const z = -14.5 + b.rand() * 21;
     if (Math.abs(z - TAKEN_ROW.z) < 1.2 && x < -4.5) continue;
-    if (x > 2.8 && x < 6.6 && z > -12.5 && z < -8) continue; // the plaque
+    if (x > 0.8 && x < 5.2 && z > -13 && z < -7) continue; // the plaque stone and the turf in front of it, by the door
     if (Math.abs(x) < hw + 1.3 && z > C.front - 4) continue; // the church
     if (x < -7 && x > -11 && z > 1.5 && z < 6.5) continue; // the oak
     const kind = kindsOld[placed % kindsOld.length];

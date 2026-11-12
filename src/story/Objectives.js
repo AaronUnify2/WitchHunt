@@ -206,7 +206,7 @@ export class Objectives {
       const ch = g.church;
       // ---- the old church and the time capsule (Session 26) ----
       if (!has('churchVisited') || !ch?.ready) return step('findJunie', 'Find Junie. Head south.', spine('timeCapsule'));
-      if (!has('plaqueRead')) return step('churchLook', 'Look round the old church. There\'s a plaque on a stone by the path.', ch.spot('plaque'));
+      if (!has('plaqueRead')) return step('churchLook', 'Look round the old church. There\'s a plaque on a stone by the door.', ch.spot('plaque'));
       if (!has('capsuleDug')) {
         if (!g.combat.weapons.has('shovel')) return step('capsuleShovel', 'Something is buried in front of the plaque stone. Fetch the shovel.', st.shovelSpot());
         return step('capsuleDig', 'Dig in front of the plaque stone.', ch.spot('capsule'));
