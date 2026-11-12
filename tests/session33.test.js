@@ -177,3 +177,105 @@ describe('the Caller is quiet once Junie is found', () => {
     expect(at.played).toEqual([]);
   });
 });
+
+// ---- Junie on the way home: her shine, and the back of the quad ------------------------------------
+import * as THREE from 'three';
+import { Stairs, stepOffSpot } from '../src/encounters/Stairs.js';
+import { FamilyRenderer } from '../src/render/FamilyRenderer.js';
+
+describe('Junie on the way home', () => {
+  const F = config.stairs.encounter.follow;
+
+  // A Stairs with Junie following, a real figure, a quad, and Tom far from home.
+  const rig = () => {
+    const flags = new Set(['junieTaken', 'stairsSeen', 'stairsMoths', 'junieFound']);
+    const said = [];
+    const scene = new THREE.Scene();
+    const quad = { mesh: new THREE.Group(), x: 50, z: 50, heading: 0 };
+    quad.mesh.name = 'quad';
+    scene.add(quad.mesh);
+    const player = { position: { x: 50, y: 0, z: 53 }, yaw: 0, camera: { position: new THREE.Vector3(50, 1.7, 53) }, riding: null };
+    const s = new Stairs(config, { on() {}, emit() {} });
+    s.init({ scene, quad, site: { place: { x: 0, z: 2, yaw: 0 }, spots: { foot: { x: 0, y: 0, z: 0 }, top: { x: 0, y: 3, z: 4 } } }, beyond: {}, player, ground: { heightAt: () => 0 }, station: { layout: { centre: { x: 900, z: 900 }, radius: 30 } }, progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) }, notify: (t) => said.push(t), cutscenes: { active: false, namedAnchors: new Map(), play() { return false; } }, rng: () => 0.5 });
+    const tick = (sec) => { for (let t = 0; t < sec; t += 0.05) s.update(0.05, null, true, false); };
+    return { s, flags, said, scene, quad, player, tick };
+  };
+
+  it('her figure is duller out of doors than at home (the glare rule), and the torch counts her', () => {
+    expect(F.albedo).toBeLessThan(config.family.albedo * 0.6);
+    const r = rig();
+    r.tick(0.2);
+    expect(r.s.junie.material.color.r).toBeCloseTo(F.albedo);
+    const c = r.s.glareCircle;
+    expect(c.x).toBeCloseTo(r.s.jx);
+    expect(c.top - c.base).toBeCloseTo(config.family.people.junie.height);
+  });
+
+  it('has a sitting pose: thighs forward, arms out in front', () => {
+    const fr = new FamilyRenderer(config.family, ['junie']);
+    fr.init(new THREE.Group(), [{ x: 0, z: 0 }], 0, 0);
+    fr.setPose(0, 'sit');
+    fr.update(5);
+    const p = fr.people[0];
+    const rot = (name) => p.list[p.names.indexOf(name)].rotation;
+    expect(rot('hipL').x).toBeLessThan(-1);
+    expect(rot('kneeL').x).toBeGreaterThan(1);
+    expect(rot('shoulderL').x).toBeLessThan(-0.8);
+  });
+
+  it('on the quad she sits on the back of it, facing forward, and it is said once', () => {
+    const r = rig();
+    r.tick(0.2);
+    expect(r.s.junie.mesh.parent).toBe(r.scene);
+    r.player.riding = r.quad;
+    r.tick(0.2);
+    const m = r.s.junie.mesh;
+    expect(m.parent).toBe(r.quad.mesh);
+    expect(m.visible).toBe(true);
+    expect(m.position.z).toBeGreaterThan(config.quad.seatBack + 0.45); // behind Tom's eye, clear of his view round
+    expect(m.rotation.y).toBeCloseTo(Math.PI);
+    expect(r.s.junie.pose).toBe('sit');
+    expect(r.s.glareCircle).toBeNull();
+    expect(r.said).toEqual(['Junie climbs on behind you and holds on']);
+    // off, and on again: not said twice
+    r.player.riding = null;
+    r.player.position.x = 50 - config.quad.stepOff;
+    r.player.position.z = 50;
+    r.tick(0.2);
+    expect(m.parent).toBe(r.scene);
+    expect(r.s.junie.pose).not.toBe('sit');
+    r.player.riding = r.quad;
+    r.tick(0.2);
+    expect(r.said.length).toBe(1);
+  });
+
+  it('she gets down on Tom’s side, behind it, without walking through it', () => {
+    const quad = { x: 0, z: 0, heading: 0 }; // facing -z; its right is +x
+    const left = stepOffSpot(quad, { x: -1.3, z: 0 }, F.seat);
+    expect(left.x).toBeCloseTo(-F.seat.off);
+    expect(left.z).toBeCloseTo(F.seat.back); // behind: +z
+    const right = stepOffSpot(quad, { x: 1.3, z: 0 }, F.seat);
+    expect(right.x).toBeCloseTo(F.seat.off);
+    expect(Math.hypot(left.x, left.z)).toBeGreaterThan(config.quad.parkedRadius);
+    expect(Math.hypot(left.x + 1.3, left.z)).toBeLessThan(F.gap); // within her following gap: she stays put
+  });
+
+  it('on any other vehicle she is hidden, as before', () => {
+    const r = rig();
+    r.tick(0.2);
+    r.player.riding = { name: 'ute' };
+    r.tick(0.2);
+    expect(r.s.junie.mesh.visible).toBe(false);
+    expect(r.s.seated).toBe(false);
+  });
+
+  it('a respawn or the walk ending while she is seated takes her off the quad', () => {
+    const r = rig();
+    r.player.riding = r.quad;
+    r.tick(0.2);
+    r.flags.add('junieHome');
+    r.s.reset();
+    expect(r.quad.mesh.children.length).toBe(0);
+    expect(r.s.junie).toBeNull();
+  });
+});

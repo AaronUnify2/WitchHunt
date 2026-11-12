@@ -770,6 +770,7 @@ export class Game {
       scene: this.scene,
       site: this.stairsSite,
       moths: this.moths, // Session 32: the swarm that keeps the stairs
+      quad: this.quad, // Session 33: Junie rides on the back of it
       beyond: this.placeBeyond,
       player: this.player,
       ground: this.world.ground,
@@ -1777,7 +1778,9 @@ export class Game {
     this.combat.viewModel.digging = Boolean(this.director.digging?.active || this.shelter.digging || this.church?.digging); // Session 15b: the dig's animation (Session 16: the shelter's hatch too)
     if (playing) {
       this.flashlight.platform = this.player.platform;
-      this.flashlight.update(dt, controls, this.player.camera, this.combat.glareExtras(this.player.position));
+      const glare = this.combat.glareExtras(this.player.position);
+      if (this.stairs.glareCircle) glare.push(this.stairs.glareCircle); // Session 33: Junie close in the beam dims it, as the dead do
+      this.flashlight.update(dt, controls, this.player.camera, glare);
     } else if (viewer.active) {
       this.flashlight.update(dt, this.lockedInput, viewer.camera, []); // held from the viewer's camera
     }

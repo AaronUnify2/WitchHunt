@@ -7,7 +7,7 @@
 //  - stand: breathing, shifting their weight, each in their own way (Ellen
 //    with her arms folded, Wyatt with his hands in his pockets, Junie
 //    hugging her rabbit); their heads turn to look at you when you're near;
-//  - walk, kneel, down: for cutscenes (setPose).
+//  - walk, kneel, down: for cutscenes (setPose); sit: a passenger (Session 33: Junie on the quad).
 // Lit like the world; through the heat scope they glow (setThermal).
 
 import * as THREE from 'three';
@@ -117,6 +117,23 @@ export class FamilyRenderer {
         set('spine', 0.04, sin * 0.06);
         set('chest', 0, -sin * 0.08);
         pose[n] = -Math.abs(Math.cos(s)) * 0.025;
+        break;
+      }
+      case 'sit': {
+        // Session 33: astride a quad's seat behind the rider, holding on to him: thighs forward and apart,
+        // shins down, leaning in a little, both arms out in front. (Junie's rabbit stays pinned to her chest.)
+        const sway = Math.sin(t * 2.1) * 0.02;
+        set('hipL', -1.3, 0, 0.42);
+        set('hipR', -1.3, 0, -0.42);
+        set('kneeL', 1.25);
+        set('kneeR', 1.25);
+        set('spine', 0.05 + sway);
+        set('chest', 0.04);
+        set('shoulderL', -1.05, 0, -0.12);
+        set('shoulderR', -1.05, 0, 0.12);
+        set('elbowL', -0.55);
+        set('elbowR', -0.55);
+        set('head', -0.08, sway * 2);
         break;
       }
       case 'kneel':

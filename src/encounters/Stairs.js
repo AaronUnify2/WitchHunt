@@ -44,6 +44,18 @@ export function followStep(jx, jz, tx, tz, dt, f) {
   return { x: jx + (dx / d) * step, z: jz + (dz / d) * step, moving: true, snapped: false };
 }
 
+// Session 33: where Junie gets down off the quad: on the side Tom stepped off to (his right if he hasn't
+// moved: thrown off, or the walk's over), `off` metres out and `back` metres behind its middle, so she never
+// has to walk through it to reach him. quad: { x, z, heading }; tom: { x, z }; seat: config follow.seat.
+export function stepOffSpot(quad, tom, seat) {
+  const rx = Math.cos(quad.heading);
+  const rz = -Math.sin(quad.heading);
+  const fx = -Math.sin(quad.heading);
+  const fz = -Math.cos(quad.heading);
+  const side = (tom.x - quad.x) * rx + (tom.z - quad.z) * rz < -0.2 ? -1 : 1;
+  return { x: quad.x + rx * side * seat.off - fx * seat.back, z: quad.z + rz * side * seat.off - fz * seat.back };
+}
+
 const FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound', 'junieHome'];
 const JUNIE = 2;
 
@@ -57,7 +69,8 @@ export class Stairs {
   }
 
   // ctx: { scene, site (StairsSite), beyond (PlaceBeyond), player, ground, station, cutscenes, dialogue,
-  // subtitles, progress, interiors, demo, notify, sfx, rng(), moths (ai/Moths.js: Session 32) }.
+  // subtitles, progress, interiors, demo, notify, sfx, rng(), moths (ai/Moths.js: Session 32),
+  // quad (world/Quad.js: Session 33, she rides on the back of it) }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
@@ -92,9 +105,11 @@ export class Stairs {
 
   reset() {
     this.state = 'idle';
+    this.seatTold = false; // Session 33: the line the first time she climbs on the quad
     this.swarm = null; // Session 32: the moths at the stairs: null, a countdown (seconds), or 'up'
     this.lineTimer = this.nextLineGap();
     this.lines = 0;
+    if (this.junie && this.seated) this.seat(false);
     if (this.following) this.spawnJunie();
     else this.removeJunie();
   }
@@ -121,8 +136,13 @@ export class Stairs {
       if (this.following) this.updateFollow(dt);
       this.updateMoths(dt, d);
     }
-    if (this.junie) this.junie.mesh.visible = this.following && outside && !this.player.riding && !this.cutscenes?.active;
-    if (this.junie) this.renderer.update(dt, this.player.camera.position);
+    if (this.junie) {
+      // Session 33 (Aaron: "put a model of her on the back of the bike"): on the quad she's seated behind him.
+      const seated = this.following && outside && Boolean(this.quad?.mesh) && this.player.riding === this.quad;
+      this.seat(seated);
+      this.junie.mesh.visible = this.following && outside && (!this.player.riding || seated) && !this.cutscenes?.active;
+      this.renderer.update(dt, seated ? null : this.player.camera.position);
+    }
     if (canInteract && input && playing && outside && d < this.ec.climbRange && this.state === 'idle') this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -227,7 +247,9 @@ export class Stairs {
     const x = p.x + Math.sin(yaw) * this.ec.follow.gap;
     const z = p.z + Math.cos(yaw) * this.ec.follow.gap;
     if (!this.junie) {
-      this.renderer = new FamilyRenderer(this.cfg.family, ['junie']);
+      // Session 33 (Aaron: "she has that reflective quality"): the family's colours are tuned for the cabin's
+      // lamps. Out of doors by torch she takes a darker material colour (the glare rule; follow.albedo).
+      this.renderer = new FamilyRenderer({ ...this.cfg.family, albedo: this.ec.follow.albedo }, ['junie']);
       this.renderer.init(this.scene, [{ x, z }], this.ground.heightAt(x, z), yaw);
       this.junie = this.renderer.people[0];
     }
@@ -236,7 +258,51 @@ export class Stairs {
     this.place();
   }
 
+  // Session 33: Junie as the torch's glare check sees her (as the dead are: Flashlight.updateGlare), so the
+  // beam dims when she's close in it. Null while she isn't standing in the world.
+  get glareCircle() {
+    if (!this.junie || !this.junie.mesh.visible || this.seated) return null;
+    const c = (this.circle ??= { x: 0, z: 0, r: 0.22, base: 0, top: 0 });
+    c.x = this.jx;
+    c.z = this.jz;
+    c.base = this.junie.mesh.position.y;
+    c.top = c.base + this.cfg.family.people.junie.height;
+    return c;
+  }
+
+  // Session 33: on and off the back of the quad. Seated, her figure is the quad's child (it pitches and rolls
+  // with it): on its seat behind Tom, facing forward, in the 'sit' pose. Off, she's put down on the side of
+  // the same side Tom stepped off, behind him (stepOffSpot).
+  seat(on) {
+    if (on === this.seated) return;
+    this.seated = on;
+    const m = this.junie.mesh;
+    const s = this.ec.follow.seat;
+    if (on) {
+      this.quad.mesh.add(m);
+      m.position.set(0, s.y, s.z);
+      m.rotation.set(0, Math.PI, 0); // the quad's front is its -z; she faces the way it does
+      this.renderer.setPose(0, 'sit');
+      if (!this.seatTold) {
+        this.seatTold = true;
+        this.notify?.('Junie climbs on behind you and holds on');
+      }
+      this.bus.emit('junie:seated', { on: true });
+      return;
+    }
+    this.scene.add(m);
+    m.rotation.set(0, 0, 0);
+    const p = this.player.position;
+    const q = this.quad;
+    const at = stepOffSpot(q, p, s);
+    this.jx = at.x;
+    this.jz = at.z;
+    this.place();
+    this.bus.emit('junie:seated', { on: false });
+  }
+
   removeJunie() {
+    this.seated = false;
     if (!this.renderer) return;
     this.renderer.dispose();
     this.junie.mesh.removeFromParent();
@@ -254,7 +320,7 @@ export class Stairs {
     if (!this.junie) this.spawnJunie();
     const p = this.player.position;
     const s = followStep(this.jx, this.jz, p.x, p.z, dt, this.ec.follow);
-    // Riding: she rides along (hidden), and gets off beside him.
+    // Riding: she rides along (on the back of the quad: seat(); hidden on anything else), and gets off beside him.
     if (this.player.riding) {
       this.jx = p.x;
       this.jz = p.z;

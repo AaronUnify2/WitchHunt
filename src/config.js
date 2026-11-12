@@ -5223,7 +5223,12 @@ export const config = {
       // Junie's up there. The stairs can't be climbed until the last of them is down.
       moths: { count: 8, after: 1.5, within: 22 },
       climbSeconds: 1.2,
-      follow: { gap: 1.7, speed: 4.6, catchUp: 9, snap: 28 }, // Junie behind Tom on the way home: metres behind, her walk (m/s), faster beyond catchUp metres, put beside him past snap
+      // Junie behind Tom on the way home: metres behind, her walk (m/s), faster beyond catchUp metres, put beside him past snap.
+      // Session 33: albedo: her material's colour out of doors (the family's is 0.62, tuned for the cabin: by torch
+      // at arm's length that blew out pale). seat: where she sits on the quad, in its frame (y up from its wheels'
+      // ground to her feet-origin, z back from its middle: on the rear rack, far enough behind Tom's eye that he can look
+      // round at her), and where she gets off: `off` to the side Tom stepped to, `back` behind its middle.
+      follow: { gap: 1.7, speed: 4.6, catchUp: 9, snap: 28, albedo: 0.3, seat: { y: 0.34, z: 0.96, off: 1.3, back: 1.1 } },
       homeRadius: 0, // metres past the fence's radius: inside it, the homecoming (0: at the fence)
       lineEvery: [40, 70], // seconds between Junie's lines on the walk home
       findDistance: 6.5, // metres from her Tom comes into the last clearing of the place beyond
