@@ -34,4 +34,10 @@ The ones I'd most like your eye on:
 - **The stairs are unlit,** so they look the same day or night. Is that eerie, or does it just look wrong?
 - **Save and quit with Junie following:** Continue puts you at home, so the homecoming plays straight away.
 
-Next is your notes, then **Session 28**: Milo's barn and the railway cutting.
+## Since then (your asks)
+
+- **Debug: Start from a story point:** the outpost cleared, with the compound to explore or explored.
+- **Milo redone:** a baggy, ruffled, wild-green-haired creepy clown with faintly glowing eyes, 1.45 m. The man is 1.75 m, in loose clothes with a belt that fits.
+- **Milo's barn** is built: PLAYTEST round 56.
+
+Next is your notes (the barn, the Junie stretch, the plane), then **the railway cutting**.
