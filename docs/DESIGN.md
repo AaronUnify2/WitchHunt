@@ -173,7 +173,7 @@ The original design, kept for reference: the player starts each run with the **s
 | Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
 | Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter: Aaron is looking for a good spot (Nov 8). Debug only for now | 50 per round |
 | SMG (MP5-style) | Full auto; fires pistol rounds | **Wherever there are dead Men in Black** (Aaron, Nov 8): the first such place in a run gives it, so the sawmill's dead agents can, and on the story spine the Car Armory always does. **Built at the sawmill (Session 28)**: beside the last agent, with 45 rounds | 10 per round |
-| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
+| Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | The moonshiners' holler's gun cabinet (*built, Session 29*; Aaron's yes) | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
 | Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). **Built (Session 27)**: an overhead smash that cleaves through up to three (`config.weapons.spikeMaul`) | Config |
 | Chainsaw (melee) | Shreds up close; no fuel. Loud (pulls every zombie nearby), slows Tom while it revs, overheats if held, and dulls (a sharpness gauge; sharpen at the station's workbench for scrap) | The sawmill (optional; Nov 8). **Built (Session 28)**: hold RT to rev and cut continuously; heard 55 m off; overheats and stalls; the chain dulls to 35% damage; HEAT and EDGE on the HUD (`config.chainsaw`) | Config |
@@ -196,7 +196,7 @@ The original design, kept for reference: the player starts each run with the **s
 #### Tools vs weapons *(Aaron, Nov 8; the belt built Session 20)*
 
 - *As built (Session 20):* the shovel is the melee weapon until it's swapped out; then it hangs on the belt and still digs (the dig always shows the shovel). Everything that needs it asks whether Tom owns it (`Weapons.has`), not whether it's in hand.
-- **Tools go on a tool belt** (the shovel; the **wire cutters** from the moonshiners' holler, Nov 8, for disarming trip wires; later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
+- **Tools go on a tool belt** (the shovel; the **wire cutters** from the moonshiners' holler, Nov 8, for disarming trip wires (*built, Session 29*, as a story flag: the belt has no display yet); later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
 - **One melee slot for fighting.** It starts as the shovel and can be swapped for something better: the **railroad spike maul** (the railway cutting) or the **chainsaw** (the sawmill) (Nov 8). *As built (Sessions 27-28, Aaron): Tom carries all three and rotates between them, as he does guns of a kind.*
 - **No flamethrower for Tom** (Aaron, Nov 8: tedious in shooters); it's a killdozer part only. **No fuel anywhere in the game.**
 - Damage values live in one weapon table in config; the turret's ammo conversion reads from it.
@@ -610,7 +610,7 @@ The witch raises only zombies. Speeds are multiples of the player's full sprint 
 | Army | Fatigues and helmet; tougher. The helmet blocks the headshot bonus, so they eat extra bullets. It comes off with enough damage, or a powerful enough round (the hunting rifle) punches straight through it; once the helmet is gone, headshots land normally (Aaron, Oct 16). First met on the military outpost approach | Helmet (+20 ballistic), rifle ammo (the main rifle ammo source) |
 | Men in Black | A dead agent: torn black suit over a white shirt, tie, sunglasses, body armour; as tough as the army (Session 13). Found where the agents fell (the government base, Ground Zero) | Body armour (+40 ballistic, the vest pickup), pistol ammo |
 | Miner (mineshaft only; designed, not built) | Helmet and headlamp | Scrap, lamp batteries |
-| Moonshiner (the holler only; designed, not built) | The turned family who ran the still | Open |
+| Moonshiner (the holler only; *built, Session 29*: the citizens' shapes in shirts and overalls) | The turned family who ran the still | Shotgun shells, scrap |
 | Earl Pruitt (the storm shelter only; built, Session 13) | One fixed look: a faded red trucker cap, grey stubble, a tan work shirt, jeans | His keys (the safe's combination) |
 
 **Daytime:** most zombies thin out at dawn; a few stragglers wander the pathways by day. An encounter's own dead (`authored`: the gas station's pack and mutant, the storm shelter's horde, the outpost's soldiers) don't sink at dawn.
@@ -1552,6 +1552,15 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 - **The still, the last puzzle:** still running, nobody tending it, its gauge in the red. Shut it down with the valves in the right order, or it blows and the part goes with it.
 - **Gun:** *proposed*, the auto shotgun (a paranoid family's stockpile). Not yet confirmed.
 - **Killdozer part:** the still's copper coil and fuel, made into **the flamethrower**.
+- **As built (Session 29;** `world/hollerGround.js`, `render/hollerModel.js`, `world/HollerSite.js`, `combat/hollerTraps.js`, `encounters/Holler.js`, `data/holler.json`, `config.holler`, `config.map.holler`; OPEN_QUESTIONS #538-564; PLAYTEST rounds 64-66**).** All names and texts are drafts.
+  - **The story** (my draft): the Rigsbys ran a still up this holler for three generations. When the lights came down over the government land, Clete Rigsby took them for the law coming for the still and strung the holler shut. A man in a black suit came up it in the autumn and didn't go back down. Then the portal went, and the family turned where they sat, round the still.
+  - **The holler** is in the ground: two wooded ridges (the forest's own trees) either side of a narrow, winding floor with a creek down one side, widening to a yard at the head under a headwall. Rock ledges at the faces' feet; the other pathways come down gullies.
+  - **The traps** (nine, four kinds, fixed up the floor): stump guns on fishing line (jump the line, or cut it; whatever walks through it on its feet takes the charge, the dead included), cans on wire (a rattle every dead thing hears), bear traps under leaves piled too neat, snares on bent saplings (Tom held until he works free with X; one of the dead held where it stands). The first is already sprung, a dead Man in Black in front of it. A first line on each kind as Tom comes near one.
+  - **The lookout** halfway up: the wire cutters (a tool: they cut the lines), the trap map (a pencil drawing; the two traps laid since aren't on it), Clete's tally of the lights.
+  - **The turned family** (a moonshiner zombie look: shirts and overalls) wait round the still and come when Tom comes into the yard, the cans ring or a shot carries; two more off the ridge.
+  - **The still:** its gauge in the red, climbing from when the family wakes (about 2.5 minutes). Pa's board by it gives the order: damper, relief, line. Out of turn it bucks; over the top it blows, and the worm with it.
+  - **The auto shotgun** (confirmed) in the shed's gun cabinet, with ammo cans; **the copper worm** from the flake stand once she's shut down: a card and a lore item until the killdozer's built.
+  - **No Caller here.**
 
 #### The railway cutting: the 1903 line (optional; rank 2)
 
@@ -2317,7 +2326,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **The Nov 8 story spine** (see Encounters) leaves these open:
   - **Run length:** settled Nov 8: a longer run (4+ hours) is accepted; the exact target is set once full runs are played (M18).
   - **The endgame's design** (the final battle and the realm of stories): Aaron is designing it; M15 waits on it.
-  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: wherever there are dead Men in Black, the sawmill included); the lore of what happened at the sawmill between the loggers and the agents (drafted and built, Session 28: OPEN_QUESTIONS #510-511); the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
+  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun (*settled, Session 29: yes*); which encounter gives the heat-scope semi-auto (the SMG is settled: wherever there are dead Men in Black, the sawmill included); the lore of what happened at the sawmill between the loggers and the agents (drafted and built, Session 28: OPEN_QUESTIONS #510-511); the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
   - The mothership's interior and beats; the Car Armory's layout, stealth beats and survivors; Sheriff's lines and look; the upgrade list and costs.
@@ -2326,7 +2335,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
   - Whether the Caller is ever seen at all (leaning no); what the place beyond and the realm of stories look like; whether other staircases still appear.
   - What the station needs the big core's power for, beyond surviving (proposed: the comms room's big radio reaching the outside world).
   - How the mega night's 150 zombies fit the performance budget; the new zombie types in detail.
-- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the SMG can be found wherever there are dead Men in Black (the sawmill's agents, the Car Armory); the auto shotgun is proposed for the moonshiners' holler; Aaron is looking for a spot for the heat-scope rifle. The hunting rifle is settled (the gas station's safe).
+- Which encounters give the SMG, the heat-scope semi-auto and the auto shotgun (OPEN_QUESTIONS #143). *Nov 8:* the SMG can be found wherever there are dead Men in Black (the sawmill's agents, the Car Armory); the auto shotgun is in the moonshiners' holler (*built, Session 29*); Aaron is looking for a spot for the heat-scope rifle. The hunting rifle is settled (the gas station's safe).
 - More achievements that don't unlock modifiers.
 - Exact numbers for everything marked config: settled in play-testing (M18).
 - Candidate entities for later, not in scope: Jersey Devil, Dogman. (*Nov 8:* the Flatwoods Monster and the Headless Horseman are now named optional encounters: the Flatwoods landing and the Horseman bridge.)

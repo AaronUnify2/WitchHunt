@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,33 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 64: the moonshiners' holler and its traps (Session 29; OPEN_QUESTIONS #538-551).** Debug menu, **Story, radio & trail cams**, "Holler: take me there" (it puts you before the mouth, walking in). "start it again" clears it and sets every trap; "give me the wire cutters" skips the lookout.
+- [ ] **The hollow:** two wooded ridges either side of a narrow floor, rock ledges at their feet, a creek down one side, the floor widening to a yard at the head. Does it read as a holler? Dark enough? Somewhere the seed brings another trail in, it comes down a gully in a ridge.
+- [ ] **The sweep:** over the mouth, down to the first trap (the stump gun, its line slack, a man in a black suit face down in front of it), along the floor to the lookout, up to the still, close on the gauge.
+- [ ] **Read the traps:** a line the first time you come near each kind. Fishing line shin high across the floor (a stump gun at the side); tin cans on a wire; leaves piled too neat (a bear trap); a sapling bent over a noose (a snare). By torch at night too: the line should catch the beam.
+- [ ] **Jump a line** (the stump gun's or the cans'): nothing happens. Walk through one: the gun fires down its line (it hurts), or the cans rattle and the family at the still come.
+- [ ] **Step in a bear trap and a snare:** held. Hold X to work free. Is the bear trap's 30 damage too much?
+- [ ] **Disarm by hand:** spring the bear traps with a stick, pull the snares' pegs (hold X).
+- [ ] **The lookout** halfway up, against the right-hand face: the wire cutters in the tackle box. From then on, hold X at a line to cut it (a cut stump gun gives up two shells).
+- [ ] **Lead the dead into the traps:** walk them through a live stump gun's line, over a bear trap, into a snare. Does it work often enough to plan for?
+- [ ] **Save and quit**, Continue: every trap you set off or disarmed stays gone.
+
+**Round 65: the trap map, the family and the still (Session 29; #552-563).**
+- [ ] **The trap map** on the lookout's board (hold X): a card, then the paper, a pencil map with an X for each trap. Two traps up the yard end aren't on it. Did you trust it, and get caught?
+- [ ] **Clete's tally** on the lookout's bench: what the family thought the lights were.
+- [ ] **The family** stand about the still (moonshiners: shirts and overalls). They come when you come into the yard, when the cans ring, or when a shot carries. Two more come down off the ridge about 18 s later. Is seven right?
+- [ ] **Pa's board** on a post by the still (hold X): the shutdown order.
+- [ ] **The still:** from when they wake, the gauge climbs out of the red; you have about two and a half minutes. Shut the damper (the firebox's glow dies), open the relief cock (steam; the needle falls), shut off the line. Try one out of turn first: steam, the needle jumps. Too easy with the board? Too hard without it?
+- [ ] **Let it blow** once (stand back): a blast, and the copper worm's a twist of torn copper in the leaves.
+- [ ] **The worm,** once she's shut down: hold X at the flake stand. A card: the dozer's flamethrower one day.
+- [ ] **The shed:** the auto shotgun in the gun cabinet (with a drum), ammo cans under the bench.
+- [ ] **Searches:** the man in the suit at the mouth, the jars, the mash barrels.
+- [ ] **At home:** hand in the map and the worm. Ellen on the map, Wyatt on the worm, Ellen on the auto shotgun.
+- [ ] **Save and quit** mid-fight with the still climbing: back at its first reading and the family round it again when you come back.
+
+**Round 66: the auto shotgun (Session 29; #564).** In the shed's gun cabinet, or debug menu, **Player** (it was already there from Session 10b).
+- [ ] Full auto off a 20-shell drum, sharing the pump's shells. It was debug-only until now: does it need its numbers looked at now it's in a real run?
 
 **Round 60: the sawmill's set (Session 28; OPEN_QUESTIONS #510-516).** Debug menu, **Story, radio & trail cams**, "Sawmill: take me there" (it puts you on the mill road, walking in). "start it again" clears it; "the dead get up now" skips to the fight.
 - [ ] **The arrival:** the sweep over the two black cars, down to the open boot, along the drag marks to the row under the tarps, into the shed to the man with the chainsaw in him. Does it land? Too long (13 s)?

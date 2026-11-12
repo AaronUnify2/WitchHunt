@@ -1,5 +1,7 @@
 # Open questions
 
+**Session 29 (Nov 12):** the moonshiners' holler (the hollow in the ground, its set, the traps and the wire cutters, the trap map, the turned family, the still, the auto shotgun, the copper worm). Your answers at the start: the holler; go with my defaults (the auto shotgun: yes). No play-test notes yet, so nothing from before changed. My calls are #538-564 below.
+
 **Session 28 (Nov 12):** the sawmill (its set and its beat), the chainsaw and the station's workbench, from HANDOVER's defaults and your yes to my three (what happened at the mill; loggers get up first, then the agents; Tom carries all three melee weapons). No play-test notes yet, so nothing from before changed. My calls are #510-537 below.
 
 **Session 27 (Nov 12):** the railway cutting (the cutting in the ground, the last train of 1903, its beat), the railroad spike maul and dynamite, all from HANDOVER's defaults and your answers (blow up in hand: yes; scarce; the sawmill next). My calls are #488-509 below.
@@ -7,6 +9,52 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 29: the moonshiners' holler
+
+Your answers at the start: the holler, not the mineshaft; go with my defaults (the auto shotgun's in it). No notes yet. Where I had to choose:
+
+**Batch 1: the hollow and the set (PLAYTEST round 64)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 538 | **The holler is in the ground.** | The clearing is lifted into two ridges 7.5-8.6 m high either side of a floor that winds up from the mouth (about 8 m wide) and widens to a yard (19 m) at the head, closed by a headwall. The ridges taper away before the mouth, so the pathway walks in between their noses. | `config.map.holler`, `world/hollerGround.js` |
+| 539 | **Other trails come in through gullies.** | Every other pathway into the clearing cuts a gully through a ridge (about 5 m across). They all meet at the clearing's middle, which is the narrow part of the floor, so on some seeds (7 has three) a ridge has a gap or two near the yard. The stretch from the mouth to halfway is whole on every seed I tried. | `config.map.holler` `gully`, `gullyBlend` |
+| 540 | **The ridges are forest.** | The game's own trees and undergrowth grow on them from 2 m up the faces (the clearing's open mask is closed there again), so they match the forest round them. Rock ledges at the faces' feet are solid, so you can't climb out except up a gully. | `GroundField.closeHoller`, `config.map.holler.wooded` |
+| 541 | **Dark?** | DESIGN says dark and narrow. No lights are added (the rule), so it's as dark as the forest by day: the ridges shade the floor's sides. By torch at night it's properly dark. | |
+| 542 | **The family's name and story** (drafts). | The Rigsbys: Clete (Pa), his kin Dewey, Ruby and the rest. Three generations of the still. When the lights came down over the government land last spring, Clete took them for the law coming for the still and strung the holler shut. A man in a black suit came up it in the autumn and didn't go back down. Then the portal went, and the family turned round the still. | `data/holler.json` `_note`, `papers.json`, `lore.json` |
+| 543 | **The first trap is already sprung,** with a dead Man in Black face down in front of it. | It teaches the stump gun before you meet a live one, and ties the holler to the lights (they did come, just not for the still). His card has a number and no name. | `config.holler.traps` (`sprung`), `render/hollerModel.js` |
+| 544 | **No parked vehicles** in the holler. | It was dealt a pickup half the time; it could have landed on the floor or a ridge. | `data/vehicles.json` |
+| 545 | **What's in the set.** | The POSTED sign at the mouth, the creek from the spring, the lookout (a lean-to with the bench, the trap map and the tackle box), the still's yard (the still on its stone firebox with the gauge, the thump keg, the flake stand with the worm, the trough from the spring, mash barrels, crates of jars, sacks, the woodpile, Pa's board), the shed against the headwall (open down its front: the gun cabinet, ammo cans, jugs). About 22,000 triangles in eight draw calls (the set, the traps, six small pieces). | `render/hollerModel.js` (`HOLLER`), `config.holler.look` |
+
+**Batch 2: the traps and the wire cutters (round 64)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 546 | **Nine traps, four kinds.** | Up the floor: the sprung stump gun, a bear trap, cans, a snare; the lookout; a live stump gun, a bear trap (not on the map), cans, a snare (not on the map), a bear trap at the yard's edge. Fixed positions (the seed doesn't move them). | `config.holler.traps` |
+| 547 | **Lines catch feet, not a jump.** | Walk through a stump gun's line or the cans' wire on the ground and it goes off; jump it and it doesn't. That's how you get past them before you have the cutters. | `combat/hollerTraps.js` `steppedIn` |
+| 548 | **The stump gun.** | Fires down its line: everything within 11 m and 13 degrees of its aim takes 90 damage (half at the far end), Tom 45. Its bang carries 45 m. | `config.holler.trapRules.shotgun` |
+| 549 | **The cans** carry 70 m: every dead thing within it comes, the family at the still among them. | | `trapRules.cans` |
+| 550 | **Caught by a bear trap or a snare.** | Bear trap: 30 damage, held until you hold X for 1.6 s. Snare: 8 damage, 1.1 s. (The witch's snare is mashed A; these are X, like everything else at the holler.) One of the dead caught is held there 14 s (bear) or 12 s (snare) and hurt a little. It stands; the snare doesn't hoist it. | `trapRules.bear`, `snare`, `holds.free` |
+| 551 | **Disarming, and the wire cutters.** | Bear traps (sprung with a stick, 1.8 s) and snares (the peg pulled, 1 s) by hand. Lines need the cutters (the tackle box at the lookout, halfway up); a cut stump gun gives up two shells. The cutters are a flag: the tool belt has no display yet (the shovel isn't shown either). A trap that's gone off or been disarmed is gone for good (a flag each). | `trapRules.holds`, `encounters/Holler.js` |
+
+**Batch 3: the beat (round 65)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 552 | **The trap map** (a lore document and a paper). | Pencil on the back of a feed sack: the holler, the creek, the lookout, the still, an X and a word for each of the seven traps the family put on it, drawn from the real layout. The two laid since aren't on it, and both are past the lookout, where you'd be trusting it. A note on it from Clete. | `papers.json` `hollerTrapMap`, `ui/paperDrawings.js` `trapMap` |
+| 553 | **Clete's tally of the lights** (on the lookout's bench). | "LIGHTS AGAIN. 3. LOW OVER THE GOV LAND. THEYRE COMING." That's the whole of what the family knew. | `data/holler.json` searches |
+| 554 | **The turned family.** | Five round the still from when you come within 70 m, waiting (they shuffle about within 5.5 m of it). A new look: the citizens' shapes in faded work shirts and denim overalls (the bib's the police vest block, in denim), a little tougher (1.15x). Their own loot: shells now and then. | `config.zombies.variants.moonshiner`, `texture.looks.moonshiner`, `loot.json` |
+| 555 | **What wakes them.** | Coming within 13 m of the still, the cans ringing, or a shot within about 29 m. Put them down from further off and it counts as woken. Two more come down off the ridge 18 s after they wake. | `config.holler.encounter` `wakeDistance`, `familyTrees` |
+| 556 | **Pa's board** (a paper, read in place). | SHUTTING HER DOWN: 1. damper shut, 2. bleed the cap, 3. line off, last; "RUBY THIS MEANS YOU". It's the puzzle's answer, in plain sight by the still. Too plain? | `papers.json` `stillBoard` |
+| 557 | **The still's clock.** | The gauge reads 0.74 (in the red) when you get there and holds until the family wakes; then it climbs to 1 in 160 s. The damper stops it climbing, the relief bleeds it to 0.3 in 4 s, the line shuts it down. | `config.holler.encounter.still` |
+| 558 | **A valve out of turn.** | The needle jumps (the line before the bleed: 0.16; anything else: 0.08), a gout of steam (6 damage within 2.6 m), and a line on what went wrong. The valve doesn't count. | `still.wrong`, `wrongLine`, `steamDamage` |
+| 559 | **It blows.** | A blast at the still (7 m, 200 to the dead, up to 90 to Tom), and the worm's gone: the flake stand's a "twist of torn copper" you can't take. The still's mesh stays standing (no wreck model). | `config.holler.encounter.blast` |
+| 560 | **Back later.** | A still left running starts back at 0.74 and holds; a family that wasn't finished is back round the still. Shut or blown stays so. | `encounters/Holler.js` `reset` |
+| 561 | **The copper worm** (lore, a card). | Hold X 2.6 s at the flake stand once she's shut down. The card calls it the dozer's flamethrower one day; Wyatt explains it at home (draft). | `lore.json` `copperCoil`, `dialogue.json` `holler.wyatt.1` |
+| 562 | **The family's lines** (drafts). | Ellen on the trap map ("I keep thinking how close that is to right"), Wyatt on the worm, Ellen on the auto shotgun. | `dialogue.json` `holler.*` |
+| 563 | **No Caller here.** | As at the sawmill: what happened in the holler was done by people (and to them). | |
+| 564 | **The auto shotgun** (your yes). | In the shed's gun cabinet with a 20-shell drum; 14 more shells in the ammo cans. Its numbers are Session 10b's (debug-only until now): 8 pellets of 6, full auto. | `config.weapons.autoShotgun`, `config.holler.encounter` |
 
 ## Session 28: the sawmill, the chainsaw, the workbench
 
