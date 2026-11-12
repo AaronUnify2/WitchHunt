@@ -1348,6 +1348,9 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Bigfoot cave and the Mothman fight (every run; story spine, beat 7; moved north)
 
+*__As scaffolded (the build queue, Nov 12; each part to be designed properly with Aaron):__*
+- ***Item 1, the plan and the dozer** (`encounters/CordonDozer.js`): the plan is five lines in the cabin after Ellen's ask; Earl's maps are fetched from the storm shelter's corkboard (a paper with his map); the family read them over the radio; the dozer waits at a placeholder camp in the `cordonDozer` clearing with six dead engineers; it needs its keys (the job box) and a battery; Tom drives it home through the checkpoint. OPEN_QUESTIONS #691-701.*
+
 *Designed with Aaron, Nov 8; not built. Replaces the earlier design (a middle-band cave with the Mothman as its only boss fight).*
 
 **The family's plan.** With Junie back, the family make a plan around the capsule's nature spirit, and realise: what if it's the Bigfoot Earl was tracking? Earl's life of being laughed at turns out to be the key; his diary and the Home of Bigfoot store are vindicated.

@@ -1,5 +1,7 @@
 # Open questions
 
+**The build queue (Nov 12):** beats 6 to 10 scaffolded one item at a time (your ask: items 1-7, then the big play-test). Calls from #691, grouped by item.
+
 **Session 33 (Nov 12):** your play-through notes, part 2 (the place beyond to Junie home), all six built, with your answers; and the four questions left from part 1, answered at the start. What they settled, and my calls in building them, are #669-690 below.
 
 **Session 32 (Nov 12):** your play-through notes, part 1 (the opening to the place beyond), all fourteen built, with your five answers. What they settled, and my calls in building them, are #646-668 below.
@@ -17,6 +19,26 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## The build queue: scaffolding for beats 6 to 10 (Nov 12)
+
+Each item is the beat playable start to end with placeholders and draft lines, for a debug and design session with you later. My calls, item by item. Every line named here is a draft.
+
+**Item 1: the family's plan and the army's dozer (PLAYTEST round 76)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 691 | **When the plan is told.** | The first time you're inside the cabin after Ellen has asked for the power cell: five lines, face to face (Ellen, Wyatt, Junie's "It's Bigfoot. Mr Pruitt's Bigfoot is real."). No cutscene. | `dialogue.json` `plan.1`-`plan.5`, `CordonDozer.updateStory` |
+| 692 | **Earl's maps are a trip to the storm shelter.** | DESIGN has them already in the shelter, so the family send you for them: a third search down there, on the corkboard, offered only once they've asked. It opens as a two-page paper with his map drawn (the road's end ringed "HIS DOOR?"). Could instead have been handed in with the diary back at the start. | `stormShelter.json` `maps`, `papers.json` `earlMaps`, `ui/paperDrawings.js` |
+| 693 | **Who works out what.** | Over the radio as you put the maps down: Ellen sees the marks bunch at the road's end; Wyatt reasons the Mothman is "sitting on him"; Ellen: a flare brings it, something has to hold it; Wyatt remembers the army's dozer and its winch. | `plan.maps.1`-`.4` |
+| 694 | **Where the dozer is.** | The story spine's `cordonDozer` clearing: on this map about 350 m east of the checkpoint and 65 m south of the fence line. The way home is back through the checkpoint. | `data/storySpine.json` |
+| 695 | **The camp** (a placeholder set). | The cut's stumps and survey tape, two log decks, two felled trunks, the crew's tent, a job box, a generator with a dead light mast, drums. One mesh. The dozer stands with its blade against the first tree they didn't fell. | `render/dozerCampModel.js`, `config.dozerCamp.look` |
+| 696 | **The crew.** | Six dead engineers (the army zombie's look), standing about the camp by the time you're within 60 m. Nothing waits on them. | `encounter.crew` |
+| 697 | **Getting it started.** | Two things: the keys from the job box (with 8 scrap), and a battery fitted to the machine (2 s). A charged spare sits by the generator; any battery you carry works. Until both, the dozer tells you what's missing. | `CordonDozer.pick`, `lockedPrompt` |
+| 698 | **Taking it home.** | The goal is home's door; it counts as home inside the fence or within 16 m outside it. The drive is about 700 m at the dozer's 19 km/h. Nothing attacks on the way beyond what the engine draws. | `encounter.homeMargin` |
+| 699 | **The dozer is saved now.** | Where it stands goes in the save. Before, it was a debug toy and vanished on load. | `Dozer.saveState`, `Game` |
+| 700 | **The quad** stays wherever you left it when you took the dozer (item 4 picks that up). | Nothing new. | |
+| 701 | **"Continue story" in the debug menu.** | Ten points so far, one per main story beat from the crashed plane on, each at the start of its beat with everything before it done. They build on a fresh run: use them from a new game, not on top of each other. | `debug/storyStart.js` `STORY_POINTS` |
 
 ## Session 33: your play-through notes, part 2
 

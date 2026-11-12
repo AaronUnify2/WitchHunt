@@ -2,6 +2,16 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 1: the family's plan and the army's dozer
+
+**Scaffolded and on `main`.** 1286 tests pass; checked headless on two seeds; not played by hand.
+
+- **To try it:** new game, debug menu, first section, "Continue story: The family's plan". Walk into the cabin.
+- **What plays:** the family's plan (five lines) → Earl's maps from the storm shelter's corkboard (a paper with his map) → the family work it out over the radio → east along the cordon to the clearing crew's camp (a sweep, six dead engineers) → keys from the job box, a battery from beside the generator → drive the dozer home.
+- **What's placeholder:** the plan is talk, not a staged scene; the camp is a first set; nothing happens on the drive home.
+- **"Continue story"** now has ten entries, the crashed plane through to the dozer home. Use them from a fresh run.
+- **For our session on it:** #691-701 in OPEN_QUESTIONS; PLAYTEST round 76.
+
 # Session 33: your play-through notes, part 2
 
 **All six notes from your second sitting are built,** with your answers, and on `main` in three batch commits plus the write-up. 1272 tests pass and the build is clean. I checked each batch headless on two seeds. None of it has been played on the tablet, and I can't hear the game, so the new static is untested by ear.

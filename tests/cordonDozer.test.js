@@ -149,14 +149,16 @@ describe('the beat, start to end', () => {
     // the battery
     r.player.position.x = 507;
     r.player.position.z = 505;
-    r.hold(1.0);
+    r.tick(0.2); // (let go of X between holds)
+    r.hold(1.2);
     expect(r.inv.batteries).toBe(1);
     expect(r.site.battery).toBe(false);
     r.player.position.x = 500;
     r.player.position.z = 506.2;
     r.tick(0.1);
     expect(r.e.hud.prompt).toBe('Hold X: fit a battery to the dozer');
-    r.hold(2.2);
+    r.tick(0.2);
+    r.hold(2.4);
     expect(r.set.has('dozerBattery')).toBe(true);
     expect(r.inv.batteries).toBe(0);
     expect(r.dozer.locked).toBe(false);
