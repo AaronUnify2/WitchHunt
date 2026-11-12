@@ -171,6 +171,10 @@
       "name": "Classified 8: the final entry",
       "from": "groundZero",
       "kind": "document"
-    }
+    },
+    {"id": "engineersNote", "name": "The engineer's note (1903)", "from": "railwayCutting", "kind": "document", "paper": "engineersNote", "card": {"look": "note", "color": "#8a7a5a", "label": "#2a2218", "line": "Pencil on the back of a train order, folded small and pushed down behind the gauges in the cab. (draft)"}},
+    {"id": "luggageLabels", "name": "The baggage checks (1903)", "from": "railwayCutting", "kind": "document", "paper": "luggageLabels", "card": {"look": "tags", "color": "#7a6a50", "label": "#2a2218", "line": "A brass ring of brown card checks off the baggage car's hook, each one numbered, each one a name. (draft)"}},
+    {"id": "hattieDoll", "name": "Hattie Bell's doll", "from": "railwayCutting", "kind": "item", "card": {"look": "doll", "color": "#6a4448", "label": "#d8c8b0", "line": "A rag doll in a faded print dress, yarn hair, a face stitched on. Sewn into its hem in red thread: H. B. McC. It was sitting up on the seat, facing the door, as if someone had sat it there to watch for her. (draft)"}},
+    {"id": "cowcatcher", "name": "The engine's cowcatcher and boiler plate", "from": "railwayCutting", "kind": "item", "card": {"look": "plate", "color": "#4a2e1e", "label": "#c8b8a0", "line": "The engine's iron pilot, its slats bent but whole, and a sheet of boiler plate as thick as your thumb. On the dozer's blade, they'd take a lot. (draft)"}}
   ]
 }

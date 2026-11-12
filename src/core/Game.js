@@ -87,6 +87,7 @@ import { MiloBarnSite } from '../world/MiloBarnSite.js';
 import { MiloBarn } from '../encounters/MiloBarn.js';
 import { RailwayCuttingSite } from '../world/RailwayCuttingSite.js';
 import { Dynamite } from '../combat/Dynamite.js';
+import { RailwayCutting } from '../encounters/RailwayCutting.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -784,6 +785,29 @@ export class Game {
     });
     this.combat.promptSources.push(this.milo.hud);
     this.vehicles.busy?.push(this.milo.hud);
+    // The railway cutting (an optional encounter: encounters/RailwayCutting.js; Session 27).
+    this.cutting = new RailwayCutting(this.cfg, this.bus);
+    this.cutting.init({
+      scene: this.scene,
+      site: this.cuttingSite,
+      player: this.player,
+      combat: this.combat,
+      enemies: this.combat.enemies,
+      ground: this.world.ground,
+      cutscenes: this.cutscenes,
+      caller: this.caller,
+      subtitles: this.subtitles,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      card: this.card,
+      clock: this.clock,
+      dynamite: this.dynamite,
+      demo: this.demo,
+      notify,
+    });
+    this.combat.promptSources.push(this.cutting.hud);
+    this.vehicles.busy?.push(this.cutting.hud);
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -900,7 +924,7 @@ export class Game {
     this.overlay.addStat('firstDay', () => `${this.firstDay.overlayLine()}  ${this.campsite.overlayLine()}  ${this.gasStation.overlayLine()}  ${this.shelter.overlayLine()}  ${this.quad.overlayLine()}`);
     this.overlay.addStat('experimental', () => `${this.experimental.map((v) => v.overlayLine()).join('  ')}  ${this.roadNorth.overlayLine()}`);
     this.overlay.addStat('outpost', () => `${this.outpost.overlayLine()}  ${this.witchEscape.overlayLine()}  ${this.homeStop.overlayLine()}`);
-    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}  ${this.stairs.overlayLine()}  ${this.milo.overlayLine()}`);
+    this.overlay.addStat('demo', () => `${this.demo.overlayLine()}  ${this.placeBeyond.overlayLine()}  ${this.flyer.overlayLine()}  ${this.moths.overlayLine()}  ${this.plane.overlayLine()}  ${this.junieTaken.overlayLine()}  ${this.comms.overlayLine()}  ${this.caller.overlayLine()}  ${this.church.overlayLine()}  ${this.stairs.overlayLine()}  ${this.milo.overlayLine()}  ${this.cutting.overlayLine()}`);
     this.overlay.addStat('story', () => `${this.dialogue.overlayLine()}  trail ${this.trailCams.overlayLine()}  cutscene ${this.cutscenes.overlayLine()}  viewer ${this.viewer.overlayLine()}`);
   }
 
@@ -958,6 +982,7 @@ export class Game {
     this.church.addDebugItems(menu);
     this.stairs.addDebugItems(menu);
     this.milo.addDebugItems(menu);
+    this.cutting.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1479,6 +1504,7 @@ export class Game {
     this.church.reset();
     this.stairs.reset();
     this.milo.reset();
+    this.cutting.reset(); // Session 27
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1754,6 +1780,7 @@ export class Game {
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
+    if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
   }
 
   get phase() {
@@ -1807,6 +1834,7 @@ export class Game {
     this.cuttingSite.dispose();
     this.stairs.dispose();
     this.milo.dispose();
+    this.cutting.dispose();
     this.stairsSite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();

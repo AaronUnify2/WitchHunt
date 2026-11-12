@@ -31,7 +31,7 @@
 // in the clearing's middle.
 //
 // buildRailwayCutting(cfg, opts) returns { group, mesh, parts: { cowcatcher,
-// door, doorOpen, lantern }, spots, colliders, rooms, dispose }. opts:
+// door, doorOpen, lantern, doll, maul, crates }, spots, colliders, rooms, dispose }. opts:
 // { weather, heightAt(X, Z) (the ground, relative to the origin), lineAt(Z)
 // ({ x, yaw }: the real line), cut (config.map.railway.cutting), keepAt(X, Z)
 // (0 in a pathway's gully, 1 clear), side (the store's bank, +1 / -1), storeZ }.
@@ -408,7 +408,7 @@ function coach(b, cfg, L, opts) {
   }
   const blocks = [...benches, [-W / 2, -0.55, sz - 0.4, sz + 0.4]];
   if (opts.tree) blocks.push([opts.tree.x - 0.2, opts.tree.x + 0.2, opts.tree.z - 0.2, opts.tree.z + 0.2]);
-  opts.luggage?.(b, { fy, body, aisle, W, blocks });
+  opts.luggage?.(b, { fy, body, aisle, W, blocks, dollB: opts.dollB });
   return { hx: W / 2 - 0.12, hz: body - 0.08, floor: fy, roof: wh, blocks };
 }
 
@@ -522,9 +522,15 @@ function powderStore(b, cfg, door, doorOpen) {
   b.box(w - 0.9, 0.04, d - 0.9, c.hollow, 0, 0.03, 0);
   b.box(w - 1.0, 0.06, 0.6, c.plank, 0, 0.75, d / 2 - 0.6);
   for (const s of [-1, 1]) b.box(0.06, 0.75, 0.6, c.plankDark, s * (w / 2 - 0.6), 0.37, d / 2 - 0.6);
-  for (let i = 0; i < 3; i++) {
-    b.box(0.55, 0.32, 0.38, c.wood, -0.6 + i * 0.6, 0.94, d / 2 - 0.6, (b.rand() - 0.5) * 0.2);
-    b.box(0.4, 0.08, 0.01, c.hollow, -0.6 + i * 0.6, 0.98, d / 2 - 0.8); // stencilled, a dark stain under it
+  // The crates of sweating sticks (their own mesh: they go up if they're knocked).
+  const cr = b.crates;
+  if (cr) {
+    cr.stack = [b.m.clone()];
+    for (let i = 0; i < 3; i++) {
+      cr.box(0.55, 0.32, 0.38, c.wood, -0.6 + i * 0.6, 0.94, d / 2 - 0.6, (cr.rand() - 0.5) * 0.2);
+      cr.box(0.4, 0.08, 0.01, c.hollow, -0.6 + i * 0.6, 0.98, d / 2 - 0.8); // stencilled, a dark stain under it
+      cr.box(0.5, 0.02, 0.33, c.hollow, -0.6 + i * 0.6, 0.79, d / 2 - 0.6); // sweated through onto the shelf
+    }
   }
   b.box(0.7, 0.03, 0.5, c.hollow, 0.3, 0.06, d / 2 - 0.9); // the stain on the floor where it's sweated
   b.put(new THREE.TorusGeometry(0.18, 0.04, 4, 12).rotateX(Math.PI / 2), c.cloth, -0.7, 0.08, -0.2);
@@ -588,6 +594,9 @@ export function buildRailwayCutting(cfg, opts) {
   const door = new SetBuilder(look, o.heightAt, 29);
   const doorOpen = new SetBuilder(look, o.heightAt, 30);
   const glow = new SetBuilder({ colors: { glass: look.flame, flame: 0xd8b070 } }, o.heightAt, 31);
+  const dollB = new SetBuilder(look, o.heightAt, 32);
+  const maulB = new SetBuilder(look, o.heightAt, 33);
+  const crateB = new SetBuilder(look, o.heightAt, 34);
   const c = b.c;
   const t = cfg.train;
   const rooms = {};
@@ -608,7 +617,7 @@ export function buildRailwayCutting(cfg, opts) {
       engine(b, L, part);
       b.spot('cab', -0.4, 1.6, -L / 2 + 1.0);
       b.spot('cabStep', -1.9, 0, -L / 2 + 1.2);
-      b.spot('cowcatcher', 0, 0, L / 2 + 1.1);
+      b.spot('cowcatcher', 0, 0, L / 2 + 0.7);
       b.spot('plate', 1.9, 0, 0.5);
       b.spot('engineSide', -2.2, 0, 0);
       b.wall(0, -L / 2 + 0.2, 0, L / 2 - 1.3, 0, 1.35, 4.8);
@@ -622,8 +631,19 @@ export function buildRailwayCutting(cfg, opts) {
       lantern(b, glow);
       b.spot('lantern', 0, 0, 0);
       b.pop();
-      // The maul, driven into a tie beside the engine (the encounter's own, so only its spot).
-      b.spot('maul', at.x - 2.1, o.heightAt(at.x - 2.1, car.z0 - t.heading * 3.8), car.z0 - t.heading * 3.8);
+      // The maul, driven into a loose tie beside the engine, its handle up at a slant (its own mesh:
+      // Tom works it loose and takes it).
+      const mz = car.z0 - t.heading * 3.8;
+      const mx = at.x - 2.1;
+      b.pushOnGround(mx, 0, mz, 0.5);
+      b.box(2.3, 0.16, 0.24, c.woodDark, 0, 0.06, 0, 0, 0, 0.04); // the tie
+      maulB.stack = [b.m.clone()];
+      maulB.box(0.07, 0.24, 0.07, c.rustDark, 0.2, 0.12, 0); // the head, half in the tie
+      maulB.push(0.2, 0.2, 0, 0.3, 0, -0.42);
+      maulB.put(new THREE.CylinderGeometry(0.019, 0.023, 0.95, 6), c.wood, 0, 0.47, 0);
+      maulB.pop();
+      b.pop();
+      b.spot('maul', mx, 0, mz);
     } else if (car.kind === 'tender') {
       b.push(at.x, y, car.zc, yaw, 0, 0.025);
       tender(b, L);
@@ -636,6 +656,7 @@ export function buildRailwayCutting(cfg, opts) {
         doors: first ? ['hanging', 'gone'] : ['shut', 'hanging'],
         tree: first ? { x: 0.35, z: -1.4 } : null,
         luggage: (bb, inside) => (first ? luggageCoach1(bb, inside) : luggageCoach2(bb, inside)),
+        dollB: first ? null : dollB,
       });
       const pz = L / 2 - t.coach.platform / 2;
       // The ways on and off: the end platforms' steps on the walking side (-x, the far side's +x too).
@@ -668,6 +689,7 @@ export function buildRailwayCutting(cfg, opts) {
   b.push(sideX(sz), sy - 0.1, sz, syaw);
   door.stack = [b.m.clone()];
   doorOpen.stack = [b.m.clone()];
+  b.crates = crateB;
   powderStore(b, sc, door, doorOpen);
   b.spot('storeDoor', 0, 0.1, -sc.depth / 2 - 0.9);
   b.spot('storeInside', 0, 0.1, sc.depth / 2 - 1.2);
@@ -721,8 +743,29 @@ export function buildRailwayCutting(cfg, opts) {
     door: small(door, 'storeDoor'),
     doorOpen: small(doorOpen, 'storeDoorOpen'),
     lantern: small(glow, 'lanternGlow', false),
+    doll: small(dollB, 'doll'),
+    maul: small(maulB, 'maulInTie'),
+    crates: small(crateB, 'powderCrates'),
   };
   parts.doorOpen.visible = false;
+  // A soft halo round the lantern's flame (additive, no light): it reads from down the line at night.
+  if (b.spots.lantern) {
+    // Two shells, a brighter small one in a faint big one, so it falls off rather than ending at an edge.
+    const mat = new THREE.MeshBasicMaterial({ color: look.flame, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false });
+    const geo = new THREE.SphereGeometry(1, 10, 8);
+    const halo = new THREE.Group();
+    for (const r of [0.16, 0.26, 0.42]) {
+      const m = new THREE.Mesh(geo, mat);
+      m.scale.setScalar(r);
+      halo.add(m);
+    }
+    halo.position.set(b.spots.lantern.x, b.spots.lantern.y + 0.15, b.spots.lantern.z);
+    halo.name = 'lanternHalo';
+    halo.material = mat;
+    halo.geometry = geo;
+    group.add(halo);
+    parts.halo = halo;
+  }
   return {
     group,
     mesh,
@@ -809,9 +852,12 @@ function luggageCoach2(b, x) {
   carpetbag(b, 0.25, y, -3.1, -0.4);
   x.blocks.push([0.0, 0.5, -3.35, -2.85]);
   b.spot('coach2.bag', 0, y, -2.4);
-  // The doll on the right-hand bench nearest the middle.
+  // The doll on the right-hand bench nearest the middle (its own mesh: Tom takes it).
   const rowZ = -x.body + 1.2 + Math.floor((x.body * 2 - 1.4) / 1.15 / 2) * 1.15;
-  doll(b, x.aisle + 0.3, x.fy + 0.5, rowZ + 0.02, Math.PI);
+  if (x.dollB) {
+    x.dollB.stack = [b.m.clone()];
+    doll(x.dollB, x.aisle + 0.3, x.fy + 0.5, rowZ + 0.02, Math.PI);
+  }
   b.spot('coach2.doll', 0, y, rowZ + 0.35);
   b.spot('coach2.voice', 0.8, x.fy + 1.0, rowZ);
   for (let i = 0; i < 4; i++) suitcase(b, -(x.W / 2 - 0.25), x.fy + 1.75, -x.body + 2 + i * 2.2, Math.PI / 2, i % 2 ? c.leather : c.leatherDark, i % 2 === 0);

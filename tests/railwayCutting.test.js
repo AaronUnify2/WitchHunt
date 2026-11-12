@@ -6,6 +6,7 @@ import { bankLift, liftAt, toModel, toWorld, across, lineAt, gullyKeep } from '.
 import { buildRailwayCutting, trainLayout } from '../src/render/railwayCuttingModel.js';
 import { storePlace } from '../src/world/RailwayCuttingSite.js';
 import { weatherFor, lumaOf } from '../src/render/propKit.js';
+import { AdditiveBlending as THREE_ADDITIVE } from 'three';
 
 const rc = config.railwayCutting;
 const cut = config.map.railway.cutting;
@@ -85,16 +86,17 @@ describe("the cutting's banks", () => {
 });
 
 describe("the cutting's set", () => {
-  it('is one mesh for the set and four small ones that change in play, no lights, within budget', () => {
+  it('is one mesh for the set and seven small ones that change in play, no lights, within budget', () => {
     let meshes = 0;
     let lights = 0;
     model.group.traverse((o) => {
       if (o.isMesh) meshes++;
       if (o.isLight) lights++;
     });
-    expect(meshes).toBe(5);
+    expect(meshes).toBe(11); // and the lantern's halo (three shells)
     expect(lights).toBe(0);
-    expect(Object.keys(model.parts).sort()).toEqual(['cowcatcher', 'door', 'doorOpen', 'lantern']);
+    expect(Object.keys(model.parts).sort()).toEqual(['cowcatcher', 'crates', 'doll', 'door', 'doorOpen', 'halo', 'lantern', 'maul']);
+    expect(model.parts.halo.material.blending).toBe(THREE_ADDITIVE);
     const geo = model.mesh.geometry;
     expect(geo.getAttribute('color').count).toBe(geo.getAttribute('position').count);
     expect(geo.getAttribute('position').count / 3).toBeLessThan(40000);

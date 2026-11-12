@@ -130,6 +130,12 @@ export class RailwayCuttingSite {
     if (this.model) this.model.parts.cowcatcher.visible = on;
   }
 
+  // A piece that changes in play (the doll, the maul in its tie, the crates): shown or not.
+  show(name, on) {
+    const m = this.model?.parts[name];
+    if (m) m.visible = on;
+  }
+
   update(cameraPosition, drawDistance) {
     if (!this.model) return;
     const d = Math.hypot(cameraPosition.x - this.frame.x, cameraPosition.z - this.frame.z);

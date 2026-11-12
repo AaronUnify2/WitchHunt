@@ -4168,6 +4168,7 @@
       ],
       "duration": 3.2,
       "skippable": false
-    }
+    },
+    {"id": "sweep.railwayCutting", "name": "Arriving at the railway cutting (establishing sweep)", "style": "sweep", "world": "run", "unseen": true, "_note": "Session 27 (encounters/RailwayCutting.js): anchor railwayCutting (ahead: along the line toward the engine's front; x right as you face it). High over the cutting's back mouth, the line running away between its rock walls; down along the coaches, their windows black, a tree up through the first one's roof; past the tender to the engine; low at last by the cowcatcher, on the lantern set down on the ties ahead of it, still burning. No one on the radio: it's south of the comms line. The wind, the train ticking as it cools, though it's been cold for a hundred and twenty years.", "camera": [{"at": 0, "anchor": "railwayCutting", "pos": [2.5, 10, -38], "look": [0, 1.5, -4]}, {"at": 3.6, "anchor": "railwayCutting", "pos": [-3.6, 4.2, -21], "look": [0, 1.9, -8]}, {"at": 7.0, "anchor": "railwayCutting", "pos": [-3.4, 2.3, 4], "look": [0, 1.8, 15]}, {"at": 10.2, "anchor": "railwayCutting", "pos": [-1.4, 1.0, 20.4], "look": [-0.35, 0.25, 24.4]}], "tracks": [{"at": 0.3, "do": "sfx", "sfx": "windGust"}, {"at": 4.4, "do": "sfx", "sfx": "trainCreak"}, {"at": 8.2, "do": "sfx", "sfx": "trainCreak"}], "duration": 11.4}
   ]
 }

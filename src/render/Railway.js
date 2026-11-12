@@ -147,7 +147,7 @@ export class Railway {
       const cut = this.ground?.cutting;
       const cc = this.ground?.mapCfg?.railway?.cutting;
       const inCut = cut && cc && Math.abs(d - cut.along) < cc.length + cc.nose * 0.7;
-      const off = inCut ? cc.floorHalf + cc.faceRun + 2.5 : pc.offset;
+      const off = inCut ? cc.floorHalf + cc.faceRun + 7 : pc.offset; // behind the powder store, which stands on the bank top
       const x = f.x + f.rx * pc.side * off;
       const z = f.z + f.rz * pc.side * off;
       // Keep off the crossings.

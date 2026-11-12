@@ -60,6 +60,22 @@
     {"id": "miloMorning", "about": "Milo's barn: the first dawn after the act. That morning Milo is outside the barn as just a man, with a tin mug of instant coffee.", "trigger": {"on": "dawn", "after": ["miloAct"]}},
     {"id": "miloCoffee", "about": "Milo's barn: Tom took the mug. 'Instant. Sorry.'"},
     {"id": "caveFound", "about": "Session 21 (M10.2): the Bigfoot cave's mouth is found: the brush in front of it at the end of the road north is cleared (the dozer's blade: world/RoadNorth.js). Until then the map and the debug lines call its clearing Road's end (encounters.json hiddenAs). Story beat 7 (M12) can set it too, from the family's plan and Earl's maps.", "standIn": false},
-    {"id": "crossedCordon", "about": "Tom has crossed the cordon: the frontier is open, and the witch plants anywhere from now on.", "standIn": false, "trigger": {"on": "south", "after": ["outpostCleared"]}}
+    {"id": "crossedCordon", "about": "Tom has crossed the cordon: the frontier is open, and the witch plants anywhere from now on.", "standIn": false, "trigger": {"on": "south", "after": ["outpostCleared"]}},
+    {"id": "cuttingVisited", "about": "The railway cutting: Tom has come into the cut and seen the last train of 1903 (encounters/RailwayCutting.js: the arrival sweep)."},
+    {"id": "cuttingCallerHeard", "about": "The railway cutting: the Caller has called from inside the second coach in Amos Pruitt's voice, for Levi."},
+    {"id": "maulTaken", "about": "The railway cutting: Tom has worked the railroad spike maul out of its tie by the engine."},
+    {"id": "engineersNoteFound", "about": "The railway cutting: the engineer's note found in the cab (lore engineersNote)."},
+    {"id": "labelsFound", "about": "The railway cutting: the baggage checks found in the baggage car (lore luggageLabels)."},
+    {"id": "dollFound", "about": "The railway cutting: Hattie Bell's doll taken off the seat in the second coach (lore hattieDoll)."},
+    {"id": "cuttingTully", "about": "The railway cutting: the Tullys' trunk searched."},
+    {"id": "cuttingTate", "about": "The railway cutting: Mary Sizemore Tate's carpetbag searched."},
+    {"id": "cuttingLevi", "about": "The railway cutting: Levi Pruitt's carpetbag searched (the photograph of Amos and Levi)."},
+    {"id": "lanternTried", "about": "The railway cutting: Tom tried to put out the lantern on the line. It wouldn't go out."},
+    {"id": "storeOpened", "about": "The railway cutting: the powder store's bar knocked off with the maul. The dead come up out of the cutting."},
+    {"id": "dynamiteTaken", "about": "The railway cutting: the six good sticks of dynamite taken from the powder store."},
+    {"id": "crateBlown", "about": "The railway cutting: the powder store's sweating crates went up."},
+    {"id": "cuttingRisen", "about": "The railway cutting: the dead have come up out of the cutting (the store opened, the cowcatcher knocked loose, or dark fell with Tom in the cut)."},
+    {"id": "cuttingCleared", "about": "The railway cutting: every one of the dead that came up is down again."},
+    {"id": "cowcatcherTaken", "about": "The railway cutting: the engine's cowcatcher and boiler plate knocked loose with the maul (lore cowcatcher: the killdozer's armour, for later)."}
   ]
 }

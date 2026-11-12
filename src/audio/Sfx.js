@@ -1015,6 +1015,20 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 3000, gain: 0.9 });
     s.tone(o, { seconds: 0.3, wave: 'square', freq: 900, endFreq: 300, gain: 0.08 });
   },
+  // Session 27: the old train in the cut, ticking and groaning as if it were cooling, a hundred and
+  // twenty years cold: a low metal groan and a few ticks.
+  trainCreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 60);
+    s.tone(o, { seconds: 1.4, wave: 'sawtooth', freq: 62 + Math.random() * 20, endFreq: 48, gain: 0.07, attack: 0.4 }); // cosmetic only
+    s.noiseBurst(o, { seconds: 1.1, type: 'bandpass', freq: 320, endFreq: 240, q: 4, gain: 0.25, attack: 0.3 });
+    for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.03, type: 'bandpass', freq: 2600, q: 5, gain: 0.3 }), 900 + i * (180 + Math.random() * 200));
+  },
+  // The dead coming up out of the ballast: stones shifting, a long groan under them.
+  ballastShift(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.9, type: 'lowpass', freq: 700, endFreq: 200, gain: 0.7, attack: 0.1 });
+    for (let i = 0; i < 5; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 1500 + Math.random() * 900, q: 3, gain: 0.4 }), i * 140);
+  },
   // Session 27: dynamite. A match struck on a box: a scrape, the flare catching.
   matchStrike(s) {
     const o = s.out(undefined, undefined, 0.7);

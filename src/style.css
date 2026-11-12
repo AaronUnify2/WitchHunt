@@ -2348,3 +2348,7 @@ body.in-cutscene .radio-status {
 .paper-drawing { display: block; width: 100%; height: auto; }
 .paper-drawing-caption { font: italic 9px Georgia, serif; fill: #5a5040; }
 .inspect-item.look-capsule { --w: 4.6rem; --h: 4.2rem; --d: 6.2rem; }
+/* Session 27: the railway cutting's finds */
+.inspect-item.look-tags { --w: 4.4rem; --h: 3rem; --d: 0.6rem; }
+.inspect-item.look-doll { --w: 3rem; --h: 5.4rem; --d: 1.4rem; }
+.inspect-item.look-plate { --w: 7rem; --h: 4.4rem; --d: 2rem; }

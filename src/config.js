@@ -2831,6 +2831,8 @@ export const config = {
       radio: { name: 'Radio', color: '#a8b0a0', blipFreq: 440 },
       clown: { name: 'The clown', color: '#d8b8c8', blipFreq: 880 }, // Milo in character: high, musical, bouncing (the story)
       milo: { name: 'Milo', color: '#c8b49a', blipFreq: 250 }, // Milo out of character: his own voice, warm
+      amos: { name: "A man's voice", color: '#b8ae94', blipFreq: 210 }, // Session 27: the Caller in Amos Pruitt's voice (1903), at the railway cutting
+      hattie: { name: "A girl's voice", color: '#d8b0c0', blipFreq: 820 }, // Session 27: the Caller as Hattie Bell McCoy, aged nine (1903)
       scanner: { name: 'Scanner', color: '#8fb08a', blipFreq: 260 }, // Session 15b: Earl's scanner at the gas station
       note: { name: "Earl's note", color: '#d8ccaa', blipFreq: 0, silent: true }, // read, not heard
     },
@@ -4472,6 +4474,32 @@ export const config = {
     // the cutting it sits toward comes from the map: world/railCutting.js).
     store: { across: 13.2, width: 3.4, depth: 2.8, height: 2.2, door: 0.95, steps: 4.5 }, // steps: metres along from the store, the navvies' steps up the face
     faceCollider: 6.4, // metres across from the line: the rock faces' colliders
+    // The beat (encounters/RailwayCutting.js).
+    encounter: {
+      sweepDistance: 30, // metres from the middle: the arrival sweep (once)
+      interactRange: 1.6,
+      boardRange: 1.3, // metres from a coach's step: climb aboard
+      boardEnds: { coach1: ['F', 'B'], coach2: ['B'] }, // the ends with a way in (coach2's front door's stuck shut)
+      roofY: 2.45, // the coaches' insides: metres from the floor to the clerestory
+      callDistance: 10, // metres from coach2's middle: the Caller calls from inside it (Amos, for Levi)
+      lureAfter: 2.5, // seconds aboard coach2: the second call, from up the bank
+      hattieAfter: 1.6, // seconds after the doll's taken: a girl's voice from the bank
+      creakEvery: [9, 22], // seconds between the train's creaks while Tom's near
+      creakDistance: 45,
+      holds: { maul: 1.5, bar: 1.8, sticks: 1.2, cowcatcher: 2.6, search: 1.0, board: 0.45, lantern: 0.9, cab: 1.2, baggage: 1.4, doll: 0.6 }, // seconds held (X)
+      sticks: 6, // the good ones in the powder store (scarce)
+      riseAfter: 3.2, // seconds after the store's door is knocked open (or the cowcatcher's bolts): the dead come up
+      // The dead coming up out of the cutting, in waves: how many, where (floor: out of the ballast
+      // around Tom; mouths: up out of the line at both ends; store: round the foot of the steps), and
+      // when the next one comes (seconds after the last, or as soon as this few of the last are left).
+      waves: [
+        { count: 6, from: 'floor', after: 0 },
+        { count: 6, from: 'mouths', after: 10, left: 2 },
+        { count: 5, from: 'store', after: 9, left: 2 },
+      ],
+      floorRing: [7, 14], // metres from Tom, on the floor of the cutting
+      crate: { r: 0.6, h: 0.9, blast: { radius: 11, damage: 420, playerDamage: 150, edge: 0.2, knockback: 6, shake: 2.2, alert: 220 } }, // the sweating crates, if they're knocked
+    },
     look: {
       weather: { rust: [0x4a2e1e, 0x33221a, 0x2a2622], grimeHeight: 0.5, keepBright: [] },
       colors: {
