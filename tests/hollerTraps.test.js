@@ -218,7 +218,7 @@ describe('the wire cutters', () => {
   it('are taken at the lookout and cut lines from then on', () => {
     const flags = new Set();
     const shown = {};
-    const site = { ready: true, place: { x: 0, z: 0, radius: 30, yaw: 0 }, spots: { cutters: { x: 1, z: 1 }, sign: { x: 50, z: 50 } }, traps: [], show: (n, on) => (shown[n] = on), setTrap() {}, at: (x, z) => ({ x, z }) };
+    const site = { ready: true, place: { x: 0, z: 0, radius: 30, yaw: 0 }, spots: { cutters: { x: 1, z: 1 }, sign: { x: 50, z: 50 } }, traps: [], show: (n, on) => (shown[n] = on), setTrap() {}, setGauge() {}, at: (x, z) => ({ x, z }) };
     const h = new Holler(config, { on() {}, emit() {} });
     h.init({ site, player: { position: { x: 1, z: 1.5 } }, combat: { sfx: null, alive: true }, enemies: { living: [] }, progress: { has: (f) => flags.has(f), setFlag: (f, on = true) => (on ? flags.add(f) : flags.delete(f)) }, notify() {} });
     expect(shown.cutters).toBe(true);

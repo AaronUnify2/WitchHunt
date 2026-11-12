@@ -1217,6 +1217,28 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.3, type: 'bandpass', freq: 600, endFreq: 900, q: 4, gain: 0.3, attack: 0.15 });
     setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.06, type: 'lowpass', freq: 900, gain: 0.6 }), 310);
   },
+  // The cans on their wire stirring in the wind: a tick or two, far off.
+  cansTick(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5, 40);
+    for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.06, wave: 'triangle', freq: 1500 + i * 230, gain: 0.05 }), i * 180);
+  },
+  // The still at a boil: a low bubbling in the pot, the cap ticking with the heat.
+  stillBoil(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 26);
+    for (let i = 0; i < 7; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.12, wave: 'sine', freq: 90 + Math.random() * 70, endFreq: 150 + Math.random() * 60, gain: 0.09 }), i * (110 + Math.random() * 120)); // cosmetic only
+    s.noiseBurst(o, { seconds: 1.2, type: 'lowpass', freq: 400, gain: 0.08, attack: 0.3 });
+  },
+  // A gout of steam: a hard hiss out of a valve.
+  steamHiss(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 40);
+    s.noiseBurst(o, { seconds: 1.4, type: 'highpass', freq: 3000, endFreq: 1800, gain: 0.7, attack: 0.02 });
+  },
+  // A valve wheel turned against its stiffness: a squeal and a clunk home.
+  valveTurn(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 20);
+    s.tone(o, { seconds: 0.4, wave: 'sawtooth', freq: 620, endFreq: 760, gain: 0.04, attack: 0.1 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 800, q: 3, gain: 0.5 }), 400);
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

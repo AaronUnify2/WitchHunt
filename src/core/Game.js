@@ -853,6 +853,7 @@ export class Game {
       player: this.player,
       combat: this.combat,
       enemies: this.combat.enemies,
+      explosives: this.explosives,
       ground: this.world.ground,
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,

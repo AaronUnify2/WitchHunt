@@ -456,15 +456,19 @@ export function buildHoller(cfg, { weather = null, heightAt = null, keepAt = nul
     b.put(new THREE.SphereGeometry(0.62, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2), c.copperDark, 0, 1.65, 0);
     b.put(new THREE.CylinderGeometry(0.2, 0.26, 0.3, 10), c.copper, 0, 2.2, 0);
     for (let k = 0; k < 8; k++) b.box(0.05, 0.04, 0.05, c.dough, Math.sin(k * 0.8) * 0.6, 1.66, Math.cos(k * 0.8) * 0.6); // the cap sealed with rye paste
-    b.put(new THREE.CylinderGeometry(0.11, 0.11, 0.04, 12).rotateX(Math.PI / 2), c.gauge, 0, 1.9, -0.5);
-    b.put(new THREE.CylinderGeometry(0.095, 0.095, 0.01, 12).rotateX(Math.PI / 2), c.gaugeFace, 0, 1.9, -0.525);
-    b.box(0.03, 0.02, 0.012, c.gaugeRed, 0.07, 1.93, -0.53, 0, 0, -0.5); // the red band
-    b.box(0.03, 0.02, 0.012, c.gaugeRed, 0.08, 1.9, -0.53, 0, 0, 0);
+    // The gauge stands off the cap on a pipe, its face toward the hollow.
+    limb(b, [0, 1.75, -0.45], [0, 1.95, -0.62], 0.025, c.copper, 6);
+    b.put(new THREE.CylinderGeometry(0.17, 0.17, 0.05, 14).rotateX(Math.PI / 2), c.gauge, 0, 2.0, -0.64);
+    b.put(new THREE.CylinderGeometry(0.15, 0.15, 0.01, 14).rotateX(Math.PI / 2), c.gaugeFace, 0, 2.0, -0.668);
+    for (let k = 0; k < 4; k++) {
+      const a = (0.3 + k * 0.13) * Math.PI; // the red band: the last stretch of the sweep (the needle's angle there)
+      b.box(0.045, 0.03, 0.008, c.gaugeRed, -Math.sin(a) * 0.115, 2.0 + Math.cos(a) * 0.115, -0.674, 0, 0, a);
+    }
     needleB.stack = [b.m.clone()];
-    needleB.push(0, 1.9, -0.535);
-    needleB.box(0.008, 0.08, 0.006, c.ink, 0, 0.035, 0);
+    needleB.push(0, 2.0, -0.68);
+    needleB.box(0.012, 0.13, 0.006, c.ink, 0, 0.055, 0);
     needleB.pop();
-    b.spot('gauge', 0, 1.9, -0.54);
+    b.spot('gauge', 0, 2.0, -0.68);
     b.put(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 6), c.brassValve, -0.3, 2.1, -0.1);
     b.box(0.18, 0.025, 0.04, c.ironDark, -0.3, 2.22, -0.1); // the relief cock's handle
     b.spot('relief', -0.95, 0, -0.7);

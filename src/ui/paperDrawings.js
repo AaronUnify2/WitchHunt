@@ -3,6 +3,9 @@
 // Amos Pruitt's drawing of the staircase in the woods, in the 1903 account
 // (papers.json capsuleAccount, page IV). Dull pencil greys on the page.
 
+import { config } from '../config.js';
+import { floorMid, floorHalf } from '../world/hollerGround.js';
+
 const PENCIL = '#4a4236';
 const SOFT = '#7a6e5a';
 
@@ -43,7 +46,53 @@ function stairs() {
 </svg>`;
 }
 
-const DRAWINGS = { stairs };
+// Session 29: the Rigsbys' trap map (papers.json hollerTrapMap), pencil on the back of a feed sack:
+// the holler from the mouth (bottom) to the still (top), the branch down one side, the lookout, and
+// an X for each trap the family put on it, labelled. Drawn from the real layout (config.holler.traps,
+// config.map.holler), so it matches the set; the two traps laid since (mapped: false) aren't on it.
+function trapMap() {
+  const g = config.map.holler;
+  const traps = config.holler.traps.filter((t) => t.mapped !== false);
+  const Y = (z) => 176 - ((z - g.mouth) / (g.head + 4 - g.mouth)) * 156;
+  const X = (x) => 125 - x * 5.2; // the walker's left (model +x) on the left as you look up the holler
+  const side = (s) => {
+    const pts = [];
+    for (let z = g.mouth; z <= g.head; z += 2) pts.push(`${X(floorMid(g, z) + s * floorHalf(g, z)).toFixed(1)} ${Y(z).toFixed(1)}`);
+    return `<path d="M${pts.join(' L')}" />`;
+  };
+  const head = `<path d="M${X(floorMid(g, g.head) + floorHalf(g, g.head)).toFixed(1)} ${Y(g.head).toFixed(1)} C ${X(6)} ${Y(g.head + 6)}, ${X(-6)} ${Y(g.head + 6)}, ${X(floorMid(g, g.head) - floorHalf(g, g.head)).toFixed(1)} ${Y(g.head).toFixed(1)}" />`;
+  const branch = [];
+  for (let z = g.head - 1; z > g.mouth; z -= 2) branch.push(`${X(floorMid(g, z) + floorHalf(g, z) * 0.55).toFixed(1)} ${Y(z).toFixed(1)}`);
+  const label = { shotgun: 'GUN', cans: 'CANS', bear: 'TRAP', snare: 'SNARE' };
+  const marks = traps.map((t, i) => {
+    const x = X(floorMid(g, t.z) + (t.dx ?? 0));
+    const y = Y(t.z);
+    const lx = i % 2 ? x + 10 : x - 10;
+    return `<path d="M${x - 4} ${y - 4} l8 8 m0 -8 l-8 8" stroke-width="1.8" />
+    <text x="${lx}" y="${y + 3}" text-anchor="${i % 2 ? 'start' : 'end'}" class="paper-drawing-caption">${label[t.kind]}</text>`;
+  });
+  const sx = X(floorMid(g, 15.5));
+  const sy = Y(15.5);
+  const look = { x: X(floorMid(g, -5) - floorHalf(g, -5) + 1.2), y: Y(-5) };
+  return `<svg class="paper-drawing" viewBox="0 0 250 185" role="img" aria-label="A pencil map of the holler, an X for each trap">
+  <g fill="none" stroke="${PENCIL}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    ${side(1)}
+    ${side(-1)}
+    ${head}
+    <path d="M${branch.join(' L')}" stroke="${SOFT}" stroke-dasharray="3 3" />
+    <rect x="${look.x - 5}" y="${look.y - 4}" width="9" height="8" stroke="${SOFT}" />
+    <text x="${look.x - 9}" y="${look.y + 3}" text-anchor="end" class="paper-drawing-caption">LOOKOUT</text>
+    <ellipse cx="${sx}" cy="${sy}" rx="6" ry="7" />
+    <path d="M${sx} ${sy - 7} v-4 h9" />
+    <text x="${sx + 12}" y="${sy + 2}" class="paper-drawing-caption">STILL</text>
+    ${marks.join('\n    ')}
+    <path d="M${X(floorMid(g, g.mouth))} ${Y(g.mouth) + 4} v-10 m-4 4 l4 -4 l4 4" stroke="${SOFT}" />
+  </g>
+  <text x="125" y="183" text-anchor="middle" class="paper-drawing-caption">road</text>
+</svg>`;
+}
+
+const DRAWINGS = { stairs, trapMap };
 
 // The SVG for a drawing id, or '' if there's none.
 export function drawingSvg(id) {

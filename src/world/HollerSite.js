@@ -16,6 +16,11 @@ import { buildHoller } from '../render/hollerModel.js';
 import { weatherFor } from '../render/propKit.js';
 import { hollerFrame, gullyKeep, toWorld } from './hollerGround.js';
 
+// The needle's turn (radians about the model's z) for a gauge reading 0..1 (pure).
+export function gaugeAngle(v) {
+  return (-0.75 + Math.max(0, Math.min(1, v)) * 1.5) * Math.PI;
+}
+
 export class HollerSite {
   // cfg: the whole config (config.holler and config.map.holler inside).
   constructor(cfg) {
@@ -98,10 +103,11 @@ export class HollerSite {
     this.model?.setTrap(i, look);
   }
 
-  // The still's gauge: 0 (cold) .. 1 (it blows). The needle sweeps 270 degrees.
+  // The still's gauge: 0 (cold) .. 1 (it blows). The needle sweeps 270 degrees, clockwise as Tom faces
+  // it (from his lower left round to his lower right; the red band's the last stretch).
   setGauge(v) {
     const n = this.model?.parts.needle;
-    if (n) n.rotation.z = (0.75 - Math.max(0, Math.min(1, v)) * 1.5) * Math.PI;
+    if (n) n.rotation.z = gaugeAngle(v);
   }
 
   update(cameraPosition, drawDistance) {

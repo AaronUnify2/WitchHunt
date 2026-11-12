@@ -101,6 +101,20 @@
     {"id": "hollerTrapCans2", "about": "The moonshiners' holler: the trap cans2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
     {"id": "hollerTrapSnare2", "about": "The moonshiners' holler: the trap snare2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
     {"id": "hollerTrapBear3", "about": "The moonshiners' holler: the trap bear3 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
-    {"id": "wireCuttersTaken", "about": "The moonshiners' holler: the wire cutters taken from the tackle box at the lookout (a tool: they cut the traps' lines)."}
+    {"id": "wireCuttersTaken", "about": "The moonshiners' holler: the wire cutters taken from the tackle box at the lookout (a tool: they cut the traps' lines)."},
+    {"id": "hollerVisited", "about": "The moonshiners' holler: Tom has come up to the holler's mouth and seen it (encounters/Holler.js: the arrival sweep)."},
+    {"id": "hollerAgent", "about": "The moonshiners' holler: the man in the suit at the mouth searched (the stump gun got him: the family did have a visitor)."},
+    {"id": "hollerLookout", "about": "The moonshiners' holler: the lookout's bench looked over (Clete's tally of the lights over the government land)."},
+    {"id": "trapMapFound", "about": "The moonshiners' holler: the family's trap map taken off the lookout's board (lore trapMap; out of date: two traps aren't on it)."},
+    {"id": "hollerJars", "about": "The moonshiners' holler: the crates of jars looked at."},
+    {"id": "hollerMash", "about": "The moonshiners' holler: the mash barrels looked at (still working: they fed it to the end)."},
+    {"id": "hollerBoard", "about": "The moonshiners' holler: Pa's shutdown board by the still read (the valves' order)."},
+    {"id": "autoShotgunTaken", "about": "The moonshiners' holler: the auto shotgun taken from the gun cabinet in the shed (a paranoid family's stockpile)."},
+    {"id": "hollerAmmo", "about": "The moonshiners' holler: the ammo cans under the shed's bench emptied (shotgun shells)."},
+    {"id": "hollerFamilyUp", "about": "The moonshiners' holler: the Rigsbys have come for Tom (he came into the yard, the cans rang, or a shot)."},
+    {"id": "hollerFamilyDown", "about": "The moonshiners' holler: every one of the Rigsbys that came is down."},
+    {"id": "hollerStillShut", "about": "The moonshiners' holler: the still shut down with the valves in the right order (the copper worm's safe to take)."},
+    {"id": "hollerStillBlown", "about": "The moonshiners' holler: the still blew (the gauge went over): the copper worm went with it."},
+    {"id": "copperCoilTaken", "about": "The moonshiners' holler: the still's copper worm taken from the flake stand (lore copperCoil: the dozer's flamethrower, for later)."}
   ]
 }

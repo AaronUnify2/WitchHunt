@@ -1640,6 +1640,7 @@ export const config = {
       army: { health: 1.6, helmet: 25 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 25 damage (Session 17, Aaron: a long fight: one service rifle round to the head knocks it off), or the hunting rifle punches straight through it
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       logger: { health: 1.25 }, // Session 28: the sawmill's crew: big men (render: the citizens' shapes in flannel)
+      moonshiner: { health: 1.15 }, // Session 29: the Rigsbys, turned round their still (render: the citizens' shapes in overalls)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
     // One spawn of 7-15 slow zombies in a tight cluster that wanders as a pack.
@@ -1786,6 +1787,9 @@ export const config = {
         // Session 28: a dead logger (the sawmill's crew): the citizens' shapes (short hair, balding or a
         // cap), always long sleeves, nearly always plaid flannel, work trousers.
         logger: { as: 'citizen', hairs: ['short', 'balding', 'trucker'], shirt: [0x4a1a16, 0x26321e, 0x4a3a14, 0x3e2c18, 0x34141c], trousers: [0x1c2638, 0x2e2418, 0x12161e, 0x4a4230], longSleeves: 1, plaid: 0.85 },
+        // Session 29: a dead moonshiner (the Rigsbys of the holler): the citizens' shapes, faded work
+        // shirts under denim overalls (the vest block, in the trousers' denim, is the bib).
+        moonshiner: { as: 'citizen', hairs: ['long', 'balding', 'trucker', 'short'], shirt: [0x4a4234, 0x3a3e40, 0x5a4a34, 0x3a2a22], trousers: [0x24303e], vest: 0x24303e, longSleeves: 0.6, plaid: 0.25 },
         // Session 13: a dead Man in Black. The shirt is its white shirt (so
         // the blood shows), under a torn black suit (jacket: open down the
         // front, a rip across the back), a black tie, the body armour's
@@ -4672,7 +4676,22 @@ export const config = {
     },
     encounter: {
       interactRange: 1.7,
-      holds: { search: 1.0, cutters: 0.8, map: 0.8 }, // seconds held (X)
+      holds: { search: 1.0, cutters: 0.8, map: 0.8, board: 0.6, valve: 1.3, cabinet: 1.4, ammo: 1.0, coil: 2.6 }, // seconds held (X)
+      sweepDistance: 7, // metres from the mouth's arrival spot: the arrival sweep (once)
+      spawnDistance: 70, // metres from the holler's middle: the family's at the still by now (until they're down)
+      wakeDistance: 13, // metres from the still: the family comes for Tom (or the cans, or a shot)
+      linger: 5.5, // metres round the still they shuffle about, waiting
+      familyTrees: { count: 2, ring: [24, 30], after: 18 }, // two more out of the trees (kin from up the ridge), this long after they wake
+      // The still (DESIGN.md: shut it down with the valves in the right order, or it blows and the
+      // part goes with it). Its gauge reads `start` (in the red) when Tom first comes; from when the family
+      // wakes it climbs to 1 (it blows) over `blowSeconds`. The valves in order: the damper (it stops
+      // climbing), the relief cock (it bleeds down to `bled` over `bleedSeconds`), the line (it's shut down).
+      // A valve out of turn: the gauge jumps `wrong` (the line before it's bled: `wrongLine`), a gout of
+      // steam (`steamDamage` within `steamRange`).
+      still: { start: 0.74, blowSeconds: 160, bled: 0.3, bleedSeconds: 4, wrong: 0.08, wrongLine: 0.16, steamDamage: 6, steamRange: 2.6, boilEvery: 2.8, boilDistance: 18, order: ['damper', 'relief', 'line'] },
+      blast: { radius: 7, damage: 200, playerDamage: 90, edge: 0.2, knockback: 3, shake: 1.6, alert: 120 },
+      autoShotgunShells: 20, // a drum, in the cabinet with it
+      ammoShells: 14, // the ammo cans under the bench
     },
     look: {
       weather: { rust: [0x34302a, 0x2a2622, 0x3a2a1e, 0x2c2a28], grimeHeight: 0.14, keepBright: [] },
