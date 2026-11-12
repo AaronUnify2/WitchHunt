@@ -241,7 +241,14 @@ export class Objectives {
       }
       return step('dozerHome', 'Drive the dozer home, through the checkpoint.', L.cabin.frontDoor);
     }
-    if (has('dozerHome') && !has('blessingBuried')) return step('zapperPrep', "The dozer's home. Fill the fence. Tonight the family call the Mothman down.", L.fenceBox);
+    // ---- the bug-zapper night (build queue item 2) ----
+    const zp = g.bugZapper;
+    if (has('dozerHome') && zp && !has('mothmanZapped')) {
+      if (zp.state === 'idle') return zp.blocked && zp.blocked !== 'started' ? step('zapperPrep', "The dozer's home. Fill the fence at the fence box before you call the Mothman down.", L.fenceBox) : step('zapperGo', "Fire the lure flares in the yard. The family are ready.", zp.spot);
+      if (zp.state === 'hooked') return step('zapperShoot', "It's on the cable. Bring it down.");
+      return step('zapperHook', 'Get on the dozer and hook the Mothman when it comes in close (B at it).', g.dozer);
+    }
+    if (has('mothmanZapped') && !has('blessingBuried')) return step('caveGo', "The Mothman's gone to ground in the cave at the end of the old road, north of the gas station. Take the dozer.", g.roadNorth?.caveAt ?? clearing('gasStation'));
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

@@ -85,7 +85,20 @@ export class Flyer {
     this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]) + 3;
   }
 
+  // Build queue item 2: hooked on a cable (the dozer's winch at the station). It thrashes round `at`
+  // ({ x, y, z }: the fairlead) at radius and height, can't leave and can't dive; its health is `health` now
+  // and every hit is the owner's to count: onHit(amount), onDown() at zero.
+  tether(at, { radius, height, speed, health, onHit = null, onDown = null }) {
+    this.tethered = { at, radius, height, speed, onHit, onDown };
+    this.unbeatable = false;
+    this.health = health;
+    this.move = 'tether';
+    this.angle = Math.atan2(this.p.x - at.x, this.p.z - at.z);
+    this.sfx?.play('screech', this.p);
+  }
+
   stop() {
+    this.tethered = null;
     this.active = false;
     this.target.targetable = false;
     this.look.active = false;
@@ -170,6 +183,12 @@ export class Flyer {
       steerTo(this.p, this.v, circlePoint(t.x, t.y, t.z, f.circleRadius, f.circleHeight, this.angle), f.circleSpeed, f.steer, dt);
       this.moveTimer -= dt;
       if (this.moveTimer <= 0) this.advance();
+    } else if (this.move === 'tether') {
+      // Round and round on the cable, jerking up and down against it.
+      const T = this.tethered;
+      this.angle += (T.speed / T.radius) * dt;
+      const lift = Math.sin(this.angle * 3.1) * 2.2;
+      steerTo(this.p, this.v, circlePoint(T.at.x, T.at.y, T.at.z, T.radius, T.height + lift, this.angle), T.speed, f.steer * 1.5, dt);
     } else if (this.move === 'flyover') {
       if (steerTo(this.p, this.v, this.goal, f.flyoverSpeed, f.steer, dt) < 4) this.advance();
     } else if (this.move === 'dive') {
@@ -199,6 +218,16 @@ export class Flyer {
     if (!this.active || this.move === 'leave') return false;
     this.health -= amount;
     this.flash = this.fc.hitFlashSeconds;
+    if (this.tethered) {
+      this.tethered.onHit?.(amount);
+      if (this.health <= 0) {
+        const down = this.tethered.onDown;
+        this.tethered.onHit = null;
+        this.tethered.onDown = null;
+        down?.();
+      }
+      return false;
+    }
     if (this.unbeatable) {
       this.health = Math.max(this.fc.health * this.fc.fleeAt + 1, this.health);
       return false;

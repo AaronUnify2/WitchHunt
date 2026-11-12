@@ -1350,6 +1350,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 *__As scaffolded (the build queue, Nov 12; each part to be designed properly with Aaron):__*
 - ***Item 1, the plan and the dozer** (`encounters/CordonDozer.js`): the plan is five lines in the cabin after Ellen's ask; Earl's maps are fetched from the storm shelter's corkboard (a paper with his map); the family read them over the radio; the dozer waits at a placeholder camp in the `cordonDozer` clearing with six dead engineers; it needs its keys (the job box) and a battery; Tom drives it home through the checkpoint. OPEN_QUESTIONS #691-701.*
+- ***Item 2, the bug-zapper night** (`encounters/BugZapper.js`): fire the lure flares from the yard once the fence holds half its capacity; the Mothman comes as at the plane; hook it from the dozer (B at it); on the cable it can be hurt, and Wyatt's rifle from the tower ends it within about a minute; it falls on the fence (a placeholder scene), the fence goes to zero, and it flies north. OPEN_QUESTIONS #702-710.*
 
 *Designed with Aaron, Nov 8; not built. Replaces the earlier design (a middle-band cave with the Mothman as its only boss fight).*
 

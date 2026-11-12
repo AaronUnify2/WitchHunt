@@ -40,6 +40,20 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 700 | **The quad** stays wherever you left it when you took the dozer (item 4 picks that up). | Nothing new. | |
 | 701 | **"Continue story" in the debug menu.** | Ten points so far, one per main story beat from the crashed plane on, each at the start of its beat with everything before it done. They build on a fresh run: use them from a new game, not on top of each other. | `debug/storyStart.js` `STORY_POINTS` |
 
+**Item 2: the bug-zapper night at the station (PLAYTEST round 77)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 702 | **How the night is called.** | A spot in the yard, 5 m from the cabin door toward the fence box (the goal's star marks it; nothing stands there yet): hold X to fire the lure flares. If it isn't night, the clock goes to night. | `BugZapper.spot`, `config.bugZapper.spotFromDoor` |
+| 703 | **How full the fence has to be.** | Half its capacity (500 of 1000). DESIGN says full; I don't yet know how many batteries a run gives by this point, so half until that's counted. Below it the prompt says what's missing. | `bugZapper.needCharge` |
+| 704 | **The flares** (a placeholder scene). | Six seconds, first person: three red flares go up one after another. Ellen: "Wyatt's on the tower with the rifle. Junie's got the lights. Send them up, Tom." | `cutscenes.json` `zapper.flares` |
+| 705 | **The Mothman before it's hooked.** | As at the plane: flyovers then dives, can't be driven off, and you can't drop below 10% health. | `bugZapper.script`, `floor` |
+| 706 | **The hook.** | On the dozer, B while looking at it within the winch's 30 m, with a generous aim. In the headless run it was hookable on its first circle, so this is easy. Should it only take the hook during a dive? | `Dozer.winchExtras`, `bugZapper.hookSlack` |
+| 707 | **On the cable.** | It circles the dozer 9 m out and 7 m up, bucking. 240 health. You have to get down to shoot (no guns from the dozer's seat). | `Flyer.tether`, `bugZapper.tether`, `hookedHealth` |
+| 708 | **The family in the fight.** | Wyatt fires from the tower every 2.6 to 4.4 seconds: before the hook it's a crack and one line; after, each shot does 14, so the fight ends in about a minute even if you never fire. Junie calls its arrival. Ellen on the floodlights (your proposal) isn't in. | `bugZapper.wyattEvery`, `wyattDamage` |
+| 709 | **The fall on the fence** (a placeholder scene). | Seven seconds: your view is pulled to the nearest fence, three zaps and shakes, red eyes on the wire that lift away north. The Mothman's body isn't staged falling. Then the fence's charge is set to 0. | `zapper.fence`, `BugZapper.zapped` |
+| 710 | **After.** | Ellen: it went straight down the old road; it's been in his cave all along; "we've no fence. Take the dozer and finish it." The goal points north. Nothing attacks the dead fence that night beyond what the game already sends. | `zapper.after.ellen` |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

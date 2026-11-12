@@ -68,6 +68,7 @@ import { AlienQuad } from '../world/AlienQuad.js';
 import { Dozer } from '../world/Dozer.js';
 import { DozerCampSite } from '../world/DozerCampSite.js';
 import { CordonDozer } from '../encounters/CordonDozer.js';
+import { BugZapper } from '../encounters/BugZapper.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -688,6 +689,11 @@ export class Game {
     this.placeBeyond.init({ world: this.world, player: this.player, interiors: this.interiors, sfx: this.combat.sfx, notify });
     this.flyer = new Flyer(this.cfg, this.bus);
     this.flyer.init({ scene: this.scene, player: this.player, combat: this.combat, sfx: this.combat.sfx, notify, rng: this.rng.fork('flyer') });
+    // Build queue item 2: the bug-zapper night at the station (encounters/BugZapper.js).
+    this.bugZapper = new BugZapper(this.cfg, this.bus);
+    this.bugZapper.init({ player: this.player, combat: this.combat, station: this.station, dozer: this.dozer, flyer: this.flyer, clock: this.clock, cutscenes: this.cutscenes, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify, skipToNight: () => { this.skipToPhase('night'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); } });
+    this.combat.promptSources.push(this.bugZapper.hud);
+    this.vehicles.busy?.push(this.bugZapper.hud);
     // Session 25 (Aaron): giant moths to shoot (debug only).
     this.moths = new Moths(this.cfg, this.bus);
     this.moths.init({ scene: this.scene, player: this.player, combat: this.combat, ground: this.world.ground, sfx: this.combat.sfx, notify, rng: this.rng.fork('moths') });
@@ -1120,6 +1126,7 @@ export class Game {
     this.church.addDebugItems(menu);
     this.stairs.addDebugItems(menu);
     this.cordonDozer.addDebugItems(menu);
+    this.bugZapper.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1650,6 +1657,7 @@ export class Game {
     this.stairs.reset();
     this.dozer.loadState(d.dozer); // build queue item 1: where the dozer stood
     this.cordonDozer.reset();
+    this.bugZapper.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1940,6 +1948,7 @@ export class Game {
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.cordonDozer.update(dt, controls, playing && this.combat.alive, !locked && !busy);
+    if (story) this.bugZapper.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill

@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: item 1, the family's plan and the army's dozer. 1286 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 and 2 (the family's plan and the dozer; the bug-zapper night). 1293 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,15 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 2: the bug-zapper night at the station (scaffolding)
+
+- **The beat** (`encounters/BugZapper.js`, `config.bugZapper`; flags `zapperStarted`, `mothmanHooked`, `mothmanZapped`): the prompt in the yard (gated on `dozerHome` and the fence's charge), the clock to night, `zapper.flares`, the Mothman sent unbeatable with Tom's health floored, the hook, the tethered fight with Wyatt's shots, `zapper.fence`, the fence's charge to zero, Ellen's lines.
+- **The dozer's hook takes story targets** (`Dozer.winchExtras`: `{ active, name, x, y, z, slack, onHook }`); **the flyer can be held on a cable** (`Flyer.tether(at, { radius, height, speed, health, onHit, onDown })`).
+- **Goals:** `zapperPrep` / `zapperGo`, `zapperHook`, `zapperShoot`, then `caveGo` (a holding goal until item 3).
+- **Continue story:** `dozerHome` is this beat's start (the fence set to 600); `cave` is its end.
+- **Tests:** `tests/bugZapper.test.js` (7). 1293 pass. **Checked headless** on seed 1234: the prompt, the flares, hooking through the dozer's own target finding and the real winch button, 57 s on the cable with only Wyatt firing, the fence scene, charge 0, the goal. No page errors (the run caught the dozer's HUD not knowing the new target: fixed).
+- **Placeholder:** both scenes; nothing marks the spot in the yard; Ellen's floodlights aren't in; the Mothman isn't seen falling.
 
 ### The build queue, item 1: the family's plan and the army's dozer (scaffolding)
 

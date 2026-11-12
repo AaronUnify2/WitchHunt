@@ -4470,6 +4470,21 @@ export const config = {
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
   },
 
+  // Build queue item 2: the bug-zapper night at the station (encounters/BugZapper.js; story spine, beat 7,
+  // stage 1). Scaffolding: every number a first guess.
+  bugZapper: {
+    needCharge: 0.5, // of the fence's capacity it has to hold before the family will call it down (DESIGN: "charged to full"; half, until the batteries a run gives are counted)
+    promptRange: 2.2, // metres from the spot in the yard: "fire the lure flares"
+    spotFromDoor: 5, // metres from the cabin's door toward the fence box: that spot
+    floor: 0.1, // Tom can't drop below this fraction of his health: a set piece doesn't end the run
+    script: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive'], // its last move repeats (it's unbeatable until hooked)
+    hookSlack: 0.35, // radians off the crosshair the hook still takes it (it's fast)
+    tether: { radius: 9, height: 7, speed: 13 }, // hooked: round the dozer on the cable (metres, metres up, m/s)
+    hookedHealth: 240, // once it's on the cable (a service rifle round is 25)
+    wyattEvery: [2.6, 4.4], // seconds between Wyatt's shots from the tower
+    wyattDamage: 14, // each, once it's hooked (so the fight always ends: about a minute if Tom never fires)
+  },
+
   // Build queue item 1: the clearing crew's camp at the end of the cordon strip, and the dozer's beat (story
   // spine, beats 6-7; DESIGN.md "Bigfoot cave and the Mothman fight"). The set: render/dozerCampModel.js,
   // world/DozerCampSite.js; the beat: encounters/CordonDozer.js. Scaffolding: every number a first guess.

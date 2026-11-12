@@ -77,6 +77,7 @@ export class Dozer extends Quad {
     this.strain = new Map(); // tree index -> seconds pushed
     this.rockHold = new Map(); // Session 25: rock index -> seconds pushed
     this.rocksAt = [];
+    this.winchExtras = []; // build queue item 2
     this.initCable();
     this.initSmoke();
     // Session 22 (M10.3 spike): parts bolted on (world/dozerParts.js, render/dozerParts.js).
@@ -875,10 +876,26 @@ export class Dozer extends Quad {
         best = { kind: 'car', v };
       }
     }
+    // Build queue item 2: other things a story beat offers the hook (the Mothman over the station):
+    // { active, x, y, z, slack (extra radians off the crosshair it forgives), onHook(dozer) }.
+    for (const e of this.winchExtras ?? []) {
+      if (!e.active) continue;
+      const dx = e.x - eye.x;
+      const dy = e.y - eye.y;
+      const dz = e.z - eye.z;
+      const d = Math.hypot(dx, dy, dz);
+      if (d > w.range || d > bestD + 2) continue;
+      const cos = (dx * fwd.x + dy * fwd.y + dz * fwd.z) / (d || 1);
+      if (Math.acos(Math.max(-1, Math.min(1, cos))) < w.cone + (e.slack ?? 0)) {
+        bestD = d;
+        best = { kind: 'extra', e };
+      }
+    }
     return best;
   }
 
   targetPoint(t, out) {
+    if (t.kind === 'extra') return out.set(t.e.x, t.e.y, t.e.z);
     if (t.kind === 'car') return out.set(t.v.x, (t.v.groundY ?? this.ground.heightAt(t.v.x, t.v.z)) + 0.6, t.v.z);
     return out.set(t.z.x, (t.z.y ?? 0) + 0.9, t.z.z);
   }
@@ -901,7 +918,7 @@ export class Dozer extends Quad {
     const W = this.winch;
     if (!W) return;
     const t = W.target;
-    if (t.kind === 'zombie' && !t.z.alive) {
+    if ((t.kind === 'zombie' && !t.z.alive) || (t.kind === 'extra' && !t.e.active)) {
       this.winch = null;
       return;
     }
@@ -913,10 +930,12 @@ export class Dozer extends Quad {
       if (W.t >= 1) {
         W.phase = 'hooked';
         W.length = d;
-        this.combat.sfx?.play('winchClunk', t.kind === 'car' ? t.v : t.z);
+        this.combat.sfx?.play('winchClunk', t.kind === 'car' ? t.v : t.kind === 'extra' ? t.e : t.z);
+        if (t.kind === 'extra') t.e.onHook?.(this);
       }
       return;
     }
+    if (t.kind === 'extra') return; // held on the cable: its owner moves it (it can't be reeled or dragged)
     if (input.isDown('flare')) {
       W.length = Math.max(w.minLength, W.length - w.reel * dt);
       W.reelTimer -= dt;
@@ -1191,7 +1210,7 @@ export class Dozer extends Quad {
     }
     const pad = input.activeDevice === 'gamepad';
     const W = this.winch;
-    const name = (t) => (t.kind === 'car' ? (t.v.def.name ?? 'the car').toLowerCase() : t.z.kind === 'mutant' ? 'the mutant' : 'one of the dead');
+    const name = (t) => (t.kind === 'extra' ? (t.e.name ?? 'it') : t.kind === 'car' ? (t.v.def.name ?? 'the car').toLowerCase() : t.z.kind === 'mutant' ? 'the mutant' : 'one of the dead');
     let winch = '';
     if (W?.phase === 'flying') winch = 'WINCH · hook away';
     else if (W) winch = `WINCH · ${name(W.target)} · ${W.length.toFixed(0)} m${W.taut ? ' · TAUT' : ''}`;

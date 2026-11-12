@@ -669,6 +669,13 @@ Round 54 (Session 26, batch 4: the stairs, the place beyond, Junie home; #469-47
 
 Round 55 (Session 26: the whole stretch in one go). From the plane's end to Junie home, on a new run: the plane, the account and clip, south past the line, the church and the capsule, the stairs, the place beyond, the walk home. Note anywhere you weren't sure what to do next.
 
+**Round 77: the bug-zapper night at the station, scaffolding (build queue item 2).** "Continue story: The bug-zapper night" on a fresh run. OPEN_QUESTIONS #702-710.
+- [ ] **The yard:** follow the star to the spot between the door and the fence box. Is "fire the lure flares" findable without something standing there?
+- [ ] **The flares**, then night, then the Mothman. Get on the dozer.
+- [ ] **Hook it:** B while looking at it. Too easy? Should it need a dive?
+- [ ] **On the cable:** get down and shoot, or stay on and let Wyatt do it. Does a minute of that hold up?
+- [ ] **The fence:** the scene, then charge 0 on the HUD, then Ellen. Does "we've no fence" land as a cost?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

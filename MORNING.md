@@ -2,6 +2,15 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 2: the bug-zapper night at the station
+
+**Scaffolded and on `main`.** 1293 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The bug-zapper night".
+- **What plays:** fire the lure flares from the yard → night → the Mothman → get on the dozer and hook it (B at it) → it thrashes on the cable while you and Wyatt shoot it → it falls on the fence, the fence goes to 0, it flies north → Ellen sends you to the cave.
+- **What's placeholder:** both scenes (the flares, the fence); the spot in the yard has nothing standing on it; hooking is easy; Ellen's floodlights aren't in.
+- **For our session on it:** #702-710; PLAYTEST round 77.
+
 # Build queue, item 1: the family's plan and the army's dozer
 
 **Scaffolded and on `main`.** 1286 tests pass; checked headless on two seeds; not played by hand.

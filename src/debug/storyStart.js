@@ -133,6 +133,7 @@ export const JUNIE_FOUND_FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 
 export const PLAN_FLAGS = ['junieHome', 'cellAsked', 'planeCellFitted'];
 export const DOZER_CAMP_FLAGS = ['familyPlan', 'earlMaps'];
 export const DOZER_HOME_FLAGS = ['dozerSeen', 'dozerKey', 'dozerBattery', 'dozerTaken', 'dozerHome'];
+export const ZAPPED_FLAGS = ['zapperStarted', 'mothmanHooked', 'mothmanZapped'];
 
 // "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
 // beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
@@ -147,7 +148,8 @@ export const STORY_POINTS = [
   { id: 'junieHome', label: 'Junie home: inside the gate (Ellen asks for the power cell)' },
   { id: 'plan', label: "The family's plan: the cell fitted, the family waiting indoors" },
   { id: 'dozerCamp', label: "The army's dozer: Earl's maps read, the crew's camp ahead" },
-  { id: 'dozerHome', label: 'The dozer home: the bug-zapper night next' },
+  { id: 'dozerHome', label: 'The bug-zapper night: the dozer home, the fence box waiting' },
+  { id: 'cave', label: 'The Bigfoot cave: the Mothman zapped and gone north, the fence dead' },
 ];
 
 // Which flags a start point sets on top of the outpost's (explored).
@@ -167,9 +169,14 @@ export function laterFlags(point) {
     case 'plan': return plan;
     case 'dozerCamp': return [...plan, ...DOZER_CAMP_FLAGS];
     case 'dozerHome': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS];
+    case 'cave': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS];
     default: return [];
   }
 }
+
+// The points that put Tom just outside the cabin door, and those with the dozer parked outside the gate.
+const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'cave']);
+const DOZER_AT_HOME = new Set(['dozerHome', 'cave']);
 
 // The jump: the outpost cleared and explored, then on to `point`.
 //  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
@@ -207,7 +214,7 @@ export function startFromLater(game, point) {
     const yaw = g.stairsSite.place.yaw;
     g.player.teleport(f.x - Math.sin(yaw) * 4, f.z - Math.cos(yaw) * 4, yaw);
     g.quad?.place?.(f.x - Math.sin(yaw) * 6 + Math.cos(yaw) * 3, f.z - Math.cos(yaw) * 6 - Math.sin(yaw) * 3, yaw);
-  } else if (point === 'junieHome' || point === 'plan' || point === 'dozerHome') {
+  } else if (AT_HOME.has(point)) {
     const L = g.station.layout;
     const d = L.cabin.frontDoor;
     g.player.teleport(d.x + (d.x - L.cabin.x) * 0.6, d.z + (d.z - L.cabin.z) * 0.6, g.player.yaw);
@@ -231,7 +238,7 @@ export function startFromLater(game, point) {
     g.quad?.place?.(at.x + 3, at.z, g.player.yaw);
   }
   g.cordonDozer?.reset();
-  if (point === 'dozerHome' && g.cordonDozer?.ready) {
+  if (DOZER_AT_HOME.has(point) && g.cordonDozer?.ready) {
     // parked outside the gate, its blade toward home
     const L = g.station.layout;
     const p = g.player.position;
@@ -241,7 +248,10 @@ export function startFromLater(game, point) {
     const r = L.radius + 8;
     g.dozer.loadState({ x: L.centre.x + (dx / l) * r, z: L.centre.z + (dz / l) * r, heading: Math.atan2(dx, dz) });
     g.dozer.locked = false;
+    const st = g.station.state;
+    st.charge = point === 'dozerHome' ? Math.max(st.charge, st.capacity * 0.6) : 0; // the night needs a fence; after it, there's none
   }
+  g.bugZapper?.reset();
   g.stairs?.reset();
   g.comms?.reset();
   g.caller?.reset();

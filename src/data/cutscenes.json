@@ -3535,6 +3535,283 @@
       "duration": 25.9
     },
     {
+      "id": "zapper.flares",
+      "name": "The bug-zapper night: the lure flares (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "unseen": true,
+      "_note": "Build queue item 2 (scaffolding; a placeholder scene): anchor zapperYard (where Tom stands at the fence box). Three flares go up from the yard, one after another, and hang red over the station. The encounter sends the Mothman as it ends.",
+      "actors": [
+        {
+          "id": "f1",
+          "kind": "glow",
+          "anchor": "zapperYard",
+          "pos": [
+            0,
+            1.6,
+            0
+          ],
+          "size": 0.3,
+          "color": 16726564
+        },
+        {
+          "id": "f2",
+          "kind": "glow",
+          "anchor": "zapperYard",
+          "pos": [
+            0,
+            1.6,
+            0
+          ],
+          "size": 0.3,
+          "color": 16726564
+        },
+        {
+          "id": "f3",
+          "kind": "glow",
+          "anchor": "zapperYard",
+          "pos": [
+            0,
+            1.6,
+            0
+          ],
+          "size": 0.3,
+          "color": 16726564
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "line",
+          "line": "zapper.flares.ellen"
+        },
+        {
+          "at": 0.4,
+          "do": "sfx",
+          "sfx": "flareGun"
+        },
+        {
+          "at": 0.4,
+          "do": "fly",
+          "actor": "f1",
+          "path": [
+            {
+              "at": 0,
+              "p": [
+                0,
+                1.6,
+                0
+              ]
+            },
+            {
+              "at": 0.8,
+              "p": [
+                3,
+                24,
+                6
+              ]
+            },
+            {
+              "at": 2.4,
+              "p": [
+                6,
+                50,
+                12
+              ]
+            },
+            {
+              "at": 6,
+              "p": [
+                7,
+                54,
+                13
+              ]
+            }
+          ]
+        },
+        {
+          "at": 0.4,
+          "do": "lookAt",
+          "target": "zapperYard",
+          "rate": 1.2,
+          "pitch": 0.9
+        },
+        {
+          "at": 1.8,
+          "do": "sfx",
+          "sfx": "flareGun"
+        },
+        {
+          "at": 1.8,
+          "do": "fly",
+          "actor": "f2",
+          "path": [
+            {
+              "at": 0,
+              "p": [
+                0,
+                1.6,
+                0
+              ]
+            },
+            {
+              "at": 0.8,
+              "p": [
+                -4,
+                22,
+                3
+              ]
+            },
+            {
+              "at": 2.4,
+              "p": [
+                -9,
+                46,
+                6
+              ]
+            },
+            {
+              "at": 5,
+              "p": [
+                -10,
+                50,
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "at": 3.2,
+          "do": "sfx",
+          "sfx": "flareGun"
+        },
+        {
+          "at": 3.2,
+          "do": "fly",
+          "actor": "f3",
+          "path": [
+            {
+              "at": 0,
+              "p": [
+                0,
+                1.6,
+                0
+              ]
+            },
+            {
+              "at": 0.8,
+              "p": [
+                1,
+                23,
+                -5
+              ]
+            },
+            {
+              "at": 2.4,
+              "p": [
+                2,
+                48,
+                -11
+              ]
+            },
+            {
+              "at": 4,
+              "p": [
+                2,
+                52,
+                -12
+              ]
+            }
+          ]
+        }
+      ],
+      "duration": 6.2
+    },
+    {
+      "id": "zapper.fence",
+      "name": "The bug-zapper night: the Mothman on the fence (first person)",
+      "style": "firstPerson",
+      "world": "run",
+      "unseen": true,
+      "_note": "Build queue item 2 (scaffolding; a placeholder scene: the Mothman isn't staged falling yet): anchor zapperFence (the fence nearest where it came down). Tom's view is pulled to the fence; the wire arcs three times; the eyes lift off it and go north.",
+      "actors": [
+        {
+          "id": "eyes",
+          "kind": "eyes",
+          "anchor": "zapperFence",
+          "pos": [
+            0,
+            0.4,
+            0
+          ],
+          "color": 16718352
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0,
+          "do": "lookAt",
+          "target": "zapperFence",
+          "rate": 4
+        },
+        {
+          "at": 0.2,
+          "do": "shake",
+          "amount": 1.4,
+          "seconds": 0.5
+        },
+        {
+          "at": 0.3,
+          "do": "sfx",
+          "sfx": "zap"
+        },
+        {
+          "at": 0.4,
+          "do": "line",
+          "line": "zapper.fence.wyatt"
+        },
+        {
+          "at": 0.9,
+          "do": "sfx",
+          "sfx": "zap"
+        },
+        {
+          "at": 1.0,
+          "do": "shake",
+          "amount": 1.0,
+          "seconds": 0.4
+        },
+        {
+          "at": 1.6,
+          "do": "sfx",
+          "sfx": "zap"
+        },
+        {
+          "at": 2.2,
+          "do": "sfx",
+          "sfx": "screech"
+        },
+        {
+          "at": 3.0,
+          "do": "move",
+          "actor": "eyes",
+          "anchor": "zapperFence",
+          "to": [
+            0,
+            26,
+            -70
+          ],
+          "seconds": 3.2
+        },
+        {
+          "at": 4.4,
+          "do": "line",
+          "line": "zapper.fence.junie"
+        }
+      ],
+      "duration": 7.4
+    },
+    {
       "id": "sweep.cordonDozer",
       "name": "Arriving at the clearing crew's camp (establishing sweep)",
       "style": "sweep",
