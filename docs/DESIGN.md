@@ -1188,6 +1188,8 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 
 #### Crashed plane (every run; story spine, beat 1; fixed)
 
+*__Changed, Session 33 (Aaron's play-through notes, part 2):__ **what the grey drops is made obvious.** As it goes down it turns to face Tom and the small alien power cell leaves its hand, arcs toward him and lies by the body: an unlit teal crystal with a faint glow and a thin wisp of light standing off it (no light added). A line on screen says it dropped something, then Wyatt does; the goal is "Search the creature. It dropped something." until it's searched, and Wyatt nudges after 25 seconds. **The cell's place in the story is the reunion** (see "Stairs in the woods": Ellen asks for it for the fence). OPEN_QUESTIONS #686-690.*
+
 *__Changed, Session 32 (Aaron's play-through notes):__ **an arrival sweep** from the clearing's edge (the gouge from above, then over the shoulder of the grey at its bench), with Wyatt and Ellen on the radio after it. **The standoff takes its time** (7.6 s): the grey looks up, vaults the wing into the open, stands looking at Tom, lifts **the pilot's pistol** (not the shotgun) and fires twice, wide, before control comes back; Tom's view closes in on it while the scene holds. **The quick draw stays.** **The power cell is a quiet drop:** it still drops and the fence box still takes it, but nothing points at it. OPEN_QUESTIONS #651-656, #659.*
 
 *Designed with Aaron, Nov 8. **The encounter is built (Session 25,** `encounters/CrashedPlane.js`**), straight from this design, to tune after play:** the standoff at 16 m (the world runs while the view holds on the grey), a 0.55 s quick draw, the hop over the wing and a shootout from past its tip, the four drops from one search (the cell fitted at the fence box at home), the pilot's log as a paper. Story flags `planeStandoff` to `planeDone`. Before that: Built so far: its clearing is placed on every run, the outpost's dogfight brings the plane down exactly there, and smoke stands over it afterwards. **The set is built (Session 24;** `render/crashedPlaneModel.js`, `world/CrashSite.js`**):** the gouge and its snapped trees, the sheared wing, the tail, the front of the plane with the pilot in it, the kept wing as the grey's workbench with the gun laid out on it, the survival kit and the knee-board; one draw call, solid, heading away from the checkpoint so Tom walks up the gouge; the encounter's places are `crashSite.spots`. **Fixed:** the same place every run, just past the checkpoint: the first stop after the outpost.*
@@ -1229,6 +1231,8 @@ The kill is never shown: setup and aftermath only. And it ties the mechanic in h
 - ~~Open: whether Junie is still taken if Tom drives it off early.~~ **Settled (Session 26 default):** yes; its last strike smashes his radio, so nobody could reach him either way.
 
 #### Junie is taken (story spine, beat 3)
+
+*__Changed, Session 33 (Aaron: trim it):__ **the wake-up scene is about 67 seconds** (it was about two minutes). The family's account is four lines; the south path camera's clip is 26 seconds with six captions (they come out calling, Tom's voice answers, they split to either side, it calls Junie, she goes, her torch goes out). OPEN_QUESTIONS #670 lists the lines cut.*
 
 *__Changed, Session 32 (Aaron's play-through notes):__ **no trip home.** The Mothman always knocks Tom out now, so he always wakes at the wreck at dawn with his radio working. Two seconds later the family's account comes over the radio; when Wyatt patches the south path camera through, its clip plays by itself; then the goal is "Find Junie. Head south". The smashed radio, the night in the wreck, the account at the gate and the spare handset no longer happen (their code and data remain for old saves). OPEN_QUESTIONS #658-661.*
 
@@ -1399,6 +1403,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### The Caller (story spine, beats 3 to 7)
 
+*__Changed, Session 33 (Aaron's play-through notes, part 2):__ **its voice from the trees is radio static** (Aaron: "we're going for creepy"): a handset's hiss keyed in the shape of a name, no notes, still from a direction, thinner for a child's voice (`audio/staticCall.js`). **It is silent while Junie walks home with Tom,** from the moment she's found until she's through the gate, and **never speaks again within 70 m of the stairs**. Elsewhere in the south it keeps its voice after she's home, until the Blessing. OPEN_QUESTIONS #676-677, #685.*
+
 *Designed with Aaron, Nov 8. **Built (Session 26,** `story/Caller.js`, `story/Comms.js`, `render/wrongFog.js`**; OPEN_QUESTIONS #454, #457-461):** never seen, no model, can't be shot. South of the comms line (`config.comms.line`, 480 m south of home, with hysteresis; Ellen warns once, her call breaks up the first time, NO SIGNAL on the HUD) it speaks in the family's voices, Junie's most: 25 draft lines over the radio or called from the trees (a positional sound, with which way under the subtitle). Its tell: the family's names and colours, but a dull-red double on every letter, a skewed name, a slower flicker, flat quiet blips, and a breath instead of the crackle. A call from the trees makes the mist stream toward the voice against the wind, gather into a bank there and roll toward Tom. More at night; never over a cutscene, paper, card, menu or another line. Back north the family are back. Until the Blessing (`blessingBuried`, a later session) every voice down south is the Caller.*
 
 *Before that: **Replaces** the earlier design (a portal creature with a too-tall, too-thin silhouette, 0–2 night events a run, radioing home to check whether a call is real).*
@@ -1430,6 +1436,13 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - **Still true from the earlier design:** the forest was already a thin place, which may be why the government built here; Ellen links it to the classified files (document 1's "thin site").
 
 #### Stairs in the woods: the place beyond (story spine, beat 5)
+
+*__Changed, Session 33 (Aaron's play-through notes, part 2):__*
+- ***No map of the place beyond:** the minimap is a black disc and the full map is refused ("No map of this place"). The same in the mine below ground.*
+- ***Junie's call there is radio static** in the shape of a call, down a path as before.*
+- ***Junie on the way home:** her figure takes a darker material colour out of doors and the torch dims on her as it does on the dead (she was a white shape by torchlight). **On the quad she sits on the rack behind Tom** (one line the first time); ridden through the gate, the homecoming plays.*
+- ***After the homecoming Ellen asks for the plane's power cell for the fence** ("It has to be stronger than it was"), and the goal is to fit it at the fence box. Without it she sends Tom back to the plane (only an old save can get there without it). Flag `cellAsked`.*
+- *OPEN_QUESTIONS #673-675, #678-684, #689-690.*
 
 *__Changed, Session 32 (Aaron's play-through notes):__ the stairs stand with their foot toward the pathway into their clearing (they used to climb away from the church). **The clearing is old growth:** sixteen giant trees ring it (`render/oldGrowth.js`: boles 22 m tall with buttress roots and moss, crowns far overhead, ferns under them), taller than the forest round them. **Moths keep the stairs:** while Junie is up there, eight giant moths drop out of the treetops when Tom first walks in, and the stairs can't be climbed until the last is down. **The place beyond is the same old growth** in bone grey under blue-black crowns: about 70 giants a clearing in place of the placeholder poles, ferns between. OPEN_QUESTIONS #664-668.*
 

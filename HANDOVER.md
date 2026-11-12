@@ -1,40 +1,23 @@
 # Handover
 
-## DO THIS FIRST: Session 33: more of Aaron's play-test, then back to the story
+## DO THIS FIRST: Session 34: more of Aaron's play-test, then back to the story
 
-**Where things stand:** everything to date is on `main` (and `ccr-2ebd0b15-khy2cs`). 1241 tests pass and the build is clean. **Aaron is partway through the big play-test.** His first sitting (a narrated play-through, the opening to the place beyond) gave fourteen notes; Session 32 built all of them (below). He is past the stairs; the optional places and the mine are still to play.
+**Where things stand:** everything to date is on `main` (and `ccr-6a92a61d-p69ruf`). 1272 tests pass and the build is clean. **Aaron is partway through the big play-test.** Two sittings so far (the opening to the place beyond; the place beyond to Junie home): twenty notes, all built (Sessions 32 and 33). The optional places and the mine are still to play.
 
-**1. His notes first** (rule 10). **Part 2 is the work list below: start there.** Ask for the next sitting's notes after it if they aren't in the conversation. He narrates as he plays and changes his mind as he goes: take his last word, and ask where two notes pull apart. He may also paste answers from the questions page (https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2, #436-645) as "#612: ..." lines: log each in OPEN_QUESTIONS. Fix the small things first. **Still open from Session 32** (ask him): Save and quit putting him at home (#649); the wake-up scene's length (#660); the standoff's zoom (#654); the quick draw's half second (#655); another place in the story for the power cell (#659).
+**1. His notes first** (rule 10). Ask for the next sitting's notes if they aren't in the conversation. He narrates as he plays and changes his mind as he goes: take his last word, and ask where two notes pull apart. If he says "no need to code now", write the notes up as a work list in this file with questions, as Session 32's end did (commit 65bda76). He may also paste answers from the questions page (https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2, #436-645) as "#612: ..." lines: log each in OPEN_QUESTIONS. Fix the small things first. **Open from Session 33** (ask once, or take what his notes say):
+- the lines cut from the wake-up scene: any he wants back (#670);
+- the wisp of light on the grey's drop: too much of a game marker (#686);
+- Junie too dark by day (#678); the fuel can sharing her seat (#681);
+- his rewrites of the draft lines (#687, #689);
+- the static by ear: can the calling path still be told in the place beyond (#676), and should the Caller's radio lines hiss too (#677).
 
-### The work list: Aaron's play-through notes, part 2 (Nov 12; the place beyond to Junie home)
-
-He said: no need to code now, write the list. Nothing in the game was changed from these. His words are quoted; "where" is read from the code, not tried. Confirm the list and the questions at its end in one message, then build, test, check headless and push each batch.
-
-1. **The map and the minimap in the place beyond.** "The map, the mini-map, continues to show the main world map, not the quiet place." Inside `placeBeyond` both still draw the forest map with Tom's dot on it (the mine does the same: OPEN_QUESTIONS #574, #618). *Where:* `ui/Minimap.js`, `ui/MapUi.js`; `game.interiors.inside` says where he is. *Fix:* in the place beyond, don't show the world: a blank or fogged-out minimap (no map to be had there fits the place), and the full map either refused ("No map of this place") or showing nothing. Ask whether he wants the same for the mine while he's below.
-2. **Junie's call in the place beyond: static, not a whistle.** "Instead of having that whistly style noise, could we use radio static, like a shh style noise?" *Where:* `audio/Sfx.js` `junieCall` (played from `PlaceBeyond.update` down the calling paths). Make it a burst of radio hiss (band-passed noise, as `radioStatic`), still positional so the path can be told by ear. The Caller's voice from the trees in the south (`Caller.js`, the "To-om" two-note sound, #460) is the same kind of whistle: ask whether that changes too.
-3. **Junie is shiny.** "She has that reflective quality that we've been trying to minimize." The figure following him home is a one-person `FamilyRenderer` (`Stairs.spawnJunie`), out in the world by torch and daylight, where the family's materials were made for the cabin's light. *Fix:* the glare rule for her out of doors: darker material colours or a material with no shine, as the cart's body was done (`buildCart`: a dark material colour), checked by torch at night at arm's length.
-4. **Junie on the quad.** "When we get on the quad bike, could you just note something like Junie is riding on the back of the bike? Either that or you could try put a model of her on the back of the bike, entirely up to you." Now she's hidden while he rides (`Stairs.update`: `mesh.visible = ... && !this.player.riding`). *My pick:* put her on the back: her figure seated behind him, carried with the quad (a seat offset in the quad's frame, a sitting pose if the figure kit has one, else standing on the rack), plus one line the first time ("Junie climbs on behind you and holds on"). If the pose can't be made to look right, the line alone.
-5. **The Caller still talks at the stairs after Junie's found.** "After I rescued Junie, the caller was still talking to me while I was at the stairs. I think we need to say that the caller doesn't talk in that area anymore." *Where:* `story/Caller.js` `get active` (south of the comms line, not in an interior). *Fix:* a quiet zone round the stairs' clearing once `junieFound` is set (and, I'd suggest, silence for the whole walk home while she's following: ask). DESIGN has the Caller keeping her voice after she's home (#475); this only quiets that place.
-6. **The alien power cell's beat: Ellen asks for it at the reunion.** "Found the perfect story beat for the alien shard. When you bring Junie back, Ellen could say she wants to upgrade the fence naturally after the reunion, and she can say that we can use the alien shard to do so." This answers #659. *Where:* the homecoming (`Stairs.homecoming`, `cutscenes.json` `junie.homecoming`, lines `junie.homecoming.*`); the cell is flag `planeCellTaken`, fitted at the fence box (`Station.js`, `planeCellFitted`, `config.station.power.cells.planeCell`). *Build:* after the homecoming scene, Ellen's line (a draft for him to rewrite: the fence has to be stronger than it was; that thing he took off the creature at the plane, would it run the fence?), then the goal comes back: "Fit the plane's alien power cell to the fence box" (Session 32 removed that goal; restore it gated on `junieHome`). If he never looted the grey, the line and goal should send him back for it or be skipped: ask.
-
-**Aaron's answers (Nov 12), so these are settled:**
-- **The maps (1):** "feel free to just black it out or take away whatever's easier if it's not necessary for that bit of the gameplay." So: black out or hide the minimap and the full map in the place beyond, and do the same in the mine while he's below (neither needs a map). Whichever is simpler.
-- **The sounds (2):** static for the Caller's voice from the trees in the south as well as Junie's call in the place beyond. "We're going for creepy."
-- **The Caller on the walk home (5):** quiet the whole way home while Junie's following, not only at the stairs.
-- **No cell at the reunion (6):** Ellen's line sends him back to the plane for it. And make the grey's drop obvious, so he loots it the first time: "the player will really want to loot the alien grey, especially if we make it very clear that something's been dropped." So add to item 6: something to see where the grey fell (a glint or small glow on the body, unlit, no light added; the body itself turning toward the camera as it drops), a line the moment it goes down that it dropped something, and a goal ("Search the creature") until `planeLooted` is set. The Mothman's flare shouldn't be offered before the body's been searched (it already waits on `planeLooted`).
-- **Junie on the quad (4):** left to you ("entirely up to you"): the model on the back with the line as the fallback, as written above.
-
-**Still to ask him:** nothing from this list.
-
-**Open questions these touch:** #472-475 (the find, bringing her home, after she's home), #460 (the Caller's voice from the trees), #574 and #618 (the dot on the map below ground), #659 (the power cell's place in the story).
-
-**2. After the list, the story's next stretch**, confirmed with him first: DESIGN.md "Build plan" M12, Bigfoot (beats 6-7), its first part: the family's plan and Earl's maps, and the military's dozer on the cordon strip. Where it plugs in:
+**2. After his notes, the story's next stretch**, confirmed with him first: DESIGN.md "Build plan" M12, Bigfoot (beats 6-7), its first part: the family's plan and Earl's maps, and the military's dozer on the cordon strip. Where it plugs in:
 - **The dozer exists as a spike** (`world/Dozer.js`, `world/dozerParts.js`; debug menu): it drives, shoves cars and trees, and has a winch. It needs its place in the story.
 - **Its clearing is on the map:** `data/storySpine.json` `cordonDozer` (beat 7), a placeholder on the cordon strip (`world/cordon.js`).
-- **The family's plan** is a scene at home once Junie's back (`junieHome`).
-- **Start points for testing:** `debug/storyStart.js` has "Outpost cleared" only. Add "the plane done" and "Junie home".
+- **The family's plan** is a scene at home once Junie's back (`junieHome`). Ellen's ask for the power cell (Session 33, `Stairs.updateCellAsk`, flag `cellAsked`) already plays there, 2.5 s after the homecoming: the plan should follow it, not talk over it.
+- **Start points for testing:** `debug/storyStart.js` now has the grey down, the plane done, Junie found and Junie home (`startFromLater(game, point)`, `laterFlags`). Add the next one the same way.
 
-**How to work** (as Sessions 26 to 31 did):
+**How to work** (as Sessions 26 to 33 did):
 - Config and data first: an encounter's texts go in its own `data/<place>.json`, and new JSON entries go in each data file's own one-line style, so the diff stays small.
 - Complete files and small modules.
 - No lights added or removed while playing: glows and unlit parts instead.
@@ -45,9 +28,38 @@ He said: no need to code now, write the list. Nothing in the game was changed fr
 - Scenes staged as cutscenes, with each line timed to its reading length.
 - A sound for every moment (`audio/Sfx.js`).
 - Check every batch headless, look at the screenshots critically, then push it to `main`.
-- Write it up at the end: STATUS, PLAYTEST from round 74, OPEN_QUESTIONS from #646, DESIGN as built, MORNING, and this file.
+- Write it up at the end: STATUS, PLAYTEST from round 76, OPEN_QUESTIONS from #691, DESIGN as built, MORNING, and this file.
 
-## Just finished: Session 32 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 1
+## Just finished: Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2
+
+**Status:** all of it is on `main` and on `ccr-6a92a61d-p69ruf`, in three batch commits and the write-up. 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; **none of it played on the tablet, and the new sounds not heard**. For Aaron: PLAYTEST round 75; OPEN_QUESTIONS #669-690; MORNING.md. His notes as he gave them, with his answers, are in this file's previous version (commit 5155fce). His four answers at the start: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.
+
+**Done, by batch** (STATUS "Session 33" has the detail):
+1. **The wake-up scene trimmed; no map in the place beyond or the mine; voices of radio static; the Caller quiet on the walk home.**
+2. **Junie's shine, and Junie on the back of the quad.**
+3. **The power cell's beat:** the grey's drop seen and said; Ellen's ask after the reunion; the fence-box goal; riding through the gate; the debug start points.
+
+**Not done or not checked:**
+- **The tablet**, and any of it played by hand.
+- **The static by ear** (the headless browser has no sound): only that the right bursts are asked for.
+- **Junie's seat overlaps the quad's fuel can** (#681).
+- **The corpse moves on a load:** after Save and Continue the grey lies at the wing's `cover` spot, not where it fell (it always did; the drop goes with it).
+- **From Session 32:** the smashed radio's leftover code and data; the ferns in the place beyond.
+
+**To carry (Session 33):**
+- **A place with no map:** add its interior id and words to `config.maps.noneIn`. `Game` sets `mapUi.dark` from it each frame; dark also stops the fog of war updating, which anything underground wants.
+- **A voice that isn't notes:** `Sfx.staticCall(out, pitch, long)` plays `staticCallPlan`'s bursts. Any other "voice on a dead channel" should use it.
+- **Silencing the Caller for a stretch of story:** add the case to `callerQuiet` (pure, tested); `Caller.quiet` gates the timer, `fromTrees` and `callFrom`, and ends a call under way.
+- **A figure the torch blows out:** two fixes, both needed: a darker material colour (pass `{ ...cfg.family, albedo }` to its renderer), and a circle `{ x, z, r, base, top }` pushed into the torch's glare check in `Game` (`Stairs.glareCircle`).
+- **A passenger on a vehicle:** make the figure the vehicle mesh's child (it pitches and rolls with it), `rotation.y = Math.PI` if the vehicle's front is -z, the `'sit'` pose, and pass `null` as the renderer's look-at (its head-turn works in world space). Keep it at least half a metre behind the rider's eye or the camera goes inside it when he looks round. Put it down beside the rider when he gets off (`stepOffSpot`), never across the vehicle from him.
+- **An encounter trigger must be checked on the riding branch too:** `updateFollow` returned early while riding, so the homecoming never fired from the saddle.
+- **Something on the ground that must be seen:** an unlit core, an additive shell (`fog: false`), and an additive open cone standing off it; flash it on a timer (`dropAt`). By day at 14 m the core and shell alone were a speck.
+- **A line that follows another whoever says it:** chain it with `"next"` in `dialogue.json`; `Dialogue.show` plays the chain (`plane.drop.wyatt`).
+- **A line a few seconds after a cutscene, once, surviving a save:** a flag, a countdown that only runs while playing and no cutscene is up, and wait for `subtitles.busy` to clear (`Stairs.updateCellAsk`).
+- **Trimming a clip:** rebuild its tracks from the kept lines' reading lengths with a script and splice only that scene's text back into `cutscenes.json` (re-serialising the whole file rewrites 800 lines).
+- **My headless harness** (the scratchpad, not kept): as Session 31's, on the dev server (`window.game`). New: import `/src/debug/storyStart.js` in the page and call `startFromLater(game, point)`; listen on `'dialogue:line'` to see chained lines (wrapping `deliver` only sees the first); a third-person shot by moving `player.camera` and calling `renderer.render` without stepping; `page.locator('.minimap canvas').screenshot()`. The subtitle box on screenshots doesn't advance when stepping by hand.
+
+## Before that: Session 32 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 1
 
 **Status:** all of it is on `main` and on `ccr-2ebd0b15-khy2cs`, in five batch commits and the write-up. 1241 tests pass and the build is clean. Checked headless; **none of it played on the tablet**. For Aaron: PLAYTEST round 74; OPEN_QUESTIONS #646-668; MORNING.md. His notes as he gave them are in this file's previous version (commit 30b81cc).
 

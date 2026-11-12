@@ -1,41 +1,41 @@
-# For Aaron (Session 32: your play-through notes, part 1)
+# For Aaron (Session 33: your play-through notes, part 2)
 
-**All fourteen notes from your first sitting are built,** with your five answers, and on `main` in five batch commits plus the write-up. 1241 tests pass and the build is clean. I checked each batch headless. None of it has been played on the tablet.
+**All six notes from your second sitting are built,** with your answers, and on `main` in three batch commits plus the write-up. 1272 tests pass and the build is clean. I checked each batch headless on two seeds. None of it has been played on the tablet, and I can't hear the game, so the new static is untested by ear.
 
-## What changed, in the order you played
+## Your four answers at the start
 
-1. **The first aid box** offers again. It's quiet only where you wake; step away and come back and it's there. (You remembered right: it already held whatever didn't fit your healing pool.)
-2. **The plane, arriving:** a sweep from the clearing's edge, ending over the shoulder of something small at the wing, then Wyatt and Ellen on the radio about it.
-3. **The standoff** is seven and a half seconds now: the grey looks up, vaults the wing, stands looking at you, lifts the pistol and fires twice before you get control. Your view closes in on it while it plays. The quick draw is still there the moment control comes back.
-4. **It holds the pilot's pistol.**
-5. **The Mothman can't be driven off.** He always knocks you out.
-6. **The power cell** still drops, with nothing pointing at it.
-7. **Waking at the wreck:** the family's account comes over the radio two seconds later, the trail camera's clip plays by itself when Wyatt patches it through, and the goal is to find Junie. Nothing sends you home.
-8. **The old church's door is shut,** with a beam across it, and the time capsule is at the foot of the steps beside it.
-9. **The crossing sign's** words fit the boards.
-10. **The bear trap:** traps were catching you while you rode, which is why there was no prompt. On the quad they now go off under the wheel and hold nothing. On foot the way out always shows.
-11. **The stairs** face the path into their clearing, with a ring of old-growth giants round it.
-12. **Eight moths** drop out of the treetops when you walk in, and the stairs won't take you until they're dead.
-13. **The place beyond** is old growth too: about 70 huge trees a clearing in place of the poles, in bone grey.
+- **Save and quit:** left at home.
+- **The wake-up scene: trimmed.** About 67 seconds where it was about two minutes. The account is four lines, the clip 26 seconds. OPEN_QUESTIONS #670 lists every line I cut; say which you want back.
+- **The standoff's zoom** and **the quick draw's half second:** kept.
 
-**PLAYTEST round 74** walks through each. **OPEN_QUESTIONS #646-668** are my calls.
+## What changed, in your list's order
+
+1. **The maps:** in the place beyond and down the mine the minimap is a black disc, and D-pad up says there's no map ("No map of this place"; "The map's no use down here"). I also found that walking under the forest in either place was lifting the fog of war on the map above; it doesn't now.
+2. **Static, not a whistle:** Junie's call in the place beyond and the Caller's voice from the trees are both radio hiss in the shape of a call, still from a direction. The Caller's lines over the radio are unchanged.
+3. **Junie's shine:** she had two problems by torch: colours made for the cabin's lamps, and the torch never dimmed for her as it does for the dead. Both fixed. At arm's length her face is a face.
+4. **Junie on the quad:** she sits on the rack behind you, with "Junie climbs on behind you and holds on" the first time. Ride through the gate and the homecoming plays (it used to wait for you to get off).
+5. **The Caller:** silent from the moment she's found until she's home, and never again near the stairs.
+6. **The power cell:**
+   - **At the plane:** when the grey goes down, something leaves its hand and lands toward you: a teal crystal with a glow and a thin wisp of light standing off it. The screen says so, Wyatt says so, and the goal is "Search the creature. It dropped something."
+   - **After the reunion:** Ellen asks whether it would run the fence, Wyatt says try it, and the goal is the fence box.
+   - **If you never searched the grey:** she sends you back to the plane. In a fresh run that can't happen (the flare needs the search), so it only covers old saves.
+
+**PLAYTEST round 75** walks through each. **OPEN_QUESTIONS #669-690** are my calls.
 
 ## Things to know
 
-- **Save and quit put you at the compound** because Continue has always put you at home (your ask, Session 20). I left it. Say if you want it to put you where you were.
-- **The wake-up scene is about two minutes:** a 40-second account you can move during, then the 54-second clip (A skips it), then three lines. I didn't cut any of your lines. Tell me which should go if it drags (#660).
-- **Your view zooms during the standoff** (#654). From 16 m the grey was a speck. Say if it's jarring.
-- **Is half a second still fair for the quick draw** now that it's already fired at you twice (#655)?
-- **The smashed radio is out of the story** but its code and lines are still in the game for old saves (#658).
-- **You said you'd find another spot for the power cell.** Nothing's done about that (#659).
-- **Ferns in the place beyond barely show** in that light (#666).
+- **Ellen's and Wyatt's new lines are drafts** for you to rewrite (#687, #689).
+- **The wisp of light on the drop** is the most game-like marker in the game so far. Say if it's too much (#686).
+- **Junie shares the quad's rack with the fuel can** (#681). I can move the can to the front rack.
+- **Is Junie too dark by day now** (#678)?
+- **Four new debug start points** (the debug menu's first section): the grey down at the plane, waking at the wreck, Junie found at the stairs with the quad beside you, Junie home. They'll get you to each of these in one press.
 
 ## Not done
 
-- **The tablet**, for all of it.
-- **Any of it played by hand.**
-- Everything in last session's list still stands (the mine's untested numbers, the surface that doesn't change once it's blown).
+- **The tablet**, and any of it played by hand.
+- **The static by ear.**
+- Everything in the earlier lists still stands (the mine's untested numbers, the smashed radio's leftover code, the ferns in the place beyond).
 
 ## Next
 
-Keep playing and narrating: you're past the stairs, with the optional places and the mine still to play. The questions page is still at https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2; this sitting settled twelve of them (listed at the top of OPEN_QUESTIONS' Session 32 section). After the play-test, my suggestion is still the story's next stretch: the family's plan and the military's dozer.
+Keep playing and narrating: the optional places and the mine are still to play. After the play-test, my suggestion is still the story's next stretch: the family's plan and the military's dozer.
