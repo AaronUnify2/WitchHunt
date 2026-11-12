@@ -1,5 +1,7 @@
 # Open questions
 
+**Session 30 (Nov 12):** the abandoned mineshaft, the way down (the surface, the battery and the cage, the mine below, the turret cart, the ride's fight, the giant moths' real behaviour). Your answers at the start: two sessions, the way down first; an ordinary car battery; my other defaults. No play-test notes yet, so nothing from before changed. My calls are #565-604 below.
+
 **Session 29 (Nov 12):** the moonshiners' holler (the hollow in the ground, its set, the traps and the wire cutters, the trap map, the turned family, the still, the auto shotgun, the copper worm). Your answers at the start: the holler; go with my defaults (the auto shotgun: yes). No play-test notes yet, so nothing from before changed. My calls are #538-564 below.
 
 **Session 28 (Nov 12):** the sawmill (its set and its beat), the chainsaw and the station's workbench, from HANDOVER's defaults and your yes to my three (what happened at the mill; loggers get up first, then the agents; Tom carries all three melee weapons). No play-test notes yet, so nothing from before changed. My calls are #510-537 below.
@@ -9,6 +11,70 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 30: the abandoned mineshaft, the way down
+
+Your answers at the start: two sessions, the mineshaft's way down first; the battery is an ordinary car battery; my other defaults are fine (the mine in a pocket under the ground, the cart's gun never runs dry but overheats, a ride on rails with stops, moths that roost and stream). No notes yet. Where I had to choose:
+
+**Batch 1: the surface (PLAYTEST round 67)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 565 | **The mine's name and story** (drafts). | The Black Laurel Coal Company's No. 2 shaft, shut in 1987 after bad air in the low seam. A few weeks ago the army opened it again (something on their instruments, far down), and hired back the old foreman and a crew who'd worked it. Eleven went down on the last shift and never tagged out. What the army brought up before that, they brought up sedated in a net: the outpost's container. | `data/mineshaft.json` |
+| 566 | **What's on the surface.** | The sign with the army's tape across it, the side office (walk in), the headframe and cage over the collar, the hoist house, rails to a spoil heap, pit props, a tipped tub, the army's crates and a lamp stand. No bodies up top: everyone's below. | `render/mineshaftModel.js` |
+| 567 | **The clearing is 22 m** (it was dealt 16-24 by the seed). | The set needs the room. 24 moved the railway cutting on one seed and broke its store's placement, so 22. Other clearings stay where they were on the seeds I tried. | `data/encounters.json` |
+| 568 | **No parked vehicles** at the mine. | It was dealt a pickup half the time; that would have been a battery waiting at the door. | `data/vehicles.json` |
+| 569 | **The six searches** (drafts). | The foreman's desk (the army's requisition: "They don't want coal. They want the low seam opened."), the tag board (eleven tags still hang), the lamp rack (3 scrap), his locker (10 pistol rounds, a first aid kit, his own tag), the army's crates (10 rifle rounds, an empty tranquilliser crate, a net cut from the inside), the tipped tub (a pale thread running back to the shaft). | `data/mineshaft.json`, `config.mineshaft.encounter` |
+| 570 | **The battery** (your call: an ordinary car battery). | Hold X for 2 s at the control box with one in your pack. It's used up, for good: the lift's live from then on. With none, the box says a car battery would do it. | `encounters/Mineshaft.js` `fitBattery` |
+| 571 | **The foreman's logbook isn't here yet.** | DESIGN keeps it as the mine's lore; I've left it for the bottom (next session), so the surface hints and the logbook tells. The desk's requisition stands in for now. | |
+| 572 | **Nobody speaks on the surface.** | No family lines yet (Ellen warning him off the cage, the radio going as he drops). The mine's also south of the comms line on some seeds, where she couldn't anyway. Worth writing with the second half. | |
+
+**Batch 2: the cage and the mine (round 68)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 573 | **Where the mine is** (my default, your yes). | An interior: a pocket 1,200 m under the clearing, loaded as the cage starts down and dropped when it's back up. Nothing of the forest is drawn while you're below. | `encounters/MineRide.js`, `world/Interiors.js` |
+| 574 | **Your dot on the map moves while you're below.** | The mine's a real loop of tunnel about 85 by 100 m, shifted so it sits under the clearing, so the map shows you wandering up to 60 m or so from the headframe. Pinning the dot to the headframe is a small change if it reads as wrong. | `config.mineshaft.origin` |
+| 575 | **The cage ride:** 26 seconds, 2,400 feet. | The walls scroll past the bars (slower than the real drop, so the eye can follow), the depth is called off on the prompt line, it hangs dead for 2.6 s at about 900 ft, then drops faster. You can look round but not get out. | `config.mineshaft.lift` |
+| 576 | **The ride up is a 5 s fade,** not the ride again. | Half a minute of nothing on the way out seemed too much. It may want to be longer once there's a fireball behind you. | `lift.upSeconds` |
+| 577 | **The drift's shape.** | 432 m, falling 27 m: the landing, a straight, a bend, the points, a bend, the long straight with the first roost, a bend, the fall, a bend, the steep run (13% down, right under the landing and 15 m below it), a bend, the last straight, the bottom. All from thirteen lines of config. | `config.mineshaft.track.legs` |
+| 578 | **How dark.** | Black beyond your torch (the mine's own dim light, fog closing in at 44 m), a few bulbs still burning as unlit glows. The torch comes on by itself as the cage starts. | `config.mineshaft.light`, `bulbsLit` |
+| 579 | **The tunnel's walls are plain.** | Rock and coal as flat-shaded faces, a timber set every 4 m, no props between stops. It's about 23,750 triangles in one draw call. It may want dressing (tubs, tools, falls, side drifts) in a style pass. | `render/mineModel.js` |
+| 580 | **Dying down there ends the run,** as anywhere. | Nothing special. | |
+| 581 | **A save made below comes back on the surface,** at the cage's gate, with the flags kept (the interior system's rule). | | |
+
+**Batch 2: the turret cart (round 69)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 582 | **The cart drives itself.** | 4.6 m/s at a cruise, 9.5 down the steep run, braking over 14 m to a stand. You only work the gun (and the brake, to start). | `config.mineshaft.ride` |
+| 583 | **The gun** (my default: its own ammo, never dry, overheats). | The ute's gun, older: 7.5 rounds a second, 40 a round, through two of the dead, about six seconds from cold to overheated. It goes through a hard hat. Its sight is the ute's ring with the heat round it. | `ride.gun` |
+| 584 | **It swings all the way round,** and your aim turns with the cart on a bend. | What's behind matters as much as what's ahead (the moths). Might be sick-making on the tablet; a limit or a slower turn are both easy. | `world/MineCart.js` |
+| 585 | **Your own guns are away while you're aboard.** | As on the ute. On foot at a stop they're back, and a shot stops at the tunnel's walls. | |
+| 586 | **Two stops** (my default: two or three). | The points (set for a siding that's fallen in: throw a lever, 1.6 s) and the fall (rock across the rails: a pinch bar, 5 s, draining if you let go). Each is done once; later rides run through. | `ride.stops`, `encounter.holds` |
+| 587 | **Getting on and off.** | Hold X at the cart to climb aboard; aboard and halted, hold X climbs down if the way's shut and lets off the brake if it's open. So you can't climb down at a stop you've already cleared, or mid-run. | `encounters/MineRide.js` `pickAboard` |
+| 588 | **The dead reach you in the tub,** for 0.6 of a swipe. | And the cart runs down anything on the rails in front of it above walking pace. | `ride.strikeScale`, `fight.ram` |
+| 589 | **The bottom is a locked door for now.** | The buffers, a timber bulkhead across the drift, barred, silk all over it and a dull violet light under it, humming. Its prompt says what's behind is still to build. | `data/mineshaft.json` `bottom` |
+| 590 | **The way back is a winch** (a fade), for this half only. | Next session it's the plunger, the fuse and the fireball behind the cart. | `MineRide.winchUp` |
+
+**Batch 3: the ride's fight and the moths (round 70)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 591 | **Zombie miners have no art of their own.** | They wear the army zombie's shapes in pit black: the helmet is the hard hat (olive, not yellow; no headlamp). 1.3x health, and the helmet stops a headshot's bonus until it's taken 18. They drop scrap. A proper miner (lamp lit?) is a style-pass job. | `config.zombies.variants.miner`, `texture.looks.miner` |
+| 592 | **How many.** | 21 on the ride down (the first alone on the rails, his back to you; then twos and threes; five on the rails down the steep run), 9 more at the two stops. | `config.mineshaft.fight.script`, `stops` |
+| 593 | **They know where you are from 30 m.** | The dead inside an interior can't see or hear the way the dead above do (you're unseen in there, so the forest's dead don't come), so the fight tells the near ones. Until then they stand about. | `fight.aware` |
+| 594 | **Beetles:** seven, in ones and twos. | Up out of the ballast 26 m ahead, a display, a charge up the rails. They run at 0.8 of their speed down here, a little slower than the cart, so it draws away and they catch up at a stop. The cart shoulders one aside for 90. | `fight.script`, `beetleSpeed`, `ram.beetle` |
+| 595 | **Three roosts:** 12, 10 and 20. | Over the long straight, over the fall, and down the steep run. The pool is still 32, so a third roost hangs only as many as are free. | `fight.script`, `stops.fall.roost` |
+| 596 | **You see a roost before you reach it:** eyes under the roof, and a line the first time. | They're hung 30 m ahead of where the cart is when they appear, and wake when it's 20 m off. | `fight.moths.wake` |
+| 597 | **The stream.** | Woken, each holds its own place along the track from you (13 m behind to 4 m ahead), up under the roof, drifting, and keeps 5 m/s over the cart's speed. One or two dive every 2 to 3.6 s; a dive that reaches you nips for 2 (the spike's was 4). | `fight.moths` |
+| 598 | **Shooting a roost early scatters it** (my default). | From more than 24 m off, 60% flee down the drift and are gone; the rest come. From closer it just wakes. | `fight.moths.scatterBeyond`, `scatter` |
+| 599 | **The roost over the fall wakes on a clock:** nine seconds after you climb down. | So the rock is levered with moths on you unless you shot them off the roof first. | `stops.fall.roost.wakeAfter` |
+| 600 | **At the bottom they leave,** all at once, over the bulkhead. | It points at what's behind it. | `MineFight.atBottom` |
+| 601 | **The mine's quiet after the first time down.** | Once the cart's reached the bottom, later rides deal nothing: the dead stay dead. Leave before the bottom and it all starts again from the top. | `MineFight.begin` |
+| 602 | **How hard is it?** | Unknown. A cart that only fired straight ahead and never at the moths took 46 nips (92 health) with long stops, and died on foot at the first stop when it stood still among seven miners. I softened the first stop and the moths after that. A careful player should lose 40 to 60. It needs your hands on it. | `config.mineshaft.fight` |
+| 603 | **No loot at the bottom yet.** | Dynamite, the rock drill head (the ram) and the logbook are next session's. This half gives only the surface's searches and what the miners drop. | |
+| 604 | **Sounds** are placeholders, 15 of them (the cage, the cart, its gun, the points, the bar, a roost waking). | | `audio/Sfx.js` |
 
 ## Session 29: the moonshiners' holler
 

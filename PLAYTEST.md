@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still); rounds 67-70 Session 30 (the mineshaft: the surface, the cage, the turret cart, the ride's fight)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,44 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 67: the mineshaft's surface (Session 30; OPEN_QUESTIONS #565-572).** Debug menu, **Story, radio & trail cams**, "Mineshaft: take me there" (it puts you on the track, walking in). "give me a battery" saves a walk to a car; "start it again" clears every flag.
+- [ ] **The arrival:** the sweep up the track to the headframe, the sign and the army's tape, in through the office door to the tag board, across to the control box, up the headframe. Does it land? Too long (16 s)?
+- [ ] **Walk the yard:** the sign, the office (walk in: the desk, the tag board with eleven brass tags, the lamp rack, the locker), the headframe and the cage, the hoist house, the tub on the rails and the spoil heap, the army's crates by the collar, the tub on its side. Does it read as a pit head? By torch at night?
+- [ ] **The searches** (six): do they tell you who was here and what they wanted, without saying what's below?
+- [ ] **The cage is dead:** the lever says so, and the control box says what it wants. Is it clear that a car battery does it?
+- [ ] **Fit a battery** (hold X at the box, with one in your pack): the leads, a relay, the lamps come on. It uses the battery up. Did it feel like a real choice against the fence?
+
+**Round 68: the cage and the mine (Session 30; #573-581).** With the battery in: the cage's lever. Or debug: "Mineshaft: down to the landing".
+- [ ] **The ride down:** about half a minute. The shaft's walls run up past the bars, the depth is called off in feet, it stops dead partway and then drops faster. Ridiculously deep enough? Too long? Can you see enough?
+- [ ] **The landing:** the cage, a bench, the cart on the rails pointing down the drift. How dark is it by your torch? Too dark to find the cart?
+- [ ] **The tunnel:** rock and coal, timber sets, rails, a string of bulbs with a few still burning. Does it hold up over 400 metres, or does it repeat?
+- [ ] **Up again:** the cage's lever on the landing (a short fade).
+- [ ] **The map:** your dot moves under the forest while you're below (the mine's loop sits under the clearing). Does that read as wrong?
+- [ ] **Frame rate** in the tunnel, and at the stops with the dead about.
+
+**Round 69: the turret cart (Session 30; #582-590).**
+- [ ] **Climb aboard** (hold X at the cart), **let off the brake** (hold X). It runs by itself. RT fires, LT steadies; the ring round the sight is the gun's heat.
+- [ ] **The gun:** it never runs dry, and overheats after about six seconds of fire. Right? Does the view from behind it feel like the ute's gun?
+- [ ] **Look behind you.** The gun swings all the way round, and your aim turns with the cart on the bends. Sick-making?
+- [ ] **The points** (the first stop): the cart halts; climb down (hold X), throw the lever on the stand ahead on the right (hold X), climb back up, brake off.
+- [ ] **The fall** (the second stop): rock across the rails. Lever it clear with the pinch bar (hold X for five seconds; it drains if you let go).
+- [ ] **The steep run:** the cart runs away at twice the speed. Fast enough to frighten? Too fast to shoot from?
+- [ ] **The bottom:** the buffers, the bulkhead across the drift with silk all over it and a light under it. It can't be opened yet (the next build). Hold X at the cart to winch back up.
+- [ ] **Ride it again:** the stops are done, so it runs straight through, and it's quiet.
+- [ ] **Save and quit** below ground, Continue: you're back on the surface with the flags kept.
+
+**Round 70: the ride's fight and the moths (Session 30; #591-604).**
+- [ ] **Zombie miners:** one on the rails with his back to you first, then twos and threes beside the track and round the bends. Hard hats (a headshot wants the helmet off first, though the cart's gun goes through). Do they read as miners in the dark?
+- [ ] **Run one down:** leave one on the rails and let the cart hit it.
+- [ ] **Beetles** come up out of the ballast ahead, display, and charge up the rails. They're a little slower than the cart, so they fall behind, and catch up at a stop. Their soft spot is the face.
+- [ ] **The first roost:** red eyes up under the roof timbers ahead, before you reach them. Did you see them in time to choose?
+- [ ] **Wake them** by riding on: they drop and come after the cart in a stream, mostly behind you, one or two diving every two or three seconds. A nip is 2. Is the stream readable? Can you thin it?
+- [ ] **Scatter them** instead: shoot into a roost from as far off as you can see it. Most of them should flee.
+- [ ] **At the stops:** the dead walk in from ahead and behind while you're down off the cart, and over the fall a roost wakes after about nine seconds. Too much on foot? Did you fight from the cart instead of climbing down?
+- [ ] **The steep run:** twenty moths streaming, five miners on the rails, at speed.
+- [ ] **At the bottom** the moths break off and go over the bulkhead.
+- [ ] **How much health did the ride cost you**, start to finish? (My guess is 40 to 60 for a careful player. It's untested by hand.)
 
 **Round 64: the moonshiners' holler and its traps (Session 29; OPEN_QUESTIONS #538-551).** Debug menu, **Story, radio & trail cams**, "Holler: take me there" (it puts you before the mouth, walking in). "start it again" clears it and sets every trap; "give me the wire cutters" skips the lookout.
 - [ ] **The hollow:** two wooded ridges either side of a narrow floor, rock ledges at their feet, a creek down one side, the floor widening to a yard at the head. Does it read as a holler? Dark enough? Somewhere the seed brings another trail in, it comes down a gully in a ridge.
