@@ -108,7 +108,7 @@ export class CarArmory {
 
   // In his cage, or stood outside it once he's freed (item 7 moves him on).
   placeSheriff() {
-    if (!this.ready) return;
+    if (!this.ready || this.sheriffAway) return; // (item 7 has him: in the ute's tray, or home in the garage)
     const at = this.has('sheriffFreed') ? this.site.spots.out : this.site.spots.sheriff;
     const s = this.sheriff;
     s.x = at.x;

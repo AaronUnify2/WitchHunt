@@ -4475,6 +4475,26 @@ export const config = {
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
   },
 
+  // Build queue item 7: the ute chase and the garage (encounters/UteChase.js; story spine, beat 10, second
+  // half). Scaffolding: every number a first guess.
+  uteChase: {
+    // The base pours after the ute while it's within `reach` metres of the Car Armory: every `every` seconds up
+    // to perWave Men in Black (dead) appear ringMin..ringMax metres round it, never more than `cap` at once.
+    // Sheriff's gun takes the nearest within gunRange every gunEvery seconds. `clear` metres past `reach`, it's over.
+    chase: { reach: 320, clear: 30, firstWave: 2.5, every: 3.5, perWave: 8, cap: 40, ringMin: 22, ringMax: 46, gunRange: 38, gunEvery: 0.28, gunDamage: 70 },
+    homeMargin: 20, // metres outside the fence's ring that still counts as the ute home
+    turretRounds: 120, // loaded in the sentry gun when it's set up
+    interactRange: 2.4, // Sheriff at his bench
+    // The garage: three bays under one roof outside the gate (`out` metres past the wire, `side` metres along it).
+    garage: { bays: 3, bayWidth: 4.6, depth: 7, height: 3.4, out: 9, side: 15, colors: { slab: 0x4a4a46, wall: 0x45413a, roof: 0x3a3c3a, bench: 0x4a4238, tool: 0x4a2a22, glowOff: 0x2e4a40 } },
+    // What Sheriff sells first, each once, in this order (a placeholder list: the real one is Aaron's).
+    upgrades: [
+      { id: 'coil', name: 'A hotter coil for the fence box', cost: 40, effect: 'capacity', amount: 500, done: 'the fence box holds 500 more' },
+      { id: 'plates', name: 'Plates cut from the truck for your vest', cost: 35, effect: 'armour', amount: 50, done: 'body armour +50' },
+      { id: 'shells', name: 'Shells loaded his way', cost: 30, effect: 'shells', amount: 18, done: '18 alien shells' },
+    ],
+  },
+
   // Build queue item 6: the Car Armory (world/CarArmorySite.js, render/carArmoryModel.js) and Sheriff
   // (encounters/CarArmory.js; story spine, beat 10, first half). Scaffolding: every number a first guess.
   carArmory: {

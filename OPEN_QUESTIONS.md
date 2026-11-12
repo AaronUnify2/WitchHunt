@@ -119,6 +119,21 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 754 | **Sheriff.** | In the last cage: the grey in the furthest cowboy kit the model has (hat, belt, gun). No white hat or tin star yet. Hold X for three seconds on the lock. He has three lines: "You are not one of theirs, and you are not one of mine." / "They call me Specimen Two. I call myself Sheriff." / "There is a truck with a gun on it in their motor pool. You drive." He stands outside the cage; a bell starts. | `armory.sheriff.*`, `CarArmory.free` |
 | 755 | **Nothing gates the cage.** | You can go straight to it, crouched, without touching the stores. | |
 
+**Item 7: the ute chase and the garage (PLAYTEST round 82)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 756 | **The ute is in the story.** | It stands in the Armory's motor pool from the start of a run, its nose at the gate, locked until Sheriff's out of his cage. Where it stands is saved. | `Ute.locked`, `saveState`, `UteChase.reset` |
+| 757 | **The chase is a stretch of road, not a route** (a first pass). | From the moment you get in: for as long as the ute is within 320 m of the base, up to eight dead agents appear round it every 3.5 seconds, never more than 40 at once. Thirty metres past that it's over. Nothing is scripted along the way: no roadblocks, no set pieces, no particular road. At the ute's top speed it's under half a minute; in the trees, longer. | `config.uteChase.chase` |
+| 758 | **Sheriff on the gun.** | He stands in the tray and shoots the nearest of the dead within 38 m every 0.28 s for 70: about sixty kills in 45 seconds in the headless run. You only drive; you can't take the gun while he has it. He can't be hurt during the chase. | `gunTarget`, `chase.gunEvery`, `gunDamage` |
+| 759 | **His wound** is told, not shown. | Clear of the base: "I appear to have a hole in me. Your kind's guns are something, friend." He lies down in the tray (the fallen pose stands in). After that the tray's gun is yours again (Y), as built. | `ute.clear.sheriff`, `UteChase.escaped` |
+| 760 | **Home.** | The ute inside the fence or within 20 m of it. Ellen: "There is an alien in a cowboy hat bleeding on my porch." Sheriff asks for a roof and your scrap. Wyatt: "We're keeping him, right?" Sheriff's caption carries the radio tag there because it follows Ellen's line: to fix. | `ute.home.*`, `uteChase.homeMargin` |
+| 761 | **The garage** (a placeholder). | It appears "by morning" (at once, with a line on screen): a three-bay shed outside the gate, nine metres past the wire and fifteen along it, a bench in the end bay. Outside the fence because the yard's layout is full; the dead can reach it. Should it be inside? | `uteChase.garage`, `garagePlace` |
+| 762 | **Sheriff at home.** | He stands at his bench, working. He never leaves it, isn't a target, and has nothing to say beyond his bench. | `UteChase.settle` |
+| 763 | **The turret.** | If you opened its crate at the Armory, it's set up at the station when Sheriff gets home, loaded with 120 rounds, on the pad the station already had for it. | `uteChase.turretRounds`, `StationState.turret` |
+| 764 | **His upgrades** (a placeholder list of three). | Hold X at him: the next one on the list, if you have the scrap. A hotter coil for the fence box (40 scrap: capacity +500); plates for your vest (35: body armour +50); shells loaded his way (30: 18 alien shells). Each once. No menu. DESIGN's list (guns, ammo, vehicles, the quad's ram) and its costs are yours to set. | `config.uteChase.upgrades`, `nextUpgrade` |
+| 765 | **Where the story stops.** | After this the goal reads that the next stretch (the killdozer and the portal) isn't built. | `Objectives.js` `afterSheriff` |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

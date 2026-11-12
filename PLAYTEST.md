@@ -710,6 +710,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The cages:** Sheriff in the last one. Break the lock. His three lines. Is that the right first meeting?
 - [ ] **The compound's shape:** too small, too open, about right?
 
+**Round 82: the ute chase and the garage, scaffolding (build queue item 7).** "Continue story: The ute chase" on a fresh run (you're at the cages, Sheriff's out, the ute's under the canopy by the gate). OPEN_QUESTIONS #756-765.
+- [ ] **Get in the ute.** Sheriff's on the gun; his line.
+- [ ] **Drive out of the gate and keep going.** They come from every side and he cuts them down. Is it a chase, or a drive with noise? What should be on the road?
+- [ ] **Clear:** his line; he's down in the tray.
+- [ ] **Home:** drive it to the station. The family's lines. A garage outside the gate; the turret up.
+- [ ] **His bench:** hold X three times with scrap in hand. Then: "Continue story: Sheriff home" goes straight here.
+- [ ] **Save and Continue** with the ute parked somewhere: it's where you left it.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

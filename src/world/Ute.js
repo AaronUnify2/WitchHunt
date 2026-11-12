@@ -312,7 +312,7 @@ export class Ute extends Quad {
       const p = this.player.position;
       const d = this.boxDistance(p.x, p.z);
       if (this.wheelSnare) freeing = d < this.qc.snare.range - 1;
-      else if (d < this.qc.mountRange - 1.2) {
+      else if (d < this.qc.mountRange - 1.2 && !this.locked) {
         const { lz } = this.toLocal(p.x, p.z);
         const toGun = lz > UTE.tray.front - 0.1;
         offer = toGun
@@ -359,7 +359,7 @@ export class Ute extends Quad {
   }
 
   mount(seat = 'cab') {
-    if (this.riding || this.stored || this.player.riding) return;
+    if (this.riding || this.stored || this.player.riding || this.locked) return;
     this.riding = true;
     this.seat = seat;
     this.unpark();
@@ -470,6 +470,19 @@ export class Ute extends Quad {
   }
 
   // The dead's swipes: through the door in the cab, up at him in the tray.
+  // Build queue item 7: the ute is in the story now (encounters/UteChase.js): `locked` keeps Tom out of it until
+  // Sheriff's free; where it stands is saved (null while it's stored).
+  saveState() {
+    return this.stored ? null : { x: this.x, z: this.z, heading: this.heading };
+  }
+
+  loadState(d) {
+    if (!d || !Number.isFinite(d.x) || !Number.isFinite(d.z)) return;
+    if (this.riding) this.leave();
+    this.clearMotion();
+    this.place(d.x, d.z, d.heading ?? 0);
+  }
+
   strikeScale() {
     return this.seat === 'gun' ? this.qc.strikeScale.gunner : this.qc.strikeScale.cab;
   }

@@ -75,6 +75,7 @@ import { Mothership } from '../encounters/Mothership.js';
 import { CrashedUfoSite } from '../world/CrashedUfoSite.js';
 import { CarArmorySite } from '../world/CarArmorySite.js';
 import { CarArmory } from '../encounters/CarArmory.js';
+import { UteChase } from '../encounters/UteChase.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -949,6 +950,11 @@ export class Game {
     this.carArmory.init({ scene: this.scene, site: this.armorySite, player: this.player, combat: this.combat, explosives: this.explosives, enemies: this.combat.enemies, ground: this.world.ground, lore: this.lore, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
     this.combat.promptSources.push(this.carArmory.hud);
     this.vehicles.busy?.push(this.carArmory.hud);
+    // Build queue item 7: the ute chase and the garage (encounters/UteChase.js).
+    this.uteChase = new UteChase(this.cfg, this.bus);
+    this.uteChase.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, armory: this.carArmory, ute: this.ute, player: this.player, combat: this.combat, enemies: this.combat.enemies, station: this.station, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
+    this.combat.promptSources.push(this.uteChase.hud);
+    this.vehicles.busy?.push(this.uteChase.hud);
     this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
     this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
@@ -1160,6 +1166,7 @@ export class Game {
     this.megaNight.addDebugItems(menu);
     this.mothership.addDebugItems(menu);
     this.carArmory.addDebugItems(menu);
+    this.uteChase.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1614,6 +1621,7 @@ export class Game {
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
+      ute: this.ute.saveState(), // build queue item 7: where the ute stands (optional; null until it's in the world)
       megaNight: this.megaNight.saveState(), // build queue item 4: the scorched ring's place (optional)
       dozer: this.dozer.saveState(), // build queue item 1: where the dozer stands (optional; null until it's in the world)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
@@ -1697,6 +1705,8 @@ export class Game {
     this.megaNight.reset();
     this.mothership.reset();
     this.carArmory.reset();
+    this.ute.loadState(d.ute); // build queue item 7: where the ute stood
+    this.uteChase.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1994,6 +2004,7 @@ export class Game {
     if (story) this.megaNight.update(dt, playing && this.combat.alive);
     if (story) this.mothership.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.carArmory.update(dt, controls, playing && this.combat.alive, !locked && !busy);
+    if (story) this.uteChase.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill

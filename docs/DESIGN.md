@@ -1487,6 +1487,9 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 *__As scaffolded (the build queue, item 6;__ `encounters/CarArmory.js`__):__ an open fenced compound (motor pool, supply hall, the armoured truck and its ring, a barricade, a holding block); ten Men in Black zombies; three living agents behind sandbags who shoot at anyone standing in the yard and don't see a crouched Tom; the stores, the turret's crate, a restocking explosives locker, documents 1-5 (no text yet); Sheriff freed from the last cage with three lines. OPEN_QUESTIONS #744-755.*
 
+*__As scaffolded (the build queue, item 7;__ `encounters/UteChase.js`__):__ the ute waits in the motor pool; Tom drives and Sheriff takes the tray's gun; the base's dead come in waves round the ute until it's 350 m clear; Sheriff is hurt (told in a line); home, a three-bay garage stands outside the gate with Sheriff at a bench in it, the turret is set up, and he sells a first three upgrades for scrap. OPEN_QUESTIONS #756-765.*
+
+
 *Designed with Aaron, Nov 8; not built. **Replaces** the earlier north-frontier design (a truck with a portal opening onto a government base full of Men in Black); its loot and the restocking explosives crate are kept.*
 
 **The Car Armory** is now a late, south-band story beat, not a north-frontier stop. It's the government's supply point near its main teleporter: another military-style outpost, this time **mixing alien and human technology**.

@@ -1,6 +1,27 @@
 # For Aaron
 
-**The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
+**The build queue is done: all seven items are scaffolded and on `main`.** The story now plays from Day 1 to Sheriff in his garage: the family's plan and the dozer, the bug-zapper night, the Bigfoot cave, the mega night, the mothership, the Car Armory, and the ute chase home. 1332 tests pass and the build is clean. Every beat was run headless from start to end; **none of it has been played by hand or on the tablet.**
+
+**How to play any of it:** new game, then the debug menu's first section. "Continue story" has 22 entries, one for the start of each main story beat from the crashed plane to Sheriff home. They build on a fresh run, so start a new game before each.
+
+**What scaffolding means here:** each beat is playable start to end with its goals, flags, a save, draft lines and placeholder sets. None of it is tuned, staged or written properly: that's the debug and design session on each encounter. Each item's section below says what plays, what's placeholder, and where its open questions are.
+
+**The three things I'd look at first:**
+1. **The mega night can't be lost yet** (#728). With the fence drained the night before, the family were dead by the third wave in my first run, so for now the station holds out whatever happens. It needs your call on how it's meant to be survived.
+2. **The ute chase has nothing on its road** (#757): it's waves round the truck until you're 350 m clear. It's the beat furthest from what DESIGN describes.
+3. **Bigfoot standing over you by torchlight with his hands out** (item 3) is the best moment in the new stretch as it stands. Worth seeing early.
+
+**Not built** (you cut the queue at seven): the killdozer and Ground Zero, the realm of stories, and the hut and ending joined to the story.
+
+# Build queue, item 7: the ute chase and the garage
+
+**Scaffolded and on `main`.** 1332 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The ute chase".
+- **What plays:** get in the ute → Sheriff's on the gun → out of the gate with the base's dead coming from every side → clear; he's hurt → drive home → the family's lines → a garage outside the gate, the turret up, Sheriff at his bench selling three upgrades for scrap.
+- **What's placeholder:** the chase has nothing on its road (no route, no set pieces); the garage is a shed; the upgrade list is three stand-ins.
+- **Not checked:** a whole chase steered by hand. Headless, the ute drives straight and I skipped the last stretch.
+- **For our session on it:** #756-765; PLAYTEST round 82.
 
 # Build queue, item 6: the Car Armory and Sheriff
 

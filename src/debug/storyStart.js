@@ -138,6 +138,7 @@ export const CAVE_DONE_FLAGS = ['caveFound', 'caveEntered', 'mothmanDead', 'bigf
 export const MEGA_DONE_FLAGS = ['quadMissing', 'megaNightCalled', 'megaNightStarted', 'megaNightDone'];
 export const SHIP_DONE_FLAGS = ['shipEntered', 'shipCoreTaken', 'quadReturned', 'shipCoreFitted'];
 export const ARMORY_DONE_FLAGS = ['armorySeen', 'armoryLooted', 'turretFound', 'armoryDocs', 'sheriffFreed'];
+export const UTE_DONE_FLAGS = ['uteTaken', 'uteEscaped', 'sheriffHome'];
 
 // "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
 // beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
@@ -158,6 +159,7 @@ export const STORY_POINTS = [
   { id: 'ufo', label: 'The crashed UFO: the mega night survived, the ship ahead, its beam standing' },
   { id: 'armory', label: "The Car Armory: the ship's core fitted, the base's gate ahead" },
   { id: 'ute', label: 'The ute chase: Sheriff freed, the alarms going' },
+  { id: 'sheriffHome', label: "Sheriff home: the garage, the turret, his bench (the end of what's built)" },
 ];
 
 // Which flags a start point sets on top of the outpost's (explored).
@@ -182,15 +184,16 @@ export function laterFlags(point) {
     case 'ufo': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS];
     case 'armory': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS, ...SHIP_DONE_FLAGS];
     case 'ute': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS, ...SHIP_DONE_FLAGS, ...ARMORY_DONE_FLAGS];
+    case 'sheriffHome': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS, ...SHIP_DONE_FLAGS, ...ARMORY_DONE_FLAGS, ...UTE_DONE_FLAGS];
     default: return [];
   }
 }
 
 // The points that put Tom just outside the cabin door, and those with the dozer parked outside the gate.
-const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight']);
-const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight', 'ufo', 'armory', 'ute']);
-const AFTER_CAVE = new Set(['megaNight', 'ufo', 'armory', 'ute']);
-const AFTER_SHIP = new Set(['armory', 'ute']);
+const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight', 'sheriffHome']);
+const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight', 'ufo', 'armory', 'ute', 'sheriffHome']);
+const AFTER_CAVE = new Set(['megaNight', 'ufo', 'armory', 'ute', 'sheriffHome']);
+const AFTER_SHIP = new Set(['armory', 'ute', 'sheriffHome']);
 
 // The jump: the outpost cleared and explored, then on to `point`.
 //  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
@@ -287,10 +290,17 @@ export function startFromLater(game, point) {
       const at = s.toWorld(0, -34);
       g.alienQuad?.place?.(at.x + 3, at.z - 2, s.place.yaw + Math.PI);
       if (point === 'armory') face(at.x, at.z, s.place.x, s.place.z);
-      else face(s.spots.cage.x, s.spots.cage.z - 0.01, s.spots.ute.x, s.spots.ute.z);
+      else if (point === 'ute') face(s.spots.out.x - 1.5, s.spots.out.z - 1.5, s.spots.ute.x, s.spots.ute.z);
     }
   }
   g.carArmory?.reset();
+  if (point === 'sheriffHome' && g.uteChase?.garageAt) {
+    // The ute pulled up in the garage's first bay.
+    const bay = g.uteChase.bays[0];
+    g.ute.loadState({ x: bay.x, z: bay.z, heading: g.uteChase.garageAt.yaw });
+    g.combat.inventory.addScrap?.(80); // (something to spend at his bench)
+  }
+  g.uteChase?.reset();
   g.mothership?.reset();
   if (DOZER_AT_HOME.has(point) && g.cordonDozer?.ready) {
     // parked outside the gate, its blade toward home

@@ -289,7 +289,14 @@ export class Objectives {
       todo.push(ar.site.spots.cage);
       return steps('armoryIn', 'Search the Car Armory: its stores, its files, and whatever they are keeping in the cages at the back. Someone in there is alive, and shooting.', todo);
     }
-    if (has('sheriffFreed')) return step('uteGo', 'The alarms are going. Get Sheriff to the truck in the motor pool.', ar?.site?.spots?.ute ?? null); // (a holding goal until build queue item 7)
+    // ---- the ute chase and the garage (build queue item 7) ----
+    const uc = g.uteChase;
+    if (has('sheriffFreed') && uc?.ready && !has('sheriffHome')) {
+      if (!has('uteTaken')) return step('uteGo', 'The alarms are going. Get to the truck in the motor pool: Sheriff will take its gun.', g.ute);
+      if (!has('uteEscaped')) return step('uteRun', 'Drive. Get clear of the base.', ar.site.spots.gate);
+      return step('uteHome', 'Sheriff is hurt. Get him home.', L.cabin.frontDoor);
+    }
+    if (has('sheriffHome')) return step('afterSheriff', "Sheriff's in the garage outside the gate. Bring him scrap. (The story's next stretch, the killdozer and the portal, isn't built yet.)", uc?.sheriffSpot ?? null);
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

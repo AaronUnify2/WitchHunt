@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 6 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the mothership; the Car Armory and Sheriff). 1326 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: all seven items (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the mothership; the Car Armory and Sheriff; the ute chase and the garage). 1332 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,17 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 7: the ute chase and the garage (scaffolding)
+
+- **The beat** (`encounters/UteChase.js`, `config.uteChase`; flags `uteTaken`, `uteEscaped`, `sheriffHome`, `sheriffUpgrade1`-`3`): the ute placed in the motor pool and unlocked when Sheriff's freed; the chase (waves through `enemies.spawnPlanned` with a `mib` mix, Sheriff's gun through `enemies.damage`); clear of the base; home; the garage shown and made solid; the turret installed; the bench.
+- **The ute in the story** (`world/Ute.js`): `locked`, `saveState` / `loadState` (the save's `ute`).
+- **Sheriff moves with the story:** the Car Armory's `sheriff` look is placed by `UteChase.placeSheriff` (the tray, then the bench) once `carArmory.sheriffAway` is set, and drawn from here when Tom's far from the base.
+- **Pure:** `gunTarget`, `chaseWave`, `garagePlace`, `nextUpgrade`.
+- **Goals:** `uteGo`, `uteRun`, `uteHome`, then `afterSheriff` (the end of what's built).
+- **Continue story:** `ute` (its start), `sheriffHome` (the last point: 22 in all).
+- **Tests:** `tests/uteChase.test.js` (6). 1332 pass. **Checked headless** on seed 1234: the ute's own prompt at the bay, in through the real mount, Sheriff in the tray, out through the gate under throttle, 45 seconds of the chase (59 kills, never more than 40 alive), clear, home, the garage, the turret (120 rounds), three upgrades bought through the real input (capacity 3000 to 3500, scrap 200 to 95), the lines, the save. No page errors. **Not checked:** a whole chase driven by steering (the headless ute goes straight and stops in the trees past the gate; the last 280 m were skipped).
+- **Placeholder:** the chase's road; Sheriff's wound; the garage; the upgrade list.
 
 ### The build queue, item 6: the Car Armory and Sheriff (scaffolding)
 
