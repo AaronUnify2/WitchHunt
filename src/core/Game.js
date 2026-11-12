@@ -769,6 +769,7 @@ export class Game {
     this.stairs.init({
       scene: this.scene,
       site: this.stairsSite,
+      moths: this.moths, // Session 32: the swarm that keeps the stairs
       beyond: this.placeBeyond,
       player: this.player,
       ground: this.world.ground,

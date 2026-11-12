@@ -44,7 +44,7 @@ export function followStep(jx, jz, tx, tz, dt, f) {
   return { x: jx + (dx / d) * step, z: jz + (dz / d) * step, moving: true, snapped: false };
 }
 
-const FLAGS = ['stairsSeen', 'stairsClimbed', 'junieFound', 'junieHome'];
+const FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound', 'junieHome'];
 const JUNIE = 2;
 
 export class Stairs {
@@ -57,7 +57,7 @@ export class Stairs {
   }
 
   // ctx: { scene, site (StairsSite), beyond (PlaceBeyond), player, ground, station, cutscenes, dialogue,
-  // subtitles, progress, interiors, demo, notify, sfx, rng() }.
+  // subtitles, progress, interiors, demo, notify, sfx, rng(), moths (ai/Moths.js: Session 32) }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
@@ -92,6 +92,7 @@ export class Stairs {
 
   reset() {
     this.state = 'idle';
+    this.swarm = null; // Session 32: the moths at the stairs: null, a countdown (seconds), or 'up'
     this.lineTimer = this.nextLineGap();
     this.lines = 0;
     if (this.following) this.spawnJunie();
@@ -118,6 +119,7 @@ export class Stairs {
         this.cutscenes?.play('stairs.sight');
       }
       if (this.following) this.updateFollow(dt);
+      this.updateMoths(dt, d);
     }
     if (this.junie) this.junie.mesh.visible = this.following && outside && !this.player.riding && !this.cutscenes?.active;
     if (this.junie) this.renderer.update(dt, this.player.camera.position);
@@ -138,15 +140,55 @@ export class Stairs {
       this.hud.prompt = this.has('junieHome') ? "You're not going up there again" : this.following ? '' : 'A staircase up to nothing. Clean, as if someone dusts it';
       return;
     }
+    // Session 32: not with the moths on him.
+    if (this.guarded) {
+      this.hold.update(dt, null, false, 1);
+      this.hud.progress = 0;
+      this.hud.prompt = this.swarm === 'up' ? 'Not with those things on you' : '';
+      return;
+    }
     const done = this.hold.update(dt, 'climb', input.isDown('interact'), this.ec.climbSeconds);
     if (done) this.climb();
     this.hud.prompt = this.hold.active ? 'Climbing…' : `Hold ${X}: climb the stairs`;
     this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
   }
 
+  // Session 32: the stairs are kept. While Junie's up there, the first time Tom comes into the clearing a swarm
+  // of giant moths drops out of the treetops; he can't climb until the last of them is down. Once (a flag):
+  // left unfinished (a save, a respawn), they come again.
+  get guarded() {
+    return Boolean(this.moths) && this.has('junieTaken') && !this.has('junieFound') && !this.has('stairsMoths');
+  }
+
+  updateMoths(dt, d) {
+    if (!this.guarded || this.cutscenes?.active) return;
+    const M = this.ec.moths;
+    if (this.swarm === null) {
+      if (d < M.within && this.has('stairsSeen')) this.swarm = M.after;
+      return;
+    }
+    if (this.swarm === 'up') {
+      if ((this.moths.living ?? 0) > 0) return;
+      this.set('stairsMoths');
+      this.swarm = null;
+      this.notify?.('The last of them drops in the leaves. Nothing else moves. The stairs are still there.');
+      this.bus.emit('stairs:clear');
+      return;
+    }
+    this.swarm -= dt;
+    if (this.swarm > 0) return;
+    const n = this.moths.send(M.count);
+    this.swarm = 'up';
+    if (n > 0) {
+      this.sfx?.play('mothWake', this.site.spots.foot);
+      this.notify?.('The treetops round the clearing let go of something. Moths, the size of dogs, and they\'ve seen you.');
+      this.bus.emit('stairs:moths', { count: n });
+    }
+  }
+
   // 2: up the stairs, into the place beyond.
   climb() {
-    if (this.following || !this.has('junieTaken')) return;
+    if (this.following || !this.has('junieTaken') || this.guarded) return;
     this.state = 'climbing';
     this.set('stairsClimbed');
     this.bus.emit('stairs:climbed');

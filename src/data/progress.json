@@ -50,6 +50,7 @@
     {"id": "capsuleRead", "about": "Session 26: the 1903 account read (at the church, or later from the ledger)."},
     {"id": "stairsKnown", "about": "Session 26: Tom knows of the stairs in the woods from the 1903 account: their clearing's on the map (the fog lifted round it, its name shown: encounters.json revealedBy)."},
     {"id": "stairsSeen", "about": "Session 26: Tom has seen the stairs in the woods (the held first look; encounters/Stairs.js)."},
+    {"id": "stairsMoths", "about": "The stairs in the woods: the swarm of giant moths that kept them is dead (Session 32); the stairs can be climbed."},
     {"id": "stairsClimbed", "about": "Session 26 (story spine, beat 5): Tom has climbed the stairs into the place beyond."},
     {"id": "junieFound", "about": "Session 26: Tom found Junie in the place beyond (three silent paths in a row). She follows him home; she can't be hurt."},
     {"id": "junieHome", "about": "Session 26/27 (story spine, beat 5): Tom has brought Junie home from the place beyond. The family are three again."},

@@ -35,6 +35,7 @@ import * as THREE from 'three';
 import { DEBUG } from '../debug/DebugMenu.js';
 import { Rng } from '../core/Rng.js';
 import { startWalk, choosePath, exitSide, sideVector, opposite } from '../world/placeBeyond.js';
+import { buildBole, buildCrown, buildFern, paint } from '../render/oldGrowth.js';
 
 const ID = 'placeBeyond';
 
@@ -120,8 +121,9 @@ export class PlaceBeyond {
     const pc = this.pc;
     const look = this.story ? { ...pc, ...pc.story } : pc;
     this.lean = this.story ? pc.story.lean : 0;
-    if (this.trunks) this.trunks.material.color.setHex(look.trunkColor ?? pc.trunk.color);
-    if (this.canopies) this.canopies.material.color.setHex(look.canopyColor ?? pc.canopy.color);
+    // Session 32: old growth, painted for the place (its own roles' colours; the spike's, or the story's).
+    const palette = (this.story ? pc.story.oldGrowth : null) ?? pc.oldGrowth;
+    for (const m of [this.trunks, this.canopies, this.ferns]) if (m) paint(m.geometry, palette);
     if (this.floorMesh) this.floorMesh.material.color.setHex(look.floorColor ?? pc.floor.color);
     if (this.dome) this.dome.material.color.setHex(look.fogColor ?? pc.light.fogColor);
   }
@@ -154,15 +156,19 @@ export class PlaceBeyond {
     const s = pc.treeSpacing;
     for (let x = -pc.half + s / 2; x < pc.half; x += s) for (let z = -pc.half + s / 2; z < pc.half; z += s) this.spots.push({ x, z });
     const n = this.spots.length;
-    const t = pc.trunk;
-    const trunkGeo = own(new THREE.CylinderGeometry(t.radiusTop, t.radiusBottom, t.height, 6));
-    trunkGeo.translate(0, t.height / 2, 0);
-    const c = pc.canopy;
-    const canopyGeo = own(new THREE.ConeGeometry(c.radius, c.height, 7));
-    canopyGeo.translate(0, c.base + c.height / 2, 0);
-    this.trunks = new THREE.InstancedMesh(trunkGeo, own(new THREE.MeshLambertMaterial({ color: t.color })), n);
-    this.canopies = new THREE.InstancedMesh(canopyGeo, own(new THREE.MeshLambertMaterial({ color: c.color })), n);
-    for (const m of [this.trunks, this.canopies]) {
+    // Session 32 (Aaron: the placeholder cylinders and cones): old growth (render/oldGrowth.js): great boles
+    // with buttress roots and moss, crowns far overhead, ferns between. Three instanced meshes.
+    const trunkGeo = own(paint(buildBole(), pc.oldGrowth));
+    const canopyGeo = own(paint(buildCrown(), pc.oldGrowth));
+    const fernGeo = own(paint(buildFern(), pc.oldGrowth));
+    this.boleRadius = trunkGeo.userData.radius;
+    const lit = () => own(new THREE.MeshLambertMaterial({ vertexColors: true }));
+    this.trunks = new THREE.InstancedMesh(trunkGeo, lit(), n);
+    this.canopies = new THREE.InstancedMesh(canopyGeo, lit(), n);
+    const fernMat = lit();
+    fernMat.side = THREE.DoubleSide;
+    this.ferns = new THREE.InstancedMesh(fernGeo, fernMat, pc.ferns);
+    for (const m of [this.trunks, this.canopies, this.ferns]) {
       m.frustumCulled = false; // one pocket, always round Tom
       group.add(m);
     }
@@ -198,9 +204,10 @@ export class PlaceBeyond {
       const x = sp.x + rng.range(-pc.treeJitter, pc.treeJitter);
       const z = sp.z + rng.range(-pc.treeJitter, pc.treeJitter);
       const keep = rng.next() < pc.treeKeep;
-      const onPath = Math.abs(x) < pc.pathHalf + 0.8 || Math.abs(z) < pc.pathHalf + 0.8;
-      if (!keep || onPath || Math.hypot(x, z) < pc.clearingRadius * (this.wide ? 1.5 : 1)) continue;
       const k = 1 + rng.range(-pc.sizeJitter, pc.sizeJitter);
+      const girth = (this.boleRadius ?? 1) * k;
+      const onPath = Math.abs(x) < pc.pathHalf + girth + 0.5 || Math.abs(z) < pc.pathHalf + girth + 0.5;
+      if (!keep || onPath || Math.hypot(x, z) < pc.clearingRadius * (this.wide ? 1.5 : 1) + girth) continue;
       q.setFromAxisAngle(up, rng.range(0, Math.PI * 2));
       // Session 26 (the story's look): every tree leans a little in toward the clearing's middle.
       if (this.lean) {
@@ -211,7 +218,7 @@ export class PlaceBeyond {
       m.compose(pos.set(x, 0, z), q, scl.set(k, k, k));
       this.trunks.setMatrixAt(i, m);
       this.canopies.setMatrixAt(i, m);
-      const r = pc.trunk.radiusBottom * k + 0.05;
+      const r = girth * 0.8;
       this.blocks.push([x - r, x + r, z - r, z + r]);
       i++;
     }
@@ -219,6 +226,20 @@ export class PlaceBeyond {
       mesh.count = i;
       mesh.instanceMatrix.needsUpdate = true;
     }
+    // The ferns: anywhere but the trodden middle of a path or the clearing's own middle, never inside a bole.
+    let f = 0;
+    for (let tries = 0; f < pc.ferns && tries < pc.ferns * 6; tries++) {
+      const x = rng.range(-pc.half, pc.half);
+      const z = rng.range(-pc.half, pc.half);
+      if (Math.abs(x) < pc.pathHalf * 0.6 || Math.abs(z) < pc.pathHalf * 0.6 || Math.hypot(x, z) < pc.clearingRadius * 0.55) continue;
+      if (this.blocks.some(([x0, x1, z0, z1]) => x > x0 && x < x1 && z > z0 && z < z1)) continue;
+      const k = rng.range(0.7, 1.5);
+      q.setFromAxisAngle(up, rng.range(0, Math.PI * 2));
+      m.compose(pos.set(x, 0, z), q, scl.set(k, k * rng.range(0.8, 1.2), k));
+      this.ferns.setMatrixAt(f++, m);
+    }
+    this.ferns.count = f;
+    this.ferns.instanceMatrix.needsUpdate = true;
     if (this.platform) this.platform.blocks = this.blocks;
   }
 

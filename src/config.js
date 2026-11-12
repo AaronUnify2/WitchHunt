@@ -3821,9 +3821,13 @@ export const config = {
       pathHalf: 2.2, // a path's half-width (no trees on it)
       exitReach: 30, // walk this far out along a path and it's taken
       entryInset: 5, // metres in from the edge Tom arrives at
-      treeSpacing: 3.2, // a grid of trees, each jittered...
-      treeJitter: 1.3, // ...by up to this
+      // Session 32 (Aaron: "a more old growth forest kind of look"): fewer trees, each a giant (render/oldGrowth.js).
+      treeSpacing: 6.2, // a grid of trees, each jittered...
+      treeJitter: 2.1, // ...by up to this
       treeKeep: 0.8, // ...and kept with this chance
+      ferns: 260, // ferns over the floor between them, each clearing's dealt afresh
+      // The old growth's colours (roles: render/oldGrowth.js), for the spike and for the story's look.
+      oldGrowth: { bark: 0x3a3026, barkDark: 0x2a231c, moss: 0x2c3a24, crown: 0x1d2a22, crownDark: 0x16201a, fern: 0x2e4226, fernDark: 0x22331e },
       trunk: { radiusTop: 0.18, radiusBottom: 0.32, height: 9, color: 0x2a2620 },
       canopy: { radius: 2.0, height: 7, base: 3.5, color: 0x1d2a22 },
       floor: { color: 0x3a3d33 },
@@ -3832,7 +3836,7 @@ export const config = {
       light: { ambientDay: 2.6, ambientNight: 1.5, ambientColor: 0xa0a8b4, fogColor: 0x5d6469, fogNear: 2, fogFar: 26 },
       // Session 26: its look in the story (encounters/PlaceBeyond.js applyLook): the forest slightly off.
       // Bone-grey trunks, blue-black crowns, a dead floor, the fog closer (storyLight), every tree leaning in (radians).
-      story: { trunkColor: 0x55534c, canopyColor: 0x1a2226, floorColor: 0x30322c, fogColor: 0x4c5356, lean: 0.07 },
+      story: { trunkColor: 0x55534c, canopyColor: 0x1a2226, floorColor: 0x30322c, fogColor: 0x4c5356, lean: 0.05, oldGrowth: { bark: 0x5a5850, barkDark: 0x45433d, moss: 0x3a4438, crown: 0x1a2226, crownDark: 0x12181c, fern: 0x4a5a4e, fernDark: 0x38463e } }, // Session 32: the old growth in bone grey under blue-black
       storyLight: { ambientDay: 2.2, ambientNight: 1.4, ambientColor: 0x98a4b0, fogColor: 0x4c5356, fogNear: 1, fogFar: 19 },
     },
     // A flying enemy (the Mothman's flyovers and dives; DESIGN.md "The
@@ -5187,6 +5191,18 @@ export const config = {
   // encounters/PlaceBeyond.js (config.spikes.placeBeyond, its story look below).
   stairs: {
     radius: 14,
+    // Session 32 (Aaron: the old-growth look "applied to the forest clearing where the stair in the woods is"):
+    // a stand of giants ringing the clearing (render/oldGrowth.js; world/StairsSite.js). count of them between
+    // ring[0] and ring[1] metres outside the clearing's edge, none within `gap` radians of the way in, none
+    // nearer each other than `apart`; `ferns` under them. Three draw calls.
+    oldGrowth: {
+      count: 16,
+      ring: [1.5, 12],
+      gap: 0.34,
+      apart: 5.5,
+      ferns: 80,
+      colors: { bark: 0x34291f, barkDark: 0x261e17, moss: 0x263420, crown: 0x1a2a1e, crownDark: 0x142018, fern: 0x2a3e22, fernDark: 0x1e2e1a },
+    },
     look: {
       // Unlit (MeshBasicMaterial): these show as they are, day or night, so they're kept darker than a lit set's.
       colors: { paint: 0x4c4a44, paintDark: 0x3a3936, tread: 0x382a1e, carpet: 0x3c1c20, brass: 0x584826 },
@@ -5195,6 +5211,10 @@ export const config = {
       needs: 'stairsKnown',
       arriveDistance: 15, // metres from the foot: the first sight of it (a held look, once), inside its clearing so no trunk's in the way
       climbRange: 1.8, // metres from the foot: hold X to climb
+      // Session 32 (Aaron: "a little bit anticlimactic... chuck in a swarm of moths"; his number: 8): giant moths
+      // come down out of the treetops `after` seconds after Tom's within `within` metres of the foot, while
+      // Junie's up there. The stairs can't be climbed until the last of them is down.
+      moths: { count: 8, after: 1.5, within: 22 },
       climbSeconds: 1.2,
       follow: { gap: 1.7, speed: 4.6, catchUp: 9, snap: 28 }, // Junie behind Tom on the way home: metres behind, her walk (m/s), faster beyond catchUp metres, put beside him past snap
       homeRadius: 0, // metres past the fence's radius: inside it, the homecoming (0: at the fence)

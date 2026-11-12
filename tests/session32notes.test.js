@@ -189,3 +189,121 @@ describe('Junie taken, told where he wakes (note 11)', () => {
     expect(goals).not.toContain("Your radio's quiet. Head home.");
   });
 });
+
+// ---- the moths that keep the stairs (note 13) -------------------------------------------------------
+import { Stairs } from '../src/encounters/Stairs.js';
+
+describe('the moths at the stairs (note 13)', () => {
+  const rig = (flags = ['junieTaken', 'stairsSeen']) => {
+    const set = new Set(flags);
+    const said = [];
+    const moths = { living: 0, sent: [], send(n) { this.sent.push(n); this.living = n; return n; } };
+    const foot = { x: 0, y: 0, z: 0 };
+    const player = { position: { x: 0, y: 0, z: -10 }, camera: { position: { x: 0, y: 1.7, z: -10 } }, riding: null };
+    const s = new Stairs(config, { on() {}, emit() {} });
+    let climbed = 0;
+    s.init({ site: { place: { x: 0, z: 2, yaw: 0 }, spots: { foot, top: { x: 0, y: 3, z: 4 } } }, beyond: {}, player, ground: { heightAt: () => 0 }, progress: { has: (f) => set.has(f), setFlag: (f) => set.add(f) }, notify: (t) => said.push(t), moths, cutscenes: { active: false, namedAnchors: new Map(), play() { return false; } } });
+    s.climb = () => { climbed++; };
+    const input = { activeDevice: 'gamepad', down: false, isDown() { return this.down; } };
+    const tick = (sec) => { for (let t = 0; t < sec; t += 0.05) s.update(0.05, input, true, true); };
+    return { s, set, said, moths, player, input, tick, climbed: () => climbed };
+  };
+  const M = config.stairs.encounter.moths;
+
+  it('eight of them come down a moment after he walks in, while Junie’s up there', () => {
+    expect(M.count).toBe(8);
+    const r = rig();
+    r.tick(M.after - 0.3);
+    expect(r.moths.sent).toEqual([]);
+    r.tick(0.6);
+    expect(r.moths.sent).toEqual([8]);
+    r.tick(5);
+    expect(r.moths.sent.length).toBe(1); // once
+  });
+
+  it('keeps him off the stairs until the last one’s down', () => {
+    const r = rig();
+    r.tick(M.after + 0.2);
+    r.player.position.z = -0.5; // at the foot
+    r.input.down = true;
+    r.tick(3);
+    expect(r.climbed()).toBe(0);
+    expect(r.s.hud.prompt).toContain('Not with those things');
+    r.moths.living = 0;
+    r.tick(0.2);
+    expect(r.set.has('stairsMoths')).toBe(true);
+    r.tick(config.stairs.encounter.climbSeconds + 0.3);
+    expect(r.climbed()).toBeGreaterThan(0);
+  });
+
+  it('sends none before she’s taken, nor once they’re dealt with', () => {
+    const a = rig(['stairsSeen']);
+    a.tick(6);
+    expect(a.moths.sent).toEqual([]);
+    const b = rig(['junieTaken', 'stairsSeen', 'stairsMoths']);
+    b.tick(6);
+    expect(b.moths.sent).toEqual([]);
+  });
+});
+
+// ---- old growth (note 14) -------------------------------------------------------------------------
+import { buildBole, buildCrown, buildFern, paint, ringStand, ROLES, OLD_GROWTH } from '../src/render/oldGrowth.js';
+
+describe('old growth (note 14)', () => {
+  it('builds a giant: a bole with buttress roots and moss, a crown far overhead, a fern, each one geometry', () => {
+    const bole = buildBole();
+    const crown = buildCrown();
+    const fern = buildFern();
+    const tris = (g) => g.attributes.position.count / 3;
+    expect(tris(bole)).toBeGreaterThan(150);
+    expect(tris(bole)).toBeLessThan(600);
+    expect(tris(crown)).toBeLessThan(400);
+    expect(tris(fern)).toBeLessThan(30);
+    bole.computeBoundingBox();
+    crown.computeBoundingBox();
+    expect(bole.boundingBox.max.y).toBeGreaterThan(OLD_GROWTH.height - 1); // tall
+    expect(bole.boundingBox.max.x - bole.boundingBox.min.x).toBeGreaterThan(5); // its roots and limbs reach out
+    expect(crown.boundingBox.min.y).toBeGreaterThan(8); // nothing of the crown down where Tom walks
+    expect(bole.userData.radius).toBeGreaterThan(1); // too big to reach round
+    // Every vertex has a role, and the bole wears bark and moss.
+    const roles = new Set(Array.from(bole.attributes.role.array));
+    expect(roles.has(ROLES.indexOf('moss'))).toBe(true);
+    expect(roles.has(ROLES.indexOf('bark'))).toBe(true);
+  });
+
+  it('paints one geometry for two places, in dull colours (the glare rule)', () => {
+    const g = buildBole();
+    for (const palette of [config.stairs.oldGrowth.colors, config.spikes.placeBeyond.oldGrowth, config.spikes.placeBeyond.story.oldGrowth]) {
+      for (const r of ROLES) expect(palette[r], r).toBeGreaterThan(0);
+      paint(g, palette);
+      const col = g.attributes.color;
+      let max = 0;
+      for (let i = 0; i < col.count; i++) max = Math.max(max, col.getX(i), col.getY(i), col.getZ(i));
+      expect(max).toBeLessThan(0.3);
+    }
+  });
+
+  it('rings the stairs’ clearing with them, the way in left open', () => {
+    const og = config.stairs.oldGrowth;
+    let seed = 7;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+    const R = config.stairs.radius;
+    const toward = 1.1;
+    const trees = ringStand(og.count, R + og.ring[0], R + og.ring[1], toward, og.gap, og.apart, rand);
+    expect(trees.length).toBeGreaterThanOrEqual(12);
+    for (const t of trees) {
+      const r = Math.hypot(t.x, t.z);
+      expect(r).toBeGreaterThanOrEqual(R + og.ring[0] - 1e-6); // outside the clearing: its floor stays clear
+      let d = Math.atan2(t.x, t.z) - toward;
+      d -= Math.round(d / (Math.PI * 2)) * Math.PI * 2;
+      expect(Math.abs(d)).toBeGreaterThanOrEqual(og.gap);
+    }
+    for (let i = 0; i < trees.length; i++) for (let j = i + 1; j < trees.length; j++) expect(Math.hypot(trees[i].x - trees[j].x, trees[i].z - trees[j].z)).toBeGreaterThanOrEqual(og.apart);
+  });
+
+  it('thins the place beyond to giants, with room on its paths', () => {
+    const pc = config.spikes.placeBeyond;
+    expect(pc.treeSpacing).toBeGreaterThan(5);
+    expect(pc.ferns).toBeGreaterThan(50);
+  });
+});
