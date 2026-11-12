@@ -90,6 +90,43 @@ function smooth(t) {
   return t * t * (3 - 2 * t);
 }
 
+// Session 27 (pure): the spike maul's pose at t (0..1 through the swing, 1 at rest), from
+// config.viewModel.smash: rest -> raised (the lift, eased), raised -> down (the drop, accelerating:
+// gravity), held down with a small bounce (the jolt), down -> rest.
+export function smashPose(sm, t) {
+  const keys = ['yaw', 'pitch', 'roll', 'x', 'y'];
+  const out = {};
+  let from;
+  let to;
+  let k;
+  if (t >= 1) return { ...sm.rest };
+  if (t < sm.windup) {
+    from = sm.rest;
+    to = sm.raised;
+    k = smooth(t / sm.windup);
+  } else if (t < sm.strike) {
+    from = sm.raised;
+    to = sm.down;
+    const u = (t - sm.windup) / (sm.strike - sm.windup);
+    k = u * u; // falling: slow off the top, fastest at the bottom
+  } else if (t < sm.settle) {
+    from = sm.down;
+    to = sm.down;
+    k = 0;
+  } else {
+    from = sm.down;
+    to = sm.rest;
+    k = smooth((t - sm.settle) / (1 - sm.settle));
+  }
+  for (const key of keys) out[key] = from[key] + (to[key] - from[key]) * k;
+  // The jolt: a quick dip and bounce just after the head lands.
+  if (t >= sm.strike && t < sm.settle) {
+    const u = (t - sm.strike) / (sm.settle - sm.strike);
+    out.y -= sm.jolt * Math.exp(-u * 5) * Math.cos(u * 9);
+  }
+  return out;
+}
+
 // Colours of the woodwork and steel.
 const WALNUT = 0x6a4428;
 const DARK_WALNUT = 0x553520;
@@ -252,6 +289,7 @@ export class ViewModel {
       thermal: this.buildThermalRifle(),
       autoShotgun: this.buildAutoShotgun(),
       shovel: this.buildShovel(),
+      spikeMaul: this.buildSpikeMaul(), // Session 27
       detonator: this.buildDetonator(),
       hands: { group: new THREE.Group() }, // Session 15b: nothing in hand
     };
@@ -569,6 +607,27 @@ export class ViewModel {
     return { group };
   }
 
+  // Session 27: the railroad spike maul: a long hickory handle, dark with a century of hands and
+  // weather, and the long slender head across its end (two tapered striking faces), rust-brown iron
+  // with the faces worn bright. Handle along -z; the head across it, up and down (y), so an overhead
+  // smash lands on a face.
+  buildSpikeMaul() {
+    const group = new THREE.Group();
+    this.mesh([
+      [rod(0.017, 0.86, 0x4e3824, 8, 0.021), 0, 0, -0.25], // the handle, thicker toward the head
+      [rod(0.02, 0.06, 0x3a2818, 8), 0, 0, 0.16], // the knob at the end
+    ], group, this.woodMaterial);
+    this.mesh([
+      [box(0.05, 0.13, 0.055, 0x3a3029), 0, 0, -0.69], // the eye, round the handle's end
+      [shade(new THREE.CylinderGeometry(0.019, 0.034, 0.17, 8).translate(0, 0.15, 0), 0x3a3029), 0, 0, -0.69], // the faces, tapering out
+      [shade(new THREE.CylinderGeometry(0.034, 0.019, 0.17, 8).translate(0, -0.15, 0), 0x3a3029), 0, 0, -0.69],
+      [shade(new THREE.CylinderGeometry(0.02, 0.02, 0.012, 8).translate(0, 0.24, 0), 0x8a8a84), 0, 0, -0.69], // worn bright
+      [shade(new THREE.CylinderGeometry(0.02, 0.02, 0.012, 8).translate(0, -0.24, 0), 0x8a8a84), 0, 0, -0.69],
+      [box(0.03, 0.02, 0.03, 0x2a241e), 0, 0.07, -0.69], // the wedge in the eye
+    ], group);
+    return { group };
+  }
+
   // M7: the remote detonator: a grey box, a stubby aerial and a red button.
   buildDetonator() {
     const group = new THREE.Group();
@@ -657,7 +716,8 @@ export class ViewModel {
     g.position.set(base.x + swayX, base.y + swayY - drop, base.z + this.kick * c.kickBack);
     g.rotation.set(this.kick * c.kickRotate - dipHold, 0, 0);
 
-    if (melee) this.updateSwing(g, weapons);
+    if (melee && weapons.weapon.swing === 'smash') this.updateSmash(g, weapons);
+    else if (melee) this.updateSwing(g, weapons);
     else this.slash.visible = false;
     if (model.pump) model.pump.position.z = -0.3 + Math.max(0, Math.sin(Math.min(1, weapons.shotTime / weapons.weapon.fireInterval) * Math.PI)) * 0.08;
 
@@ -756,6 +816,21 @@ export class ViewModel {
     this.slash.scale.x = d; // mirrored for a left-to-right swing
     this.slashUniforms.uHead.value = t < sl.strike ? head : 1 + sl.tail * smooth(after);
     this.slashUniforms.uFade.value = 1 - smooth(after) * 0.6;
+  }
+
+  // Session 27: the spike maul's overhead smash: lifted slowly over the right shoulder, dropped
+  // fast to the middle, held a beat where it landed (a jolt on the impact), hauled back to rest. No
+  // trail and no mirroring: every swing is the same blow.
+  updateSmash(g, weapons) {
+    this.slash.visible = false;
+    const sm = this.cfg.smash;
+    const t = Math.min(1, weapons.swingTime / sm.seconds);
+    const pose = smashPose(sm, t);
+    g.rotation.x += pose.pitch;
+    g.rotation.y = pose.yaw;
+    g.rotation.z = pose.roll;
+    g.position.x += pose.x;
+    g.position.y += pose.y;
   }
 
   dispose() {

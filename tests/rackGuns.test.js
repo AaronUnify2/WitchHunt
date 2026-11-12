@@ -10,7 +10,7 @@ describe('the guns on the rack (Session 23)', () => {
   it('has a look for every gun that can go on the rack', () => {
     const L = config.weapons.loadout;
     for (const id of Object.keys(L.slotOf)) {
-      if (L.tools.includes(id)) continue;
+      if (L.tools.includes(id) || L.slotOf[id] === 'melee') continue; // Session 27: melee weapons never go on the rack (weapons.found)
       expect(show.guns[id], id).toBeTruthy();
     }
   });

@@ -235,3 +235,19 @@ export function meleeTarget(eye, fx, fz, enemies, reach, arcRad) {
   }
   return best;
 }
+
+// Session 27: every target in a heavy swing's arc (the spike maul cleaves), nearest first, at most
+// `max`. The same test as meleeTarget's, for each.
+export function meleeTargets(eye, fx, fz, enemies, reach, arcRad, max = 3) {
+  const out = [];
+  for (const e of enemies) {
+    const dx = e.x - eye.x;
+    const dz = e.z - eye.z;
+    const dist = Math.hypot(dx, dz);
+    if (dist - e.hitRadius > reach) continue;
+    const angle = dist < 1e-6 ? 0 : Math.acos(Math.max(-1, Math.min(1, (dx * fx + dz * fz) / dist))) - Math.atan(e.hitRadius / dist);
+    if (angle <= arcRad / 2) out.push({ e, dist });
+  }
+  out.sort((a, b) => a.dist - b.dist);
+  return out.slice(0, max).map((h) => h.e);
+}

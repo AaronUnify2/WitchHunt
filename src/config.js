@@ -1140,7 +1140,7 @@ export const config = {
       slotOf: {
         rifle: 'long', shotgun: 'long', sniper: 'long', thermal: 'long', autoShotgun: 'long',
         pistol: 'sidearm', smg: 'sidearm',
-        shovel: 'melee',
+        shovel: 'melee', spikeMaul: 'melee',
       },
       tools: ['shovel'],
       rackName: "the comms room's gun rack",
@@ -1181,6 +1181,32 @@ export const config = {
       magSize: 0,
       recoilDegrees: 0,
       noise: 4, // metres: zombies this close hear it (silent, near enough)
+    },
+    // Session 27: the railroad spike maul (the railway cutting; DESIGN.md "Weapons"): a heavy sledge for
+    // the melee slot, slower than the shovel and much harder. An overhead smash (config.viewModel.smash):
+    // a slow lift, a fast drop; it connects at the bottom of the drop. It cleaves: everything in its arc,
+    // up to `cleave`, each further one taking `cleaveKeep` of the last's damage. A miss hits the ground
+    // (a thud and a jolt). Swinging it slows Tom for `slowSeconds`. It knocks rusted iron loose too (the
+    // powder store's bar, the cowcatcher's bolts: encounters/RailwayCutting.js).
+    spikeMaul: {
+      name: 'Railroad spike maul',
+      kind: 'melee',
+      swing: 'smash',
+      damage: 65, // a level 1 citizen (60) in one; police and army in two
+      reach: 2.5,
+      arcDegrees: 60,
+      fireInterval: 1.15,
+      hitDelay: 0.5, // the bottom of the drop (config.viewModel.smash: strike x seconds)
+      stagger: 1.2,
+      knockback: 3.4,
+      cleave: 3,
+      cleaveKeep: 0.65,
+      slowSeconds: 0.75, // Tom's slowed this long after a swing (the shovel: fireSlowSeconds)
+      shake: 0.35, // the camera's jolt on a hit (the shovel's is 0.15)
+      thudShake: 0.12, // on a miss: the head into the ground
+      magSize: 0,
+      recoilDegrees: 0,
+      noise: 9, // metres: a sledge's thump carries further than a shovel's
     },
     // M7: the remote for planted charges (combat/Explosives.js). A slot only
     // while charges are out or in hand; RT sets them all off.
@@ -1465,6 +1491,19 @@ export const config = {
       fadeAfter: 0.3, // share of the swing it takes to fade after the slash
       color: 0xe6f0ff,
       intensity: 1.3, // above 1, so the bloom catches it
+    },
+    // Session 27: the spike maul's overhead smash (the shovel's slash's poses, the same keys; nothing
+    // mirrors). A slow lift over the right shoulder (windup), a fast drop to the middle (strike: the
+    // hit, weapons.spikeMaul.hitDelay), held on the ground a beat (settle), then hauled back to rest.
+    smash: {
+      seconds: 1.1,
+      rest: { yaw: -0.35, pitch: 0.78, roll: -0.5, x: 0.06, y: -0.3 },
+      windup: 0.34,
+      strike: 0.46,
+      settle: 0.62,
+      raised: { yaw: -0.12, pitch: 2.05, roll: -0.18, x: 0.02, y: 0.12 },
+      down: { yaw: 0.04, pitch: -0.2, roll: 0.03, x: -0.17, y: 0.03 }, // the head on the ground just below the middle of the view
+      jolt: 0.05, // metres the view model jumps on the impact
     },
     muzzleFlashSeconds: 0.05,
     muzzleFlashColor: 0xffd890,

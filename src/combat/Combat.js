@@ -121,9 +121,17 @@ export class Combat {
       }),
       bus.on('enemy:charge', ({ zombie }) => this.sfx.play('charge', zombie)),
       bus.on('enemy:helmetOff', ({ x, z }) => this.sfx.play('helmetOff', { x, z })), // Session 17
-      bus.on('weapon:hit', ({ killed, part, melee }) => {
+      bus.on('weapon:hit', ({ killed, part, melee, id, x, z, first }) => {
         this.hud.hitMarker(killed, part === 'head' || part === 'weak');
-        if (melee) this.sfx.play('shovelHit');
+        // Session 27: the maul's own crunch (once per swing, however many it cleaves through).
+        if (melee && id === 'spikeMaul') {
+          if (first !== false) this.sfx.play(killed ? 'maulKill' : 'maulHit');
+          if (x !== undefined) this.fx.dust(x, this.player.position.y + 1.0, z);
+        } else if (melee) this.sfx.play('shovelHit');
+      }),
+      bus.on('weapon:thud', ({ x, z }) => {
+        this.fx.dust(x, this.ground?.heightAt?.(x, z) ?? this.player.position.y, z);
+        this.sfx.play('maulThud');
       }),
       bus.on('weapon:fired', ({ id }) => {
         const cam = this.player.camera;
@@ -136,7 +144,7 @@ export class Combat {
         this.fx.dust(x, y, z);
         this.sfx.play('impact', { x, z });
       }),
-      bus.on('weapon:swing', () => this.sfx.play('swing')),
+      bus.on('weapon:swing', ({ id } = {}) => this.sfx.play(id === 'spikeMaul' ? 'maulSwing' : 'swing')),
       bus.on('weapon:reload', () => this.sfx.play('reload')),
       bus.on('weapon:loaded', () => this.sfx.play('loaded')),
       bus.on('weapon:empty', () => this.sfx.play('empty')),
@@ -460,6 +468,7 @@ export class Combat {
       const w = this.cfg.weapons[id];
       player.addItem(`Give the ${w.name.toLowerCase()} (+${w.debugRounds} rounds)`, () => this.giveWeapon(id, w.debugRounds));
     }
+    player.addItem('Give the railroad spike maul (Session 27)', () => this.giveWeapon('spikeMaul'));
     player.addItem(`Give armour (+${d.giveArmour} ballistic)`, () => this.armour.add('ballistic', d.giveArmour));
     // Session 20: kits that don't fit go to the comms room's box, as a pickup's would.
     const giveKits = (kind, n) => {

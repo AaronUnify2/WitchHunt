@@ -21,7 +21,7 @@ import * as THREE from 'three';
 import { WeaponState } from '../combat/WeaponState.js';
 import { slotOf } from './loadout.js';
 import { aimSlowdown } from '../combat/aimAssist.js';
-import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, partMultiplier, meleeFromBehind, helmetPart } from '../combat/hitscan.js';
+import { rayEnemiesAll, rayBlockers, falloff, spreadDirection, meleeTarget, meleeTargets, partMultiplier, meleeFromBehind, helmetPart } from '../combat/hitscan.js';
 
 // Which part counts when several pellets of one shot land: the best one.
 const PART_RANK = { body: 0, helmet: 0.5, head: 1, weak: 2 }; // Session 17: 'helmet', a headshot an army helmet stopped
@@ -258,11 +258,11 @@ export class Weapons {
       return;
     }
     if (!s.fire()) return;
-    this.fireSlow = this.cfg.fireSlowSeconds;
+    this.fireSlow = w.slowSeconds ?? this.cfg.fireSlowSeconds; // Session 27: the maul's heavier
     if (w.kind === 'melee') {
       this.meleeTimer = w.hitDelay;
       this.swingTime = 0;
-      this.bus.emit('weapon:swing');
+      this.bus.emit('weapon:swing', { id: this.id });
     } else {
       this.shotTime = 0;
       this.fireHitscan(w);
@@ -334,14 +334,28 @@ export class Weapons {
     const w = this.weapon;
     if (w.kind !== 'melee') return;
     const flat = Math.hypot(this.forward.x, this.forward.z) || 1;
-    const target = meleeTarget(this.eye, this.forward.x / flat, this.forward.z / flat, this.targets(), w.reach, w.arcDegrees * DEG_TO_RAD);
-    if (!target) return;
-    const at = { x: target.x, y: this.eye.y - 0.4, z: target.z };
-    // A swing from behind a mutant lands on its weak spot.
-    const part = meleeFromBehind(this.eye, target) ? 'weak' : 'body';
-    const killed = this.applyHit(target, w.damage * partMultiplier(target, part, 1), part, w, at, this.eye);
-    this.player.shake(0.15);
-    this.bus.emit('weapon:hit', { killed, part, melee: true });
+    const fx = this.forward.x / flat;
+    const fz = this.forward.z / flat;
+    // Session 27: a heavy weapon cleaves through everything in its arc (the nearest first).
+    const hits = w.cleave > 1 ? meleeTargets(this.eye, fx, fz, this.targets(), w.reach, w.arcDegrees * DEG_TO_RAD, w.cleave) : [meleeTarget(this.eye, fx, fz, this.targets(), w.reach, w.arcDegrees * DEG_TO_RAD)].filter(Boolean);
+    if (!hits.length) {
+      // The maul's head into the ground (or the air): a thud and a jolt.
+      if (w.thudShake) {
+        this.player.shake(w.thudShake);
+        this.bus.emit('weapon:thud', { id: this.id, x: this.eye.x + fx * w.reach * 0.7, z: this.eye.z + fz * w.reach * 0.7 });
+      }
+      return;
+    }
+    let scale = 1;
+    for (const target of hits) {
+      const at = { x: target.x, y: this.eye.y - 0.4, z: target.z };
+      // A swing from behind a mutant lands on its weak spot.
+      const part = meleeFromBehind(this.eye, target) ? 'weak' : 'body';
+      const killed = this.applyHit(target, w.damage * scale * partMultiplier(target, part, 1), part, w, at, this.eye);
+      this.bus.emit('weapon:hit', { killed, part, melee: true, id: this.id, x: target.x, z: target.z, first: scale === 1 });
+      scale *= w.cleaveKeep ?? 1;
+    }
+    this.player.shake(w.shake ?? 0.15);
   }
 
   // Controller look slows over a zombie's body or head (stronger aimed).

@@ -969,6 +969,52 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 3500, gain: 1 });
     s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 900, endFreq: 60, gain: 0.2 });
   },
+  // Session 27: the railroad spike maul. A heavy, slow whoosh (low, rising late as it drops).
+  maulSwing(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 220, endFreq: 900, q: 1.2, gain: 0.55, attack: 0.3 });
+    s.tone(o, { seconds: 0.4, wave: 'sine', freq: 70, endFreq: 110, gain: 0.12, attack: 0.3 });
+  },
+  // Iron into a body: a deep thunk and the crunch under it.
+  maulHit(s) {
+    const o = s.out();
+    s.tone(o, { seconds: 0.3, freq: 110, endFreq: 42, gain: 1 });
+    s.noiseBurst(o, { seconds: 0.12, type: 'lowpass', freq: 900, endFreq: 300, gain: 0.9 });
+    s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 2400, q: 2, gain: 0.5 }); // the crack
+  },
+  // One it drops: the same, wetter and heavier, a second crunch after.
+  maulKill(s) {
+    const o = s.out();
+    s.tone(o, { seconds: 0.4, freq: 95, endFreq: 35, gain: 1.1 });
+    s.noiseBurst(o, { seconds: 0.18, type: 'lowpass', freq: 1100, endFreq: 200, gain: 1 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.1, type: 'bandpass', freq: 700, q: 1.5, gain: 0.6 }), 70);
+  },
+  // Its head into the ground: a dull thump, dirt.
+  maulThud(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.tone(o, { seconds: 0.25, freq: 75, endFreq: 38, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.2, type: 'lowpass', freq: 500, endFreq: 120, gain: 0.6 });
+  },
+  // Wrenched out of the tie it's been driven into for a century: a creak, a scrape, a pop.
+  maulPull(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 140, endFreq: 95, gain: 0.08, attack: 0.2 });
+    s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 600, endFreq: 1400, q: 2, gain: 0.4, attack: 0.2 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.08, type: 'lowpass', freq: 800, gain: 0.8 }), 650);
+  },
+  // Iron on old iron: a ringing clang, a rattle (the powder store's bar; the cowcatcher's bolts).
+  ironClang(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.tone(o, { seconds: 1.1, wave: 'triangle', freq: 640, endFreq: 610, gain: 0.25 });
+    s.tone(o, { seconds: 0.9, wave: 'triangle', freq: 1510, endFreq: 1480, gain: 0.1 });
+    s.noiseBurst(o, { seconds: 0.06, type: 'highpass', freq: 2500, gain: 0.7 });
+  },
+  // A rusted bolt shearing.
+  boltSnap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 3000, gain: 0.9 });
+    s.tone(o, { seconds: 0.3, wave: 'square', freq: 900, endFreq: 300, gain: 0.08 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

@@ -100,8 +100,8 @@ export class WeaponCross {
     return {
       flareGun: { owned: true, name: 'Flare gun', weapon: null, note: `${flares} flare${flares === 1 ? '' : 's'} · always to hand on Y` },
       dynamite: { owned: false, name: 'Dynamite' },
-      // The melee bar (Session 25): the shovel now; the railroad spike maul and the chainsaw are designed, not built.
-      spikeMaul: { owned: Boolean(this.weapons?.has('spikeMaul')), name: 'Railroad spike maul', note: 'melee' },
+      // The melee bar (Session 25): the shovel, the railroad spike maul (Session 27: the railway cutting); the chainsaw's designed, not built.
+      spikeMaul: { owned: Boolean(this.weapons?.has('spikeMaul')), name: 'Railroad spike maul', weapon: 'spikeMaul', note: 'melee · heavy: slow, cleaves' },
       chainsaw: { owned: Boolean(this.weapons?.has('chainsaw')), name: 'Chainsaw', note: 'melee' },
       charges: { owned: Boolean(this.weapons?.order.includes('detonator')), name: 'Military explosives', weapon: 'detonator', note: 'the detonator' },
     };
@@ -343,6 +343,19 @@ function drawIcon(id, wcfg) {
     g.moveTo(80, 66);
     g.quadraticCurveTo(84, 80, 88, 72);
     g.stroke();
+  } else if (id === 'spikeMaul') {
+    // Session 27: the long handle, the long slender head across its end.
+    rect(14, 62, 78, 6); // the handle
+    rect(10, 60, 8, 10); // the knob
+    g.beginPath(); // the head: two tapered faces either side of the eye
+    g.moveTo(88, 64);
+    g.lineTo(96, 28);
+    g.lineTo(104, 28);
+    g.lineTo(108, 64);
+    g.lineTo(104, 100);
+    g.lineTo(96, 100);
+    g.closePath();
+    g.fill();
   } else if (id === 'shovel') {
     rect(20, 60, 64, 6); // the shaft
     rect(14, 54, 10, 18); // the D-grip

@@ -107,7 +107,7 @@ export class ZombieDirector {
       bus.on('player:hurt', () => this.digging.interrupt()),
       bus.on('player:respawned', () => this.digging.init()),
       bus.on('weapon:fired', ({ id }) => this.onNoise(this.cfg.weapons[id]?.noise ?? 0)),
-      bus.on('weapon:swing', () => this.onNoise(this.cfg.weapons.shovel.noise ?? 0)),
+      bus.on('weapon:swing', ({ id } = {}) => this.onNoise(this.cfg.weapons[id]?.noise ?? this.cfg.weapons.shovel.noise ?? 0)),
     ];
   }
 
