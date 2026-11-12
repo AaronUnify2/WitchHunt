@@ -228,6 +228,20 @@ export class Objectives {
       if (has('planeCellTaken')) return step('planeCell', "Fit the plane's alien power cell to the fence box. Ellen wants the fence stronger.", L.fenceBox);
       return step('planeCellBack', 'Go back to the crashed plane and search the creature. Ellen wants what it dropped, for the fence.', pl.grey);
     }
+    // ---- the family's plan and the army's dozer (build queue item 1) ----
+    const dz = g.cordonDozer;
+    if (has('cellAsked') && dz?.ready && !has('dozerHome')) {
+      if (!has('familyPlan')) return step('plan', 'Go inside. The family have been talking.', L.cabin.frontDoor);
+      if (!has('earlMaps')) return step('earlMaps', "Fetch Earl's maps from the corkboard in his storm shelter, east of home.", sh?.hatchAt ?? sh?.frame);
+      if (!has('dozerTaken')) {
+        if (!has('dozerSeen')) return step('dozerFind', "Follow the cordon east to where the army's clearing crew stopped. Their dozer has a winch.", dz.site.place);
+        if (!has('dozerKey')) return step('dozerKey', "Find the dozer's keys in the crew's camp.", dz.site.spots.box);
+        if (!has('dozerBattery')) return step('dozerBattery', "The dozer's battery is dead. Fit the spare from beside the generator.", g.combat.inventory.batteries > 0 ? g.dozer : dz.site.spots.battery);
+        return step('dozerStart', 'Climb up on the dozer.', g.dozer);
+      }
+      return step('dozerHome', 'Drive the dozer home, through the checkpoint.', L.cabin.frontDoor);
+    }
+    if (has('dozerHome') && !has('blessingBuried')) return step('zapperPrep', "The dozer's home. Fill the fence. Tonight the family call the Mothman down.", L.fenceBox);
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

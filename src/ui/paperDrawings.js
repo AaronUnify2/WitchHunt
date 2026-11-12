@@ -92,7 +92,42 @@ function trapMap() {
 </svg>`;
 }
 
-const DRAWINGS = { stairs, trapMap };
+// Earl's map of the north ridge (build queue item 1): the road running north past his store to where it
+// stops, the ridge's contour, the creek, and thirty years of sightings as Xs, bunched round the road's end.
+function earlMaps() {
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  const end = { x: 128, y: 40 };
+  const marks = [];
+  for (let i = 0; i < 26; i++) {
+    const far = i > 20;
+    const a = rand() * Math.PI * 2;
+    const r = far ? 40 + rand() * 45 : 5 + rand() * 24;
+    const x = Math.max(10, Math.min(240, end.x + Math.cos(a) * r));
+    const y = Math.max(10, Math.min(150, end.y + Math.sin(a) * r * 0.8 + (far ? 30 : 4)));
+    marks.push(`<path d="M${(x - 2.5).toFixed(1)} ${(y - 2.5).toFixed(1)} l5 5 m0 -5 l-5 5" />`);
+  }
+  return `<svg class="paper-drawing" viewBox="0 0 250 185" role="img" aria-label="A hand-drawn map of a ridge, a road that stops, and many small crosses bunched round the road's end">
+  <g fill="none" stroke="${PENCIL}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 30 C 50 10, 90 26, 126 18 S 210 8, 246 26" stroke="${SOFT}" />
+    <path d="M6 44 C 52 24, 92 40, 110 30 M150 30 C 190 24, 220 22, 246 40" stroke="${SOFT}" />
+    <path d="M10 150 C 60 138, 80 160, 130 146 S 210 150, 244 134" stroke="${SOFT}" stroke-dasharray="5 3" />
+    <path d="M124 176 C 122 140, 132 100, 128 ${end.y + 4}" stroke-width="2.2" />
+    <path d="M132 176 C 130 140, 140 100, 136 ${end.y + 4}" stroke-width="2.2" />
+    <path d="M118 ${end.y + 3} h28" stroke-width="2.6" />
+    <rect x="142" y="112" width="14" height="10" />
+    <circle cx="${end.x + 4}" cy="${end.y - 6}" r="15" stroke-dasharray="2 3" />
+    ${marks.join('\n    ')}
+  </g>
+  <text x="160" y="120" class="paper-drawing-caption">STORE</text>
+  <text x="150" y="${end.y + 7}" class="paper-drawing-caption">ROAD ENDS</text>
+  <text x="${end.x + 24}" y="${end.y - 12}" class="paper-drawing-caption">HIS DOOR?</text>
+  <text x="14" y="162" class="paper-drawing-caption">creek</text>
+  <text x="125" y="183" text-anchor="middle" class="paper-drawing-caption">to town</text>
+</svg>`;
+}
+
+const DRAWINGS = { stairs, trapMap, earlMaps };
 
 // The SVG for a drawing id, or '' if there's none.
 export function drawingSvg(id) {

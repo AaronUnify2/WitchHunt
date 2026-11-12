@@ -3535,6 +3535,80 @@
       "duration": 25.9
     },
     {
+      "id": "sweep.cordonDozer",
+      "name": "Arriving at the clearing crew's camp (establishing sweep)",
+      "style": "sweep",
+      "world": "run",
+      "unseen": true,
+      "_note": "Build queue item 1 (scaffolding): anchor dozerCamp (encounters/CordonDozer.js: ahead is up the cut to the machine; x right as you walk in). High over the stumps, the strip running back toward the fence; down past the log deck and the tent; in on the dozer, its blade against the first tree they didn't fell.",
+      "camera": [
+        {
+          "at": 0,
+          "anchor": "dozerCamp",
+          "pos": [
+            3,
+            9,
+            -30
+          ],
+          "look": [
+            0,
+            2,
+            2
+          ]
+        },
+        {
+          "at": 3.0,
+          "anchor": "dozerCamp",
+          "pos": [
+            9,
+            3.4,
+            -14
+          ],
+          "look": [
+            2,
+            1.2,
+            2
+          ]
+        },
+        {
+          "at": 5.6,
+          "anchor": "dozerCamp",
+          "pos": [
+            4.5,
+            2.2,
+            -3
+          ],
+          "look": [
+            0,
+            1.6,
+            6.5
+          ]
+        },
+        {
+          "at": 7.6,
+          "anchor": "dozerCamp",
+          "pos": [
+            3.2,
+            1.9,
+            0.5
+          ],
+          "look": [
+            -0.2,
+            1.5,
+            7
+          ]
+        }
+      ],
+      "tracks": [
+        {
+          "at": 0.3,
+          "do": "sfx",
+          "sfx": "windGust"
+        }
+      ],
+      "duration": 8.2
+    },
+    {
       "id": "sweep.oldChurch",
       "name": "Arriving at the old church (establishing sweep)",
       "style": "sweep",

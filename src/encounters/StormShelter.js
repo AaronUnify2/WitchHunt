@@ -454,6 +454,7 @@ export class StormShelter {
       let bestD = this.sc.roomRange;
       for (const pt of this.points) {
         if (!pt.below || this.searched.has(pt.id)) continue;
+        if (pt.needs && !this.progress?.has(pt.needs)) continue; // (Earl's maps: only once the family have asked for them)
         const d = dist(pt);
         if (d < bestD) {
           best = pt;
@@ -492,6 +493,9 @@ export class StormShelter {
   search(pt) {
     this.searched.add(pt.id);
     switch (pt.id) {
+      case 'maps': // build queue item 1: Earl's maps off the corkboard (encounters/CordonDozer.js takes it from here)
+        this.bus.emit('stormShelter:maps', { device: this.device });
+        break;
       case 'diary':
         this.props?.setTaken('diary', true);
         this.lore?.give('pruittDiary');

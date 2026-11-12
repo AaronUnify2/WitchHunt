@@ -731,7 +731,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4468,6 +4468,29 @@ export const config = {
     // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
     // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
+  // Build queue item 1: the clearing crew's camp at the end of the cordon strip, and the dozer's beat (story
+  // spine, beats 6-7; DESIGN.md "Bigfoot cave and the Mothman fight"). The set: render/dozerCampModel.js,
+  // world/DozerCampSite.js; the beat: encounters/CordonDozer.js. Scaffolding: every number a first guess.
+  dozerCamp: {
+    radius: 22, // metres from its middle the set reaches (for drawing it)
+    encounter: {
+      needs: 'cellAsked', // Ellen's asked for the power cell: the plan is the next thing said at home
+      planAfter: 1.5, // seconds indoors with the family before they start
+      sweepDistance: 34, // metres from the camp's middle: the arrival sweep (once)
+      crewWithin: 60, // metres: the crew's dead are there by the time he's this near
+      crew: 6, // engineers in fatigues
+      linger: 8, // metres each wanders from where it stood
+      interactRange: 1.9,
+      boxScrap: 8, // in the job box with the keys
+      homeMargin: 16, // metres outside the fence's ring that still counts as the dozer home
+    },
+    look: {
+      weather: { rust: [0x3a3c3a, 0x2c2e2c, 0x4a4a30, 0x4a2a22], grimeHeight: 0.3, keepBright: [] },
+      // Dull, all of them (the glare rule): olive canvas, army plant yellow gone to mustard, sawn wood kept dark.
+      colors: { bark: 0x2e261e, cut: 0x6a5a40, sawdust: 0x5c5038, needles: 0x1e2a1c, stake: 0x5e5642, tape: 0x8a4a22, canvas: 0x3c4230, pole: 0x4a4032, rope: 0x5a5440, cot: 0x34382c, blanket: 0x40443a, table: 0x4a4638, paper: 0x7a7462, radio: 0x23261f, steel: 0x3a3c3a, steelDark: 0x2c2e2c, iron: 0x26241f, plant: 0x4a4a30, lampDead: 0x3a3a34, charger: 0x4a2a22, cable: 0x1a1a1a, drum: 0x4a2a22, jerry: 0x343a2a, saw: 0x5a3a22, battery: 0x1c1c1e },
+    },
   },
 
   // Session 26: the old church and the time capsule (story spine, beat 4;

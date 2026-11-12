@@ -168,6 +168,15 @@
       "z": 0.9,
       "label": "take the tape out of the VCR",
       "seconds": 0.8
+    },
+    {
+      "id": "maps",
+      "below": true,
+      "needs": "familyPlan",
+      "x": -0.45,
+      "z": 1.05,
+      "label": "take Earl's maps off the corkboard",
+      "seconds": 1.0
     }
   ]
 }

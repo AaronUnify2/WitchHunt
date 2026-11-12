@@ -23,7 +23,8 @@
 //    driving away drags it, holding Y / F reels it in; B / R again lets go.
 //  - A / Space: the horn. D-pad right / H: the work lights. Black smoke
 //    when it works hard. The loudest thing in the woods.
-// Not saved itself (the trees and trails it leaves are: LandClearing).
+// Build queue item 1: in the story (encounters/CordonDozer.js): `locked` keeps Tom off it until it has its keys
+// and a battery; where it stands is saved (saveState).
 //
 // Events: 'dozer:mounted', 'dozer:dismounted', 'tree:felled' (LandClearing).
 
@@ -244,7 +245,7 @@ export class Dozer extends Quad {
       const p = this.player.position;
       const d = this.boxDistance(p.x, p.z);
       if (this.wheelSnare) freeing = d < this.qc.snare.range - 1;
-      else if (d < this.qc.mountRange - 1.2) offer = { key: 'dozer-on', prompt: `Hold ${X}: climb up on the dozer`, seconds: this.qc.mountSeconds, act: () => this.mount() };
+      else if (d < this.qc.mountRange - 1.2 && !this.locked) offer = { key: 'dozer-on', prompt: `Hold ${X}: climb up on the dozer`, seconds: this.qc.mountSeconds, act: () => this.mount() };
     }
     if (this.wheelSnare && !this.riding) {
       if (freeing && input.wasPressed('interact')) this.mash += 1 / this.qc.snare.presses;
@@ -275,7 +276,7 @@ export class Dozer extends Quad {
   }
 
   mount() {
-    if (this.riding || this.stored || this.player.riding) return;
+    if (this.riding || this.stored || this.player.riding || this.locked) return;
     this.riding = true;
     this.unpark();
     const p = this.player;
@@ -1207,6 +1208,19 @@ export class Dozer extends Quad {
       climbers: this.climbers.size,
       hint: pad ? 'RT blade down · LT blade up · B winch · hold Y reel · A horn · hold X off' : 'Mouse blade down · Right blade up · R winch · hold F reel · Space horn · hold E off',
     });
+  }
+
+  // Build queue item 1: the dozer is in the story now, so where it stands is saved (null while it's stored).
+  saveState() {
+    return this.stored ? null : { x: this.x, z: this.z, heading: this.heading };
+  }
+
+  loadState(d) {
+    if (!d || !Number.isFinite(d.x) || !Number.isFinite(d.z)) return;
+    if (this.riding) this.leave();
+    this.unpark();
+    this.clearMotion();
+    this.place(d.x, d.z, d.heading ?? 0);
   }
 
   // ---- debug ------------------------------------------------------------------------------------------

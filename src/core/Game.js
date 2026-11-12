@@ -66,6 +66,8 @@ import { Quad } from '../world/Quad.js';
 import { Ute } from '../world/Ute.js';
 import { AlienQuad } from '../world/AlienQuad.js';
 import { Dozer } from '../world/Dozer.js';
+import { DozerCampSite } from '../world/DozerCampSite.js';
+import { CordonDozer } from '../encounters/CordonDozer.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -101,7 +103,7 @@ import { Beetles } from '../ai/Beetles.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
-import { startFromOutpostCleared, startFromLater } from '../debug/storyStart.js';
+import { startFromOutpostCleared, startFromLater, STORY_POINTS } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -170,6 +172,8 @@ export class Game {
     this.churchSite.init(this.scene, this.world, this.colliders);
     this.stairsSite = new StairsSite(this.cfg); // Session 26: the stairs in the woods
     this.stairsSite.init(this.scene, this.world, this.colliders);
+    this.dozerCampSite = new DozerCampSite(this.cfg); // build queue item 1: the clearing crew's camp on the cordon strip
+    this.dozerCampSite.init(this.scene, this.world, this.colliders);
     this.barnSite = new MiloBarnSite(this.cfg); // Milo's barn (an optional encounter)
     this.barnSite.init(this.scene, this.world, this.colliders);
     this.cuttingSite = new RailwayCuttingSite(this.cfg); // Session 27: the railway cutting (an optional encounter)
@@ -664,6 +668,11 @@ export class Game {
     this.dozer = new Dozer(this.cfg, this.bus);
     this.dozer.init({ ...ctx, clearing: this.clearing, vehicles: this.vehicles });
     this.experimental = [this.ute, this.alienQuad, this.dozer];
+    // Build queue item 1: the family's plan and the army's dozer (encounters/CordonDozer.js).
+    this.cordonDozer = new CordonDozer(this.cfg, this.bus);
+    this.cordonDozer.init({ site: this.dozerCampSite, dozer: this.dozer, player: this.player, combat: this.combat, station: this.station, cutscenes: this.cutscenes, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, paper: this.paper, enemies: this.combat.enemies, demo: this.demo, sfx: this.combat.sfx, notify: (text) => this.toast.show(text) });
+    this.combat.promptSources.push(this.cordonDozer.hud);
+    this.vehicles.busy?.push(this.cordonDozer.hud);
     for (const v of this.experimental) {
       this.combat.promptSources.push(v.hud);
       this.vehicles.busy?.push(v.hud);
@@ -1066,10 +1075,8 @@ export class Game {
       startFromLater(this, point);
       this.debugMenu.close();
     };
-    start.addItem('The plane: the grey down, what it dropped still to pick up', later('greyDown'));
-    start.addItem('The plane done: waking at the wreck at dawn (the account and the clip follow)', later('planeDone'));
-    start.addItem('Junie found: at the stairs, the quad beside you, the walk home ahead', later('junieFound'));
-    start.addItem('Junie home: inside the gate (Ellen asks for the power cell)', later('junieHome'));
+    // Aaron, Nov 12: "a continue story option for each main story encounter".
+    for (const s of STORY_POINTS) start.addItem(`Continue story: ${s.label}`, later(s.id));
     const time = menu.category(DEBUG.time);
     time.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     time.addItem('Skip to night', () => this.skipToPhase('night'));
@@ -1112,6 +1119,7 @@ export class Game {
     this.caller.addDebugItems(menu);
     this.church.addDebugItems(menu);
     this.stairs.addDebugItems(menu);
+    this.cordonDozer.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1566,6 +1574,7 @@ export class Game {
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
+      dozer: this.dozer.saveState(), // build queue item 1: where the dozer stands (optional; null until it's in the world)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
       homeStop: this.homeStop.saveState(), // Session 18 (optional)
       roadNorth: this.roadNorth.saveState(), // Session 21: the brush in front of the cave (optional)
@@ -1639,6 +1648,8 @@ export class Game {
     this.junieTaken.reset();
     this.church.reset();
     this.stairs.reset();
+    this.dozer.loadState(d.dozer); // build queue item 1: where the dozer stood
+    this.cordonDozer.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1828,6 +1839,7 @@ export class Game {
     this.hollerSite.update(camera.position, this.drawDistance);
     this.mineSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
+    this.dozerCampSite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
@@ -1927,6 +1939,7 @@ export class Game {
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
+    if (story) this.cordonDozer.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill
@@ -1994,6 +2007,7 @@ export class Game {
     this.mineshaft.dispose();
     this.mineBeetles.dispose();
     this.stairsSite.dispose();
+    this.dozerCampSite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);

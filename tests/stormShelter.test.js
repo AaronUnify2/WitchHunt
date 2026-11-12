@@ -60,7 +60,7 @@ describe('the storm shelter', () => {
     }
     const ids = shelter.searches.map((s) => s.id);
     for (const id of ['diary', 'tapes']) expect(ids).toContain(id);
-    expect(ids.sort()).toEqual(['diary', 'tapes']);
+    expect(ids.sort()).toEqual(['diary', 'maps', 'tapes']); // build queue item 1: Earl's maps on the corkboard (story, offered once the family ask)
     expect(shelter.searches.some((s) => s.gives || s.loot)).toBe(false);
     const lore = new Set(loreData.items.map((i) => i.id));
     expect(lore.has('pruittDiary') && lore.has('pruittTapes')).toBe(true);

@@ -130,15 +130,45 @@ export const JUNIE_TOLD_FLAGS = ['junieTaken', 'familyAccount', 'junieClipSeen']
 export const CHURCH_FLAGS = ['churchVisited', 'plaqueRead', 'capsuleDug', 'capsuleOpened', 'capsuleRead', 'stairsKnown'];
 export const JUNIE_FOUND_FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound'];
 
-// Which flags a start point sets on top of the outpost's: 'greyDown' | 'planeDone' | 'junieFound' | 'junieHome'.
+export const PLAN_FLAGS = ['junieHome', 'cellAsked', 'planeCellFitted'];
+export const DOZER_CAMP_FLAGS = ['familyPlan', 'earlMaps'];
+export const DOZER_HOME_FLAGS = ['dozerSeen', 'dozerKey', 'dozerBattery', 'dozerTaken', 'dozerHome'];
+
+// "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
+// beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
+// Add a beat's point here, its flags to laterFlags and its placing to startFromLater when the beat is built.
+export const STORY_POINTS = [
+  { id: 'plane', label: 'The crashed plane: through the checkpoint, the wreck ahead' },
+  { id: 'greyDown', label: 'The plane: the grey down, what it dropped still to pick up' },
+  { id: 'planeDone', label: 'Junie taken: waking at the wreck at dawn (the account and the clip follow)' },
+  { id: 'church', label: 'The old church: told about Junie, the church ahead' },
+  { id: 'stairs', label: 'The stairs: the 1903 account read, the stairs ahead (the moths keep them)' },
+  { id: 'junieFound', label: 'Junie found: at the stairs, the quad beside you, the walk home ahead' },
+  { id: 'junieHome', label: 'Junie home: inside the gate (Ellen asks for the power cell)' },
+  { id: 'plan', label: "The family's plan: the cell fitted, the family waiting indoors" },
+  { id: 'dozerCamp', label: "The army's dozer: Earl's maps read, the crew's camp ahead" },
+  { id: 'dozerHome', label: 'The dozer home: the bug-zapper night next' },
+];
+
+// Which flags a start point sets on top of the outpost's (explored).
 export function laterFlags(point) {
   const down = PLANE_DOWN_FLAGS;
-  if (point === 'greyDown') return [...down];
-  if (point === 'planeDone') return [...down, ...PLANE_DONE_FLAGS];
-  const found = [...down, ...PLANE_DONE_FLAGS, ...JUNIE_TOLD_FLAGS, ...CHURCH_FLAGS, ...JUNIE_FOUND_FLAGS];
-  if (point === 'junieFound') return found;
-  if (point === 'junieHome') return [...found, 'junieHome'];
-  return [];
+  const told = [...down, ...PLANE_DONE_FLAGS, ...JUNIE_TOLD_FLAGS];
+  const found = [...told, ...CHURCH_FLAGS, ...JUNIE_FOUND_FLAGS];
+  const plan = [...found, ...PLAN_FLAGS];
+  switch (point) {
+    case 'plane': return ['crossedCordon'];
+    case 'greyDown': return [...down];
+    case 'planeDone': return [...down, ...PLANE_DONE_FLAGS];
+    case 'church': return told;
+    case 'stairs': return [...told, ...CHURCH_FLAGS];
+    case 'junieFound': return found;
+    case 'junieHome': return [...found, 'junieHome'];
+    case 'plan': return plan;
+    case 'dozerCamp': return [...plan, ...DOZER_CAMP_FLAGS];
+    case 'dozerHome': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS];
+    default: return [];
+  }
 }
 
 // The jump: the outpost cleared and explored, then on to `point`.
@@ -177,10 +207,40 @@ export function startFromLater(game, point) {
     const yaw = g.stairsSite.place.yaw;
     g.player.teleport(f.x - Math.sin(yaw) * 4, f.z - Math.cos(yaw) * 4, yaw);
     g.quad?.place?.(f.x - Math.sin(yaw) * 6 + Math.cos(yaw) * 3, f.z - Math.cos(yaw) * 6 - Math.sin(yaw) * 3, yaw);
-  } else if (point === 'junieHome') {
+  } else if (point === 'junieHome' || point === 'plan' || point === 'dozerHome') {
     const L = g.station.layout;
     const d = L.cabin.frontDoor;
     g.player.teleport(d.x + (d.x - L.cabin.x) * 0.6, d.z + (d.z - L.cabin.z) * 0.6, g.player.yaw);
+    if (point !== 'junieHome' && g.station.state.capacity < 1000) g.station.state.fitPowerCell?.('planeCell');
+  } else if (point === 'plane' && g.plane?.ready) {
+    const cp = g.world.map.cluster.checkpoint;
+    const w = g.plane.spot('work');
+    face(cp.x, cp.z + 14, w.x, w.z);
+  } else if (point === 'church' && g.church?.ready) {
+    const c = g.churchSite.place;
+    const at = g.churchSite.toWorld(0, -46);
+    face(at.x, at.z, c.x, c.z);
+  } else if (point === 'stairs' && g.stairs?.ready) {
+    const f = g.stairsSite.spots.foot;
+    const yaw = g.stairsSite.place.yaw;
+    face(f.x - Math.sin(yaw) * 34, f.z - Math.cos(yaw) * 34, f.x, f.z);
+  } else if (point === 'dozerCamp' && g.cordonDozer?.ready) {
+    const s = g.dozerCampSite;
+    const at = s.toWorld(0, -52);
+    face(at.x, at.z, s.place.x, s.place.z);
+    g.quad?.place?.(at.x + 3, at.z, g.player.yaw);
+  }
+  g.cordonDozer?.reset();
+  if (point === 'dozerHome' && g.cordonDozer?.ready) {
+    // parked outside the gate, its blade toward home
+    const L = g.station.layout;
+    const p = g.player.position;
+    const dx = p.x - L.centre.x;
+    const dz = p.z - L.centre.z;
+    const l = Math.hypot(dx, dz) || 1;
+    const r = L.radius + 8;
+    g.dozer.loadState({ x: L.centre.x + (dx / l) * r, z: L.centre.z + (dz / l) * r, heading: Math.atan2(dx, dz) });
+    g.dozer.locked = false;
   }
   g.stairs?.reset();
   g.comms?.reset();
@@ -189,6 +249,5 @@ export function startFromLater(game, point) {
   g.dialogue.pending.length = 0;
   g.dialogue.later.length = 0;
   g.mapUi.fog.reveal(g.player.position.x, g.player.position.z, 60);
-  const said = { greyDown: 'the grey is down at the plane, still to search', planeDone: 'waking at the wreck at dawn', junieFound: 'Junie found: she follows you home', junieHome: 'Junie is home' };
-  g.toast.show(`Debug: ${said[point] ?? point}`);
+  g.toast.show(`Debug: ${STORY_POINTS.find((s) => s.id === point)?.label ?? point}`);
 }
