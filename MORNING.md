@@ -2,6 +2,16 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 3: the Bigfoot cave
+
+**Scaffolded and on `main`.** 1302 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The Bigfoot cave". The dozer's beside you, facing the brush.
+- **What plays:** push through the brush → hold X at the mouth → the tunnel, the eggs (beetles hatch) → the last chamber: the Mothman on the ground, and it can die → cut Bigfoot out of the cocoon; he stands and holds out the Blessing → home, bury it at the star in the yard → the family's voices are back for good.
+- **The best moment so far:** Bigfoot standing over you by torchlight with his hands out.
+- **What's placeholder:** the cave is one fixed layout, roughly dressed; no giant moths; nothing is said or staged when he's freed.
+- **For our session on it:** #711-722; PLAYTEST round 78.
+
 # Build queue, item 2: the bug-zapper night at the station
 
 **Scaffolded and on `main`.** 1293 tests pass; checked headless; not played by hand.

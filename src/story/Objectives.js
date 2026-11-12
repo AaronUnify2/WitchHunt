@@ -248,7 +248,19 @@ export class Objectives {
       if (zp.state === 'hooked') return step('zapperShoot', "It's on the cable. Bring it down.");
       return step('zapperHook', 'Get on the dozer and hook the Mothman when it comes in close (B at it).', g.dozer);
     }
-    if (has('mothmanZapped') && !has('blessingBuried')) return step('caveGo', "The Mothman's gone to ground in the cave at the end of the old road, north of the gas station. Take the dozer.", g.roadNorth?.caveAt ?? clearing('gasStation'));
+    // ---- the Bigfoot cave (build queue item 3) ----
+    const cv = g.bigfootCave;
+    if (has('mothmanZapped') && cv?.ready && !has('blessingBuried')) {
+      if (cv.inside) {
+        if (!has('mothmanDead')) return step('caveMothman', 'Go deeper. Finish the Mothman.');
+        if (!has('bigfootFreed')) return step('caveFree', 'Cut the thing in the silk free, at the back of the cave.');
+        return step('caveOut', 'Go back out to the road.');
+      }
+      if (has('bigfootFreed')) return step('blessingBury', 'Bury the Blessing in the yard at home.', cv.burySpot);
+      if (!g.roadNorth.brushCleared) return step('caveGo', "The Mothman's gone to ground at the end of the old road, north of the gas station. Take the dozer and clear the brush.", g.roadNorth.layout.brush);
+      return step('caveEnter', 'Go into the cave.', cv.mouth);
+    }
+    if (has('blessingBuried')) return step('afterBigfoot', 'Bigfoot is free and the voice in the trees is gone. Fetch the quad from where you left it.', g.quad); // (a holding goal until build queue item 4)
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

@@ -69,7 +69,7 @@ export class RoadNorth {
     // At the cave's mouth, once it shows.
     if (this.brushCleared) {
       const m = this.layout.mouth;
-      if (Math.hypot(pos.x - m.x, pos.z - m.z) < this.rc.mouthRange) this.hud.prompt = 'A cave, going deep into the rock. It smells of wet fur. (Built with its story: M12)';
+      if (!this.caveBuilt && Math.hypot(pos.x - m.x, pos.z - m.z) < this.rc.mouthRange) this.hud.prompt = 'A cave, going deep into the rock. It smells of wet fur. (Built with its story: M12)';
     }
   }
 

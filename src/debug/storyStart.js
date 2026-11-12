@@ -134,6 +134,7 @@ export const PLAN_FLAGS = ['junieHome', 'cellAsked', 'planeCellFitted'];
 export const DOZER_CAMP_FLAGS = ['familyPlan', 'earlMaps'];
 export const DOZER_HOME_FLAGS = ['dozerSeen', 'dozerKey', 'dozerBattery', 'dozerTaken', 'dozerHome'];
 export const ZAPPED_FLAGS = ['zapperStarted', 'mothmanHooked', 'mothmanZapped'];
+export const CAVE_DONE_FLAGS = ['caveFound', 'caveEntered', 'mothmanDead', 'bigfootFreed', 'blessingBuried'];
 
 // "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
 // beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
@@ -150,6 +151,7 @@ export const STORY_POINTS = [
   { id: 'dozerCamp', label: "The army's dozer: Earl's maps read, the crew's camp ahead" },
   { id: 'dozerHome', label: 'The bug-zapper night: the dozer home, the fence box waiting' },
   { id: 'cave', label: 'The Bigfoot cave: the Mothman zapped and gone north, the fence dead' },
+  { id: 'megaNight', label: 'The missing quad and the mega night: Bigfoot freed, the Blessing buried' },
 ];
 
 // Which flags a start point sets on top of the outpost's (explored).
@@ -170,13 +172,14 @@ export function laterFlags(point) {
     case 'dozerCamp': return [...plan, ...DOZER_CAMP_FLAGS];
     case 'dozerHome': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS];
     case 'cave': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS];
+    case 'megaNight': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS];
     default: return [];
   }
 }
 
 // The points that put Tom just outside the cabin door, and those with the dozer parked outside the gate.
-const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'cave']);
-const DOZER_AT_HOME = new Set(['dozerHome', 'cave']);
+const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight']);
+const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight']);
 
 // The jump: the outpost cleared and explored, then on to `point`.
 //  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
@@ -238,6 +241,17 @@ export function startFromLater(game, point) {
     g.quad?.place?.(at.x + 3, at.z, g.player.yaw);
   }
   g.cordonDozer?.reset();
+  if (point === 'cave' && g.bigfootCave?.ready) {
+    // South of the brush at the road's north end (north is -z), the machine facing into it, the fence dead.
+    const b = g.roadNorth.layout.brush;
+    const z = b.z + b.hz + 6;
+    g.dozer.loadState({ x: b.x, z, heading: 0 });
+    g.dozer.locked = false;
+    g.player.teleport(b.x + 3.5, z + 1, 0);
+    g.station.state.charge = 0;
+  }
+  if (point === 'megaNight') g.roadNorth?.clearBrush?.('load');
+  g.bigfootCave?.reset();
   if (DOZER_AT_HOME.has(point) && g.cordonDozer?.ready) {
     // parked outside the gate, its blade toward home
     const L = g.station.layout;
@@ -249,7 +263,7 @@ export function startFromLater(game, point) {
     g.dozer.loadState({ x: L.centre.x + (dx / l) * r, z: L.centre.z + (dz / l) * r, heading: Math.atan2(dx, dz) });
     g.dozer.locked = false;
     const st = g.station.state;
-    st.charge = point === 'dozerHome' ? Math.max(st.charge, st.capacity * 0.6) : 0; // the night needs a fence; after it, there's none
+    st.charge = point === 'dozerHome' ? Math.max(st.charge, st.capacity * 0.6) : 100; // the night needs a fence; after it there's little
   }
   g.bugZapper?.reset();
   g.stairs?.reset();

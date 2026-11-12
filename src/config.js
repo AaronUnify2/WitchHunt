@@ -631,7 +631,7 @@ export const config = {
       mouthRange: 3.5, // metres from the mouth: the cave's prompt (once the brush is cleared)
       bladeReach: 0.5, // metres beyond a piece of brush the dozer's blade knocks it away from
       bladeHalf: 1.7, // metres either side of the blade's centre it reaches
-      brushClearAt: 0.8, // once this share of the brush's pieces is down, the rest comes down with it
+      brushClearAt: 0.6, // once this share of the brush's pieces is down, the rest comes down with it
       look: {
         rockTextureMeters: 8,
         lampPeriod: 1.1, // seconds per blink (the two barricades out of step)
@@ -769,7 +769,7 @@ export const config = {
   // Session 33 (Aaron's play-through, part 2): where there's no map to be had. Inside these interiors the
   // minimap is a black disc and the full map is refused with these words (ui/MapUi.js noMapIn).
   maps: {
-    noneIn: { placeBeyond: 'No map of this place', mineshaft: "The map's no use down here" },
+    noneIn: { placeBeyond: 'No map of this place', mineshaft: "The map's no use down here", bigfootCave: 'No map of the cave' },
   },
 
   // Full-screen map (D-pad up / M)
@@ -2522,6 +2522,7 @@ export const config = {
       spikeTrap: 3,
       floodlight: 4,
       fenceCharge: 20, // at fullSecurityCharge or more
+      blessing: 20, // build queue item 3: Bigfoot's Blessing, buried inside the fence: permanent, never drains
     },
     // Scrap prices (Aaron: "just pick some prices").
     costs: {
@@ -4468,6 +4469,26 @@ export const config = {
     // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
     // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
+  // Build queue item 3: the Bigfoot cave (encounters/BigfootCave.js, world/bigfootCaveShape.js,
+  // render/bigfootCaveModel.js; story spine, beat 7, stage 2). Scaffolding: every number a first guess.
+  bigfootCave: {
+    mouthRange: 3.2, // metres from the mouth: "go into the cave"
+    exitBack: 3, // metres out from the mouth Tom's put when he leaves
+    interactRange: 1.9,
+    hatchWithin: 5.5, // metres from a clutch of eggs: its beetles hatch
+    hatch: 2, // beetles a clutch
+    mothman: { health: 320, crawl: 1.5, reach: 3.2, attackEvery: 2.6, windup: 0.75, damage: 20 }, // wounded, on the ground: it drags itself at Tom (m/s), rakes within reach
+    cutSeconds: 3, // the cocoon
+    cocoonClear: 1.5, // metres in front of the cocoon Tom's held to; and in front of Bigfoot once he's out:
+    bigfootClear: 1.9,
+    freed: { slump: 2.6, kneel: 2.8, stand: 2.2, ahead: 1.7 }, // seconds in each pose once he's cut free, then he holds the Blessing out; how far in front of the cocoon he ends up
+    natureArmour: 40, // his gift (DESIGN: +40, one-off)
+    buryClear: 7, // the Blessing's spot at home is at least this far from the fence box, the cabin's door and the tower (burySpotIn)
+    burySeconds: 3,
+    light: { ambientDay: 0.9, ambientNight: 0.9, ambientColor: 0x5a6470, fogColor: 0x040506, fogNear: 2, fogFar: 30 },
+    look: { colors: { floor: 0x2a2622, roof: 0x1c1a18, rock: 0x34302b, rockDark: 0x24211e, egg: 0x4e5438, eggDark: 0x3a3f2c, ash: 0x2c2a28, mat: 0x4a3e2a, wood: 0x3e3022, woodPale: 0x5e5038 } },
   },
 
   // Build queue item 2: the bug-zapper night at the station (encounters/BugZapper.js; story spine, beat 7,

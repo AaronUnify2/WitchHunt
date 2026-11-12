@@ -69,6 +69,7 @@ import { Dozer } from '../world/Dozer.js';
 import { DozerCampSite } from '../world/DozerCampSite.js';
 import { CordonDozer } from '../encounters/CordonDozer.js';
 import { BugZapper } from '../encounters/BugZapper.js';
+import { BigfootCave } from '../encounters/BigfootCave.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -732,7 +733,7 @@ export class Game {
   initSouth(root) {
     const notify = (text) => this.toast.show(text);
     this.comms = new Comms(this.cfg, this.bus);
-    this.comms.init({ progress: this.progress, player: this.player, homeZ: this.station.layout.centre.z, demo: this.demo, deep: () => Boolean(this.mineRide?.below) }); // Session 31: no radio down the mine
+    this.comms.init({ progress: this.progress, player: this.player, homeZ: this.station.layout.centre.z, demo: this.demo, deep: () => Boolean(this.mineRide?.below) || Boolean(this.bigfootCave?.inside) }); // Session 31: no radio down the mine
     this.dialogue.comms = this.comms;
     this.radioStatus = new RadioStatus(this.cfg.comms);
     this.radioStatus.init(root);
@@ -920,6 +921,11 @@ export class Game {
     this.mineBeetles = new Beetles(this.cfg, this.bus);
     this.mineBeetles.init(this.scene, { player: this.player, combat: this.combat, colliders: null, ground: this.world.ground });
     this.mineFight = new MineFight(this.cfg, this.bus);
+    // Build queue item 3: the Bigfoot cave (encounters/BigfootCave.js). Its beetles are the mine's (the pool for interiors).
+    this.bigfootCave = new BigfootCave(this.cfg, this.bus);
+    this.bigfootCave.init({ scene: this.scene, world: this.world, roadNorth: this.roadNorth, interiors: this.interiors, player: this.player, combat: this.combat, station: this.station, beetles: this.mineBeetles, flashlight: this.flashlight, cutscenes: this.cutscenes, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
+    this.combat.promptSources.push(this.bigfootCave.hud);
+    this.vehicles.busy?.push(this.bigfootCave.hud);
     this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
     this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
@@ -1127,6 +1133,7 @@ export class Game {
     this.stairs.addDebugItems(menu);
     this.cordonDozer.addDebugItems(menu);
     this.bugZapper.addDebugItems(menu);
+    this.bigfootCave.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1658,6 +1665,7 @@ export class Game {
     this.dozer.loadState(d.dozer); // build queue item 1: where the dozer stood
     this.cordonDozer.reset();
     this.bugZapper.reset();
+    this.bigfootCave.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1924,7 +1932,7 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.player.riding.hud?.prompt);
-    const rideFree = !locked && !this.holler?.traps?.held && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt);
+    const rideFree = !locked && !this.holler?.traps?.held && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt || this.bigfootCave?.hud.prompt || this.bugZapper?.hud.prompt); // (build queue: a story prompt beside a parked vehicle comes first)
     this.quad.update(dt, controls, playing && first, rideFree && !(this.player.riding && this.player.riding !== this.quad) && !this.experimental.some((v) => v.hud.prompt), daylight);
     let offered = Boolean(this.quad.hud.prompt) && !this.player.riding;
     for (const v of this.experimental) {
@@ -1949,6 +1957,7 @@ export class Game {
     if (story) this.stairs.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
     if (story) this.cordonDozer.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.bugZapper.update(dt, controls, playing && this.combat.alive, !locked && !busy);
+    if (story) this.bigfootCave.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill

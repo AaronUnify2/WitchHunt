@@ -274,6 +274,7 @@ export class StationState {
       add(door.id, `${capitalise(door.name)}${door.reinforced ? ' (reinforced)' : ''}`, value * (door.health / door.max), value);
     }
     const p = this.cfg.power;
+    if (this.blessing) add('blessing', "Bigfoot's Blessing", v.blessing, v.blessing); // build queue item 3 (set from the flag blessingBuried by encounters/BigfootCave.js)
     add('charge', 'Electric fence charge', v.fenceCharge * Math.min(1, this.charge / p.fullSecurityCharge), v.fenceCharge);
     let spikes = 0;
     let spikeCount = 0;

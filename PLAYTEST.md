@@ -676,6 +676,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **On the cable:** get down and shoot, or stay on and let Wyatt do it. Does a minute of that hold up?
 - [ ] **The fence:** the scene, then charge 0 on the HUD, then Ellen. Does "we've no fence" land as a cost?
 
+**Round 78: the Bigfoot cave, scaffolding (build queue item 3).** "Continue story: The Bigfoot cave" on a fresh run (the dozer's beside you, facing the brush). OPEN_QUESTIONS #711-722.
+- [ ] **The brush:** drive straight into it. One push opens the cave.
+- [ ] **In:** hold X at the mouth. The map goes dark, the radio's dead, the torch is on.
+- [ ] **The eggs:** beetles hatch as you pass each clutch. Too many? Too few?
+- [ ] **The last chamber:** the Mothman on the ground, dragging itself at you. Is a grounded fight right, or should it still fly in here?
+- [ ] **Bigfoot:** cut him out; he comes out, stands, holds out his hands. Does it land without a word said?
+- [ ] **Home:** bury the Blessing at the star in the yard. The family's lines, and the security line in the ledger.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

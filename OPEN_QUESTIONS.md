@@ -54,6 +54,23 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 709 | **The fall on the fence** (a placeholder scene). | Seven seconds: your view is pulled to the nearest fence, three zaps and shakes, red eyes on the wire that lift away north. The Mothman's body isn't staged falling. Then the fence's charge is set to 0. | `zapper.fence`, `BugZapper.zapped` |
 | 710 | **After.** | Ellen: it went straight down the old road; it's been in his cave all along; "we've no fence. Take the dozer and finish it." The goal points north. Nothing attacks the dead fence that night beyond what the game already sends. | `zapper.after.ellen` |
 
+**Item 3: the Bigfoot cave (PLAYTEST round 78)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 711 | **The cave is fixed, not seeded** (for now). | One layout: a 22 m tunnel, an egg chamber, a narrow throat, the last chamber. 64 m end to end. DESIGN asks for a small seeded interior; that's for the encounter's own session. | `world/bigfootCaveShape.js` |
+| 712 | **Its look** (a placeholder). | Rock boxed round the shape, clutches of eggs, and in the last chamber a hearth ring, three carved posts, a woven mat and a tool rack standing in for Bigfoot's home. Dark; the torch comes on as you go in. | `render/bigfootCaveModel.js`, `config.bigfootCave.look`, `light` |
+| 713 | **Clearing the brush takes one push now.** | The old spike needed 80% of the brush's pieces knocked away, and a straight drive only reached 68%, so it never opened. It's 60% now. | `config.map.roadNorth.brushClearAt` |
+| 714 | **Going in.** | Hold X at the mouth, once the Mothman's been zapped and the brush is cleared. No scene; you're in. The cave's prompt wins over the dozer's when the dozer's parked in the mouth. | `BigfootCave.pick`, `Game` `rideFree` |
+| 715 | **The eggs.** | Nine clutches; within 5.5 m of one, two beetles hatch from it. Eighteen in all if you pass every clutch. None after the Mothman's dead. | `bigfootCave.hatch`, `hatchWithin` |
+| 716 | **No giant moths in the lair yet.** | DESIGN has them. The moths' pool needs a habitat written for the cave (as the mine's was); left for the design session. | |
+| 717 | **The Mothman in the cave.** | On the ground, wounded: it drags itself at you at 1.5 m/s, never leaves the last chamber, and rakes for 20 every 2.6 s when you're within about 3 m (a screech and a wind-up first). 320 health. It dies here. | `bigfootCave.mothman` |
+| 718 | **Freeing Bigfoot.** | Hold X at the cocoon for 3 s (refused while the Mothman lives). He comes out onto his hands, kneels, stands, and holds out his hands; hold X to take the Blessing. About eight seconds, in play, no cutscene, no lines: he doesn't speak. | `bigfootCave.freed`, `freedPose` |
+| 719 | **The gifts.** | The Blessing ("his sign, cut in a river stone") and nature armour +40. | `bigfootCave.natureArmour` |
+| 720 | **Burying the Blessing.** | A spot in the yard inside the fence, clear of the fence box, the door and the tower (the goal's star marks it; DESIGN's "base of a tree" has no tree yet). Hold X for 3 s. Security +20 for good, as its own line. | `burySpotIn`, `config.station.security.blessing`, `StationState.blessing` |
+| 721 | **The voices come back.** | Ellen: "There's no hiss. There's nothing on the line but you." Junie: "The one that used my voice. I can't feel it listening any more." Wyatt: "Earl was right." From then the family reach you anywhere and the Caller never speaks (the rule was already in the game, waiting on this flag). | `cave.blessing.*`, `story/Comms.js` |
+| 722 | **Bigfoot stays in the cave.** | Go back and he's standing there. He does nothing more yet. | |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

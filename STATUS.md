@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 and 2 (the family's plan and the dozer; the bug-zapper night). 1293 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 3 (the family's plan and the dozer; the bug-zapper night; the Bigfoot cave). 1302 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,17 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 3: the Bigfoot cave (scaffolding)
+
+- **The beat** (`encounters/BigfootCave.js`, `config.bigfootCave`; flags `caveEntered`, `mothmanDead`, `bigfootFreed`, and `blessingBuried`, which the Caller and the comms already waited on): the way in at the road's mouth; an interior (`world/Interiors.js`) with one room platform and blocks for its narrow parts; beetles from the eggs (the mine's pool, in the cave's space); the grounded Mothman (its own `MothmanRenderer`, an extra target, `crawlStep`); Bigfoot (`PosedFigure` with `bigfootPose`) and the two cocoons; the Blessing and the nature armour; the burial at home.
+- **The cave** (`world/bigfootCaveShape.js`: sections, `confine`, `caveBlocks`; `render/bigfootCaveModel.js`: one baked mesh).
+- **Security:** `StationState.blessing` adds its own line (`config.station.security.blessing`).
+- **Also:** no map in the cave; no radio in it (`Comms` deep); `roadNorth.brushClearAt` 0.6; a story prompt beside a parked vehicle comes first (`Game` `rideFree`).
+- **Goals:** `caveGo`, `caveEnter`, `caveMothman`, `caveFree`, `caveOut`, `blessingBury`, then `afterBigfoot` (a holding goal until item 4).
+- **Continue story:** `cave` (its start: the dozer facing the brush), `megaNight` (its end).
+- **Tests:** `tests/bigfootCave.test.js` (9). 1302 pass. **Checked headless** on seed 1234: the push through the brush, going in through the real input with the dozer parked in the mouth (the run caught the dozer's prompt stealing the hold), the hatching, the rake (20 every 3.3 s), thirteen rifle hits to kill it, the cut, the poses, the gifts, out, the burial, the family's lines. No page errors.
+- **Placeholder:** the layout and its dressing; no moths; shots aren't stopped by the cave's rock; Bigfoot's only animation is the freeing.
 
 ### The build queue, item 2: the bug-zapper night at the station (scaffolding)
 
