@@ -14,6 +14,9 @@
 //     driven off) face to face as he comes into sight of home, and Wyatt
 //     hands him the spare handset (radioMended). Ellen frantic, Wyatt
 //     guilty, and Junie's slot on the channel silent.
+//     Session 32 (Aaron): there's no trip home in it. The Mothman always
+//     knocks him out now, so it's always the radio, two seconds after he
+//     wakes at the wreck, and the clip (3) follows by itself.
 //  3. The south path trail camera's clip (D-pad down, like Earl's tape;
 //     clip.junieTaken, then on the monitors): night, torches, Tom's voice
 //     from the dark, wrong; they split; Junie's torch goes on into the
@@ -100,6 +103,7 @@ export class JunieTaken {
     this.state = 'idle';
     this.waited = 0;
     this.quiet = null;
+    this.clipIn = null;
     this.watch?.cancel('junieClip');
     // Saved mid-way through the account at the gate: the spare handset was given.
     if (this.has('familyAccount') && this.has('radioSmashed')) this.progress?.setFlag('radioMended');
@@ -144,6 +148,14 @@ export class JunieTaken {
       this.bus.emit('junie:taken');
     }
     if (this.state !== 'idle' || this.cutscenes?.active) return;
+    if (this.clipIn !== null && this.clipIn !== undefined) {
+      this.clipIn -= dt;
+      if (this.clipIn <= 0) {
+        this.clipIn = null;
+        if (!this.has('junieClipSeen')) this.playClip();
+      }
+      return;
+    }
     this.waited += dt;
     // 2: the account, once they can reach him (and nothing else is on the radio).
     const p = this.player.position;
@@ -176,7 +188,11 @@ export class JunieTaken {
         this.set('radioMended');
         this.notify?.("Wyatt's spare handset: your radio works again");
       }
-      this.offerClip();
+      // Session 32 (Aaron: "he wakes up, goes looking for Junie. No need to go back to the compound"; the clip
+      // "inside the wake up scene"): over the radio, Wyatt's patching it through is the cue: it plays by itself.
+      // Face to face at the gate (an old save with the radio smashed) it's still offered on D-pad down.
+      if (face) this.offerClip();
+      else this.clipIn = this.jc.clipAfter;
       this.state = 'idle';
     });
   }

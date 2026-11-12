@@ -132,3 +132,60 @@ describe('the crashed plane, reworked (notes 6-10)', () => {
     expect(goals).not.toContain("step('planeCell'");
   });
 });
+
+// ---- Junie taken, with no trip home (note 11) ---------------------------------------------------------
+import { JunieTaken } from '../src/encounters/JunieTaken.js';
+
+describe('Junie taken, told where he wakes (note 11)', () => {
+  const rig = () => {
+    const flags = new Set(['planeDone']);
+    const played = [];
+    const scenes = [];
+    const offered = [];
+    const handlers = {};
+    const bus = { on: (n, f) => (handlers[n] ??= []).push(f), emit: (n, p) => { for (const f of handlers[n] ?? []) f(p ?? {}); } };
+    const subtitles = { busy: false, clear() {} };
+    const j = new JunieTaken(config, bus);
+    j.init({
+      scene: { add() {} },
+      player: { position: { x: 400, y: 0, z: 400 } }, // at the wreck: nowhere near home
+      station: { layout: { centre: { x: 0, z: 0 }, radius: 30, cabin: { furniture: [] } }, floorY: 0, setPresent() {} },
+      dialogue: { play: (id, vars, radio) => { played.push([id, radio]); subtitles.busy = true; } },
+      subtitles,
+      cutscenes: { active: false, namedAnchors: new Map(), play: (id, opts) => { scenes.push(id); opts.onDone(false); return true; } },
+      watch: { offer: (o) => offered.push(o.id), cancel() {} },
+      progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) },
+      comms: { state: 'ok', reachesFamily: true },
+      notify() {},
+    });
+    const tick = (s) => { for (let t = 0; t < s; t += 0.05) j.update(0.05, null, true, false); };
+    return { j, flags, played, scenes, offered, subtitles, tick };
+  };
+
+  it('the family reach him over the radio two seconds after he wakes, wherever he is', () => {
+    const r = rig();
+    r.tick(config.junieTaken.accountDelay - 0.3);
+    expect(r.played).toEqual([]);
+    r.tick(0.5);
+    expect(r.played).toEqual([['junie.account.1', true]]);
+    expect(r.flags.has('familyAccount')).toBe(true);
+  });
+
+  it('then the south path camera’s clip plays by itself, and the goal is Junie', () => {
+    const r = rig();
+    r.tick(config.junieTaken.accountDelay + 0.2);
+    r.tick(3);
+    expect(r.scenes).toEqual([]); // not over the account
+    r.subtitles.busy = false; // the account's said
+    r.tick(config.junieTaken.clipAfter + 0.3);
+    expect(r.scenes).toEqual(['clip.junieTaken']);
+    expect(r.offered).toEqual([]); // not left on D-pad down
+    expect(r.flags.has('junieClipSeen')).toBe(true);
+    expect(r.played.at(-1)[0]).toBe('junie.after.1');
+  });
+
+  it('never sends him home for it', () => {
+    const goals = fs.readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
+    expect(goals).not.toContain("Your radio's quiet. Head home.");
+  });
+});

@@ -196,7 +196,8 @@ export class Objectives {
     // ---- Junie taken (Session 26) ----
     if (has('junieTaken') && !has('familyAccount')) {
       if (g.comms?.state === 'dead') return step('radioHome', "Your radio's smashed. Nobody could reach you all night. Get home.", L.cabin.frontDoor);
-      return step('radioWait', "Your radio's quiet. Head home.", L.cabin.frontDoor);
+      // Session 32 (Aaron: no drive home for a chat): he's told where he wakes, over the radio, in a moment.
+      return step('radioWait', "Dawn. Your radio's quiet. Raise them.");
     }
     if (watching('junieClip')) return step('junieClip', 'Watch the south path camera (D-pad down).');
     // Session 32 (Aaron: "we won't call attention to it"): the plane's power cell is no goal. The fence box still takes it.

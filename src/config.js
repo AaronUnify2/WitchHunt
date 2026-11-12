@@ -4407,7 +4407,8 @@ export const config = {
   // and Junie didn't come back. Every number a first guess, to tune after play.
   junieTaken: {
     needs: 'planeDone', // the Mothman at the crash site is over (either ending)
-    accountDelay: 5, // seconds of play after the wake before Ellen gets through
+    accountDelay: 2, // seconds of play after the wake before Ellen gets through (Session 32: was 5)
+    clipAfter: 0.6, // Session 32 (Aaron: no trip home; the clip inside the wake-up scene): seconds after the account's last line, the south path camera's clip plays by itself
     homeRange: 75, // metres from home's centre: with the radio smashed, the family's account waits until Tom's this near (they see him from the tower)
     clipFrom: 7, // metres past the fence, toward the crashed plane: where the south path camera stands (at the clearing's edge, looking out to the trees)
     rabbit: { y: 0.56, offsetX: -0.3, color: 0x9a9080, eyes: 0x141010 }, // Junie's rabbit, left on the bottom bunk (metres above the floor; along the bunk from its middle); her rabbit's colours
