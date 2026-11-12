@@ -67,6 +67,7 @@ export class Flyer {
     const f = this.fc;
     this.script = opts.script ?? f.script;
     this.story = Boolean(opts.story);
+    this.unbeatable = Boolean(opts.unbeatable); // Session 32: the Mothman at the plane: it flinches, it never leaves
     const t = this.player.position;
     const a = this.rng.range(0, Math.PI * 2);
     this.p.x = t.x + Math.sin(a) * f.startDistance;
@@ -113,7 +114,10 @@ export class Flyer {
   // The script's next move, with a circle between each.
   advance() {
     if (this.move === 'circle') {
-      this.begin(nextMove(this.script ?? this.fc.script, this.index++));
+      const script = this.script ?? this.fc.script;
+      let next = nextMove(script, this.index++);
+      if (next === 'leave' && this.unbeatable) next = script[script.length - 1]; // Session 32: it doesn't tire
+      this.begin(next);
     } else {
       this.begin('circle');
     }
@@ -195,6 +199,10 @@ export class Flyer {
     if (!this.active || this.move === 'leave') return false;
     this.health -= amount;
     this.flash = this.fc.hitFlashSeconds;
+    if (this.unbeatable) {
+      this.health = Math.max(this.fc.health * this.fc.fleeAt + 1, this.health);
+      return false;
+    }
     if (this.health <= this.fc.health * this.fc.fleeAt) {
       this.hurt = true;
       this.begin('leave');

@@ -72,3 +72,63 @@ describe('a bear trap and the quad (note 3)', () => {
     expect(r.said).toContain(holler.traps.bear.wheel);
   });
 });
+
+// ---- the crashed plane, reworked (notes 6-10) ---------------------------------------------------------
+import { standoffAt } from '../src/encounters/CrashedPlane.js';
+import { KIT_STAGES, alienSpec } from '../src/render/alienModel.js';
+import cutscenes from '../src/data/cutscenes.json';
+import dialogue from '../src/data/dialogue.json';
+import progress from '../src/data/progress.json';
+import fs from 'fs';
+
+describe('the crashed plane, reworked (notes 6-10)', () => {
+  const ec = config.crashedPlane.encounter;
+  const S = ec.standoff;
+
+  it('has an arrival sweep from the edge of the clearing, and the family on the radio after it', () => {
+    const sweep = cutscenes.cutscenes.find((c) => c.id === 'sweep.crashedPlane');
+    expect(sweep.camera.every((k) => k.anchor === 'crashSite')).toBe(true);
+    expect(sweep.camera[0].pos[1]).toBeGreaterThan(8); // a high vantage first
+    expect(ec.sweepDistance).toBeGreaterThan(ec.triggerDistance + 20); // well before the standoff
+    const ids = new Map(dialogue.lines.map((l) => [l.id, l]));
+    for (const id of ['plane.sweep.wyatt', 'plane.sweep.ellen']) expect(ids.get(id).channel).toBe('radio');
+    expect(progress.flags.map((f) => f.id)).toContain('planeSeen');
+  });
+
+  it('takes its time: it vaults out, stands a few seconds in the open, lifts the pistol, fires twice, then hands back', () => {
+    expect(standoffAt(0.5, S).phase).toBe('work');
+    expect(standoffAt(S.turnAt + 0.1, S).phase).toBe('turn');
+    expect(standoffAt(S.hopAt + S.hopSeconds / 2, S).phase).toBe('hop');
+    expect(standoffAt(S.hopAt + S.hopSeconds / 2, S).k).toBeCloseTo(0.5, 5);
+    expect(standoffAt(S.aimAt - 0.1, S).phase).toBe('stare');
+    expect(S.aimAt - (S.hopAt + S.hopSeconds)).toBeGreaterThanOrEqual(2); // seen for a few seconds
+    expect(standoffAt(S.aimAt + 0.1, S)).toEqual({ phase: 'aim', shots: 0 });
+    expect(standoffAt(S.shots[0] + 0.01, S).shots).toBe(1);
+    expect(standoffAt(S.end, S).shots).toBe(2);
+    for (const at of S.shots) {
+      expect(at).toBeGreaterThan(S.aimAt + 0.5);
+      expect(at).toBeLessThan(S.end);
+    }
+    const cs = cutscenes.cutscenes.find((c) => c.id === 'plane.standoff');
+    expect(cs.duration).toBe(S.end);
+    expect(cs.skippable).toBe(false);
+    expect(ec.quickDraw).toBeGreaterThan(0.3); // the quick draw's window stays (Aaron)
+  });
+
+  it('puts the pilot’s pistol in its hand at the plane, not the shotgun', () => {
+    expect(KIT_STAGES[0].pistol).toBe(true);
+    expect(KIT_STAGES[0].shotgun).toBeFalsy();
+    const wood = (kit) => alienSpec(config.aliens.grey, kit).masses.filter((m) => m[8] === 'gunWood').length;
+    expect(wood(KIT_STAGES[0])).toBe(1); // a grip
+    expect(wood(KIT_STAGES[1])).toBe(2); // the pump and the stock, still, further on
+  });
+
+  it('can’t drive the Mothman off, and makes no goal of the power cell', () => {
+    const plane = fs.readFileSync(new URL('../src/encounters/CrashedPlane.js', import.meta.url), 'utf8');
+    expect(plane).toContain('unbeatable: true');
+    expect(plane).not.toContain("setFlag('radioSmashed')");
+    expect(plane).not.toContain('fit it at the fence box');
+    const goals = fs.readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
+    expect(goals).not.toContain("step('planeCell'");
+  });
+});

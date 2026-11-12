@@ -4346,8 +4346,14 @@ export const config = {
     encounter: {
       needs: 'outpostCleared', // the outpost's barricade down (the dogfight brought the plane down)
       triggerDistance: 16, // metres from the grey as Tom comes up the gouge: the standoff (close enough for a quick draw)
+      sweepDistance: 46, // Session 32: metres from the wreck: the arrival sweep (once), the grey glimpsed at its bench
+      sweepLines: [0.8, 5.2], // seconds after the sweep: Wyatt's line about what's by the wing, then Ellen's (his line's reading length on)
       drawDistance: 120, // the grey's drawn within this
-      standoff: { turnAt: 1.3, aimAt: 2.3 }, // seconds into the standoff: it turns; it lifts its gun
+      // Session 32 (Aaron: "too rushed"): seconds into the standoff. It looks up from its work (turnAt), vaults
+      // the wing into the open (hopAt, for hopSeconds, to `out`: a spot of the wreck's own frame, x and z), stands
+      // looking at him, lifts the pistol (aimAt), and fires twice, wide (shots). Then control comes back (end:
+      // the cutscene's length) and the quick draw's window opens.
+      standoff: { turnAt: 1.2, hopAt: 2.0, hopSeconds: 0.85, hopHeight: 1.5, out: [2.4, 2.6], aimAt: 5.3, shots: [6.2, 7.0], end: 7.6, zoom: 0.42 }, // zoom: Tom's view narrows on it while the scene holds (x his field of view), so it's seen properly from 16 m
       quickDraw: 0.55, // seconds after control comes back: one good hit drops it
       greyHealth: 70, // after the quick draw: a service rifle round is 25 (x3 on the head)
       hit: { hitRadius: 0.3, height: 1.4, headBottom: 1.06, headRadius: 0.22, headshotMultiplier: 3 }, // a little generous: it's small
@@ -4358,6 +4364,8 @@ export const config = {
       drops: { pistolRounds: 12, alienShells: 6 },
       flareAfter: 10, // seconds after its drops are taken, Wyatt suggests the signal flare
       floor: 0.1, // the Mothman's fight: Tom can't drop below 10% health; reaching it, he blacks out
+      // Session 32 (Aaron): he can't be driven off here (Flyer `unbeatable`): the fight always ends at the floor
+      // and the blackout, and the script's last move repeats until it does.
       mothmanScript: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive'],
     },
     look: {

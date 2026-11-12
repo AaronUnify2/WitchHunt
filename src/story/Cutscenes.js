@@ -42,6 +42,7 @@ export class Cutscenes {
     // Session 15b: anchors other systems name (the campsite's frame), so a
     // clip rewatched on the monitors is shot from the same place.
     this.namedAnchors = new Map(); // name -> () => { x, z, yaw }
+    this.liveTargets = new Map(); // Session 32: name -> () => ({ x, y, z }), looked up every frame
   }
 
   // ctx: { root, scene, renderer, postFX, player, clock, world, station,
@@ -379,6 +380,9 @@ export class Cutscenes {
   targetOf(name) {
     if (name === 'witch') return { x: this.witch.x, y: this.world.ground.heightAt(this.witch.x, this.witch.z) + 1.8, z: this.witch.z };
     if (name === 'hut') return { x: this.hut.x, y: this.world.ground.heightAt(this.hut.x, this.hut.z) + 2, z: this.hut.z };
+    // Session 32: something that moves while the view holds on it (the grey vaulting the wing): { x, y, z } now.
+    const live = this.liveTargets?.get(name);
+    if (live) return live();
     const a = this.anchor(name);
     return { x: a.x, y: a.y + 1.5, z: a.z };
   }

@@ -29,6 +29,7 @@
     {"id": "outpostCall", "about": "Ellen's call to adventure: report to the checkpoint (Session 17, M9.4: encounters/Outpost.js sets it as the gas station's safe opens, Aaron: right away, with come home if it goes bad). Opens the outpost's gates. Back-up: as soon as the rifle's claimed (an older save).", "standIn": false, "trigger": {"on": "all", "after": ["rifleClaimed"]}},
     {"id": "outpostEntered", "about": "Tom has reached the outpost (Session 17: Outpost sets it a few metres inside the clearing; the visit trigger stays as a back-up).", "standIn": false, "trigger": {"on": "visit", "clearing": "outpost"}},
     {"id": "outpostCleared", "about": "Tom has fought through the outpost: the barricade's peak is down (Session 17: Outpost.peakDown()). Opens the checkpoint.", "standIn": false},
+    {"id": "planeSeen", "about": "The crashed plane: Tom has seen the wreck from the clearing's edge (the arrival sweep, the grey glimpsed at its bench; Session 32)."},
     {"id": "planeStandoff", "about": "Session 25: the crashed plane's standoff has played (encounters/CrashedPlane.js): the grey at its bench saw Tom."},
     {"id": "planeGreyDown", "about": "Session 25: the crashed plane's grey is down (the quick draw or the shootout); it lies where it fell."},
     {"id": "planeLooted", "about": "Session 25: the grey's drops taken: the pilot's pistol, alien shells, an alien med kit, the small alien power cell."},

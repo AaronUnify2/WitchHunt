@@ -59,7 +59,9 @@ function hand(side, bone, wx, wy, wz) {
 
 // The cowboy drift's stages, each adding to the last.
 export const KIT_STAGES = [
-  { id: 'plain', name: 'Plain, with a shotgun (the crashed plane)', shotgun: true },
+  // Session 32 (Aaron: "he's holding the shotgun, so we need him to be holding the pistol"): at the plane it's
+  // the pilot's own sidearm, which is what it drops.
+  { id: 'plain', name: "Plain, with the pilot's pistol (the crashed plane)", pistol: true },
   { id: 'hat', name: 'Hat and bandana', shotgun: true, hat: true, bandana: true },
   // Session 25 (Aaron: "a bit weird to wear a belt without pants; just make sure they're not skin tight"): trousers from the belt on.
   { id: 'belt', name: 'Gun belt, holster and trousers', shotgun: true, hat: true, bandana: true, belt: true, holsters: 1, trousers: true },
@@ -131,6 +133,15 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
     masses.push(['wristR', null, x, gy + 0.004, z + 0.3, 0.02, 0.022, 0.06, 'gunWood']); // the pump
     masses.push(['wristR', null, x, gy + 0.012, z - 0.04, 0.022, 0.035, 0.06, 'gunMetal']); // the receiver
     masses.push(['wristR', null, x, gy - 0.012, z - 0.16, 0.017, 0.032, 0.11, 'gunWood', [0.2, 0, 0]]); // the stock
+  }
+  if (kit.pistol) {
+    // The pilot's pistol in its right hand, too big for it: slide, barrel, grip, trigger guard.
+    const [, , x, y, z] = ALIEN_JOINTS[8];
+    const gy = y - 0.075;
+    masses.push(['wristR', null, x, gy + 0.03, z + 0.08, 0.014, 0.02, 0.085, 'gunMetal']); // the slide
+    tubes.push(['wristR', x, gy + 0.03, z + 0.12, x, gy + 0.03, z + 0.2, 0.008, 0.008, 'gunMetal']); // the barrel's end
+    masses.push(['wristR', null, x, gy - 0.015, z + 0.02, 0.013, 0.04, 0.022, 'gunWood', [0.3, 0, 0]]); // the grip
+    masses.push(['wristR', null, x, gy + 0.005, z + 0.07, 0.006, 0.012, 0.022, 'gunMetal']); // the guard
   }
   const rings = [];
   const flat = [Math.PI / 2, 0, 0]; // a ring lying level

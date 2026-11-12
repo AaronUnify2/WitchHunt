@@ -35,6 +35,7 @@
 // 'plane:mothmanGone' { drivenOff }, 'plane:done'.
 
 import { AlienRenderer } from '../render/AlienRenderer.js';
+import { toWorld } from '../world/CrashSite.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { rayBlockers } from '../combat/hitscan.js';
 import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
@@ -52,13 +53,24 @@ export function peekPoint(cover, along, out) {
   return { x: cover.x + along.x * out, z: cover.z + along.z * out };
 }
 
+// Session 32: what the grey is doing `t` seconds into the standoff (config standoff): 'work' | 'turn' | 'hop'
+// (k: 0..1 through it) | 'stare' | 'aim'; and how many of its wild shots are due by then.
+export function standoffAt(t, s) {
+  const shots = s.shots.filter((at) => t >= at).length;
+  if (t < s.turnAt) return { phase: 'work', shots };
+  if (t < s.hopAt) return { phase: 'turn', shots };
+  if (t < s.hopAt + s.hopSeconds) return { phase: 'hop', k: (t - s.hopAt) / s.hopSeconds, shots };
+  if (t < s.aimAt) return { phase: 'stare', shots };
+  return { phase: 'aim', shots };
+}
+
 // A hop from a to b (the scramble over the wing): t 0..1 -> { x, z, lift }.
 export function hop(a, b, t, height) {
   const k = Math.max(0, Math.min(1, t));
   return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k, lift: Math.sin(k * Math.PI) * height };
 }
 
-const FLAGS = ['planeStandoff', 'planeGreyDown', 'planeLooted', 'planeLogRead', 'planeCellTaken', 'planeCellFitted', 'mothmanMet', 'planeDone'];
+const FLAGS = ['planeSeen', 'planeStandoff', 'planeGreyDown', 'planeLooted', 'planeLogRead', 'planeCellTaken', 'planeCellFitted', 'mothmanMet', 'planeDone'];
 
 export class CrashedPlane {
   constructor(cfg, bus) {
@@ -96,6 +108,10 @@ export class CrashedPlane {
     this.blockers = [];
     this.cutscenes?.namedAnchors?.set('grey', () => ({ x: this.grey.x, z: this.grey.z, yaw: 0, dy: 1.1 }));
     this.cutscenes?.namedAnchors?.set('wreck', () => ({ ...this.spot('kit'), yaw: 0 }));
+    // Session 32: the standoff's view follows it over the wing; the sweep's frame: ahead is up the gouge to the
+    // wreck (the model's +z), x to the right of that (the model's -x).
+    this.cutscenes?.liveTargets?.set('grey', () => ({ x: this.grey.x, y: this.grey.y + 1.0, z: this.grey.z }));
+    this.cutscenes?.namedAnchors?.set('crashSite', () => ({ x: this.crashSite.place.x, z: this.crashSite.place.z, yaw: this.crashSite.place.yaw + Math.PI }));
     this.bus.on('player:respawned', () => this.reset());
     this.reset();
   }
@@ -116,6 +132,7 @@ export class CrashedPlane {
   reset() {
     this.state = 'idle';
     this.timer = 0;
+    this.later = [];
     this.greyHealth = this.ec.greyHealth;
     this.mothmanOn = false;
     this.flareSuggested = false;
@@ -151,9 +168,12 @@ export class CrashedPlane {
     const near = Math.hypot(p.x - g.x, p.z - g.z);
     if (playing) {
       this.timer += dt;
+      this.tickLater(dt);
       switch (this.state) {
         case 'idle':
-          if (this.has(this.ec.needs) && near < this.ec.triggerDistance && !this.cutscenes?.active) this.startStandoff();
+          // Session 32: the first sight of it, from the clearing's edge (once); then, close, the standoff.
+          if (this.has(this.ec.needs) && !this.has('planeSeen') && near < this.ec.sweepDistance && near > this.ec.triggerDistance + 4 && !this.cutscenes?.active) this.arrive();
+          else if (this.has(this.ec.needs) && near < this.ec.triggerDistance && !this.cutscenes?.active) this.startStandoff();
           break;
         case 'standoff':
           this.updateStandoff(dt);
@@ -202,10 +222,39 @@ export class CrashedPlane {
     g.facing = Math.atan2(p.x - g.x, p.z - g.z);
   }
 
+  // 0 (Session 32; Aaron: "a sweep just showing the crashed plane from a higher vantage point... a little hint
+  // at the alien being there... have them reference the alien from the radio"): over the gouge to the wreck,
+  // then low toward the wing and the small grey thing bent over it. Wyatt, then Ellen, once it's over.
+  arrive() {
+    this.progress?.setFlag('planeSeen');
+    this.bus.emit('plane:seen');
+    const [a, b] = this.ec.sweepLines;
+    const lines = () => {
+      this.later.push({ t: a, fn: () => this.dialogue?.play('plane.sweep.wyatt') });
+      this.later.push({ t: b, fn: () => this.dialogue?.play('plane.sweep.ellen') });
+    };
+    if (!this.cutscenes?.play('sweep.crashedPlane', { onDone: lines })) lines();
+  }
+
+  tickLater(dt) {
+    if (!this.later.length) return;
+    for (const l of this.later) l.t -= dt;
+    const due = this.later.filter((l) => l.t <= 0);
+    this.later = this.later.filter((l) => l.t > 0);
+    for (const l of due) l.fn();
+  }
+
   // 1: the standoff.
   startStandoff() {
     this.state = 'standoff';
     this.timer = 0;
+    this.shotsFired = 0;
+    this.progress?.setFlag('planeSeen'); // (come at it from close: no sweep after this)
+    const g = this.grey;
+    const o = this.ec.standoff.out;
+    const out = toWorld(this.crashSite.place, o[0], o[1]);
+    this.hopFrom = { x: g.x, z: g.z };
+    this.hopTo = { x: out.x, z: out.z };
     this.progress?.setFlag('planeStandoff');
     this.bus.emit('plane:standoff');
     this.cutscenes?.play('plane.standoff');
@@ -214,18 +263,48 @@ export class CrashedPlane {
   updateStandoff() {
     const s = this.ec.standoff;
     const g = this.grey;
-    // Absorbed in its work, then it turns and lifts its gun.
-    if (this.timer < s.turnAt) g.state = 'examine';
-    else if (this.timer < s.aimAt) {
-      g.state = 'idle';
+    // Absorbed in its work; it looks up; it vaults the wing into the open and stands there, looking at him;
+    // it lifts the pistol; it fires, twice, wide. Then it's Tom's move.
+    const at = standoffAt(this.timer, s);
+    // The view closes in on it over the first second, and opens again as control comes back.
+    this.player.fovMultiplier = 1 + (s.zoom - 1) * Math.min(1, this.timer / 1.0) * Math.min(1, Math.max(0, (s.end - this.timer) / 0.35));
+    const turn = () => {
       const p = this.player.position;
       const want = Math.atan2(p.x - g.x, p.z - g.z);
       let d = want - g.facing;
       d -= Math.round(d / (Math.PI * 2)) * Math.PI * 2;
       g.facing += d * Math.min(1, 0.12);
-    } else g.state = 'aim';
+    };
+    if (at.phase === 'work') g.state = 'examine';
+    else if (at.phase === 'turn') {
+      g.state = 'idle';
+      turn();
+    } else if (at.phase === 'hop') {
+      const h = hop(this.hopFrom, this.hopTo, at.k, s.hopHeight);
+      g.x = h.x;
+      g.z = h.z;
+      g.y = this.ground.heightAt(g.x, g.z) + h.lift;
+      g.state = 'ambush';
+      turn();
+    } else {
+      if (this.hopTo && (g.x !== this.hopTo.x || g.z !== this.hopTo.z)) {
+        g.x = this.hopTo.x;
+        g.z = this.hopTo.z;
+      }
+      g.y = this.ground.heightAt(g.x, g.z);
+      turn();
+      // A shot holds its pose a moment; between them it's aiming.
+      if (at.phase === 'stare') g.state = 'idle';
+      else if (g.state !== 'fire' || g.timer > 0.3) g.state = 'aim';
+      while (this.shotsFired < at.shots) {
+        this.shotsFired++;
+        this.greyFire(false);
+        this.player.shake?.(0.5);
+      }
+    }
     if (!this.cutscenes?.active && this.timer > 0.2) {
       // Control's back: the quick draw.
+      this.player.fovMultiplier = 1;
       this.state = 'quickdraw';
       this.timer = 0;
       this.target.targetable = true;
@@ -428,7 +507,8 @@ export class CrashedPlane {
     this.progress?.setFlag('planeLooted');
     this.sfx?.play('pickup');
     this.timer = 0;
-    this.combat.hud.pickup(`The pilot's pistol, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell (fit it at the fence box at home)`);
+    // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at.
+    this.combat.hud.pickup(`The pilot's pistol, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
   }
 
   readLog() {
@@ -452,31 +532,17 @@ export class CrashedPlane {
   startMothman() {
     const fl = this.flyer;
     this.combat.setHealthFloor('crashedPlane', this.ec.floor, () => this.blackout());
-    this.offLeft = this.bus.on('flyer:left', ({ hurt }) => this.mothmanGone(hurt));
-    fl.send({ script: this.ec.mothmanScript, story: true });
+    this.offLeft = this.bus.on('flyer:left', () => this.mothmanGone());
+    // Session 32 (Aaron: "he has to knock you unconscious"): he can't be driven off.
+    fl.send({ script: this.ec.mothmanScript, story: true, unbeatable: true });
     this.dialogue?.play('plane.mothman.ellen');
   }
 
-  // Hurt enough, it flew off. Session 26 (HANDOVER default 1: Junie is taken
-  // either way): its last low pass on the way out smashes Tom's radio mid-line,
-  // and the night passes with nobody able to reach him.
-  mothmanGone(drivenOff) {
-    this.offLeft?.();
-    this.offLeft = null;
+  // Session 32: it can't be driven off any more (Session 26's smashed radio and the night sat out in the wreck
+  // are gone). If it ever leaves by itself (its script run out), it's the same ending: he goes down.
+  mothmanGone() {
     if (this.state !== 'mothman') return;
-    this.combat.clearHealthFloor('crashedPlane');
-    this.state = 'smashed';
-    this.drivenOff = drivenOff;
-    this.progress?.setFlag('radioSmashed');
-    const night = () => this.nightPasses();
-    if (!this.cutscenes?.play('plane.radioSmashed', { onDone: night })) night();
-  }
-
-  // Dazed, the radio in pieces: he sits the dark out in the wreck. Dawn.
-  nightPasses() {
-    this.skipToDawn?.();
-    this.finish(this.drivenOff);
-    this.notify?.("Dawn. You sat the night out in the wreck. The radio's in pieces. Home's north");
+    this.blackout();
   }
 
   // The floor held: he blacks out; red eyes over him; he wakes at the wreck at dawn.

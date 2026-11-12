@@ -199,7 +199,7 @@ export class Objectives {
       return step('radioWait', "Your radio's quiet. Head home.", L.cabin.frontDoor);
     }
     if (watching('junieClip')) return step('junieClip', 'Watch the south path camera (D-pad down).');
-    if (has('planeCellTaken') && !has('planeCellFitted')) return step('planeCell', "Fit the plane's alien power cell to the fence box at home.", L.fenceBox);
+    // Session 32 (Aaron: "we won't call attention to it"): the plane's power cell is no goal. The fence box still takes it.
     if (has('junieClipSeen') && !has('junieHome')) {
       const spine = (key) => g.world.map.clearings.find((c) => c.key === key);
       const ch = g.church;
