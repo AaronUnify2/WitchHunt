@@ -24,7 +24,7 @@
 //     in the south had a power core, a big one.
 //
 // Saved through story flags (quadMissing, megaNightCalled, megaNightStarted,
-// megaNightDone) and the ring's place (Game: save.megaNight). A night under
+// megaNightDone; quadReturned is the mothership's) and the ring's place (Game: save.megaNight). A night under
 // way when the run's saved starts again from its first wave. Off in Demo mode.
 //
 // Events: 'mega:quadMissing', 'mega:started', 'mega:wave' { index, count }, 'mega:done'.
@@ -104,7 +104,7 @@ export class MegaNight {
     this.restoreOverrun?.();
     if (!this.has('megaNightDone')) this.progress?.setFlag('megaNightStarted', false);
     // The quad's gone from the moment the Blessing's in the ground (until the mothership gives it back).
-    if (this.has('blessingBuried') && !this.has('quadReturned')) this.takeQuad();
+    if (this.has('blessingBuried')) this.takeQuad();
     else this.showRing(false);
   }
 
@@ -133,13 +133,13 @@ export class MegaNight {
     if (q.riding) q.dismount?.();
     this.ring ??= { x: q.x, z: q.z };
     q.setGone?.(true);
-    this.showRing(true);
+    this.showRing(!this.has('quadReturned'));
   }
 
-  // The mothership gives it back (build queue item 5 calls this).
+  // The mothership gives it back (build queue item 5 calls this): rebuilt, as the alien quad (world/AlienQuad.js,
+  // which the mothership's encounter places). Earl's quad as it was is gone for good; so is the ring.
   returnQuad() {
     this.set('quadReturned');
-    this.quad?.setGone?.(false);
     this.showRing(false);
   }
 

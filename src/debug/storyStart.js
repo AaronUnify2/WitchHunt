@@ -136,6 +136,7 @@ export const DOZER_HOME_FLAGS = ['dozerSeen', 'dozerKey', 'dozerBattery', 'dozer
 export const ZAPPED_FLAGS = ['zapperStarted', 'mothmanHooked', 'mothmanZapped'];
 export const CAVE_DONE_FLAGS = ['caveFound', 'caveEntered', 'mothmanDead', 'bigfootFreed', 'blessingBuried'];
 export const MEGA_DONE_FLAGS = ['quadMissing', 'megaNightCalled', 'megaNightStarted', 'megaNightDone'];
+export const SHIP_DONE_FLAGS = ['shipEntered', 'shipCoreTaken', 'quadReturned', 'shipCoreFitted'];
 
 // "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
 // beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
@@ -153,7 +154,8 @@ export const STORY_POINTS = [
   { id: 'dozerHome', label: 'The bug-zapper night: the dozer home, the fence box waiting' },
   { id: 'cave', label: 'The Bigfoot cave: the Mothman zapped and gone north, the fence dead' },
   { id: 'megaNight', label: 'The missing quad and the mega night: Bigfoot freed, the Blessing buried' },
-  { id: 'ufo', label: 'The crashed UFO: the mega night survived, Ellen wants the big core' },
+  { id: 'ufo', label: 'The crashed UFO: the mega night survived, the ship ahead, its beam standing' },
+  { id: 'armory', label: "The Car Armory: the ship's core fitted, the alien quad at the gate" },
 ];
 
 // Which flags a start point sets on top of the outpost's (explored).
@@ -176,14 +178,15 @@ export function laterFlags(point) {
     case 'cave': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS];
     case 'megaNight': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS];
     case 'ufo': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS];
+    case 'armory': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS, ...SHIP_DONE_FLAGS];
     default: return [];
   }
 }
 
 // The points that put Tom just outside the cabin door, and those with the dozer parked outside the gate.
-const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight', 'ufo']);
-const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight', 'ufo']);
-const AFTER_CAVE = new Set(['megaNight', 'ufo']);
+const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight', 'armory']);
+const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight', 'ufo', 'armory']);
+const AFTER_CAVE = new Set(['megaNight', 'ufo', 'armory']);
 
 // The jump: the outpost cleared and explored, then on to `point`.
 //  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
@@ -225,7 +228,6 @@ export function startFromLater(game, point) {
     const L = g.station.layout;
     const d = L.cabin.frontDoor;
     g.player.teleport(d.x + (d.x - L.cabin.x) * 0.6, d.z + (d.z - L.cabin.z) * 0.6, g.player.yaw);
-    if (point !== 'junieHome' && g.station.state.capacity < 1000) g.station.state.fitPowerCell?.('planeCell');
   } else if (point === 'plane' && g.plane?.ready) {
     const cp = g.world.map.cluster.checkpoint;
     const w = g.plane.spot('work');
@@ -244,6 +246,8 @@ export function startFromLater(game, point) {
     face(at.x, at.z, s.place.x, s.place.z);
     g.quad?.place?.(at.x + 3, at.z, g.player.yaw);
   }
+  // The plane's cell is in the fence box from 'plan' on, wherever the point puts Tom.
+  if (flags.includes('planeCellFitted') && g.station.state.capacity < 1000) g.station.state.fitPowerCell?.('planeCell');
   g.cordonDozer?.reset();
   if (point === 'cave' && g.bigfootCave?.ready) {
     // South of the brush at the road's north end (north is -z), the machine facing into it, the fence dead.
@@ -265,10 +269,24 @@ export function startFromLater(game, point) {
     g.megaNight?.reset();
   }
   g.bigfootCave?.reset();
+  if (point === 'ufo' && g.mothership?.ready) {
+    const s = g.ufoSite;
+    const at = s.toWorld(0, -44);
+    face(at.x, at.z, s.place.x, s.place.z);
+  }
+  if (point === 'armory') {
+    const st = g.station.state;
+    if (st.capacity < 3000) st.fitPowerCell?.('shipCore');
+    const L = g.station.layout;
+    const d = L.cabin.frontDoor;
+    const k = (L.radius + 5) / (Math.hypot(d.x - L.centre.x, d.z - L.centre.z) || 1);
+    g.alienQuad?.place?.(L.centre.x + (d.x - L.centre.x) * k + 4, L.centre.z + (d.z - L.centre.z) * k, 0);
+  }
+  g.mothership?.reset();
   if (DOZER_AT_HOME.has(point) && g.cordonDozer?.ready) {
     // parked outside the gate, its blade toward home
     const L = g.station.layout;
-    const p = g.player.position;
+    const p = L.cabin.frontDoor; // (out past the fence on the door's side, wherever Tom is)
     const dx = p.x - L.centre.x;
     const dz = p.z - L.centre.z;
     const l = Math.hypot(dx, dz) || 1;
@@ -276,7 +294,8 @@ export function startFromLater(game, point) {
     g.dozer.loadState({ x: L.centre.x + (dx / l) * r, z: L.centre.z + (dz / l) * r, heading: Math.atan2(dx, dz) });
     g.dozer.locked = false;
     const st = g.station.state;
-    st.charge = point === 'dozerHome' ? Math.max(st.charge, st.capacity * 0.6) : 100; // the night needs a fence; after it there's little
+    if (point === 'dozerHome') st.charge = Math.max(st.charge, st.capacity * 0.6); // the night needs a fence;
+    else if (point !== 'armory') st.charge = 100; // after it there's little, until the ship's core
   }
   g.bugZapper?.reset();
   g.stairs?.reset();

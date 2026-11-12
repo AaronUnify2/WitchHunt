@@ -1471,6 +1471,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### Crashed UFO and the mothership (every run; story spine, beat 9)
 
+*__As scaffolded (the build queue, item 5;__ `encounters/Mothership.js`__):__ the saucer and its beam in the clearing; hold X in the beam after the mega night; four rooms in a line aboard (pad, corridor, core room, hangar) with five greys who stand, aim and fire; the core taken from its plinth; Earl's quad on a cradle, ridden down the beam as the alien quad; the core fitted at the fence box (capacity 3000). OPEN_QUESTIONS #735-743.*
+
 *Designed with Aaron, Nov 8; not built. Built so far: its clearing is placed on every run, the dogfight's craft limps south and comes down there, and smoke stands over it; the grey alien's model and cowboy-drift kit. **Replaces** the earlier design (a hand-built ship interior on the ground, enterable from night 5, its shield locking the exit until the core is taken).*
 
 - **The crashed ship is only the door:** Tom heads further south and finds it in its clearing. Its **beam takes him up to a mothership** high in the atmosphere, never seen from the ground. The open sky stays believable on clear days; you only reach it through the crashed ship's beam.

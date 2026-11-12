@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 4 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the missing quad and the mega night). 1311 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 5 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the UFO and the mothership). 1317 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,18 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 5: the crashed UFO and the mothership (scaffolding)
+
+- **The beat** (`encounters/Mothership.js`, `config.mothership`, `config.crashedUfo`; flags `shipEntered`, `shipCoreTaken`, `quadReturned`, `shipCoreFitted`): the beam at the crash site, the interior (`SHIP_SECTIONS` through `world/sectionShape.js`), five greys (`AlienRenderer`, each an extra target, `greyStep`), the core, the quad on its cradle, down the beam with the alien quad placed beside Tom, the core fitted at the fence box.
+- **A space of sections, shared** (`world/sectionShape.js`: `sectionAt`, `halfAt`, `confine`, `blocks`): the cave's shape made general, for this and the next interior.
+- **The sets** (`render/mothershipModel.js`: `buildCrashedUfo`, `buildMothership`; each a baked mesh plus one unlit mesh for the glow; `world/CrashedUfoSite.js`).
+- **The station** (`Station.fitShipCore`, `power.cells.shipCore`): the fence box's third kind of fit; emits `station:shipCore`.
+- **The old quad stays gone** once the alien quad's returned (`MegaNight.returnQuad` only sets the flag and clears the ring).
+- **Goals:** `ufoGo`, `shipCore`, `shipQuad`, `shipDown`, `shipBack`, `coreFit`, then `armoryGo` (a holding goal until item 6).
+- **Continue story:** `ufo` (its start, at the clearing's edge), `armory` (its end). Start points now fit the plane's cell whenever their flags say it's fitted.
+- **Tests:** `tests/mothership.test.js` (6). 1317 pass. **Checked headless** on seed 1234: the site, up the beam through the real input, the first grey firing (4 shots in 8 s, 27 damage), three rifle hits to kill it, the core, the quad, down, the alien quad's own prompt, the core fitted (1000 to 3000), the lines, the goal. No page errors. The run caught the old quad reappearing beside the new one.
+- **Placeholder:** the ship's rooms; the greys' behaviour; no scene for the beam; the alien quad isn't saved or on the map.
 
 ### The build queue, item 4: the missing quad and the mega night (scaffolding)
 

@@ -71,6 +71,8 @@ import { CordonDozer } from '../encounters/CordonDozer.js';
 import { BugZapper } from '../encounters/BugZapper.js';
 import { BigfootCave } from '../encounters/BigfootCave.js';
 import { MegaNight } from '../encounters/MegaNight.js';
+import { Mothership } from '../encounters/Mothership.js';
+import { CrashedUfoSite } from '../world/CrashedUfoSite.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -177,6 +179,8 @@ export class Game {
     this.stairsSite.init(this.scene, this.world, this.colliders);
     this.dozerCampSite = new DozerCampSite(this.cfg); // build queue item 1: the clearing crew's camp on the cordon strip
     this.dozerCampSite.init(this.scene, this.world, this.colliders);
+    this.ufoSite = new CrashedUfoSite(this.cfg); // build queue item 5: the crashed UFO and its beam
+    this.ufoSite.init(this.scene, this.world, this.colliders);
     this.barnSite = new MiloBarnSite(this.cfg); // Milo's barn (an optional encounter)
     this.barnSite.init(this.scene, this.world, this.colliders);
     this.cuttingSite = new RailwayCuttingSite(this.cfg); // Session 27: the railway cutting (an optional encounter)
@@ -930,6 +934,12 @@ export class Game {
     // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js).
     this.megaNight = new MegaNight(this.cfg, this.bus);
     this.megaNight.init({ scene: this.scene, ground: this.world.ground, player: this.player, quad: this.quad, station: this.station, enemies: this.combat.enemies, world: this.world, combat: this.combat, clock: this.clock, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify, skipToNight: () => { this.skipToPhase('night'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); }, skipToDawn: () => { this.skipToPhase('dawn'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); } });
+    // Build queue item 5: the crashed UFO and the mothership (encounters/Mothership.js).
+    this.mothership = new Mothership(this.cfg, this.bus);
+    this.mothership.init({ scene: this.scene, world: this.world, site: this.ufoSite, interiors: this.interiors, player: this.player, combat: this.combat, station: this.station, megaNight: this.megaNight, alienQuad: this.alienQuad, flashlight: this.flashlight, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
+    this.combat.promptSources.push(this.mothership.hud);
+    this.vehicles.busy?.push(this.mothership.hud);
+    this.bus.on('station:shipCore', () => this.dialogue.play('ship.fitted.ellen'));
     this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
     this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
@@ -1139,6 +1149,7 @@ export class Game {
     this.bugZapper.addDebugItems(menu);
     this.bigfootCave.addDebugItems(menu);
     this.megaNight.addDebugItems(menu);
+    this.mothership.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1674,6 +1685,7 @@ export class Game {
     this.bigfootCave.reset();
     this.megaNight.loadState(d.megaNight); // build queue item 4: where the quad stood
     this.megaNight.reset();
+    this.mothership.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1864,6 +1876,7 @@ export class Game {
     this.mineSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
     this.dozerCampSite.update(camera.position, this.drawDistance);
+    this.ufoSite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
@@ -1940,7 +1953,7 @@ export class Game {
     this.gates.update(dt, playing && first && !locked);
     // M9.2: the campsite's search points wait while another prompt shows.
     const busy = this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || (this.player.riding && this.player.riding.hud?.prompt);
-    const rideFree = !locked && !this.holler?.traps?.held && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt || this.bigfootCave?.hud.prompt || this.bugZapper?.hud.prompt); // (build queue: a story prompt beside a parked vehicle comes first)
+    const rideFree = !locked && !this.holler?.traps?.held && !(this.director.hud.prompt || this.station.hud.prompt || this.vehicles.hud.prompt || this.familyTalk.hud.prompt || this.campsite.hud.prompt || this.gasStation.hud.prompt || this.shelter.hud.prompt || this.outpost.hud.prompt || this.bigfootCave?.hud.prompt || this.bugZapper?.hud.prompt || this.mothership?.hud.prompt); // (build queue: a story prompt beside a parked vehicle comes first)
     this.quad.update(dt, controls, playing && first, rideFree && !(this.player.riding && this.player.riding !== this.quad) && !this.experimental.some((v) => v.hud.prompt), daylight);
     let offered = Boolean(this.quad.hud.prompt) && !this.player.riding;
     for (const v of this.experimental) {
@@ -1967,6 +1980,7 @@ export class Game {
     if (story) this.bugZapper.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.bigfootCave.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.megaNight.update(dt, playing && this.combat.alive);
+    if (story) this.mothership.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill
@@ -2035,6 +2049,7 @@ export class Game {
     this.mineBeetles.dispose();
     this.stairsSite.dispose();
     this.dozerCampSite.dispose();
+    this.ufoSite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);

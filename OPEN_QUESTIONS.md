@@ -88,6 +88,20 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 733 | **Ellen's ask.** | "One more night like that and there's no station." The ship that came down in the south: "Whatever drives a ship, I want it in our fence box." Wyatt: the tracks at the ring only had three toes. | `mega.after.*` |
 | 734 | **"The difficulty rises from here"** | isn't built: the new kinds don't join the ordinary nights yet, and nothing about later nights changes. | |
 
+**Item 5: the crashed UFO and the mothership (PLAYTEST round 80)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 735 | **The crash site** (a placeholder set). | The saucer down on one edge at the end of a gouge of thrown earth, a rim of purple and green light still running round it with gaps, five snapped black trunks, and beside it the beam: a tall faint green column on a ringed pad. Seen from the clearing's edge. | `render/mothershipModel.js` `buildCrashedUfo`, `config.crashedUfo.look` |
+| 736 | **Going up.** | Hold X in the beam, any time after the mega night. No scene: a zap, a line on screen, and you're on the pad aboard. | `Mothership.enter`, `mothership.beamRange` |
+| 737 | **The ship is four rooms in a line** (a first pass). | The pad, an 18 m corridor, the core room, the hangar: 66 m end to end. Grey-blue metal, a purple strip and a green strip down each wall, lit doorways. DESIGN asks for a hand-built interior; this is its skeleton. | `SHIP_SECTIONS`, `buildMothership` |
+| 738 | **The greys aboard.** | Five: one at the corridor's end in a hat, two in the core room, two in the hangar as gunslingers (the further in, the more cowboy, as you asked). Each waits at its post until you're within 15 m, aims for 0.9 s, fires (40% to hit, 9 damage), sidesteps, and aims again. 70 health; three alien shells each. They don't take cover or move up. | `config.mothership.greys`, `greyStep` |
+| 739 | **The core.** | An unlit pale-green orb turning on a plinth in the core room. Hold X to take it. Ellen: "every needle in this room moved." | `Mothership.takeCore`, `ship.core.ellen` |
+| 740 | **Earl's quad in the hangar.** | The alien quad's model on a cradle. It won't let you take it until you have the core ("that's what you came for"). Hold X: you're down the beam on the ground with the alien quad beside you. The pad takes you down without it, too. | `Mothership.takeQuad` |
+| 741 | **Earl's quad as it was never comes back.** | The rebuilt one is the alien quad you've had in the debug menu (boost, plasma). It isn't on the map and isn't saved yet: after a load it's back beside the beam. | `MegaNight.returnQuad`, `Mothership.reset` |
+| 742 | **The radio works aboard.** | The Blessing reaches everywhere, so the family talk to you up there (Wyatt: "your signal just went straight up"). No map aboard. | |
+| 743 | **The core at the fence box.** | Capacity 3000 (it was 1000), and full. Ellen: "the gauge only goes to one." Then she points you at the Men in Black's channel, still transmitting in the south. | `config.station.power.cells.shipCore`, `Station.fitShipCore`, `ship.fitted.*` |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

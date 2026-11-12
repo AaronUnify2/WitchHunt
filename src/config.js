@@ -731,7 +731,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -769,7 +769,7 @@ export const config = {
   // Session 33 (Aaron's play-through, part 2): where there's no map to be had. Inside these interiors the
   // minimap is a black disc and the full map is refused with these words (ui/MapUi.js noMapIn).
   maps: {
-    noneIn: { placeBeyond: 'No map of this place', mineshaft: "The map's no use down here", bigfootCave: 'No map of the cave' },
+    noneIn: { placeBeyond: 'No map of this place', mineshaft: "The map's no use down here", bigfootCave: 'No map of the cave', mothership: 'No map of this' },
   },
 
   // Full-screen map (D-pad up / M)
@@ -2502,6 +2502,8 @@ export const config = {
       cells: {
         // The crashed plane's small alien power cell (Session 25; the debug menu until then).
         planeCell: { name: "the plane's alien power cell", capacity: 1000, charge: 500 },
+        // Build queue item 5: the mothership's big core (the fence's store trebled, and full).
+        shipCore: { name: "the ship's core", capacity: 3000, charge: 3000 },
       },
       fullSecurityCharge: 100, // charge that gives the fence its full security value
       nightDrain: 40, // drained steadily over each night
@@ -4469,6 +4471,23 @@ export const config = {
     // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
     // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
+  // Build queue item 5: the crashed UFO (world/CrashedUfoSite.js) and the mothership (encounters/Mothership.js;
+  // story spine, beat 9). Scaffolding: every number a first guess. Their look: render/mothershipModel.js.
+  crashedUfo: {
+    radius: 26, // metres from its middle the set reaches (for drawing it)
+    look: { beamOpacity: 0.16, glow: { green: 0x3ad08a, purple: 0x8a4ad0 }, colors: { earth: 0x2e261c, char: 0x1a1612, hull: 0x4a4e56, hullPale: 0x62666e, hullDark: 0x2c2f35 } },
+  },
+  mothership: {
+    beamRange: 2.2, // metres from the beam's middle on the ground: "step into the light"
+    interactRange: 1.6,
+    light: { ambientDay: 2.4, ambientNight: 2.4, ambientColor: 0x9a8ac8, fogColor: 0x14101e, fogNear: 6, fogFar: 60 },
+    look: { glow: { green: 0x3ad08a, purple: 0x8a4ad0, core: 0xb8ffe0 }, colors: { deck: 0x555963, hull: 0x666a74, hullPale: 0x7a7e88, hullDark: 0x3a3d45, crate: 0x4a3e2e, crateDark: 0x3a3026 } },
+    // The greys aboard: [x, z, kit stage] each, in the ship's frame (the further in, the more cowboy). They see Tom
+    // within `see` metres, aim for `aim` seconds, fire (hitChance, damage, within range), wait `after`, sidestep
+    // `strafe` metres for `step` seconds at `speed`, and aim again.
+    greys: { posts: [[0.8, 23, 1], [-4, 33, 2], [4.5, 39, 2], [-4, 50, 3], [6, 61, 3]], health: 70, see: 15, aim: 0.9, after: 0.4, step: 0.8, strafe: 1.6, speed: 2.4, range: 30, hitChance: 0.4, damage: 9, shells: 3 },
   },
 
   // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js; story spine, beat 8).

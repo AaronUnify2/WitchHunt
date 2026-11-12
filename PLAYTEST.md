@@ -693,6 +693,15 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Dawn**, and Ellen's ask. The goal points south.
 - [ ] **Frame rate** on the tablet with all of them in the yard.
 
+**Round 80: the crashed UFO and the mothership, scaffolding (build queue item 5).** "Continue story: The crashed UFO" on a fresh run. OPEN_QUESTIONS #735-743.
+- [ ] **The site:** the saucer, its rim light, the beam. Does it read from the clearing's edge?
+- [ ] **Up the beam.** Too abrupt without a scene?
+- [ ] **The corridor and the first grey.** Then the core room's two. Is a stand-and-shoot grey enough for now, or does it want cover first?
+- [ ] **The core** off its plinth.
+- [ ] **The hangar:** Earl's quad on its cradle. Take it down the beam.
+- [ ] **Ride the alien quad home** (boost on L3 or A, plasma on the triggers).
+- [ ] **Fit the core:** 3000 on the gauge, and Ellen's lines.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

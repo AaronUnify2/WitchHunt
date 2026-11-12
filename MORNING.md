@@ -2,6 +2,15 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 5: the crashed UFO and the mothership
+
+**Scaffolded and on `main`.** 1317 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The crashed UFO".
+- **What plays:** the saucer and its beam → hold X in the light → aboard: a corridor, a core room, a hangar, five greys getting more cowboy as you go → take the core → Earl's quad on a cradle: take it down the beam → ride the alien quad home → fit the core: 3000 on the fence.
+- **What's placeholder:** the ship is four boxes in a line; the greys stand and shoot; going up and down has no scene; the alien quad isn't saved or on the map yet.
+- **For our session on it:** #735-743; PLAYTEST round 80.
+
 # Build queue, item 4: the missing quad and the mega night
 
 **Scaffolded and on `main`.** 1311 tests pass; checked headless; not played by hand.

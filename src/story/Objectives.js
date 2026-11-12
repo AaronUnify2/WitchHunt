@@ -267,7 +267,18 @@ export class Objectives {
       if (mg.state === 'night') return step('megaNight', `Hold the station. Wave ${Math.min(mg.sent, mg.plan.length)} of ${mg.plan.length}.`);
       return step('megaHome', 'The station is under attack. Get home.', L.cabin.frontDoor);
     }
-    if (has('megaNightDone')) return step('ufoGo', "Find the ship that came down in the south. Ellen wants what drives it for the fence.", g.world.map.clearings.find((c) => c.key === 'crashedUfo')); // (a holding goal until build queue item 5)
+    // ---- the crashed UFO and the mothership (build queue item 5) ----
+    const ms = g.mothership;
+    if (has('megaNightDone') && ms?.ready && !has('shipCoreFitted')) {
+      if (ms.inside) {
+        if (!has('shipCoreTaken')) return step('shipCore', "Find what drives the ship. Deeper in.");
+        if (!has('quadReturned')) return step('shipQuad', "Earl's quad is in the hangar, at the far end.");
+        return step('shipDown', 'Back to the pad, and down.');
+      }
+      if (!has('shipCoreTaken')) return step(has('shipEntered') ? 'shipBack' : 'ufoGo', has('shipEntered') ? 'Go back up the beam for the core.' : 'Find the ship that came down in the south. Ellen wants what drives it for the fence.', ms.beamAt);
+      return step('coreFit', "Take the ship's core home and fit it to the fence box.", L.fenceBox);
+    }
+    if (has('shipCoreFitted')) return step('armoryGo', "Somebody is still transmitting on the Men in Black's channel, in the south past the crashed ship. Find them.", g.world.map.clearings.find((c) => c.key === 'carArmory')); // (a holding goal until build queue item 6)
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

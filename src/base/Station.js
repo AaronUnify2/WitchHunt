@@ -337,6 +337,16 @@ export class Station {
     return `The alien cell hums in the fence box: capacity ${this.state.capacity}, +${Math.round(added)} charge`;
   }
 
+  // Build queue item 5: the ship's core into the fence box.
+  fitShipCore() {
+    const added = this.state.fitPowerCell('shipCore');
+    this.progress?.setFlag('shipCoreFitted');
+    this.renderer.pulseWire();
+    this.combat.sfx.play('pickup');
+    this.bus.emit('station:shipCore');
+    return `The core settles into the fence box and every wire in the yard sings: capacity ${this.state.capacity}, +${Math.round(added)} charge`;
+  }
+
   // Session 20 (Aaron): where Save and quit puts Tom back: in the cabin's
   // main room, facing the front door (config.station.safePoint: from the cabin's centre).
   safePoint() {
@@ -678,6 +688,10 @@ export class Station {
     // Session 25: the crashed plane's small alien power cell, carried home.
     if (this.progress?.has('planeCellTaken') && !this.progress.has('planeCellFitted')) {
       offer(dist(box), { key: 'cell', prompt: `Hold ${X}: fit the plane's alien power cell to the fence box`, busy: 'Fitting the cell…', seconds: h.battery, act: () => this.fitPlaneCell() }, -1);
+    }
+    // Build queue item 5: the mothership's core.
+    if (this.progress?.has('shipCoreTaken') && !this.progress.has('shipCoreFitted')) {
+      offer(dist(box), { key: 'core', prompt: `Hold ${X}: fit the ship's core to the fence box`, busy: 'Fitting the core…', seconds: h.battery, act: () => this.fitShipCore() }, -1);
     }
     if (inv.batteries > 0 && !s.chargeFull) {
       offer(dist(box), { key: 'battery', prompt: `Hold ${X}: fit a battery in the fence box (${chargeText})`, busy: 'Fitting the battery…', seconds: h.battery, act: () => this.fitBattery() });

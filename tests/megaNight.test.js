@@ -134,11 +134,13 @@ describe('the beat, start to end', () => {
     expect(again.m.ring).toEqual({ x: 7, z: 9 });
   });
 
-  it('the quad comes back when the mothership gives it back', () => {
+  it('the mothership gives it back rebuilt: the old quad stays gone, the ring goes', () => {
     const r = rig();
     r.m.returnQuad();
-    expect(r.quad.gone).toBe(false);
+    expect(r.quad.gone).toBe(true); // Earl's quad as it was never comes back; the alien quad is the mothership's to place
     expect(r.set.has('quadReturned')).toBe(true);
+    r.m.reset();
+    expect(r.quad.gone).toBe(true);
   });
 });
 
