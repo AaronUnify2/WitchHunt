@@ -731,7 +731,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4769,6 +4769,75 @@ export const config = {
         shoe: 0x0e0e0e,
         blood: 0x2a0e0c,
         bloodDark: 0x1c0a09,
+      },
+    },
+  },
+
+  // Session 30: the abandoned mineshaft (an optional encounter; DESIGN.md "Abandoned mineshaft"; the
+  // surface set: render/mineshaftModel.js, world/MineshaftSite.js; the beat: encounters/Mineshaft.js;
+  // the texts: data/mineshaft.json). The Black Laurel Coal Company's No. 2 shaft (a draft name).
+  mineshaft: {
+    radius: 26, // metres from its middle the set reaches (for drawing it)
+    encounter: {
+      interactRange: 1.7,
+      holds: { search: 1.0, desk: 1.0, tags: 0.9, lamps: 0.9, locker: 1.2, army: 1.0, cart: 0.8, battery: 2.0, lever: 0.9 }, // seconds held (X)
+      sweepDistance: 6, // metres from the arrival spot: the arrival sweep (once)
+      locker: { pistol: 10, kits: 1 }, // the foreman's locker: rounds and a first aid kit
+      lamps: { scrap: 3 }, // the lamp rack: dead cap lamps, good for scrap
+      army: { rifle: 10 }, // the army's crates by the collar: service rifle rounds
+      creakEvery: [6, 15], // the headframe in the wind, while Tom's near (seconds)
+      creakDistance: 40,
+    },
+    look: {
+      weather: { rust: [0x34302a, 0x2a2622, 0x3a3630, 0x2c2a28, 0x3a3028], grimeHeight: 0.16, keepBright: [0x3a5a2a, 0x5a1a14] },
+      colors: {
+        post: 0x3e3428, // the headframe's timbers
+        postDark: 0x2e261e,
+        plank: 0x4a4234,
+        plankDark: 0x383024,
+        clap: 0x56524a, // the office's boards, once white
+        clapDark: 0x3a362e,
+        trim: 0x2e2a24,
+        tin: 0x3a3028, // rusted roofing tin
+        tinDark: 0x2c2a28,
+        iron: 0x34302a, // the cage, the sheave, the rails
+        ironDark: 0x2a2622,
+        cable: 0x1e1d1c,
+        concrete: 0x4a4944, // the collar
+        concreteDark: 0x3a3936,
+        coal: 0x141312, // the spoil, the dust on everything
+        coalDark: 0x0e0d0d,
+        dirt: 0x2e281e,
+        hollow: 0x0b0a0a, // down the shaft, inside a window
+        glass: 0x1e262a,
+        floor: 0x2c251c,
+        desk: 0x3a2a1c,
+        paper: 0x6a665a,
+        ink: 0x1a1612,
+        brass: 0x5a4a24, // the tag board's tags, the cap lamps
+        board: 0x1e1c1a, // the tag board's black paint
+        locker: 0x34403a, // institutional green, chipped
+        lamp: 0x3a3a36, // a cap lamp's body
+        lens: 0x5a5a4c,
+        box: 0x3a3a38, // the lift's control box
+        boxDark: 0x2a2a28,
+        lead: 0x5a1a14, // a jumper lead's red clip
+        leadBlack: 0x161514,
+        battery: 0x1a1a1c,
+        batteryCap: 0x5a5440,
+        live: 0x3a5a2a, // the box's lamp, lit (unlit material: it glows a dull green)
+        signBoard: 0x4a4638,
+        signPaint: 0x1a1612,
+        army: 0x2e3424, // olive crates
+        armyDark: 0x22281a,
+        stencil: 0x5a5440,
+        tarp: 0x2a3228,
+        tape: 0x5a5020, // hazard tape, faded
+        silk: 0x5a584e, // a strand of something pale on the headframe (the first hint)
+        bark: 0x2e2820,
+        barkDark: 0x241f19,
+        endGrain: 0x5e5038,
+        helmet: 0x4a4022, // a miner's helmet, once yellow
       },
     },
   },

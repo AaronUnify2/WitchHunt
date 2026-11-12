@@ -254,10 +254,6 @@
     "moonshinersHoller": {"count": [0, 0], "chance": 0},
     "sawmill": {"count": [0, 0], "chance": 0},
     "milosBarn": {"count": [0, 0], "chance": 0},
-    "mineshaft": {
-      "count": [0, 1],
-      "chance": 0.5,
-      "weights": {"pickup": 1}
-    }
+    "mineshaft": {"count": [0, 0], "chance": 0}
   }
 }

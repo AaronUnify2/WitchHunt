@@ -93,6 +93,8 @@ import { SawmillSite } from '../world/SawmillSite.js';
 import { Sawmill } from '../encounters/Sawmill.js';
 import { HollerSite } from '../world/HollerSite.js';
 import { Holler } from '../encounters/Holler.js';
+import { MineshaftSite } from '../world/MineshaftSite.js';
+import { Mineshaft } from '../encounters/Mineshaft.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -173,6 +175,8 @@ export class Game {
     this.sawmillSite.init(this.scene, this.world, this.colliders);
     this.hollerSite = new HollerSite(this.cfg); // Session 29: the moonshiners' holler (an optional encounter)
     this.hollerSite.init(this.scene, this.world, this.colliders);
+    this.mineSite = new MineshaftSite(this.cfg); // Session 30: the abandoned mineshaft (an optional encounter)
+    this.mineSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -868,6 +872,27 @@ export class Game {
     });
     this.combat.promptSources.push(this.holler.hud);
     this.vehicles.busy?.push(this.holler.hud);
+    // The abandoned mineshaft (an optional encounter: encounters/Mineshaft.js; Session 30).
+    this.mineshaft = new Mineshaft(this.cfg, this.bus);
+    this.mineshaft.init({
+      scene: this.scene,
+      site: this.mineSite,
+      player: this.player,
+      combat: this.combat,
+      enemies: this.combat.enemies,
+      cutscenes: this.cutscenes,
+      dialogue: this.dialogue,
+      subtitles: this.subtitles,
+      progress: this.progress,
+      lore: this.lore,
+      paper: this.paper,
+      card: this.card,
+      clock: this.clock,
+      demo: this.demo,
+      notify,
+    });
+    this.combat.promptSources.push(this.mineshaft.hud);
+    this.vehicles.busy?.push(this.mineshaft.hud);
     // Someone who isn't there says nothing (Junie, taken).
     this.dialogue.absent = (speaker) => speaker === 'junie' && this.junieTaken.away;
     this.combat.promptSources.push(this.junieTaken.hud);
@@ -1046,6 +1071,7 @@ export class Game {
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
     this.holler.addDebugItems(menu);
+    this.mineshaft.addDebugItems(menu);
     const display = menu.category(DEBUG.display);
     display.addItem('Toggle debug overlay', () => this.overlay.toggle());
     display.addItem(
@@ -1572,6 +1598,7 @@ export class Game {
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
     this.holler.reset(); // Session 29
+    this.mineshaft.reset(); // Session 30
     this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
@@ -1750,6 +1777,7 @@ export class Game {
     this.cuttingSite.update(camera.position, this.drawDistance);
     this.sawmillSite.update(camera.position, this.drawDistance);
     this.hollerSite.update(camera.position, this.drawDistance);
+    this.mineSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
@@ -1854,6 +1882,7 @@ export class Game {
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill
     if (story) this.holler.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 29: the moonshiners' holler
+    if (story) this.mineshaft.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 30: the abandoned mineshaft
   }
 
   get phase() {
@@ -1907,11 +1936,13 @@ export class Game {
     this.cuttingSite.dispose();
     this.sawmillSite.dispose();
     this.hollerSite.dispose();
+    this.mineSite.dispose();
     this.stairs.dispose();
     this.milo.dispose();
     this.cutting.dispose();
     this.sawmill.dispose();
     this.holler.dispose();
+    this.mineshaft.dispose();
     this.stairsSite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();

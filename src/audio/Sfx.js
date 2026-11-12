@@ -1239,6 +1239,25 @@ const RECIPES = {
     s.tone(o, { seconds: 0.4, wave: 'sawtooth', freq: 620, endFreq: 760, gain: 0.04, attack: 0.1 });
     setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 800, q: 3, gain: 0.5 }), 400);
   },
+  // Session 30 (the mineshaft). The headframe working in the wind: a long timber groan, a cable ticking.
+  frameCreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 60);
+    s.tone(o, { seconds: 1.3, wave: 'sawtooth', freq: 74, endFreq: 61, gain: 0.07, attack: 0.4, vibrato: 3 });
+    s.noiseBurst(o, { seconds: 1.1, type: 'bandpass', freq: 420, endFreq: 300, q: 6, gain: 0.12, attack: 0.5 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.05, wave: 'triangle', freq: 1900, gain: 0.04 }), 900);
+  },
+  // A battery's leads clamped on: two bites of metal, a small spark.
+  batteryFit(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 20);
+    for (const t of [0, 420]) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 1600, q: 3, gain: 0.5 }), t);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.03, type: 'highpass', freq: 5000, gain: 0.5 }), 470);
+  },
+  // A relay closing in the hoist house, and the lamp's hum coming up.
+  relayClack(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 40);
+    s.noiseBurst(o, { seconds: 0.04, type: 'lowpass', freq: 1200, gain: 0.8 });
+    setTimeout(() => s.ready && s.tone(o, { seconds: 1.2, wave: 'sawtooth', freq: 100, gain: 0.03, attack: 0.3 }), 60);
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

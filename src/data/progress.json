@@ -115,6 +115,14 @@
     {"id": "hollerFamilyDown", "about": "The moonshiners' holler: every one of the Rigsbys that came is down."},
     {"id": "hollerStillShut", "about": "The moonshiners' holler: the still shut down with the valves in the right order (the copper worm's safe to take)."},
     {"id": "hollerStillBlown", "about": "The moonshiners' holler: the still blew (the gauge went over): the copper worm went with it."},
-    {"id": "copperCoilTaken", "about": "The moonshiners' holler: the still's copper worm taken from the flake stand (lore copperCoil: the dozer's flamethrower, for later)."}
+    {"id": "copperCoilTaken", "about": "The moonshiners' holler: the still's copper worm taken from the flake stand (lore copperCoil: the dozer's flamethrower, for later)."},
+    {"id": "mineVisited", "about": "The abandoned mineshaft: Tom has come up the track and seen it (encounters/Mineshaft.js: the arrival sweep)."},
+    {"id": "mineDesk", "about": "The abandoned mineshaft: the foreman's desk gone through (the army's requisition; they wanted the low seam opened)."},
+    {"id": "mineTags", "about": "The abandoned mineshaft: the tag board looked at (eleven men went down and never tagged out)."},
+    {"id": "mineLamps", "about": "The abandoned mineshaft: the lamp rack stripped for scrap."},
+    {"id": "mineLocker", "about": "The abandoned mineshaft: the foreman's locker forced (pistol rounds, a first aid kit)."},
+    {"id": "mineArmy", "about": "The abandoned mineshaft: the army's crates by the collar looked through (rifle rounds; the empty tranquilliser crate, the cut net)."},
+    {"id": "mineCart", "about": "The abandoned mineshaft: the tipped tub looked at (the pale thread running back to the shaft)."},
+    {"id": "mineBatteryFitted", "about": "The abandoned mineshaft: a car battery fitted to the lift's control box (the cage works from then on)."}
   ]
 }
