@@ -34,6 +34,7 @@ describe('GroundField heights', () => {
   it('levels the clearings', () => {
     for (const c of map.clearings) {
       if (c.key === 'railwayCutting') continue; // Session 27: banks either side of the line, on purpose (tests/railwayCutting.test.js)
+      if (c.key === 'moonshinersHoller') continue; // Session 29: a hollow between two ridges, on purpose (tests/holler.test.js)
       const centre = ground.heightAt(c.x, c.z);
       for (let a = 0; a < 8; a++) {
         const r = c.radius * 0.5;

@@ -71,7 +71,7 @@ export const SAWMILL = {
 const UP = new THREE.Vector3(0, 1, 0);
 
 // A round limb from a to b (the current frame), `sides` round.
-function limb(b, a, to, r, color, sides = 5, r2 = r) {
+export function limb(b, a, to, r, color, sides = 5, r2 = r) {
   const av = new THREE.Vector3(...a);
   const bv = new THREE.Vector3(...to);
   const d = bv.clone().sub(av);
@@ -84,7 +84,7 @@ function limb(b, a, to, r, color, sides = 5, r2 = r) {
 }
 
 // A log along the frame's x, centred at (x, y, z): bark, both ends cut.
-function log(b, len, r, x, y, z, yaw = 0, color = null) {
+export function log(b, len, r, x, y, z, yaw = 0, color = null) {
   const c = b.c;
   b.push(x, y, z, yaw);
   b.put(new THREE.CylinderGeometry(r, r * 1.06, len, 8, 1, true).rotateZ(Math.PI / 2), color ?? (b.rand() < 0.5 ? c.bark : c.barkDark));
@@ -120,7 +120,7 @@ function axe(b) {
 }
 
 // A blood pool on the ground or a floor (its frame's y is the surface).
-function blood(b, r, x = 0, z = 0, y = 0.012) {
+export function blood(b, r, x = 0, z = 0, y = 0.012) {
   const c = b.c;
   b.put(new THREE.CylinderGeometry(r, r, 0.012, 9).scale(1, 1, 0.7 + b.rand() * 0.5), b.rand() < 0.5 ? c.blood : c.bloodDark, x, y, z, b.rand() * 6);
 }

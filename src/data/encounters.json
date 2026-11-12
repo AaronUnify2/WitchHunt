@@ -15,7 +15,7 @@
     { "id": "carArmory", "name": "Car Armory", "band": "south", "appears": "every", "placement": "spine", "builtIn": "M14" },
     { "id": "groundZero", "name": "Ground Zero", "band": "south", "appears": "every", "placement": "spine", "builtIn": "M15" },
     { "id": "hut", "name": "Witch's hut", "band": "south", "appears": "every", "placement": "spine", "kind": "hut", "clearingType": null, "builtIn": "M7" },
-    { "id": "moonshinersHoller", "name": "Moonshiners' holler", "placement": "optional", "rank": 1, "builtIn": "M14" },
+    { "id": "moonshinersHoller", "name": "Moonshiners' holler", "placement": "optional", "rank": 1, "radius": 30, "builtIn": "M14" },
     { "id": "railwayCutting", "name": "Railway cutting", "placement": "optional", "rank": 2, "onRailway": true, "radius": 24, "builtIn": "M11" },
     { "id": "sawmill", "name": "Sawmill", "placement": "optional", "rank": 3, "radius": 26, "builtIn": "M13" },
     { "id": "mineshaft", "name": "Abandoned mineshaft", "placement": "optional", "rank": 4, "builtIn": "M12" },

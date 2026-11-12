@@ -91,6 +91,7 @@ import { Chainsaw } from '../combat/Chainsaw.js';
 import { RailwayCutting } from '../encounters/RailwayCutting.js';
 import { SawmillSite } from '../world/SawmillSite.js';
 import { Sawmill } from '../encounters/Sawmill.js';
+import { HollerSite } from '../world/HollerSite.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -169,6 +170,8 @@ export class Game {
     this.cuttingSite.init(this.scene, this.world, this.colliders);
     this.sawmillSite = new SawmillSite(this.cfg); // Session 28: the sawmill (an optional encounter)
     this.sawmillSite.init(this.scene, this.world, this.colliders);
+    this.hollerSite = new HollerSite(this.cfg); // Session 29: the moonshiners' holler (an optional encounter)
+    this.hollerSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -1720,6 +1723,7 @@ export class Game {
     this.churchSite.update(camera.position, this.drawDistance);
     this.cuttingSite.update(camera.position, this.drawDistance);
     this.sawmillSite.update(camera.position, this.drawDistance);
+    this.hollerSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
@@ -1875,6 +1879,7 @@ export class Game {
     this.churchSite.dispose();
     this.cuttingSite.dispose();
     this.sawmillSite.dispose();
+    this.hollerSite.dispose();
     this.stairs.dispose();
     this.milo.dispose();
     this.cutting.dispose();

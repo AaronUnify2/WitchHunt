@@ -479,6 +479,13 @@ export const config = {
         carve: 0x1e1c18,
       },
     },
+    // Session 29: the moonshiners' holler's ground (world/hollerGround.js; model z ahead from the mouth
+    // at -30, x on the walker's left). floorHalf / yardHalf: the floor's half width up the hollow and at
+    // the still's yard (yard: the z it widens over); head: where the headwall starts; wind / windRate:
+    // how far and how often the floor winds; the ridges' face, height (left, right), top and fade; mouth /
+    // nose: the ridges come down to nothing over `nose` metres before the mouth; gullies for the other
+    // pathways in.
+    holler: { floorHalf: 4.2, yardHalf: 9.5, yard: [1, 10], head: 21, wind: 2.0, windRate: 0.085, faceRun: 5, height: [7.5, 8.6], topOut: 12, outFade: 14, mouth: -28, nose: 12, lumps: 0.12, gully: 2.4, gullyBlend: 3.2, wooded: 2.0 }, // wooded: metres up the faces the forest's trees start
     clearing: {
       radiusMin: 16,
       radiusMax: 24,
@@ -724,7 +731,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4620,6 +4627,109 @@ export const config = {
         sawBar: 0x4a4c4c,
         axe: 0x3a3a3a,
         handle: 0x4a3a24,
+      },
+    },
+  },
+  // Session 29: the moonshiners' holler (an optional encounter; DESIGN.md "Moonshiners' holler"; the
+  // hollow's ground: world/hollerGround.js (config.map.holler); the set: render/hollerModel.js,
+  // world/HollerSite.js). The Rigsbys' still (a draft name) up a narrow hollow the family trapped
+  // against the law when the lights came over the government land. The layout's measurements are in
+  // the model (HOLLER); the traps' layout and the colours are here.
+  holler: {
+    radius: 32, // metres from its middle the set reaches (for drawing it)
+    // The traps up the floor (model z from the mouth at -28 to the head at 21; dx: off the floor's
+    // middle, + the walker's left). shotgun: a gun on a stump at the floor's side (side: +1 left, -1
+    // right), set `back` metres up the hollow, aimed at the line's middle; cans: tin cans on a wire
+    // across the floor (span: its half length, else the floor's); bear: under leaves piled too
+    // neatly; snare: a sapling (on `side`) bent over a noose. mapped: false (two of them): not on the
+    // family's trap map (it's out of date). sprung: already gone off (the first, and the man it got).
+    traps: [
+      { id: 'mouthGun', kind: 'shotgun', z: -24, side: 1, back: 2.2, sprung: true },
+      { id: 'bear1', kind: 'bear', z: -19, dx: 1.2 },
+      { id: 'cans1', kind: 'cans', z: -14.5, skew: 0.3 },
+      { id: 'snare1', kind: 'snare', z: -10, dx: -1.4, side: -1 },
+      { id: 'gun2', kind: 'shotgun', z: -1, side: 1, back: 2.4 },
+      { id: 'bear2', kind: 'bear', z: 2.5, dx: -1.6, mapped: false },
+      { id: 'cans2', kind: 'cans', z: 6.5, span: 5.5 },
+      { id: 'snare2', kind: 'snare', z: 9, dx: 3, side: 1, mapped: false },
+      { id: 'bear3', kind: 'bear', z: 10.5, dx: -5 },
+    ],
+    look: {
+      weather: { rust: [0x34302a, 0x2a2622, 0x3a2a1e, 0x2c2a28], grimeHeight: 0.14, keepBright: [] },
+      colors: {
+        rock: 0x4a4840, // the ledges, wet and mossy
+        rockDark: 0x363630,
+        stone: 0x4e4a42, // the firebox's laid stone
+        stoneDark: 0x3a3732,
+        wetStone: 0x2e302c,
+        water: 0x2c383a, // the branch, a little sky in it
+        laurel: 0x2a3a26, // rhododendron, leathery and dark
+        laurelDark: 0x223020,
+        bark: 0x2e2820,
+        barkDark: 0x241f19,
+        endGrain: 0x5a4c36,
+        sapling: 0x3a3226,
+        leaves: 0x4a3a28, // the floor's litter (near the ground's own colour)
+        leavesDark: 0x42342a,
+        leavesNeat: 0x4e3e28, // the one pile too neat: a shade too even, a shade too fresh
+        stake: 0x3a3022,
+        cord: 0x4a4434,
+        line: 0x6c6c66, // the fishing line: pale enough to catch the torch
+        wire: 0x3a3a38,
+        can: 0x5a5a54,
+        canRust: 0x4a3222,
+        trapIron: 0x2a2826,
+        gunMetal: 0x232325,
+        gunStock: 0x3e2a1a,
+        board: 0x4a4234,
+        boardDark: 0x363024,
+        paint: 0x1a1612,
+        chalk: 0x6a6860,
+        post: 0x3e3428,
+        postDark: 0x2e261e,
+        tin: 0x3a3028, // rusted roofing tin
+        floor: 0x2c251c,
+        stave: 0x4a3622, // the barrels
+        staveDark: 0x3a2a1a,
+        hoop: 0x2a2826,
+        mash: 0x4a4228, // sour mash, a skin on it
+        copper: 0x6a3c22, // the still, dulled brown with heat and age
+        copperDark: 0x52301c,
+        dough: 0x5a5440, // the rye paste sealing the cap
+        iron: 0x2a2826,
+        ironDark: 0x1e1d1c,
+        glow: 0x7a3a14, // the fire through the firebox door's gaps (unlit)
+        gauge: 0x3a3a36,
+        gaugeFace: 0x6a665a,
+        gaugeRed: 0x5a1a14,
+        brassValve: 0x5a4a24,
+        jar: 0x3e4a48, // mason jars
+        jug: 0x5a4a34, // stoneware
+        sack: 0x5a5040, // corn and sugar
+        thermos: 0x2a3a2e,
+        paper: 0x6a665a,
+        ink: 0x1a1612,
+        tackle: 0x2a3a2a, // a green tackle box
+        cutterGrip: 0x5a1e14, // the cutters' red grips, faded
+        cabinet: 0x3a2a1c,
+        ammoCan: 0x2e3424,
+        hollow: 0x0d0c0b,
+        // The man in the suit at the mouth (render/sawmillModel.js deadMan).
+        skin: 0x5c5a4c,
+        skinDark: 0x4a4a40,
+        flannelRed: 0x4a1a16,
+        denim: 0x1c2638,
+        workBrown: 0x2e2418,
+        boot: 0x1a1410,
+        hair: 0x1e140c,
+        hairGrey: 0x4a4a46,
+        hardHat: 0x5a4a14,
+        suit: 0x1c1c22,
+        shirt: 0x6a665c,
+        tie: 0x08080a,
+        shoe: 0x0e0e0e,
+        blood: 0x2a0e0c,
+        bloodDark: 0x1c0a09,
       },
     },
   },

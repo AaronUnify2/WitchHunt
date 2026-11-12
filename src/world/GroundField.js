@@ -15,6 +15,7 @@ import { noiseSeed, smoothstep } from './noise.js';
 import { cliffZ, cliffHeight, clampToWalkable, blendedNoise, fixedWeight } from './mapGeometry.js';
 import { pointSegmentDistance } from './mapGraph.js';
 import { cuttingFrame, liftAt } from './railCutting.js';
+import { hollerFrame, liftAt as hollerLift, offFloor, gullyKeep, toModel as hollerToModel } from './hollerGround.js';
 
 export class GroundField {
   // map: from generateMap(). mapCfg: config.map. terrainCfg: config.terrain.
@@ -69,6 +70,29 @@ export class GroundField {
       const line = [{ x: this.geo.xMin, z }, { x: this.geo.xMax, z }];
       this.rasterPath(line, { ...this.mapCfg.paths, width: k.track, clearance: k.cleared - k.track / 2, edgeNoise: 0.6 });
     }
+    // Session 29: the moonshiners' holler: its ridges are forest again (trees and laurel on both
+    // faces and over the head), only the floor and the other pathways' gullies left open.
+    this.holler = this.mapCfg.holler ? hollerFrame(this.map) : null;
+    if (this.holler) this.closeHoller();
+  }
+
+  // The holler's ridges back to forest: past `wooded` metres off the floor, clear of the gullies,
+  // inside the clearing (the forest outside it is forest already).
+  closeHoller() {
+    const f = this.holler;
+    const hc = this.mapCfg.holler;
+    const k = this.mapCfg.clearings;
+    const reach = f.radius + k.treeClearance + k.edgeNoise + 4;
+    this.forBox(f.x, f.z, f.x, f.z, reach, (idx, x, z) => {
+      if (this.open[idx] <= 0) return;
+      const m = hollerToModel(f, x, z);
+      if (m.z < hc.mouth) return;
+      const off = offFloor(hc, m.x, m.z);
+      const wood = smoothstep(hc.wooded, hc.wooded + 2, off) * gullyKeep(f, hc, x, z);
+      if (wood <= 0) return;
+      this.open[idx] *= 1 - wood;
+      this.dirt[idx] *= 1 - wood;
+    });
   }
 
   // Visit every mask point within `reach` of a box, calling fn(index, x, z).
@@ -245,6 +269,7 @@ export class GroundField {
     // Session 27: the railway cutting's banks (world/railCutting.js).
     const cut = this.mapCfg.railway?.cutting;
     this.cutting = this.map.railway && cut ? cuttingFrame(this.map, cut) : null;
+    // Session 29: the moonshiners' holler's ridges and headwall (world/hollerGround.js; its frame is buildMasks').
     if (this.rail) this.rail.grade = railGrade(this.rail, this.geo, this.mapCfg.railway.grade, (x, z) => this.rawHeight(x, z, 1));
     this.heights = new Float32Array(this.nx * this.nz);
     this.minHeight = Infinity;
@@ -293,6 +318,7 @@ export class GroundField {
     // hills its two collapsed tunnels are bored into at the map's edges.
     if (this.rail) h = this.railHeight(x, z, h);
     if (this.cutting) h += liftAt(this.cutting, this.mapCfg.railway.cutting, x, z);
+    if (this.holler) h += hollerLift(this.holler, this.mapCfg.holler, x, z);
     // Behind the cliff face the ground climbs to the plateau on top.
     const behind = cliffZ(this.geo, x) - z;
     if (behind > 0) h += cliffHeight(this.geo, x) * smoothstep(0, this.geo.cliff.rampWidth, behind);
