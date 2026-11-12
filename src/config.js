@@ -731,7 +731,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo', 'carArmory'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -2887,6 +2887,8 @@ export const config = {
       clown: { name: 'The clown', color: '#d8b8c8', blipFreq: 880 }, // Milo in character: high, musical, bouncing (the story)
       milo: { name: 'Milo', color: '#c8b49a', blipFreq: 250 }, // Milo out of character: his own voice, warm
       amos: { name: "A man's voice", color: '#b8ae94', blipFreq: 210 }, // Session 27: the Caller in Amos Pruitt's voice (1903), at the railway cutting
+      sheriff: { name: 'Sheriff', color: '#c8e0b0', blipFreq: 610 }, // build queue item 6: the friendly grey (a dry, careful drawl learned off old films)
+      agent: { name: 'A man in a suit', color: '#a0a4a8', blipFreq: 280 }, // build queue item 6: a surviving Man in Black, behind the barricade
       dispatch: { name: "The car's radio", color: '#9aa8a0', blipFreq: 330 }, // Session 28: the recall message looping on the agents' sedan radio (the sawmill)
       hattie: { name: "A girl's voice", color: '#d8b0c0', blipFreq: 820 }, // Session 27: the Caller as Hattie Bell McCoy, aged nine (1903)
       scanner: { name: 'Scanner', color: '#8fb08a', blipFreq: 260 }, // Session 15b: Earl's scanner at the gas station
@@ -4471,6 +4473,30 @@ export const config = {
     // gather: the share of the mist's puffs that move (faded) to within `spread` metres of the voice as it starts;
     // bank: how much thicker they are round it while it calls; reverse: how hard the low mist's flow runs backward.
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
+  },
+
+  // Build queue item 6: the Car Armory (world/CarArmorySite.js, render/carArmoryModel.js) and Sheriff
+  // (encounters/CarArmory.js; story spine, beat 10, first half). Scaffolding: every number a first guess.
+  carArmory: {
+    radius: 30, // metres from its middle the set reaches (for drawing it)
+    encounter: {
+      needs: 'shipCoreFitted', // Ellen's pointed him at the channel
+      seenBeyond: 14, // metres outside the set: Ellen's line as he comes up to it
+      drawBeyond: 60, // its people are posed within this of the set
+      deadBeyond: 40, // the yard's dead are there by the time he's this near
+      dead: 10, // Men in Black, dead, in the yard
+      linger: 7,
+      interactRange: 1.9,
+      cageSeconds: 3,
+      // The three alive behind the barricade: they fire in turn at anyone standing in the lane (aim, then `after`,
+      // then `step` seconds before the next aim); crouched he's seen only within `under` metres of the sandbags.
+      survivors: { health: 60, aim: 0.8, after: 0.3, step: 0.9, range: 40, hitChance: 0.45, damage: 11, under: 2.2 },
+      loot: { perPool: 40, kits: 4, scrap: 60, armour: 60 }, // rounds for every kind of ammunition he has a gun for; first aid kits; scrap; ballistic armour
+    },
+    look: {
+      glow: { portal: 0x58a0d8, portalDim: 0x1c3048 },
+      colors: { post: 0x34373a, mesh: 0x2a2d30, roof: 0x3a3c3a, paint: 0x6a6648, drum: 0x3a4a3a, slab: 0x4a4a46, wall: 0x45484a, rack: 0x3a3632, crate: 0x4a4434, crateDark: 0x3a3628, crateGreen: 0x34402e, locker: 0x3c4046, warn: 0x8a6a22, desk: 0x4a4238, paper: 0x7a7462, truck: 0x26282c, truckDark: 0x1c1e22, tyre: 0x141414, sand: 0x5e563e, sandDark: 0x4a4430, bar: 0x2e3034, cot: 0x3c4038 },
+    },
   },
 
   // Build queue item 5: the crashed UFO (world/CrashedUfoSite.js) and the mothership (encounters/Mothership.js;

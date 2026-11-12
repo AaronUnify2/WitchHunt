@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 5 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the UFO and the mothership). 1317 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 6 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the mothership; the Car Armory and Sheriff). 1326 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,16 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 6: the Car Armory and Sheriff (scaffolding)
+
+- **The beat** (`encounters/CarArmory.js`, `config.carArmory`; flags `armorySeen`, `armoryLooted`, `turretFound`, `armoryDocs`, `sheriffFreed`): Ellen at the gate; ten `mib` zombies; three living agents (`MibRenderer`, each an extra target) who fire in turn while Tom's seen (`seenInLane`, the mothership's `greyStep`); the stores, the turret's crate, the restocking explosives locker, documents 1-5 (`lore.give`); Sheriff (`AlienRenderer`, the last kit stage) freed from his cage.
+- **The set** (`render/carArmoryModel.js`, `world/CarArmorySite.js`): one baked mesh and the portal ring's glow, in the `carArmory` clearing, the gate facing the way in.
+- **Speakers:** `sheriff`, `agent`.
+- **Goals:** `armoryGo`, `armoryIn` (the stores, the turret, the files and the cage starred at once), then `uteGo` (a holding goal until item 7).
+- **Continue story:** `armory` (its start, outside the gate with the alien quad), `ute` (its end, at the cage).
+- **Tests:** `tests/carArmory.test.js` (9). 1326 pass. **Checked headless** on seed 1234: the gate and the dead; five seconds crouched in the lane (no hits) then five standing (33 damage); each search through the real input; charges 0 to 2; the lock; Sheriff's lines; the goal. No page errors.
+- **Placeholder:** the layout; the stealth rule; the documents' text; Sheriff's look and everything he does after the cage.
 
 ### The build queue, item 5: the crashed UFO and the mothership (scaffolding)
 

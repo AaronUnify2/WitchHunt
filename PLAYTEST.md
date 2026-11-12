@@ -702,6 +702,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Ride the alien quad home** (boost on L3 or A, plasma on the triggers).
 - [ ] **Fit the core:** 3000 on the gauge, and Ellen's lines.
 
+**Round 81: the Car Armory and Sheriff, scaffolding (build queue item 6).** "Continue story: The Car Armory" on a fresh run. OPEN_QUESTIONS #744-755.
+- [ ] **The gate:** Ellen's line; dead agents in the yard.
+- [ ] **Walk in upright:** a shout, and three guns over the sandbags. Crouch: they stop.
+- [ ] **The hall, crouched or round the side:** the crates, the long crate (the turret), the locker (charges), the desk (the files).
+- [ ] **Shoot a survivor.** How should that feel?
+- [ ] **The cages:** Sheriff in the last one. Break the lock. His three lines. Is that the right first meeting?
+- [ ] **The compound's shape:** too small, too open, about right?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

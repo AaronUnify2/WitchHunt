@@ -102,6 +102,23 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 742 | **The radio works aboard.** | The Blessing reaches everywhere, so the family talk to you up there (Wyatt: "your signal just went straight up"). No map aboard. | |
 | 743 | **The core at the fence box.** | Capacity 3000 (it was 1000), and full. Ellen: "the gauge only goes to one." Then she points you at the Men in Black's channel, still transmitting in the south. | `config.station.power.cells.shipCore`, `Station.fitShipCore`, `ship.fitted.*` |
 
+**Item 6: the Car Armory and Sheriff (PLAYTEST round 81)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 744 | **The base is an open compound, not an interior** (a first pass). | A fenced yard about 42 m square: the motor pool inside the gate on the left, the supply hall along the right, the armoured truck at the far left with its back doors open on a blue ring, a sandbag barricade across the middle, a holding block of four cages at the back. Outdoors because the escape in item 7 drives out of it. | `render/carArmoryModel.js`, `config.carArmory.look` |
+| 745 | **Why you go there.** | After the core's fitted Ellen says someone is still transmitting on the Men in Black's channel in the south; the goal points at it. At the gate: "Those are the men who started all this." | `ship.fitted.ellen2`, `armory.seen.ellen` |
+| 746 | **The dead.** | Ten Men in Black zombies in the yard between the gate and the barricade, there by the time you're near. They come back each visit until Sheriff's out. | `carArmory.encounter.dead` |
+| 747 | **The survivors.** | Three living agents kneeling behind the sandbags (SMG, pistol, rifle). Anyone standing in the open yard in front of them is shot at by each in turn (45% to hit, 11 damage). "Contact front! Nothing leaves this site!" | `encounter.survivors`, `armory.spotted.agent` |
+| 748 | **The stealth, as it is.** | Crouch and they don't see you, unless you're within about 2 m of the sandbags. The supply hall and the motor pool are outside what they can see. That's the whole rule: no sound, no light, no patrols. | `seenInLane`, `ARMORY.lane` |
+| 749 | **They can be killed.** | 60 health each. The first time, the screen says "He was a living man. He would have killed you." Nothing else changes. Should killing them cost something, or be impossible? | `CarArmory.hitAgent` |
+| 750 | **The stores.** | One search of the crates: 40 rounds for every kind of gun you carry, four first aid kits, 60 scrap, 60 body armour. | `encounter.loot` |
+| 751 | **The turret.** | A long crate in the hall: opening it sets a flag and Wyatt asks you to bring it home. It's set up at the station in item 7. | `turretFound` |
+| 752 | **The explosives locker restocks.** | Every visit it fills you back up to what you can carry (two charges now). The only place in the game that does. | `CarArmory.takeCharges` |
+| 753 | **Documents 1 to 5** are taken together off one desk. | They go in as lore items to hand in. They have no text yet: the files need writing with you. | `ARMORY_DOCS`, `lore.json` |
+| 754 | **Sheriff.** | In the last cage: the grey in the furthest cowboy kit the model has (hat, belt, gun). No white hat or tin star yet. Hold X for three seconds on the lock. He has three lines: "You are not one of theirs, and you are not one of mine." / "They call me Specimen Two. I call myself Sheriff." / "There is a truck with a gun on it in their motor pool. You drive." He stands outside the cage; a bell starts. | `armory.sheriff.*`, `CarArmory.free` |
+| 755 | **Nothing gates the cage.** | You can go straight to it, crouched, without touching the stores. | |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

@@ -278,7 +278,18 @@ export class Objectives {
       if (!has('shipCoreTaken')) return step(has('shipEntered') ? 'shipBack' : 'ufoGo', has('shipEntered') ? 'Go back up the beam for the core.' : 'Find the ship that came down in the south. Ellen wants what drives it for the fence.', ms.beamAt);
       return step('coreFit', "Take the ship's core home and fit it to the fence box.", L.fenceBox);
     }
-    if (has('shipCoreFitted')) return step('armoryGo', "Somebody is still transmitting on the Men in Black's channel, in the south past the crashed ship. Find them.", g.world.map.clearings.find((c) => c.key === 'carArmory')); // (a holding goal until build queue item 6)
+    // ---- the Car Armory and Sheriff (build queue item 6) ----
+    const ar = g.carArmory;
+    if (has('shipCoreFitted') && ar?.ready && !has('sheriffFreed')) {
+      if (!has('armorySeen')) return step('armoryGo', "Somebody is still transmitting on the Men in Black's channel, in the south past the crashed ship. Find them.", ar.site.place);
+      const todo = [];
+      if (!has('armoryLooted')) todo.push(ar.site.spots.crates);
+      if (!has('turretFound')) todo.push(ar.site.spots.turret);
+      if (!has('armoryDocs')) todo.push(ar.site.spots.docs);
+      todo.push(ar.site.spots.cage);
+      return steps('armoryIn', 'Search the Car Armory: its stores, its files, and whatever they are keeping in the cages at the back. Someone in there is alive, and shooting.', todo);
+    }
+    if (has('sheriffFreed')) return step('uteGo', 'The alarms are going. Get Sheriff to the truck in the motor pool.', ar?.site?.spots?.ute ?? null); // (a holding goal until build queue item 7)
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

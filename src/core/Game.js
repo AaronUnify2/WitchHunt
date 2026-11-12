@@ -73,6 +73,8 @@ import { BigfootCave } from '../encounters/BigfootCave.js';
 import { MegaNight } from '../encounters/MegaNight.js';
 import { Mothership } from '../encounters/Mothership.js';
 import { CrashedUfoSite } from '../world/CrashedUfoSite.js';
+import { CarArmorySite } from '../world/CarArmorySite.js';
+import { CarArmory } from '../encounters/CarArmory.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -181,6 +183,8 @@ export class Game {
     this.dozerCampSite.init(this.scene, this.world, this.colliders);
     this.ufoSite = new CrashedUfoSite(this.cfg); // build queue item 5: the crashed UFO and its beam
     this.ufoSite.init(this.scene, this.world, this.colliders);
+    this.armorySite = new CarArmorySite(this.cfg); // build queue item 6: the Car Armory's compound
+    this.armorySite.init(this.scene, this.world, this.colliders);
     this.barnSite = new MiloBarnSite(this.cfg); // Milo's barn (an optional encounter)
     this.barnSite.init(this.scene, this.world, this.colliders);
     this.cuttingSite = new RailwayCuttingSite(this.cfg); // Session 27: the railway cutting (an optional encounter)
@@ -940,6 +944,11 @@ export class Game {
     this.combat.promptSources.push(this.mothership.hud);
     this.vehicles.busy?.push(this.mothership.hud);
     this.bus.on('station:shipCore', () => this.dialogue.play('ship.fitted.ellen'));
+    // Build queue item 6: the Car Armory and Sheriff (encounters/CarArmory.js).
+    this.carArmory = new CarArmory(this.cfg, this.bus);
+    this.carArmory.init({ scene: this.scene, site: this.armorySite, player: this.player, combat: this.combat, explosives: this.explosives, enemies: this.combat.enemies, ground: this.world.ground, lore: this.lore, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
+    this.combat.promptSources.push(this.carArmory.hud);
+    this.vehicles.busy?.push(this.carArmory.hud);
     this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
     this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
@@ -1150,6 +1159,7 @@ export class Game {
     this.bigfootCave.addDebugItems(menu);
     this.megaNight.addDebugItems(menu);
     this.mothership.addDebugItems(menu);
+    this.carArmory.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1686,6 +1696,7 @@ export class Game {
     this.megaNight.loadState(d.megaNight); // build queue item 4: where the quad stood
     this.megaNight.reset();
     this.mothership.reset();
+    this.carArmory.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1877,6 +1888,7 @@ export class Game {
     this.stairsSite.update(camera.position, this.drawDistance);
     this.dozerCampSite.update(camera.position, this.drawDistance);
     this.ufoSite.update(camera.position, this.drawDistance);
+    this.armorySite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
     // M7 step 6: the run's clock, and the ending after she dies.
@@ -1981,6 +1993,7 @@ export class Game {
     if (story) this.bigfootCave.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.megaNight.update(dt, playing && this.combat.alive);
     if (story) this.mothership.update(dt, controls, playing && this.combat.alive, !locked && !busy);
+    if (story) this.carArmory.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill
@@ -2050,6 +2063,7 @@ export class Game {
     this.stairsSite.dispose();
     this.dozerCampSite.dispose();
     this.ufoSite.dispose();
+    this.armorySite.dispose();
     this.barnSite.dispose();
     this.radioStatus.dispose();
     document.removeEventListener('pointerlockchange', this.onPointerLockChange);

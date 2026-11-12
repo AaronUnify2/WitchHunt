@@ -2,6 +2,16 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 6: the Car Armory and Sheriff
+
+**Scaffolded and on `main`.** 1326 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The Car Armory".
+- **What plays:** the base's gate → dead agents in the yard → walk in upright and three living ones open up from behind sandbags; crouch and they lose you → the supply hall: ammunition, kits, armour, the turret in its crate, a locker of charges that refills every visit, the five files → the cages at the back: break Sheriff's lock; he says his piece; a bell starts.
+- **What's placeholder:** the compound's layout; the stealth is one rule (crouch); the files have no text; Sheriff has no white hat or star yet.
+- **A question for you (#749):** you can shoot the survivors. Should that cost something?
+- **For our session on it:** #744-755; PLAYTEST round 81.
+
 # Build queue, item 5: the crashed UFO and the mothership
 
 **Scaffolded and on `main`.** 1317 tests pass; checked headless; not played by hand.
