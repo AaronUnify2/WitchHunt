@@ -69,6 +69,25 @@ export function rails(b, c, z0, z1, y = 0) {
   for (let z = z0 + 0.3; z < z1; z += 0.7) b.box(1.1, 0.07, 0.16, c.postDark, 0, y + 0.035, z, (b.rand() - 0.5) * 0.06);
 }
 
+// The lift's cage (its frame: the floor's middle on the ground, the track's way +z): a steel floor, four
+// corner posts, bars down both sides, a roof; open at both ends (men walk in one and out the other).
+// The lever's on the post at -x, by the +z end.
+export function liftCage(b, c, G) {
+  b.box(G.half * 2, 0.06, G.half * 2, c.ironDark, 0, 0.06, 0);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) b.box(0.07, G.roof, 0.07, c.iron, sx * G.half, G.roof / 2 + 0.06, sz * G.half);
+  b.box(G.half * 2 + 0.1, 0.07, G.half * 2 + 0.1, c.ironDark, 0, G.roof + 0.08, 0);
+  for (const s of [-1, 1]) {
+    for (const y of [0.55, 1.1, 1.65]) b.box(0.035, 0.035, G.half * 2, c.iron, s * G.half, y, 0);
+    for (let k = -2; k <= 2; k++) b.box(0.022, G.roof, 0.022, c.ironDark, s * G.half, G.roof / 2 + 0.06, k * 0.33);
+  }
+  // The gate, folded back against a post.
+  for (let k = 0; k < 4; k++) b.box(0.03, 1.7, 0.03, c.iron, G.half + 0.06 + k * 0.05, 0.95, -G.half - 0.03 - k * 0.02);
+  // The lever.
+  b.box(0.1, 0.22, 0.12, c.boxDark, -G.half + 0.08, 1.15, 0.45);
+  limb(b, [-G.half + 0.14, 1.15, 0.45], [-G.half + 0.3, 1.42, 0.45], 0.016, c.iron, 5);
+  b.put(new THREE.SphereGeometry(0.035, 6, 4), c.lead, -G.half + 0.3, 1.43, 0.45);
+}
+
 export function buildMineshaft(cfg, { weather = null, heightAt = null } = {}) {
   const look = cfg.look;
   const b = new SetBuilder(look, heightAt, 3001);
@@ -190,24 +209,10 @@ export function buildMineshaft(cfg, { weather = null, heightAt = null } = {}) {
     flat.stack = [b.m.clone()];
     flat.box(K.half * 2, 0.02, K.half * 2, c.hollow, 0, 0.02, 0); // down the shaft, round the cage
     flat.box(1.6, 0.03, 0.9, c.plankDark, 0, 0.03, -K.half - 0.2); // the gangplank in
-    // The cage at the collar: a steel floor, four corner posts, bars on three sides, a roof, a lamp.
-    b.box(G.half * 2, 0.06, G.half * 2, c.ironDark, 0, 0.06, 0);
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) b.box(0.07, G.roof, 0.07, c.iron, sx * G.half, G.roof / 2 + 0.06, sz * G.half);
-    b.box(G.half * 2 + 0.1, 0.07, G.half * 2 + 0.1, c.ironDark, 0, G.roof + 0.08, 0);
-    for (const y of [0.55, 1.1, 1.65]) {
-      for (const s of [-1, 1]) b.box(0.035, 0.035, G.half * 2, c.iron, s * G.half, y, 0);
-      b.box(G.half * 2, 0.035, 0.035, c.iron, 0, y, G.half);
-    }
-    for (let k = -2; k <= 2; k++) {
-      for (const s of [-1, 1]) b.box(0.022, G.roof, 0.022, c.ironDark, s * G.half, G.roof / 2 + 0.06, k * 0.33);
-      b.box(0.022, G.roof, 0.022, c.ironDark, k * 0.33, G.roof / 2 + 0.06, G.half);
-    }
-    // The gate, folded back against the near-left post.
-    for (let k = 0; k < 4; k++) b.box(0.03, 1.7, 0.03, c.iron, G.half + 0.06 + k * 0.05, 0.95, -G.half - 0.03 - k * 0.02);
-    // The lever on the cage's right-hand post (Tom's right as he steps in: the model's -x).
-    b.box(0.1, 0.22, 0.12, c.boxDark, -G.half + 0.08, 1.15, 0.45);
-    limb(b, [-G.half + 0.14, 1.15, 0.45], [-G.half + 0.3, 1.42, 0.45], 0.016, c.iron, 5);
-    b.put(new THREE.SphereGeometry(0.035, 6, 4), c.lead, -G.half + 0.3, 1.43, 0.45);
+    // The cage at the collar (a through cage: open at both ends), its far end shut off by the collar's own gate.
+    liftCage(b, c, G);
+    for (const y of [0.55, 1.1, 1.65]) b.box(G.half * 2, 0.035, 0.035, c.iron, 0, y, G.half + 0.12);
+    for (let k = -2; k <= 2; k++) b.box(0.022, 1.75, 0.022, c.ironDark, k * 0.33, 0.93, G.half + 0.12);
     b.spot('lever', -G.half + 0.55, 1.2, 0.2);
     b.spot('cage', 0, 0.06, 0);
     b.spot('gate', 0, 0, -K.half - 1.4);

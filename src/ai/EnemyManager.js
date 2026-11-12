@@ -132,6 +132,7 @@ export class EnemyManager {
   // to hang about) }.
   // Returns the zombie, or null if the population (or the mutant cap) is full.
   spawnZombie(x, z, opts = {}) {
+    this.spaces ??= new Map();
     const kind = opts.kind ?? 'zombie';
     if (kind === 'mutant' && this.mutantCount >= this.mutantCfg.poolSize) return null;
     const slot = this.freeSlot();
@@ -142,8 +143,11 @@ export class EnemyManager {
     const variant = mutant ? 'mutant' : opts.variant ?? 'citizen';
     const body = mutant ? m : c;
     const pos = { x, z };
-    this.ground.clamp(pos);
-    resolveCircles(pos, body.radius, this.colliders.query(pos.x, pos.z, body.radius, this.nearby));
+    // Session 30: one spawned inside an interior (opts.space) stands on its floor, between its walls.
+    if (!opts.space) {
+      this.ground.clamp(pos);
+      resolveCircles(pos, body.radius, this.colliders.query(pos.x, pos.z, body.radius, this.nearby));
+    }
     const range = opts.speedRange ?? (mutant ? [m.speedMin, m.speedMax] : null);
     const roll = speedRoll(this.rng, c.speedSkew);
     const baseHealth = mutant ? m.health : c.health * (c.variants[variant]?.health ?? 1);
@@ -155,7 +159,8 @@ export class EnemyManager {
       health: baseHealth * this.stats.health,
       rise: opts.rise,
     });
-    slot.y = this.ground.heightAt(slot.x, slot.z);
+    slot.space = opts.space ?? null;
+    slot.y = opts.space ? (opts.y ?? 0) : this.ground.heightAt(slot.x, slot.z);
     slot.speedRoll = roll;
     slot.speedRange = range;
     slot.horde = opts.horde ?? null;
@@ -333,7 +338,7 @@ export class EnemyManager {
       }
     }
     this.separate(this.activeList);
-    for (const z of this.activeList) z.y = this.ground.heightAt(z.x, z.z);
+    for (const z of this.activeList) z.y = this.floorAt(z);
     const ms = performance.now() - started;
     this.simMs += (ms - this.simMs) * lod.timingSmoothing;
   }
@@ -376,9 +381,21 @@ export class EnemyManager {
   }
 
   settle(z) {
+    if (z.space) {
+      this.spaces?.get(z.space)?.confine?.(z, z.y, z.radius);
+      z.y = this.floorAt(z);
+      return;
+    }
     if (z.alive) resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
     this.ground.clamp(z);
     z.y = this.ground.heightAt(z.x, z.z);
+  }
+
+  // Session 30: the floor under a zombie: the ground, or its interior's own (world/Interiors.js pockets
+  // lie far under the map: `spaces` maps an interior's id to { floorAt(x, z, y), confine(pos, y, r) }).
+  floorAt(z) {
+    if (!z.space) return this.ground.heightAt(z.x, z.z);
+    return this.spaces?.get(z.space)?.floorAt?.(z.x, z.z, z.y) ?? z.y;
   }
 
   // One step of the full simulation over `dt` seconds (active every
@@ -391,7 +408,7 @@ export class EnemyManager {
       this.updateFade(z, dt, player);
       this.routeAtStation(z, player);
     }
-    z.moveScale = (1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z)) * boost;
+    z.moveScale = z.space ? boost : (1 + (c.undergrowthMultiplier - 1) * this.ground.undergrowthAt(z.x, z.z)) * boost;
     if (z.slowTimer > 0) {
       z.slowTimer -= dt;
       z.moveScale *= z.slow;
@@ -412,17 +429,18 @@ export class EnemyManager {
       z.chargeStarted = false;
       this.bus.emit('enemy:charge', { zombie: z });
     }
-    if (z.alive && collide) {
+    if (z.alive && z.space) this.spaces?.get(z.space)?.confine?.(z, z.y, z.radius);
+    else if (z.alive && collide) {
       resolveCircles(z, z.radius, this.colliders.query(z.x, z.z, z.radius, this.nearby));
       this.ground.clamp(z);
     }
     if (detour) {
       z.goalX = goalX;
       z.goalZ = goalZ;
-    } else if (collide) {
+    } else if (collide && !z.space) {
       this.unstick(z, fromX, fromZ, dt);
     }
-    if (z.active) z.y = this.ground.heightAt(z.x, z.z);
+    if (z.active) z.y = this.floorAt(z);
   }
 
   // Walking toward a goal but barely moving: after a moment, detour a few
@@ -497,6 +515,7 @@ export class EnemyManager {
     const dt = seconds / n;
     for (let i = 0; i < n && z.active; i++) this.step(z, dt, player, senses, false, z.mode === 'march' ? lod.abstractMarchScale : 1);
     if (!z.active) return;
+    if (z.space) return;
     this.ground.clamp(z);
     z.y = this.ground.heightAt(z.x, z.z);
   }

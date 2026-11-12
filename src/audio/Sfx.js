@@ -1258,6 +1258,79 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.04, type: 'lowpass', freq: 1200, gain: 0.8 });
     setTimeout(() => s.ready && s.tone(o, { seconds: 1.2, wave: 'sawtooth', freq: 100, gain: 0.03, attack: 0.3 }), 60);
   },
+  // The cage: the brake letting go and the drum taking up; a creak of the guides; a jolt.
+  cageStart(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.09, type: 'lowpass', freq: 700, gain: 0.8 });
+    s.tone(o, { seconds: 1.6, wave: 'sawtooth', freq: 42, endFreq: 66, gain: 0.12, attack: 0.3 });
+    s.noiseBurst(o, { seconds: 1.4, type: 'bandpass', freq: 240, endFreq: 420, q: 3, gain: 0.2, attack: 0.4 });
+  },
+  cageCreak(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    o.gain.value /= s.muffled || 1;
+    const f = 300 + Math.random() * 260; // cosmetic only
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: f, endFreq: f * 0.8, q: 9, gain: 0.3, attack: 0.15 });
+    s.tone(o, { seconds: 0.9, wave: 'sawtooth', freq: 52, endFreq: 48, gain: 0.05, attack: 0.2 });
+  },
+  cageJolt(s) {
+    const o = s.out(undefined, undefined, 1);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.22, type: 'lowpass', freq: 500, endFreq: 120, gain: 1.0 });
+    s.tone(o, { seconds: 0.5, wave: 'square', freq: 70, endFreq: 38, gain: 0.3 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 900, q: 8, gain: 0.15, attack: 0.1 }), 180);
+  },
+  // The cart: the brake off and the wheels taking; a rail joint; the brake hauled on.
+  cartStart(s) {
+    const o = s.out(undefined, undefined, 0.7);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 1100, q: 3, gain: 0.6 });
+    s.noiseBurst(o, { seconds: 1.2, type: 'lowpass', freq: 220, endFreq: 420, gain: 0.3, attack: 0.5 });
+  },
+  railClack(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.04, type: 'bandpass', freq: 1500, q: 2, gain: 0.5 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 1150, q: 2, gain: 0.55 }), 95);
+    s.noiseBurst(o, { seconds: 0.5, type: 'lowpass', freq: 180, gain: 0.22, attack: 0.05 });
+  },
+  cartBrake(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    o.gain.value /= s.muffled || 1;
+    s.tone(o, { seconds: 0.9, wave: 'sawtooth', freq: 1900, endFreq: 900, gain: 0.05, attack: 0.05, vibrato: 30 });
+    s.noiseBurst(o, { seconds: 0.9, type: 'bandpass', freq: 2600, endFreq: 1200, q: 5, gain: 0.3 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'lowpass', freq: 400, gain: 0.8 }), 880);
+  },
+  // The cart's gun: older and slower than the ute's, a heavier knock.
+  cartGun(s) {
+    const o = s.out(undefined, undefined, 1.0);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 2000, gain: 0.7 });
+    s.noiseBurst(o, { seconds: 0.4, freq: 2200, endFreq: 120, gain: 1.0 });
+    s.tone(o, { seconds: 0.22, wave: 'square', freq: 50, endFreq: 30, gain: 0.6 });
+  },
+  // The points thrown: the lever's ratchet, the blades clacking across.
+  pointsThrow(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    o.gain.value /= s.muffled || 1;
+    for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.03, type: 'bandpass', freq: 1800, q: 4, gain: 0.4 }), i * 70);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.12, type: 'lowpass', freq: 900, gain: 0.9 }), 330);
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.4, wave: 'triangle', freq: 320, endFreq: 300, gain: 0.08 }), 340);
+  },
+  // The pinch bar under the rock: iron on stone, a grunt of it shifting.
+  barPry(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 0.08, type: 'bandpass', freq: 2600, q: 6, gain: 0.5 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.4, type: 'lowpass', freq: 260, endFreq: 140, gain: 0.5, attack: 0.1 }), 120);
+  },
+  // The rock going: a long rumble and clatter off the rails.
+  rockRoll(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    o.gain.value /= s.muffled || 1;
+    s.noiseBurst(o, { seconds: 1.6, type: 'lowpass', freq: 300, endFreq: 90, gain: 0.9, attack: 0.1 });
+    for (let i = 0; i < 5; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 700 + Math.random() * 600, q: 2, gain: 0.5 }), 200 + i * 230); // cosmetic only
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

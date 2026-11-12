@@ -2,12 +2,63 @@
  "_note": "Session 30: the abandoned mineshaft's texts (encounters/Mineshaft.js; DESIGN.md \"Abandoned mineshaft\"). Every text is a draft for Aaron. The story they tell (my draft, Session 30): the Black Laurel Coal Company's No. 2 shaft shut in 1987 after bad air in the low seam. A few weeks ago the army opened it again: something on their instruments, far down. They hired back the old foreman and a crew of men who'd worked it, to run the hoist and timber the low seam for them. Eleven went down on the last shift and never tagged out. What the army brought up before that, they brought up in a net, sedated (the outpost's container).",
  "sign": "BLACK LAUREL COAL CO. No. 2 SHAFT. CLOSED 1987. And under it, stencilled, a lot newer: U.S. GOVT PROPERTY. NO ENTRY.",
  "searches": [
-  {"id": "desk", "spot": "desk", "flag": "mineDesk", "hold": "desk", "prompt": "go through the foreman's desk", "busy": "Going through it…", "text": "A requisition, three weeks old: timber, cable, eleven men's wages, signed for by an army captain. Under it the foreman's own hand: \"They don't want coal. They want the low seam opened. Nobody will say why.\""},
-  {"id": "tags", "spot": "tags", "flag": "mineTags", "hold": "tags", "prompt": "look at the tag board", "busy": "Counting…", "text": "A brass tag on a hook for every man below. You hang it going down, you take it coming up. Eleven still hang there."},
-  {"id": "lamps", "spot": "lamps", "flag": "mineLamps", "hold": "lamps", "prompt": "check the lamp rack", "busy": "Checking them…", "text": "Cap lamps on a dead charger, flat, every one. One's missing off the end. You strip the rest for what's in them.", "scrap": true},
-  {"id": "locker", "spot": "locker", "flag": "mineLocker", "hold": "locker", "prompt": "force the foreman's locker", "busy": "Forcing it…", "text": "A thermos, a photo of a girl on a pony, a box of pistol rounds, a first aid tin. And his tag. He hadn't gone down. He isn't here either.", "locker": true},
-  {"id": "army", "spot": "army", "flag": "mineArmy", "hold": "army", "prompt": "look through the army's crates", "busy": "Looking…", "text": "Rifle rounds. A crate stencilled TRANQUILLISER, LARGE ANIMAL, empty. A cargo net big enough for a horse, cut clean through from the inside.", "army": true},
-  {"id": "cart", "spot": "cart", "flag": "mineCart", "hold": "cart", "prompt": "look at the tipped tub", "busy": "Looking…", "text": "Coal, spilled. In it a thread as thick as your thumb, pale, and tacky when you touch it. It runs back toward the shaft."}
+  {
+   "id": "desk",
+   "spot": "desk",
+   "flag": "mineDesk",
+   "hold": "desk",
+   "prompt": "go through the foreman's desk",
+   "busy": "Going through it…",
+   "text": "A requisition, three weeks old: timber, cable, eleven men's wages, signed for by an army captain. Under it the foreman's own hand: \"They don't want coal. They want the low seam opened. Nobody will say why.\""
+  },
+  {
+   "id": "tags",
+   "spot": "tags",
+   "flag": "mineTags",
+   "hold": "tags",
+   "prompt": "look at the tag board",
+   "busy": "Counting…",
+   "text": "A brass tag on a hook for every man below. You hang it going down, you take it coming up. Eleven still hang there."
+  },
+  {
+   "id": "lamps",
+   "spot": "lamps",
+   "flag": "mineLamps",
+   "hold": "lamps",
+   "prompt": "check the lamp rack",
+   "busy": "Checking them…",
+   "text": "Cap lamps on a dead charger, flat, every one. One's missing off the end. You strip the rest for what's in them.",
+   "scrap": true
+  },
+  {
+   "id": "locker",
+   "spot": "locker",
+   "flag": "mineLocker",
+   "hold": "locker",
+   "prompt": "force the foreman's locker",
+   "busy": "Forcing it…",
+   "text": "A thermos, a photo of a girl on a pony, a box of pistol rounds, a first aid tin. And his tag. He hadn't gone down. He isn't here either.",
+   "locker": true
+  },
+  {
+   "id": "army",
+   "spot": "army",
+   "flag": "mineArmy",
+   "hold": "army",
+   "prompt": "look through the army's crates",
+   "busy": "Looking…",
+   "text": "Rifle rounds. A crate stencilled TRANQUILLISER, LARGE ANIMAL, empty. A cargo net big enough for a horse, cut clean through from the inside.",
+   "army": true
+  },
+  {
+   "id": "cart",
+   "spot": "cart",
+   "flag": "mineCart",
+   "hold": "cart",
+   "prompt": "look at the tipped tub",
+   "busy": "Looking…",
+   "text": "Coal, spilled. In it a thread as thick as your thumb, pale, and tacky when you touch it. It runs back toward the shaft."
+  }
  ],
  "box": {
   "prompt": "fit a battery to the lift",
@@ -19,6 +70,51 @@
  "cage": {
   "dead": "The cage. The lever does nothing: no power",
   "prompt": "take the cage down",
-  "busy": "Easing the lever…"
+  "busy": "Easing the lever…",
+  "depth": "{feet} ft",
+  "hang": "The cage stops dead. Somewhere a long way up, the drum groans. Then it lets go.",
+  "landed": "Bottom of the shaft. It's warm down here, and the air's thick. A cart with a gun bolted to it sits on the rails, pointing down the drift.",
+  "landedAgain": "Bottom of the shaft.",
+  "up": {
+   "prompt": "take the cage up",
+   "busy": "Easing the lever…"
+  }
+ },
+ "cart": {
+  "board": {
+   "prompt": "climb aboard the cart",
+   "busy": "Climbing up…"
+  },
+  "brake": {
+   "prompt": "let off the brake",
+   "busy": "Easing it off…"
+  },
+  "down": {
+   "prompt": "climb down",
+   "busy": "Climbing down…"
+  },
+  "winch": {
+   "prompt": "winch the cart back up to the landing",
+   "busy": "Hooking on…"
+  },
+  "winched": "The winch hauls the cart back up the drift, slow, the whole way in the dark."
+ },
+ "stops": {
+  "points": {
+   "prompt": "throw the points",
+   "busy": "Heaving it over…",
+   "halt": "The cart grinds to a stop. The points are set for the siding, and the siding's under the roof. There's a lever on a stand up ahead on the right.",
+   "done": "The lever goes over and the blades clack across. The way's open."
+  },
+  "fall": {
+   "prompt": "lever the rock off the rails",
+   "busy": "Heaving on the bar…",
+   "halt": "Rock down across the rails. There's a pinch bar beside it.",
+   "done": "The last of it rolls clear. The rails are bent, not broken. It'll run."
+  }
+ },
+ "bottom": {
+  "arrive": "The cart fetches up against the buffers. End of the drift. Ahead, a timber bulkhead right across it, barred from this side, and strung all over with something pale. There's a light under it, and it's humming.",
+  "door": "The bar's swollen tight into its brackets. Not by hand. (What's behind it is still to build.)"
  }
 }

@@ -56,6 +56,7 @@ export class Weapons {
     this.rayHits = []; // reused by rayEnemiesAll
     this.assistTargets = [];
     this.extraTargets = []; // M7: the witch
+    this.spaceRays = new Map(); // Session 30: an interior's id -> (origin, dir, max) => how far a shot goes in it
     this.targetList = []; // reused: zombies plus targetable extras
     this.assistCfgAiming = { ...this.assistCfg, slowFactor: this.assistCfg.aimingSlowFactor };
     this.reset();
@@ -286,7 +287,8 @@ export class Weapons {
 
     for (let i = 0; i < w.pellets; i++) {
       const dir = spreadDirection(this.forward, this.right, this.up, spread, this.rng, this.dir);
-      const blocked = rayBlockers(eye, dir, this.blockers, w.range, this.ground);
+      const inRoom = this.player.space ? this.spaceRays.get(this.player.space) : null;
+      const blocked = inRoom ? inRoom(eye, dir, w.range) : rayBlockers(eye, dir, this.blockers, w.range, this.ground);
       const count = rayEnemiesAll(eye, dir, living, blocked, this.rayHits);
       if (count === 0) {
         if (blocked < check) {

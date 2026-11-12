@@ -4780,7 +4780,7 @@ export const config = {
     radius: 26, // metres from its middle the set reaches (for drawing it)
     encounter: {
       interactRange: 1.7,
-      holds: { search: 1.0, desk: 1.0, tags: 0.9, lamps: 0.9, locker: 1.2, army: 1.0, cart: 0.8, battery: 2.0, lever: 0.9 }, // seconds held (X)
+      holds: { search: 1.0, desk: 1.0, tags: 0.9, lamps: 0.9, locker: 1.2, army: 1.0, cart: 0.8, battery: 2.0, lever: 0.9, points: 1.6, fall: 5.0, winch: 1.2 }, // seconds held (X); fall: levering the rock off the rails (it drains if he lets go)
       sweepDistance: 6, // metres from the arrival spot: the arrival sweep (once)
       locker: { pistol: 10, kits: 1 }, // the foreman's locker: rounds and a first aid kit
       lamps: { scrap: 3 }, // the lamp rack: dead cap lamps, good for scrap
@@ -4788,6 +4788,95 @@ export const config = {
       creakEvery: [6, 15], // the headframe in the wind, while Tom's near (seconds)
       creakDistance: 40,
     },
+    // The mine below (world/mineTrack.js: pure; render/mineModel.js; encounters/MineRide.js). A pocket far
+    // under the clearing (world/Interiors.js). Mine space: the cage's middle at the origin on the landing's
+    // floor, the track heading +z; `origin` shifts the whole mine so its loop sits under the clearing
+    // (Tom's dot on the map stays near it).
+    origin: [-40, -46],
+    // The track: legs in order, each `len` metres, turning `turn` degrees (+ toward the frame's +x) and
+    // falling at `grade` (rise per metre). half / roof: the tunnel's half width and height. wide: the
+    // galleries (the landing, the two stops, the bottom).
+    track: {
+      step: 1,
+      back: 3,
+      ease: 5,
+      half: 1.9,
+      roof: 3.1,
+      endRoom: 3,
+      legs: [
+        { len: 26, grade: 0 }, // 0-26: the landing
+        { len: 40, grade: -0.06 }, // 26-66: the first drift
+        { len: 28, turn: 90, grade: -0.08 }, // 66-94
+        { len: 30, grade: 0 }, // 94-124: the points
+        { len: 28, turn: 90, grade: -0.08 }, // 124-152
+        { len: 44, grade: -0.07 }, // 152-196: the roosts
+        { len: 28, turn: 90, grade: -0.08 }, // 196-224
+        { len: 30, grade: 0 }, // 224-254: the fall
+        { len: 28, turn: 90, grade: -0.1 }, // 254-282
+        { len: 56, grade: -0.13 }, // 282-338: the steep run (right under the landing, far below it)
+        { len: 28, turn: 90, grade: -0.1 }, // 338-366
+        { len: 40, grade: -0.06 }, // 366-406
+        { len: 26, grade: 0 }, // 406-432: the bottom
+      ],
+      wide: [
+        { s0: -3, s1: 22, half: 3.2 },
+        { s0: 98, s1: 122, half: 3.6 },
+        { s0: 228, s1: 252, half: 3.6 },
+        { s0: 408, s1: 436, half: 4.2 },
+      ],
+    },
+    bulbsLit: [1, 9, 17, 61, 109, 113, 153, 241, 301, 409, 425], // s along the track: the bulbs still burning (the rest are dead)
+    // The cage: seconds down (and the hang partway: it stops dead, then drops faster), the depth it reads.
+    // speed: how fast the walls run past the bars (m/s, for the eye: the real drop's far quicker).
+    lift: { seconds: 26, hangAt: 0.38, hang: 2.6, depth: 2400, speed: 5.5, creakEvery: 1.7, upSeconds: 5 },
+    // The turret cart (world/MineCart.js). It runs on its own: `cruise` m/s, faster down `runs`, braking
+    // over `brake` metres to a stop. start / end: where it waits at the landing and where it stops at the
+    // bottom (s along the track). stops: where it halts until Tom's cleared the way.
+    ride: {
+      start: 9,
+      end: 424,
+      cruise: 4.6,
+      crawl: 0.7,
+      brake: 14,
+      accel: 1.8,
+      runs: [{ s0: 282, s1: 372, speed: 9.5 }],
+      stops: [
+        { id: 'points', s: 110 },
+        { id: 'fall', s: 240 },
+      ],
+      clackEvery: 3.2, // metres between rail joints (a clack each)
+      eye: { back: 0.8, up: 0.5 }, // his eye behind and above the gun's pivot (standing at it, as on the ute)
+      strikeScale: 0.7, // the dead's swipes reach up at him in the tub
+      mountSeconds: 0.8,
+      // The old gun on its pedestal: it never runs dry (a belt box as long as the ride), it overheats.
+      gun: {
+        rate: 7.5,
+        damage: 40,
+        pierce: 2,
+        pierceKeep: 0.7,
+        range: 90,
+        falloff: [30, 90, 0.7],
+        spread: 0.5,
+        spreadMax: 1.8,
+        spreadGrow: 0.07,
+        spreadSettle: 3.5,
+        aimSpread: 0.6,
+        aimFov: 0.75,
+        stagger: 0.5,
+        knockback: 1.0,
+        heatPerShot: 0.021,
+        coolRate: 0.42,
+        coolDelay: 0.25,
+        jamUntil: 0.3,
+        kick: 0.3,
+        shake: 0.1,
+        pitchMin: -0.75,
+        pitchMax: 0.95,
+        tracerEvery: 2,
+      },
+    },
+    // The mine's own light and fog (world/Interiors.js): black beyond the torch.
+    light: { ambientDay: 0.55, ambientNight: 0.55, ambientColor: 0x8a8478, fogColor: 0x040404, fogNear: 3, fogFar: 44 },
     look: {
       weather: { rust: [0x34302a, 0x2a2622, 0x3a3630, 0x2c2a28, 0x3a3028], grimeHeight: 0.16, keepBright: [0x3a5a2a, 0x5a1a14] },
       colors: {
@@ -4838,6 +4927,22 @@ export const config = {
         barkDark: 0x241f19,
         endGrain: 0x5e5038,
         helmet: 0x4a4022, // a miner's helmet, once yellow
+        // Below ground (render/mineModel.js).
+        rock: 0x3a3832,
+        rockDark: 0x2a2926,
+        seam: 0x121110, // the coal in the wall
+        ballast: 0x2a2620,
+        bulb: 0x2a2a26, // a dead bulb on the string
+        bulbLit: 0x7a5a26, // a live one (unlit material: dull amber)
+        cartBody: 0x2e2a26,
+        cartTrim: 0x3a2a1e,
+        gun: 0x232325,
+        gunJacket: 0x2e3230,
+        gunBrass: 0x5a4a24,
+        grip: 0x3e2a1a,
+        flash: 0xffc070,
+        door: 0x30281e, // the bulkhead at the bottom
+        seamGlow: 0x4a2a5a, // the light under it (unlit: a dull violet)
       },
     },
   },

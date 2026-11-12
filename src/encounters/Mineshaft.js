@@ -102,9 +102,7 @@ export class Mineshaft {
     if (playing) this.tickLater(dt);
     // Below ground it's the ride's.
     if (this.ride?.below) {
-      this.hud.prompt = '';
-      this.hud.progress = 0;
-      this.ride.update(dt, input, playing, canInteract);
+      this.ride.update(dt, input, playing, canInteract || this.player.riding === this.ride.cart);
       return;
     }
     const d = this.distance();

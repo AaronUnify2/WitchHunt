@@ -166,7 +166,8 @@ export class Combat {
   onStrike(zombie, damage) {
     if (this.shielded) return; // Session 21 (Aaron): nothing lands on Tom while a cutscene plays
     this.sfx.play('swipe', zombie);
-    if (this.player.platform) return; // up the lookout tower, out of reach (M5)
+    // Up the lookout tower, out of reach (M5). Session 30: not in an interior it's in with him (the mine).
+    if (this.player.platform && !(zombie.space && zombie.space === this.player.space)) return;
     const scale = this.player.riding?.strikeScale?.() ?? 1; // the experimental ute: the cab's door, the tray's height
     if (scale <= 0) return;
     this.hurtPlayer(damage * scale, zombie.kind === 'mutant' ? 2 : 1);
@@ -295,6 +296,10 @@ export class Combat {
     for (const { item, amount } of rollLoot(lootTableFor(zombie, this.lootTables), this.lootRng, this.drops)) {
       const a = this.lootRng.range(0, Math.PI * 2);
       const r = this.lootRng.range(0, c.scatter);
+      if (zombie.space) {
+        this.pickups.drop(item, amount, zombie.x, zombie.y, zombie.z, a); // Session 30: in an interior: where it fell
+        continue;
+      }
       const pos = this.ground.clamp({ x: zombie.x + Math.sin(a) * r, z: zombie.z + Math.cos(a) * r });
       this.pickups.drop(item, amount, pos.x, this.ground.heightAt(pos.x, pos.z), pos.z, a);
     }

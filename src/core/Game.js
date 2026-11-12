@@ -95,6 +95,7 @@ import { HollerSite } from '../world/HollerSite.js';
 import { Holler } from '../encounters/Holler.js';
 import { MineshaftSite } from '../world/MineshaftSite.js';
 import { Mineshaft } from '../encounters/Mineshaft.js';
+import { MineRide } from '../encounters/MineRide.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -874,9 +875,25 @@ export class Game {
     this.vehicles.busy?.push(this.holler.hud);
     // The abandoned mineshaft (an optional encounter: encounters/Mineshaft.js; Session 30).
     this.mineshaft = new Mineshaft(this.cfg, this.bus);
+    this.mineRide = new MineRide(this.cfg, this.bus); // the cage, the mine below, the turret cart
+    this.mineRide.init({
+      scene: this.scene,
+      site: this.mineSite,
+      interiors: this.interiors,
+      world: this.world,
+      player: this.player,
+      combat: this.combat,
+      enemies: this.combat.enemies,
+      progress: this.progress,
+      flashlight: this.flashlight,
+      vhud: this.vehicleHud,
+      hud: this.mineshaft.hud,
+      notify,
+    });
     this.mineshaft.init({
       scene: this.scene,
       site: this.mineSite,
+      ride: this.mineRide,
       player: this.player,
       combat: this.combat,
       enemies: this.combat.enemies,

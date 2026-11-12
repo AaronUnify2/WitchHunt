@@ -45,17 +45,20 @@ export class Beetles {
   }
 
   // One out of the ground (its crate) at (x, z), facing yaw (radians, +z at 0).
-  spawn(x, z, facing = 0) {
+  // Session 30: opts { space, y, floorAt(x, z, y), confine(pos, y, r), state }: one inside an interior (the mine).
+  spawn(x, z, facing = 0, opts = null) {
     const a = this.ac;
     const b = {
+      space: opts?.space ?? null,
+      room: opts,
       active: true,
       alive: true,
       targetable: true,
       x,
       z,
-      y: this.ground.heightAt(x, z),
+      y: opts?.space ? (opts.y ?? 0) : this.ground.heightAt(x, z),
       facing,
-      state: 'emerge',
+      state: opts?.state ?? 'emerge',
       timer: 0,
       walked: 0,
       flash: 0,
@@ -110,8 +113,10 @@ export class Beetles {
   update(dt, playing) {
     if (playing) {
       const p = this.player.position;
-      const safe = Boolean(this.player.platform) || !this.combat?.alive;
-      for (const b of this.list) this.step(b, dt, p, safe);
+      const up = Boolean(this.player.platform);
+      const dead = !this.combat?.alive;
+      // Session 30: one in the interior Tom's in can reach him (its platform is the floor they share).
+      for (const b of this.list) this.step(b, dt, p, dead || (b.space ? b.space !== this.player.space : up));
     }
     this.renderer?.update(this.list, playing ? dt : 0);
   }
@@ -178,12 +183,15 @@ export class Beetles {
     const stop = safe ? 1.6 : a.attackRange * 0.7;
     const move = Math.max(0, Math.min(speed * dt, d - stop));
     const pos = { x: b.x + Math.sin(b.facing) * move, z: b.z + Math.cos(b.facing) * move };
-    if (this.colliders) resolveCircles(pos, a.radius, this.colliders.query(pos.x, pos.z, a.radius, this.nearby));
-    this.ground?.clamp?.(pos);
+    if (b.space) b.room.confine?.(pos, b.y, a.radius);
+    else {
+      if (this.colliders) resolveCircles(pos, a.radius, this.colliders.query(pos.x, pos.z, a.radius, this.nearby));
+      this.ground?.clamp?.(pos);
+    }
     b.walked += Math.hypot(pos.x - b.x, pos.z - b.z);
     b.x = pos.x;
     b.z = pos.z;
-    b.y = this.ground.heightAt(b.x, b.z);
+    b.y = b.space ? (b.room.floorAt?.(b.x, b.z, b.y) ?? b.y) : this.ground.heightAt(b.x, b.z);
   }
 
   go(b, state) {

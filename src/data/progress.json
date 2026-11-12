@@ -123,6 +123,10 @@
     {"id": "mineLocker", "about": "The abandoned mineshaft: the foreman's locker forced (pistol rounds, a first aid kit)."},
     {"id": "mineArmy", "about": "The abandoned mineshaft: the army's crates by the collar looked through (rifle rounds; the empty tranquilliser crate, the cut net)."},
     {"id": "mineCart", "about": "The abandoned mineshaft: the tipped tub looked at (the pale thread running back to the shaft)."},
-    {"id": "mineBatteryFitted", "about": "The abandoned mineshaft: a car battery fitted to the lift's control box (the cage works from then on)."}
+    {"id": "mineBatteryFitted", "about": "The abandoned mineshaft: a car battery fitted to the lift's control box (the cage works from then on)."},
+    {"id": "mineBelow", "about": "The abandoned mineshaft: Tom has been down in the cage at least once (encounters/MineRide.js)."},
+    {"id": "minePoints", "about": "The abandoned mineshaft: the points thrown at the first stop (the cart runs straight through from then on)."},
+    {"id": "mineFall", "about": "The abandoned mineshaft: the rock levered off the rails at the second stop."},
+    {"id": "mineBottom", "about": "The abandoned mineshaft: the cart has reached the bottom of the drift (the bulkhead; the ride down is quiet from then on)."}
   ]
 }
