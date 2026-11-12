@@ -712,6 +712,14 @@ const RECIPES = {
   callerVoice(s, pos) {
     s.staticCall(s.out(pos?.x, pos?.z, 0.8, pos?.range ?? 110), pos?.pitch ?? 1, true);
   },
+  // Session 33: the small alien power cell landing in the leaves by the grey: a soft thud, then a thin glassy
+  // ring that hangs a moment (it's still humming).
+  cellDrop(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 40);
+    s.noiseBurst(o, { seconds: 0.09, freq: 900, endFreq: 200, gain: 0.35 });
+    s.tone(o, { seconds: 1.3, wave: 'sine', freq: 2093, endFreq: 2080, gain: 0.07, attack: 0.004 });
+    s.tone(o, { seconds: 0.9, wave: 'sine', freq: 3136, endFreq: 3120, gain: 0.03, attack: 0.004 });
+  },
   // The bell in the old church's ruined steeple: one dull, cracked note
   // (a struck pot more than a bell), as if something brushed it.
   crackedBell(s, pos) {

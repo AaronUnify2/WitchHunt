@@ -16,8 +16,11 @@
 //     now and then. Through the gate: the homecoming (junie.homecoming),
 //     and the family are three again.
 //
+//  5. Session 33: a few seconds after, Ellen asks for the plane's power cell for the
+//     fence (cellAsk), and the goal is the fence box (story/Objectives.js).
+//
 // Saved through story flags: stairsSeen, stairsClimbed, junieFound,
-// junieHome. Saved with Junie following, she's beside him again on load.
+// junieHome, cellAsked. Saved with Junie following, she's beside him again on load.
 // Off in Demo mode.
 //
 // Events: 'stairs:climbed', 'junie:found', 'junie:home'.
@@ -56,7 +59,17 @@ export function stepOffSpot(quad, tom, seat) {
   return { x: quad.x + rx * side * seat.off - fx * seat.back, z: quad.z + rz * side * seat.off - fz * seat.back };
 }
 
-const FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound', 'junieHome'];
+// Session 33 (Aaron: "when you bring Junie back, Ellen could say she wants to upgrade the fence naturally after
+// the reunion, and she can say that we can use the alien shard"): which of Ellen's lines follows the homecoming.
+//  - the cell's already in the fence box: 'home.cell.fitted' (she's seen what it did);
+//  - Tom has it: 'home.cell.ask' (would it run the fence?);
+//  - he never searched the grey (an old save): 'home.cell.back' (go back to the plane for it).
+export function cellAsk({ taken, fitted }) {
+  if (fitted) return 'home.cell.fitted';
+  return taken ? 'home.cell.ask' : 'home.cell.back';
+}
+
+const FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound', 'junieHome', 'cellAsked'];
 const JUNIE = 2;
 
 export class Stairs {
@@ -105,6 +118,7 @@ export class Stairs {
 
   reset() {
     this.state = 'idle';
+    this.askIn = null; // Session 33: the countdown to Ellen's ask about the fence
     this.seatTold = false; // Session 33: the line the first time she climbs on the quad
     this.swarm = null; // Session 32: the moths at the stairs: null, a countdown (seconds), or 'up'
     this.lineTimer = this.nextLineGap();
@@ -123,6 +137,7 @@ export class Stairs {
 
   update(dt, input, playing, canInteract) {
     if (!this.ready || this.demo?.active) return;
+    if (playing) this.updateCellAsk(dt);
     const p = this.player.position;
     const foot = this.site.spots.foot;
     const d = Math.hypot(p.x - foot.x, p.z - foot.z);
@@ -324,6 +339,13 @@ export class Stairs {
     if (this.player.riding) {
       this.jx = p.x;
       this.jz = p.z;
+      // Session 33: ridden through the gate with her on the back, it's home all the same: he pulls up and
+      // they get down (before, nothing happened until he got off).
+      if (this.insideHome(p) && !this.cutscenes?.active && this.player.riding === this.quad && typeof this.quad.dismount === 'function') {
+        this.quad.dismount();
+        this.seat(false);
+        this.homecoming();
+      }
       return;
     }
     this.junie.mesh.rotation.y = Math.atan2(p.x - s.x, p.z - s.z); // she keeps her eyes on him
@@ -340,7 +362,26 @@ export class Stairs {
     // Through the gate together: home.
     const L = this.station.layout;
     const r = L.radius + this.ec.homeRadius;
-    if (Math.hypot(p.x - L.centre.x, p.z - L.centre.z) < r && Math.hypot(this.jx - L.centre.x, this.jz - L.centre.z) < r + 3 && !this.cutscenes?.active && zoneOf(L, p.x, p.z) >= 1) this.homecoming();
+    if (this.insideHome(p) && Math.hypot(this.jx - L.centre.x, this.jz - L.centre.z) < r + 3 && !this.cutscenes?.active) this.homecoming();
+  }
+
+  // Is this spot inside the fence at home?
+  insideHome(p) {
+    const L = this.station?.layout;
+    if (!L) return false;
+    return Math.hypot(p.x - L.centre.x, p.z - L.centre.z) < L.radius + this.ec.homeRadius && zoneOf(L, p.x, p.z) >= 1;
+  }
+
+  // Session 33: a few seconds after the homecoming (or the next time he's playing, if it was saved in
+  // between), once nothing else is being said: Ellen and the fence. Once (the flag cellAsked).
+  updateCellAsk(dt) {
+    if (!this.has('junieHome') || this.has('cellAsked') || this.cutscenes?.active) return;
+    this.askIn = (this.askIn ?? this.ec.cellAskAfter) - dt;
+    if (this.askIn > 0 || this.subtitles?.busy) return;
+    this.set('cellAsked');
+    const id = cellAsk({ taken: this.has('planeCellTaken'), fitted: this.has('planeCellFitted') });
+    this.dialogue?.play(id, {}, null);
+    this.bus.emit('junie:cellAsked', { id });
   }
 
   homecoming() {

@@ -190,7 +190,7 @@ export class Objectives {
     const pl = g.plane;
     if (pl?.ready && has('crossedCordon') && !has('planeDone')) {
       if (!has('planeGreyDown')) return step('plane', 'Find where the plane came down, just past the checkpoint.', pl.spot('work'));
-      if (!has('planeLooted')) return step('planeLoot', 'Search the grey: it had the pilot\'s gun.', pl.grey);
+      if (!has('planeLooted')) return step('planeLoot', 'Search the creature. It dropped something.', pl.grey); // Session 33 (Aaron): until it's searched
       return step('planeFlare', "Fire the pilot's signal flare from his survival kit.", pl.spot('kit'));
     }
     // ---- Junie taken (Session 26) ----
@@ -200,7 +200,8 @@ export class Objectives {
       return step('radioWait', "Dawn. Your radio's quiet. Raise them.");
     }
     if (watching('junieClip')) return step('junieClip', 'Watch the south path camera (D-pad down).');
-    // Session 32 (Aaron: "we won't call attention to it"): the plane's power cell is no goal. The fence box still takes it.
+    // Session 32 (Aaron: "we won't call attention to it"): the plane's power cell is no goal here. The fence box still
+    // takes it. (Session 33: it's a goal once Junie's home: below.)
     if (has('junieClipSeen') && !has('junieHome')) {
       const spine = (key) => g.world.map.clearings.find((c) => c.key === key);
       const ch = g.church;
@@ -219,6 +220,13 @@ export class Objectives {
       if (has('stairsKnown') && !has('stairsClimbed')) return step('stairs', "Find Amos Pruitt's staircase, a half day east of the church.", spine('stairs'));
       if (has('stairsKnown')) return step('climb', 'Climb the stairs. Take the silent way, every time.', spine('stairs'));
       return step('findJunie', 'Find Junie.', spine('stairs'));
+    }
+    // Session 33 (Aaron: "Ellen could say she wants to upgrade the fence naturally after the reunion... we can use
+    // the alien shard"): the plane's power cell has its goal again, once Junie's home. Never searched the grey
+    // (an old save): back to the plane for it first.
+    if (has('junieHome') && !has('planeCellFitted') && pl?.ready) {
+      if (has('planeCellTaken')) return step('planeCell', "Fit the plane's alien power cell to the fence box. Ellen wants the fence stronger.", L.fenceBox);
+      return step('planeCellBack', 'Go back to the crashed plane and search the creature. Ellen wants what it dropped, for the fence.', pl.grey);
     }
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');

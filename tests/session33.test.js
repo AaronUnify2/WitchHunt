@@ -279,3 +279,225 @@ describe('Junie on the way home', () => {
     expect(r.s.junie).toBeNull();
   });
 });
+
+// ---- the power cell's beat: the grey's drop made obvious, Ellen's ask, the goal --------------------
+import { dropAt, CrashedPlane } from '../src/encounters/CrashedPlane.js';
+import { cellAsk } from '../src/encounters/Stairs.js';
+import { Objectives } from '../src/story/Objectives.js';
+import { laterFlags, PLANE_DONE_FLAGS } from '../src/debug/storyStart.js';
+import progress from '../src/data/progress.json';
+import fs from 'node:fs';
+
+describe('what the grey dropped', () => {
+  const d = config.crashedPlane.encounter.drop;
+
+  it('leaves its hand, arcs out, lands, and glints from then on', () => {
+    const start = dropAt(0, d);
+    expect(start.k).toBe(0);
+    expect(start.lift).toBeCloseTo(d.hand);
+    expect(start.glint).toBe(0);
+    const mid = dropAt(d.fallSeconds / 2, d);
+    expect(mid.lift).toBeGreaterThan(d.hand / 2); // up over the arc
+    const landed = dropAt(d.fallSeconds, d);
+    expect(landed.k).toBe(1);
+    expect(landed.lift).toBeCloseTo(0);
+    expect(landed.landed).toBe(true);
+    expect(landed.glint).toBeCloseTo(1); // a flash as it lands
+    expect(dropAt(d.fallSeconds + d.glintEvery / 2, d).glint).toBeLessThan(0.01);
+    expect(dropAt(d.fallSeconds + d.glintEvery, d).glint).toBeCloseTo(1); // and again
+  });
+
+  it('is unlit and adds no light (the rule): basic materials only', () => {
+    const src = fs.readFileSync(new URL('../src/encounters/CrashedPlane.js', import.meta.url), 'utf8');
+    const build = src.slice(src.indexOf('  buildDrop() {'), src.indexOf('  dropRest() {'));
+    expect(build).toContain('MeshBasicMaterial');
+    expect(build).not.toMatch(/Light\(/);
+  });
+
+  // The encounter with fakes round it, the grey at its bench.
+  const rig = (flags = ['outpostCleared', 'planeSeen', 'planeStandoff']) => {
+    const set = new Set(flags);
+    const said = [];
+    const lines = [];
+    const sounds = [];
+    const scene = new THREE.Scene();
+    const spots = { work: { x: 0, z: 0 }, bench: { x: 0, z: -1 }, cover: { x: 2, z: -2 }, cockpit: { x: -4, z: -1 }, kit: { x: 5, z: 0 }, log: { x: -4, z: 0 } };
+    const player = { position: { x: 0, y: 0, z: 10 }, yaw: 0, camera: { position: { x: 0, y: 1.7, z: 10 } } };
+    const combat = { sfx: { play: (n) => sounds.push(n) }, weapons: { extraTargets: [], addAmmo: () => true }, clearHealthFloor() {}, giveWeapon() {}, inventory: { addKits: () => 1 }, hud: { pickup: (t) => said.push(t) } };
+    const pl = new CrashedPlane(config, { on() {}, emit() {} });
+    pl.init({ scene, crashSite: { place: { x: 0, z: 0, yaw: 0 }, spots }, player, combat, ground: { heightAt: () => 0 }, progress: { has: (f) => set.has(f), setFlag: (f, on = true) => (on ? set.add(f) : set.delete(f)) }, dialogue: { play: (id) => lines.push(id) }, notify: (t) => said.push(t), cutscenes: { active: false, namedAnchors: new Map(), liveTargets: new Map(), play() { return false; } } });
+    const tick = (s) => { for (let t = 0; t < s; t += 0.05) pl.update(0.05, null, true, false); };
+    return { pl, set, said, lines, sounds, player, tick };
+  };
+
+  it('shows the moment the grey goes down, on Tom’s side of the body, and it’s said', () => {
+    const r = rig();
+    r.pl.state = 'quickdraw';
+    r.pl.timer = 0.1;
+    r.tick(0.05);
+    expect(r.pl.drop.visible).toBe(false);
+    r.pl.hitGrey(40, 'body');
+    expect(r.set.has('planeGreyDown')).toBe(true);
+    expect(r.said.at(-1)).toMatch(/Something fell from its hand, glowing/);
+    r.tick(0.1);
+    expect(r.pl.drop.visible).toBe(true);
+    expect(r.pl.dropSpot.y).toBeGreaterThan(0.5); // still in the air
+    r.tick(d.fallSeconds + 0.2);
+    expect(r.sounds).toContain('cellDrop');
+    expect(r.pl.dropSpot.y).toBeCloseTo(d.restY);
+    const g = r.pl.grey;
+    expect(Math.hypot(r.pl.dropSpot.x - g.x, r.pl.dropSpot.z - g.z)).toBeCloseTo(d.out);
+    // toward Tom: nearer him than the body is
+    expect(Math.hypot(r.pl.dropSpot.x - r.player.position.x, r.pl.dropSpot.z - r.player.position.z)).toBeLessThan(Math.hypot(g.x - r.player.position.x, g.z - r.player.position.z));
+  });
+
+  it('can be searched from the thing itself, and is gone once it has been', () => {
+    const r = rig(['outpostCleared', 'planeSeen', 'planeStandoff', 'planeGreyDown']);
+    r.tick(0.2);
+    expect(r.pl.drop.visible).toBe(true); // a load: lying there already
+    expect(r.pl.dropSpot.y).toBeCloseTo(d.restY);
+    r.player.position.x = r.pl.dropSpot.x;
+    r.player.position.z = r.pl.dropSpot.z + 1.2;
+    const pick = r.pl.pick('X');
+    expect(pick.key).toBe('loot');
+    expect(pick.prompt).toBe('Hold X: search the creature (it dropped something)');
+    pick.act();
+    expect(r.set.has('planeCellTaken')).toBe(true);
+    r.tick(0.1);
+    expect(r.pl.drop.visible).toBe(false);
+  });
+
+  it('Wyatt says so straight after either way it goes down, and again if it’s left', () => {
+    for (const id of ['plane.quick.wyatt', 'plane.down.wyatt']) expect(lineById.get(id).next).toBe('plane.drop.wyatt');
+    expect(lineById.get('plane.drop.wyatt').text).toMatch(/dropped something/);
+    expect(lineById.has('hint.planeLoot')).toBe(true);
+    expect(config.objectives.hintAfter.planeLoot).toBeLessThan(40);
+  });
+});
+
+describe('Ellen asks for the power cell after the reunion (#659)', () => {
+  it('picks her line by what Tom has done with it', () => {
+    expect(cellAsk({ taken: true, fitted: false })).toBe('home.cell.ask');
+    expect(cellAsk({ taken: false, fitted: false })).toBe('home.cell.back'); // sent back to the plane for it
+    expect(cellAsk({ taken: true, fitted: true })).toBe('home.cell.fitted');
+    for (const id of ['home.cell.ask', 'home.cell.wyatt', 'home.cell.back', 'home.cell.fitted', 'hint.planeCell', 'hint.planeCellBack']) {
+      expect(lineById.get(id).draft).toBe(true);
+      expect(lineById.get(id).cued).toBe(true);
+    }
+    expect(lineById.get('home.cell.ask').text).toMatch(/fence/);
+    expect(lineById.get('home.cell.back').text).toMatch(/Go back for it/);
+    expect(progress.flags.map((f) => f.id)).toContain('cellAsked');
+  });
+
+  const rig = (flags) => {
+    const set = new Set(flags);
+    const lines = [];
+    const subtitles = { busy: false };
+    const s = new Stairs(config, { on() {}, emit() {} });
+    s.init({ site: { place: { x: 0, z: 2, yaw: 0 }, spots: { foot: { x: 0, y: 0, z: 0 }, top: { x: 0, y: 3, z: 4 } } }, beyond: {}, player: { position: { x: 300, y: 0, z: 300 }, camera: { position: { x: 300, y: 1.7, z: 300 } }, riding: null }, ground: { heightAt: () => 0 }, progress: { has: (f) => set.has(f), setFlag: (f) => set.add(f) }, dialogue: { play: (id) => lines.push(id) }, subtitles, notify() {}, cutscenes: { active: false, namedAnchors: new Map(), play() { return false; } } });
+    const tick = (sec) => { for (let t = 0; t < sec; t += 0.05) s.update(0.05, null, true, false); };
+    return { s, set, lines, subtitles, tick };
+  };
+
+  it('a few seconds after the homecoming, once, and never over another line', () => {
+    const r = rig(['junieTaken', 'junieFound', 'junieHome', 'planeCellTaken']);
+    r.tick(config.stairs.encounter.cellAskAfter - 0.4);
+    expect(r.lines).toEqual([]);
+    r.subtitles.busy = true;
+    r.tick(3);
+    expect(r.lines).toEqual([]);
+    r.subtitles.busy = false;
+    r.tick(0.2);
+    expect(r.lines).toEqual(['home.cell.ask']);
+    expect(r.set.has('cellAsked')).toBe(true);
+    r.tick(20);
+    expect(r.lines.length).toBe(1);
+  });
+
+  it('not before she’s home, and not again after a load', () => {
+    const before = rig(['junieTaken', 'planeCellTaken']);
+    before.tick(10);
+    expect(before.lines).toEqual([]);
+    const loaded = rig(['junieTaken', 'junieFound', 'junieHome', 'planeCellTaken', 'cellAsked']);
+    loaded.tick(10);
+    expect(loaded.lines).toEqual([]);
+    const none = rig(['junieTaken', 'junieFound', 'junieHome']);
+    none.tick(5);
+    expect(none.lines).toEqual(['home.cell.back']);
+  });
+
+  // The goal, from a game faked just far enough.
+  const goal = (flags) => {
+    const set = new Set(flags);
+    const o = new Objectives(config, null);
+    const grey = { x: 70, z: 80 };
+    o.init({
+      progress: { has: (f) => set.has(f) },
+      clock: { day: 6, phase: 'day' },
+      station: { layout: { fenceBox: { x: 1, z: 2 }, cabin: { frontDoor: { x: 3, z: 4 } }, tower: { ladder: { x: 0, z: 0 } } }, state: { segments: [] }, shovelSpot: () => ({ x: 0, z: 0 }) },
+      campsite: {}, gasStation: {}, shelter: null, outpost: null,
+      world: { map: { clearings: [], cluster: {} } },
+      combat: { weapons: { has: () => true }, inventory: { batteries: 0 } },
+      plane: { ready: true, grey, spot: () => grey },
+      church: { ready: true, spot: () => ({ x: 0, z: 0 }) },
+    });
+    return o.work();
+  };
+  const base = ['gasStationVisited', 'crossedCordon', 'planeGreyDown', 'planeLooted', 'planeDone', 'junieTaken', 'familyAccount', 'junieClipSeen', 'churchVisited', 'plaqueRead', 'capsuleDug', 'capsuleOpened', 'capsuleRead', 'stairsKnown', 'junieFound'];
+
+  it('the goal is the fence box once she’s home, not on the walk', () => {
+    expect(goal([...base, 'planeCellTaken']).id).toBe('junieHome');
+    const g = goal([...base, 'planeCellTaken', 'junieHome']);
+    expect(g.id).toBe('planeCell');
+    expect(g.at).toEqual({ x: 1, z: 2 });
+    expect(goal([...base, 'planeCellTaken', 'junieHome', 'planeCellFitted']).id).toBe('afterJunie');
+  });
+
+  it('never searched the grey: back to the plane for it, then the fence box', () => {
+    const g = goal([...base.filter((f) => f !== 'planeLooted'), 'junieHome']);
+    expect(g.id).toBe('planeCellBack');
+    expect(g.at).toEqual({ x: 70, z: 80 });
+    expect(g.text).toMatch(/crashed plane/);
+  });
+
+  it('at the plane the goal is to search the creature until it’s done', () => {
+    const g = goal(['gasStationVisited', 'crossedCordon', 'planeGreyDown']);
+    expect(g.id).toBe('planeLoot');
+    expect(g.text).toBe('Search the creature. It dropped something.');
+  });
+});
+
+describe('the later start points (debug)', () => {
+  it('each sets every flag of the one before it', () => {
+    const order = ['greyDown', 'planeDone', 'junieFound', 'junieHome'];
+    for (let i = 1; i < order.length; i++) for (const f of laterFlags(order[i - 1])) expect(laterFlags(order[i])).toContain(f);
+    expect(laterFlags('greyDown')).not.toContain('planeLooted');
+    for (const f of PLANE_DONE_FLAGS) expect(laterFlags('planeDone')).toContain(f);
+    expect(laterFlags('junieFound')).not.toContain('junieHome');
+    expect(laterFlags('junieHome')).not.toContain('cellAsked'); // Ellen asks once he's playing
+    const known = new Set(progress.flags.map((f) => f.id));
+    for (const f of laterFlags('junieHome')) expect(known.has(f)).toBe(true);
+  });
+});
+
+describe('ridden home on the quad', () => {
+  it('through the gate with her on the back: he pulls up, they get down, the homecoming plays', () => {
+    const flags = new Set(['junieTaken', 'stairsSeen', 'stairsMoths', 'junieFound']);
+    const scene = new THREE.Scene();
+    const player = { position: { x: 0, y: 0, z: 5 }, yaw: 0, camera: { position: new THREE.Vector3(0, 1.7, 5) }, riding: null };
+    const quad = { mesh: new THREE.Group(), x: 0, z: 5, heading: 0, dismounted: 0, dismount() { this.dismounted++; player.riding = null; player.position.x = -1.3; } };
+    scene.add(quad.mesh);
+    const played = [];
+    const s = new Stairs(config, { on() {}, emit() {} });
+    const layout = { centre: { x: 0, z: 0 }, radius: 30, gate: { angle: 0, halfWidth: 0.2 }, cabin: { x: 0, z: 0 } };
+    s.init({ scene, quad, site: { place: { x: 500, z: 500, yaw: 0 }, spots: { foot: { x: 500, y: 0, z: 500 }, top: { x: 500, y: 3, z: 504 } } }, beyond: {}, player, ground: { heightAt: () => 0 }, station: { layout, setPresent() {} }, progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) }, notify() {}, cutscenes: { active: false, namedAnchors: new Map(), play: (id, o) => { played.push(id); o.onDone(); return true; } }, rng: () => 0.5 });
+    s.insideHome = () => true; // (the fence's zones are the station's own business)
+    player.riding = quad;
+    s.update(0.05, null, true, false);
+    expect(quad.dismounted).toBe(1);
+    expect(played).toEqual(['junie.homecoming']);
+    expect(flags.has('junieHome')).toBe(true);
+    expect(quad.mesh.children.length).toBe(0); // she's off it, and gone indoors
+    expect(s.junie).toBeNull();
+  });
+});

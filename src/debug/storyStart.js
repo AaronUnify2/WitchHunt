@@ -120,3 +120,75 @@ export function startFromOutpostCleared(game, { explored = false } = {}) {
   g.dialogue.later.length = 0;
   g.toast.show(explored ? 'Debug: the outpost cleared and explored. The checkpoint is open' : 'Debug: the outpost cleared. The compound is still to explore');
 }
+
+// ---- Session 33: later start points (HANDOVER: "the plane done", "Junie home") ---------------------------
+
+// The flags each later stretch sets, in order (data/progress.json).
+export const PLANE_DOWN_FLAGS = ['crossedCordon', 'planeSeen', 'planeStandoff', 'planeGreyDown'];
+export const PLANE_DONE_FLAGS = ['planeLooted', 'planeLogRead', 'planeCellTaken', 'mothmanMet', 'planeDone'];
+export const JUNIE_TOLD_FLAGS = ['junieTaken', 'familyAccount', 'junieClipSeen'];
+export const CHURCH_FLAGS = ['churchVisited', 'plaqueRead', 'capsuleDug', 'capsuleOpened', 'capsuleRead', 'stairsKnown'];
+export const JUNIE_FOUND_FLAGS = ['stairsSeen', 'stairsMoths', 'stairsClimbed', 'junieFound'];
+
+// Which flags a start point sets on top of the outpost's: 'greyDown' | 'planeDone' | 'junieFound' | 'junieHome'.
+export function laterFlags(point) {
+  const down = PLANE_DOWN_FLAGS;
+  if (point === 'greyDown') return [...down];
+  if (point === 'planeDone') return [...down, ...PLANE_DONE_FLAGS];
+  const found = [...down, ...PLANE_DONE_FLAGS, ...JUNIE_TOLD_FLAGS, ...CHURCH_FLAGS, ...JUNIE_FOUND_FLAGS];
+  if (point === 'junieFound') return found;
+  if (point === 'junieHome') return [...found, 'junieHome'];
+  return [];
+}
+
+// The jump: the outpost cleared and explored, then on to `point`.
+//  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
+//  - planeDone: waking at the wreck at dawn after the Mothman (the family's account and the clip follow).
+//  - junieFound: at the foot of the stairs with Junie, the quad beside them, the walk home ahead.
+//  - junieHome: just inside the gate, Junie home (Ellen asks for the power cell in a moment).
+export function startFromLater(game, point) {
+  const g = game;
+  startFromOutpostCleared(g, { explored: true });
+  const flags = laterFlags(point);
+  // The grey's drops, as the search gives them (before the flags say it's been searched).
+  if (flags.includes('planeLooted') && !g.progress.has('planeLooted')) {
+    for (const f of PLANE_DOWN_FLAGS) g.progress.setFlag(f);
+    g.plane?.reset();
+    g.plane?.ready && g.plane.loot();
+  }
+  for (const f of flags) g.progress.setFlag(f);
+  g.plane?.reset();
+  g.junieTaken?.reset();
+  g.church?.reset();
+  const face = (x, z, tx, tz) => g.player.teleport(x, z, Math.atan2(-(tx - x), -(tz - z)));
+  if (point === 'greyDown' && g.plane?.ready) {
+    const gr = g.plane.grey;
+    const w = g.plane.spot('work');
+    const b = g.plane.spot('bench');
+    const l = Math.hypot(w.x - b.x, w.z - b.z) || 1;
+    face(gr.x + ((w.x - b.x) / l) * 7, gr.z + ((w.z - b.z) / l) * 7, gr.x, gr.z);
+  } else if (point === 'planeDone' && g.plane?.ready) {
+    g.progress.setFlag('planeDone', false); // wake() sets it: the night passes, he's at the survival kit at dawn
+    g.progress.setFlag('mothmanMet', false);
+    g.plane.state = 'mothman';
+    g.plane.wake();
+  } else if (point === 'junieFound' && g.stairs?.ready) {
+    const f = g.stairsSite.spots.foot;
+    const yaw = g.stairsSite.place.yaw;
+    g.player.teleport(f.x - Math.sin(yaw) * 4, f.z - Math.cos(yaw) * 4, yaw);
+    g.quad?.place?.(f.x - Math.sin(yaw) * 6 + Math.cos(yaw) * 3, f.z - Math.cos(yaw) * 6 - Math.sin(yaw) * 3, yaw);
+  } else if (point === 'junieHome') {
+    const L = g.station.layout;
+    const d = L.cabin.frontDoor;
+    g.player.teleport(d.x + (d.x - L.cabin.x) * 0.6, d.z + (d.z - L.cabin.z) * 0.6, g.player.yaw);
+  }
+  g.stairs?.reset();
+  g.comms?.reset();
+  g.caller?.reset();
+  g.subtitles.clear();
+  g.dialogue.pending.length = 0;
+  g.dialogue.later.length = 0;
+  g.mapUi.fog.reveal(g.player.position.x, g.player.position.z, 60);
+  const said = { greyDown: 'the grey is down at the plane, still to search', planeDone: 'waking at the wreck at dawn', junieFound: 'Junie found: she follows you home', junieHome: 'Junie is home' };
+  g.toast.show(`Debug: ${said[point] ?? point}`);
+}

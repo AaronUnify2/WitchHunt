@@ -123,13 +123,14 @@ describe('the crashed plane, reworked (notes 6-10)', () => {
     expect(wood(KIT_STAGES[1])).toBe(2); // the pump and the stock, still, further on
   });
 
-  it('can’t drive the Mothman off, and makes no goal of the power cell', () => {
+  it('can’t drive the Mothman off, and makes no goal of the power cell at the plane', () => {
     const plane = fs.readFileSync(new URL('../src/encounters/CrashedPlane.js', import.meta.url), 'utf8');
     expect(plane).toContain('unbeatable: true');
     expect(plane).not.toContain("setFlag('radioSmashed')");
     expect(plane).not.toContain('fit it at the fence box');
+    // Session 33 (Aaron: Ellen asks for it after the reunion): it's a goal again, but only once Junie's home.
     const goals = fs.readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
-    expect(goals).not.toContain("step('planeCell'");
+    expect(goals).toContain("has('junieHome') && !has('planeCellFitted')");
   });
 });
 

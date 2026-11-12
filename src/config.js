@@ -3103,7 +3103,7 @@ export const config = {
 
   // Session 17 (Aaron: more breadcrumbs from the family): seconds stuck on a
   // step (story/Objectives.js) before its hint line (dialogue.json hint.<id>).
-  objectives: { hintAfter: { default: 100, note: 60, scanner: 80, tapes: 60 } },
+  objectives: { hintAfter: { default: 100, note: 60, scanner: 80, tapes: 60, planeLoot: 25 } }, // Session 33: planeLoot: Wyatt says so soon if the grey's left unsearched
 
   // Escaping the witch early in the run (Session 17, Aaron; story/WitchEscape.js):
   // until the cordon's crossed, while she's attacking within `range` metres,
@@ -4373,6 +4373,12 @@ export const config = {
       interactRange: 1.8,
       drops: { pistolRounds: 12, alienShells: 6 },
       flareAfter: 10, // seconds after its drops are taken, Wyatt suggests the signal flare
+      // Session 33 (Aaron: "make it very clear that something's been dropped"): the power cell, seen on the ground
+      // by the body until it's searched. Unlit, no light: a crystal `size` metres across and a faint shell
+      // haloScale times wider (haloOpacity). It leaves the grey's hand (hand metres up), arcs `out` metres toward
+      // Tom (hop metres high) in fallSeconds, rests restY above the ground, and flashes every glintEvery seconds.
+      // wisp: the thin cone of light standing up off it once it's landed (wispHeight metres tall, wispWidth x size wide at its foot).
+      drop: { color: 0x4fd6b0, size: 0.1, haloScale: 5, haloOpacity: 0.11, out: 0.85, hand: 0.8, hop: 0.45, restY: 0.13, fallSeconds: 0.7, glintEvery: 2.2, wispHeight: 2.2, wispWidth: 1.6, wispOpacity: 0.2 },
       floor: 0.1, // the Mothman's fight: Tom can't drop below 10% health; reaching it, he blacks out
       // Session 32 (Aaron): he can't be driven off here (Flyer `unbeatable`): the fight always ends at the floor
       // and the blackout, and the script's last move repeats until it does.
@@ -5230,6 +5236,7 @@ export const config = {
       // round at her), and where she gets off: `off` to the side Tom stepped to, `back` behind its middle.
       follow: { gap: 1.7, speed: 4.6, catchUp: 9, snap: 28, albedo: 0.3, seat: { y: 0.34, z: 0.96, off: 1.3, back: 1.1 } },
       homeRadius: 0, // metres past the fence's radius: inside it, the homecoming (0: at the fence)
+      cellAskAfter: 2.5, // Session 33: seconds after the homecoming, Ellen asks for the plane's power cell for the fence
       lineEvery: [40, 70], // seconds between Junie's lines on the walk home
       findDistance: 6.5, // metres from her Tom comes into the last clearing of the place beyond
     },

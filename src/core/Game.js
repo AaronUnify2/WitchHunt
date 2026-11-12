@@ -101,7 +101,7 @@ import { Beetles } from '../ai/Beetles.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
-import { startFromOutpostCleared } from '../debug/storyStart.js';
+import { startFromOutpostCleared, startFromLater } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import {
@@ -1061,6 +1061,15 @@ export class Game {
     };
     start.addItem('Outpost cleared: the compound still to explore', jump(false));
     start.addItem('Outpost cleared and explored: the checkpoint next', jump(true));
+    // Session 33: later points (the plane, Junie), each on top of the outpost explored.
+    const later = (point) => () => {
+      startFromLater(this, point);
+      this.debugMenu.close();
+    };
+    start.addItem('The plane: the grey down, what it dropped still to pick up', later('greyDown'));
+    start.addItem('The plane done: waking at the wreck at dawn (the account and the clip follow)', later('planeDone'));
+    start.addItem('Junie found: at the stairs, the quad beside you, the walk home ahead', later('junieFound'));
+    start.addItem('Junie home: inside the gate (Ellen asks for the power cell)', later('junieHome'));
     const time = menu.category(DEBUG.time);
     time.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     time.addItem('Skip to night', () => this.skipToPhase('night'));

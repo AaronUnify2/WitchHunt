@@ -34,6 +34,7 @@
 // Events: 'plane:standoff', 'plane:greyDown' { quick }, 'plane:flare',
 // 'plane:mothmanGone' { drivenOff }, 'plane:done'.
 
+import * as THREE from 'three';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { toWorld } from '../world/CrashSite.js';
 import { HoldAction } from '../player/HoldAction.js';
@@ -62,6 +63,18 @@ export function standoffAt(t, s) {
   if (t < s.hopAt + s.hopSeconds) return { phase: 'hop', k: (t - s.hopAt) / s.hopSeconds, shots };
   if (t < s.aimAt) return { phase: 'stare', shots };
   return { phase: 'aim', shots };
+}
+
+// Session 33 (Aaron: "make it very clear that something's been dropped"): the thing the grey dropped, `t`
+// seconds after it went down. It leaves the grey's hand (hand: metres up), arcs out to where it rests (k: 0..1
+// along the way, lift: metres above its resting height), lands at d.fallSeconds, and from then on glints:
+// glint 0..1, a quick flash every d.glintEvery seconds, the first as it lands. d: config ...encounter.drop.
+export function dropAt(t, d) {
+  const k = Math.max(0, Math.min(1, t / d.fallSeconds));
+  const lift = (1 - k) * d.hand + Math.sin(k * Math.PI) * d.hop;
+  const since = t - d.fallSeconds;
+  const glint = since < 0 ? 0 : Math.exp(-(since % d.glintEvery) * 7);
+  return { k, lift, landed: since >= 0, glint };
 }
 
 // A hop from a to b (the scramble over the wing): t 0..1 -> { x, z, lift }.
@@ -112,8 +125,73 @@ export class CrashedPlane {
     // wreck (the model's +z), x to the right of that (the model's -x).
     this.cutscenes?.liveTargets?.set('grey', () => ({ x: this.grey.x, y: this.grey.y + 1.0, z: this.grey.z }));
     this.cutscenes?.namedAnchors?.set('crashSite', () => ({ x: this.crashSite.place.x, z: this.crashSite.place.z, yaw: this.crashSite.place.yaw + Math.PI }));
+    this.buildDrop();
     this.bus.on('player:respawned', () => this.reset());
     this.reset();
+  }
+
+  // Session 33: what the grey dropped, lying by the body until it's searched: the small alien power cell. No
+  // light: an unlit crystal, and the same colour again as a wide, faint shell round it (the glow), so it
+  // shows by night and reads from across the clearing by day, with a thin wisp of light standing up off it.
+  buildDrop() {
+    if (!this.scene) return;
+    const d = this.ec.drop;
+    const core = new THREE.OctahedronGeometry(d.size, 0);
+    core.scale(1, 1.6, 1);
+    this.dropCore = new THREE.Mesh(core, new THREE.MeshBasicMaterial({ color: d.color }));
+    this.dropHalo = new THREE.Mesh(new THREE.SphereGeometry(d.size * d.haloScale, 12, 8), new THREE.MeshBasicMaterial({ color: d.color, transparent: true, opacity: d.haloOpacity, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.dropHalo.material.fog = false; // it shows through the ground mist
+    // A thin wisp of the same light standing up off it (an open cone, widest at the cell, fading to its tip):
+    // what's seen first from the clearing's edge, over the wing and the leaves.
+    const wisp = new THREE.ConeGeometry(d.size * d.wispWidth, d.wispHeight, 10, 1, true);
+    wisp.translate(0, d.wispHeight / 2, 0);
+    this.dropWisp = new THREE.Mesh(wisp, new THREE.MeshBasicMaterial({ color: d.color, transparent: true, opacity: d.wispOpacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    this.drop = new THREE.Group();
+    this.drop.name = 'planeDrop';
+    this.drop.add(this.dropCore, this.dropHalo, this.dropWisp);
+    this.drop.visible = false;
+    this.scene.add(this.drop);
+    this.dropT = 99;
+    this.dropSpot = { x: 0, y: 0, z: 0 };
+  }
+
+  // Where it rests: `out` metres in front of the body's feet (the way it was facing: at Tom, when it fell).
+  dropRest() {
+    const g = this.grey;
+    const out = this.ec.drop.out;
+    const x = g.x + Math.sin(g.facing) * out;
+    const z = g.z + Math.cos(g.facing) * out;
+    return { x, y: this.ground.heightAt(x, z), z };
+  }
+
+  get dropShown() {
+    return this.has('planeGreyDown') && !this.has('planeLooted');
+  }
+
+  updateDrop(dt, shown) {
+    if (!this.drop) return;
+    const show = shown && this.dropShown;
+    this.drop.visible = show;
+    if (!show) return;
+    const d = this.ec.drop;
+    const was = this.dropT;
+    this.dropT += dt;
+    const a = dropAt(this.dropT, d);
+    const rest = this.dropRest();
+    const g = this.grey;
+    this.dropSpot.x = g.x + (rest.x - g.x) * a.k;
+    this.dropSpot.z = g.z + (rest.z - g.z) * a.k;
+    this.dropSpot.y = rest.y + d.restY + a.lift;
+    this.drop.position.set(this.dropSpot.x, this.dropSpot.y, this.dropSpot.z);
+    this.dropCore.rotation.y += dt * 1.3;
+    this.dropCore.rotation.z = a.landed ? 0.5 : this.dropT * 9; // tumbling as it falls; lying tilted after
+    const pulse = 1 + 0.12 * Math.sin(this.dropT * 2.6);
+    this.dropHalo.scale.setScalar(pulse * (1 + a.glint * 0.9));
+    this.dropHalo.material.opacity = d.haloOpacity * (1 + a.glint * 2.5);
+    this.dropWisp.visible = a.landed; // it stands up once the thing's come to rest
+    this.dropWisp.material.opacity = d.wispOpacity * (0.75 + 0.25 * pulse + a.glint * 1.5);
+    this.dropWisp.scale.set(1, Math.min(1, (this.dropT - d.fallSeconds) / 0.6), 1);
+    if (was < d.fallSeconds && a.landed) this.sfx?.play('cellDrop', this.dropSpot);
   }
 
   get ready() {
@@ -156,6 +234,7 @@ export class CrashedPlane {
     g.active = true;
     g.alienPose = null;
     this.target.targetable = false;
+    this.dropT = 99; // (a load, a respawn: what it dropped is lying there already)
     if (down) this.state = this.has('mothmanMet') ? 'done' : 'down';
   }
 
@@ -204,6 +283,7 @@ export class CrashedPlane {
     g.timer += dt;
     const shown = near < this.ec.drawDistance;
     this.renderer.update(shown && g.active ? [g] : [], dt);
+    this.updateDrop(dt, shown);
     const t = this.target;
     t.x = g.x;
     t.y = g.y;
@@ -456,15 +536,18 @@ export class CrashedPlane {
 
   greyDown(quick) {
     const g = this.grey;
+    this.faceTom(); // Session 33: it goes down facing him, and what it drops lands on his side of it
     g.state = 'dying';
     g.timer = 0;
+    this.dropT = 0;
     this.target.targetable = false;
     this.state = 'down';
     this.timer = 0;
     this.progress?.setFlag('planeGreyDown');
     this.bus.emit('plane:greyDown', { quick });
     this.sfx?.play('mothDie', g);
-    this.notify?.(quick ? 'Quick draw: it never got its shot off' : 'The grey is down');
+    // Session 33 (Aaron): said the moment it goes down, so he searches it the first time.
+    this.notify?.(quick ? 'Quick draw: it never got its shot off. Something fell from its hand, glowing' : 'The grey is down. Something fell from its hand, glowing');
     this.dialogue?.play(quick ? 'plane.quick.wyatt' : 'plane.down.wyatt');
   }
 
@@ -487,7 +570,7 @@ export class CrashedPlane {
     const dist = (q) => Math.hypot(p.x - q.x, p.z - q.z);
     if (this.state === 'down' || this.state === 'done') {
       const g = this.grey;
-      if (!this.has('planeLooted') && dist(g) < r + 0.4) return { key: 'loot', prompt: `Hold ${X}: search the grey (it had the pilot's pistol)`, busy: 'Searching…', seconds: 1.4, act: () => this.loot() };
+      if (!this.has('planeLooted') && Math.min(dist(g), dist(this.dropSpot ?? g)) < r + 0.4) return { key: 'loot', prompt: `Hold ${X}: search the creature (it dropped something)`, busy: 'Searching…', seconds: 1.4, act: () => this.loot() };
       if (!this.has('planeLogRead') && dist(this.spot('log')) < r) return { key: 'log', prompt: `Hold ${X}: pick up the pilot's knee-board`, busy: 'Picking it up…', seconds: 0.8, act: () => this.readLog() };
       if (this.state === 'down' && this.has('planeLooted') && !this.mothmanOn && dist(this.spot('kit')) < r) return { key: 'flare', prompt: `Hold ${X}: fire the pilot's signal flare`, busy: 'Loading the flare pistol…', seconds: 1.2, act: () => this.fireFlare() };
       if (this.state === 'down' && !this.has('planeLooted') && dist(this.spot('kit')) < r) return { key: 'kit', prompt: "The pilot's survival kit: a flare pistol and three flares", act: null };
@@ -507,7 +590,8 @@ export class CrashedPlane {
     this.progress?.setFlag('planeLooted');
     this.sfx?.play('pickup');
     this.timer = 0;
-    // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at.
+    // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at. (Session 33: what it's for
+    // comes from Ellen once Junie's home: encounters/Stairs.js askForCell.)
     this.combat.hud.pickup(`The pilot's pistol, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
   }
 
@@ -606,6 +690,13 @@ export class CrashedPlane {
   }
 
   dispose() {
+    if (this.drop) {
+      this.drop.removeFromParent();
+      for (const m of [this.dropCore, this.dropHalo, this.dropWisp]) {
+        m.geometry.dispose();
+        m.material.dispose();
+      }
+    }
     this.renderer?.pool?.forEach((o) => o.mesh.removeFromParent());
   }
 }
