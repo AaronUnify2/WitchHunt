@@ -132,6 +132,7 @@
     {"id": "mineCavernSeen", "about": "The abandoned mineshaft: Tom has walked into the cavern (the seam, the torn cocoon)."},
     {"id": "foremanLogFound", "about": "The abandoned mineshaft: Everett Shaw's logbook taken from beside him at the plunger (lore foremanLog)."},
     {"id": "mineSticks", "about": "The abandoned mineshaft: the dynamite left in the open case taken."},
-    {"id": "drillHeadTaken", "about": "The abandoned mineshaft: the rock drill's head knocked off (lore drillHead: the killdozer's ram, for later)."}
+    {"id": "drillHeadTaken", "about": "The abandoned mineshaft: the rock drill's head knocked off (lore drillHead: the killdozer's ram, for later)."},
+    {"id": "mineSealed", "about": "The abandoned mineshaft: the charges fired and Tom out ahead of the fire: the seam and the cavern are sealed, and the cage won't go down again (encounters/MineBottom.js)."}
   ]
 }

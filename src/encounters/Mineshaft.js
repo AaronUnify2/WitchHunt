@@ -57,6 +57,7 @@ export class Mineshaft {
       this.cutscenes?.namedAnchors?.set('mineshaft', () => ({ x: p.x, z: p.z, yaw: Math.atan2(-Math.sin(p.yaw), -Math.cos(p.yaw)) }));
     }
     this.bus.on('player:respawned', () => this.reset());
+    this.bus.on('mine:sealed', () => this.dress());
     this.reset();
   }
 
@@ -89,10 +90,20 @@ export class Mineshaft {
     this.later = [];
     this.creak = 4;
     if (!this.ready) return;
-    this.site.show('battery', this.powered);
-    this.site.show('boxLamp', this.powered);
-    this.site.show('cageLamp', this.powered);
+    this.dress();
     this.ride?.reset();
+  }
+
+  // Session 31: sealed (the charges fired below), the relay's tripped: the lamps are out for good.
+  get sealed() {
+    return this.has('mineSealed');
+  }
+
+  dress() {
+    if (!this.ready) return;
+    this.site.show('battery', this.powered);
+    this.site.show('boxLamp', this.powered && !this.sealed);
+    this.site.show('cageLamp', this.powered && !this.sealed);
   }
 
   // ---- each frame ---------------------------------------------------------------------------
@@ -172,6 +183,13 @@ export class Mineshaft {
     add(this.spot('sign'), r + 0.8, { key: 'sign', prompt: data.sign, act: null });
     // 3: the control box.
     const state = boxState(this.powered, this.combat.inventory?.batteries ?? 0);
+    if (this.sealed) {
+      add(this.spot('box'), r + 0.2, { key: 'box', prompt: data.out.box, act: null });
+      add(this.spot('lever'), r, { key: 'lever', prompt: data.out.lever, act: null });
+      if (!cands.length) return null;
+      cands.sort((a, b) => a.dd - b.dd);
+      return cands[0].o;
+    }
     if (state === 'fit') add(this.spot('box'), r + 0.2, opt('box', data.box, H.battery, () => this.fitBattery()));
     else add(this.spot('box'), r + 0.2, { key: 'box', prompt: state === 'live' ? data.box.live : data.box.none, act: null });
     // 4: the cage's lever.

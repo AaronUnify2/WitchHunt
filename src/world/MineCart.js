@@ -67,6 +67,7 @@ export class MineCart {
     this.speed = 0;
     this.moving = false;
     this.stopAt = null;
+    this.dir = 1;
     this.pose();
   }
 
@@ -93,6 +94,7 @@ export class MineCart {
 
   // Off toward the next halt.
   go(stop) {
+    this.dir = 1;
     this.stopAt = stop;
     if (!this.moving) {
       this.moving = true;
@@ -101,9 +103,47 @@ export class MineCart {
     }
   }
 
+  // Session 31: back up the drift on the haulage rope, to a stop at `stop` (s). speedOf(): what the rope (or
+  // what's behind it) wants of it, m/s.
+  runUp(stop, speedOf) {
+    this.dir = -1;
+    this.stopAt = { id: 'top', s: stop };
+    this.upSpeed = speedOf;
+    if (!this.moving) {
+      this.moving = true;
+      this.sfx?.play('cartHaul', this.worldPoint());
+      this.bus.emit('mine:cartMoving');
+    }
+  }
+
+  rollUp(dt) {
+    const E = this.cfg.mineshaft.escape;
+    const stop = this.stopAt.s;
+    let target = this.upSpeed?.() ?? E.haul;
+    const left = this.s - stop;
+    if (left < E.brake) target = Math.min(target, Math.max(this.rc.crawl, target * (left / E.brake)));
+    this.speed = target < this.speed ? Math.max(target, this.speed - E.accel * 3 * dt) : Math.min(target, this.speed + E.accel * dt);
+    const before = this.s;
+    this.s = Math.max(stop, this.s - this.speed * dt);
+    this.clack += before - this.s;
+    if (this.clack >= this.rc.clackEvery) {
+      this.clack = 0;
+      this.sfx?.play('railClack', this.worldPoint());
+      this.player.shake?.(0.05 + this.speed * 0.012);
+    }
+    if (this.s <= stop + 0.02) {
+      this.s = stop;
+      this.speed = 0;
+      this.moving = false;
+      this.sfx?.play('cartBrake', this.worldPoint());
+      this.bus.emit('mine:cartStopped', { at: 'top' });
+    }
+  }
+
   // ---- riding --------------------------------------------------------------------------------
 
-  mount() {
+  // up: facing back up the drift (the way out), not down the rails.
+  mount(up = false) {
     if (this.riding || this.player.riding) return;
     this.riding = true;
     const p = this.player;
@@ -111,11 +151,11 @@ export class MineCart {
     p.crouched = false;
     p.sprinting = false;
     // Looking down the rails.
-    p.yaw = this.heading + Math.PI;
+    p.yaw = this.heading + (up ? 0 : Math.PI);
     p.pitch = -0.04;
     this.sfx?.play('climb');
     const pad = this.device !== 'keyboardMouse';
-    this.combat.hud?.pickup?.(pad ? 'On the gun: RT fires, LT steadies it. It overheats: let it cool. It swings right round.' : 'On the gun: left mouse fires, right mouse steadies it. It overheats: let it cool. It swings right round.');
+    if (!up) this.combat.hud?.pickup?.(pad ? 'On the gun: RT fires, LT steadies it. It overheats: let it cool. It swings right round.' : 'On the gun: left mouse fires, right mouse steadies it. It overheats: let it cool. It swings right round.');
     this.carry(p);
   }
 
@@ -176,6 +216,10 @@ export class MineCart {
 
   roll(dt) {
     if (!this.moving) return;
+    if (this.dir < 0) {
+      this.rollUp(dt);
+      return;
+    }
     const stop = this.stopAt?.s ?? this.rc.end;
     const target = speedAt(this.rc, this.s, stop);
     this.speed = target < this.speed ? target : Math.min(target, this.speed + this.rc.accel * dt);

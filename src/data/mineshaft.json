@@ -156,8 +156,24 @@
   "plunger": {
    "prompt": "push the plunger",
    "busy": "Leaning on it…",
-   "soon": "The exploder. Two strands of cable run from it to the face, and nine holes in the face are packed and wired. He never pushed it. (The way out is still to build.)"
+   "armed": "The handle goes down like it's going through gravel. Nothing. Then a spit and a fizz by your boot: they spliced in a length of slow fuse, to give the shot-firer time to reach the cart. It's burning. Go.",
+   "late": "You're still on your feet in the drift when it goes."
   }
+ },
+ "out": {
+  "fuse": "FUSE {s}s · GET TO THE CART",
+  "fuseAboard": "FUSE {s}s",
+  "board": {
+   "prompt": "jump in and throw the rope's clutch",
+   "busy": "Climbing in…"
+  },
+  "haul": "The haulage rope snatches the cart and starts it back up the drift at a walk. Ahead of you the moths are pouring away up it, every one of them, and not one looks back.",
+  "blast": "It goes. You feel it in the rails before you hear it. Then the whole drift behind you is orange, and the cart is going a great deal faster than the rope.",
+  "rails": "There are men on the rails ahead. Every one you hit slows you down.",
+  "singe": "The fire comes right over the cart's tail and you with it, and falls back. Keep the rails clear.",
+  "sealed": "The ground thumps once under your boots. Smoke comes up the shaft like a chimney's, and the cage hangs crooked in the collar. Whatever's down there is under a mountain now.",
+  "lever": "The cage hangs crooked in the collar and the shaft's breathing smoke. Nothing's going down there again",
+  "box": "The lift's control box. The relay's tripped for good"
  },
  "fight": {
   "first": "There's a man on the rails ahead, in a hard hat, his back to you. He turns round. He's been dead a while.",

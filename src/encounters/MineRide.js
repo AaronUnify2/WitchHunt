@@ -96,7 +96,7 @@ export class MineRide {
       spawn: () => ({ x: this.entrance.x, z: this.entrance.z, yaw: Math.PI, pitch: 0 }),
       exit: () => this.exitPoint(),
       get light() {
-        return self.mc.light;
+        return self.bottom.light; // the mine's own, until the fire's behind him (encounters/MineBottom.js)
       },
       // What happens down here is in here with him: nothing's muffled.
       onEnter: () => {
@@ -279,7 +279,7 @@ export class MineRide {
 
   // Down (the surface beat's lever).
   descend() {
-    if (!this.ready || this.below) return false;
+    if (!this.ready || this.below || this.has('mineSealed')) return false;
     this.later = [];
     this.interiors.enter(ID);
     this.phase = 'descending';
@@ -391,6 +391,13 @@ export class MineRide {
       if (playing) this.updateCage(dt);
       return;
     }
+    if (this.phase === 'cine') {
+      // The closing cutscene: the bottom's (it runs while the game's held).
+      this.bottom.update(dt, false);
+      this.hud.prompt = '';
+      this.hud.progress = 0;
+      return;
+    }
     if (this.phase === 'ascending') {
       if (playing) {
         this.t += dt;
@@ -411,6 +418,7 @@ export class MineRide {
       this.fight?.update(dt, this);
     }
     this.bottom.update(dt, playing);
+    if (!this.below || !this.model) return; // the way out's end took him up (the bottom's finish)
     if (canInteract !== false && input && playing && !this.fadeJob) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -431,6 +439,10 @@ export class MineRide {
       this.bus.emit('mine:bottom');
       return;
     }
+    if (at === 'top') {
+      this.where = 'landing'; // the way out's end (the bottom's: encounters/MineBottom.js)
+      return;
+    }
     this.where = at;
     this.notify?.(data.stops[at].halt);
     this.bus.emit('mine:stop', { id: at });
@@ -447,6 +459,12 @@ export class MineRide {
     if (done && best?.act) best.act();
     this.hud.prompt = best ? (this.hold.active && best.busy ? best.busy : best.prompt) : '';
     this.hud.progress = this.hold.key !== null ? this.hold.progress : 0;
+    // The fuse's count goes over everything (Session 31).
+    const banner = this.bottom.banner;
+    if (banner) {
+      this.hud.prompt = this.hud.prompt ? `${banner} · ${this.hud.prompt}` : banner;
+      if (this.hold.key === null) this.hud.progress = Math.max(0, this.bottom.fuse / this.mc.escape.fuse);
+    }
     if (this.phase === 'aboard') this.cart.hint = this.hud.prompt || null;
   }
 
@@ -458,7 +476,7 @@ export class MineRide {
   }
 
   pickAboard(X) {
-    if (this.cart.moving) return null;
+    if (this.cart.moving || this.bottom.esc) return null;
     const H = this.mc.encounter.holds;
     const opt = (key, def, seconds, act) => ({ key, prompt: `Hold ${X}: ${def.prompt}`, busy: def.busy, seconds, act });
     if (this.wayOpen()) return opt('brake', data.cart.brake, H.lever, () => this.release());
@@ -479,7 +497,9 @@ export class MineRide {
     const spot = (name) => this.toWorld(this.model.spots[name]);
     const cart = this.cart.worldPoint();
     if (this.where === 'bottom') {
-      add(cart, r + 0.6, opt('winch', data.cart.winch, H.winch, () => this.winchUp()));
+      // The fuse lit: the cart's the only thing worth reaching (a wide reach, a short hold).
+      if (this.bottom.fuse !== null) add(cart, r + 1.4, opt('flee', data.out.board, 0.45, () => this.bottom.flee()));
+      else add(cart, r + 0.6, opt('winch', data.cart.winch, H.winch, () => this.winchUp()));
       this.bottom.pick(add, opt, X);
     } else add(cart, r + 0.6, opt('board', data.cart.board, this.rc.mountSeconds, () => this.board()));
     if (this.where === 'landing') add(spot('cageLever'), r, opt('up', data.cage.up, H.lever, () => this.ascend()));
@@ -505,10 +525,11 @@ export class MineRide {
 
   // ---- what each does --------------------------------------------------------------------------
 
-  board() {
+  // up: facing back up the drift (the way out).
+  board(up = false) {
     if (this.phase !== 'foot') return;
     this.cart.device = this.device;
-    this.cart.mount();
+    this.cart.mount(up);
     this.phase = 'aboard';
     this.player.platform = this.ridingPlatform();
   }
@@ -549,7 +570,7 @@ export class MineRide {
 
   // The bottom's as far as this build goes: the cart winched back up to the landing.
   winchUp() {
-    if (this.phase !== 'foot' || this.where !== 'bottom') return;
+    if (this.phase !== 'foot' || this.where !== 'bottom' || this.bottom.fuse !== null) return;
     this.sfx?.play('cartStart', this.player.position);
     this.fade(2.4, () => {
       this.fight?.clear();
@@ -646,6 +667,7 @@ export class MineRide {
     cat.addItem('Mineshaft: to the points', () => this.jump('points'));
     cat.addItem('Mineshaft: to the fall', () => this.jump('fall'));
     cat.addItem('Mineshaft: to the bottom', () => this.jump('bottom'));
+    cat.addItem('Mineshaft: push the plunger (from anywhere at the bottom)', () => this.bottom.push());
     cat.addItem('Mineshaft: to the bottom, the bulkhead open', () => {
       this.set('mineBottom');
       this.set('mineBulkhead');
@@ -657,7 +679,7 @@ export class MineRide {
   }
 
   overlayLine() {
-    return `${this.phase} ${this.where} ${this.below ? this.cart.overlayLine() : ''} ${this.fight?.overlayLine?.() ?? ''}`;
+    return `${this.phase} ${this.where} ${this.below ? `${this.cart.overlayLine()} ${this.bottom.overlayLine()}` : this.has('mineSealed') ? 'sealed' : ''} ${this.fight?.overlayLine?.() ?? ''}`;
   }
 
   dispose() {

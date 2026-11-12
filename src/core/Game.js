@@ -1791,7 +1791,8 @@ export class Game {
     const hour = viewer.active ? (viewer.hour ?? this.clock.hourOfDay) : (cs.hour ?? this.clock.hourOfDay);
     // Session 21: inside an interior its own light (not for a cutscene's or the viewer's own camera, out in the world).
     if (this.state === 'running') this.interiors.update(dt, this.clock);
-    const indoors = this.interiors.inside && !viewer.active && !cs.ownCamera ? this.interiors.inside : null;
+    // Session 31: unless the cutscene's camera is in there with him (data "indoors": the mine's last scene).
+    const indoors = this.interiors.inside && !viewer.active && (!cs.ownCamera || cs.current?.data.indoors) ? this.interiors.inside : null;
     this.sky.interior = indoors?.light ?? null;
     this.atmosphere.inside = Boolean(indoors);
     this.atmosphere.preUpdate(this.clock, this.sky);

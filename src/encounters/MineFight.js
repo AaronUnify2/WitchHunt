@@ -31,15 +31,17 @@
 
 import { halfAt, pointAt, roofAt } from '../world/mineTrack.js';
 import { ID } from './MineRide.js';
+import { streamSlot } from '../ai/Moths.js';
 import data from '../data/mineshaft.json';
 
 // ---- the pure parts (tested) ----------------------------------------------------------------
 
 // The script entries the cart has reached and not yet fired: s the cart's place, fired a Set of indices.
-export function due(script, s, fired) {
+// dir -1: the cart's coming back up the drift (it's reached an entry when it's come up to it).
+export function due(script, s, fired, dir = 1) {
   const out = [];
   script.forEach((e, i) => {
-    if (!fired.has(i) && s >= e.at) out.push(i);
+    if (!fired.has(i) && (dir > 0 ? s >= e.at : s <= e.at)) out.push(i);
   });
   return out;
 }
@@ -56,9 +58,10 @@ export function roostPlaces(s0, s1, count) {
 }
 
 // Is a zombie at (zs, zlat) (along the track, across it) in front of the cart's nose at speed?
-export function rammed(rc, cartS, speed, zs, zlat) {
+// dir: +1 running down the drift, -1 coming back up it (its tail leads).
+export function rammed(rc, cartS, speed, zs, zlat, dir = 1) {
   if (speed < rc.speed) return false;
-  const ahead = zs - (cartS + 1.2); // from the cart's nose
+  const ahead = dir > 0 ? zs - (cartS + 1.2) : cartS - 1.2 - zs; // from the end of the cart that leads
   return ahead > -0.6 && ahead < rc.reach && Math.abs(zlat) < rc.half;
 }
 
@@ -73,6 +76,7 @@ export class MineFight {
     this.waves = [];
     this.said = new Set();
     this.quiet = true;
+    this.escaping = false; // Session 31: the ride back up, the fire behind (encounters/MineBottom.js)
     this.token = {};
   }
 
@@ -130,6 +134,7 @@ export class MineFight {
     this.moths?.setHabitat(null);
     this.roosts.clear();
     this.waves = [];
+    this.escaping = false;
   }
 
   // ---- the moths' habitat: the mine as they need it --------------------------------------------
@@ -210,6 +215,44 @@ export class MineFight {
     return n;
   }
 
+  // Session 31: the plunger's down. Every moth there is lets go and leaves: out ahead of Tom, up the drift,
+  // and none of them stops to bite.
+  fleeMoths(ride) {
+    if (!this.moths) return;
+    this.ride = ride;
+    this.room ??= ride.room();
+    const hc = this.cfg.mineshaft.escape.moths;
+    const hab = this.habitat(ride);
+    hab.hc = hc;
+    this.moths.setHabitat(hab);
+    for (const [id, r] of this.roosts) {
+      if (r.woke) continue;
+      r.woke = true;
+      this.moths.wake(id, false);
+    }
+    for (const m of this.moths.moths ?? []) if (m.active) m.slot = streamSlot(hc, () => this.rng.next());
+    this.moths.dartTimer = 1e9;
+  }
+
+  // The cart's away back up the drift: the last of the shift come down the rails to meet it.
+  startEscape(ride) {
+    this.ride = ride;
+    this.room ??= ride.room();
+    this.escaping = true;
+    this.upFired = new Set();
+    this.aware = 0;
+  }
+
+  updateEscape(dt, ride) {
+    const E = this.cfg.mineshaft.escape;
+    const cart = ride.cart;
+    for (const i of due(E.script, cart.s, this.upFired, -1)) {
+      this.upFired.add(i);
+      for (const [s, lat] of E.script[i].miners ?? []) this.miner(s, lat, 'chase');
+    }
+    this.updateMiners(dt, ride);
+  }
+
   // ---- spawning --------------------------------------------------------------------------------
 
   miner(s, lat, mode = 'linger') {
@@ -249,6 +292,10 @@ export class MineFight {
   // ---- each frame (the ride's update, while Tom's below) ---------------------------------------
 
   update(dt, ride) {
+    if (this.escaping && this.ride) {
+      this.updateEscape(dt, ride);
+      return;
+    }
     if (this.quiet || !this.ride) return;
     this.beetles?.update(dt, true);
     const cart = ride.cart;
@@ -369,11 +416,19 @@ export class MineFight {
       if (!z.alive) continue;
       const c = this.room.confine({ x: z.x, z: z.z }, z.y, 0, n);
       const zs = c.s;
-      if (ride.phase === 'aboard' && cart.moving && rammed(f.ram, cart.s, cart.speed, zs, c.lat)) {
+      if (ride.phase === 'aboard' && cart.moving && rammed(f.ram, cart.s, cart.speed, zs, c.lat, cart.dir ?? 1)) {
         this.ram(z, cart);
         continue;
       }
-      if (zs < cart.s - f.behind && ride.phase === 'aboard') {
+      if (this.escaping) {
+        // What the cart's passed is the fire's.
+        const fire = ride.bottom?.fireS ?? null;
+        if (zs > cart.s + f.behind || (fire !== null && zs > fire - 2)) {
+          z.state = 'free';
+          z.tier = null;
+          continue;
+        }
+      } else if (zs < cart.s - f.behind && ride.phase === 'aboard') {
         z.state = 'free';
         z.tier = null;
         continue;
@@ -387,10 +442,12 @@ export class MineFight {
     this.enemies.damage(z, this.fc.ram.damage, 'body', { id: 'mineCart', stagger: 1, knockback: this.fc.ram.knock }, { x: z.x, y: z.y + 1, z: z.z }, w);
     this.sfx?.play('cartHit', w);
     this.player.shake?.(0.9);
+    if (this.escaping) cart.speed *= this.cfg.mineshaft.escape.ramKeep; // it costs him: the fire's coming
     this.bus.emit('mine:rammed', { zombie: z });
   }
 
   overlayLine() {
+    if (this.escaping) return `out: miners ${this.miners.filter((z) => z.alive).length} moths ${this.moths?.living ?? 0}`;
     if (this.quiet) return 'quiet';
     return `miners ${this.miners.filter((z) => z.alive).length} beetles ${this.beetles?.living.length ?? 0} roosting ${this.moths?.roosting() ?? 0} fired ${this.fired.size}`;
   }

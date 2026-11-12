@@ -4937,6 +4937,45 @@ export const config = {
       roost: { count: 22, s: [446, 466] }, // the moths, up under the cavern's roof (they watch; they don't come down unless they're shot at)
       hintOnce: true,
     },
+    // Session 31: the way out (encounters/MineBottom.js; DESIGN.md "The ending"). The plunger lights a slow
+    // fuse: `fuse` seconds to be aboard the cart (not aboard when it's burnt down, the blast kills him). The
+    // haulage rope takes the cart up at `haul` m/s until the charges go; the blast throws it on at `speed`.
+    // The fire comes up the drift behind, timed so a cart that's slowed by nothing reaches the landing
+    // `fire.endGap` metres ahead of it. Each of the dead the cart hits keeps only `ramKeep` of its speed, so
+    // the rails want clearing with the gun. When the fire reaches the cart (`fire.min` metres) it licks over
+    // him for `fire.lick`, never below `fire.floor` health (it can't kill him), and gutters `fire.fallBack`
+    // metres back before it comes on again.
+    escape: {
+      fuse: 20,
+      hurryAt: 6, // seconds left: the ticks run together
+      haul: 4.2,
+      speed: 10.5,
+      kick: 7.5, // the cart's speed the moment the blast catches it
+      accel: 3,
+      brake: 18, // metres before `stop` it brakes over
+      stop: 12, // where it stops on the landing (s)
+      cutAt: 44, // the cart this near the top: the last of it's a cutscene
+      ramKeep: 0.55,
+      fire: { from: 466, startGap: 46, endGap: 9, min: 2.6, lick: 12, fallBack: 11, floor: 12, balls: 2.3, radius: 1.9, roarEvery: 1.0, glowFrom: 60 }, // from: where it starts (s), or startGap metres behind the cart if that's nearer (the first of it comes fast); balls: metres between the balls of it; glowFrom: metres behind the cart it starts to light the drift
+      // The last of the shift, on the rails ahead as the cart comes up: each entry fires when the cart's come
+      // up to `at`; miners [s, lat].
+      script: [
+        { at: 404, miners: [[372, 0.1]] },
+        { at: 374, miners: [[340, -0.2], [334, 0.3]] },
+        { at: 332, miners: [[298, 0], [291, 0.5]] },
+        { at: 288, miners: [[258, 0.2]] },
+        { at: 252, miners: [[222, -0.3], [215, 0.2]] },
+        { at: 206, miners: [[176, 0], [170, -0.5], [163, 0.3]] },
+        { at: 152, miners: [[122, 0.1], [116, -0.4]] },
+        { at: 110, miners: [[82, -0.2], [76, 0.3]] },
+      ],
+      // The moths go too: out ahead of him up the drift (`along`: metres from Tom, negative is up the drift),
+      // and none of them stops to bite.
+      moths: { wake: 20, scatterBeyond: 24, scatter: 0, along: [-24, -5], up: [1.5, 2.6], speedOver: 2.5, dartSpeedOver: 9, dartEvery: [9999, 9999], dartCount: [0, 0], nipDamage: 0, leaveSeconds: 3.5 },
+      light: { ambient: 1.5, color: 0xd88a4a, fogColor: 0x2a1206 }, // the drift's own light with the fire right behind (eased in from the mine's)
+      look: { fire: 0xd8601c, core: 0xf0d090 },
+      cine: { arrive: 2.6, fill: [3.0, 5.6], lift: 4.5, glow: 3.2 }, // the closing cutscene (cutscenes.json mine.out): the cart's last seconds in, the fire into the landing, the cage away
+    },
     // The mine's own light and fog (world/Interiors.js): black beyond the torch.
     light: { ambientDay: 0.55, ambientNight: 0.55, ambientColor: 0x8a8478, fogColor: 0x040404, fogNear: 3, fogFar: 44 },
     look: {
