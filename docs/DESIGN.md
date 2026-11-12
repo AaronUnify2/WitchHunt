@@ -172,11 +172,11 @@ The original design, kept for reference: the player starts each run with the **s
 | Pistol | Reliable sidearm | The crashed plane: the pilot's pistol, taken off the grey alien that picked it up (Nov 8). Not built, debug only for now | 10 per round |
 | Hunting rifle (scoped, bolt-action) | Kills with a headshot (Aaron); punches through a line of zombies and through army helmets. Its own rare rounds; the scope doubles as binoculars | The gas station's gun safe (in the stockroom), opened with the combination on Earl's keys (storm shelter); its rare rounds are in the military outpost's gun pit (Session 18; they were up the watchtower) | 50 per round (150 to the head) |
 | Semi-auto rifle (heat scope) | The hunting rifle's rounds, 10 at a time; its scope shows the living white-hot | An encounter: Aaron is looking for a good spot (Nov 8). Debug only for now | 50 per round |
-| SMG (MP5-style) | Full auto; fires pistol rounds | **Wherever there are dead Men in Black** (Aaron, Nov 8): the first such place in a run gives it, so the sawmill's dead agents can, and on the story spine the Car Armory always does. Debug only for now | 10 per round |
+| SMG (MP5-style) | Full auto; fires pistol rounds | **Wherever there are dead Men in Black** (Aaron, Nov 8): the first such place in a run gives it, so the sawmill's dead agents can, and on the story spine the Car Armory always does. **Built at the sawmill (Session 28)**: beside the last agent, with 45 rounds | 10 per round |
 | Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
 | Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). **Built (Session 27)**: an overhead smash that cleaves through up to three (`config.weapons.spikeMaul`) | Config |
-| Chainsaw (melee) | Shreds up close; no fuel. Loud (pulls every zombie nearby), slows Tom while it revs, overheats if held, and dulls (a sharpness gauge; sharpen at the station's workbench for scrap) | The sawmill (optional; Nov 8). Designed, not built | Config |
+| Chainsaw (melee) | Shreds up close; no fuel. Loud (pulls every zombie nearby), slows Tom while it revs, overheats if held, and dulls (a sharpness gauge; sharpen at the station's workbench for scrap) | The sawmill (optional; Nov 8). **Built (Session 28)**: hold RT to rev and cut continuously; heard 55 m off; overheats and stalls; the chain dulls to 35% damage; HEAT and EDGE on the HUD (`config.chainsaw`) | Config |
 | Dynamite (thrown) | The first handheld throwable: small, unstable, short-fused crowd clearing. **Not a hut charge** | The railway cutting's powder store, the mineshaft (optional; Nov 8). **Built (Session 27)**: lit with RT, cooked, thrown on a drawn arc; it blows up in your hand if held too long; scarce (`config.dynamite`) | Config |
 | Explosive charge | Remote-detonated blast | Built: the military outpost's armoury (one). Designed: the Car Armory's restocking crate (the mineshaft now gives dynamite instead; Nov 8). Debug menu | Config |
 
@@ -197,7 +197,7 @@ The original design, kept for reference: the player starts each run with the **s
 
 - *As built (Session 20):* the shovel is the melee weapon until it's swapped out; then it hangs on the belt and still digs (the dig always shows the shovel). Everything that needs it asks whether Tom owns it (`Weapons.has`), not whether it's in hand.
 - **Tools go on a tool belt** (the shovel; the **wire cutters** from the moonshiners' holler, Nov 8, for disarming trip wires; later perhaps an axe or a crowbar). They come out automatically when you interact (dig a sigil and the shovel comes out) and never take a slot. They're keys to the world.
-- **One melee slot for fighting.** It starts as the shovel and can be swapped for something better: the **railroad spike maul** (the railway cutting) or the **chainsaw** (the sawmill) (Nov 8).
+- **One melee slot for fighting.** It starts as the shovel and can be swapped for something better: the **railroad spike maul** (the railway cutting) or the **chainsaw** (the sawmill) (Nov 8). *As built (Sessions 27-28, Aaron): Tom carries all three and rotates between them, as he does guns of a kind.*
 - **No flamethrower for Tom** (Aaron, Nov 8: tedious in shooters); it's a killdozer part only. **No fuel anywhere in the game.**
 - Damage values live in one weapon table in config; the turret's ammo conversion reads from it.
 
@@ -455,6 +455,7 @@ The sum of every defence's current value (each scales with its remaining health)
 ### The workbench *(Aaron, Nov 8; designed, not built)*
 
 - A workbench at the station, **there from the start**. Tom sharpens the chainsaw (from the sawmill) there for a little scrap. *(Proposed: it could also be where Sheriff's upgrades are bought before he arrives, or be folded into the garage; open.)*
+  **As built (Session 28):** in the cabin's main room, against the comms room's wall. Hold X to file the chain sharp for 3 scrap (`config.station.workbench`). It only sharpens the chainsaw so far.
 
 ### The garage *(Aaron, Nov 8; designed, not built)*
 
@@ -1580,6 +1581,16 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 - **Weapon: the chainsaw** (melee slot; Evil Dead 2 is a reference). No fuel. Balanced by **noise** (it pulls every zombie nearby), **slowing Tom while it revs**, **overheating** if held too long, and a **sharpness gauge**: as the chain dulls it cuts slower, and Tom sharpens it at a **workbench at the station**, there from the start, for a little scrap.
 - **Killdozer part:** the mill's **head saw** on the front blade, shredding whatever it pushes.
 
+**As built (Session 28;** `render/sawmillModel.js`, `world/SawmillSite.js`, `encounters/Sawmill.js`, `data/sawmill.json`, `config.sawmill`**).** All names and texts are drafts.
+
+- **What happened** (Aaron's yes to the default): Harlan Stover's crew cleared forty acres south of the old rail line for the government at triple rates, cash in a case, no paperwork. On the last payday every man was told to be at the mill to sign. Two cars came after dark. One agent shot the day shift in their bunks with a suppressed pistol out of the payroll case; the others dragged them to a pit they'd started, with lime and tarps bought that morning. Stover had worked it out an hour before and sent the night shift back to the saw. They fought with what was to hand. Nobody on either side walked away.
+- **The set:** the mill road in between the agents' two sedans (one boot open on lime, shovels and tarp; the last agent dead against the other, its radio looping a recall message); the bunkhouse (walk in: empty bunks, the card table, the payroll case with foam cut for a pistol); drag marks to five shapes under tarps and a knee-deep pit; the mill shed with the 60-inch head saw and a log stopped in the cut; the log deck and a man in a suit under its logs; the filing room with the foreman's desk.
+- **The beat:** an arrival sweep; the SMG beside the last agent; eight searches that tell the story; **the day book** (seven pages, ending "Dead men don't get paid" and a last entry as the cars come up the road); the chainsaw worked out of an agent on the shed floor.
+- **The dead get up** the first time the chainsaw revs at the mill (or the head saw's hammered off, or dusk falls with Tom in the yard): the five under the tarps one after another, then the four of the night shift, then three agents and four more out of the trees. Each gets up from where it lay. Loggers are a new zombie look (the citizens' shapes in flannel).
+- **The head saw** is hammered off its arbor (it rings): a card and a lore item until the killdozer's built.
+- **No Caller here:** what was done at the mill was done by people.
+
+
 #### Abandoned mineshaft (optional; rank 4)
 
 *Replaces the earlier design (a short tunnel with zombie miners, beetles and one charge).* The Mothman's origin, now a big set piece.
@@ -2306,7 +2317,7 @@ Ideas that came up while designing and don't belong to one section yet. Workshop
 - **The Nov 8 story spine** (see Encounters) leaves these open:
   - **Run length:** settled Nov 8: a longer run (4+ hours) is accepted; the exact target is set once full runs are played (M18).
   - **The endgame's design** (the final battle and the realm of stories): Aaron is designing it; M15 waits on it.
-  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: wherever there are dead Men in Black, the sawmill included); the lore of what happened at the sawmill between the loggers and the agents (to write later); the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
+  - **The optional encounters** (Nov 8): Milo's killdozer part; whether the moonshiners give the auto shotgun; which encounter gives the heat-scope semi-auto (the SMG is settled: wherever there are dead Men in Black, the sawmill included); the lore of what happened at the sawmill between the loggers and the agents (drafted and built, Session 28: OPEN_QUESTIONS #510-511); the rest of the pool (the Flatwoods landing, the convoy, the listening post, the Horseman bridge); how many appear per run; Milo's lines; Milo's year (the story has a 2009 Civic and mentions 2019; proposed: Witch Hunt happens years before it); whether the family can imagine Milo in the realm of stories; the railway cutting's radio.
   - The mid-game layout: which places are fixed and where (only the crashed plane is fixed so far); which end of the cordon strip the dozer is parked at.
   - The witch's scripted beats along the story; how the hut's witchfire ring sits with killing her early in pathway fights.
   - The mothership's interior and beats; the Car Armory's layout, stealth beats and survivors; Sheriff's lines and look; the upgrade list and costs.

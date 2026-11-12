@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,35 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 60: the sawmill's set (Session 28; OPEN_QUESTIONS #510-516).** Debug menu, **Story, radio & trail cams**, "Sawmill: take me there" (it puts you on the mill road, walking in). "start it again" clears it; "the dead get up now" skips to the fight.
+- [ ] **The arrival:** the sweep over the two black cars, down to the open boot, along the drag marks to the row under the tarps, into the shed to the man with the chainsaw in him. Does it land? Too long (13 s)?
+- [ ] **Walk the yard:** the sedans (lime and shovels in one boot, an axe through the other's windscreen), the bunkhouse (walk in: the bunks, the card table, the case), the drag marks, the tarps, the pit, the lumber stacks.
+- [ ] **The mill shed:** the head saw with a log stopped in the cut, the carriage, the power unit, the conveyor to the sawdust pile, the log deck and the man under the logs, the filing room on the end.
+- [ ] Can you read what happened here without the day book? Is anything too dark to make out by day? By torch at night?
+- [ ] The frame rate in the yard (the set is about 25,000 triangles in six draw calls).
+
+**Round 61: the chainsaw (Session 28; #517-525).** At the mill, or debug menu, **Player**, "Give the chainsaw".
+- [ ] **Hold RT:** it spins up, then cuts whatever's in front of it. The chain runs round the bar. Is the half-second spin-up right?
+- [ ] **It slows you**, more in a cut. **It's loud:** rev it near anything and see what turns round.
+- [ ] **Heat:** hold it until it stalls (about 9 s in the air, 5 s cutting). It smokes, the bar shows it cooling, and it starts again. Too soon, too long?
+- [ ] **The edge:** debug "Chainsaw: dull the chain", then cut something. Is dull different enough?
+- [ ] The HUD's HEAT and EDGE bars: readable on the tablet?
+- [ ] Is it fun? Is it too strong next to the maul?
+
+**Round 62: the workbench (Session 28; #526-527).** In the cabin's main room, on your left as you come in the front door.
+- [ ] Without the chainsaw: it only says what it is.
+- [ ] With a worn chain and 3 scrap: hold X, the file strokes, "The chain's sharp again".
+- [ ] Is 3 scrap right? Is it in a good place?
+
+**Round 63: the sawmill's beat (Session 28; #528-537).**
+- [ ] **The last agent's car:** the radio as you come near it. Take the SMG.
+- [ ] **Search the scene:** the boot, the payroll case, the bunks, the pit, the man under the logs (his vest), the power unit, the filer's bench.
+- [ ] **The day book** on the foreman's desk in the filing room: seven pages. Does the last one land?
+- [ ] **Work the chainsaw out of the agent**, then rev it. The tarps sit up one after another, then the night shift, then the agents and more from the trees. Is sixteen a fight? Do the bodies getting up where they lay read?
+- [ ] **Knock the head saw off its arbor:** the ring of it, the card.
+- [ ] **Save and Continue** mid-fight: the dead are lying where they fell again and it starts over when you come back.
+- [ ] At home: Ellen on the day book, Wyatt on the head saw, Ellen on the chainsaw.
 
 **Round 57: the railway cutting (Session 27; OPEN_QUESTIONS #488-496, #506-509).** Debug menu, **Story, radio & trail cams**, "Railway cutting: take me there" (it puts you on the line, walking in). "start it again" clears it; "the dead come up now" skips to the fight.
 - [ ] **The cutting:** rock walls either side of the line, the banks running back into the trees, a gully where each pathway comes down. Does it read as a cutting blasted through a rise?

@@ -1,10 +1,64 @@
 # Open questions
 
+**Session 28 (Nov 12):** the sawmill (its set and its beat), the chainsaw and the station's workbench, from HANDOVER's defaults and your yes to my three (what happened at the mill; loggers get up first, then the agents; Tom carries all three melee weapons). No play-test notes yet, so nothing from before changed. My calls are #510-537 below.
+
 **Session 27 (Nov 12):** the railway cutting (the cutting in the ground, the last train of 1903, its beat), the railroad spike maul and dynamite, all from HANDOVER's defaults and your answers (blow up in hand: yes; scarce; the sawmill next). My calls are #488-509 below.
 
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 28: the sawmill, the chainsaw, the workbench
+
+Your answers at the start: no notes yet (a big play-test is coming); go with my three defaults. Where I had to choose:
+
+**Batch 1: the set (PLAYTEST round 60)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 510 | **What happened at the mill** (your yes to my default; every word a draft). | The government hired Harlan Stover's crew to clear the ground for the portal programme at triple rates: cash in a case, no paperwork. On the last payday every man was told to be at the mill to sign. Two cars came up the road after dark. One agent walked into the bunkhouse with the payroll case (a suppressed pistol in it) and shot the day shift in their bunks. The others dragged them out to a pit they'd started, with lime and tarps bought that morning. Stover had worked it out an hour before and sent the night shift back to the saw. They came off it with a peavey, an axe, the log deck's chocks and a chainsaw. Nobody on either side walked away. | `data/sawmill.json` (its `_note` and every text), `data/papers.json` `loggersDiary` |
+| 511 | **Names and dates** (drafts). | Harlan Stover, Stover Lumber Co.; his men Dale, Lyle and Ray; his wife Margaret. The day book runs August 4 to September 26, with no year. The job: forty acres south of the old rail line. Ray saw "a ring poured in concrete bigger than the church" with a hum off it. The crew drank at Pruitt's (Earl's). | `data/papers.json` `loggersDiary` |
+| 512 | **The layout.** | The mill road comes in between the agents' two sedans. The bunkhouse is on your left, the lumber stacks on your right, the mill shed across the back of the yard (open down its front), the filing room on its right-hand end, the log deck and sawdust pile behind it. The row under the tarps and the pit are at the back left. | `render/sawmillModel.js` `SAWMILL` |
+| 513 | **Nobody's dead inside the bunkhouse.** | You walk in: the bunks are empty and dark with it, and drag marks lead out of the door to the row under the tarps. That's the story, and it also means none of the dead get up indoors and get stuck behind a door. | `render/sawmillModel.js` |
+| 514 | **The dead who get up are lying in the set.** | Twelve of them are one mesh. When one gets up, its body folds out of the mesh and a zombie stands up in the same place. | `render/sawmillModel.js` `hideRiser`, `world/SawmillSite.js` `raise` |
+| 515 | **No parked pickups at the mill.** | The seed used to park one or two there; they could have landed inside the shed. The two sedans are part of the set: you can't drive them or open them. | `data/vehicles.json` `sawmill` |
+| 516 | **The pit is painted on the ground.** | A dark rectangle with a dirt rim and a spoil heap, not a hole you can fall in. | `render/sawmillModel.js` |
+
+**Batch 2: the chainsaw (round 61)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 517 | **The controls.** | Hold RT. It takes 0.45 s to spin up, then bites ten times a second for as long as you hold it. RB / LB to the melee kind, or the weapon cross's melee bar. | `config.chainsaw` `spinUp`, `tick` |
+| 518 | **How hard it cuts.** | 170 damage a second with a sharp chain: a citizen in about a third of a second, two at once. Each bite holds them in place. Dull, it does 35% of that and holds them much less. Reach 2 m. | `config.chainsaw` `damagePerSecond`, `dullDamage`, `cleave`, `stagger`, `reach` |
+| 519 | **Loud.** | While it revs, every zombie within 55 m hears it, again every 0.6 s. Idling in your hand it's heard at 10 m. The maul's thump is 9 m. | `config.chainsaw.noise` |
+| 520 | **It slows you.** | 60% speed while it revs, 42% while it's in something. | `config.chainsaw` `move`, `cutMove` |
+| 521 | **It overheats.** | About 9 s of revving or 5 s of solid cutting. Then it stalls and smokes, and the prompt bar shows it cooling. It starts again by itself after about 5 s, even with RT still held. Should you have to let go and squeeze again? | `config.chainsaw.heat` |
+| 522 | **The chain dulls.** | It's found at 55% (it's been in a man). From sharp it takes about 50 s of cutting to go dull. It never breaks. One warning when it's nearly gone. | `config.chainsaw.wear` |
+| 523 | **Tom carries all three melee weapons** (your yes). | The shovel, the maul and the chainsaw rotate like guns of a kind. | `config.weapons.rotation` |
+| 524 | **What the HUD shows.** | "chain: sharp / good / worn / dull" where the ammo goes, and two small bars under it, HEAT and EDGE. OVERHEATED when it stalls. | `ui/Hud.js`, `style.css` `.hud-saw` |
+| 525 | **The sounds** (placeholders, like all of them). | Its own engine note: a putter at idle, a howl revved, a growl in a cut. Plus the rev, the bite, the kill, running hot, the stall, a dead trigger and the restart. | `audio/Sfx.js` `saw()`, `chainsaw*` |
+
+**Batch 3: the workbench (round 62)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 526 | **Where it is.** | In the cabin's main room, against the comms room's wall, left of the way from the front door to the comms door. A vise, a tool board, files. There from the start. | `config.station.cabin.workbench` |
+| 527 | **What it does and costs.** | Hold X for 3.6 s to file the chain sharp for 3 scrap. It only does the chainsaw: DESIGN's idea of buying Sheriff's upgrades there is still open. | `config.station.workbench` |
+
+**Batch 4: the beat (round 63)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 528 | **What wakes them.** | The first time the chainsaw revs within 40 m of the mill. Also: hammering the head saw off, or dusk falling with you in the yard. If you take the saw and walk away without revving it there, nothing gets up. | `config.sawmill.encounter` `revWithin`, `encounters/Sawmill.js` |
+| 529 | **How many, in what order** (your yes: loggers first, then agents). | Sixteen. The five under the tarps sit up one after another; then the four of the night shift where they fell; then three agents, and four more agents out of the trees. I couldn't play that fight by hand headless, so the numbers are guesses. | `config.sawmill.encounter.waves`, `riseGap` |
+| 530 | **A logger zombie.** | The citizens' shapes in flannel and work trousers, so no new art. A quarter tougher than a citizen. They drop scrap more than ammo. | `config.zombies.texture.looks.logger`, `variants.logger`, `data/loot.json` |
+| 531 | **The SMG.** | On the ground beside the last agent, with 45 rounds. He's the one who stays dead. The Car Armory will still give it on the spine. | `config.sawmill.encounter.smgRounds` |
+| 532 | **The car's radio** (a draft, and it's lore I made up). | A recorded recall message loops on the last agent's radio: "...ground station is lost. All field units, hold your positions and wait for recall. Do not return to the Armory. This message repeats." It plays again when the agents get up. It fits the Armory being overrun; cut it if it says too much. | `data/dialogue.json` `sawmill.dispatch.*` |
+| 533 | **The man under the logs.** | Searching him gives his vest (+40 ballistic) and 12 pistol rounds. | `config.sawmill.encounter.pinned` |
+| 534 | **The head saw.** | Hold X for 3.4 s at the head rig: you hammer the collar nut and the whole plate rings on each blow. No tool needed. An inspect card and a lore item; the killdozer isn't built. | `encounters/Sawmill.js` `takeHeadSaw` |
+| 535 | **The family's lines** (drafts). | Ellen once the day book's handed in, Wyatt on the head saw, and Ellen on the chainsaw ("That thing stays outside, Tom"). | `data/dialogue.json` `sawmill.ellen.*`, `sawmill.wyatt.1` |
+| 536 | **No Caller at the mill.** | What happened here was done by people, so it stays quiet: no voice from the trees. | n/a |
+| 537 | **The tarps can't be opened.** | The prompt only says "You don't open one". After they've got up it says the rope's been pulled apart from the inside. | `data/sawmill.json` `tarps` |
 
 ## Session 27: the railway cutting, the spike maul, dynamite
 
