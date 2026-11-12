@@ -1,4 +1,8 @@
-# For Aaron (Session 33: your play-through notes, part 2)
+# For Aaron
+
+**While you sleep (set up Nov 12):** a scheduled task wakes me every three hours to build the next item of the build queue in HANDOVER.md (ten items, the family's plan through to the hut and the ending). Each session adds its own section above this line's successor, newest first. Everything is built from DESIGN.md with its proposals taken as defaults and logged in OPEN_QUESTIONS for your edit. To stop it: tell me, or turn off "Witch Hunt build queue" in your scheduled tasks.
+
+# Session 33: your play-through notes, part 2
 
 **All six notes from your second sitting are built,** with your answers, and on `main` in three batch commits plus the write-up. 1272 tests pass and the build is clean. I checked each batch headless on two seeds. None of it has been played on the tablet, and I can't hear the game, so the new static is untested by ear.
 
