@@ -153,7 +153,7 @@ export class Minimap {
       ctx.fillRect(sx - dot / 2, sy - dot / 2, dot, dot);
     }
     // Session 16: the quad bike, where it was left.
-    if (this.quad && !this.quad.riding) {
+    if (this.quad && !this.quad.riding && !this.quad.gone) {
       const [bx, by] = toScreen(this.quad.x, this.quad.z);
       if (Math.hypot(bx - half, by - half) < half) drawQuadMarker(ctx, bx, by, player.yaw - this.quad.heading, size * 0.045);
     }

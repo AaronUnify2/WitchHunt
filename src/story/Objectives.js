@@ -260,7 +260,14 @@ export class Objectives {
       if (!g.roadNorth.brushCleared) return step('caveGo', "The Mothman's gone to ground at the end of the old road, north of the gas station. Take the dozer and clear the brush.", g.roadNorth.layout.brush);
       return step('caveEnter', 'Go into the cave.', cv.mouth);
     }
-    if (has('blessingBuried')) return step('afterBigfoot', 'Bigfoot is free and the voice in the trees is gone. Fetch the quad from where you left it.', g.quad); // (a holding goal until build queue item 4)
+    // ---- the missing quad and the mega night (build queue item 4) ----
+    const mg = g.megaNight;
+    if (has('blessingBuried') && mg && !has('megaNightDone')) {
+      if (!has('quadMissing')) return step('quadFetch', 'Bigfoot is free and the voice in the trees is gone. Fetch the quad from where you left it.', mg.ring ?? g.quad);
+      if (mg.state === 'night') return step('megaNight', `Hold the station. Wave ${Math.min(mg.sent, mg.plan.length)} of ${mg.plan.length}.`);
+      return step('megaHome', 'The station is under attack. Get home.', L.cabin.frontDoor);
+    }
+    if (has('megaNightDone')) return step('ufoGo', "Find the ship that came down in the south. Ellen wants what drives it for the fence.", g.world.map.clearings.find((c) => c.key === 'crashedUfo')); // (a holding goal until build queue item 5)
     if (has('junieHome') && !has('blessingBuried')) return step('afterJunie', "Junie's home. Keep the station running, and dig up her sigils.");
     return step('free', 'Keep the station running, and dig up her sigils.');
   }

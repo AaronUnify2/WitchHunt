@@ -135,6 +135,7 @@ export const DOZER_CAMP_FLAGS = ['familyPlan', 'earlMaps'];
 export const DOZER_HOME_FLAGS = ['dozerSeen', 'dozerKey', 'dozerBattery', 'dozerTaken', 'dozerHome'];
 export const ZAPPED_FLAGS = ['zapperStarted', 'mothmanHooked', 'mothmanZapped'];
 export const CAVE_DONE_FLAGS = ['caveFound', 'caveEntered', 'mothmanDead', 'bigfootFreed', 'blessingBuried'];
+export const MEGA_DONE_FLAGS = ['quadMissing', 'megaNightCalled', 'megaNightStarted', 'megaNightDone'];
 
 // "Continue story" (Aaron, Nov 12: "a continue story option for each main story encounter"): every main story
 // beat past the outpost, in order. Each puts the run at the START of that beat with everything before it done.
@@ -152,6 +153,7 @@ export const STORY_POINTS = [
   { id: 'dozerHome', label: 'The bug-zapper night: the dozer home, the fence box waiting' },
   { id: 'cave', label: 'The Bigfoot cave: the Mothman zapped and gone north, the fence dead' },
   { id: 'megaNight', label: 'The missing quad and the mega night: Bigfoot freed, the Blessing buried' },
+  { id: 'ufo', label: 'The crashed UFO: the mega night survived, Ellen wants the big core' },
 ];
 
 // Which flags a start point sets on top of the outpost's (explored).
@@ -173,13 +175,15 @@ export function laterFlags(point) {
     case 'dozerHome': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS];
     case 'cave': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS];
     case 'megaNight': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS];
+    case 'ufo': return [...plan, ...DOZER_CAMP_FLAGS, ...DOZER_HOME_FLAGS, ...ZAPPED_FLAGS, ...CAVE_DONE_FLAGS, ...MEGA_DONE_FLAGS];
     default: return [];
   }
 }
 
 // The points that put Tom just outside the cabin door, and those with the dozer parked outside the gate.
-const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight']);
-const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight']);
+const AT_HOME = new Set(['junieHome', 'plan', 'dozerHome', 'megaNight', 'ufo']);
+const DOZER_AT_HOME = new Set(['dozerHome', 'megaNight', 'ufo']);
+const AFTER_CAVE = new Set(['megaNight', 'ufo']);
 
 // The jump: the outpost cleared and explored, then on to `point`.
 //  - greyDown: at the crashed plane, the grey just shot, what it dropped still lying by it.
@@ -250,7 +254,16 @@ export function startFromLater(game, point) {
     g.player.teleport(b.x + 3.5, z + 1, 0);
     g.station.state.charge = 0;
   }
-  if (point === 'megaNight') g.roadNorth?.clearBrush?.('load');
+  if (AFTER_CAVE.has(point)) {
+    g.roadNorth?.clearBrush?.('load');
+    // The quad was left at the clearing crew's camp when Tom took the dozer: that's where the ring is.
+    const s = g.dozerCampSite;
+    if (s?.place && g.megaNight && !g.megaNight.ring) {
+      const at = s.toWorld(3, -40);
+      g.megaNight.ring = { x: at.x, z: at.z };
+    }
+    g.megaNight?.reset();
+  }
   g.bigfootCave?.reset();
   if (DOZER_AT_HOME.has(point) && g.cordonDozer?.ready) {
     // parked outside the gate, its blade toward home

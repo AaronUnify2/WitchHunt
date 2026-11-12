@@ -165,7 +165,7 @@ export class MapScreen {
     }
 
     // Session 16: the quad bike, where it was left (not while Tom's on it).
-    if (this.quad && !this.quad.riding) {
+    if (this.quad && !this.quad.riding && !this.quad.gone) {
       const [bx, by] = toScreen(this.quad.x, this.quad.z);
       drawQuadMarker(ctx, bx, by, -this.quad.heading, marker * 2.2);
     }

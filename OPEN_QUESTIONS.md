@@ -71,6 +71,23 @@ Each item is the beat playable start to end with placeholders and draft lines, f
 | 721 | **The voices come back.** | Ellen: "There's no hiss. There's nothing on the line but you." Junie: "The one that used my voice. I can't feel it listening any more." Wyatt: "Earl was right." From then the family reach you anywhere and the Caller never speaks (the rule was already in the game, waiting on this flag). | `cave.blessing.*`, `story/Comms.js` |
 | 722 | **Bigfoot stays in the cave.** | Go back and he's standing there. He does nothing more yet. | |
 
+**Item 4: the missing quad and the mega night (PLAYTEST round 79)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 723 | **When the quad goes.** | The moment the Blessing is buried: no model, no map icon, no prompt. DESIGN has it go when you take the dozer; doing it at the Blessing means nobody can stumble on the ring before the story sends them. | `MegaNight.takeQuad`, `Quad.setGone` |
+| 724 | **The ring** (a placeholder). | A flat dark ring where it stood. The three-toed tracks are only in the words on screen. It can half sink into sloping ground. | `megaNight.ring`, `buildRing` |
+| 725 | **The radio erupts** four seconds after you find the ring. | Ellen: "Forget the quad! They're coming out of the trees. All of them. Every side. Get home!" Junie: "She's angry, Daddy. She knows what you did." | `mega.call.*` |
+| 726 | **When the night starts.** | When you're back within 120 m of home. If it's day, the clock goes to night. | `megaNight.startWithin` |
+| 727 | **The night's shape.** | Six waves of 24, thirty seconds apart, from all round the fence: 144, plus the new kinds and whatever the Screamers call (up to 30 more). In the headless run with nobody shooting there were 197 alive at once and it kept running. | `megaNight.waves`, `perWave`, `every` |
+| 728 | **The station can't fall on this night** (scaffolding). | In my first run the family were dead by the third wave: 150 against a fence the Mothman drained the night before. So for now the dead still break in and still hurt you, but the run doesn't end. **This is the biggest open design question in the queue:** how is this night meant to be survivable? | `megaNight.holdsOut` |
+| 729 | **The Hollow** (a stand-in). | A mutant's body. Two come (waves 2 and 4). At the wire each tears one whole fence panel to nothing, once. No charge, no look of its own. | `megaNight.hollowWaves`, `hollow` |
+| 730 | **The Screamer** (a stand-in). | An ordinary-looking one that stands 34 m outside the fence and shrieks every 9 seconds; three more come to each shriek, up to five times, until you kill it. Ellen tells you to shut it up. It doesn't speed the others up yet. | `megaNight.screamer` |
+| 731 | **The Hanged** (a stub). | One, in wave 4: if you're outside the fence it lands beside you with a line on screen; otherwise it comes with the rest. The pin, and Wyatt shooting it off you, aren't built. | `megaNight.hangedWaves` |
+| 732 | **How it ends.** | Dawn, when every wave is in and three or fewer are left within 110 m of home; or after seven minutes whatever's left. | `megaOver`, `endLeft`, `timeout` |
+| 733 | **Ellen's ask.** | "One more night like that and there's no station." The ship that came down in the south: "Whatever drives a ship, I want it in our fence box." Wyatt: the tracks at the ring only had three toes. | `mega.after.*` |
+| 734 | **"The difficulty rises from here"** | isn't built: the new kinds don't join the ordinary nights yet, and nothing about later nights changes. | |
+
 ## Session 33: your play-through notes, part 2
 
 Your notes (Nov 12) and your answers: black the maps out in the place beyond and the mine; static for Junie's call and for the Caller's voice from the trees ("we're going for creepy"); the Caller quiet the whole walk home; Junie on the quad left to me; Ellen asks for the power cell after the reunion, sends you back for it if you haven't got it, and the grey's drop made obvious. At the start of the session: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.

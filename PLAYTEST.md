@@ -684,6 +684,15 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Bigfoot:** cut him out; he comes out, stands, holds out his hands. Does it land without a word said?
 - [ ] **Home:** bury the Blessing at the star in the yard. The family's lines, and the security line in the ledger.
 
+**Round 79: the missing quad and the mega night, scaffolding (build queue item 4).** "Continue story: The missing quad and the mega night" on a fresh run (the ring is at the clearing crew's camp). OPEN_QUESTIONS #723-734.
+- [ ] **The ring:** follow the goal to where the quad was. No quad, no icon on the map.
+- [ ] **The radio**, then get home. Is the trip back tense, or just a drive?
+- [ ] **The night:** six waves. Can it be fought at all with the fence as it is? (The station can't fall yet: #728.)
+- [ ] **The Hollow:** something big walks to the wire and a whole panel goes.
+- [ ] **The Screamer:** find it at the treeline and put it down. Does hunting it feel like the right job?
+- [ ] **Dawn**, and Ellen's ask. The goal points south.
+- [ ] **Frame rate** on the tablet with all of them in the yard.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

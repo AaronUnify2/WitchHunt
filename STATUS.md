@@ -1,6 +1,6 @@
 # Witch Hunt: Status
 
-Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 3 (the family's plan and the dozer; the bug-zapper night; the Bigfoot cave). 1302 tests pass. Each item's section is under "What exists".
+Last updated: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: items 1 to 4 (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the missing quad and the mega night). 1311 tests pass. Each item's section is under "What exists".
 
 Before that: Nov 12, 2026: **Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2.** All six notes from his second sitting (the place beyond to Junie home) are built, with his answers, plus the one change from his four answers at the start (the wake-up scene trimmed). The minimap is blacked out and the full map refused in the place beyond and in the mine below ground. Junie's call in the place beyond and the Caller's voice from the trees are radio static in the shape of a call. Junie, following Tom home, no longer blows out white by torchlight, sits on the back of the quad when he rides, and the Caller says nothing the whole way. What the grey drops at the plane is seen and said; after the reunion Ellen asks for the power cell for the fence and the goal is the fence box. The wake-up scene at the wreck is about 67 seconds where it was about two minutes. Four debug start points (the grey down, waking at the wreck, Junie found, Junie home). 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; not played on the tablet. More of his play-test is to come (the optional places and the mine).
 
@@ -85,6 +85,16 @@ Live build: **https://aaronunify2.github.io/WitchHunt/** (Settings > Pages > Sou
 Dev conveniences: `?seed=1234` in the URL fixes the run seed (and so the whole map). The debug menu has "New map" (a fresh random seed) and "Restart this map" (same seed). In dev builds, `window.game` exposes the running Game in the browser console.
 
 ## What exists
+
+### The build queue, item 4: the missing quad and the mega night (scaffolding)
+
+- **The beat** (`encounters/MegaNight.js`, `config.megaNight`; flags `quadMissing`, `megaNightCalled`, `megaNightStarted`, `megaNightDone`, and `quadReturned` for item 5): the quad gone at the Blessing (`Quad.setGone`; the maps skip a gone quad), a ring mesh where it stood (its place saved: `save.megaNight`), the radio call, the night begun near home, waves through `enemies.spawnPlanned` as Demo mode sends them, the three stand-ins, dawn, Ellen's lines.
+- **Pure:** `megaPlan`, `megaTotal`, `segmentAt`, `megaOver`.
+- **The station holds out** while the night runs (`station.overrunEnabled` off, restored at dawn or on a reset): `megaNight.holdsOut`.
+- **Goals:** `quadFetch`, `megaHome`, `megaNight` (with the wave count), then `ufoGo` (a holding goal until item 5).
+- **Continue story:** `megaNight` (its start), `ufo` (its end).
+- **Tests:** `tests/megaNight.test.js` (9). 1311 pass. **Checked headless** on seed 1234: the ring found, the call, home, the whole night with Tom idle (197 alive at its peak, both Hollows tearing a panel, the Screamers calling), dawn, the lines, the goal, the save. No page errors. The first run ended in the ordinary defeat at wave 3, which is why the station holds out.
+- **Placeholder:** all three new kinds; the ring; the night's numbers; no difficulty rise afterwards.
 
 ### The build queue, item 3: the Bigfoot cave (scaffolding)
 

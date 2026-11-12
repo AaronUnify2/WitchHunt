@@ -1386,6 +1386,8 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 
 #### After Bigfoot: the missing quad and the mega night (story spine, beat 8)
 
+*__As scaffolded (the build queue, item 4;__ `encounters/MegaNight.js`__):__ the quad vanishes when the Blessing is buried, leaving a ring; finding it, the radio erupts; back near home the night begins: six waves of 24 with two Hollows (each tears a fence panel down), two Screamers (each calls more until it's killed) and one Hanged (a stub). The station can't fall on this night yet. Dawn, and Ellen asks for the ship's core. The difficulty rise isn't built. OPEN_QUESTIONS #723-734.*
+
 *Designed with Aaron, Nov 8; not built.* With Bigfoot free, the witch answers with her biggest attack yet, and the station's need for the alien ship's big core becomes urgent.
 
 **The quad goes missing.**

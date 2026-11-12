@@ -4471,6 +4471,30 @@ export const config = {
     fog: { inhale: 1.6, hold: 3.6, exhale: 4.5, fade: 2.2, radius: 34, speed: 2.6, amount: 0.95, reverse: 2.4, gather: 0.5, spread: 9, bank: 1.4 },
   },
 
+  // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js; story spine, beat 8).
+  // Scaffolding: every number a first guess. 6 waves of 24 is 144; with the stand-ins and what the Screamers
+  // call, about 150 (DESIGN: "about 150 zombies"; the M10.3 spike held 57 fps with 150 on the tablet).
+  megaNight: {
+    ring: { inner: 1.1, outer: 1.9, color: 0x0c0a08, find: 7 }, // the scorch where the quad stood (metres); Tom finds it within `find`
+    callAfter: 4, // seconds after he finds the ring: the radio erupts
+    startWithin: 120, // metres from home's centre: the night begins as he gets back this near
+    waves: 6,
+    perWave: 24,
+    firstAfter: 4, // seconds into the night: the first wave
+    every: 30, // seconds between waves
+    ringMin: 26, // each wave comes from this far outside the fence...
+    ringMax: 52, // ...to this far
+    hollowWaves: [1, 3], // which waves (from 0) bring a Hollow
+    screamerWaves: [2, 4], // ...a Screamer
+    hangedWaves: [3], // ...a Hanged
+    hollow: { reach: 2.2 }, // metres from the wire: it tears the panel in front of it down
+    screamer: { back: 34, first: 6, every: 9, calls: 3, maxCalls: 5 }, // it stands this far outside the fence; its first shriek after `first` seconds, then every `every`; each brings `calls` more
+    nearHome: 110, // the dead within this of home count as still attacking
+    endLeft: 3, // every wave sent and this few left: dawn
+    timeout: 420, // seconds: dawn comes anyway
+    holdsOut: true, // SCAFFOLDING: the station can't be overrun during this night (the family survive it whatever happens); false once it's tuned
+  },
+
   // Build queue item 3: the Bigfoot cave (encounters/BigfootCave.js, world/bigfootCaveShape.js,
   // render/bigfootCaveModel.js; story spine, beat 7, stage 2). Scaffolding: every number a first guess.
   bigfootCave: {

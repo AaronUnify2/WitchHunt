@@ -70,6 +70,7 @@ import { DozerCampSite } from '../world/DozerCampSite.js';
 import { CordonDozer } from '../encounters/CordonDozer.js';
 import { BugZapper } from '../encounters/BugZapper.js';
 import { BigfootCave } from '../encounters/BigfootCave.js';
+import { MegaNight } from '../encounters/MegaNight.js';
 import { LandClearing } from '../world/LandClearing.js';
 import { VehicleHud } from '../ui/VehicleHud.js';
 import { FirstDay } from '../story/FirstDay.js';
@@ -926,6 +927,9 @@ export class Game {
     this.bigfootCave.init({ scene: this.scene, world: this.world, roadNorth: this.roadNorth, interiors: this.interiors, player: this.player, combat: this.combat, station: this.station, beetles: this.mineBeetles, flashlight: this.flashlight, cutscenes: this.cutscenes, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
     this.combat.promptSources.push(this.bigfootCave.hud);
     this.vehicles.busy?.push(this.bigfootCave.hud);
+    // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js).
+    this.megaNight = new MegaNight(this.cfg, this.bus);
+    this.megaNight.init({ scene: this.scene, ground: this.world.ground, player: this.player, quad: this.quad, station: this.station, enemies: this.combat.enemies, world: this.world, combat: this.combat, clock: this.clock, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify, skipToNight: () => { this.skipToPhase('night'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); }, skipToDawn: () => { this.skipToPhase('dawn'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); } });
     this.mineFight.init({ enemies: this.combat.enemies, beetles: this.mineBeetles, moths: this.moths, combat: this.combat, player: this.player, notify, rng: this.rng.fork('mine') });
     this.mineRide.fight = this.mineFight;
     this.mineshaft.init({
@@ -1134,6 +1138,7 @@ export class Game {
     this.cordonDozer.addDebugItems(menu);
     this.bugZapper.addDebugItems(menu);
     this.bigfootCave.addDebugItems(menu);
+    this.megaNight.addDebugItems(menu);
     this.milo.addDebugItems(menu);
     this.cutting.addDebugItems(menu);
     this.sawmill.addDebugItems(menu);
@@ -1588,6 +1593,7 @@ export class Game {
       shelter: this.shelter.saveState(), // Session 16 (M9.3): the storm shelter's beats (optional)
       outpost: this.outpost.saveState(), // Session 17 (M9.4): the outpost's beats (optional)
       quad: this.quad.saveState(), // Session 15b: where the quad bike was left (optional)
+      megaNight: this.megaNight.saveState(), // build queue item 4: the scorched ring's place (optional)
       dozer: this.dozer.saveState(), // build queue item 1: where the dozer stands (optional; null until it's in the world)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
       homeStop: this.homeStop.saveState(), // Session 18 (optional)
@@ -1666,6 +1672,8 @@ export class Game {
     this.cordonDozer.reset();
     this.bugZapper.reset();
     this.bigfootCave.reset();
+    this.megaNight.loadState(d.megaNight); // build queue item 4: where the quad stood
+    this.megaNight.reset();
     this.milo.reset();
     this.cutting.reset(); // Session 27
     this.sawmill.reset(); // Session 28
@@ -1958,6 +1966,7 @@ export class Game {
     if (story) this.cordonDozer.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.bugZapper.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.bigfootCave.update(dt, controls, playing && this.combat.alive, !locked && !busy);
+    if (story) this.megaNight.update(dt, playing && this.combat.alive);
     if (story) this.milo.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Milo's barn
     if (story) this.cutting.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 27: the railway cutting
     if (story) this.sawmill.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 28: the sawmill

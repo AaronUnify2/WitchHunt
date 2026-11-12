@@ -193,9 +193,23 @@ export class Quad {
 
   // playing: the world runs. canInteract: no other prompt first, no menu.
   // daylight: 0 (night) .. 1 (day), for the headlamp.
+  // Build queue item 4: taken (the greys have it): no model, nothing solid, no prompt, off the maps.
+  setGone(gone) {
+    this.gone = Boolean(gone);
+    if (this.gone && this.riding) this.eject();
+    this.mesh.visible = !this.gone;
+    if (this.collider) this.collider.off = this.gone;
+    if (this.gone) this.hud.prompt = '';
+  }
+
   update(dt, input, playing, canInteract, daylight = 1) {
     this.daylight = daylight;
     this.device = input.activeDevice;
+    if (this.gone) {
+      this.hud.prompt = '';
+      this.hud.progress = 0;
+      return;
+    }
     if (!playing) {
       this.hud.prompt = '';
       if (!this.riding) this.combat.sfx?.engine?.(false);

@@ -2,6 +2,16 @@
 
 **The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
+# Build queue, item 4: the missing quad and the mega night
+
+**Scaffolded and on `main`.** 1311 tests pass; checked headless; not played by hand.
+
+- **To try it:** new game, debug menu, "Continue story: The missing quad and the mega night".
+- **What plays:** go for the quad → a scorched ring, no quad → the radio erupts → get home → six waves, about 150, with a Hollow that walks through the fence and a Screamer that calls more → dawn → Ellen asks for the ship's core.
+- **The big question for you (#728):** with the fence drained the night before, the family were dead by the third wave in my first run. For now the station can't fall on this night, so you can play it. How should it be survivable?
+- **What's placeholder:** the Hollow is a mutant, the Screamer looks like any other, the Hanged just lands beside you; nothing gets harder afterwards.
+- **For our session on it:** #723-734; PLAYTEST round 79.
+
 # Build queue, item 3: the Bigfoot cave
 
 **Scaffolded and on `main`.** 1302 tests pass; checked headless; not played by hand.
