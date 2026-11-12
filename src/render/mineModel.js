@@ -31,7 +31,8 @@ import { bakeParts } from './propKit.js';
 import { SetBuilder } from './setBuilder.js';
 import { limb } from './sawmillModel.js';
 import { liftCage, MINESHAFT } from './mineshaftModel.js';
-import { pointAt, halfAt, trackPoint } from '../world/mineTrack.js';
+import { pointAt, halfAt, roofAt, trackPoint } from '../world/mineTrack.js';
+import { dressCavern } from './mineCavernModel.js';
 
 const LEVER_AXIS = new THREE.Vector3();
 
@@ -43,20 +44,24 @@ function hash(a, b) {
 
 // The tunnel's cross-section at ring i: nine points, [lat, up], from the floor's -lat edge over the roof to its +lat edge.
 export function ringProfile(h, roof, i) {
+  // A high roof (the cavern): the walls' points go up with it, and the rock's rougher.
+  const tall = roof > 3.5;
+  const y1 = tall ? roof * 0.3 : 1.1;
+  const y2 = tall ? roof * 0.68 : 2.2;
   const base = [
     [-h, 0],
-    [-h - 0.14, 1.1],
-    [-h + 0.12, 2.2],
+    [-h - 0.14, y1],
+    [-h + 0.12, y2],
     [-h * 0.5, roof - 0.18],
     [0, roof],
     [h * 0.5, roof - 0.18],
-    [h - 0.12, 2.2],
-    [h + 0.14, 1.1],
+    [h - 0.12, y2],
+    [h + 0.14, y1],
     [h, 0],
   ];
   return base.map(([x, y], k) => {
     if (k === 0 || k === 8) return [x, y];
-    const j = 0.2;
+    const j = tall ? 0.2 + Math.min(0.5, (roof - 3.5) * 0.12) : 0.2;
     // Rock: every point a little out of true, never in past the track's own width.
     return [x + (hash(i, k) - 0.3) * j * Math.sign(x || 1), y + (hash(i, k + 20) - 0.5) * j];
   });
@@ -76,7 +81,6 @@ export function buildMine(cfg, track, { weather = null } = {}) {
   const c = b.c;
   const R = cfg.ride;
   const glowB = new SetBuilder(look, null, 3102);
-  const seamB = new SetBuilder(look, null, 3103);
   const leverB = new SetBuilder(look, null, 3104);
   const fallB = new SetBuilder(look, null, 3105);
   const sleeveB = new SetBuilder(look, null, 3106);
@@ -98,7 +102,7 @@ export function buildMine(cfg, track, { weather = null } = {}) {
     const cx = p.x + Math.sin(p.yaw) * over;
     const cz = p.z + Math.cos(p.yaw) * over;
     const h = halfAt(track, Math.min(s, track.length));
-    const prof = ringProfile(h, track.roof, i);
+    const prof = ringProfile(h, roofAt(track, Math.min(s, track.length)), i);
     rings.push({ s, y: p.y, cx, cz, pts: prof.map(([lat, up]) => new THREE.Vector3(cx + Math.cos(p.yaw) * lat, p.y + up, cz - Math.sin(p.yaw) * lat)), mid: new THREE.Vector3(cx, p.y + 1.5, cz) });
   }
   const tris = { rock: [], rockDark: [], seam: [], ballast: [] };
@@ -132,7 +136,7 @@ export function buildMine(cfg, track, { weather = null } = {}) {
   }
   // The end walls: a fan across each end ring.
   for (const [ring, inward] of [[rings[0], rings[1].mid], [rings[rings.length - 1], rings[rings.length - 2].mid]]) {
-    const hub = new THREE.Vector3(ring.cx, ring.y + 1.4, ring.cz);
+    const hub = new THREE.Vector3(ring.cx, ring.y + (ring === rings[0] ? 1.4 : roofAt(track, track.length) * 0.45), ring.cz);
     for (let k = 0; k < 8; k++) tri(tris.rock, hub, ring.pts[k], ring.pts[k + 1], inward);
     tri(tris.rock, hub, ring.pts[8], ring.pts[0], inward);
   }
@@ -140,7 +144,8 @@ export function buildMine(cfg, track, { weather = null } = {}) {
 
   // ---- the timber sets, the bulbs, the silk ----
   let set = 0;
-  for (let s = track.s0 + 1; s < track.length + 1; s += 4, set++) {
+  const doorS = track.door ?? track.length + 1;
+  for (let s = track.s0 + 1; s < doorS - 1; s += 4, set++) {
     const h = halfAt(track, s);
     if (Math.abs(s) < 2.2) continue; // not through the cage
     pushAt(b, s);
@@ -158,7 +163,7 @@ export function buildMine(cfg, track, { weather = null } = {}) {
       b.box(0.02, 0.07, 0.02, c.cable, 0.5, 2.48, 0);
     }
     // Silk, from the fall on down: strands post to cap, more of them toward the bottom.
-    const deep = (s - 200) / (track.length - 200);
+    const deep = (s - 200) / (doorS - 200);
     if (deep > 0 && hash(set, 9) < 0.25 + deep * 0.7) {
       const sd = hash(set, 11) < 0.5 ? -1 : 1;
       limb(b, [sd * (h - 0.2), 0.4 + hash(set, 12) * 0.8, 0.05], [sd * (h * 0.2), 2.5, 0.02], 0.012 + deep * 0.012, c.silk, 3);
@@ -167,7 +172,7 @@ export function buildMine(cfg, track, { weather = null } = {}) {
     b.pop();
   }
   // The cable the bulbs hang from, in runs.
-  for (let s = track.s0 + 1; s < track.length - 3; s += 4) {
+  for (let s = track.s0 + 1; s < doorS - 5; s += 4) {
     const a = frame(s, 0.5, 2.5);
     const av = [a.x, a.y, a.z];
     const q = frame(s + 4, 0.5, 2.5);
@@ -244,31 +249,47 @@ export function buildMine(cfg, track, { weather = null } = {}) {
     spot('fallStand', at - 1.3, 0.2, 0);
   }
 
-  // ---- the bottom: the buffers, the bulkhead across the drift's end ----
+  // ---- the bottom: the buffers, the bulkhead across the drift (its leaf is its own mesh: it's opened) ----
+  const doorB = new SetBuilder(look, null, 3107);
+  const doorOpenB = new SetBuilder(look, null, 3108);
+  const doorGlowB = new SetBuilder(look, null, 3109);
   {
     pushAt(b, R.end + 3.6, 0, 0, 0, true);
     for (const sd of [-1, 1]) b.box(0.22, 0.9, 0.22, c.postDark, sd * 0.45, 0.45, 0);
     b.box(1.3, 0.22, 0.24, c.post, 0, 0.72, -0.05);
     b.pop();
-    const hE = halfAt(track, track.length);
-    const dz = (track.endRoom ?? 2.5) - 0.35;
-    pushAt(b, track.length, 0, 0, 0, true);
-    b.box(hE * 2 + 0.6, 3.2, 0.3, c.rockDark, 0, 1.6, dz + 0.2);
-    b.box(2.6, 2.6, 0.16, c.door, 0, 1.3, dz);
-    for (const y of [0.5, 1.3, 2.1]) b.box(2.7, 0.2, 0.08, c.postDark, 0, y, dz - 0.1);
-    b.box(3.0, 0.16, 0.14, c.iron, 0, 1.25, dz - 0.18); // the bar across it
-    for (const sd of [-1, 1]) b.box(0.24, 2.9, 0.24, c.post, sd * 1.45, 1.45, dz - 0.05);
-    b.box(3.2, 0.26, 0.26, c.post, 0, 2.85, dz - 0.05);
-    // Silk across it, corner to corner, and down the walls beside.
-    for (let k = 0; k < 9; k++) limb(b, [(hash(k, 31) - 0.5) * 3.2, 0.1 + hash(k, 32) * 0.6, dz - 0.2], [(hash(k, 33) - 0.5) * 3.6, 2.2 + hash(k, 34) * 0.8, dz - 0.25 - hash(k, 35) * 0.5], 0.014 + hash(k, 36) * 0.02, c.silk, 3);
-    for (const sd of [-1, 1]) limb(b, [sd * (hE - 0.2), 2.6, dz - 2.5], [sd * 1.5, 1.2, dz - 0.2], 0.03, c.silk, 3);
-    seamB.stack = [b.m.clone()];
-    seamB.box(2.5, 0.05, 0.05, c.seamGlow, 0, 0.03, dz - 0.09);
-    for (const sd of [-1, 1]) seamB.box(0.04, 2.5, 0.04, c.seamGlow, sd * 1.28, 1.3, dz - 0.085);
+    const hE = halfAt(track, doorS);
+    pushAt(b, doorS, 0, 0, 0, true);
+    // The rock packed round the frame, the frame.
+    for (const sd of [-1, 1]) b.box(hE - 1.2, 3.3, 0.3, c.rockDark, sd * (1.3 + (hE - 1.2) / 2), 1.65, 0.2);
+    b.box(hE * 2 + 0.6, 0.7, 0.3, c.rockDark, 0, 2.95, 0.2);
+    for (const sd of [-1, 1]) b.box(0.24, 2.9, 0.24, c.post, sd * 1.45, 1.45, -0.05);
+    b.box(3.2, 0.26, 0.26, c.post, 0, 2.85, -0.05);
+    for (const sd of [-1, 1]) limb(b, [sd * (hE - 0.2), 2.6, -2.5], [sd * 1.5, 1.2, -0.2], 0.03, c.silk, 3);
+    // Shut: the leaf, its battens, the bar across it, silk corner to corner.
+    doorB.stack = [b.m.clone()];
+    doorB.box(2.6, 2.6, 0.16, c.door, 0, 1.3, 0);
+    for (const y of [0.5, 1.3, 2.1]) doorB.box(2.7, 0.2, 0.08, c.postDark, 0, y, -0.1);
+    doorB.box(3.0, 0.16, 0.14, c.iron, 0, 1.25, -0.18);
+    for (let k = 0; k < 9; k++) limb(doorB, [(hash(k, 31) - 0.5) * 3.2, 0.1 + hash(k, 32) * 0.6, -0.2], [(hash(k, 33) - 0.5) * 3.6, 2.2 + hash(k, 34) * 0.8, -0.25 - hash(k, 35) * 0.5], 0.014 + hash(k, 36) * 0.02, c.silk, 3);
+    // Open: the leaf dragged back and leant on the wall, the bar on the floor, the silk torn and hanging.
+    doorOpenB.stack = [b.m.clone()];
+    doorOpenB.box(2.6, 2.6, 0.16, c.doorOpen, -(hE - 0.45), 1.26, -1.75, Math.PI / 2 - 0.12, 0, 0.1);
+    for (const y of [0.5, 1.3, 2.1]) doorOpenB.box(0.08, 0.2, 2.7, c.postDark, -(hE - 0.56), y, -1.75, -0.12);
+    doorOpenB.box(3.0, 0.14, 0.16, c.iron, 0.9, 0.08, -1.2, 0.5);
+    for (let k = 0; k < 7; k++) limb(doorOpenB, [(k % 2 ? -1 : 1) * (1.0 + hash(k, 41) * 0.35), 2.75, -0.1], [(k % 2 ? -1 : 1) * (0.7 + hash(k, 42) * 0.7), 0.9 + hash(k, 43) * 1.5, -0.2 - hash(k, 44) * 0.4], 0.014 + hash(k, 45) * 0.016, c.silk, 3);
+    // The light under and round the leaf while it's shut.
+    doorGlowB.stack = [b.m.clone()];
+    doorGlowB.box(2.5, 0.05, 0.05, c.seamGlow, 0, 0.03, -0.09);
+    for (const sd of [-1, 1]) doorGlowB.box(0.04, 2.5, 0.04, c.seamGlow, sd * 1.28, 1.3, -0.085);
     b.pop();
-    spot('door', track.length + dz - 1.2, 0, 1.3);
+    spot('door', doorS - 1.2, 0, 1.3);
     spot('bottom', R.end, 0, 0);
   }
+
+  // ---- past it: the cavern, the seam, the cocoon, the charges (render/mineCavernModel.js) ----
+  const kit = { b, cfg, track, pushAt, frame, spot, hash, builder: (seed) => new SetBuilder(look, null, seed) };
+  const cav = dressCavern(kit);
 
   // ---- the shaft's sleeve: four walls round the cage, cribbed every two metres (it scrolls) ----
   {
@@ -324,7 +345,36 @@ export function buildMine(cfg, track, { weather = null } = {}) {
   };
   const parts = {};
   parts.bulbs = basic(glowB, look.colors.bulbLit, 'mineBulbs');
-  parts.seamGlow = basic(seamB, look.colors.seamGlow, 'seamGlow');
+  parts.doorGlow = basic(doorGlowB, look.colors.seamGlow, 'doorGlow');
+  parts.bulkhead = lit(doorB, 'bulkhead');
+  parts.bulkheadOpen = lit(doorOpenB, 'bulkheadOpen');
+  parts.bulkheadOpen.visible = false;
+  // The seam: its own unlit colour (it pulses), and a halo added on round it and on the floor.
+  parts.seamGlow = basic(cav.glow, look.colors.seamGlow, 'seamGlow');
+  parts.seamHalo = basic(cav.halo, look.colors.seamGlow, 'seamHalo');
+  Object.assign(parts.seamHalo.material, { transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const seamColor = new THREE.Color(look.colors.seamGlow);
+  parts.log = lit(cav.log, 'foremanLog');
+  parts.drillHead = lit(cav.head, 'drillHead');
+  parts.sticks = lit(cav.sticks, 'mineSticks');
+  // The exploder's handle: it slides down its own rod.
+  parts.handle = lit(cav.handle, 'plungerHandle');
+  parts.spark = basic(cav.spark, look.colors.fuse, 'fuseSpark');
+  parts.spark.visible = false;
+  // The fire that comes up the drift: a few unlit balls of it, added on (no lights), hidden until it's lit.
+  const fireGeo = own(new THREE.SphereGeometry(1, 12, 8));
+  const fireMat = own(new THREE.MeshBasicMaterial({ color: cfg.escape?.look?.fire ?? 0xd8601c, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const coreMat = own(new THREE.MeshBasicMaterial({ color: cfg.escape?.look?.core ?? 0xf0d090, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  parts.fire = [];
+  for (let i = 0; i < 6; i++) {
+    const m = new THREE.Mesh(fireGeo, i % 3 === 0 ? coreMat : fireMat);
+    m.visible = false;
+    m.frustumCulled = false;
+    m.name = 'mineFire';
+    group.add(m);
+    parts.fire.push(m);
+  }
+  const sparkAt = {};
   // The points' lever: its geometry's at the stand's foot, so it turns about it (thrown: over the other way).
   {
     const g = own(bakeParts(leverB.parts, { weather, seed: 35 }));
@@ -357,6 +407,51 @@ export function buildMine(cfg, track, { weather = null } = {}) {
     setLever(k) {
       const yaw = parts.pointsYaw;
       parts.pointsLever.quaternion.setFromAxisAngle(LEVER_AXIS.set(Math.cos(yaw), 0, -Math.sin(yaw)), (k - 0.5) * 1.0);
+    },
+    fuseRun: kit.fuseRun,
+    // The bulkhead: shut or open.
+    setDoor(open) {
+      parts.bulkhead.visible = !open;
+      parts.doorGlow.visible = !open;
+      parts.bulkheadOpen.visible = open;
+    },
+    // The seam's light: k 0..1 (its pulse); 0 and hidden once it's sealed.
+    setSeam(k, on = true) {
+      parts.seamGlow.visible = on;
+      parts.seamHalo.visible = on;
+      parts.seamGlow.material.color.copy(seamColor).multiplyScalar(k);
+      parts.doorGlow.material.color.copy(seamColor).multiplyScalar(k);
+      parts.seamHalo.material.opacity = 0.07 * k;
+    },
+    // The exploder's handle: 0 up .. 1 down.
+    setPlunger(k) {
+      parts.handle.position.y = -0.3 * k;
+    },
+    // The spark on the slow fuse: k 0..1 along the cable from the exploder to the face (null: out).
+    setSpark(k) {
+      parts.spark.visible = k !== null;
+      if (k === null) return;
+      const run = kit.fuseRun;
+      const f = Math.max(0, Math.min(run.length - 1 - 1e-6, k * (run.length - 1)));
+      const i = Math.floor(f);
+      const a = trackPoint(track, run[i][0], run[i][1], 0.05, sparkAt);
+      const ax = a.x;
+      const ay = a.y;
+      const az = a.z;
+      const q = trackPoint(track, run[i + 1][0], run[i + 1][1], 0.05, sparkAt);
+      const t = f - i;
+      parts.spark.position.set(ax + (q.x - ax) * t, ay + (q.y - ay) * t, az + (q.z - az) * t);
+    },
+    // The fire: balls at [{ x, y, z, r }] (mine space), the rest hidden.
+    setFire(list) {
+      parts.fire.forEach((m, i) => {
+        const f = list?.[i];
+        m.visible = Boolean(f);
+        if (f) {
+          m.position.set(f.x, f.y, f.z);
+          m.scale.setScalar(f.r);
+        }
+      });
     },
     // The sleeve round the cage: y metres up from where it starts (it repeats every 2), shown or not.
     setSleeve(y, on) {

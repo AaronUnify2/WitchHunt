@@ -94,10 +94,10 @@
    "busy": "Climbing down…"
   },
   "winch": {
-   "prompt": "winch the cart back up to the landing",
+   "prompt": "hook the cart to the haulage rope and go back up",
    "busy": "Hooking on…"
   },
-  "winched": "The winch hauls the cart back up the drift, slow, the whole way in the dark."
+  "winched": "The haulage rope takes the cart back up the drift, slow, the whole way in the dark."
  },
  "stops": {
   "points": {
@@ -114,8 +114,50 @@
   }
  },
  "bottom": {
-  "arrive": "The cart fetches up against the buffers. End of the drift. Ahead, a timber bulkhead right across it, barred from this side, and strung all over with something pale. There's a light under it, and it's humming.",
-  "door": "The bar's swollen tight into its brackets. Not by hand. (What's behind it is still to build.)"
+  "arrive": "The cart fetches up against the buffers. End of the drift. Ahead, a timber bulkhead right across it, barred from this side, and strung all over with something pale. There's a light under it, red, and it's humming.",
+  "door": {
+   "prompt": "lever the bar out with the pinch bar",
+   "busy": "Heaving on the bar…",
+   "done": "The bar shrieks out of its brackets and the leaf sags. You drag it back against the wall. The air that comes through is warm, and it smells of singed hair."
+  },
+  "inside": "This was never dug. A cavern, the roof lost in the dark. At the far end the coal's split from the floor up, and the split is lit from inside, red, coming and going like breath. Beside it something the size of a car hangs from the roof, torn open.",
+  "roost": "The roof's moving. They're all up there in the silk, folded, and every eye is on the seam. Not one of them looks at you.",
+  "hint": "Nobody's coming back down here after you. Anything worth carrying out, take it now.",
+  "seam": {
+   "prompt": "look into the seam",
+   "busy": "Looking…",
+   "text": "A hand wide. It isn't fire: there's no heat off it, and the hum's in your teeth. There's no back to it either. A long way of red, and far off in it something moving, the way things move under ice."
+  },
+  "cocoon": {
+   "prompt": "look at the thing hung from the roof",
+   "busy": "Looking…",
+   "text": "Silk, wound as thick as a mattress, twice your height. It split down one side from the inside, and the edges have curled and gone hard. Empty. What came out of it was taller than you, and it came out folded."
+  },
+  "foreman": {
+   "prompt": "look at the man by the box",
+   "busy": "Looking…",
+   "text": "Sixty, about. FOREMAN on his hard hat. There isn't a bite on him. He ran the cable back from the face, sat down to get his breath, and didn't get it. His hand's a foot short of the plunger."
+  },
+  "log": {
+   "prompt": "take the book by his hand",
+   "busy": "Picking it up…"
+  },
+  "sticks": {
+   "prompt": "take the sticks left in the open case",
+   "busy": "Lifting them out…",
+   "text": "Dynamite, dry, the paper still stiff. The rest of the case went into the wall.",
+   "full": "You can't carry any more dynamite. The sticks stay in the case."
+  },
+  "drill": {
+   "prompt": "knock the head off the rock drill",
+   "busy": "Hammering the collar…",
+   "keep": "The rock drill's head: a ram for the front of the dozer, one day"
+  },
+  "plunger": {
+   "prompt": "push the plunger",
+   "busy": "Leaning on it…",
+   "soon": "The exploder. Two strands of cable run from it to the face, and nine holes in the face are packed and wired. He never pushed it. (The way out is still to build.)"
+  }
  },
  "fight": {
   "first": "There's a man on the rails ahead, in a hard hat, his back to you. He turns round. He's been dead a while.",

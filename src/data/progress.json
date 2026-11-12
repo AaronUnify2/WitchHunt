@@ -127,6 +127,11 @@
     {"id": "mineBelow", "about": "The abandoned mineshaft: Tom has been down in the cage at least once (encounters/MineRide.js)."},
     {"id": "minePoints", "about": "The abandoned mineshaft: the points thrown at the first stop (the cart runs straight through from then on)."},
     {"id": "mineFall", "about": "The abandoned mineshaft: the rock levered off the rails at the second stop."},
-    {"id": "mineBottom", "about": "The abandoned mineshaft: the cart has reached the bottom of the drift (the bulkhead; the ride down is quiet from then on)."}
+    {"id": "mineBottom", "about": "The abandoned mineshaft: the cart has reached the bottom of the drift (the bulkhead; the ride down is quiet from then on)."},
+    {"id": "mineBulkhead", "about": "The abandoned mineshaft: the bulkhead at the bottom levered open with the pinch bar (encounters/MineBottom.js)."},
+    {"id": "mineCavernSeen", "about": "The abandoned mineshaft: Tom has walked into the cavern (the seam, the torn cocoon)."},
+    {"id": "foremanLogFound", "about": "The abandoned mineshaft: Everett Shaw's logbook taken from beside him at the plunger (lore foremanLog)."},
+    {"id": "mineSticks", "about": "The abandoned mineshaft: the dynamite left in the open case taken."},
+    {"id": "drillHeadTaken", "about": "The abandoned mineshaft: the rock drill's head knocked off (lore drillHead: the killdozer's ram, for later)."}
   ]
 }

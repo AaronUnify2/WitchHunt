@@ -23,7 +23,8 @@ describe("the mine's model", () => {
     const tris = mine.mesh.geometry.getAttribute('position').count / 3;
     expect(tris).toBeGreaterThan(8000);
     expect(tris).toBeLessThan(40000);
-    expect(Object.keys(mine.parts).filter((k) => mine.parts[k]?.isMesh).sort()).toEqual(['bulbs', 'fall', 'pointsLever', 'seamGlow', 'skirt', 'sleeve']);
+    expect(Object.keys(mine.parts).filter((k) => mine.parts[k]?.isMesh).sort()).toEqual(['bulbs', 'bulkhead', 'bulkheadOpen', 'doorGlow', 'drillHead', 'fall', 'handle', 'log', 'pointsLever', 'seamGlow', 'seamHalo', 'skirt', 'sleeve', 'spark', 'sticks']);
+    expect(mine.parts.fire.length).toBe(6);
     expect(mine.parts.sleeve.visible).toBe(false);
   });
 

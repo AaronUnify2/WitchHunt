@@ -20,10 +20,9 @@
 //      - the fall, rock down across the rails: climb down, lever it clear
 //        with the pinch bar (the hold drains if he lets go).
 //     Each is done once (a flag): the next ride runs straight through.
-//  4. The bottom: the buffers, and the bulkhead across the end of the
-//     drift, barred, silk all over it and a light under it. What's behind
-//     it is the next session's (the seam, the cocoon, the plunger). For
-//     now the cart winches back up from here.
+//  4. The bottom: the buffers, and the bulkhead across the drift, barred,
+//     silk all over it and a light under it. What's behind it, and the way
+//     out, is encounters/MineBottom.js (Session 31).
 //
 // A place Tom can walk in is a room platform cut from the track (zone()):
 // the landing, each stop, the bottom. Riding, his platform rides with the
@@ -38,6 +37,7 @@ import { buildTrack, pointAt, halfAt, nearest, confine, rayDistance, nextStop, c
 import { buildMine, buildCart } from '../render/mineModel.js';
 import { weatherFor } from '../render/propKit.js';
 import { MineCart } from '../world/MineCart.js';
+import { MineBottom, BOTTOM_FLAGS } from './MineBottom.js';
 import data from '../data/mineshaft.json';
 
 export const RIDE_FLAGS = ['mineBelow', 'minePoints', 'mineFall', 'mineBottom'];
@@ -48,7 +48,7 @@ const STOP_FLAG = { points: 'minePoints', fall: 'mineFall' };
 // The stretch of track Tom can walk at each place the cart stands: [from, to] (s), pure.
 export function zoneSpan(rc, track, where) {
   if (where === 'landing') return [-1.15, 23];
-  if (where === 'bottom') return [rc.end - 5, track.length + (track.endRoom ?? 2.5) - 0.9];
+  if (where === 'bottom') return [rc.end - 5, track.length + (track.endRoom ?? 2.5) - 2.3]; // through the bulkhead to the foot of the cavern's end wall
   const st = rc.stops.find((s) => s.id === where);
   return st ? [st.s - 5, st.s + 12.5] : null;
 }
@@ -60,9 +60,10 @@ export class MineRide {
     this.rc = cfg.mineshaft.ride;
     this.lc = cfg.mineshaft.lift;
     this.bus = bus;
-    this.flags = RIDE_FLAGS;
+    this.flags = [...RIDE_FLAGS, ...BOTTOM_FLAGS];
     this.track = buildTrack(this.mc.track);
     this.cart = new MineCart(cfg, bus);
+    this.bottom = new MineBottom(cfg, bus, this); // Session 31: past the bulkhead
     this.phase = 'surface'; // 'descending' | 'foot' | 'aboard' | 'ascending'
     this.where = 'landing'; // where the cart stands (or last stood): 'landing' | a stop's id | 'bottom'
     this.offset = { x: 0, y: 0, z: 0 };
@@ -72,13 +73,15 @@ export class MineRide {
   }
 
   // ctx: { scene, site (MineshaftSite), interiors, player, combat, enemies, progress, flashlight, vhud,
-  // world, notify, hud (the surface beat's: one prompt for both), fight (MineFight, optional), rng() }.
+  // world, notify, hud (the surface beat's: one prompt for both), fight (MineFight, optional), rng(), and for
+  // the bottom (encounters/MineBottom.js): lore, paper, card, dynamite }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
     this.sfx = this.combat?.sfx;
     this.hold = new HoldAction(this.cfg.station.hold.releaseDrain);
     this.hold.init();
+    this.bottom.init(ctx);
     if (!this.ready) return;
     const p = this.site.place;
     const self = this;
@@ -148,6 +151,11 @@ export class MineRide {
     return { x: p.x + Math.cos(p.yaw) * lat + this.offset.x, y: p.y + up + this.offset.y, z: p.z - Math.sin(p.yaw) * lat + this.offset.z, yaw: p.yaw, s };
   }
 
+  // How far along the track a world point is.
+  sOf(p) {
+    return nearest(this.track, p.x - this.offset.x, p.y - this.offset.y, p.z - this.offset.z, null, this.n ?? (this.n = {})).s;
+  }
+
   // What the dead, the beetles and a shot need of the mine (world space in and out).
   room() {
     const t = this.track;
@@ -208,6 +216,14 @@ export class MineRide {
     this.leverK = this.has('minePoints') ? 1 : 0;
     this.model.setLever(this.leverK);
     this.model.parts.fall.visible = !this.has('mineFall');
+    this.bottom.dress();
+  }
+
+  // The room box Tom's in, cut again (something in it has changed: the bulkhead's open).
+  rezone() {
+    if (this.phase !== 'foot') return;
+    const p = this.player.position;
+    this.player.setPlatform(this.zone(this.where), p.x, p.z);
   }
 
   // A room platform (Player keepInRoom) over the track from s0 to s1, with whatever stands in it.
@@ -215,9 +231,12 @@ export class MineRide {
     const [s0, s1] = zoneSpan(this.rc, this.track, where);
     const mid = (s0 + s1) / 2;
     const p = pointAt(this.track, mid, {});
-    let half = Infinity;
-    for (let s = s0; s <= s1; s += 1) half = Math.min(half, halfAt(this.track, s));
-    const blocks = [];
+    // The box is as wide as the stretch's narrowest part; the bottom's (the drift, the bulkhead, the cavern)
+    // as wide as its widest, with blocks to narrow it (the bottom's own).
+    const deep = where === 'bottom';
+    let half = deep ? 0 : Infinity;
+    for (let s = s0; s <= s1; s += 1) half = deep ? Math.max(half, halfAt(this.track, s)) : Math.min(half, halfAt(this.track, s));
+    const blocks = deep ? this.bottom.blocks(mid, half - 0.12, s0, s1) : [];
     const add = (s, hw, hl) => blocks.push([-hw, hw, s - mid - hl, s - mid + hl]);
     add(this.cart.s, 0.66, 1.25); // the cart
     if (where === 'landing') {
@@ -355,6 +374,7 @@ export class MineRide {
     this.showFade();
     this.cart.eject();
     this.fight?.clear();
+    this.bottom.reset();
     this.phase = 'surface';
     this.where = 'landing';
   }
@@ -390,6 +410,7 @@ export class MineRide {
       }
       this.fight?.update(dt, this);
     }
+    this.bottom.update(dt, playing);
     if (canInteract !== false && input && playing && !this.fadeJob) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -459,7 +480,7 @@ export class MineRide {
     const cart = this.cart.worldPoint();
     if (this.where === 'bottom') {
       add(cart, r + 0.6, opt('winch', data.cart.winch, H.winch, () => this.winchUp()));
-      add(spot('door'), r + 0.9, { key: 'door', prompt: data.bottom.door, act: null });
+      this.bottom.pick(add, opt, X);
     } else add(cart, r + 0.6, opt('board', data.cart.board, this.rc.mountSeconds, () => this.board()));
     if (this.where === 'landing') add(spot('cageLever'), r, opt('up', data.cage.up, H.lever, () => this.ascend()));
     if (this.where === 'points') {
@@ -476,7 +497,7 @@ export class MineRide {
       this.strokeT = (this.strokeT ?? 0) - 1 / 30;
       if (this.strokeT <= 0) {
         this.strokeT = 0.8;
-        this.sfx?.play('barPry', p);
+        this.sfx?.play(best.strokeSfx ?? 'barPry', p);
       }
     }
     return best;
@@ -625,6 +646,14 @@ export class MineRide {
     cat.addItem('Mineshaft: to the points', () => this.jump('points'));
     cat.addItem('Mineshaft: to the fall', () => this.jump('fall'));
     cat.addItem('Mineshaft: to the bottom', () => this.jump('bottom'));
+    cat.addItem('Mineshaft: to the bottom, the bulkhead open', () => {
+      this.set('mineBottom');
+      this.set('mineBulkhead');
+      this.jump('bottom');
+      this.dress();
+      this.rezone();
+      this.fight?.hangCavern?.(this);
+    });
   }
 
   overlayLine() {

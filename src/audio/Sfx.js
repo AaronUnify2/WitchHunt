@@ -1343,6 +1343,77 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.2, type: 'lowpass', freq: 300, endFreq: 90, gain: 1.0 });
     s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 210, endFreq: 200, gain: 0.1 });
   },
+  // Session 31: the bottom of the mine (encounters/MineBottom.js). Placeholders, like the rest.
+  // The seam: one breath of its hum, two notes a hair apart so it beats, swelling and going.
+  seamHum(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 34);
+    s.tone(o, { seconds: 2.5, wave: 'sine', freq: 58, endFreq: 56, gain: 0.5, attack: 1.1 });
+    s.tone(o, { seconds: 2.5, wave: 'sine', freq: 61.5, endFreq: 59, gain: 0.4, attack: 1.2 });
+    s.tone(o, { seconds: 2.2, wave: 'triangle', freq: 233, endFreq: 228, gain: 0.035, attack: 1.0, vibrato: 3 });
+  },
+  // The bulkhead's bar coming out of its brackets, the leaf dragged back.
+  bulkheadOpen(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 1500, endFreq: 700, gain: 0.07, vibrato: 40 });
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 2200, endFreq: 900, q: 6, gain: 0.35 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.16, type: 'lowpass', freq: 500, gain: 0.9 }), 520);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 1.3, type: 'lowpass', freq: 260, endFreq: 120, gain: 0.6, attack: 0.2 }), 800);
+  },
+  // The drill's collar hammered: steel on steel, ringing; then the head coming off and hitting the floor.
+  drillKnock(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.04, type: 'highpass', freq: 2400, gain: 0.6 });
+    s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 1320, endFreq: 1300, gain: 0.1 });
+  },
+  drillOff(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.noiseBurst(o, { seconds: 0.18, type: 'lowpass', freq: 420, endFreq: 120, gain: 1.0 });
+    s.tone(o, { seconds: 0.9, wave: 'triangle', freq: 640, endFreq: 620, gain: 0.12 });
+  },
+  // The plunger going down: a ratchet through its rack, a dead clunk.
+  plungerPush(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    for (let i = 0; i < 7; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.025, type: 'bandpass', freq: 1500 + i * 60, q: 4, gain: 0.4 }), i * 45);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.14, type: 'lowpass', freq: 380, gain: 0.9 }), 340);
+  },
+  // The slow fuse: a spit as it takes, then a tick of hiss (played over and over, quicker as it runs down).
+  fuseSpit(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.noiseBurst(o, { seconds: 0.5, type: 'highpass', freq: 3000, gain: 0.5, attack: 0.02 });
+  },
+  fuseTick(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 0.16, type: 'bandpass', freq: 5200, q: 2, gain: 0.3, attack: 0.02 });
+    s.tone(o, { seconds: 0.05, wave: 'square', freq: 1100, gain: 0.06 });
+  },
+  // The haulage rope taking the cart's weight: a twang down the drift, the wheels starting to grind uphill.
+  cartHaul(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 190, endFreq: 150, gain: 0.12, vibrato: 14 });
+    s.noiseBurst(o, { seconds: 1.6, type: 'lowpass', freq: 260, endFreq: 520, gain: 0.4, attack: 0.5 });
+  },
+  // The charges, all nine at once, a long way under a mountain: felt before it's heard.
+  mineBlast(s) {
+    const o = s.out(undefined, undefined, 1.4);
+    s.tone(o, { seconds: 2.6, freq: 46, endFreq: 22, gain: 1.2, attack: 0.01 });
+    s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 1500, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 3.4, type: 'lowpass', freq: 900, endFreq: 70, gain: 1.3, attack: 0.02 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 2.4, type: 'lowpass', freq: 300, endFreq: 60, gain: 0.9, attack: 0.4 }), 900);
+  },
+  // The fire coming up the drift behind: a roar that's played again each second, louder the closer it is
+  // (pos.near: 0 far .. 1 on him).
+  fireRoar(s, pos) {
+    const k = Math.max(0, Math.min(1, pos?.near ?? 0.5));
+    const o = s.out(undefined, undefined, 0.35 + k * 0.85);
+    s.noiseBurst(o, { seconds: 1.3, type: 'lowpass', freq: 300 + k * 700, endFreq: 200 + k * 400, gain: 0.9, attack: 0.3 });
+    s.noiseBurst(o, { seconds: 1.2, type: 'bandpass', freq: 1400 + k * 1200, q: 0.8, gain: 0.18 + k * 0.3, attack: 0.3 });
+    s.tone(o, { seconds: 1.2, freq: 52, endFreq: 44, gain: 0.5, attack: 0.3 });
+  },
+  // Singed: a lick of it over the cart's tail.
+  fireLick(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.noiseBurst(o, { seconds: 0.45, type: 'bandpass', freq: 2400, endFreq: 900, q: 0.9, gain: 0.8, attack: 0.04 });
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

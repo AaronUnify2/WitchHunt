@@ -4784,7 +4784,7 @@ export const config = {
     radius: 26, // metres from its middle the set reaches (for drawing it)
     encounter: {
       interactRange: 1.7,
-      holds: { search: 1.0, desk: 1.0, tags: 0.9, lamps: 0.9, locker: 1.2, army: 1.0, cart: 0.8, battery: 2.0, lever: 0.9, points: 1.6, fall: 5.0, winch: 1.2 }, // seconds held (X); fall: levering the rock off the rails (it drains if he lets go)
+      holds: { search: 1.0, desk: 1.0, tags: 0.9, lamps: 0.9, locker: 1.2, army: 1.0, cart: 0.8, battery: 2.0, lever: 0.9, points: 1.6, fall: 5.0, winch: 1.2, door: 3.2, look: 0.7, log: 1.0, sticks: 1.0, drill: 3.0, plunger: 1.4 }, // seconds held (X); fall: levering the rock off the rails (it drains if he lets go); door: the bulkhead's bar, the same
       sweepDistance: 6, // metres from the arrival spot: the arrival sweep (once)
       locker: { pistol: 10, kits: 1 }, // the foreman's locker: rounds and a first aid kit
       lamps: { scrap: 3 }, // the lamp rack: dead cap lamps, good for scrap
@@ -4796,7 +4796,7 @@ export const config = {
     // under the clearing (world/Interiors.js). Mine space: the cage's middle at the origin on the landing's
     // floor, the track heading +z; `origin` shifts the whole mine so its loop sits under the clearing
     // (Tom's dot on the map stays near it).
-    origin: [-40, -46],
+    origin: [-56, -50], // Session 31: shifted for the cavern past the bottom
     // The track: legs in order, each `len` metres, turning `turn` degrees (+ toward the frame's +x) and
     // falling at `grade` (rise per metre). half / roof: the tunnel's half width and height. wide: the
     // galleries (the landing, the two stops, the bottom).
@@ -4821,13 +4821,17 @@ export const config = {
         { len: 28, turn: 90, grade: -0.1 }, // 338-366
         { len: 40, grade: -0.06 }, // 366-406
         { len: 26, grade: 0 }, // 406-432: the bottom
+        { len: 36, grade: 0 }, // 432-468: through the bulkhead, the cavern (Session 31)
       ],
       wide: [
         { s0: -3, s1: 22, half: 3.2 },
         { s0: 98, s1: 122, half: 3.6 },
         { s0: 228, s1: 252, half: 3.6 },
-        { s0: 408, s1: 436, half: 4.2 },
+        { s0: 408, s1: 433.5, half: 4.2 },
+        { s0: 437, s1: 476, half: 7.5, ramp: 5 }, // the cavern
       ],
+      high: [{ s0: 437, s1: 476, roof: 8.4, ramp: 5 }], // where the roof's higher than `roof` (the cavern)
+      door: 434.6, // the bulkhead across the drift (a shot and the dead stop there until it's open)
     },
     bulbsLit: [1, 9, 17, 61, 109, 113, 153, 241, 301, 409, 425], // s along the track: the bulbs still burning (the rest are dead)
     // The cage: seconds down (and the hang partway: it stops dead, then drops faster), the depth it reads.
@@ -4917,6 +4921,22 @@ export const config = {
       // them flee down the drift instead. speedOver: how much faster than the cart they fly.
       moths: { wake: 20, scatterBeyond: 24, scatter: 0.6, along: [-13, 4], up: [1.7, 2.7], speedOver: 5, dartSpeedOver: 9, dartEvery: [2.0, 3.6], dartCount: [1, 2], nipDamage: 2, leaveSeconds: 3.5 },
     },
+    // Session 31: the bottom, past the bulkhead (render/mineCavernModel.js; encounters/MineBottom.js).
+    // Everything's placed by [s along the track, lat across it] (the cavern runs from 437 to its end
+    // wall at 471, 15 m across, its roof 8.4 m up).
+    bottom: {
+      seam: { height: 6.2, width: 0.34, pulse: 2.6, glow: [0.45, 1.0], hum: 26 }, // the crack in the end wall: a pulse every `pulse` seconds between these brightnesses; heard within `hum` metres
+      cocoon: { at: [460.5, -3.1], top: 5.4, length: 4.1, radius: 1.15 }, // hung from the roof (its top this far up), split down the side facing the way in
+      plunger: [462.5, 3.2], // the exploder, and the foreman beside it
+      foreman: [461.2, 4.3],
+      log: [461.7, 3.9], // his logbook, by his hand
+      drill: [449, -4.8], // the rock drill on its column, where they stopped
+      sticks: [447.5, 4.8], // the open case of dynamite they hadn't used
+      sticksGiven: 5,
+      charges: 9, // shot holes round the seam, each tamped and wired
+      roost: { count: 22, s: [446, 466] }, // the moths, up under the cavern's roof (they watch; they don't come down unless they're shot at)
+      hintOnce: true,
+    },
     // The mine's own light and fog (world/Interiors.js): black beyond the torch.
     light: { ambientDay: 0.55, ambientNight: 0.55, ambientColor: 0x8a8478, fogColor: 0x040404, fogNear: 3, fogFar: 44 },
     look: {
@@ -4984,7 +5004,26 @@ export const config = {
         grip: 0x3e2a1a,
         flash: 0xffc070,
         door: 0x30281e, // the bulkhead at the bottom
-        seamGlow: 0x4a2a5a, // the light under it (unlit: a dull violet)
+        seamGlow: 0x7a2418, // the seam's light (unlit: a dull red; it pulses: encounters/MineBottom.js)
+        doorOpen: 0x282018,
+        husk: 0x4e4c44, // the cocoon's silk, greyer than a strand
+        huskDark: 0x1c1a17, // inside it
+        ichor: 0x2a2c1c, // what dried under it
+        fur: 0x1a1816, // shed, in drifts
+        crate: 0x4a3a22, // the powder company's cases
+        crateDark: 0x382c1a,
+        stick: 0x5a3a2a, // a stick of dynamite: waxed paper gone brown
+        wire: 0x5a4a24, // firing cable: two strands, brass at the ends
+        exploder: 0x2a2420, // the plunger's box
+        handle: 0x4a2a1a,
+        coat: 0x2a2c2e, // the foreman's
+        coatDark: 0x1e2022,
+        skin: 0x4a463c, // long dead
+        bit: 0x3c3a36, // the drill's steel
+        bitBright: 0x56544c,
+        hose: 0x181716,
+        book: 0x2a1c14, // the logbook's boards
+        fuse: 0xd08a3a, // the spark on the slow fuse (unlit)
       },
     },
   },

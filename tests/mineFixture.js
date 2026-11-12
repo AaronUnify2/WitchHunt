@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { config } from './mapFixture.js';
 import { MineRide } from '../src/encounters/MineRide.js';
 
-export function make({ flags = [], fight = null, enemies = null } = {}) {
+export function make({ flags = [], fight = null, enemies = null, extra = {} } = {}) {
   const set = new Set(flags);
   const said = [];
   const sounds = [];
@@ -64,6 +64,7 @@ export function make({ flags = [], fight = null, enemies = null } = {}) {
     hud,
     notify: (t) => said.push(t),
     rng: () => 0.5,
+    ...extra,
   });
   const input = { activeDevice: 'gamepad', down: new Set(), isDown(a) { return this.down.has(a); }, getLook: () => ({ x: 0, y: 0 }) };
   const tick = (seconds, dt = 0.05) => {

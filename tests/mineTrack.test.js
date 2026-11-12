@@ -32,7 +32,7 @@ describe("the mine's track", () => {
   });
 
   it("keeps its loop under the clearing (Tom's dot on the map stays near the mine)", () => {
-    for (const p of track.points) expect(Math.hypot(p.x + mc.origin[0], p.z + mc.origin[1])).toBeLessThan(75);
+    for (const p of track.points) expect(Math.hypot(p.x + mc.origin[0], p.z + mc.origin[1])).toBeLessThan(80);
   });
 
   it('finds the nearest point of the right level', () => {

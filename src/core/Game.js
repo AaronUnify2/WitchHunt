@@ -891,6 +891,13 @@ export class Game {
       vhud: this.vehicleHud,
       hud: this.mineshaft.hud,
       notify,
+      // Session 31: the bottom (encounters/MineBottom.js).
+      lore: this.lore,
+      paper: this.paper,
+      card: this.card,
+      dynamite: this.dynamite,
+      explosives: this.explosives,
+      cutscenes: this.cutscenes,
     });
     // What comes at him down there (encounters/MineFight.js): miners, the mine's own beetles, the moths.
     this.mineBeetles = new Beetles(this.cfg, this.bus);

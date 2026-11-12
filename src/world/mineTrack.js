@@ -59,7 +59,8 @@ export function buildTrack(tc) {
   const nb = Math.round(back / step);
   for (let i = nb; i >= 1; i--) points.push({ s: -i * step, x: 0, y: raw[0].y, z: -i * step, yaw: 0 });
   for (const p of raw) points.push(p);
-  return { points, s0: -nb * step, length, step, half: tc.half, roof: tc.roof, wide: tc.wide ?? [] };
+  // shutAt: an s nothing passes (the bulkhead at the bottom, until it's opened: the ride sets it), or null.
+  return { points, s0: -nb * step, length, step, half: tc.half, roof: tc.roof, wide: tc.wide ?? [], high: tc.high ?? [], door: tc.door ?? null, shutAt: null, endRoom: tc.endRoom };
 }
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -90,6 +91,17 @@ export function halfAt(track, s) {
     if (k > 0) h = Math.max(h, track.half + (w.half - track.half) * (k * k * (3 - 2 * k)));
   }
   return h;
+}
+
+// The roof's height above the floor at s: the track's own, higher through a cavern (eased over its ramp).
+export function roofAt(track, s) {
+  let r = track.roof;
+  for (const w of track.high ?? []) {
+    const ramp = w.ramp ?? 4;
+    const k = Math.min(1, Math.max(0, (s - w.s0) / ramp), Math.max(0, (w.s1 - s) / ramp));
+    if (k > 0) r = Math.max(r, track.roof + (w.roof - track.roof) * (k * k * (3 - 2 * k)));
+  }
+  return r;
 }
 
 // The nearest point of the track to (x, y, z): { s, lat (metres off the line, + toward the frame's +x),
@@ -144,7 +156,7 @@ const _n = {};
 // Is (x, y, z) inside the tunnel (between its walls, its floor and its roof, not past either end)?
 export function inside(track, x, y, z, hint = null, margin = 0) {
   const n = nearest(track, x, y, z, hint, _n);
-  if (n.dy < -0.3 || n.dy > track.roof) return false;
+  if (n.dy < -0.3 || n.dy > roofAt(track, n.s)) return false;
   const along = alongPast(track, x, z, n);
   if (along) return false;
   return Math.abs(n.lat) < halfAt(track, n.s) - margin;
@@ -163,6 +175,7 @@ function alongPast(track, x, z, n) {
 export function rayDistance(track, origin, dir, max, hint = null, step = 0.6) {
   let h = hint;
   let prev = 0;
+  const from = track.shutAt === null || track.shutAt === undefined ? 0 : nearest(track, origin.x, origin.y, origin.z, hint, _n).s;
   for (let t = step; ; t += step) {
     const tt = Math.min(t, max);
     const x = origin.x + dir.x * tt;
@@ -170,11 +183,17 @@ export function rayDistance(track, origin, dir, max, hint = null, step = 0.6) {
     const z = origin.z + dir.z * tt;
     const n = nearest(track, x, y, z, h, _n);
     h = n.s;
-    const out = n.dy < -0.05 || n.dy > track.roof || Math.abs(n.lat) >= halfAt(track, n.s) || alongPast(track, x, z, n);
+    const out = n.dy < -0.05 || n.dy > roofAt(track, n.s) || Math.abs(n.lat) >= halfAt(track, n.s) || alongPast(track, x, z, n) || shutBetween(track, from, n.s);
     if (out) return (prev + tt) / 2;
     prev = tt;
     if (tt >= max) return max;
   }
+}
+
+// Is the shut bulkhead between two places on the track?
+export function shutBetween(track, a, b) {
+  const d = track.shutAt;
+  return d !== null && d !== undefined && (a - d) * (b - d) < 0;
 }
 
 // Keep pos ({ x, z }, at height y) between the tunnel's walls, r from them and not past its ends.

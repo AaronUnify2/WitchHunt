@@ -29,7 +29,7 @@
 //
 // Events: 'mine:rammed' { zombie }.
 
-import { halfAt, pointAt } from '../world/mineTrack.js';
+import { halfAt, pointAt, roofAt } from '../world/mineTrack.js';
 import { ID } from './MineRide.js';
 import data from '../data/mineshaft.json';
 
@@ -106,6 +106,7 @@ export class MineFight {
     this.aware = 0;
     this.room = ride.room();
     this.moths?.setHabitat(this.habitat(ride));
+    if (ride.has('mineBulkhead') && !ride.has('mineSealed')) this.hangCavern(ride);
   }
 
   // The brake's off (the ride's hook).
@@ -144,7 +145,7 @@ export class MineFight {
       // A waking moth's place in the stream: `along` the track from Tom, drifting; across by its own lat.
       slot: (m, t, out) => {
         const sl = m.slot;
-        const s = Math.max(track.s0 + 1, Math.min(track.length, ride.cart.s + sl.along + Math.sin(t * 0.7 * sl.speed + sl.phase) * 2.5));
+        const s = Math.max(track.s0 + 1, Math.min(track.length, this.tomS(ride) + sl.along + Math.sin(t * 0.7 * sl.speed + sl.phase) * 2.5));
         const half = halfAt(track, s) - 0.6;
         pointAt(track, s, p);
         const lat = sl.lat * half * Math.cos(t * 0.5 * sl.speed + sl.phase);
@@ -157,7 +158,7 @@ export class MineFight {
       clamp: (m) => {
         const c = room.confine(m, m.y, 0.45);
         const lo = c.floor + o.y + 0.5;
-        const hi = c.floor + o.y + track.roof - 0.45;
+        const hi = c.floor + o.y + roofAt(track, c.s) - 0.45;
         if (m.y < lo) {
           m.y = lo;
           if (m.v.y < 0) m.v.y = 0;
@@ -179,6 +180,34 @@ export class MineFight {
         return out;
       },
     };
+  }
+
+  // Where Tom is along the track: the cart, or his own feet when he's down off it.
+  tomS(ride) {
+    if (ride.phase !== 'foot') return ride.cart.s;
+    const p = this.player.position;
+    return this.room.sAt(p.x, p.z, p.y);
+  }
+
+  // Session 31: the cavern's roost (encounters/MineBottom.js): all of them, up in the silk under its roof.
+  // They watch the seam; a shot into them brings them down.
+  hangCavern(ride) {
+    if (!this.moths || !ride.model || this.roosts.has('cavern')) return 0;
+    this.ride = ride;
+    this.room ??= ride.room();
+    if (!this.moths.habitat) this.moths.setHabitat(this.habitat(ride));
+    const R = this.cfg.mineshaft.bottom.roost;
+    const pts = [];
+    for (let i = 0; i < R.count; i++) {
+      const k = i / Math.max(1, R.count - 1);
+      const s = R.s[0] + (R.s[1] - R.s[0]) * k;
+      const lat = Math.sin(i * 2.4) * (halfAt(ride.track, s) - 1.6);
+      const a = ride.at(s, lat, roofAt(ride.track, s) - 1.0 - Math.abs(lat) * 0.12);
+      pts.push({ x: a.x, y: a.y, z: a.z, facing: a.yaw });
+    }
+    const n = this.moths.roost(pts, 'cavern');
+    this.roosts.set('cavern', { s0: R.s[0], s1: R.s[1], woke: false, wakeAfter: null, t: 0 });
+    return n;
   }
 
   // ---- spawning --------------------------------------------------------------------------------
