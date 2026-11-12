@@ -1,28 +1,66 @@
 # Handover
 
-## DO THIS FIRST: Session 27: Aaron's notes, then the railway cutting
+## DO THIS FIRST: Session 28: Aaron's big play-test notes, then the sawmill
 
-**Where things stand:** everything to date is on `main` (and `ccr-0f2c285b-r1djeq`), 988 tests passing, the build clean. The story plays from the opening through the crashed plane, Junie taken, the Caller, the old church, the stairs and Junie home; **Milo's barn** is built too. Nothing since Session 25 has been played on the tablet.
+**Where things stand:** everything to date is on `main` (and `ccr-32834d0b-9inowu`). 1031 tests pass and the build is clean. The story plays from the opening through the crashed plane, Junie taken, the Caller, the old church, the stairs and Junie home. **Two optionals are built: Milo's barn and the railway cutting** (Session 27, with the spike maul and dynamite). Nothing since Session 25 has been played on the tablet.
 
-**1. Aaron's notes first** (rule 10). He's said they're coming: **Milo's barn** (PLAYTEST round 56), **the Junie stretch** (rounds 51-55, not played yet) and **notes on the crashed plane** (round 49). Ask for them if they aren't in the conversation; fix the small ones before anything else, and log each settled call in OPEN_QUESTIONS.
+**1. Aaron's notes first** (rule 10). He said a **massive play-test** is coming: Milo's barn (PLAYTEST round 56), the Junie stretch (rounds 51-55), the crashed plane (round 49), and now the railway cutting, the maul and dynamite (rounds 57-59). Ask for them if they aren't in the conversation. Fix the small ones before anything else, and log each settled call in OPEN_QUESTIONS (Session 27's calls are #488-509; the ones I'd most like his eye on are #491, the train's story; #502, the damage in hand; #505, the crates; #506, the waves).
 
-**2. Then the next mid-game encounter: the railway cutting** (Aaron: "keep building more mid-game encounters; your choice which is next"). Chosen because it's Session 28's other half (M11's optionals), it pays off the 1903 story the old church just told (the night the eleven were taken), and it brings two systems later beats need (the spike maul, dynamite). DESIGN.md "The railway cutting: the 1903 line" is the brief:
-- **Where:** the optional `railwayCutting` clearing the seed puts on the 1903 line (`onRailway`, radius 24; all five optionals are dealt every run). Don't move the map (saves keep). Find its frame with `world/clearingFrame.js` `pathFrame(map, 'railwayCutting')`; the line's geometry is `world/railway.js`.
-- **The set** (one baked mesh with `render/setBuilder.js`, as `render/oldChurchModel.js` / `render/miloBarnModel.js`): a cutting blasted through a rise, its walls rock; the last train of 1903 swallowed by the forest in it: a rusted locomotive (its **cowcatcher and boiler plate**: the killdozer part), its tender, two or three carriages, doors hanging, saplings through the floors, the luggage and belongings of a town still inside. The old powder store (a stone hut, its door barred) up the cutting's side. Mind the clearing's radius and the railway's grade.
-- **The beat (defaults; log each as an OPEN_QUESTIONS row from #488):**
-  - An arrival sweep along the train. Quiet, eerie: no enemies at first.
-  - **The carriages:** hold-X searches; the luggage is tagged with the names on the old church's stones (Josiah Tully, Levi Pruitt, Hattie Bell McCoy...): a paper ("the luggage labels") and a lore item; Hattie Bell's doll, perhaps.
-  - **The Caller here** (south of the comms line, so it's the Caller's ground): a positional call from inside a carriage in a 1903 voice: Amos Pruitt calling for Levi. `game.caller.callFrom(pos, lineId, 'From inside the carriage')`.
-  - **The railroad spike maul** (the melee bar's slot is waiting: `config.weapons.cross.melee`, `rotation`): a heavy sledge, slower than the shovel, hits much harder; driven into a tie by the locomotive. A view model and a swing (`player/ViewModel.js`, the shovel's as the pattern), tests.
-  - **Dynamite** from the powder store (the weapon cross's down arm already lists it: `ui/WeaponCross.js`): the first handheld throwable. Hold to light (a fuse with a sound and a spark), throw on release (an arc, `combat/Explosives.js` for the blast), a few sticks. It's old and sweating: a hard knock (shot) sets it off where it lies. Make the throw readable and test the arc.
-  - **A fight:** the dead come up out of the cutting once the powder store's opened (or at dusk): the maul and the dynamite's first use.
-  - **The killdozer part:** the cowcatcher and boiler plate (a card and a lore item, as Milo's horn: the killdozer isn't built).
-  - Flags for every beat, `reset()` from them, the `CrashedPlane` shape.
-- **Then, if there's room:** the sawmill (rank 3: the chainsaw, the station's workbench, the head saw part) or the moonshiners' holler (rank 1). Ask Aaron which.
+**2. Then the sawmill** (Aaron, Session 27: "sawmill after"). DESIGN.md "The sawmill" is the brief. Workshop the open points with him first, or take these defaults and log each as an OPEN_QUESTIONS row from #510:
+- **Where:** the optional `sawmill` clearing the seed deals (all five optionals are dealt every run). Find its frame with `world/clearingFrame.js` `pathFrame(map, 'sawmill')`. Don't move the map. If the ground should change (a mill pond, a log chute down a slope), do it as the cutting did: a lift in `GroundField` from a pure module (`world/railCutting.js` is the pattern), and skip the clearing in `tests/groundField.test.js`'s level test.
+- **The set** (one baked mesh with `render/setBuilder.js`, as `render/railwayCuttingModel.js`): the mill shed with its head rig and the big circular head saw; the log deck and the carriage track; the sawdust pile; the bunkhouse; a crime scene. Dead loggers, and dead Men in Black where the loggers fought back (the MIB zombie look is `render/mibModel.js`; dead ones could be posed figures or corpses, as `ai/Moths.js` lays corpses).
+- **The beat:**
+  - An arrival sweep over the scene.
+  - Searches: the logger's diary (a paper; DESIGN.md has its arc: giddy at triple rates, then no paperwork, the last entry "Dead men don't get paid").
+  - **The SMG** on a dead agent (`combat.giveWeapon('smg', rounds)`).
+  - **The chainsaw:** `config.weapons.cross.melee` and `rotation` already list it. It's the big build. No fuel. It's loud (it pulls every zombie near), it slows Tom while it revs, it overheats if held too long, and it has a sharpness gauge. Give it a hold-RT rev-and-cut that damages continuously (like the maul's cleave, but per tick), a view model (`player/ViewModel.js`, as `buildSpikeMaul` / `updateSmash`), a running engine sound (`Sfx.engine` is a held-note pattern), and a HUD heat and sharpness readout.
+  - **The station's workbench:** sharpen the chain for a little scrap (`base/Station.js` prompts; the ledger's scrap).
+  - A fight (the dead loggers rising, or MIB zombies).
+  - **The head saw**, a killdozer part: a card and a lore item, like the cowcatcher.
+  - Flags for every beat and `reset()` from them, in the shape of `RailwayCutting`.
+- **Then, if there's room:** the moonshiners' holler (rank 1) or the mineshaft (where dynamite turns up again: `game.dynamite.give(n)`). Ask Aaron.
 
-**How to work** (as Sessions 26 and after): config and data first; complete files, small modules; no lights added or removed while playing (glows and unlit "lantern-lit" parts instead, as the barn's board); dull colours (the glare rule); one draw call where you can; tests for what you build; saves through story flags; scenes staged as cutscenes with their lines timed to their reading length (`config.subtitles`: letters at 45 a second, plus 1.4 s, plus 0.28 s a word); a sound for every moment (synthesised, `audio/Sfx.js`). Check every batch headless and look at the screenshots critically, then push it to `main`. Write it up at the end (STATUS, PLAYTEST from round 57, OPEN_QUESTIONS, DESIGN as built, MORNING, this file).
+**How to work** (as Sessions 26 and 27 did):
+- Config and data first: an encounter's texts go in its own `data/<place>.json`, and new JSON entries go in each data file's own one-line style, so the diff stays small.
+- Complete files and small modules.
+- No lights added or removed while playing: glows and unlit parts instead (the cutting's lantern halo).
+- Dull colours (the glare rule).
+- One draw call where you can.
+- Tests for what you build.
+- Saves go through story flags.
+- Scenes staged as cutscenes, with each line timed to its reading length.
+- A sound for every moment (`audio/Sfx.js`).
+- Check every batch headless, look at the screenshots critically, then push it to `main`.
+- Write it up at the end: STATUS, PLAYTEST from round 60, OPEN_QUESTIONS, DESIGN as built, MORNING, and this file.
 
-## Just finished: after Session 26 (Aaron's asks)
+## Just finished: Session 27 (Level & Encounter Designer + AI Programmer): the railway cutting, the spike maul, dynamite
+
+**Status:** all of it is on `main` and on `ccr-32834d0b-9inowu`, in six commits (one per batch, the family's lines, then the write-up). 1031 tests pass and the build is clean. Checked headless; **none of it played on the tablet**. Aaron's answers at the start: skip his notes until the big play-test, the defaults, dynamite blows up in your hand, scarce, the sawmill next, and "detailed work rather than finish early; fun comes first". For Aaron: PLAYTEST rounds 57-59; OPEN_QUESTIONS #488-509; MORNING.md.
+
+**Done, by batch** (STATUS "Session 27" has the detail):
+1. **The cutting and the train:** the banks in the ground (`world/railCutting.js`); the set (`render/railwayCuttingModel.js`, `world/RailwayCuttingSite.js`).
+2. **The spike maul** (`config.weapons.spikeMaul`, the cleave, `smashPose`).
+3. **Dynamite** (`combat/Dynamite.js`, `combat/dynamiteFlight.js`).
+4. **The beat** (`encounters/RailwayCutting.js`, `data/railwayCutting.json`), then the family's lines on the hand-ins.
+
+**Not done or not checked:**
+- **The tablet**, for all of it. The set is 23-34k triangles, depending on the seed's banks, in one draw call plus about ten small ones; then 17 dead and the dynamite's fireballs.
+- **A real fight played by hand:** the headless runs killed the waves by debug. The wave sizes and timings are guesses (#506).
+- **The killdozer** isn't built, so the cowcatcher is a card and a lore item, as Milo's horn is.
+- **Dynamite elsewhere:** only the powder store gives it so far (the mineshaft is meant to as well).
+- **The sounds** are placeholders (synthesised), like every sound in the game.
+
+**To carry (Session 27):**
+- **Changing a clearing's ground:** a pure module that gives a lift at (x, z), added in `GroundField.heightFormula` after the railway's grade (`world/railCutting.js` `liftAt`; `GroundField.cutting` holds its frame). Everything that asks for the ground's height follows it. The ground's grid is 4 m, so shapes need to be 8 m or more across; dress the faces with set pieces laid on the real slope.
+- **Rooms in the world** (not interiors): `player.setPlatform({ room, aboard: true, x, z, y, hx, hz, rx, rz, fx, fz, roofY, blocks }, x, z)` keeps Tom inside a box with blocks (the coaches). `setPlatform(null, x, z)` puts him back on the ground. `RailwayCutting.board` and `leave` show how.
+- **A heavy melee weapon:** `swing: 'smash'` in its config uses the view model's `smashPose` instead of the slash. `cleave`, `cleaveKeep`, `slowSeconds`, `shake` and `thudShake` are all config. `weapon:swing` and `weapon:hit` now carry `id` (the director's noise and the sounds use it).
+- **A thrown weapon:** `kind: 'thrown'`. `Weapons` doesn't fire it; its own system reads RT (`combat/Dynamite.js`). `Weapons.setSlot(id, present)` keeps it in hand while there's something to throw.
+- **Something that goes up when it's knocked:** `game.dynamite.addHazard({ x, y, z, r, h, blast, onBlow })`. It's a target for shots and swings, and nearby blasts chain into it. `removeHazard(h)`.
+- **Extra targets** (`weapons.extraTargets`) take melee swings too, and the maul's cleave can catch them.
+- **The view model's muzzle flash** now needs a `muzzle` on the model (a weapon without one never flashes).
+- **My headless harness** (the scratchpad, not kept) is Sessions 25-26's: Playwright from the global install, presses through a wrapped `input.readKeyboardMouse`, `game.update` stepped by hand, then `game.renderer.render(dt)`. New in this session: close the night forecast with `nightWatch.forecastDue = false; nightWatch.closeForecast()` after `skipToPhase`; the torch with `flashlight.setOn(true)`; and Save and Continue as `saveAndQuit()`, wait for the reload, then `startScreen.activate('continue')`. Mind the cutting's boulders when lining up a test shot.
+
+## Before that: after Session 26 (Aaron's asks)
 
 1. **Start from a story point** (debug menu, first section; `debug/storyStart.js`): the outpost cleared (the compound to explore, or explored). It builds on Skip intro, sets the flags and loads each opening encounter's end state through its own `loadState`. Add later start points the same way (the plane's end, Junie home) when they'd help testing.
 2. **Milo redone** (`render/miloModel.js`): the clown a baggy, ruffled, wild-green-haired creepy clown with glowing eyes and too-long fingers, 1.45 m (a foot shorter: funnier); the man in loose clothes with a belt that fits, **1.75 m** (Aaron: it'll be funnier, trust him). The figure kit's masses take a `lo` flag (coarse spheres, for many small pieces). OPEN_QUESTIONS #476-479.
@@ -32,7 +70,7 @@
    - The encounter's timers run on game time (`later()`), not `setTimeout`.
    - Not checked: the tablet; a long stay at the barn at night by torch.
 
-## Just finished: Session 26 (on its own, Aaron at work): Junie taken, the Caller, the old church, the stairs, Junie home
+## Before that: Session 26 (on its own, Aaron at work): Junie taken, the Caller, the old church, the stairs, Junie home
 
 **Status:** all of it is on `main` and on `ccr-0f2c285b-r1djeq`, in six commits (one per batch, then the write-up). 976 tests pass and the build is clean. Checked headless; **none of it played on the tablet**. For Aaron: PLAYTEST rounds 51-55; my calls: OPEN_QUESTIONS #449-475; MORNING.md.
 
@@ -63,7 +101,7 @@
 - **Start from a story point** (debug menu, first section; `debug/storyStart.js`, Aaron's ask after Session 26): "Outpost cleared" (the compound to explore, or explored). It builds on Skip intro, sets the flags (`OUTPOST_CLEARED_FLAGS`) and loads each opening encounter's end state through its own `loadState`. When a later beat is done, add the next start point the same way (the flags, the encounters' states, what Tom carries, where he stands).
 - **My headless harness** (the scratchpad, not kept): Session 25's (draw with `game.renderer.render(dt)`, presses by wrapping `input.readKeyboardMouse`), plus Playwright loaded from the global install (`createRequire('/opt/node22/lib/node_modules/')`), `saveContinue()` (save and quit, wait for the reload, re-wrap, Continue), and waiting on cutscenes long enough (a 54 s clip outlasts a 40 s wait).
 
-## Just finished: Session 25, Aaron's play-through list, the giant moths, the crashed plane
+## Before that: Session 25, Aaron's play-through list, the giant moths, the crashed plane
 
 **Status:** all of it is on `main` and on `ccr-c4151e90-199ypg`, in eight commits (one per batch). 936 tests pass and the build is clean. I checked it headless, but **none of it has been played on the tablet**. For Aaron: PLAYTEST rounds 42-49; my calls: OPEN_QUESTIONS #412-445; MORNING.md. Aaron's notes as he gave them are in this file's previous version (commit 7f5de33).
 
@@ -204,6 +242,7 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 
 ### Open questions for Aaron
 
+- **Session 27:** #488-509 (the cutting and the train #488-492 and #507, the maul #497-499, dynamite #500-505 and #508, the beat #493-496, #506 and #509).
 - **Session 26:** #449-475 (Junie taken #449-456, the Caller #457-461, the old church #462-468, the stairs and Junie home #469-475).
 - **Session 25:** #412-445; #446-448 settled.
 - **Session 24:** #393-411: the Mothman (#393-397), the crashed plane's set (#398-402), giant moths (#403-404), Bigfoot and his cocoon (#405-407), Milo and his animals (#408-411: answered from the story; the blue suit settled). #404 settled (16 to 32).
@@ -220,10 +259,10 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 ## Session kickoff prompt for the next session
 
 ```
-You are picking up Witch Hunt after Session 26 and Aaron's follow-up asks (a debug story start, Milo redone, Milo's barn). Read HANDOVER.md first: its top section, "DO THIS FIRST", is the plan: Aaron's play-test notes (Milo's barn, the Junie stretch, the crashed plane), then the next mid-game encounter, the railway cutting (the last train of 1903, the spike maul, dynamite, the cowcatcher), with defaults for its open points.
-Ask Aaron for his notes first if they aren't here (rule 10) and fix those before building. Then build the railway cutting in batches: test each (npx vitest run, npx vite build), check it headless (look at screenshots critically and fix what reads badly), and push it to main before the next. Log your calls as numbered OPEN_QUESTIONS rows from #488.
-Aaron's direction: "minimum viable product is the enemy of fun." Build each beat as the scene it should be: a real set, staged cutscenes, sound for every moment that matters, lines that carry the dread.
-Read docs/DESIGN.md ("The railway cutting: the 1903 line", "Weapons", "Time capsule and the old church", "The Caller"), STATUS.md (Session 26 and after) and the code HANDOVER.md points to, as each batch needs them.
+You are picking up Witch Hunt after Session 27 (the railway cutting, the railroad spike maul, dynamite). Read HANDOVER.md first: its top section, "DO THIS FIRST", is the plan: Aaron's big play-test notes (Milo's barn, the Junie stretch, the crashed plane, the railway cutting, the maul, dynamite), then the next optional encounter, the sawmill (the chainsaw, the station's workbench, the head saw), with defaults for its open points.
+Ask Aaron for his notes first if they aren't here (rule 10) and fix those before building. Then build the sawmill in batches: test each (npx vitest run, npx vite build), check it headless (look at screenshots critically and fix what reads badly), and push it to main before the next. Log your calls as numbered OPEN_QUESTIONS rows from #510.
+Aaron's direction: "minimum viable product is the enemy of fun", and "detailed work rather than finish early; fun comes first". Build each beat as the scene it should be: a real set, staged cutscenes, sound for every moment that matters, lines that carry the dread.
+Read docs/DESIGN.md ("The sawmill", "Weapons", "Men in Black"), STATUS.md (Session 27 and after) and the code HANDOVER.md points to, as each batch needs them.
 Keep Aaron's rules: config and data first, complete files, small modules, no lights added or removed while playing, dull colours (the glare rule), one draw call where you can, tests for what you build, saves through story flags.
-Finish with the write-up (STATUS, PLAYTEST rounds from 57, OPEN_QUESTIONS, DESIGN as built, MORNING, HANDOVER rewritten for the session after). If you run out of room, say at the top of HANDOVER.md exactly where you stopped.
+Finish with the write-up (STATUS, PLAYTEST rounds from 60, OPEN_QUESTIONS, DESIGN as built, MORNING, HANDOVER rewritten for the session after). If you run out of room, say at the top of HANDOVER.md exactly where you stopped.
 ```

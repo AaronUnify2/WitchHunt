@@ -1,43 +1,32 @@
-# For Aaron (Session 26: Junie taken, the Caller, the old church, the stairs, Junie home)
+# For Aaron (Session 27: the railway cutting, the spike maul, dynamite)
 
-**The whole plan is built, Session 27's batch too.** The story now runs from the crashed plane to Junie home. It's on `main` in five batch commits. 976 tests pass and the build is clean. I checked it headless, on two seeds, with Save and Continue after every beat. None of it has been played on the tablet yet.
+**The railway cutting is built, with the railroad spike maul and dynamite.** It's on `main` in five batch commits plus the family's lines. 1031 tests pass and the build is clean. I checked it headless on three seeds, with Save and Continue. None of it has been played on the tablet yet.
 
 ## What to play
 
-**PLAYTEST rounds 51-55.** The quickest way in is the debug menu's **Story, radio & trail cams** section. Each beat has a "take me there" or "start it now".
+**PLAYTEST rounds 57-59.** The quickest way in: debug menu, **Story, radio & trail cams**, "Railway cutting: take me there". It puts you on the line, walking in.
 
-1. **Junie is taken.** After the plane, both endings end at dawn.
-   - Driven off: his last pass smashes your radio mid-line, and the HUD says RADIO DEAD.
-   - Then the family's account, and the south path camera's clip (D-pad down).
-   - At home, Junie's gone, and her rabbit is on the bunk.
-2. **The Caller.** Head south past the plane.
-   - Ellen breaks up, and the HUD says NO SIGNAL. After that, every voice is the Caller.
-   - Over the radio it begs and lies in the family's voices, with the tell: a faint red double on the letters, and a breath instead of the crackle.
-   - From the trees it calls your name, from behind you. Watch the mist move toward the voice against the wind, then roll at you.
-3. **The old church.**
-   - The sweep, then Junie's voice from inside the church and the cracked bell.
-   - Read the plaque and the row of eleven stones.
-   - Dig up the capsule with the shovel and read the 1903 account (Amos Pruitt drew the stairs).
-4. **The stairs.**
-   - A house's staircase alone in the woods, clean, lit by nothing.
-   - Climb it. In the place beyond, take the silent path three times.
-   - Junie's in the last clearing. Walk her home: she follows you, and the homecoming plays at the cabin door.
+1. **The cutting.** The line runs through a rise blasted in rock, with the last train of 1903 standing in it: the engine, the tender, two coaches with trees growing through them, and the baggage car off the rails. Ahead of the engine, a lantern sits on the ties, still burning. Try putting it out.
+2. **Climb aboard** the coaches (hold X at an end platform) and go through a town's belongings: the names on the church's stones are on the labels.
+   - Near the second coach, a man's voice calls from inside it for Levi. Go in.
+   - In the cab: the engineer's note. In the baggage car: the baggage checks.
+3. **The maul** is driven into a tie by the engine. Work it loose. It's an overhead smash that cleaves through crowds.
+4. **The powder store** is up the bank. Knock its bar off with the maul and take the six good sticks.
+   - The dead come up out of the ballast, in three waves.
+   - **Dynamite:** RT lights it, hold to cook it, let go to throw. The arc shows while it's lit. Hold it too long and it goes off in your hand, as you said.
+   - Shoot the store's sweating crates for a very big bang, from far enough away.
+5. **The cowcatcher:** knock it loose with the maul. It's armour for the killdozer one day.
 
-## Calls I made (OPEN_QUESTIONS #449-475)
+## Calls I made (OPEN_QUESTIONS #488-509)
 
 The ones I'd most like your eye on:
 
-- **The names** (all drafts): the 1903 town is Hemlock Gap, the church is Mount Zion, and Bigfoot is **the Keeper**. The night they were taken is October 13, 1903, so the capsule falls due this month, 100 years on.
-- **The texts** are drafts too: the plaque, the stones, the six-page account, and the Caller's 25 lines. Please rewrite anything.
-- **The clip** of Junie being taken runs 54 s. Is that too long?
-- **The Caller's tell, and the fog:** are they clear enough, or too subtle?
-- **The stairs are unlit,** so they look the same day or night. Is that eerie, or does it just look wrong?
-- **Save and quit with Junie following:** Continue puts you at home, so the homecoming plays straight away.
+- **The train's story** (#491, drafts): the families who'd had enough took the 7:10 out to Charleston on October 13, 1903. A lantern on the line stopped it in the cut, the voice called from both banks, and eleven went up into the trees. That makes "her father was standing beside me" happen on the train.
+- **Dynamite in your hand** (#502) does 70 damage, not the full blast: it hurts badly but doesn't always end the run. Too soft?
+- **When the dead come up, and how many** (#506): 17 in three waves. I couldn't play that fight by hand headless.
+- **The maul's weight** (#497): one blow per citizen, a 1.15 s swing. Too slow?
+- **The Caller here** (#495): Amos for Levi, then a girl asking for her doll. Too much, or not enough?
 
-## Since then (your asks)
+## Next
 
-- **Debug: Start from a story point:** the outpost cleared, with the compound to explore or explored.
-- **Milo redone:** a baggy, ruffled, wild-green-haired creepy clown with faintly glowing eyes, 1.45 m. The man is 1.75 m, in loose clothes with a belt that fits.
-- **Milo's barn** is built: PLAYTEST round 56.
-
-Next is your notes (the barn, the Junie stretch, the plane), then **the railway cutting**.
+Your big play-test notes, then **the sawmill** (the chainsaw, the station's workbench, the head saw).

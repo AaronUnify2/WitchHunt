@@ -1,8 +1,56 @@
 # Open questions
 
+**Session 27 (Nov 12):** the railway cutting (the cutting in the ground, the last train of 1903, its beat), the railroad spike maul and dynamite, all from HANDOVER's defaults and your answers (blow up in hand: yes; scarce; the sawmill next). My calls are #488-509 below.
+
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 27: the railway cutting, the spike maul, dynamite
+
+Your answers at the start: skip the notes for now, the defaults, **dynamite blows up in your hand**, **scarce**, the sawmill next. Where I had to choose:
+
+**Batch 1: the cutting and the train (PLAYTEST round 57)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 488 | **A cutting in the ground.** | The clearing on the line (wherever the seed puts it) now has two banks either side of the line, 5.6 m on the south side and 7.2 m on the north, with steep faces in blasted rock. Both ends taper down to the line's level (the cutting's mouths). It's in the terrain itself (`GroundField`), so trees, feet and the dead follow it. The map didn't move, so saves keep. | `config.map.railway.cutting`, `world/railCutting.js` |
+| 489 | **The way in.** | Every pathway into the clearing comes down through a gully cut in the bank (the old wagon roads), so no seed walls you out. The powder store goes on the bank that fewer pathways come down, at the end away from them. The navvies' timber steps go up the face beside it. | `world/railCutting.js` `gullyKeep`, `world/RailwayCuttingSite.js` `storePlace` |
+| 490 | **The train.** | A 4-4-0 engine heading east (its cowcatcher and a sheet of boiler plate hanging loose), the tender, two coaches in faded Tuscan red, and the baggage car off the rails at the back, leaning on the bank. Saplings grow up through the cab, the coal and the first coach. About 23,000-34,000 triangles, depending on the seed's banks: one draw call, plus small pieces that change in play. | `config.railwayCutting.train`, `render/railwayCuttingModel.js` |
+| 491 | **The train's story** (drafts, all of it). | The night of October 13, 1903: the families who'd had enough took the 7:10 out to Charleston. In the cut the engineer found a lantern set down on the ties, lit, with no one by it, and stopped. Dub Combs, the brakeman, went ahead with a lamp and didn't come back. Then the voice called from both banks; eleven got down and went up into the trees. The rest walked home at first light. This makes the pastor's "her father was standing beside me" happen on the train. Rewrite anything. | `data/railwayCutting.json`, `papers.json` (`engineersNote`, `luggageLabels`) |
+| 492 | **The lantern on the line.** | It's still burning, 123 years on: a warm glow with a soft halo (no light added). Try to put it out and it won't. At night it's the first thing you see down the line. | `config.railwayCutting.look.flame` |
+| 507 | **The telegraph line through the cutting.** | Its poles run along the north bank's top, behind the powder store, instead of down the rock face. | `render/Railway.js` `buildPoles` |
+
+**Batch 2: the spike maul (round 58)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 497 | **The maul's numbers.** | 65 damage (a level 1 citizen dies in one; police and army take two), a 1.15 s swing (the shovel's is 0.7), 2.5 m reach. It cleaves through up to three in its arc, each one after the first taking 65% of the last. A miss thuds into the ground with a jolt. A swing slows you for 0.75 s and carries 9 m. | `config.weapons.spikeMaul` |
+| 498 | **The swing.** | An overhead smash: a slow lift over the right shoulder, a fast drop to the middle of the view, a jolt where it lands, then hauled back. Every swing is the same blow (the shovel's alternate). It has its own whoosh, crunch and thud. | `config.viewModel.smash` |
+| 499 | **Where it is, and what else it does.** | Driven into a loose tie beside the engine; hold X to work it loose. It's also what knocks rusted iron off: the powder store's bar and the cowcatcher's bolts both need it (holding X with it swings it, clang by clang). | `encounters/RailwayCutting.js` |
+
+**Batch 3: dynamite (round 59)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 500 | **The controls.** | Pick it on the weapon cross's down arm (or RB / LB to the explosive kind). RT strikes a match and lights the fuse. The fuse burns while you hold (cook it); let go and it's thrown. A tap lights it and throws at once. The fuse is 3.4 s; the prompt bar shows what's left, and "THROW IT!" for the last 1.1 s, with the hiss climbing. | `config.dynamite` |
+| 501 | **The arc.** | While it's lit, the arc is drawn as dots, with a ring where it'll land. It bounces a little, rolls a metre or two and glances off trunks, walls and the dead. | `config.dynamite` (`throwSpeed`, `gravity`, `restitution`) |
+| 502 | **Blowing up in your hand** (your yes). | Hold it past the fuse and it goes off where you stand. The dead around you get the full blast, but it does **70 to you** (armour first), not the full 110, so it hurts badly without always ending the run. Too soft? | `config.dynamite.inHandDamage` |
+| 503 | **Switching away with it lit.** | You drop it at your feet, still burning. | `combat/Dynamite.js` `drop()` |
+| 504 | **Scarce** (your answer). | You carry eight at most. Six good sticks in the powder store. When the last one's thrown, your previous weapon comes back. | `config.dynamite.carryMax`, `config.railwayCutting.encounter.sticks` |
+| 505 | **A hard knock.** | A lit stick lying there goes off at once if it's shot or struck (the maul's swing counts). The store's **sweating crates** are a much bigger bang (11 m, 420 damage) if anything knocks them or another blast reaches them. Lure the dead to the store and shoot the crates; mind your own distance. Sticks in your pack can't be set off. | `config.railwayCutting.encounter.crate`, `Dynamite.addHazard` |
+| 508 | **What the HUD shows.** | "N sticks" where the ammo goes, "Dynamite ×N" in the items line, and the count on the weapon cross. | `ui/Hud.js`, `ui/WeaponCross.js` |
+
+**Batch 4: the beat (round 57)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 493 | **The coaches' insides.** | Climb aboard at an end platform (hold X) and you're in a room, as in the storm shelter: the benches, the racks, the stove, the town's things. Climb down at the end. The second coach's front door is stuck shut. | `config.railwayCutting.encounter.boardEnds` |
+| 494 | **What's to find.** | The Tullys' trunk, Mary Sizemore Tate's carpetbag (coach 1), Levi Pruitt's bag with a photograph of Amos and Levi, and the conductor's punch (coach 2). These are lines of text only. **The engineer's note** in the cab and **the baggage checks** off the baggage car (every surname on the church's stones) are lore items with papers. **Hattie Bell's doll** is a lore item too. | `data/railwayCutting.json` |
+| 495 | **The Caller here.** | Near the second coach, a man's voice from inside it: Amos calling for Levi. Once you're aboard, Amos again from up the bank ("Mama's up here with the lantern"). Take the doll and a girl's voice asks for her Polly. When the dead rise: "There's room on the train." The captions say "A man's voice" and "A girl's voice". | `dialogue.json` `caller.cutting.*`, `config.story.speakers` |
+| 496 | **Hattie Bell's doll.** | Sitting up on a seat facing the door. Handed in at home: Ellen wants it out of sight; once Junie's home, she says its name is Polly, "I know because she told me." | `lore.json` `hattieDoll`, `dialogue.json` `cutting.*` |
+| 506 | **When the dead come up.** | 3 s after the store's bar is knocked off, or straight after the cowcatcher's bolts (that much noise), or if dusk falls with you in the cut. The ballast shifts first, then three waves rise out of the ground: 6 on the floor around you, 6 up the line from both mouths, then 5 round the foot of the steps. A wave comes after 9-10 s, or as soon as two of the last are left. Save, or die, mid-fight and it starts again when you come back. | `config.railwayCutting.encounter.waves` |
+| 509 | **The cowcatcher and boiler plate.** | Hold X at the engine's front with the maul (clang, clang, a bolt snaps): an inspect card and a lore item, armour for the killdozer one day. It's not bolted onto anything yet. | `lore.json` `cowcatcher` |
 
 ## After Session 26: Milo's barn (Aaron: "can it pretty please be the Milo encounter?")
 

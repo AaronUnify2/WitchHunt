@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,34 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 57: the railway cutting (Session 27; OPEN_QUESTIONS #488-496, #506-509).** Debug menu, **Story, radio & trail cams**, "Railway cutting: take me there" (it puts you on the line, walking in). "start it again" clears it; "the dead come up now" skips to the fight.
+- [ ] **The cutting:** rock walls either side of the line, the banks running back into the trees, a gully where each pathway comes down. Does it read as a cutting blasted through a rise?
+- [ ] **The sweep:** along the coaches, past the tender and the engine, down to the lantern on the ties, still burning.
+- [ ] **The train:** the engine (its cowcatcher, a sheet of boiler plate hanging off it), the tender, two coaches with trees growing through them, and the baggage car off the rails. Listen: now and then it ticks and groans as if it were cooling.
+- [ ] **Climb aboard** a coach at an end platform (hold X). Search the Tullys' trunk and Mary Sizemore Tate's bag in the first coach. Climb down at the end.
+- [ ] **The Caller:** walk toward the second coach. A man's voice from inside it, calling for Levi. Go in. Nobody's there, only Levi's bag (a photograph) and a rag doll sitting up on a seat facing the door. Stay a moment: he calls again from up the bank. Take the doll: a girl's voice.
+- [ ] **The cab:** the engineer's note. **The baggage car:** the baggage checks, with every name on the church's stones. Read both.
+- [ ] **The lantern:** try to put it out.
+- [ ] **The maul:** by the engine, driven into a tie. Work it loose.
+- [ ] **The powder store** up the bank (the timber steps go up beside it): knock the bar off with the maul. Take the six good sticks.
+- [ ] **The dead come up** out of the ballast a few seconds later, in three waves. Try the maul on a crowd and the dynamite on the next wave. Try luring them to the store and shooting the crates (from far enough away).
+- [ ] **The cowcatcher:** hold X at the engine's front with the maul. A card: armour for the dozer one day.
+- [ ] **At home:** hand in the note, the checks, the doll and the cowcatcher, then talk to the family.
+- [ ] **Save and quit** mid-fight and Continue: the fight starts again when you go back. After the fight, everything stays as you left it.
+- [ ] By torch at night: the coaches, the lantern down the line. The frame rate in the cutting with the dead up.
+
+**Round 58: the railroad spike maul (Session 27; #497-499).** It's in the cutting, or debug menu, **Player**, "Give the railroad spike maul".
+- [ ] **The smash:** a slow lift, a fast drop, a jolt where it lands. Too slow, too heavy? The rest pose over your shoulder.
+- [ ] **One blow** drops a citizen; police and army take two. It cleaves: swing into a crowd and up to three go down or stagger. A miss thuds into the dirt.
+- [ ] It slows you for a moment after each swing, and the dead hear it further off. On the weapon cross's melee bar; RB / LB brings it out with the melee kind.
+
+**Round 59: dynamite (Session 27; #500-505).** Six sticks in the powder store, or debug menu, **Player**, "Give dynamite".
+- [ ] **Light it:** pick it on the weapon cross (down arm), press RT: a match, the fuse spits. Hold to cook it. The prompt bar shows the fuse; "THROW IT!" near the end.
+- [ ] **The arc:** dots and a landing ring while it's lit. Let go: it lands about where the ring was, bounces, rolls a little.
+- [ ] **Hold it too long:** it goes off in your hand. It hurts a lot (70), but doesn't always kill you. Too soft?
+- [ ] **Shoot a lit stick** lying on the ground: it goes off at once. Switch weapons with one lit: you drop it at your feet.
+- [ ] Is it fun? Scarce enough (eight carried at most)? Readable on the tablet?
 
 **Round 56: Milo's barn (your ask; OPEN_QUESTIONS #480-487).** Debug menu, **Story, radio & trail cams**, "Milo's barn: take me to the lane".
 - [ ] **The siege:** the sweep over the barn ringed by the dead; Milo in the yard throwing knives, bounding, chuckling. Help him or watch. Wyatt and Ellen on the radio (north of the comms line).

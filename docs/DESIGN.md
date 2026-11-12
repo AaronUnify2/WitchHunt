@@ -175,9 +175,9 @@ The original design, kept for reference: the player starts each run with the **s
 | SMG (MP5-style) | Full auto; fires pistol rounds | **Wherever there are dead Men in Black** (Aaron, Nov 8): the first such place in a run gives it, so the sawmill's dead agents can, and on the story spine the Car Armory always does. Debug only for now | 10 per round |
 | Auto shotgun (AA-12-style) | Full auto, a 20-shell drum; fires shotgun shells | *Proposed (Nov 8):* the moonshiners' holler. Debug only for now | 8 pellets × 6 |
 | Flare gun | Light; lures zombies; a direct hit conks | Always to hand (flares are found) | 18 on a hit |
-| Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). Designed, not built | Config |
+| Railroad spike maul (melee) | A heavy sledge: slower than the shovel, hits much harder | The railway cutting (optional; Nov 8). **Built (Session 27)**: an overhead smash that cleaves through up to three (`config.weapons.spikeMaul`) | Config |
 | Chainsaw (melee) | Shreds up close; no fuel. Loud (pulls every zombie nearby), slows Tom while it revs, overheats if held, and dulls (a sharpness gauge; sharpen at the station's workbench for scrap) | The sawmill (optional; Nov 8). Designed, not built | Config |
-| Dynamite (thrown) | The first handheld throwable: small, unstable, short-fused crowd clearing. **Not a hut charge** | The railway cutting's powder store, the mineshaft (optional; Nov 8). Designed, not built | Config |
+| Dynamite (thrown) | The first handheld throwable: small, unstable, short-fused crowd clearing. **Not a hut charge** | The railway cutting's powder store, the mineshaft (optional; Nov 8). **Built (Session 27)**: lit with RT, cooked, thrown on a drawn arc; it blows up in your hand if held too long; scarce (`config.dynamite`) | Config |
 | Explosive charge | Remote-detonated blast | Built: the military outpost's armoury (one). Designed: the Car Armory's restocking crate (the mineshaft now gives dynamite instead; Nov 8). Debug menu | Config |
 
 - **Alien shotgun shells:** 150% of a normal shell's damage, with a purple muzzle flash. From aliens; the first come off the crashed plane's grey. *(Built Session 20; debug menu only until the plane.)*
@@ -1561,6 +1561,17 @@ A quiet trap puzzle, a break from the busier north. Serious in tone.
 - **Dynamite:** an old powder store from blasting the cutting holds sweating dynamite, the game's first handheld throwables.
 - **No gun.**
 - **Killdozer part:** the locomotive's **cowcatcher and boiler plate**: armour.
+- **As built (Session 27;** `world/railCutting.js`, `render/railwayCuttingModel.js`, `world/RailwayCuttingSite.js`, `encounters/RailwayCutting.js`, `data/railwayCutting.json`, `config.railwayCutting`; OPEN_QUESTIONS #488-509; PLAYTEST round 57**):**
+  - **The cutting:** in the ground. Two banks either side of the line, with blasted rock faces, tops fading into the forest and the ends tapering to the mouths. A gully for every pathway in.
+  - **The train:** the last train out of Hemlock Gap, No. 4, the 7:10 to Charleston, October 13, 1903. The engine (a 4-4-0), the tender, two coaches you climb aboard, and the baggage car off the rails. A lantern set down on the ties ahead of the engine, still burning, that won't go out.
+  - **The story it tells** (drafts): the engineer stopped for the lantern; the brakeman went ahead with a lamp and didn't come back; the voice called from both banks and eleven went up into the trees; the rest walked home at first light.
+  - **The finds:** the searches (the Tullys' trunk, Mary Sizemore Tate's bag, Levi Pruitt's bag with a photograph of Amos and Levi). The engineer's note in the cab and the baggage checks in the baggage car (lore and papers). Hattie Bell's doll (lore).
+  - **The Caller:** Amos calling for Levi from inside the second coach, then from up the bank; a girl's voice asking for her doll; "There's room on the train" as the dead rise.
+  - **The maul** in a tie by the engine.
+  - **The powder store:** its bar knocked off with the maul. Six good sticks of dynamite, and the sweating crates, which go up if knocked.
+  - **The fight:** the dead come up out of the ballast in three waves, once the store's opened, the cowcatcher's knocked loose, or dark falls with Tom in the cut.
+  - **The cowcatcher and boiler plate,** knocked loose with the maul: a card and a lore item (the killdozer isn't built).
+  - **The radio:** none; it's south of the comms line.
 
 #### The sawmill (optional; rank 3)
 
@@ -2205,8 +2216,8 @@ Building and styling alternate, so the game looks better as it grows instead of 
 | 24 | Graphics Engineer / Technical Artist | Models for the next stretch: the Mothman, giant moths, Bigfoot, Milo (and his animals), the crashed plane's set. **Done (Nov 10)** | Part of M17 |
 | 25 | Level & Encounter Designer + AI Programmer | The crashed plane (the grey's AI, the quick draw) and the Mothman at the crash site. **Done (Nov 11)** | M11 (part 1) |
 | 26 | Level & Encounter Designer + Narrative Designer | Junie taken, the Caller, comms in the south, the old church and the time capsule; their lines. **Done (Nov 11), with Session 27's work too** | M11 (part 2) |
-| 27 | Level & Encounter Designer | The stairs and the place beyond; Junie home. **Done in Session 26**: Session 27 is Aaron's notes on it, or Session 28 moves up | M11 (part 3) |
-| 28 | Level & Encounter Designer + AI Programmer | Optional: the railway cutting (spike maul, dynamite) and Milo's barn | M11 (part 4) |
+| 27 | Level & Encounter Designer | The stairs and the place beyond; Junie home. **Done in Session 26**. Session 27 built Session 28's railway cutting instead (Aaron's notes wait for his big play-test) | M11 (part 3) |
+| 28 | Level & Encounter Designer + AI Programmer | Optional: the railway cutting (spike maul, dynamite) and Milo's barn. **Done**: Milo's barn after Session 26, the railway cutting in Session 27 | M11 (part 4) |
 | 29 | QA & Balance | Play-test beats 1–5 and the two optionals | QA |
 | 30 | Level & Encounter Designer + AI Programmer | The dozer on the cordon strip and the bug-zapper night | M12 (part 1) |
 | 31 | Level & Encounter Designer + AI Programmer | Optional: the mineshaft (the turret cart, giant moths) | M12 (part 2) |
