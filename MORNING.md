@@ -1,6 +1,6 @@
 # For Aaron
 
-**While you sleep (set up Nov 12):** a scheduled task wakes me every three hours to build the next item of the build queue in HANDOVER.md (ten items, the family's plan through to the hut and the ending). Each session adds its own section above this line's successor, newest first. Everything is built from DESIGN.md with its proposals taken as defaults and logged in OPEN_QUESTIONS for your edit. To stop it: tell me, or turn off "Witch Hunt build queue" in your scheduled tasks.
+**The build queue (set up Nov 12):** items 1 to 7 of HANDOVER.md's queue (the family's plan through to the ute chase and the garage) are being built as scaffolding, one about every 70 minutes: each beat playable start to end with placeholders, draft lines and a "Continue story" item in the debug menu, ready for a debug and design session with you. Each adds a section here, newest first.
 
 # Session 33: your play-through notes, part 2
 
