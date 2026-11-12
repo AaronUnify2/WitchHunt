@@ -95,13 +95,12 @@ describe('Junie is taken (encounters/JunieTaken.js)', () => {
   it('its flags, lines and clip are all there', () => {
     for (const f of ['junieTaken', 'familyAccount', 'junieClipSeen', 'radioSmashed', 'radioMended', 'junieHome', 'blessingBuried']) expect(flagIds).toContain(f);
     for (const id of ['plane.smashed.ellen', 'junie.home.wyatt', 'junie.account.1', 'junie.spare.wyatt', 'junie.after.1', 'junie.rabbit.wyatt', 'hint.findJunie']) expect(lineById.has(id)).toBe(true);
-    // The account's chain runs to Wyatt patching the clip through, and Junie's slot on it is silent.
+    // The account's chain runs to Wyatt patching the clip through.
     const chain = [];
     for (let l = lineById.get('junie.account.1'); l; l = lineById.get(l.next)) chain.push(l);
     expect(chain.length).toBeLessThanOrEqual(12); // Dialogue.show plays up to twelve
-    const silent = chain.find((l) => l.speaker === 'junie');
-    expect(silent.channel).toBe('caption');
-    expect(/[A-Za-z0-9]/.test(silent.text)).toBe(false); // no letters: no blips
+    // Session 33 (Aaron: trim it): four lines; Junie's silent slot on the channel went with the cut.
+    expect(chain.map((l) => l.id)).toEqual(['junie.account.1', 'junie.account.2', 'junie.account.6', 'junie.account.9']);
     // The family's lines after: never leaving the fence after dark again.
     const faces = dialogue.lines.filter((l) => l.channel === 'face' && l.when?.all?.includes('familyAccount') && !l.cued);
     expect(faces.length).toBeGreaterThanOrEqual(2);

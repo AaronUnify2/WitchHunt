@@ -766,6 +766,12 @@ export const config = {
     enemyDotPixels: 3,
   },
 
+  // Session 33 (Aaron's play-through, part 2): where there's no map to be had. Inside these interiors the
+  // minimap is a black disc and the full map is refused with these words (ui/MapUi.js noMapIn).
+  maps: {
+    noneIn: { placeBeyond: 'No map of this place', mineshaft: "The map's no use down here" },
+  },
+
   // Full-screen map (D-pad up / M)
   mapScreen: {
     marginVmin: 5, // TV-safe margin
@@ -4449,6 +4455,7 @@ export const config = {
     voices: { junie: 1.6, ellen: 1.22, wyatt: 1.04, tom: 0.84 }, // the callerVoice sound's pitch for whose voice it wears
     avoidRepeat: 9, // the last this many lines aren't picked again
     backCooldown: 150, // seconds: the family's "we've got you again" isn't said more often than this
+    quiet: { following: true, stairsRadius: 70 }, // Session 33 (Aaron): silent the whole walk home while Junie's following; and once she's been found, never again within this many metres of the stairs
     // The fog that moves wrong round a call from the trees (render/GroundMist.js pull):
     // first the mist near Tom streams toward the voice, against the wind (inhale); then
     // a bank rolls from it toward him (exhale). Seconds for each, and how strongly.

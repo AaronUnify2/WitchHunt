@@ -9,6 +9,12 @@ import { Minimap } from './Minimap.js';
 import { MapScreen } from './MapScreen.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
+// Session 33 (Aaron: the maps kept showing the forest in the place beyond; "black it out"; the mine too):
+// the words for "no map here" inside interior `id`, or null where the maps work. noneIn: config.maps.noneIn.
+export function noMapIn(noneIn, id) {
+  return (id && noneIn?.[id]) || null;
+}
+
 export class MapUi {
   constructor(cfg, world, bus) {
     this.cfg = cfg;
@@ -84,12 +90,18 @@ export class MapUi {
   // them all, fog or not; null for the normal red dots.
   // witch (M7 debug): { x, z, state } drawn on both maps, or null.
   update(dt, input, player, enemies, canToggle, sigils = null, tierColors = null, witch = null) {
-    if (canToggle && (input.wasPressed('map') || (this.screen.isOpen && input.wasPressed('menuBack')))) {
+    // Session 33: this.dark (set by Game each frame: noMapIn) blacks the minimap out, refuses the full map
+    // with its words, and stops the fog of war lifting from the forest far overhead.
+    const dark = this.dark ?? null;
+    this.minimap.dark = Boolean(dark);
+    if (dark && !this.screen.isOpen) {
+      if (canToggle && input.wasPressed('map')) this.bus.emit('map:refused', { text: dark });
+    } else if (canToggle && (input.wasPressed('map') || (this.screen.isOpen && input.wasPressed('menuBack')))) {
       this.screen.toggle();
       this.minimap.show(!this.screen.isOpen);
       this.bus.emit(this.screen.isOpen ? 'map:opened' : 'map:closed');
     }
-    this.fog.update(player.position.x, player.position.z);
+    if (!dark) this.fog.update(player.position.x, player.position.z);
     this.minimap.update(dt, player, enemies, sigils, tierColors, witch);
     this.screen.update(dt, player, enemies, `seen ${Math.round(this.fog.revealedFraction * 100)}%`, sigils, tierColors, witch);
   }

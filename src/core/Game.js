@@ -57,7 +57,7 @@ import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
 import { ModelViewer } from '../debug/ModelViewer.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
-import { MapUi } from '../ui/MapUi.js';
+import { MapUi, noMapIn } from '../ui/MapUi.js';
 import { StoryProgress } from '../story/StoryProgress.js';
 import { Gates } from '../world/Gates.js';
 import { Campsite } from '../encounters/Campsite.js';
@@ -739,7 +739,7 @@ export class Game {
     });
     // The Caller: south of the comms line, a voice in the family's (story/Caller.js).
     this.caller = new Caller(this.cfg, this.bus);
-    this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo, interiors: this.interiors });
+    this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo, interiors: this.interiors, stairsAt: () => this.stairsSite?.place ?? null });
     // The old church and the time capsule (encounters/OldChurch.js).
     this.church = new OldChurch(this.cfg, this.bus);
     this.church.init({
@@ -986,6 +986,7 @@ export class Game {
     const cfg = this.cfg;
     this.mapUi = new MapUi(cfg, this.world, this.bus);
     this.mapUi.init(root);
+    this.bus.on('map:refused', ({ text }) => this.toast.show(text)); // Session 33: no map in the place beyond or the mine
     this.toast = new Toast(cfg.ui);
     this.toast.init(root);
     // Session 15b (Aaron): control prompts in their own slot under the toast
@@ -1786,6 +1787,7 @@ export class Game {
     const enemies = this.combat.enemies;
     const tierColors = enemies.showTiers ? this.cfg.zombies.lod.tierColors : null;
     const witchOnMap = this.witch.showOnMap ? this.witch : null;
+    this.mapUi.dark = noMapIn(this.cfg.maps.noneIn, this.interiors.id);
     this.mapUi.update(dt, controls, this.player, enemies.living, running && !this.debugMenu.isOpen && this.combat.alive && !locked && !cs.active && !held, sigilsOnMap, tierColors, witchOnMap);
     // M8: a cutscene draws from its own camera, at its own hour (the grade and sky).
     // Session 13: the model viewer draws from its own camera, at its light's hour.

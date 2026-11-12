@@ -85,6 +85,17 @@ export function fogAt(t, f) {
   return { inhale: Math.max(0, inhale), exhale: Math.max(0, exhale) };
 }
 
+// Session 33 (Aaron's play-through, part 2: "after I rescued Junie, the caller was still talking to me while
+// I was at the stairs"; and: quiet the whole way home while she's following). Is the Caller silent now?
+//  - while Junie's walking home with Tom (found, not yet home): everywhere;
+//  - once she's been found, within q.stairsRadius of the stairs, for good: that place is done with.
+// q: config.caller.quiet. stairs: { x, z } or null.
+export function callerQuiet({ found, home, stairs, px, pz }, q) {
+  if (!found) return false;
+  if (!home && q.following) return true;
+  return Boolean(stairs) && Math.hypot(px - stairs.x, pz - stairs.z) < q.stairsRadius;
+}
+
 export class Caller {
   constructor(cfg, bus) {
     this.cfg = cfg;
@@ -94,7 +105,8 @@ export class Caller {
     this.fog = null; // the pull on the mist while a call from the trees plays (Atmosphere.wrongFog)
   }
 
-  // ctx: { dialogue, subtitles, comms, progress, player, clock, sfx, atmosphere, demo, interiors, rng() }.
+  // ctx: { dialogue, subtitles, comms, progress, player, clock, sfx, atmosphere, demo, interiors, rng(),
+  // stairsAt(): the stairs' { x, z } or null (Session 33: its quiet zone) }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
@@ -123,7 +135,13 @@ export class Caller {
 
   get active() {
     // Not inside an interior (the place beyond has its own voice).
-    return this.comms?.state === 'south' && this.has(this.kc.needs) && !this.demo?.active && !this.interiors?.inside;
+    return this.comms?.state === 'south' && this.has(this.kc.needs) && !this.demo?.active && !this.interiors?.inside && !this.quiet;
+  }
+
+  // Session 33: nothing from it on the walk home with Junie, nor at the stairs after (callerQuiet).
+  get quiet() {
+    const p = this.player.position;
+    return callerQuiet({ found: this.has('junieFound'), home: this.has('junieHome'), stairs: this.stairsAt?.() ?? null, px: p.x, pz: p.z }, this.kc.quiet);
   }
 
   // ---- crossing the line ----------------------------------------------------------------------
@@ -157,6 +175,7 @@ export class Caller {
       const n = this.comms.northOfLine();
       if (n > 0 && n < this.cfg.comms.warnBefore) this.dialogue.play('comms.warn.ellen');
     }
+    if (this.call && this.quiet) this.endCall(); // Session 33: a call under way stops the moment she's found
     if (this.call) this.updateCall(dt);
     if (!this.active || !canSpeak) return;
     if (this.call || this.subtitles?.busy) return;
@@ -198,6 +217,7 @@ export class Caller {
   // A call from a place (a story beat's: inside the old church). dirText:
   // the words under the line, else which way it is from Tom.
   callFrom(at, id = null, dirText = null) {
+    if (this.quiet) return false;
     const pick = id ?? pickFresh(this.pools.trees, this.recent, this.rng());
     if (!pick) return false;
     this.remember(pick);

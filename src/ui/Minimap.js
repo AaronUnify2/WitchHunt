@@ -6,6 +6,8 @@
 
 import { drawQuadMarker, drawObjectiveMarker, MAP_COLORS, drawClearingMarker, drawPlayerArrow, drawSigilMarker, drawWitchMarker, drawVehicleMarker, drawTrailCams, vehicleShown, vehicleColor, updateFogCanvas, fogRect } from './mapImage.js';
 
+export const MAP_DARK = { fill: '#040506', rim: 'rgba(240, 232, 208, 0.28)' };
+
 export class Minimap {
   constructor(minimapConfig) {
     this.cfg = minimapConfig;
@@ -49,7 +51,8 @@ export class Minimap {
     if (this.timer > 0) return;
     this.timer = this.cfg.refreshPerSecond > 0 ? 1 / this.cfg.refreshPerSecond : 0;
     this.resize();
-    this.draw(player, enemies, sigils, tierColors, witch);
+    if (this.dark) this.drawDark();
+    else this.draw(player, enemies, sigils, tierColors, witch);
   }
 
   resize() {
@@ -61,7 +64,27 @@ export class Minimap {
     }
   }
 
+  // Session 33 (Aaron: "black it out"): where there's no map to be had (the place beyond, the mine below):
+  // a black disc and its rim. No ground, no markers, no arrow, no N.
+  drawDark() {
+    const ctx = this.ctx;
+    const size = this.canvas.width;
+    const half = size / 2;
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = MAP_DARK.fill;
+    ctx.beginPath();
+    ctx.arc(half, half, half, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = MAP_DARK.rim;
+    ctx.lineWidth = Math.max(1, size * 0.012);
+    ctx.beginPath();
+    ctx.arc(half, half, half - ctx.lineWidth / 2, 0, Math.PI * 2);
+    ctx.stroke();
+    this.north.style.display = 'none';
+  }
+
   draw(player, enemies, sigils, tierColors, witch) {
+    this.north.style.display = '';
     const ctx = this.ctx;
     const size = this.canvas.width;
     const half = size / 2;

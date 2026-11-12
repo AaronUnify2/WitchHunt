@@ -6,6 +6,8 @@
 // The AudioContext can only start after a user gesture: call unlock()
 // from the tap that starts the game.
 
+import { staticCallPlan } from './staticCall.js';
+
 const NOISE_SECONDS = 1;
 
 export class Sfx {
@@ -88,6 +90,14 @@ export class Sfx {
     src.connect(filter).connect(env).connect(dest);
     src.start(t, Math.random() * NOISE_SECONDS);
     src.stop(t + seconds + 0.02);
+  }
+
+  // Session 33: a voice of radio static (audio/staticCall.js): its bursts, each at its delay.
+  staticCall(dest, pitch, long) {
+    for (const b of staticCallPlan(pitch, long)) {
+      if (b.delay <= 0) this.noiseBurst(dest, b);
+      else setTimeout(() => this.ready && this.noiseBurst(dest, b), b.delay);
+    }
   }
 
   tone(dest, { seconds, wave = 'sine', freq, endFreq = freq, gain = 1, attack = 0.005, vibrato = 0 }) {
@@ -221,13 +231,12 @@ const ENGINE_VOICES = {
 
 const RECIPES = {
   // Session 22 (spikes): placeholders until real recordings.
-  // Junie calling "Da-ad?" down a path in the place beyond: two falling notes,
-  // a child's pitch. Not muffled inside (it's in there with him).
+  // Junie calling "Da-ad?" down a path in the place beyond. Session 33 (Aaron): radio static in the shape of
+  // the call, not notes (audio/staticCall.js). Not muffled inside (it's in there with him).
   junieCall(s, pos) {
-    const o = s.out(pos?.x, pos?.z, 0.55, 60);
+    const o = s.out(pos?.x, pos?.z, 0.6, 60);
     o.gain.value /= s.muffled || 1;
-    s.tone(o, { seconds: 0.32, wave: 'triangle', freq: 620, endFreq: 560, gain: 0.32, attack: 0.04, vibrato: 7 });
-    setTimeout(() => s.ready && s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 700, endFreq: 520, gain: 0.3, attack: 0.05, vibrato: 9 }), 360);
+    s.staticCall(o, 1.6, false);
   },
   // A big flyer's wingbeat: a low, soft thump of air.
   wingbeat(s, pos) {
@@ -697,21 +706,11 @@ const RECIPES = {
     const o = s.out(undefined, undefined, 0.4);
     s.tone(o, { seconds: 1.6, wave: 'sine', freq: 46, endFreq: 41, gain: 0.1, attack: 0.4 });
   },
-  // A voice from the trees: the Caller calling Tom from a direction. Two
-  // breathy falling notes (a name, "To-om"), formant-filtered noise over a
-  // faint tone, panned to where it comes from, carrying a long way. pos.pitch:
-  // whose voice (a child's is higher).
+  // A voice from the trees: the Caller calling Tom from a direction. Session 33 (Aaron: static here too,
+  // "we're going for creepy"): a handset's hiss with nobody holding it, keyed in the shape of a name
+  // ("To-om"), panned to where it comes from, carrying a long way. pos.pitch: whose voice (a child's is thinner).
   callerVoice(s, pos) {
-    const o = s.out(pos?.x, pos?.z, 0.75, pos?.range ?? 110);
-    const f = pos?.pitch ?? 1;
-    const note = (delay, from, to, len) =>
-      setTimeout(() => {
-        if (!s.ready) return;
-        s.noiseBurst(o, { seconds: len, type: 'bandpass', freq: 900 * f, endFreq: 650 * f, q: 3.5, gain: 0.42, attack: 0.08 });
-        s.tone(o, { seconds: len, wave: 'triangle', freq: from * f, endFreq: to * f, gain: 0.07, attack: 0.07, vibrato: 4 });
-      }, delay);
-    note(0, 330, 300, 0.42);
-    note(520, 280, 210, 0.75);
+    s.staticCall(s.out(pos?.x, pos?.z, 0.8, pos?.range ?? 110), pos?.pitch ?? 1, true);
   },
   // The bell in the old church's ruined steeple: one dull, cracked note
   // (a struck pot more than a bell), as if something brushed it.

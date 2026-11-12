@@ -3132,7 +3132,7 @@
         "time": "clock",
         "rec": true
       },
-      "_note": "Session 26 (DESIGN.md 'Junie is taken'): the night Tom lay out at the crashed plane. The Caller spoke on the radio in his voice; the family went out after him. Anchor junieWoods (encounters/JunieTaken.js: config.junieTaken.clipFrom metres past the fence toward the plane, ahead = away from home, toward the treeline). A camera on a post by the south path, looking out to the trees. They come out with torches, calling; Tom's voice answers from the left, then the right, then ahead; they split; Junie's torch goes on into the trees and out. Ellen and Wyatt run after it and out of frame. The last seconds are empty trees, and one word. Its beats are timed to each caption's reading length (config.subtitles).",
+      "_note": "Session 26 (DESIGN.md 'Junie is taken'): the night Tom lay out at the crashed plane. The Caller spoke on the radio in his voice; the family went out after him. Anchor junieWoods (encounters/JunieTaken.js: config.junieTaken.clipFrom metres past the fence toward the plane, ahead = away from home, toward the treeline). A camera on a post by the south path, looking out to the trees. They come out with torches, calling; Tom's voice answers from the left, then the right, then ahead; they split; Junie's torch goes on into the trees and out. Ellen and Wyatt run after it and out of frame. The last seconds are empty trees, and one word. Its beats are timed to each caption's reading length (config.subtitles). Session 33 (Aaron: trim it): cut from 53.7 s to about half: they come out calling, his voice answers, they split to both sides, he calls Junie, she goes; five captions dropped.",
       "camera": [
         {
           "at": 0,
@@ -3145,7 +3145,7 @@
           "look": [
             0.6,
             0.6,
-            11.0
+            11
           ],
           "fov": 60
         }
@@ -3226,29 +3226,29 @@
       ],
       "tracks": [
         {
-          "at": 0.5,
+          "at": 0.4,
           "do": "move",
           "actor": "ellen",
           "to": [
             -0.7,
             0,
-            6.0
+            6
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 0.5,
+          "at": 0.4,
           "do": "move",
           "actor": "tellen",
           "to": [
-            -0.44999999999999996,
+            -0.45,
             1.15,
             6.35
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 0.7,
+          "at": 0.5,
           "do": "move",
           "actor": "wyatt",
           "to": [
@@ -3256,10 +3256,10 @@
             0,
             5.4
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 0.7,
+          "at": 0.5,
           "do": "move",
           "actor": "twyatt",
           "to": [
@@ -3267,10 +3267,10 @@
             1.15,
             5.75
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 0.9,
+          "at": 0.6,
           "do": "move",
           "actor": "junie",
           "to": [
@@ -3278,10 +3278,10 @@
             0,
             4.7
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 0.9,
+          "at": 0.6,
           "do": "move",
           "actor": "tjunie",
           "to": [
@@ -3289,90 +3289,22 @@
             1.15,
             5.05
           ],
-          "seconds": 6.0
+          "seconds": 4.2
         },
         {
-          "at": 1.6,
+          "at": 1.2,
           "do": "line",
           "line": "clip.junie.1",
           "radio": false
         },
         {
-          "at": 4.21,
-          "do": "line",
-          "line": "clip.junie.2",
-          "radio": false
-        },
-        {
-          "at": 10.67,
+          "at": 3.61,
           "do": "line",
           "line": "clip.junie.3",
           "radio": false
         },
         {
-          "at": 11.47,
-          "do": "move",
-          "actor": "ellen",
-          "to": [
-            -1.6,
-            0,
-            6.6
-          ],
-          "seconds": 0.8
-        },
-        {
-          "at": 11.47,
-          "do": "move",
-          "actor": "tellen",
-          "to": [
-            -1.35,
-            1.15,
-            6.949999999999999
-          ],
-          "seconds": 0.8
-        },
-        {
-          "at": 11.67,
-          "do": "move",
-          "actor": "wyatt",
-          "to": [
-            0.3,
-            0,
-            5.9
-          ],
-          "seconds": 0.8
-        },
-        {
-          "at": 11.67,
-          "do": "move",
-          "actor": "twyatt",
-          "to": [
-            0.55,
-            1.15,
-            6.25
-          ],
-          "seconds": 0.8
-        },
-        {
-          "at": 14.99,
-          "do": "line",
-          "line": "clip.junie.4",
-          "radio": false
-        },
-        {
-          "at": 17.16,
-          "do": "line",
-          "line": "clip.junie.5",
-          "radio": false
-        },
-        {
-          "at": 23.37,
-          "do": "line",
-          "line": "clip.junie.6",
-          "radio": false
-        },
-        {
-          "at": 24.27,
+          "at": 4.61,
           "do": "move",
           "actor": "ellen",
           "to": [
@@ -3380,10 +3312,10 @@
             0,
             8.6
           ],
-          "seconds": 1.8
+          "seconds": 2.4
         },
         {
-          "at": 24.27,
+          "at": 4.61,
           "do": "move",
           "actor": "tellen",
           "to": [
@@ -3391,16 +3323,10 @@
             1.15,
             8.95
           ],
-          "seconds": 1.8
+          "seconds": 2.4
         },
         {
-          "at": 26.77,
-          "do": "line",
-          "line": "clip.junie.7",
-          "radio": false
-        },
-        {
-          "at": 27.37,
+          "at": 5.21,
           "do": "move",
           "actor": "wyatt",
           "to": [
@@ -3408,44 +3334,44 @@
             0,
             8.2
           ],
-          "seconds": 1.8
+          "seconds": 2.4
         },
         {
-          "at": 27.37,
+          "at": 5.21,
           "do": "move",
           "actor": "twyatt",
           "to": [
             4.65,
             1.15,
-            8.549999999999999
+            8.55
           ],
-          "seconds": 1.8
+          "seconds": 2.4
         },
         {
-          "at": 33.12,
+          "at": 7.63,
           "do": "line",
           "line": "clip.junie.8",
           "radio": false
         },
         {
-          "at": 37.7,
+          "at": 11.8,
           "do": "line",
           "line": "clip.junie.9",
           "radio": false
         },
         {
-          "at": 38.3,
+          "at": 12.4,
           "do": "move",
           "actor": "junie",
           "to": [
             0.9,
             0,
-            19.0
+            19
           ],
           "seconds": 4.6
         },
         {
-          "at": 38.3,
+          "at": 12.4,
           "do": "move",
           "actor": "tjunie",
           "to": [
@@ -3456,41 +3382,41 @@
           "seconds": 4.6
         },
         {
-          "at": 42.3,
+          "at": 16.4,
           "do": "glitch",
-          "amount": 0.45,
           "seconds": 0.4,
+          "amount": 0.45,
           "sound": false
         },
         {
-          "at": 42.4,
+          "at": 16.5,
           "do": "hide",
           "actor": "tjunie"
         },
         {
-          "at": 42.8,
+          "at": 16.9,
           "do": "hide",
           "actor": "junie"
         },
         {
-          "at": 43.7,
+          "at": 17.4,
           "do": "line",
           "line": "clip.junie.10",
           "radio": false
         },
         {
-          "at": 43.9,
+          "at": 17.6,
           "do": "move",
           "actor": "ellen",
           "to": [
             0.2,
             0,
-            15.0
+            15
           ],
-          "seconds": 1.8
+          "seconds": 1.6
         },
         {
-          "at": 43.9,
+          "at": 17.6,
           "do": "move",
           "actor": "tellen",
           "to": [
@@ -3498,43 +3424,43 @@
             1.15,
             15.35
           ],
-          "seconds": 1.8
+          "seconds": 1.6
         },
         {
-          "at": 44.2,
+          "at": 17.8,
           "do": "move",
           "actor": "wyatt",
           "to": [
-            2.0,
+            2,
             0,
             14.2
           ],
-          "seconds": 1.9
+          "seconds": 1.7
         },
         {
-          "at": 44.2,
+          "at": 17.8,
           "do": "move",
           "actor": "twyatt",
           "to": [
             2.25,
             1.15,
-            14.549999999999999
+            14.55
           ],
-          "seconds": 1.9
+          "seconds": 1.7
         },
         {
-          "at": 46.0,
+          "at": 19.3,
           "do": "move",
           "actor": "ellen",
           "to": [
             -1.8,
             0,
-            21.0
+            21
           ],
-          "seconds": 1.8
+          "seconds": 1.6
         },
         {
-          "at": 46.0,
+          "at": 19.3,
           "do": "move",
           "actor": "tellen",
           "to": [
@@ -3542,21 +3468,21 @@
             1.15,
             21.35
           ],
-          "seconds": 1.8
+          "seconds": 1.6
         },
         {
-          "at": 46.4,
+          "at": 19.6,
           "do": "move",
           "actor": "wyatt",
           "to": [
-            3.0,
+            3,
             0,
             20.4
           ],
-          "seconds": 1.9
+          "seconds": 1.7
         },
         {
-          "at": 46.4,
+          "at": 19.6,
           "do": "move",
           "actor": "twyatt",
           "to": [
@@ -3564,49 +3490,49 @@
             1.15,
             20.75
           ],
-          "seconds": 1.9
+          "seconds": 1.7
         },
         {
-          "at": 47.9,
+          "at": 20.9,
           "do": "hide",
           "actor": "ellen"
         },
         {
-          "at": 47.9,
+          "at": 20.9,
           "do": "hide",
           "actor": "tellen"
         },
         {
-          "at": 48.4,
+          "at": 21.3,
           "do": "hide",
           "actor": "wyatt"
         },
         {
-          "at": 48.4,
+          "at": 21.3,
           "do": "hide",
           "actor": "twyatt"
         },
         {
-          "at": 50.1,
+          "at": 22.4,
           "do": "line",
           "line": "clip.junie.11",
           "radio": false
         },
         {
-          "at": 51.0,
+          "at": 23.3,
           "do": "glitch",
-          "amount": 0.25,
           "seconds": 0.25,
+          "amount": 0.25,
           "sound": false
         },
         {
-          "at": 52.11,
+          "at": 24.3,
           "do": "fade",
           "to": 1,
           "seconds": 1.4
         }
       ],
-      "duration": 53.7
+      "duration": 25.9
     },
     {
       "id": "sweep.oldChurch",
