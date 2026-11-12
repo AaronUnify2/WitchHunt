@@ -4791,6 +4791,8 @@ export const config = {
       army: { rifle: 10 }, // the army's crates by the collar: service rifle rounds
       creakEvery: [6, 15], // the headframe in the wind, while Tom's near (seconds)
       creakDistance: 40,
+      tagsGap: 5.5, // seconds after a search's text before Wyatt's line about it (time to read it)
+      outGap: 6.8, // seconds between Ellen's line at the collar and Wyatt's (her line's reading length)
     },
     // The mine below (world/mineTrack.js: pure; render/mineModel.js; encounters/MineRide.js). A pocket far
     // under the clearing (world/Interiors.js). Mine space: the cage's middle at the origin on the landing's

@@ -20,13 +20,14 @@ export class RadioStatus {
     this.textEl = this.el.querySelector('.radio-status-text');
   }
 
-  // state: 'ok' | 'dead' | 'south' (story/Comms.js); visible: the HUD is up.
+  // state: 'ok' | 'dead' | 'south' | 'deep' (story/Comms.js); visible: the HUD is up.
   update(state, visible = true) {
     const key = visible ? state : 'hidden';
     if (key === this.shown || !this.el) return;
     this.shown = key;
     const on = visible && state !== 'ok';
-    this.el.className = `radio-status ${on ? state : 'hidden'}`;
+    // Session 31: deep underground reads as the south does (NO SIGNAL).
+    this.el.className = `radio-status ${on ? (state === 'deep' ? 'south' : state) : 'hidden'}`;
     if (on) this.textEl.textContent = state === 'dead' ? this.cfg.hud.deadText : this.cfg.hud.southText;
   }
 

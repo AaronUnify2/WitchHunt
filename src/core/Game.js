@@ -717,7 +717,7 @@ export class Game {
   initSouth(root) {
     const notify = (text) => this.toast.show(text);
     this.comms = new Comms(this.cfg, this.bus);
-    this.comms.init({ progress: this.progress, player: this.player, homeZ: this.station.layout.centre.z, demo: this.demo });
+    this.comms.init({ progress: this.progress, player: this.player, homeZ: this.station.layout.centre.z, demo: this.demo, deep: () => Boolean(this.mineRide?.below) }); // Session 31: no radio down the mine
     this.dialogue.comms = this.comms;
     this.radioStatus = new RadioStatus(this.cfg.comms);
     this.radioStatus.init(root);
@@ -914,6 +914,7 @@ export class Game {
       enemies: this.combat.enemies,
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,
+      comms: this.comms,
       subtitles: this.subtitles,
       progress: this.progress,
       lore: this.lore,

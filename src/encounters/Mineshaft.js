@@ -13,6 +13,11 @@
 //     (an ordinary car battery: the one the fence box would have had).
 //  4. The cage down (encounters/MineRide.js): a creaking ride, ridiculously
 //     deep, to the landing and the turret cart.
+//  5. The family over the radio (Session 31; dialogue.json mine.*), where it
+//     reaches: Ellen at the sight of it, Wyatt at the tag board and the
+//     battery, Ellen cut off mid-word as the cage drops (nothing reaches him
+//     below: story/Comms.js 'deep'); and at the collar once it's blown and
+//     sealed, Ellen then Wyatt, or, south of the comms line, the Caller.
 //
 // Saved through story flags (data/progress.json): FLAGS below and the
 // ride's (MineRide's RIDE_FLAGS). reset() works out the rest. Off in Demo mode.
@@ -44,7 +49,7 @@ export class Mineshaft {
   }
 
   // ctx: { scene, site (MineshaftSite), ride (MineRide, optional), player, combat, enemies, cutscenes,
-  // dialogue, subtitles, progress, lore, paper, card, clock, demo, notify, rng() }.
+  // dialogue, comms, subtitles, progress, lore, paper, card, clock, demo, notify, rng() }.
   init(ctx) {
     Object.assign(this, ctx);
     this.rng ??= Math.random;
@@ -57,7 +62,10 @@ export class Mineshaft {
       this.cutscenes?.namedAnchors?.set('mineshaft', () => ({ x: p.x, z: p.z, yaw: Math.atan2(-Math.sin(p.yaw), -Math.cos(p.yaw)) }));
     }
     this.bus.on('player:respawned', () => this.reset());
-    this.bus.on('mine:sealed', () => this.dress());
+    this.bus.on('mine:sealed', () => this.onSealed());
+    this.bus.on('cutscene:ended', ({ id }) => {
+      if (id === 'sweep.mineshaft') this.after(1.2, () => this.sayOnce('mine.ellen.arrive'));
+    });
     this.reset();
   }
 
@@ -97,6 +105,38 @@ export class Mineshaft {
   // Session 31: sealed (the charges fired below), the relay's tripped: the lamps are out for good.
   get sealed() {
     return this.has('mineSealed');
+  }
+
+  // A line over the radio, the first time only (dropped where the radio doesn't reach: story/Comms.js).
+  sayOnce(id) {
+    const d = this.dialogue;
+    if (!d || d.heard?.has(id)) return false;
+    return d.play(id);
+  }
+
+  // Out, and the mine sealed behind him: the lamps go, and somebody's on the radio.
+  onSealed() {
+    this.dress();
+    if (this.comms?.state === 'south') {
+      this.after(4, () => this.dialogue?.play('caller.mine.out'));
+      return;
+    }
+    this.after(2.5, () => this.sayOnce('mine.ellen.out'));
+    this.after(2.5 + this.ec.outGap, () => this.sayOnce('mine.wyatt.out'));
+  }
+
+  // The cage's lever: Ellen gets half a sentence in, the first time.
+  // It goes over whatever was being said (as the cut at the comms line does: story/Caller.js): it's the last
+  // thing through before the rock takes the signal.
+  goDown() {
+    const d = this.dialogue;
+    const line = d?.byId?.get('mine.ellen.cage');
+    if (line && !d.heard.has(line.id) && this.comms?.state === 'ok') {
+      this.subtitles?.clear();
+      d.show(line, {}, true);
+      d.heard.add(line.id);
+    }
+    this.ride.descend();
   }
 
   dress() {
@@ -194,7 +234,7 @@ export class Mineshaft {
     else add(this.spot('box'), r + 0.2, { key: 'box', prompt: state === 'live' ? data.box.live : data.box.none, act: null });
     // 4: the cage's lever.
     if (!this.powered) add(this.spot('lever'), r, { key: 'lever', prompt: data.cage.dead, act: null });
-    else if (this.ride?.ready) add(this.spot('lever'), r, opt('lever', data.cage, H.lever, () => this.ride.descend()));
+    else if (this.ride?.ready) add(this.spot('lever'), r, opt('lever', data.cage, H.lever, () => this.goDown()));
     else add(this.spot('lever'), r, { key: 'lever', prompt: data.box.live, act: null });
     if (!cands.length) return null;
     cands.sort((a, b) => a.dd - b.dd);
@@ -222,6 +262,7 @@ export class Mineshaft {
       this.combat.hud?.pickup?.(`${this.ec.army.rifle} rifle rounds`);
     }
     if (s.text) this.notify?.(s.text);
+    if (s.id === 'tags') this.after(this.ec.tagsGap, () => this.sayOnce('mine.wyatt.tags'));
   }
 
   giveRounds(type, n) {
@@ -242,6 +283,7 @@ export class Mineshaft {
       this.sfx?.play('relayClack', this.spot('cage'));
       this.notify?.(data.box.done);
       this.bus.emit('mine:powered');
+      this.after(this.ec.tagsGap, () => this.sayOnce('mine.wyatt.battery'));
     });
   }
 

@@ -7,12 +7,15 @@
 //  - he's south of the comms line (config.comms.line), until the Blessing's
 //    buried (config.comms.until, a later session's flag). Down there every
 //    voice on the radio is the Caller's (story/Caller.js).
+// And while he's deep underground (Session 31: the mine, a function the game gives: `deep`) nothing reaches
+// him at all, the Caller included: 'deep'. His place against the line isn't worked out down there (the mine's
+// tunnels run under it on some maps).
 // The line has hysteresis: the cut comes south of dz + band, the family come
 // back north of dz - band, so stepping about on it can't flicker it.
 //
 // The pure parts (tested): southOfLine(), commsState().
 //
-// Events: 'comms:changed' { state, was } ('ok' | 'dead' | 'south').
+// Events: 'comms:changed' { state, was } ('ok' | 'dead' | 'south' | 'deep').
 
 // With hysteresis: was Tom south of the line (wasSouth), is he now? z: world
 // z (south is +z); lineZ: the line's world z.
@@ -24,8 +27,9 @@ export function southOfLine(z, lineZ, band, wasSouth) {
 // What the radio can do now: 'dead' (smashed, not mended), 'south' (cut off by
 // the interference, not yet ended by the Blessing), else 'ok'. A dead radio
 // wins: nothing comes through it at all, not even the Caller.
-export function commsState({ smashed = false, mended = false, south = false, blessed = false } = {}) {
+export function commsState({ smashed = false, mended = false, south = false, blessed = false, deep = false } = {}) {
   if (smashed && !mended) return 'dead';
+  if (deep) return 'deep'; // under half a mile of rock: nobody, and nothing
   if (south && !blessed) return 'south';
   return 'ok';
 }
@@ -39,7 +43,7 @@ export class Comms {
     this.state = 'ok';
   }
 
-  // ctx: { progress, player, homeZ (home's centre, world z), demo }.
+  // ctx: { progress, player, homeZ (home's centre, world z), demo, deep() (is he far underground?) }.
   init(ctx) {
     Object.assign(this, ctx);
     this.lineZ = (this.homeZ ?? 0) + this.cc.line.dz;
@@ -53,12 +57,12 @@ export class Comms {
   // Each frame (cheap): where Tom is against the line, and the radio's state.
   update() {
     const z = this.player?.position.z ?? 0;
-    this.south = !this.demo?.active && southOfLine(z, this.lineZ, this.cc.line.band, this.south);
+    if (!this.deep?.()) this.south = !this.demo?.active && southOfLine(z, this.lineZ, this.cc.line.band, this.south);
     this.refresh();
   }
 
   refresh() {
-    const next = commsState({ smashed: this.has('radioSmashed'), mended: this.has('radioMended'), south: this.south, blessed: this.has(this.cc.until) });
+    const next = commsState({ smashed: this.has('radioSmashed'), mended: this.has('radioMended'), south: this.south, blessed: this.has(this.cc.until), deep: Boolean(this.deep?.()) });
     if (next !== this.state) {
       const was = this.state;
       this.state = next;
