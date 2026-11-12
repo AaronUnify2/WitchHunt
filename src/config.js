@@ -1632,6 +1632,7 @@ export const config = {
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
       army: { health: 1.6, helmet: 25 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 25 damage (Session 17, Aaron: a long fight: one service rifle round to the head knocks it off), or the hunting rifle punches straight through it
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
+      logger: { health: 1.25 }, // Session 28: the sawmill's crew: big men (render: the citizens' shapes in flannel)
       mib: { health: 1.6 }, // Session 13: a dead agent in its body armour (as tough as the army: the hunting rifle still kills it with a headshot)
     },
     // One spawn of 7-15 slow zombies in a tight cluster that wanders as a pack.
@@ -1775,6 +1776,9 @@ export const config = {
         police: { shirt: [0x161c2c, 0x1a2234], trousers: [0x12141c], longSleeves: 0.4, plaid: 0, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
         // Session 13: camouflage, webbing, and a bare-headed block for when its helmet's gone.
         army: { shirt: [0x34402a, 0x3a4430], trousers: [0x2e3824, 0x343c28], longSleeves: 1, plaid: 0, camo: 1, webbing: 0x22241a, bare: true, hat: 'helmet', hatColor: 0x2a3222 },
+        // Session 28: a dead logger (the sawmill's crew): the citizens' shapes (short hair, balding or a
+        // cap), always long sleeves, nearly always plaid flannel, work trousers.
+        logger: { as: 'citizen', hairs: ['short', 'balding', 'trucker'], shirt: [0x4a1a16, 0x26321e, 0x4a3a14, 0x3e2c18, 0x34141c], trousers: [0x1c2638, 0x2e2418, 0x12161e, 0x4a4230], longSleeves: 1, plaid: 0.85 },
         // Session 13: a dead Man in Black. The shirt is its white shirt (so
         // the blood shows), under a torn black suit (jacket: open down the
         // front, a rip across the back), a black tie, the body armour's
@@ -2859,6 +2863,7 @@ export const config = {
       clown: { name: 'The clown', color: '#d8b8c8', blipFreq: 880 }, // Milo in character: high, musical, bouncing (the story)
       milo: { name: 'Milo', color: '#c8b49a', blipFreq: 250 }, // Milo out of character: his own voice, warm
       amos: { name: "A man's voice", color: '#b8ae94', blipFreq: 210 }, // Session 27: the Caller in Amos Pruitt's voice (1903), at the railway cutting
+      dispatch: { name: "The car's radio", color: '#9aa8a0', blipFreq: 330 }, // Session 28: the recall message looping on the agents' sedan radio (the sawmill)
       hattie: { name: "A girl's voice", color: '#d8b0c0', blipFreq: 820 }, // Session 27: the Caller as Hattie Bell McCoy, aged nine (1903)
       scanner: { name: 'Scanner', color: '#8fb08a', blipFreq: 260 }, // Session 15b: Earl's scanner at the gas station
       note: { name: "Earl's note", color: '#d8ccaa', blipFreq: 0, silent: true }, // read, not heard
@@ -4518,8 +4523,36 @@ export const config = {
   // (SAWMILL); the colours are here.
   sawmill: {
     radius: 30, // metres from its middle the set reaches (for drawing it)
+    encounter: {
+      sweepDistance: 31, // metres from the middle: the arrival sweep (once)
+      interactRange: 1.7,
+      holds: { search: 1.0, boot: 1.1, agent: 1.3, handset: 0.7, case: 0.9, bunks: 1.1, tarps: 0.8, pit: 0.9, pinned: 1.4, desk: 1.0, bench: 0.8, engine: 0.9, chainsaw: 2.4, headSaw: 3.4 }, // seconds held (X)
+      smgRounds: 45, // with the SMG, off the last agent: a magazine and a half
+      pinned: { pistol: 12, armour: 40 }, // the agent under the logs: rounds, and his vest (ballistic)
+      agentRounds: 9, // the last agent's spare magazine
+      // Sounds while Tom's near: the loose tin on the shed's roof in the wind; flies at the tarps and the pit.
+      tinEvery: [7, 18],
+      tinDistance: 45,
+      fliesEvery: 2.6,
+      fliesDistance: 7,
+      radioDistance: 6, // metres from the last agent's sedan: its radio, once
+      // The dead get up (Aaron's default, Session 28): the first time the chainsaw revs at the mill (its noise
+      // is what wakes them), or the head saw's knocked off its arbor, or if dark falls with Tom in the yard.
+      riseAfter: 1.6, // seconds from that to the first tarp moving
+      riseGap: [0.5, 1.1], // seconds between one of a wave getting up and the next
+      revWithin: 40, // metres from the mill's middle: a rev this close counts
+      // The waves: which of the laid-out dead (their kind, their groups in the set) get up, when the next
+      // comes (seconds after the last, or as soon as this few are still up), and any more that walk in
+      // out of the trees (the agents who ran, and died out there).
+      waves: [
+        { kind: 'logger', groups: ['tarps'], after: 0 },
+        { kind: 'logger', groups: ['yard', 'mill'], after: 10, left: 1 },
+        { kind: 'mib', groups: ['yard', 'mill', 'pit'], after: 11, left: 2, trees: { count: 4, variant: 'mib', ring: [26, 31] } },
+      ],
+      clangEvery: 0.7, // the head saw's collar nut: a blow this often while X is held
+    },
     look: {
-      weather: { rust: [0x34302a, 0x2a2622, 0x3a3630, 0x2c2a28], grimeHeight: 0.5, keepBright: [] },
+      weather: { rust: [0x34302a, 0x2a2622, 0x3a3630, 0x2c2a28], grimeHeight: 0.16, keepBright: [] }, // low: the dead lie on the ground, and grime would black them out
       colors: {
         post: 0x3e3428, // the shed's timbers
         postDark: 0x2e261e,
@@ -4582,7 +4615,7 @@ export const config = {
         shirt: 0x6a665c,
         tie: 0x08080a,
         shoe: 0x0e0e0e,
-        saw: 0x4a2010, // the chainsaw's faded orange body
+        saw: 0x6a2c12, // the chainsaw's faded orange body
         sawDark: 0x1c1a18,
         sawBar: 0x4a4c4c,
         axe: 0x3a3a3a,

@@ -51,7 +51,10 @@ export function paletteTable(tex) {
     return [start, list.length];
   };
   for (const part of PARTS) shared[part] = add(tex.palettes[part]);
-  for (const variant of tex.variantOrder) {
+  // Session 28: a look that borrows another variant's blocks (`as`: the loggers wear the citizens')
+  // still has its own palettes.
+  const borrowed = Object.keys(tex.looks).filter((v) => tex.looks[v].as && !tex.variantOrder.includes(v));
+  for (const variant of [...tex.variantOrder, ...borrowed]) {
     const own = tex.looks[variant] ?? {};
     offsets[variant] = {};
     for (const part of PARTS) offsets[variant][part] = own[part] ? add(own[part]) : shared[part];
@@ -60,6 +63,7 @@ export function paletteTable(tex) {
 }
 
 export const PARTS = ['shirt', 'trousers', 'hair', 'skin'];
+const MATCHED = []; // reused: the blocks a look can wear
 
 // One zombie's look from its variant and seed. blocks: atlasBlocks();
 // table: paletteTable(). Returns { block, bare (its bare block, for when
@@ -75,16 +79,19 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   let first = -1;
   let count = 0;
   out.bare = -1;
+  const matched = MATCHED;
+  const wears = look.as ?? variant; // Session 28: whose blocks it wears
   for (let i = 0; i < blocks.length; i++) {
-    if (blocks[i].variant !== variant) continue;
+    if (blocks[i].variant !== wears) continue;
+    if (look.hairs && !blocks[i].bare && !look.hairs.includes(blocks[i].hair)) continue;
     if (blocks[i].bare) {
       out.bare = i;
       continue;
     }
     if (first < 0) first = i;
-    count++;
+    matched[count++] = i;
   }
-  out.block = first < 0 ? 0 : first + Math.floor(r(1) * count);
+  out.block = first < 0 ? 0 : matched[Math.floor(r(1) * count)];
   out.shirt = pick(offsets.shirt, r(2));
   out.trousers = pick(offsets.trousers, r(3));
   out.hair = pick(offsets.hair, r(4));

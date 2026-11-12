@@ -31,6 +31,11 @@
       { "item": "flare", "chance": 0.05 }
     ],
     "earl": [],
+    "logger": [
+      { "item": "scrap", "chance": 0.35, "min": 1, "max": 3 },
+      { "item": "shotgunAmmo", "chance": 0.1, "min": 1, "max": 2 },
+      { "item": "firstAid", "chance": 0.04 }
+    ],
     "mib": [
       { "item": "vest", "chance": 0.35 },
       { "item": "pistolAmmo", "chance": 0.3, "min": 2, "max": 5 }

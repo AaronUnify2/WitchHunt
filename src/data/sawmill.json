@@ -1,0 +1,103 @@
+{
+ "_note": "Session 28: the sawmill's hold-X searches and finds (encounters/Sawmill.js; DESIGN.md \"The sawmill\"). Every text is a draft for Aaron. spot: a place in the set (render/sawmillModel.js spots); hold: config.sawmill.encounter.holds' key; flag: the story flag it sets (data/progress.json), once; text: what Tom finds (a notify); lore / paper: what it gives. The story they tell (Aaron's default, Session 28): the government hired Harlan Stover's crew to clear the ground for the portal programme at triple rates, cash in a case, no paperwork. On the last payday (Friday, September 26) every man was told to be at the mill to sign. Two cars came up the road after dark. One agent walked into the bunkhouse with the payroll case (a suppressed pistol in it) and shot the day shift in their bunks; the others dragged them out to a pit they'd started, with lime and tarps bought that morning. Stover had worked it out an hour before and sent the night shift back to the saw. They came off it with what was to hand: a peavey, an axe, the log deck's chocks, a chainsaw. Nobody on either side walked away. Then the portal went, and nobody came to tidy up.",
+ "searches": [
+  {
+   "id": "boot",
+   "spot": "boot",
+   "hold": "boot",
+   "flag": "sawmillBoot",
+   "prompt": "look in the boot",
+   "busy": "Looking…",
+   "text": "Three bags of quicklime. Two shovels with the store's stickers still on the handles. Forty feet of blue tarp. A receipt, paid cash, dated the morning of payday. They knew how the day would end before the crew had clocked on."
+  },
+  {
+   "id": "case",
+   "spot": "case",
+   "hold": "case",
+   "flag": "sawmillCase",
+   "prompt": "look in the payroll case",
+   "busy": "…",
+   "text": "The payroll case. Grey foam, cut to the shape of a pistol and the suppressor that screws onto it. No money. There was never any money in it."
+  },
+  {
+   "id": "bunks",
+   "spot": "bunks",
+   "hold": "bunks",
+   "flag": "sawmillBunks",
+   "prompt": "look over the bunks",
+   "busy": "…",
+   "text": "Six bunks, the blankets pulled off toward the door. The day shift, shot where they slept and dragged out by the feet. One man stood inside the door and worked along the wall, left to right. Nobody got as far as the floor."
+  },
+  {
+   "id": "pit",
+   "spot": "pit",
+   "hold": "pit",
+   "flag": "sawmillPit",
+   "prompt": "look in the pit",
+   "busy": "…",
+   "text": "Knee deep. That's as far as they'd got when the night shift came off the saw."
+  },
+  {
+   "id": "pinned",
+   "spot": "pinned",
+   "hold": "pinned",
+   "flag": "sawmillPinned",
+   "prompt": "search the man under the logs",
+   "busy": "Reaching under…",
+   "text": "Somebody knocked the chocks out of the log deck above him. His vest took none of it: it's still good. A spare magazine in his jacket."
+  },
+  {
+   "id": "bench",
+   "spot": "bench",
+   "hold": "bench",
+   "flag": "sawmillBench",
+   "prompt": "look over the saw filer's bench",
+   "busy": "…",
+   "text": "The saw filer's bench. A chain clamped in the vise, half done: a round file down each tooth, three strokes, the same each side. You could do that at the bench at home."
+  },
+  {
+   "id": "engine",
+   "spot": "engine",
+   "hold": "engine",
+   "flag": "sawmillEngine",
+   "prompt": "look at the power unit",
+   "busy": "…",
+   "text": "The power unit's stop is pulled. Somebody shut the head saw down by hand, with a log still in the cut. Its lower teeth are dark, and it isn't pitch."
+  },
+  {
+   "id": "desk",
+   "spot": "desk",
+   "hold": "desk",
+   "flag": "diaryFound",
+   "lore": "loggersDiary",
+   "paper": "loggersDiary",
+   "prompt": "take the day book off the desk",
+   "busy": "…",
+   "text": ""
+  }
+ ],
+ "tarps": {
+  "prompt": "Five of them, wrapped in tarp and roped. You don't open one",
+  "gone": "Five tarps, open and flat. The rope's been pulled apart from the inside"
+ },
+ "agent": {
+  "prompt": "take the SMG",
+  "busy": "…",
+  "text": "The last of them. He emptied it across the yard and sat down against his car with the radio in his hand, waiting for somebody to answer. An MP5, a magazine and a half left for it."
+ },
+ "chainsaw": {
+  "prompt": "work the chainsaw out of him",
+  "busy": "Working it out…",
+  "text": "A logger's saw, and it went in running. No fuel left in the world for it, and it doesn't seem to care. Hold the trigger: it's loud, it runs hot, and the chain's seen better days.",
+  "hint": "Everything for a mile will hear that."
+ },
+ "headSaw": {
+  "prompt": "knock the head saw off its arbor",
+  "busy": "Hammering the collar nut…",
+  "text": ""
+ },
+ "risen": "Under the nearest tarp, something sits up.",
+ "second": "In the shed, a man in flannel gets his hands under him.",
+ "third": "The ones in suits are getting up.",
+ "cleared": "The mill's quiet. The tin on the roof ticks in the wind."
+}

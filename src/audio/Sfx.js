@@ -1062,6 +1062,55 @@ const RECIPES = {
     s.tone(o, { seconds: 0.06, wave: 'triangle', freq: 420, endFreq: 260, gain: 0.25 });
     s.noiseBurst(o, { seconds: 0.04, type: 'bandpass', freq: 1400, q: 2, gain: 0.3 });
   },
+  // Session 28: the sawmill. A loose sheet of roofing tin lifting in the wind and slapping back down.
+  tinBang(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 70);
+    s.noiseBurst(o, { seconds: 0.5, type: 'bandpass', freq: 900, endFreq: 500, q: 3, gain: 0.25, attack: 0.25 }); // the creak up
+    setTimeout(() => {
+      if (!s.ready) return;
+      s.noiseBurst(o, { seconds: 0.12, type: 'bandpass', freq: 1700, q: 2, gain: 0.8 });
+      s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 310, endFreq: 280, gain: 0.12 });
+    }, 520);
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 1500, q: 2, gain: 0.35 }), 760); // and the bounce
+  },
+  // Flies, where the dead have lain a while: a thin wavering whine, close.
+  flies(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.5, 14);
+    s.tone(o, { seconds: 2.4, wave: 'sawtooth', freq: 205, endFreq: 190, gain: 0.02, attack: 0.5, vibrato: 14 });
+    s.tone(o, { seconds: 1.9, wave: 'sawtooth', freq: 241, endFreq: 262, gain: 0.014, attack: 0.7, vibrato: 9 });
+  },
+  // The agents' car radio: a squelch tail, static, a carrier whine under a voice that isn't a person.
+  carRadio(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8, 30);
+    s.noiseBurst(o, { seconds: 0.12, type: 'highpass', freq: 3000, gain: 0.5 });
+    s.noiseBurst(o, { seconds: 3.4, type: 'bandpass', freq: 2100, q: 0.8, gain: 0.12, attack: 0.1 });
+    s.tone(o, { seconds: 3.2, wave: 'sine', freq: 1010, endFreq: 1004, gain: 0.02, attack: 0.2 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.1, type: 'highpass', freq: 3000, gain: 0.45 }), 3350);
+  },
+  // Something moving under a roped tarp: stiff plastic crackling, a rope drawn tight.
+  tarpShift(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    for (let i = 0; i < 6; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.09, type: 'highpass', freq: 2400 + Math.random() * 1800, gain: 0.4 }), i * (90 + Math.random() * 80)); // cosmetic only
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.5, wave: 'sawtooth', freq: 180, endFreq: 240, gain: 0.05, attack: 0.2 }), 300);
+  },
+  // The head saw struck: sixty inches of plate ringing like a cracked gong, a long time.
+  sawRing(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 90);
+    s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 2200, gain: 0.8 });
+    s.tone(o, { seconds: 2.6, wave: 'triangle', freq: 392, endFreq: 388, gain: 0.2, vibrato: 3 });
+    s.tone(o, { seconds: 2.0, wave: 'sine', freq: 1043, endFreq: 1036, gain: 0.09 });
+    s.tone(o, { seconds: 1.4, wave: 'sine', freq: 1702, endFreq: 1690, gain: 0.05 });
+  },
+  // It comes off the arbor: the ring cut short as its edge meets the floor, and it settles round like a dropped coin.
+  sawOff(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 90);
+    s.tone(o, { seconds: 0.5, wave: 'triangle', freq: 392, endFreq: 380, gain: 0.22 });
+    setTimeout(() => {
+      if (!s.ready) return;
+      s.noiseBurst(o, { seconds: 0.14, type: 'lowpass', freq: 500, gain: 0.9 });
+      for (let i = 0; i < 9; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.09, wave: 'triangle', freq: 500 + i * 22, gain: 0.14 - i * 0.012 }), i * (150 - i * 12));
+    }, 480);
+  },
   // Session 28: the chainsaw. The trigger squeezed: the revs climbing out of the idle.
   chainsawRev(s) {
     const o = s.out(undefined, undefined, 0.5);

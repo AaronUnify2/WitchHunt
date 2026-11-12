@@ -76,6 +76,21 @@
     {"id": "crateBlown", "about": "The railway cutting: the powder store's sweating crates went up."},
     {"id": "cuttingRisen", "about": "The railway cutting: the dead have come up out of the cutting (the store opened, the cowcatcher knocked loose, or dark fell with Tom in the cut)."},
     {"id": "cuttingCleared", "about": "The railway cutting: every one of the dead that came up is down again."},
-    {"id": "cowcatcherTaken", "about": "The railway cutting: the engine's cowcatcher and boiler plate knocked loose with the maul (lore cowcatcher: the killdozer's armour, for later)."}
+    {"id": "cowcatcherTaken", "about": "The railway cutting: the engine's cowcatcher and boiler plate knocked loose with the maul (lore cowcatcher: the killdozer's armour, for later)."},
+    {"id": "sawmillVisited", "about": "The sawmill: Tom has come up the mill road and seen it (encounters/Sawmill.js: the arrival sweep)."},
+    {"id": "sawmillRadio", "about": "The sawmill: the recall message on the last agent's car radio has been heard."},
+    {"id": "sawmillBoot", "about": "The sawmill: the sedan's boot searched (quicklime, shovels, tarp: bought the morning of payday)."},
+    {"id": "smgTaken", "about": "The sawmill: the SMG taken from beside the last agent (DESIGN.md: wherever there are dead Men in Black)."},
+    {"id": "sawmillCase", "about": "The sawmill: the payroll case on the bunkhouse table looked at (no money: foam cut for a pistol)."},
+    {"id": "sawmillBunks", "about": "The sawmill: the bunks looked over (the day shift, shot where they slept and dragged out)."},
+    {"id": "sawmillPit", "about": "The sawmill: the pit looked at (knee deep: as far as they got)."},
+    {"id": "sawmillPinned", "about": "The sawmill: the agent under the logs searched (pistol rounds, his vest)."},
+    {"id": "sawmillBench", "about": "The sawmill: the saw filer's bench looked over (how a chain's sharpened: the workbench at home)."},
+    {"id": "sawmillEngine", "about": "The sawmill: the power unit looked at (shut down by hand, the saw stopped in the cut)."},
+    {"id": "diaryFound", "about": "The sawmill: the foreman's day book found on his desk (lore loggersDiary)."},
+    {"id": "chainsawTaken", "about": "The sawmill: the chainsaw worked out of the agent on the shed floor."},
+    {"id": "sawmillRisen", "about": "The sawmill: the dead have got up (the chainsaw revved at the mill, the head saw knocked loose, or dark fell with Tom in the yard)."},
+    {"id": "sawmillCleared", "about": "The sawmill: every one of the dead that got up is down again."},
+    {"id": "headSawTaken", "about": "The sawmill: the 60-inch head saw taken off its arbor (lore headSaw: the killdozer's saw, for later)."}
   ]
 }
