@@ -143,8 +143,13 @@ export class Railway {
     const spots = [];
     for (let d = d0 + pc.spacing / 2; d < d1; d += pc.spacing * (0.85 + this.rng.next() * 0.3)) {
       const f = railFrame(this.line, d);
-      const x = f.x + f.rx * pc.side * pc.offset;
-      const z = f.z + f.rz * pc.side * pc.offset;
+      // Session 27: through the railway cutting the line runs along the top of its bank, not the face.
+      const cut = this.ground?.cutting;
+      const cc = this.ground?.mapCfg?.railway?.cutting;
+      const inCut = cut && cc && Math.abs(d - cut.along) < cc.length + cc.nose * 0.7;
+      const off = inCut ? cc.floorHalf + cc.faceRun + 2.5 : pc.offset;
+      const x = f.x + f.rx * pc.side * off;
+      const z = f.z + f.rz * pc.side * off;
       // Keep off the crossings.
       if (this.crossings.some((c) => Math.hypot(c.x - x, c.z - z) < 6)) continue;
       const roll = this.rng.next();

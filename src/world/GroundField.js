@@ -14,6 +14,7 @@
 import { noiseSeed, smoothstep } from './noise.js';
 import { cliffZ, cliffHeight, clampToWalkable, blendedNoise, fixedWeight } from './mapGeometry.js';
 import { pointSegmentDistance } from './mapGraph.js';
+import { cuttingFrame, liftAt } from './railCutting.js';
 
 export class GroundField {
   // map: from generateMap(). mapCfg: config.map. terrainCfg: config.terrain.
@@ -241,6 +242,9 @@ export class GroundField {
     // Session 21: the railway's grade: the ground along its line, smoothed
     // over a long window (a surveyed grade: cuttings through the rises,
     // low banks over the dips).
+    // Session 27: the railway cutting's banks (world/railCutting.js).
+    const cut = this.mapCfg.railway?.cutting;
+    this.cutting = this.map.railway && cut ? cuttingFrame(this.map, cut) : null;
     if (this.rail) this.rail.grade = railGrade(this.rail, this.geo, this.mapCfg.railway.grade, (x, z) => this.rawHeight(x, z, 1));
     this.heights = new Float32Array(this.nx * this.nz);
     this.minHeight = Infinity;
@@ -288,6 +292,7 @@ export class GroundField {
     // Session 21: eased toward the railway's grade along its line, and the
     // hills its two collapsed tunnels are bored into at the map's edges.
     if (this.rail) h = this.railHeight(x, z, h);
+    if (this.cutting) h += liftAt(this.cutting, this.mapCfg.railway.cutting, x, z);
     // Behind the cliff face the ground climbs to the plateau on top.
     const behind = cliffZ(this.geo, x) - z;
     if (behind > 0) h += cliffHeight(this.geo, x) * smoothstep(0, this.geo.cliff.rampWidth, behind);

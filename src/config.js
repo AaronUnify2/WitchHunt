@@ -441,6 +441,14 @@ export const config = {
       // The collapsed tunnels sit beyond the walkable area's east and west
       // edges, bored into hills that rise behind them (metres).
       tunnel: { beyondEdge: 6, hillFront: 18, hillRise: 22, hillHeight: 13, hillWidth: 42, cutHalf: 3.2, cutSlope: 7 }, // hillFront: metres in front of the portal its hill starts to rise; hillRise: over how far; cutHalf / cutSlope: the cutting's floor either side of the line and its banks
+      // Session 27: the railway cutting (world/railCutting.js): where the seed's railwayCutting clearing
+      // sits on the line, the ground either side is lifted into two banks the navvies blasted through in
+      // 1902; the pathways come down into it through gullies. Metres. floorHalf: the open floor either side
+      // of the line (wider than the ground's 4 m grid, so the floor stays flat); faceRun: the face's
+      // slope; height: the south bank's and the north bank's; topOut / outFade: how far back the tops run
+      // and fade into the forest; length / nose: the full banks either side of the middle, and their
+      // taper to the mouths; lumps: the tops' unevenness; gully / gullyBlend: a pathway's cut.
+      cutting: { floorHalf: 5.5, faceRun: 5, height: [5.6, 7.2], topOut: 19, outFade: 16, length: 15, nose: 14, lumps: 0.12, gully: 3.4, gullyBlend: 5, store: { z: 8 } },
       regrowth: { saplings: 0.12, saplingScale: [0.3, 0.55], bushes: 0.55 }, // on the bed: the chance per tree spot of a young tree (and its size), per bush spot of brush
       // Drawn (render/Railway.js).
       gauge: 1.435, // metres between the rails (standard gauge)
@@ -716,7 +724,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -4362,6 +4370,88 @@ export const config = {
         capsule: 0x4a5a48, // copper, green with a century underground
         capsuleDark: 0x2e3a2e,
       },
+    },
+  },
+
+  // Session 27: the railway cutting (an optional encounter; DESIGN.md "The railway cutting:
+  // the 1903 line"). The set: render/railwayCuttingModel.js, world/RailwayCuttingSite.js; the
+  // ground's banks: world/railCutting.js (config.map.railway.cutting). The last train out of
+  // Hemlock Gap, October 13, 1903, stopped in the cut and left there: the engine (its cowcatcher
+  // and boiler plate: the killdozer's armour), the tender, two coaches and the baggage car off the
+  // rails, the belongings of a town still aboard; the powder store up the bank.
+  railwayCutting: {
+    radius: 34, // metres from its middle the set reaches (for drawing it)
+    // The train along the line (metres along it from the clearing's middle, toward the engine's
+    // front: heading +1 is east). Each car: its kind, length, the gap after the one in front.
+    train: {
+      heading: 1,
+      front: 21, // the cowcatcher's tip
+      sink: 0.16, // a century of litter: the wheels sunk this far
+      cars: [
+        { kind: 'engine', length: 10.2, gap: 0 },
+        { kind: 'tender', length: 5.6, gap: 0.5 },
+        { kind: 'coach', id: 'coach1', length: 12, gap: 0.9 },
+        { kind: 'coach', id: 'coach2', length: 12, gap: 1.0 },
+        { kind: 'baggage', id: 'baggage', length: 8.5, gap: 1.6, roll: 0.3, skew: 0.16 }, // off the rails, leaning on the bank
+      ],
+      coach: { width: 2.8, floor: 1.15, wall: 2.05, platform: 0.95, aisle: 0.58, bench: 1.15 }, // floor: above the rails; wall: the side walls' height above the floor; aisle: its half width; bench: metres between benches
+    },
+    // The old powder store up on the bank (X across from the line, by the frame's side; the end of
+    // the cutting it sits toward comes from the map: world/railCutting.js).
+    store: { across: 13.2, width: 3.4, depth: 2.8, height: 2.2, door: 0.95, steps: 4.5 }, // steps: metres along from the store, the navvies' steps up the face
+    faceCollider: 6.4, // metres across from the line: the rock faces' colliders
+    look: {
+      weather: { rust: [0x4a2e1e, 0x33221a, 0x2a2622], grimeHeight: 0.5, keepBright: [] },
+      colors: {
+        rock: 0x4a4842, // blasted shale and sandstone, grey-brown
+        rockDark: 0x38362f,
+        rockLight: 0x56534a,
+        strata: 0x403b33,
+        drill: 0x2a2824, // the half-barrel drill holes down the faces
+        moss: 0x34402a,
+        mossDark: 0x2a3322,
+        fern: 0x2e3a24,
+        earth: 0x3e3022,
+        litter: 0x3a3020,
+        root: 0x33281e,
+        rust: 0x4a2e1e,
+        rustDark: 0x33221a,
+        iron: 0x2a2622,
+        ironDark: 0x1e1c19,
+        boiler: 0x2c2a27, // the engine's black, gone to rust and soot
+        brass: 0x544626, // the bell, the dome's trim
+        coach: 0x4a2420, // the coaches' Tuscan red, faded
+        coachDark: 0x381c19,
+        letter: 0x5a4a2a, // the gilt lettering's ghost
+        wood: 0x4a3626,
+        woodDark: 0x35271c,
+        woodGrey: 0x55514a, // planks weathered silver
+        roof: 0x2c2a26,
+        roofDark: 0x22201d,
+        hollow: 0x0d0c0b,
+        glass: 0x1e262a,
+        plush: 0x2e3a2c, // the seats' green plush
+        plushDark: 0x232b21,
+        leather: 0x3e2c1c,
+        leatherDark: 0x2c2014,
+        canvas: 0x5a5444,
+        cloth: 0x4a4038,
+        clothBlue: 0x343a46,
+        clothRose: 0x4e3436,
+        tag: 0x6a6252, // the brown card labels
+        coal: 0x1a1918,
+        bark: 0x3a2e24,
+        leaf: 0x34402a,
+        leafDark: 0x2a3322,
+        stone: 0x4e4a42,
+        stoneDark: 0x3c3934,
+        plank: 0x3e3428,
+        plankDark: 0x2c261e,
+        paint: 0x5c5a50, // POWDER, white once
+        lamp: 0x2a2622,
+        lampGlass: 0x3a3a30,
+      },
+      flame: 0xb07a3a, // the lantern on the line (unlit material: a glow, no light)
     },
   },
 

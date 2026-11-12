@@ -85,6 +85,7 @@ import { StairsSite } from '../world/StairsSite.js';
 import { Stairs } from '../encounters/Stairs.js';
 import { MiloBarnSite } from '../world/MiloBarnSite.js';
 import { MiloBarn } from '../encounters/MiloBarn.js';
+import { RailwayCuttingSite } from '../world/RailwayCuttingSite.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
@@ -159,6 +160,8 @@ export class Game {
     this.stairsSite.init(this.scene, this.world, this.colliders);
     this.barnSite = new MiloBarnSite(this.cfg); // Milo's barn (an optional encounter)
     this.barnSite.init(this.scene, this.world, this.colliders);
+    this.cuttingSite = new RailwayCuttingSite(this.cfg); // Session 27: the railway cutting (an optional encounter)
+    this.cuttingSite.init(this.scene, this.world, this.colliders);
     this.initWitch();
     this.initStation(root);
     this.initVehicles();
@@ -1642,6 +1645,7 @@ export class Game {
     this.hut.update(dt, camera.position, this.drawDistance);
     this.crashSite.update(camera.position, this.drawDistance);
     this.churchSite.update(camera.position, this.drawDistance);
+    this.cuttingSite.update(camera.position, this.drawDistance);
     this.stairsSite.update(camera.position, this.drawDistance);
     this.barnSite.update(camera.position, this.drawDistance);
 
@@ -1790,6 +1794,7 @@ export class Game {
     this.junieTaken.dispose();
     this.church.dispose();
     this.churchSite.dispose();
+    this.cuttingSite.dispose();
     this.stairs.dispose();
     this.milo.dispose();
     this.stairsSite.dispose();
