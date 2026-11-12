@@ -1,0 +1,34 @@
+{
+ "_note": "Session 29: the moonshiners' holler's texts (encounters/Holler.js, combat/hollerTraps.js; DESIGN.md \"Moonshiners' holler\"). Every text is a draft for Aaron. The story they tell (my draft, Session 29): the Rigsbys ran a still up this holler for three generations. When the lights started coming down over the government land last spring, Clete Rigsby took them for the law (revenue men, the state, the feds: it was all one to him) and strung the holler shut: shotguns on stumps, cans on wire, snares, his daddy's bear traps. A man in a black suit came up it in the autumn, and didn't go back down. Then the portal went, and the family turned where they sat, round the still they never let go cold. traps: each kind's lines (combat/hollerTraps.js): hint (the first time Tom's near one), noCutters (the prompt at a line without the cutters), disarm (the X prompt, and what he finds), caught / free (a bear trap or a snare has him), hit (a stump gun's charge caught him).",
+ "traps": {
+  "shotgun": {
+   "hint": "Fishing line, shin high, right across the floor. It runs off to a stump with a shotgun wired down on it. Step over it, or cut it.",
+   "noCutters": "Fishing line, tied to a trigger. Jump it, or find something to cut it with",
+   "disarm": { "prompt": "cut the line", "busy": "Easing it slack…", "text": "Line cut, slack in your hand. Two shells out of the gun." },
+   "hit": "The stump gun. You walked right into its line."
+  },
+  "cans": {
+   "hint": "Tin cans hung on a wire across the floor. Brush it and every dead thing up this holler hears.",
+   "noCutters": "Tin cans on a wire. Jump it, or find something to cut it with",
+   "disarm": { "prompt": "cut the wire, hold the cans still", "busy": "Easy…", "text": "Wire cut, the cans laid down quiet." }
+  },
+  "bear": {
+   "hint": "Leaves piled too neat, all the one colour. Nobody rakes a holler. Something's under there.",
+   "disarm": { "prompt": "spring it with a stick", "busy": "Feeling for the pan…", "text": "The jaws slam shut on the stick. A bear trap, an old one, chained to a stake." },
+   "caught": "Bear trap. Your leg's in it.",
+   "free": { "prompt": "prise the jaws open", "busy": "Prising…" }
+  },
+  "snare": {
+   "hint": "A sapling bent right over to the ground, pegged down. A loop of cord laid open in the leaves under it.",
+   "disarm": { "prompt": "pull the peg", "busy": "Working it loose…", "text": "The sapling whips up empty, the noose swinging off the top of it." },
+   "caught": "The snare. It's got you by the ankle.",
+   "free": { "prompt": "work the noose off", "busy": "Working it off…" }
+  }
+ },
+ "cutters": {
+  "prompt": "take the wire cutters",
+  "busy": "…",
+  "text": "Wire cutters, red grips, out of the tackle box. On your belt now. They'll take a line clean."
+ },
+ "sign": "POSTED. NO TRESPASSING. Painted by hand, a long time ago, and painted over again since. Under it, newer, in a hurry: THIS MEANS YOU."
+}

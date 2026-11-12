@@ -4654,6 +4654,26 @@ export const config = {
       { id: 'snare2', kind: 'snare', z: 9, dx: 3, side: 1, mapped: false },
       { id: 'bear3', kind: 'bear', z: 10.5, dx: -5 },
     ],
+    // How the traps go off and come apart (combat/hollerTraps.js). reach: metres from a trap (a line's
+    // nearest point) that X works it; hintDistance: the first time Tom's this near each kind, a line on
+    // it; holds: seconds held (X) to disarm each kind, and to work free of a bear trap or a snare.
+    trapRules: {
+      reach: 1.5,
+      hintDistance: 4.5,
+      holds: { disarm: { shotgun: 1.4, cans: 1.0, bear: 1.8, snare: 1.0 }, free: { bear: 1.6, snare: 1.1 } },
+      // The stump gun's charge: everything within `range` metres and `halfAngle` degrees of its aim takes
+      // `damage` (falling off by `falloff` at the far end); Tom takes `tomDamage`. Its bang carries
+      // `alert` metres. Cut, its line gives up the `shells` in the gun.
+      shotgun: { range: 11, halfAngle: 13, damage: 90, falloff: 0.5, knockback: 2.5, tomDamage: 45, alert: 45, shells: 2 },
+      cans: { alert: 70 }, // metres the rattle carries
+      // radius: metres from its middle it takes a foot; damage: Tom's; deadDamage / holdSeconds: one of the dead's.
+      bear: { radius: 0.5, damage: 30, shake: 1.5, deadDamage: 40, holdSeconds: 14 },
+      snare: { radius: 0.55, damage: 8, shake: 1, deadDamage: 10, holdSeconds: 12 },
+    },
+    encounter: {
+      interactRange: 1.7,
+      holds: { search: 1.0, cutters: 0.8, map: 0.8 }, // seconds held (X)
+    },
     look: {
       weather: { rust: [0x34302a, 0x2a2622, 0x3a2a1e, 0x2c2a28], grimeHeight: 0.14, keepBright: [] },
       colors: {

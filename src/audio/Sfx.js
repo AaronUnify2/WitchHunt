@@ -1172,6 +1172,51 @@ const RECIPES = {
     for (let i = 0; i < 6; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.025, wave: 'square', freq: 2100, gain: 0.06 }), i * 45);
     setTimeout(() => s.ready && s.tone(o, { seconds: 0.7, wave: 'triangle', freq: 1760, endFreq: 1740, gain: 0.1 }), 330);
   },
+  // Session 29: the moonshiners' holler's traps. A stump gun going off down its line: a shotgun's
+  // blast out in the open, the holler's walls throwing it back twice.
+  trapGun(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 120);
+    s.noiseBurst(o, { seconds: 0.6, freq: 2400, endFreq: 140, gain: 1 });
+    s.tone(o, { seconds: 0.35, freq: 72, endFreq: 30, gain: 0.9 });
+    for (const [t, g] of [[260, 0.3], [520, 0.14]]) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.45, freq: 900, endFreq: 120, gain: g }), t);
+  },
+  // Tin cans on a wire, jerked: a clatter that keeps going, bright and tinny.
+  cansRattle(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 90);
+    for (let i = 0; i < 14; i++) {
+      setTimeout(() => {
+        if (!s.ready) return;
+        s.noiseBurst(o, { seconds: 0.05, type: 'bandpass', freq: 2600 + Math.random() * 2400, q: 6, gain: 0.5 - i * 0.025 });
+        s.tone(o, { seconds: 0.08, wave: 'triangle', freq: 1300 + Math.random() * 900, gain: 0.06 });
+      }, i * (55 + Math.random() * 70)); // cosmetic only
+    }
+  },
+  // A bear trap's jaws slamming: an iron clack and the spring's twang.
+  bearSnap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 40);
+    s.noiseBurst(o, { seconds: 0.07, type: 'bandpass', freq: 1900, q: 3, gain: 1 });
+    s.tone(o, { seconds: 0.4, wave: 'triangle', freq: 560, endFreq: 510, gain: 0.18, vibrato: 18 });
+    s.tone(o, { seconds: 0.12, freq: 120, endFreq: 70, gain: 0.5 });
+  },
+  // A sapling whipping upright: a swish rising, then the cord snapping tight.
+  snareWhip(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 40);
+    s.noiseBurst(o, { seconds: 0.28, type: 'bandpass', freq: 700, endFreq: 3200, q: 1.2, gain: 0.6, attack: 0.05 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.06, type: 'highpass', freq: 2000, gain: 0.7 }), 260);
+    setTimeout(() => s.ready && s.tone(o, { seconds: 0.5, wave: 'sine', freq: 140, endFreq: 120, gain: 0.08, vibrato: 6 }), 280);
+  },
+  // The wire cutters through a line: a small hard snip.
+  wireSnip(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6, 16);
+    s.noiseBurst(o, { seconds: 0.03, type: 'highpass', freq: 4200, gain: 0.7 });
+    s.tone(o, { seconds: 0.05, wave: 'square', freq: 2400, endFreq: 1800, gain: 0.05 });
+  },
+  // A peg pulled, a trap prised open: wood creaking, then giving.
+  trapPeg(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.7, 18);
+    s.noiseBurst(o, { seconds: 0.3, type: 'bandpass', freq: 600, endFreq: 900, q: 4, gain: 0.3, attack: 0.15 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.06, type: 'lowpass', freq: 900, gain: 0.6 }), 310);
+  },
   death(s) {
     const o = s.out();
     s.tone(o, { seconds: 2.5, wave: 'sawtooth', freq: 90, endFreq: 35, gain: 0.4, attack: 0.1 });

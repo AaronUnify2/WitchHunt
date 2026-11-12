@@ -91,6 +91,16 @@
     {"id": "chainsawTaken", "about": "The sawmill: the chainsaw worked out of the agent on the shed floor."},
     {"id": "sawmillRisen", "about": "The sawmill: the dead have got up (the chainsaw revved at the mill, the head saw knocked loose, or dark fell with Tom in the yard)."},
     {"id": "sawmillCleared", "about": "The sawmill: every one of the dead that got up is down again."},
-    {"id": "headSawTaken", "about": "The sawmill: the 60-inch head saw taken off its arbor (lore headSaw: the killdozer's saw, for later)."}
+    {"id": "headSawTaken", "about": "The sawmill: the 60-inch head saw taken off its arbor (lore headSaw: the killdozer's saw, for later)."},
+    {"id": "hollerTrapMouthGun", "about": "The moonshiners' holler: the trap mouthGun has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapBear1", "about": "The moonshiners' holler: the trap bear1 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapCans1", "about": "The moonshiners' holler: the trap cans1 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapSnare1", "about": "The moonshiners' holler: the trap snare1 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapGun2", "about": "The moonshiners' holler: the trap gun2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapBear2", "about": "The moonshiners' holler: the trap bear2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapCans2", "about": "The moonshiners' holler: the trap cans2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapSnare2", "about": "The moonshiners' holler: the trap snare2 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "hollerTrapBear3", "about": "The moonshiners' holler: the trap bear3 has gone off or been disarmed (combat/hollerTraps.js; config.holler.traps)."},
+    {"id": "wireCuttersTaken", "about": "The moonshiners' holler: the wire cutters taken from the tackle box at the lookout (a tool: they cut the traps' lines)."}
   ]
 }
