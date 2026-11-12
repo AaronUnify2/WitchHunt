@@ -275,6 +275,42 @@ export function buildInterior(cabin, fy, k, box, rng) {
   glow.push(b(0.1, 0.18, 0.1, tx + 0.25, tb.h + 0.03, tz - 0.1, k.lanternGlass));
   add(0.13, 0.04, 0.13, tx + 0.25, tb.h + 0.21, tz - 0.1, k.metalDark);
   for (let i = 0; i < 5; i++) add(0.07, 0.005, 0.1, tx - 0.3 + i * 0.09, tb.h, tz + 0.12 + (i % 2) * 0.03, k.paper, i * 0.4 - 0.8);
+  // Session 28: the workbench against the comms room's wall: a thick top on a braced frame, a shelf
+  // under it; the vise at one end; a board of tools on the wall behind (a bow saw, a hammer, files in
+  // a row); an oil can, a jar of nails, a rag. The chainsaw's chain is filed here (base/Station.js).
+  const wb = c.furniture.find((f) => f.id === 'workbench');
+  if (wb) {
+    const wx = wb.x - c.x;
+    const wz = wb.z - c.z;
+    const back = wz - wb.d / 2;
+    add(wb.w, 0.07, wb.d, wx, wb.h - 0.07, wz, k.tableTop);
+    add(wb.w - 0.2, 0.03, wb.d - 0.12, wx, 0.22, wz, k.woodDark);
+    for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) add(0.08, wb.h - 0.07, 0.08, wx + lx * (wb.w / 2 - 0.08), 0, wz + lz * (wb.d / 2 - 0.07), k.woodDark);
+    add(wb.w - 0.2, 0.08, 0.04, wx, 0.5, wz + wb.d / 2 - 0.06, k.woodDark);
+    // The vise at the east end, its jaws and its bar.
+    add(0.16, 0.16, 0.2, wx + wb.w / 2 - 0.25, wb.h, wz + 0.12, k.iron);
+    add(0.2, 0.06, 0.06, wx + wb.w / 2 - 0.25, wb.h + 0.16, wz + 0.02, k.metalDark);
+    add(0.2, 0.06, 0.06, wx + wb.w / 2 - 0.25, wb.h + 0.16, wz + 0.2, k.metalDark);
+    add(0.02, 0.02, 0.3, wx + wb.w / 2 - 0.25, wb.h + 0.06, wz + 0.3, k.chrome);
+    // The tool board.
+    add(wb.w - 0.1, 0.8, 0.03, wx, wb.h + 0.25, back + 0.02, k.rackBoard);
+    add(0.5, 0.03, 0.02, wx - 0.5, wb.h + 0.85, back + 0.05, k.metalDark); // a bow saw: the frame and the blade
+    add(0.03, 0.2, 0.02, wx - 0.74, wb.h + 0.66, back + 0.05, k.metalDark);
+    add(0.03, 0.2, 0.02, wx - 0.26, wb.h + 0.66, back + 0.05, k.metalDark);
+    add(0.48, 0.015, 0.015, wx - 0.5, wb.h + 0.66, back + 0.05, k.chrome);
+    add(0.04, 0.3, 0.03, wx + 0.05, wb.h + 0.5, back + 0.05, k.plank); // a hammer
+    add(0.14, 0.05, 0.04, wx + 0.05, wb.h + 0.8, back + 0.055, k.iron);
+    for (let i = 0; i < 4; i++) {
+      add(0.02, 0.24, 0.015, wx + 0.35 + i * 0.1, wb.h + 0.55, back + 0.05, k.chrome); // the files
+      add(0.03, 0.09, 0.03, wx + 0.35 + i * 0.1, wb.h + 0.46, back + 0.05, k.plank);
+    }
+    // On the top: an oil can, a jar of nails, a rag, a file left out.
+    add(0.09, 0.1, 0.09, wx - 0.6, wb.h, wz - 0.08, k.metalDark);
+    add(0.015, 0.1, 0.015, wx - 0.6, wb.h + 0.1, wz - 0.08, k.metalDark, 0);
+    add(0.08, 0.11, 0.08, wx - 0.35, wb.h, wz - 0.1, k.chrome);
+    add(0.2, 0.015, 0.16, wx - 0.05, wb.h, wz + 0.1, k.blanketRed, 0.4);
+    add(0.26, 0.015, 0.02, wx + 0.3, wb.h, wz + 0.05, k.chrome, 0.5);
+  }
   // The bunks: a steel frame, two mattresses with wool blankets and pillows.
   const bk = c.furniture.find((f) => f.id === 'bunks');
   const bxl = bk.x - c.x;

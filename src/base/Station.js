@@ -35,6 +35,7 @@ import { StationRenderer } from '../render/StationRenderer.js';
 import { Ledger } from '../ui/Ledger.js';
 import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { buildFencePlan } from './fencePlan.js';
+import { sharpenOffer, edgeWord } from '../combat/chainsawState.js';
 
 const AMMO_NAMES = { pistol: 'pistol rounds', rifle: 'rifle rounds', shotgun: 'shotgun shells', alienShells: 'alien shells' };
 
@@ -343,6 +344,34 @@ export class Station {
     return { x: c.x + c.halfW - r.standOff, z: c.z + r.z };
   }
 
+  // Session 28: the workbench in the main room (config.station.workbench): where Tom stands at it.
+  benchSpot() {
+    const f = this.layout.cabin.furniture.find((x) => x.id === 'workbench');
+    return f ? { x: f.x, z: f.z + f.d / 2 + this.sc.workbench.standOff } : null;
+  }
+
+  // What the bench offers now: { key, prompt, busy, seconds, act } (act null: only to read).
+  benchOffer(X) {
+    const wb = this.sc.workbench;
+    const saw = this.chainsaw ?? this.combat.chainsaw; // combat/Chainsaw.js (Game hands it to Combat)
+    if (!saw?.owned) return { key: 'workbench', prompt: 'The workbench: a vise, files, an oil can. Nothing of yours needs an edge yet', act: null };
+    const offer = sharpenOffer(wb, saw.state.sharp, this.combat.inventory.scrap);
+    const edge = edgeWord(saw.state.sharp);
+    if (!offer.needed) return { key: 'workbench', prompt: `The workbench: the chainsaw's chain is sharp`, act: null };
+    if (!offer.can) return { key: 'workbench', prompt: `The workbench: the chain's ${edge}. Sharpening it takes ${wb.scrap} scrap (you have ${this.combat.inventory.scrap})`, act: null };
+    return { key: 'workbench', prompt: `Hold ${X}: sharpen the chainsaw's chain (${wb.scrap} scrap; it's ${edge})`, busy: 'Filing each tooth…', seconds: wb.seconds, act: () => this.sharpenChain(), stroke: wb.stroke };
+  }
+
+  sharpenChain() {
+    const wb = this.sc.workbench;
+    if (!this.combat.inventory.spendScrap(wb.scrap)) return null;
+    (this.chainsaw ?? this.combat.chainsaw).sharpen();
+    this.combat.sfx.play('sharpened', this.benchSpot());
+    this.combat.hud.pickup("The chain's sharp again");
+    this.bus.emit('station:sharpened');
+    return null;
+  }
+
   // Where it leans: { x, z } (outside the front wall, east of the door).
   shovelSpot() {
     const d = this.layout.cabin.frontDoor;
@@ -565,6 +594,14 @@ export class Station {
     const best = this.pickInteraction(input.activeDevice === 'gamepad' ? 'X' : 'E');
     const key = best?.act ? best.key : null;
     const done = this.hold.update(dt, key, input.isDown('interact'), best?.seconds ?? 1);
+    // Session 28: a job with strokes (filing the chain): a sound on each while it's held.
+    if (this.hold.active && best?.stroke) {
+      this.strokeTimer = (this.strokeTimer ?? 0) - dt;
+      if (this.strokeTimer <= 0) {
+        this.strokeTimer = best.stroke;
+        this.combat.sfx.play('fileStroke', this.player.position);
+      }
+    } else this.strokeTimer = 0;
     if (done && best?.act) {
       const message = best.act();
       if (message) this.notify(message);
@@ -614,6 +651,8 @@ export class Station {
       if (inv.canTakeKit()) offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: first ? `Hold ${X}: search the first aid box` : `Hold ${X}: take from the first aid box (${what})`, busy: 'Searching…', seconds: h.ledger, act: () => this.takeAidBox() });
       else offer(dist(this.aidBoxSpot()), { key: 'aid-box', prompt: `First aid box: ${what}. Your healing is full`, act: null });
     }
+    const bench = this.benchSpot(); // Session 28
+    if (bench) offer(dist(bench), this.benchOffer(X));
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     const found = this.combat.weapons.found.length; // Session 25: just to look at
     offer(dist(this.rackSpot()), { key: 'gun-rack', prompt: `The gun rack: ${found === 0 ? 'no guns found yet' : `the ${found === 1 ? 'gun' : `${found} guns`} you've found`}. ${X === 'X' ? 'D-pad down' : 'G'}: the weapon cross`, act: null });

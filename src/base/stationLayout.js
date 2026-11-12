@@ -172,6 +172,7 @@ function cabinLayout(centre, c, deskCfg) {
       { id: 'table', x: cx - 2.8, z: cz + 2.0, w: 1.3, d: 0.85, h: 0.76 },
       { id: 'bunks', x: cx + hw - 1.15, z: cz + 2.45, w: 2.0, d: 0.9, h: 1.9 },
       { id: 'cabinets', x: cx + 1.5, z: cz - hd + 0.4, w: 1.45, d: 0.6, h: 1.32 },
+      ...(c.workbench ? [{ id: 'workbench', x: cx + c.workbench.x, z: cz + partZ + 0.08 + c.workbench.d / 2, w: c.workbench.w, d: c.workbench.d, h: c.workbench.h }] : []), // Session 28
     ],
     // Where the family wait out the night (placeholders until M8).
     family: [

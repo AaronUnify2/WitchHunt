@@ -2420,6 +2420,10 @@ export const config = {
         commsDepth: 3.5, // the comms room is the back (north) strip of the cabin
         commsDoorX: 3.5, // the comms door, east of centre in the partition
         commsDoorWidth: 1.2,
+        // Session 28 (DESIGN.md "The ranger station"): the workbench, there from the start: in the main room,
+        // against the comms room's wall, west of the way from the front door to the comms door (x: metres
+        // east of the cabin's centre; w across, d out from the wall, h tall).
+        workbench: { x: -0.9, w: 1.8, d: 0.6, h: 0.9 },
         doorApproach: 0.9, // metres either side of a door where zombies stand to attack or step through
         cornerMargin: 1.4, // zombies round the cabin's corners this far out
       },
@@ -2521,6 +2525,11 @@ export const config = {
     // Session 16 (Aaron): the first aid box on the comms room wall; 2 kits in it.
     // Session 20 (Aaron): it's where kits go that don't fit in the healing pool.
     aidBox: { kits: { firstAid: 2 } },
+    // Session 28: the workbench (the cabin's main room; config.station.cabin.workbench places it). The
+    // chainsaw's chain is filed sharp here for a little scrap (Aaron, Nov 8): hold X for `seconds`, a
+    // file stroke every `stroke`. fullAt: sharper than this, there's nothing to do. standOff: where Tom
+    // stands, out from the bench's front.
+    workbench: { scrap: 3, fullAt: 0.95, seconds: 3.6, stroke: 0.55, standOff: 0.75 },
     // Session 20 (Aaron): the gun rack on the comms room's east wall (z: metres from the cabin's centre; standOff: where Tom stands, in from the wall).
     gunRack: { z: -2.2, standOff: 0.9,
       // Session 23 (#343): the guns on the rack show, standing on its shelf against the pegs, in the
