@@ -1,19 +1,18 @@
 # Handover
 
-## DO THIS FIRST: Session 31: Aaron's big play-test notes, then the mineshaft's second half
+## DO THIS FIRST: Session 32: Aaron's big play-test notes, then back to the story (beats 6 and 7: the family's plan and the military's dozer)
 
-**Where things stand:** everything to date is on `main` (and `ccr-0df28e11-vknf7t`). 1189 tests pass and the build is clean. The story plays from the opening through the crashed plane, Junie taken, the Caller, the old church, the stairs and Junie home. Four optionals are built (Milo's barn, the railway cutting, the sawmill, the moonshiners' holler), and **the mineshaft's first half** (Session 30): the surface, the battery and the cage, the mine below, the turret cart, the ride's fight and the giant moths' real behaviour. **It stops at the bottom:** a barred bulkhead, and the cart winches back up. Nothing since Session 25 has been played on the tablet.
+**Where things stand:** everything to date is on `main` (and `ccr-2ebd0b15-khy2cs`). 1222 tests pass and the build is clean. The story plays from the opening through the crashed plane, Junie taken, the Caller, the old church, the stairs and Junie home. **All five designed optional encounters are built:** Milo's barn, the railway cutting, the sawmill, the moonshiners' holler and the mineshaft (Sessions 30 and 31: the way down, then the bottom, the plunger and the fire out). Nothing since Session 25 has been played on the tablet.
 
-**1. Aaron's notes first** (rule 10). His **big play-test** still hasn't come back (his notes were empty at the start of Sessions 28, 29 and 30). It covers PLAYTEST rounds 49-70. Ask for them if they aren't in the conversation. Fix the small ones before anything else, and log each settled call in OPEN_QUESTIONS. The Session 30 calls I'd most like his eye on: #602 (how hard the ride is: untested by hand), #575-576 (the cage ride's length), #574 (his dot on the map moves while he's below), #584 (the gun swings right round), #591 (miners in the army's shapes), #595-599 (the moths' numbers).
+**1. Aaron's notes first** (rule 10). His **big play-test** still hasn't come back (his notes were empty at the start of Sessions 28 to 31). It covers PLAYTEST rounds 49-73. Ask for them if they aren't in the conversation. Fix the small ones before anything else, and log each settled call in OPEN_QUESTIONS. The Session 31 calls I'd most like his eye on: #612 (the logbook's story), #611 (the foreman never gets up), #622 (is 20 seconds too many), #630 (how much the fire hurts: untested by hand), #631 (too many miners for eleven tags), #633 (riding out tail first), #616 (what you leave is lost), #638 (the lines).
 
-**2. Then the mineshaft's second half** (DESIGN.md "Abandoned mineshaft", from "The bottom"): the bulkhead opens on the seam where the Mothman came through and the giant torn cocoon; the miners' explosives, packed and never fired, with a plunger; Tom presses it (or hooks a battery to it), a short fuse, back in the cart; the cart grinds back up and a cutscene shows the fireball roaring up the tunnel behind him; the blast seals the seam and the cavern but not his tunnel. The foreman's logbook (`lore.json` `foremanLog` exists, with no paper yet), dynamite (`game.dynamite.give(n)`), the rock drill head (the ram: a card and a lore item, like the other killdozer parts). And the family's lines for the whole place (#572). Where it plugs in:
-- **The bottom now:** `encounters/MineRide.js` `cartStopped('end')` sets `mineBottom`; on foot there the cart offers `winchUp()` (a fade: replace it) and the door's prompt is `data/mineshaft.json` `bottom.door`. The bulkhead is baked into the tunnel's mesh in `render/mineModel.js` (the block headed "the bottom"): give it its own mesh to open it. The seam's light is `parts.seamGlow`.
-- **A cavern past the end:** the track ends at s 432 (`config.mineshaft.track.legs`); the tunnel's end wall is `endRoom` metres past it. Add a gallery to `track.wide` and a leg, or build the cavern as its own set at the track's end and a zone for it (`zoneSpan`).
-- **The cart going back up:** `MineCart.roll` only runs forward (`speedAt`, `nextStop`). Running it backward up the same track is a sign on the speed and a stop at `ride.start`.
-- **The fireball:** `explosives.blast` for the bang; the chase is a cutscene or a glow mesh run up the track behind the cart (`trackPoint`).
-- **After it:** the mine is sealed. A flag (`mineSealed`?) that makes the cage's lever say so.
+**2. Then the story's next stretch** (my suggestion in MORNING.md; **confirm it with Aaron**, he may want something else first). DESIGN.md "Build plan" M12, **Bigfoot (beats 6-7)**, its first part: **the family's plan and Earl's maps**, and **the military's dozer on the cordon strip** (the grappling hook and winch). Read DESIGN.md "The family's plan", "Getting the dozer" and "The dozer". The bug-zapper night and the cave are the sessions after. Where it plugs in:
+- **The dozer exists as a spike** (`world/Dozer.js`, `world/dozerParts.js`; debug menu): it drives, shoves cars and trees, and has a winch that hooks a car or one of the dead. It needs its place in the story: found parked where the clearing crew stopped, started, driven home.
+- **Its clearing is on the map:** `data/storySpine.json` `cordonDozer` (beat 7), a placeholder on the cordon strip (`world/cordon.js`). It wants a set (the crew's camp, the machine, why they stopped) and a beat, as the optional encounters have.
+- **The family's plan** is a scene at home once Junie's back (`junieHome`): Earl's maps from the storm shelter, the realisation that the capsule's nature spirit is Earl's Bigfoot, the goal set. `encounters/Stairs.js` ends with the homecoming; `story/Objectives.js` sets goals.
+- **Start points for testing:** `debug/storyStart.js` has "Outpost cleared" only. A "Junie home" start would save a long walk: add it first.
 
-**How to work** (as Sessions 26 to 30 did):
+**How to work** (as Sessions 26 to 31 did):
 - Config and data first: an encounter's texts go in its own `data/<place>.json`, and new JSON entries go in each data file's own one-line style, so the diff stays small.
 - Complete files and small modules.
 - No lights added or removed while playing: glows and unlit parts instead.
@@ -24,9 +23,43 @@
 - Scenes staged as cutscenes, with each line timed to its reading length.
 - A sound for every moment (`audio/Sfx.js`).
 - Check every batch headless, look at the screenshots critically, then push it to `main`.
-- Write it up at the end: STATUS, PLAYTEST from round 71, OPEN_QUESTIONS from #605, DESIGN as built, MORNING, and this file.
+- Write it up at the end: STATUS, PLAYTEST from round 74, OPEN_QUESTIONS from #646, DESIGN as built, MORNING, and this file.
 
-## Just finished: Session 30 (Level & Encounter Designer + AI Programmer): the mineshaft, the way down
+## Just finished: Session 31 (Level & Encounter Designer + AI Programmer): the mineshaft, the bottom and the way out
+
+**Status:** all of it is on `main` and on `ccr-2ebd0b15-khy2cs`, in four commits (one per batch, then the write-up). 1222 tests pass and the build is clean. Checked headless on three seeds; **none of it played on the tablet**. Aaron's answers at the start: no notes yet; the seam a glowing crack; the cocoon hung, split, 4 m; a 20 second fuse that kills; the ride up played, then a cutscene. For Aaron: PLAYTEST rounds 71-73; OPEN_QUESTIONS #605-645; MORNING.md.
+
+**Done, by batch** (STATUS "Session 31" has the detail):
+1. **The bottom** (`render/mineCavernModel.js`, `encounters/MineBottom.js`, `config.mineshaft.bottom`; `world/mineTrack.js` `roofAt`, `shutAt`): the bulkhead, the cavern, the seam, the cocoon, the charges, the foreman and his logbook, the dynamite, the drill's head, the cavern's roost.
+2. **The way out** (`MineBottom` `push` to `finish`, `world/MineCart.js` `runUp`, `MineFight` `startEscape`, `config.mineshaft.escape`, the cutscene `mine.out`): the fuse, the cart back up, the fire, the miners on the rails, the closing cutscene, the mine sealed.
+3. **The family's lines** (`dialogue.json` `mine.*`, `encounters/Mineshaft.js`), and no radio underground (`story/Comms.js` `deep`).
+
+**Not done or not checked:**
+- **The tablet**, for all of it (the tunnel is about 29,200 triangles in one draw call, fifteen small pieces, six balls of fire; then 22 moths and the dead).
+- **Any of it played by hand:** the way out's numbers are guesses (#622, #628-630).
+- **The surface doesn't change** once it's blown: only the lamps and the prompts (#637).
+- **The count in the cart is small** (#624); **Tom isn't seen in the cutscene** (#635).
+- **A miner's own art** and **the tunnel's dressing**: as Session 30 left them.
+- **The killdozer** isn't built, so the drill's head is a card and a lore item.
+- **The sounds** are placeholders (synthesised), like every sound in the game.
+
+**To carry (Session 31):**
+- **A wider, higher room at the end of a swept tunnel:** add a leg to the track, a `wide` entry and a `high` entry (`roofAt(track, s)`); `ringProfile` scales its wall points with the roof. Dress it from its own module with the tunnel's builder (`dressCavern(kit)`: `kit.pushAt(builder, s, lat, up, yaw, flat)` puts a frame on the track; `kit.builder(seed)` gives a builder for a piece that changes in play). Run `tests/mineTrack.test.js` after: the mine must stay under its clearing.
+- **A door in a swept tunnel:** bake its frame; give the leaf shut and the leaf open their own meshes and show one; set `track.shutAt` so shots stop there (`shutBetween`); add a block across the room box until it's open.
+- **One room box for a space of several widths:** make the box as wide as the widest part and narrow it with blocks (`sideBlocks(track, s0, s1, mid, hx)`). It only works where the track's straight and level.
+- **A glow without a light:** an unlit mesh for the thing itself, plus a second unlit mesh of the same shape drawn several times wider at a few per cent opacity, added on (`seamHalo`). Layers that overlap fall away from the middle by themselves.
+- **Firelight without a light:** an interior's light is read every frame (`Sky`), so hand `Interiors.define` a `light` object of your own and change its `ambientDay`, `ambientColor` and `fogColor` as the fire nears (`MineBottom.setGlow`).
+- **A cutscene inside an interior** needs `"indoors": true` in its data, or its camera is lit as the world outside is (grey fog at 1,200 m down). Give it anchors of your own through `cutscenes.play(id, { anchors: { name: { x, z, yaw, dy } } })`: `dy` is the height above the map's ground there (very negative in a pocket). An anchor's "ahead" is (-sin yaw, -cos yaw), its x to the right of that.
+- **Staging a cutscene from the encounter:** the cutscene's `emit` events reach the bus (`mine:out`), and the encounter runs its own clock while `playing` is false (`MineBottom.updateCine`, called from `MineRide.update`'s `cine` phase). Set the flags when it starts, and finish in `onDone`, so a skip or a quit mid-scene ends in the same place.
+- **Leaving an interior partway through a frame** (a cutscene's end, a bus event) disposes the model: return from the rest of that frame's update (`if (!this.below || !this.model) return`). The tests caught this; the headless run didn't.
+- **A vehicle run backward:** `MineCart.runUp(stop, speedOf)` sets `dir = -1`; `rollUp` is its own small loop. `mount(true)` faces Tom the other way. `due` and `rammed` in `MineFight` take the direction.
+- **The moths told to leave without biting:** a habitat whose `hc` has `dartEvery` huge and `dartCount` 0, then re-roll each active moth's `slot` (`streamSlot`). Their stream follows `tomS(ride)`: the cart, or Tom's feet when he's off it.
+- **The radio's reach has a fourth state:** `comms.state === 'deep'` while `game.mineRide.below`. Add to the `deep` function in `Game` for any other place far underground (the Bigfoot cave may want it). A line that must cut in over what's being said: `subtitles.clear(); dialogue.show(line, {}, true); dialogue.heard.add(line.id)`.
+- **A line played once by an encounter:** `if (!dialogue.heard.has(id)) dialogue.play(id)`. A line the radio drops isn't marked heard, so it's tried again next time.
+- **The run's end, not a respawn:** killing Tom (`combat.hurtPlayer(9999)`) ends the run with the end screen; nothing that isn't a flag comes back.
+- **My headless harness** (the scratchpad, not kept): Session 30's, plus: stop the game's own loop with `cancelAnimationFrame(game.rafId); game.loop = () => {}` and step `game.update(1/30)`; step a cutscene to a time with `while (game.cutscenes.current?.t < t) game.update(1/30)`; close a card with `game.card.choose('read' | 'keep', game.input)` and a paper with `game.paper.close(game.input)`; call `saveAndQuit()` from a `setTimeout` so the page's reload doesn't kill the call that asked for it; wrap `game.dialogue.deliver` to list which lines played and which the radio dropped. Seed 7 has the mine north of the comms line; 1234 and 99 have it south.
+
+## Before that: Session 30 (Level & Encounter Designer + AI Programmer): the mineshaft, the way down
 
 **Status:** all of it is on `main` and on `ccr-0df28e11-vknf7t`, in four commits (one per batch, then the write-up). 1189 tests pass and the build is clean. Checked headless; **none of it played on the tablet**. Aaron's answers at the start: no notes yet; two sessions, the way down first; an ordinary car battery; my other defaults. For Aaron: PLAYTEST rounds 67-70; OPEN_QUESTIONS #565-604; MORNING.md.
 

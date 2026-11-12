@@ -2230,7 +2230,7 @@ export const config = {
   },
 
   // Session 27: dynamite (combat/Dynamite.js; DESIGN.md "Weapons"): the first handheld throwable,
-  // old and sweating, from the railway cutting's powder store (and the mineshaft, later). Scarce
+  // old and sweating, from the railway cutting's powder store and the bottom of the mineshaft (Session 31). Scarce
   // (Aaron). With it in hand: press RT to strike a match and light the fuse; hold, and the fuse
   // burns (it's lit the moment you press: cook it to land it short); release to throw. Hold too long
   // and it goes off in your hand (Aaron: "Yes blow up in hand"). Thrown, it arcs, bounces and rolls,

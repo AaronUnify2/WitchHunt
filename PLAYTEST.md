@@ -1,4 +1,4 @@
-# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still); rounds 67-70 Session 30 (the mineshaft: the surface, the cage, the turret cart, the ride's fight)
+# Play-test list: Session 15, the first day (M9.2); rounds 16-19 Session 16; rounds 20-24 Session 17 (the outpost); rounds 25-27 Session 18 (QA); rounds 28-30 Session 19 (style pass 2); round 31 Session 20 (the new systems); round 32 Session 21 (the map); round 34 Session 22 (the spikes); round 36 Session 23 (QA); rounds 37-41 Session 24 (models); rounds 42-50 Session 25 (your play-through notes, the moths, the crashed plane); rounds 51-55 Session 26 (Junie taken, the Caller, the old church, the stairs, Junie home); rounds 57-59 Session 27 (the railway cutting, the spike maul, dynamite); rounds 60-63 Session 28 (the sawmill, the chainsaw, the workbench); rounds 64-66 Session 29 (the moonshiners' holler, its traps, the still); rounds 67-70 Session 30 (the mineshaft: the surface, the cage, the turret cart, the ride's fight); rounds 71-73 Session 31 (the mineshaft: the bottom, the way out, the family's lines)
 
 A running list for Aaron. Live build: **https://aaronunify2.github.io/WitchHunt/**. Play on the tablet with the controller.
 
@@ -421,6 +421,39 @@ Round 50 (Session 25, your notes on rounds 45 and 47; OPEN_QUESTIONS #446-448).
 - [ ] **The melee bar:** along the bottom of the weapon cross. Go down past the end of the down arm onto it, use left and right along it, and up to go back. The shovel is there now, with empty slots for the railroad spike maul and the chainsaw (designed, not built yet).
 - [ ] **The camp around its heat shield:** the log wall is on the side you walk in from, throwing the fire's heat into the camp. The three lean-tos sit close in an arc on the warm side, open to the fire. The slashed one is in the middle, with the blood leading off behind it.
 - [ ] **The debug menu's Enemies section:** tabs for Zombies (including one of each kind in front of you), The witch, Giant beetles, Giant moths, The Mothman, and Aliens (the crashed plane's grey). Sigils and marches keep their own section.
+
+**Round 71: the bottom of the mine (Session 31; OPEN_QUESTIONS #605-619).** Ride down, or debug menu, **Story, radio & trail cams**: "Mineshaft: to the bottom" (the bulkhead shut) or "to the bottom, the bulkhead open".
+- [ ] **The bulkhead:** hold X at it for about three seconds (the pinch bar from the fall). The bar comes out, the leaf's dragged back against the wall, the silk hangs torn.
+- [ ] **The cavern:** walk in. Far bigger than the drift, the roof out of the torch's reach. Does it read as somewhere nobody dug?
+- [ ] **The seam:** a crack up the end wall, taller than a house and a hand wide, lit red from inside. It pulses slowly and hums, louder as you come near. Is it the right red? Too bright, too dull? Hold X to look into it.
+- [ ] **The cocoon:** hung beside the seam, twice your height, split down the side that faces you, dark inside. Hold X to look. Does it read as something that hatched?
+- [ ] **The moths:** look up. Red eyes all over the roof. They don't come down. Shoot one and they all do.
+- [ ] **The foreman** sat against a case by the exploder, his hand a foot short of it. **His logbook** is by his hand (hold X): a card, then seven pages. Read it through: is it the right story? (Every word is a draft.)
+- [ ] **The dynamite:** the open case on the right as you come in: 5 sticks.
+- [ ] **The drill's head:** the rock drill on its tripod on the left. Hold X for three seconds: a card (the killdozer's ram).
+- [ ] **Go back up without pushing the plunger** (hold X at the cart: the haulage rope, a fade) and come down again: the bulkhead's still open, what you took is gone, the moths are back on the roof.
+- [ ] **Save and quit** in the cavern, Continue: you're at the collar, and everything's as you left it below.
+
+**Round 72: the way out (Session 31; #620-637).** Debug: "Mineshaft: push the plunger" works from anywhere at the bottom.
+- [ ] **The plunger:** hold X at the exploder. The handle goes down, a spark starts up the cable, and the prompt line counts: FUSE 20s · GET TO THE CART. Every moth lets go of the roof and streams out ahead of you.
+- [ ] **Run.** It's about 40 m to the cart. Hold X at it (a short hold, a wide reach). How many seconds did you have left? Is 20 right?
+- [ ] **Miss it once on purpose:** stand in the cavern until it burns down. You die. Is that fair, or should the blast wait for you?
+- [ ] **The rope:** the cart starts back up the drift at a walk with the count still running (it's small, under the sight: can you read it?).
+- [ ] **The blast:** a shake and a roar, the cart leaps to twice the speed, and the drift behind you is orange. Look back: the fire's coming.
+- [ ] **The rails:** miners walk down the rails at you in ones, twos and threes. Shoot them before the cart reaches them. Each one it hits slows it right down, and the fire gains.
+- [ ] **Let it catch you** (don't shoot): it comes over the cart, takes 12 health, and falls back. It can't kill you. A ride with no shots fired cost my test 36 health; a clean one cost nothing. Too soft? Too easy?
+- [ ] **The gun the wrong way round:** you face up the drift, the cart's nose points down it. Does it feel right, or backward?
+- [ ] **The last of it** is a cutscene, about 12 seconds: the cart into the landing, the fire after it, the cage away, black, then the headframe from outside with a thump and a lick of fire up the shaft. Does it land? Skip it once with A.
+- [ ] **Afterwards:** you're at the collar. The cage's lever and the control box both say it's finished, and the lamps are out. Save and quit, Continue: still sealed.
+
+**Round 73: the family at the mine (Session 31; #638-645).** On a seed where the mine is north of the comms line (the radio works at it; seed 7 is one). South of it, none of the family speaks, as everywhere down there.
+- [ ] **Ellen** over the radio once the arrival sweep ends.
+- [ ] **Wyatt** a few seconds after you count the tags, and again after the battery goes on.
+- [ ] **Ellen as the cage drops:** half a sentence, cut off mid-word, and NO SIGNAL on the HUD all the way down and all the time you're below.
+- [ ] **At the collar afterwards:** Ellen ("The whole house jumped"), then Wyatt.
+- [ ] **South of the line** (seeds 1234 and 99): one line at the collar in Ellen's voice that isn't Ellen.
+- [ ] **At home:** hand in the logbook and the drill's head, and talk to Ellen, Wyatt and Junie.
+- [ ] All eleven are drafts: OPEN_QUESTIONS #638 lists them (`mine.*` in `src/data/dialogue.json`). Change any of them.
 
 **Round 67: the mineshaft's surface (Session 30; OPEN_QUESTIONS #565-572).** Debug menu, **Story, radio & trail cams**, "Mineshaft: take me there" (it puts you on the track, walking in). "give me a battery" saves a walk to a car; "start it again" clears every flag.
 - [ ] **The arrival:** the sweep up the track to the headframe, the sign and the army's tape, in through the office door to the tag board, across to the control box, up the headframe. Does it land? Too long (16 s)?

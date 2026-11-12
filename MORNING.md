@@ -1,49 +1,57 @@
-# For Aaron (Session 30: the mineshaft, the way down)
+# For Aaron (Session 31: the mineshaft, the bottom and the way out)
 
-**The first half of the mineshaft is built:** the surface, the battery and the cage, the mine below, the turret cart and everything that comes at you on the ride. It's on `main` in three batch commits plus the write-up. 1189 tests pass and the build is clean. I checked it headless on two seeds, with Save and Continue. None of it has been played on the tablet yet.
+**The mineshaft is finished.** The bulkhead opens, and everything from "The bottom" in DESIGN is built: the seam, the torn cocoon, the charges and the plunger, the foreman's logbook, the dynamite, the rock drill's head, the cart back up with the fire behind it, and the family's lines for the whole place. It's on `main` in three batch commits plus the write-up. 1222 tests pass and the build is clean. I checked it headless on three seeds, with Save and Continue. None of it has been played on the tablet yet.
 
 Your notes were empty again, so nothing from earlier sessions changed.
 
-**It stops at the bottom.** The cart fetches up at a barred bulkhead with a light under it, and winches back up. The seam, the cocoon, the plunger, the fireball, the logbook, the dynamite and the drill head are the next session.
+Your four answers at the start are in as you gave them: the seam is a glowing crack, the cocoon is hung and split and about 4 m, the fuse is 20 seconds and kills you if you're not aboard, and the ride back up is played and ends in a cutscene.
 
 ## What to play
 
-**PLAYTEST rounds 67-70.** The quickest way in: debug menu, **Story, radio & trail cams**, "Mineshaft: take me there". It puts you on the track, walking in. "give me a battery" saves a walk to a car. "down to the landing", "to the points", "to the fall" and "to the bottom" skip ahead.
+**PLAYTEST rounds 71-73.** The quickest way in: debug menu, **Story, radio & trail cams**, "Mineshaft: to the bottom" (the bulkhead shut) or "to the bottom, the bulkhead open". "push the plunger" works from anywhere at the bottom.
 
-1. **The surface.** A sweep up to the headframe. Walk the yard and the office: the tag board has eleven brass tags still on their hooks.
-2. **The battery.** The cage's lever does nothing until you fit a car battery at the control box by the gate. It's used up for good.
-3. **The cage.** Half a minute down. The walls run past the bars, the depth is called off in feet, and it stops dead once on the way.
-4. **The cart.** Hold X to climb aboard, hold X again to let off the brake. It drives itself. RT fires, LT steadies, and the ring round the sight is the gun's heat. It never runs dry. Look behind you: the gun swings all the way round.
-5. **The dead.** Miners in hard hats stand about the drift. Any left on the rails, the cart runs down.
-6. **The points.** The cart halts. Climb down, throw the lever on the stand ahead on the right, climb back up, brake off. More of them walk in while you're on foot.
-7. **The moths.** Red eyes under the roof timbers ahead. Ride on and they drop and come after the cart in a stream. Or shoot into the roost from as far off as you can see it, and most of them flee.
-8. **The fall.** Rock across the rails: five seconds on the pinch bar, with a roost over your head that wakes while you're at it.
-9. **The steep run.** The cart runs away at twice the speed, twenty moths behind it and five miners on the rails ahead.
-10. **The bottom.** The bulkhead. The moths break off and go over the top of it. Hold X at the cart to winch back up, then the cage's lever.
+1. **The bulkhead.** Hold X at it for three seconds. Tom levers the bar out with the pinch bar from the fall.
+2. **The cavern.** Far bigger than the drift, and nobody dug it. The seam is at the far end: a crack up the wall, taller than a house, lit red from inside, pulsing and humming.
+3. **The cocoon** hangs beside it, twice your height, split open down the side facing you. Look up: the moths are all over the roof, watching the seam. They leave you alone unless you shoot one.
+4. **The foreman** is sat by the exploder with his hand a foot short of it. His logbook is by his hand: seven pages, and it tells where the Mothman came from.
+5. **Take what's worth taking:** the dynamite from the open case (5 sticks), and the head off the rock drill (the killdozer's ram). Once the mine's sealed, anything left is gone.
+6. **The plunger.** Hold X. A spark starts up the cable and the prompt counts down from 20. Every moth lets go of the roof and pours out ahead of you.
+7. **Run for the cart**, about 40 m, and hold X at it. The haulage rope takes it up the drift at a walk with the count still running.
+8. **The blast.** The cart leaps to twice the speed and the drift behind you turns orange. Look back at it.
+9. **The rails.** The last of the shift walk down the rails at you. Shoot them before the cart reaches them: each one it hits nearly halves its speed, and the fire gains. If it catches you it burns you and falls back. It can't kill you.
+10. **The end** is a 12-second cutscene: the landing, the cage, then the headframe from outside. After it the cage won't go down again.
+11. **The family** talk at the mine on seeds where the radio reaches it (seed 7 does). Ellen is cut off mid-word as the cage drops, and it's NO SIGNAL until you're back up.
 
-## Calls I made (OPEN_QUESTIONS #565-604)
+## Calls I made (OPEN_QUESTIONS #605-645)
 
 The ones I'd most like your eye on:
 
-- **How hard the ride is** (#602). I can't play it. A cart that only fired straight ahead lost nearly all its health to the moths, and one that stood still on foot at the first stop died there. I softened both after that. My guess is a careful player loses 40 to 60.
-- **The mine's story** (#565, drafts): the Black Laurel No. 2, shut in 1987, opened again by the army; eleven men on the last shift; what the army brought up in a net.
-- **The cage ride's length** (#575): 26 seconds down, a 5-second fade up (#576).
-- **Your dot on the map moves** while you're below (#574). The mine is a real loop of tunnel under the clearing. I can pin the dot to the headframe if it reads as wrong.
-- **The gun swings right round and turns with the cart** (#584). It might be sick-making on the tablet.
-- **Miners wear the army zombie's shapes** (#591): an olive helmet for a hard hat, no headlamp.
-- **The moths' numbers** (#595-599): three roosts of 12, 10 and 20; a nip is 2; scattering sends 60% away.
-- **The tunnel's walls are plain** (#579): rock, coal, timber and rails for 400 metres, nothing between the stops.
-- **Nobody speaks** (#572): no lines from the family about the cage or the radio going. Worth writing with the second half.
+- **The logbook's story** (#612, a draft): what came through the seam was a pale grub that spun the cocoon; the Mothman hatched from it; the army netted it and told the men it was an owl; the moths came after; the eleven packed the seam themselves and never came up.
+- **The foreman** (#611): named Everett Shaw, dead beside the exploder, not turned. He never gets up. Should he?
+- **Looking into the seam** (#608): "a long way of red, and far off in it something moving". It hints at the realm of stories.
+- **Is 20 seconds too many?** (#622). Walking, my test reached the cart with 11 to 13 left.
+- **How much the fire hurts** (#630): 12 a time, and it falls back. A ride with no shots fired cost 36 health; a clean one cost nothing. I can't play it, so this is a guess.
+- **Too many miners for eleven tags** (#631): fourteen more on the way up, on top of thirty-odd going down.
+- **You ride out tail first** (#633): the cart isn't turned round.
+- **Anything you leave is lost** (#616): one line warns you, once. Should the plunger wait for the drill's head?
+- **The plunger needs no battery** (#620): DESIGN offered it as an option; the cage already cost you one.
+- **The eleven lines** (#638), all drafts, and **Junie hoping the moths got out** (#644).
+- **Nobody speaks below ground** (#642-643): not the family, not the Caller.
+
+## Something the headless run found
+
+On some seeds the mine's tunnels run under the comms line, so Ellen's "you're going, I can't hear y" was playing halfway down the mine. The radio now has its own state for being underground, and that's gone.
 
 ## Not done
 
-- **The tablet**, for all of it. The tunnel is about 23,750 triangles in one draw call, plus six small pieces and the cart; then up to a dozen dead, eight beetles and 32 moths.
-- **A ride played by hand.** Every number in the fight is a guess.
-- **The bottom half:** the seam, the cocoon, the explosives and the plunger, the fireball behind the cart, the logbook, the dynamite, the rock drill head.
-- **The family's lines.**
-- **A miner of his own** (a yellow hard hat, a lamp).
+- **The tablet**, for all of it. The tunnel is about 29,200 triangles in one draw call, plus fifteen small pieces; then 22 moths, the dead, and six balls of fire.
+- **Any of it played by hand.** Every number on the way out is a guess (#622, #628-630).
+- **The surface doesn't change** once it's blown (#637): no smoke, no crooked cage, only the lamps out and what the lever says.
+- **The count in the cart is small** (#624): it's the little line under the gun's sight.
+- **Tom isn't in the cutscene** (#635): there's no model of him.
+- **A miner of his own** (a yellow hard hat, a lamp) and **the tunnel's dressing** between the stops: still as Session 30 left them.
 - **The sounds** are placeholders (synthesised), like every sound in the game.
 
 ## Next
 
-Your big play-test notes. Then **the mineshaft's second half**: the bulkhead opens on the seam and the torn cocoon, the miners' explosives and the plunger, and the cart grinds back up with the fireball behind it.
+Your big play-test notes (PLAYTEST rounds 49-73 now). After that, the five designed optional encounters are all built, so my suggestion is to go back to the story: **beats 6 and 7's first part**, the family's plan with Earl's maps and the military's dozer on the cordon strip. Say if you'd rather have something else first.

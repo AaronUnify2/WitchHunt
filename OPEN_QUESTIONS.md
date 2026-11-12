@@ -1,5 +1,7 @@
 # Open questions
 
+**Session 31 (Nov 12):** the abandoned mineshaft, the bottom and the way out (the cavern, the seam, the cocoon, the charges and the plunger, the logbook, the dynamite, the rock drill's head, the fuse, the cart back up with the fire behind it, the closing cutscene, the family's lines). Your answers at the start: a glowing crack; a 4 m hung cocoon; a 20 second fuse that kills; a played ride up ending in a cutscene. No play-test notes yet, so nothing from before changed. My calls are #605-645 below.
+
 **Session 30 (Nov 12):** the abandoned mineshaft, the way down (the surface, the battery and the cage, the mine below, the turret cart, the ride's fight, the giant moths' real behaviour). Your answers at the start: two sessions, the way down first; an ordinary car battery; my other defaults. No play-test notes yet, so nothing from before changed. My calls are #565-604 below.
 
 **Session 29 (Nov 12):** the moonshiners' holler (the hollow in the ground, its set, the traps and the wire cutters, the trap map, the turned family, the still, the auto shotgun, the copper worm). Your answers at the start: the holler; go with my defaults (the auto shotgun: yes). No play-test notes yet, so nothing from before changed. My calls are #538-564 below.
@@ -11,6 +13,66 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Session 31: the abandoned mineshaft, the bottom and the way out
+
+Your answers at the start: no notes yet. **The seam:** a glowing crack. **The cocoon:** hung, split, 4 m. **The fuse:** 20 seconds, and the blast kills him if he's not aboard. **The ride back up:** played, then a cutscene. Everything else below is my call. All the texts are drafts.
+
+**Batch 1: the bottom (PLAYTEST round 71)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 605 | **What's behind the bulkhead.** | A cavern nobody dug: 34 m long, 15 m across, its roof 8.4 m up, level with the end of the drift. Black beyond the torch, as the rest of the mine is. | `config.mineshaft.track` (`legs`, `wide`, `high`) |
+| 606 | **How the bulkhead opens.** | Hold X for 3.2 s: Tom levers the bar out with the pinch bar from the fall. No key, no fight for it. Before, the prompt only said it wouldn't move. | `encounter.holds.door`, `MineBottom.openDoor` |
+| 607 | **The seam** (your call: a glowing crack). | Up the end wall, 6.2 m tall and at most 34 cm wide, a dull red. It breathes: a pulse every 2.6 s between 45% and full, with a hum you hear from 26 m. The glow round it and on the floor is a few faint see-through layers, since nothing in the game adds a light. The light under the bulkhead used to be violet; it's this red now. | `config.mineshaft.bottom.seam`, `look.colors.seamGlow` |
+| 608 | **Looking into it** (a draft). | "There's no back to it. A long way of red, and far off in it something moving, the way things move under ice." It hints at the realm of stories without showing it. Too much? | `data/mineshaft.json` `bottom.seam` |
+| 609 | **The cocoon** (your call: hung, split, 4 m). | Hung from the roof beside the seam, 4.1 m long, its bottom 1.3 m off the floor, split down the side that faces you as you walk in, dark inside, bands of silk round it, ropes of it to the roof and the walls. Tom can't walk under it. | `bottom.cocoon`, `render/mineCavernModel.js` |
+| 610 | **The charges.** | Nine shot holes round the seam, each with two wires down the face, gathered into a cable back along the floor to the exploder. The powder company's cases are stacked at the foot of the face. The exploder is at the far end, beside the cocoon, so the run to the cart is the whole cavern and the drift: about 40 m. | `bottom.plunger`, `bottom.charges` |
+| 611 | **The foreman** (a draft name: Everett Shaw). | Sat against a case by the exploder, dead, not turned, no bite on him, his hand a foot short of the plunger. The surface said he hadn't gone down and wasn't there either; this is where he went. He never gets up. Should he? | `bottom.foreman` |
+| 612 | **His logbook** (a draft, seven pages). | The army hired twelve men to open the low seam. Behind the old bulkhead: this cavern, and the split, glowing and humming. Something pale and soft came out of it and spun itself to the roof. It hatched: tall, winged, red-eyed. The army darted it, netted it (the first net it cut) and took it up, and told the men it was an owl. Then the moths came, and the men sickened; one died and was back at the face next day. The eleven drilled and packed the seam themselves and didn't come up. Shaw left his tag in his locker and went down to fire it. This is the Mothman's origin as DESIGN has it; the grub and the "owl" are mine. | `data/papers.json` `foremanLog` |
+| 613 | **The moths in the cavern.** | 22 of them hang under the roof once the bulkhead's open, eyes lit, watching the seam. They leave Tom alone unless he shoots into them; then they all come down on him on foot. | `bottom.roost`, `MineFight.hangCavern` |
+| 614 | **Dynamite:** 5 sticks | from the open case, up to your carry limit of 8 (if you're full they stay in the case). With the powder store's that's the second place that gives any. | `bottom.sticksGiven` |
+| 615 | **The rock drill's head.** | The drill stands on a tripod where they stopped. Hold X for 3 s to knock the head off: a card and a lore item, as the other killdozer parts are. It's the dozer spike's "Spiked ram". | `MineBottom.takeDrill`, `data/lore.json` `drillHead` |
+| 616 | **Anything you leave is lost.** | Once the mine's sealed you can't go back for the logbook, the sticks or the drill's head. One line says so, once, a little after you first walk in. Should the plunger refuse until the drill's head is taken? | `bottom.hintOnce`, `data` `bottom.hint` |
+| 617 | **Leaving without blowing it.** | You still can: hold X at the cart and the haulage rope takes it back up (a fade, as before; I renamed it from a winch so it's the same rope the way out uses). Everything below stays as you left it. | `MineRide.winchUp` |
+| 618 | **Your dot on the map** (#574 again). | The cavern is further from the headframe than the loop was, so I moved the whole mine to keep it under the clearing. The dot now wanders up to about 78 m from the headframe while you're below. | `config.mineshaft.origin` |
+| 619 | **The mine's size.** | The tunnel's one mesh is about 29,200 triangles now (it was 23,750), plus fifteen small pieces and six balls of fire. Not measured on the tablet. |  |
+
+**Batch 2: the way out (round 72)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 620 | **The plunger works by hand.** | Hold X for 1.4 s. DESIGN offered "or hooks a battery to it"; I left that out, since the cage already cost you one. | `encounter.holds.plunger` |
+| 621 | **Why there's a fuse on a plunger.** | The miners spliced a length of slow fuse in, "to give the shot-firer time to reach the cart". The logbook says so and so does the line when you push it. | `data` `bottom.plunger.armed` |
+| 622 | **The fuse** (your call: 20 s). | My walking test (5 m/s, no sprint) reached the cart with 11 to 13 s left. It may be generous: 14 or 15 would still be fair. | `config.mineshaft.escape.fuse` |
+| 623 | **Not aboard, you die** (your call). | The blast takes all your health: the run's end screen, and back to your last save. Nothing about the fuse is saved, so it's all as it was before the plunger. | `MineBottom.blow` |
+| 624 | **The count.** | On the prompt line, with its bar draining: "FUSE 14s · GET TO THE CART", in front of whatever else is offered. Once you're in the cart it moves to the small line under the gun's sight, which may be too small to read. | `MineRide.updateInteraction`, `MineBottom.banner` |
+| 625 | **Getting aboard with the fuse lit.** | A short hold (0.45 s) from further off than usual, and the cart starts by itself: no brake to let off. | `MineRide.pickFoot`, `MineBottom.flee` |
+| 626 | **What moves the cart.** | The haulage rope, at 4.2 m/s, until the fuse is down. Then the blast "throws" it on at 10.5 m/s for the rest. It's the excuse for a fast ride uphill. | `escape.haul`, `escape.speed`, `escape.kick` |
+| 627 | **The moths leave.** | At the plunger every moth lets go and streams out ahead of you up the drift, 5 to 24 m in front, and none bites. They're in your sights the whole way; shooting them is up to you. | `escape.moths`, `MineFight.fleeMoths` |
+| 628 | **How the fire's timed.** | It starts 46 m behind the cart and its speed is worked out so a cart slowed by nothing reaches the landing with the fire 9 m behind. So it's always gaining a little, and close at the end. | `escape.fire` (`startGap`, `endGap`), `fireSpeed` |
+| 629 | **Hitting the dead costs you.** | The cart kills what it hits, as on the way down, but keeps only 55% of its speed each time and takes a second or two to get it back. Shooting them off the rails first is the whole game of the ride. | `escape.ramKeep` |
+| 630 | **When the fire catches the cart** (your call: it singes, it never kills). | It comes over the tail, takes 12 health (never taking you under 12), and falls 11 m back before it comes on again. My first version sat on the cart and burned you down to the floor; this is kinder. A ride with no shots fired cost 36; a clean one, nothing. Too soft? | `escape.fire` (`lick`, `floor`, `fallBack`) |
+| 631 | **Who's on the rails.** | Fourteen miners in eight groups of one to three, walking down the drift at you. With the thirty-odd on the way down that's a lot more than the tag board's eleven. I'd say the army's men are among them, but nothing says so yet. | `escape.script` |
+| 632 | **Nothing else on the way up:** | no beetles, and the moths don't attack. It's about a minute in all (the rope, then about 33 s at speed). |  |
+| 633 | **You ride tail first.** | The cart isn't turned round: Tom faces up the drift over its back, the gun swung round. It may feel backward. | `MineCart.mount(up)` |
+| 634 | **The fire's look.** | Six unlit balls of orange added on, breathing, and the drift's own light and fog turned orange as it nears. No lights added. Looking back at it is the best view. | `escape.look`, `escape.light`, `MineBottom.showFire` |
+| 635 | **The closing cutscene** (12 s, three shots). | From beside the rails: the cart braking in with the fire behind. From inside the cage: the fire filling the landing, the shaft's walls coming down. Black. Then the headframe from outside: a thump, a lick of fire and smoke up the shaft. Tom isn't seen (there's no model of him). | `cutscenes.json` `mine.out`, `escape.cine` |
+| 636 | **Sealed for good.** | The flag is set as the cutscene starts, so skipping it or quitting in it still seals the mine. There's no going back down. | `mineSealed` |
+| 637 | **The surface afterwards** is plain. | The cage's lever and the control box say it's finished, and their lamps are out. The set itself doesn't change: no smoke, no crooked cage. A style pass could add both. | `data` `out.lever`, `out.box` |
+
+**Batch 3: the family's lines (round 73)**
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 638 | **The eleven lines** (drafts). | Ellen, arriving: "Black Laurel? That's been shut since before I knew you. Bad air, they said. What does the army want with a dead coal mine?" Wyatt, the tags: "Eleven tags still up? Dad, that's what the board's for. Eleven men went down and nobody came back for their tag." Wyatt, the battery: "You're running a mine hoist off a car battery. That's the best and the worst idea you've ever had." Ellen, the cage: "Tom, the second that cage drops we lose you. Whatever's down there, it isn't wor" Ellen, out: "Tom! Tom, answer me. The whole house jumped. Tell me that was you." Wyatt, out: "Was that the mine? Dad. Did you blow up a mine?" The Caller, out (south only): "Tom. You left one of them down there. Go back down and get him." At home, Ellen on the logbook: "It came up out of the ground, and they put it in a box and drove it past our road. And he left his tag in his locker so nobody would go down after him. I'm glad somebody read it, Tom." Wyatt on the drill's head: "That's off a drifter. It's made to chew into a mountain all shift and not care. Front of the dozer, Dad. Front and centre." Ellen, once it's sealed: "So that's one door shut. I don't know how many there are. But that one's shut, and you shut it." Junie, once it's sealed and she's home: "You smell like a bonfire. Did the big moths get out? I hope the big moths got out." | `data/dialogue.json` `mine.*`, `caller.mine.out` |
+| 639 | **When they play.** | Ellen 1.2 s after the arrival sweep. Wyatt 5.5 s after the tag board's text and after the battery's (time to read it). Ellen as you pull the cage's lever, the first time. At the collar: Ellen 2.5 s after you're out, Wyatt 6.8 s after her (her line's reading length). Each once. | `encounter.tagsGap`, `outGap` |
+| 640 | **Ellen's line at the cage cuts in** | over anything being said, as the cut at the comms line does, and stops mid-word. | `Mineshaft.goDown` |
+| 641 | **South of the comms line** | (the mine is there on about half the seeds) none of the six radio lines play, as everywhere down there. At the collar afterwards the Caller says one line in Ellen's voice instead. | `Mineshaft.onSealed` |
+| 642 | **No radio underground.** | A new state for the radio: nothing reaches Tom in the mine, and the HUD shows NO SIGNAL. It also fixes something the headless run found: the tunnels run under the comms line on some seeds, so Ellen's "you're going, I can't hear y" played halfway down the mine. | `story/Comms.js` `deep` |
+| 643 | **Nobody speaks below.** | Not the family, not the Caller. Tom's alone from the cage to the collar; the game's own text carries it. Should the Caller have the mine too? |  |
+| 644 | **Junie hopes the moths got out.** | It's the one line that's on their side. Cut it if it's wrong for her. | `mine.junie.1` |
+| 645 | **Sounds** are placeholders, 12 of them | (the seam's hum, the bulkhead, the drill, the plunger, the fuse, the rope, the blast, the fire). | `audio/Sfx.js` |
 
 ## Session 30: the abandoned mineshaft, the way down
 
