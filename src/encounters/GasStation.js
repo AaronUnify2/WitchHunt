@@ -817,9 +817,12 @@ export class GasStation {
       st.mag = 0;
       w.pools[w.ammoType(id)].rounds = Math.max(0, stored - (this.cfg.weapons[id].startReserve ?? 0));
     }
-    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds)`);
+    // Round 2 (Aaron): and an old lever-action behind it, the one Earl once let Wyatt shoot: Wyatt's, for the tower.
+    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds), and an old lever-action with a box of shells: the one Earl let Wyatt shoot`);
+    this.progress?.setFlag('wyattRifle');
     this.progress?.setFlag('rifleClaimed');
     this.dialogue?.play('gas.safe.open');
+    this.dialogue?.play('gas.safe.lever');
   }
 
   // ---- saving ------------------------------------------------------------------------------------------

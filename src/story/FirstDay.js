@@ -267,9 +267,7 @@ export class FirstDay {
     if ((step === 'fit' || step === 'repair') && zone >= 1 && !this.fenceWhole() && calm) {
       once('fence', null, 'The torn fence: hold X at it, or repair it from the ledger in the comms room', 'The torn fence: hold E at it, or repair it from the ledger in the comms room');
     }
-    if (this.progress.has('shelterCall') && !this.combat.weapons.has('shovel') && calm) {
-      once('shovel', null, 'Fetch the shovel from beside the cabin door: it digs up what she buries', 'Fetch the shovel from beside the cabin door: it digs up what she buries');
-    }
+    // (Round 2: the shovel's in the garage from Day 1, and Earl's spade stands at his shelter: no 'fetch it' hint.)
     // Round 2 (Aaron: "you should get a prompt to ride the quad bike at the beginning of the game"): once
     // the tower's done and the campsite's the job, in the yard and on foot.
     if (day1 && this.currentStep() === 'campsite' && zone >= 1 && !this.player.riding && this.quad && !this.cutscenes.active && calm) {

@@ -10,7 +10,7 @@ import campsiteData from '../src/data/campsite.json';
 const ids = new Set(dialogueData.lines.map((l) => l.id));
 
 // The goal at the gas station, from a game faked just far enough.
-function gasGoal({ flags = [], done = [], witchSeen = false, batteries = 0 } = {}) {
+function gasGoal({ flags = [], done = [], witchSeen = false, batteries = 0, shelter = null } = {}) {
   const set = new Set(['gasStationVisited', ...flags]);
   const o = new Objectives(config, null);
   const gas = {
@@ -26,7 +26,7 @@ function gasGoal({ flags = [], done = [], witchSeen = false, batteries = 0 } = {
     progress: { has: (f) => set.has(f) },
     clock: { day: 2, phase: 'day' },
     station: { layout: { fenceBox: { x: 1, z: 2 }, cabin: { frontDoor: { x: 3, z: 4 } }, tower: { ladder: { x: 0, z: 0 } } }, state: { segments: [] }, shovelSpot: () => ({ x: 5, z: 5 }) },
-    campsite: {}, gasStation: gas, shelter: null, outpost: null,
+    campsite: {}, gasStation: gas, shelter, outpost: null,
     world: { map: { clearings: [], cluster: {} } },
     combat: { weapons: { has: () => false }, inventory: { batteries } },
   });
@@ -45,8 +45,10 @@ describe('the gas station: the goal follows the gate (plan #4)', () => {
     expect(ids.has('hint.gasLook')).toBe(true);
   });
 
-  it('moves straight on to the shovel once the gate is open, whatever is left undone', () => {
-    expect(gasGoal({ flags: ['shelterCall'], witchSeen: true, done: ['note'] }).id).toBe('shovel');
+  it('moves straight on to the shelter once the gate is open, whatever is left undone', () => {
+    // (Round 2: no trip home for the shovel: the shelter's behind the store and Earl's spade is by its track.)
+    expect(gasGoal({ flags: ['shelterCall'], witchSeen: true, done: ['note'], shelter: { frame: { x: 0, z: 0 }, spadeAt: { x: 1, z: 1 } } }).id).toBe('shelter');
+    expect(gasGoal({ flags: ['shelterCall', 'shelterVisited'], witchSeen: true, done: ['note'], shelter: { frame: { x: 0, z: 0 }, spadeAt: { x: 1, z: 1 } } }).id).toBe('spade');
   });
 });
 

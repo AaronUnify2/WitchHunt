@@ -38,6 +38,7 @@
 // 'stormShelter:earlDown', 'stormShelter:keys', 'stormShelter:hatch' { state },
 // 'stormShelter:down', 'stormShelter:up', 'stormShelter:searched' { id }.
 
+import * as THREE from 'three';
 import shelterData from '../data/stormShelter.json';
 import { clearingFrame, frameToWorld, frameYaw, frameAnchor } from '../world/clearingFrame.js';
 import { rollLoot } from '../combat/loot.js';
@@ -57,7 +58,7 @@ export class StormShelter {
   }
 
   static frame(map) {
-    return clearingFrame(map, 'stormShelter', 'home');
+    return clearingFrame(map, 'stormShelter', 'gasStation'); // Round 2 (Aaron): it's on a short spur behind Earl's store now
   }
 
   // Night 1's sigil spot, beside the hatch, in the world (FirstDay plants it there).
@@ -102,6 +103,10 @@ export class StormShelter {
       this.props.init(scene, this.frame, this.ground, hatchY, floorY);
     }
     this.points = this.data.searches.map((s) => ({ ...s, ...(s.below ? this.roomPoint(s.x, s.z) : frameToWorld(this.frame, s.x, s.z)) }));
+    // Round 2: Earl's own spade, stuck in the ground by the track in (he dug the shelter himself): a shovel
+    // for a Tom who left his in the garage, so the sigil never costs a trip home.
+    this.spadeAt = frameToWorld(this.frame, this.sc.spade.x, this.sc.spade.z);
+    if (scene) this.buildSpade(scene);
     this.lootRng = new Rng(`${this.cfg.map.cluster.seed}:shelter-loot`);
     this.hold = new HoldAction(this.cfg.station.hold.releaseDrain);
     this.hold.init();
@@ -229,7 +234,11 @@ export class StormShelter {
     }
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
-    if (!this.hordeSent && d < this.frame.radius + this.sc.hordeDistance) this.sendHorde();
+    if (this.spadeMesh) this.spadeMesh.visible = this.spadeHere;
+    // Round 2: the shelter's beside the gas station now: its dead aren't put there until the family have
+    // sent Tom (shelterCall), or he's walked right up to it anyway.
+    const due = this.progress?.has('shelterCall') ? this.sc.hordeDistance : this.sc.hordeEarly;
+    if (!this.hordeSent && d < this.frame.radius + due) this.sendHorde();
     if (!this.arrived && d <= this.frame.radius + this.sc.sweepDistance && !this.below && this.onPathIn(l)) this.arrive();
     this.updateRising(dt);
     this.updateEarl();
@@ -261,6 +270,37 @@ export class StormShelter {
       this.duskHeld += Math.min(dt, c.phaseElapsed - at);
       c.phaseElapsed = at;
     }
+  }
+
+  // Round 2: Earl's spade, while Tom has no shovel.
+  get spadeHere() {
+    return Boolean(this.spadeAt) && !this.combat?.weapons?.has('shovel');
+  }
+
+  buildSpade(scene) {
+    const k = this.sc.spade;
+    const g = new THREE.Group();
+    const mat = new THREE.MeshLambertMaterial({ color: k.handle });
+    const steel = new THREE.MeshLambertMaterial({ color: k.blade });
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.0, 0.05), mat);
+    shaft.position.y = 0.62;
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.05, 0.05), mat);
+    grip.position.y = 1.14;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.3, 0.025), steel);
+    blade.position.y = 0.06;
+    g.add(shaft, grip, blade);
+    g.position.set(this.spadeAt.x, this.ground.heightAt(this.spadeAt.x, this.spadeAt.z), this.spadeAt.z);
+    g.rotation.set(0.12, 0.7, 0.08);
+    g.traverse((o) => (o.castShadow = true));
+    scene.add(g);
+    this.spadeMesh = g;
+  }
+
+  takeSpade() {
+    this.combat.giveWeapon('shovel');
+    this.combat.hud?.pickup?.("Earl's spade: dig up sigils, or fight with it");
+    this.combat.sfx?.play('pickup');
+    this.bus.emit('station:shovel');
   }
 
   // ---- the horde ------------------------------------------------------------------------------------
@@ -531,6 +571,9 @@ export class StormShelter {
       if (best) return { key: best.id, prompt: `Hold ${X}: ${best.label}`, busy: best.id.startsWith('shelf') ? 'Searching…' : null, seconds: best.seconds ?? 1, act: () => this.search(best) };
       if (dist(this.ladderAt) < 1.0) return { key: 'climb-up', prompt: `Hold ${X}: climb the ladder`, busy: 'Climbing…', seconds: h.climbUp, act: () => this.climbUp() };
       return null;
+    }
+    if (this.spadeHere && dist(this.spadeAt) < this.sc.keysRange) {
+      return { key: 'spade', prompt: `Hold ${X}: take Earl's spade`, seconds: h.keys, act: () => this.takeSpade() };
     }
     if (this.keysAt && !this.keysTaken && dist(this.keysAt) < this.sc.keysRange) {
       return { key: 'keys', prompt: `Hold ${X}: take Earl's keys`, seconds: h.keys, act: () => this.takeKeys() };

@@ -186,6 +186,9 @@ export class EnemyManager {
     // Session 17 (M9.4): an army zombie's helmet (it stops the headshot bonus until it's knocked off).
     slot.helmet = mutant ? 0 : (c.variants[variant]?.helmet ?? 0);
     slot.helmetOff = false;
+    // Round 1 plan #12 / #14: an encounter's dulled senses; a reused slot starts clear.
+    slot.sightScale = 1;
+    slot.deaf = false;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;
   }

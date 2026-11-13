@@ -100,6 +100,8 @@ export class TrailCams {
     for (let i = this.reports.length - 1; i >= 0; i--) {
       const r = this.reports[i];
       if (this.time < r.at) continue;
+      // Round 2: an encounter may hold the story camera's call (Night 2's fight at the fence).
+      if (this.holdReports?.()) continue;
       this.reports.splice(i, 1);
       this.report(r.cam, r.sighting);
     }
@@ -120,13 +122,27 @@ export class TrailCams {
   // The family noticed: the camera is marked on the map for a while.
   // (Placeholder notice: the family's sighting lines are written with
   // Aaron, and the clip plays from the comms room's monitors in 12b.)
-  report(cam, sighting) {
+  report(cam, sighting, quiet = false) {
     cam.leadUntil = this.time + this.tc.leadSeconds;
     this.lastSighting = { cam, sighting };
     this.sfx?.play('radioCrackle');
-    if (this.firstPlotReport(cam)) this.reportPlot(cam, sighting);
+    if (this.firstPlotReport(cam)) this.reportPlot(cam, sighting, quiet);
+    else if (quiet) this.notify(`${cam.name.toUpperCase()}: it caught her. It's marked on your map`);
     else this.notify(`${cam.name.toUpperCase()}: something moved past it. It's marked on your map`);
     this.bus.emit('witch:trailCam', { cam, sighting });
+  }
+
+  // Round 2: the story camera's held reports, now (quietly: whoever held them says it). True if there were any.
+  releaseHeld() {
+    let any = false;
+    for (let i = this.reports.length - 1; i >= 0; i--) {
+      const r = this.reports[i];
+      if (!r.cam.story) continue;
+      this.reports.splice(i, 1);
+      this.report(r.cam, r.sighting, true);
+      any = true;
+    }
+    return any;
   }
 
   // Plan #10: the first time the family plot's camera (a 'story' camera) catches her, before the cordon.
@@ -135,10 +151,10 @@ export class TrailCams {
   }
 
   // Ellen calls it, the camera stays marked longer, and the feed waits on D-pad down (never forced, as camera six's).
-  reportPlot(cam, sighting) {
+  reportPlot(cam, sighting, quiet = false) {
     this.progress.setFlag('plotCamSeen');
     cam.leadUntil = this.time + this.tc.firstPlotReport.lead;
-    this.dialogue?.play('trailcam.plot');
+    if (!quiet) this.dialogue?.play('trailcam.plot');
     const anchors = { trailCam: { x: cam.x, z: cam.z, yaw: cam.facing } };
     const play = () => this.cutscenes?.play('clip.sighting', { anchors, osd: { name: cam.name.toUpperCase() } });
     this.watch?.offer({ id: `trailCam${cam.id}`, pad: `D-pad down: watch ${cam.name.toLowerCase()}`, key: `V: watch ${cam.name.toLowerCase()}`, play });

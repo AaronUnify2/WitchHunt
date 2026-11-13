@@ -5,6 +5,7 @@
     { "id": "campsite", "name": "Abandoned campsite", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "M9" },
     { "id": "gasStation", "name": "Roadside gas station", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "M9" },
     { "id": "stormShelter", "name": "Storm shelter", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "M9" },
+    { "id": "pruittFarm", "name": "Pruitt farm", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "Round 2" },
     { "id": "outpost", "name": "Overrun military outpost", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "M9" },
     { "id": "bigfootCave", "name": "Bigfoot cave", "hiddenAs": "Road's end", "revealedBy": "caveFound", "band": "north", "appears": "every", "placement": "cluster", "builtIn": "M12" },
     { "id": "crashedPlane", "name": "Crashed plane", "band": "north", "appears": "every", "placement": "spine", "builtIn": "M11" },

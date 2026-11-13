@@ -1645,6 +1645,7 @@ export const config = {
       citizen: { health: 1 },
       police: { health: 1.5 }, // uniform and bulletproof vest: tougher
       army: { health: 1.6, helmet: 25 }, // fatigues and helmet: tougher. Session 17 (M9.4): the helmet stops the headshot bonus until it's taken 25 damage (Session 17, Aaron: a long fight: one service rifle round to the head knocks it off), or the hunting rifle punches straight through it
+      screamer: { health: 13.4 }, // Round 2 (Aaron: "really strong"): about 800 at level 1 (ai/Screamers.js; config.screamer)
       earl: { health: 1 }, // Session 13: Earl Pruitt, the gas station's owner (one, authored: the storm shelter's hatch)
       logger: { health: 1.25 }, // Session 28: the sawmill's crew: big men (render: the citizens' shapes in flannel)
       miner: { health: 1.3, helmet: 18 }, // Session 30: the Black Laurel's last shift (render: the army's shapes, hard hats for helmets, in pit black)
@@ -1821,6 +1822,9 @@ export const config = {
         // a faded red trucker cap (his 'hair'), grey stubble and sideburns,
         // a tan work shirt with chest pockets, a belt, jeans. One look,
         // whatever the seed (one colour per part).
+        // Round 2: the Screamer: the citizens' long-haired shape, tall and wasted (its own build), bone-grey
+        // skin, white hair, what's left of a black dress or coat. (A stand-in look until its own model.)
+        screamer: { as: 'citizen', hairs: ['long'], shirt: [0x121014, 0x18141a], trousers: [0x0e0c10], hair: [0x8a8880, 0x76746c], skin: [0x7e7a70, 0x86826f], longSleeves: 1, plaid: 0, build: { width: [0.82, 0.88], height: [1.24, 1.3] } },
         earl: {
           shirt: [0x3e3220],
           trousers: [0x1c2638],
@@ -3135,6 +3139,7 @@ export const config = {
   // within quadRange); she's gone once she's been off him goneAfter seconds.
   // Session 18 (Aaron): the stop at home on the ride back from the storm shelter (story/HomeStop.js).
   homeStop: {
+    enabled: false, // Round 2: the stop at home after the shelter is Night 2's prep now (encounters/NightTwo.js)
     callDistance: 110, // metres from the compound's centre: Wyatt's word to stop in
     insideMargin: 1, // metres inside the fence that count as home
     hintPad: 'The ledger (comms room): repair and upgrade the fence · a battery tops up the fence box',
@@ -3220,6 +3225,7 @@ export const config = {
     gateLineDistance: 88, // Plan #16: 'come home if it goes bad' this close to the centre (the road gate is about 85)
     nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
     justUsLeaving: 26, // Plan #17: metres south of the centre (toward the checkpoint): 'It's just us now' plays here at the latest
+    callAfterDawn: 9, // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
     callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
@@ -3331,6 +3337,8 @@ export const config = {
     // up and Tom's within `riseRange` of it), by day too; dug up, that stops.
     horde: { count: 12, riseEvery: 6, riseRange: 60, memory: 20 },
     hordeDistance: 70,
+    hordeEarly: 22, // Round 2: before the family send him there (the shelter's beside the gas station now), only this close
+    spade: { x: 4.2, z: -12.5, handle: 0x3a2a1c, blade: 0x2a2c2e }, // Round 2: Earl's spade by the track in (the shelter's frame), for a Tom with no shovel
     // Session 16 (Aaron, on the quad): the sweep comes this far up the path
     // from the clearing's edge, so there's time to see the horde, get back
     // on the bike and plough into them.
@@ -5593,6 +5601,39 @@ export const config = {
     post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
     map: { color: '#8cc4ec', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 }, // Session 16 (Aaron): blue (green read as the witch's)
   },
+
+  // Round 2 (Aaron's play-test, Nov 13): Night 2 at the station, a real defence (encounters/NightTwo.js).
+  // Every number a first guess, to tune by play.
+  //  holdMax: seconds dusk waits for Tom to get home; prepSeconds: inside the fence before night (prepLate:
+  //  if night's already fallen); reserveRounds: rifle rounds handed over at prep.
+  //  horde: `count` up the campground trail `first` seconds in, `second` more from the south `secondAfter`
+  //  later, all risen `out` metres past the fence.
+  //  mutants: one from each of `sides` (degrees round the fence from due south, + east), `gap` seconds
+  //  apart, `health` each, `escort` of the dead with each; they come once `whenLeft` or fewer of the
+  //  horde stand, or `after` seconds.
+  //  screamer: at `side`, `out` metres past the fence, once both mutants are down or `after` seconds.
+  //  The night's over when the Screamer's down and `endLeft` or fewer are left within `nearHome` of home
+  //  (or `timeout`). cantFall: the station can't be overrun tonight (scaffolding for the first play-tests).
+  night2: {
+    holdMax: 240, prepSeconds: 45, prepLate: 10, reserveRounds: 20, holdBeforeDawn: 25, cantFall: true,
+    horde: { first: 6, count: 10, out: 42, secondAfter: 22, second: 6 },
+    mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 240, escort: 4 },
+    screamer: { after: 80, side: 6, out: 44 },
+    nearHome: 95, endLeft: 2, timeout: 480, afterDelay: 4, talkMin: 6,
+  },
+
+  // Round 2 (Aaron: "Wyatt should jump up onto the tower and snipe zombies"): base/TowerSniper.js. From the
+  // night he has Earl's lever-action (flag wyattRifle), at night: a shot every `every` seconds at the dead
+  // within `range` of the tower, `hitChance` to hit, `headChance` of the hits to the head (x the headshot
+  // multiplier). at: where he stands on the platform, from its middle. Lines when he drops one, now and then.
+  wyattTower: { enabled: true, at: [-0.9, 1.0], every: 3.2, range: 62, damage: 45, hitChance: 0.72, headChance: 0.3, stagger: 0.35, knockback: 0.3, sayChance: 0.5, sayEvery: 28, lines: ['wyatt.tower.1', 'wyatt.tower.2', 'wyatt.tower.3'] },
+
+  // Round 2 (Aaron: "Let's send a screamer. I vote we make it really strong too"): ai/Screamers.js. Its health
+  // is zombies.variants.screamer (x zombies.health). first / every: seconds to its first scream and between
+  // screams; calls: how many of the dead rise to each, within ring metres of it, not past maxAlive living
+  // within countWithin of home; hitDelay: each hit puts the next scream back this long (to maxDelay);
+  // wakeAt: Tom this close and it comes for him; maxCalls / comeInAfter: then it walks on the fence itself.
+  screamer: { first: 5, every: 15, calls: 5, ring: [3, 9], maxAlive: 26, countWithin: 110, hitDelay: 1.6, maxDelay: 22, wakeAt: 9, maxCalls: 8, comeInAfter: 150, linger: 2.5, speedRange: [0.3, 0.36], shake: 0.25, shakeWithin: 70 },
 
   // Round 2 (Aaron): on foot deep in the trees (nothing open within `radius` metres), from day `fromDay`,
   // `count` giant moths find Tom `first` seconds in and every `every` seconds after, `max` about at most;

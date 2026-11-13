@@ -277,6 +277,8 @@
       ],
       "duration": 4.6
     },
+    {"id": "fade.nightfall", "name": "The day fades to dusk (Round 2: Night 2 at the station, when Tom comes home by daylight)", "style": "firstPerson", "_note": "Round 2 (encounters/NightTwo.js): the picture fades to black, the clock goes on (the emit fade:mid; onDone does it too if skipped), and it fades back up.", "tracks": [{"at": 0, "do": "fade", "to": 1, "seconds": 1.4}, {"at": 1.6, "do": "emit", "event": "fade:mid"}, {"at": 2.2, "do": "fade", "to": 0, "seconds": 1.8}], "duration": 4.0},
+    {"id": "fade.dawn", "name": "The night fades to dawn (Round 2: after Night 2's defence)", "style": "firstPerson", "_note": "Round 2 (encounters/NightTwo.js): as day1.dawn, for any night that ends with a fade.", "tracks": [{"at": 0, "do": "fade", "to": 1, "seconds": 1.8}, {"at": 2, "do": "emit", "event": "fade:mid"}, {"at": 2.8, "do": "fade", "to": 0, "seconds": 2.2}], "duration": 5.2},
     {
       "id": "day1.dawn",
       "name": "Night 1: the night fades to dawn",

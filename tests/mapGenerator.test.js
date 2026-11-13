@@ -100,7 +100,10 @@ describe('generateMap: placement', () => {
       for (let i = 0; i < cs.length; i++) {
         for (let j = i + 1; j < cs.length; j++) {
           const pair = [cs[i].key, cs[j].key];
-          const extra = pair.includes('home') && pair.includes('campsite') ? 0 : gap;
+          // Round 2 (Aaron): the storm shelter is on a short spur behind the gas station: the authored
+          // cluster's own clearings need only stand clear of each other.
+          const authored = cs[i].cluster && cs[j].cluster;
+          const extra = pair.includes('home') && pair.includes('campsite') ? 0 : authored ? Math.min(gap, 10) : gap;
           expect(dist(cs[i], cs[j])).toBeGreaterThanOrEqual(cs[i].radius + cs[j].radius + extra - 1e-6);
         }
       }

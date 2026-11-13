@@ -49,7 +49,9 @@ describe('a stop at home on the way back from the shelter (Aaron)', () => {
     const hints = [];
     const L = { centre: { x: 0, z: 0 }, radius: 28 };
     const player = { position: { x: 200, z: 0 } };
-    const h = new HomeStop(config, bus);
+    // (Round 2: the stop is retired in play (Night 2's prep took its place): config.homeStop.enabled false. Its
+    // rules are still tested, switched on.)
+    const h = new HomeStop({ ...config, homeStop: { ...config.homeStop, enabled: true } }, bus);
     h.init({
       player,
       station: { layout: L },

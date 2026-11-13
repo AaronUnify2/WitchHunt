@@ -51,6 +51,7 @@ export class NightWatch {
     this.nightHours = (next - this.nightStartHour + 24) % 24;
     this.groups = new Map();
     this.forceAway = false; // debug
+    this.scripted = []; // Round 2: encounters' own lines on the forecast
     this.reset();
     this.station.pageSources.push(() => [this.ledgerPage()]);
     this.wireEvents();
@@ -138,6 +139,13 @@ export class NightWatch {
     if (strays) {
       out.parts.push(strays);
       out.total += strays.value;
+    }
+    // Round 2: what an encounter knows is coming tonight (Night 2's defence): scripted: [() => part | null].
+    for (const fn of this.scripted ?? []) {
+      const part = fn();
+      if (!part) continue;
+      out.parts.push(part);
+      out.total += part.value;
     }
     return out;
   }

@@ -38,7 +38,7 @@ export class HomeStop {
   }
 
   update(dt, playing) {
-    if (!playing || !this.due) return;
+    if (!playing || !this.due || this.hc.enabled === false) return;
     const L = this.station?.layout;
     if (!L) return;
     const p = this.player.position;

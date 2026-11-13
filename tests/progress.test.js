@@ -43,8 +43,12 @@ describe('progress flags', () => {
     // The shelter: just the visit (Session 16: the rifle's stand-in is gone; the safe sets rifleClaimed).
     expect(runTriggers(f, ctx({ clearing: 'stormShelter' }))).toEqual(['shelterVisited']);
     // The safe opened with Earl's combination: Ellen's call comes with it (Session 17: Outpost makes it; the trigger's a back-up).
+    // Round 2 (Aaron): Ellen's call comes at the dawn after Night 2's defence (Outpost makes it on night2Done);
+    // it has no trigger of its own, or the flag would be set before she has spoken.
     f.set('rifleClaimed');
-    expect(runTriggers(f, ctx({}))).toEqual(['outpostCall']);
+    expect(runTriggers(f, ctx({}))).toEqual([]);
+    f.set('night2Done');
+    f.set('outpostCall');
     // The outpost: entered, then cleared.
     expect(runTriggers(f, ctx({ clearing: 'outpost' }))).toEqual(['outpostEntered']);
     // Session 17: no stand-in: an empty outpost isn't cleared; the barricade's peak going down sets it (Outpost).

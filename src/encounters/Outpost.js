@@ -152,7 +152,8 @@ export class Outpost {
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       // Session 17 (Aaron): Ellen sends Tom the moment the safe opens.
       this.bus.on('story:flag', ({ id, on }) => {
-        if (id === 'rifleClaimed' && on && !this.progress?.has('outpostCall')) this.callIn = 0.6;
+        // Round 2 (Aaron): the call comes at the dawn after Night 2's defence (it was at the safe).
+        if (id === 'night2Done' && on && !this.progress?.has('outpostCall')) this.callIn = this.oc.callAfterDawn;
       }),
       // A round into a crate, or a blast near one, breaks it open.
       this.bus.on('weapon:impact', ({ x, y, z }) => this.crateShot(x, y, z)),
@@ -1411,7 +1412,7 @@ export class Outpost {
 
   // An older save with the rifle claimed but no call: make the call now.
   checkCall() {
-    if (this.progress?.has('rifleClaimed') && !this.progress?.has('outpostCall')) this.callIn = 1;
+    if (this.progress?.has('night2Done') && !this.progress?.has('outpostCall')) this.callIn = 1; // Round 2: after Night 2
   }
 
   // ---- debug -------------------------------------------------------------------------------------------

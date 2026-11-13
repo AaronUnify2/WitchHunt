@@ -135,9 +135,10 @@ export class Objectives {
 
     // ---- the shovel and the storm shelter ----
     const shovel = g.combat.weapons.has('shovel');
-    if (!shovel && has('shelterCall')) return step('shovel', 'Fetch the shovel from beside the cabin door.', st.shovelSpot());
+    // (Round 2: no trip home for the shovel: Earl's own spade stands by the track into his shelter.)
     if (sh?.frame && has('shelterCall')) {
-      if (!has('shelterVisited')) return step('shelter', "Go to the Pruitts' storm shelter, on their land east of home.", sh.frame);
+      if (!has('shelterVisited')) return step('shelter', "Go up the track behind Earl's store to his storm shelter.", sh.frame);
+      if (!shovel && sh.spadeAt && !has('shelterSigilDug')) return step('spade', "Take Earl's spade, by the track in.", sh.spadeAt);
       const sig = sh.sigil();
       if (sig) return step('shelterSigil', "Dig up the sigil beside the shelter's hatch.", sig);
       // Plan #14: 'Put Earl down' (and his marker) once the family have seen him; before that the dead at the hatch.
@@ -153,13 +154,21 @@ export class Objectives {
     // ---- home with the tapes; the safe ----
     // Session 17 (Aaron): tapes are watched on D-pad down; handing them in (for the monitors) isn't a step.
     if (watching('pruittTapes')) return step('tapes', "Watch Earl's tape (D-pad down).");
-    // Session 18 (Aaron): home's on the way back from the shelter: stop in and see to the fence.
-    if (has('earlCombination') && !has('rifleClaimed') && !has('homeStop')) {
-      return step('homeStop', "Stop at home on the way back: spend your scrap on the fence at the ledger, and top up the fence box with a battery.", g.combat.inventory.batteries > 0 ? L.fenceBox : L.cabin.frontDoor);
-    }
     if (has('earlCombination') && !has('rifleClaimed') && gas.frame) {
       const s = gas.spots.find((x) => x.id === 'safe');
-      return step('safe', "Open the gas station's safe with Earl's combination.", s);
+      return step('safe', "Open the gas station's safe with Earl's combination. It's just past the store's back door.", s);
+    }
+    // ---- Round 2 (Aaron): Night 2 at the station (encounters/NightTwo.js) ----
+    const n2 = g.nightTwo;
+    if (n2 && has('rifleClaimed') && !has('night2Done')) {
+      if (n2.state === 'night') {
+        const sc = n2.screamerAt;
+        if (sc) return step('night2Screamer', 'Something at the treeline is calling them in. Put it down.', sc);
+        return step('night2', 'Hold the station.');
+      }
+      if (n2.state === 'after') return step('night2After', 'Hold the station.');
+      if (n2.state === 'prep') return step('night2Prep', "Night's nearly here. A battery in the fence box, your scrap into the fence at the ledger.", g.combat.inventory.batteries > 0 ? L.fenceBox : L.cabin.desk);
+      return step('night2Home', "It's getting dark. Get home to the station before night.", L.gate.mid);
     }
     // ---- the military outpost (Session 17, M9.4) ----
     const op = g.outpost;
@@ -246,7 +255,7 @@ export class Objectives {
     const dz = g.cordonDozer;
     if (has('cellAsked') && dz?.ready && !has('dozerHome')) {
       if (!has('familyPlan')) return step('plan', 'Go inside. The family have been talking.', L.cabin.frontDoor);
-      if (!has('earlMaps')) return step('earlMaps', "Fetch Earl's maps from the corkboard in his storm shelter, east of home.", sh?.hatchAt ?? sh?.frame);
+      if (!has('earlMaps')) return step('earlMaps', "Fetch Earl's maps from the corkboard in his storm shelter, behind his store.", sh?.hatchAt ?? sh?.frame);
       if (!has('dozerTaken')) {
         if (!has('dozerSeen')) return step('dozerFind', "Follow the cordon east to where the army's clearing crew stopped. Their dozer has a winch.", dz.site.place);
         if (!has('dozerKey')) return step('dozerKey', "Find the dozer's keys in the crew's camp.", dz.site.spots.box);

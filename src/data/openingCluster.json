@@ -3,7 +3,8 @@
   "clearings": [
     { "key": "home", "dx": 0, "dz": 0 },
     { "key": "campsite", "dx": -130, "dz": 70, "radius": 20, "clearingType": "homeWoods" },
-    { "key": "stormShelter", "dx": 150, "dz": 90, "radius": 20, "clearingType": "homeWoods" },
+    { "key": "stormShelter", "dx": -62, "dz": 113, "radius": 20, "clearingType": "homeWoods" },
+    { "key": "pruittFarm", "dx": 150, "dz": 90, "radius": 22, "clearingType": "homeWoods" },
     { "key": "familyCemetery", "kind": "sigilGround", "dx": 220, "dz": 200, "radius": 18, "clearingType": "homeWoods" },
     { "key": "gasStation", "dx": -100, "dz": 200, "radius": 24, "clearingType": "homeWoods" },
     { "key": "outpost", "dx": 10, "dz": 260, "radius": 30, "clearingType": "homeWoods" },
@@ -11,8 +12,9 @@
   ],
   "paths": [
     { "a": "home", "b": "campsite" },
-    { "a": "home", "b": "stormShelter" },
-    { "a": "stormShelter", "b": "familyCemetery" },
+    { "a": "gasStation", "b": "stormShelter" },
+    { "a": "home", "b": "pruittFarm" },
+    { "a": "pruittFarm", "b": "familyCemetery" },
     { "a": "campsite", "b": "gasStation" },
     { "a": "gasStation", "b": "outpost", "road": true },
     { "a": "familyCemetery", "b": "outpost" },
@@ -23,7 +25,8 @@
     { "id": 7, "near": "familyCemetery", "dx": -8, "dz": -7, "story": true }
   ],
   "gates": [
-    { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
+    { "id": "shelterSpur", "kind": "pipeGate", "path": ["gasStation", "stormShelter"], "t": 0.5, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 E. PRUITT. KEEP OUT." },
+    { "id": "farmGate", "kind": "pipeGate", "path": ["home", "pruittFarm"], "at": 78, "opensOn": "farmCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
     { "id": "gasStationTrail", "kind": "fallenTree", "path": ["campsite", "gasStation"], "t": 0.5, "opensOn": "day2", "locked": "A fallen oak blocks the trail. Too big to climb with a pack." },
     { "id": "roadNorth", "kind": "fallenTree", "road": 45, "line": "north", "opensOn": "day2", "locked": "Another oak down, across the road this time. Too big to climb with a pack." },
     { "id": "outpostRoad", "kind": "chainGate", "road": 432, "opensOn": "outpostCall", "locked": "Chained shut. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY." },

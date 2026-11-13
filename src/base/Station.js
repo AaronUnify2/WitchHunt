@@ -544,6 +544,26 @@ export class Station {
     if (col) col.off = !present;
   }
 
+  // Round 2 (Aaron: "Wyatt should jump up onto the tower and snipe zombies"; Ellen at her board, Junie at
+  // the monitors): family member i stands at spot { x, y, z, facing } (y: the floor there), or back at their
+  // own place in the comms room (spot null). Their collider is off while they're away from it.
+  placeFamily(i, spot) {
+    const fr = this.renderer.familyRenderer;
+    const person = fr?.people?.[i];
+    const home = this.layout.cabin.family[i];
+    if (!person || !home) return;
+    const c = this.layout.cabin.commsCentre;
+    const at = spot ?? { x: home.x, y: this.floorY, z: home.z, facing: Math.atan2(c.x - home.x, c.z - home.z) };
+    person.mesh.position.set(at.x, at.y, at.z);
+    person.facing = at.facing;
+    person.mesh.rotation.y = at.facing;
+    const col = this.familyColliders?.[i];
+    if (col) col.off = Boolean(spot) || !person.mesh.visible;
+    this.familyAway ??= [];
+    this.familyAway[i] = Boolean(spot);
+    this.bus.emit('family:placed', { index: i, y: at.y, away: Boolean(spot) });
+  }
+
   // A zombie in the comms room: the family are lost.
   checkOverrun() {
     if (!this.overrunEnabled || this.overrunDone || !this.combat.alive) return;

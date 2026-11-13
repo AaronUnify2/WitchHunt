@@ -215,9 +215,12 @@ describe('the military outpost: the beats', () => {
 
   it("sends Tom the moment the safe opens (Aaron), with Ellen's word to come home if it goes bad", () => {
     const r = rig();
+    // Round 2 (Aaron): the call comes at the dawn after Night 2's defence (it was at the safe).
     r.progress.setFlag('rifleClaimed');
-    expect(r.flags.has('outpostCall')).toBe(false); // after Wyatt's line on the safe
     r.step(1);
+    expect(r.flags.has('outpostCall')).toBe(false);
+    r.progress.setFlag('night2Done');
+    r.step(oc.callAfterDawn + 1);
     expect(r.flags.has('outpostCall')).toBe(true);
     // Plan #16: 'come home if it goes bad' waits for the road gate.
     expect(r.played).toEqual(['outpost.call.ellen']);

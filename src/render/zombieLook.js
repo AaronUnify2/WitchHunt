@@ -102,7 +102,7 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   const bb = tex.bodyBlood;
   out.blood = bb.amount[0] + (bb.amount[1] - bb.amount[0]) * Math.pow(r(10), bb.skew);
   out.bloodSeed = Math.floor(r(11) * bb.seeds);
-  const b = tex.build;
+  const b = look.build ?? tex.build; // (Round 2: a look's own build: the Screamer's, tall and wasted)
   out.width = b.width[0] + (b.width[1] - b.width[0]) * r(8);
   out.height = b.height[0] + (b.height[1] - b.height[0]) * r(9);
   return out;

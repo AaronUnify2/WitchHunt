@@ -44,6 +44,10 @@ export class FamilyTalk {
       return mesh;
     });
     this.heads = this.figures.map((f) => new THREE.Box3().setFromObject(f).max.y - f.position.y);
+    // Round 2: someone moved to another place (Wyatt up the tower): their floor moves with them.
+    this.bus?.on?.('family:placed', ({ index, y }) => {
+      if (index >= 0 && index < this.baseY.length) this.baseY[index] = y;
+    });
   }
 
   // The family member you're looking at, close enough to talk to: an index, or -1.

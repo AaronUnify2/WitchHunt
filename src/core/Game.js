@@ -71,6 +71,9 @@ import { CordonDozer } from '../encounters/CordonDozer.js';
 import { BugZapper } from '../encounters/BugZapper.js';
 import { BigfootCave } from '../encounters/BigfootCave.js';
 import { MegaNight } from '../encounters/MegaNight.js';
+import { NightTwo } from '../encounters/NightTwo.js';
+import { Screamers } from '../ai/Screamers.js';
+import { TowerSniper } from '../base/TowerSniper.js';
 import { Mothership } from '../encounters/Mothership.js';
 import { CrashedUfoSite } from '../world/CrashedUfoSite.js';
 import { CarArmorySite } from '../world/CarArmorySite.js';
@@ -953,6 +956,13 @@ export class Game {
     this.combat.promptSources.push(this.bigfootCave.hud);
     this.vehicles.busy?.push(this.bigfootCave.hud);
     // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js).
+    // Round 2 (Aaron's play-test, Nov 13): the Screamer; Wyatt up the tower; Night 2's defence at the station.
+    this.screamers = new Screamers(this.cfg, this.bus);
+    this.screamers.init({ enemies: this.combat.enemies, world: this.world, station: this.station, player: this.player, sfx: this.combat.sfx, shake: (a) => this.player.shake?.(a) });
+    this.sniper = new TowerSniper(this.cfg, this.bus);
+    this.sniper.init({ station: this.station, enemies: this.combat.enemies, clock: this.clock, progress: this.progress, fx: this.combat.fx, sfx: this.combat.sfx, dialogue: this.dialogue, rng: this.rng.fork('wyatt'), ground: this.world.ground });
+    this.nightTwo = new NightTwo(this.cfg, this.bus);
+    this.nightTwo.init({ station: this.station, enemies: this.combat.enemies, world: this.world, player: this.player, clock: this.clock, combat: this.combat, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, screamers: this.screamers, sniper: this.sniper, trailCams: this.trailCams, nightWatch: this.nightWatch, demo: this.demo, sfx: this.combat.sfx, notify, skipToPhase: (name) => this.skipToPhase(name) });
     this.megaNight = new MegaNight(this.cfg, this.bus);
     this.megaNight.init({ scene: this.scene, ground: this.world.ground, player: this.player, quad: this.quad, station: this.station, enemies: this.combat.enemies, world: this.world, combat: this.combat, clock: this.clock, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify, skipToNight: () => { this.skipToPhase('night'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); }, skipToDawn: () => { this.skipToPhase('dawn'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); } });
     // Build queue item 5: the crashed UFO and the mothership (encounters/Mothership.js).
@@ -1180,6 +1190,7 @@ export class Game {
     this.bugZapper.addDebugItems(menu);
     this.bigfootCave.addDebugItems(menu);
     this.megaNight.addDebugItems(menu);
+    this.nightTwo.addDebugItems(menu);
     this.mothership.addDebugItems(menu);
     this.carArmory.addDebugItems(menu);
     this.uteChase.addDebugItems(menu);
@@ -1725,6 +1736,9 @@ export class Game {
     this.bigfootCave.reset();
     this.megaNight.loadState(d.megaNight); // build queue item 4: where the quad stood
     this.megaNight.reset();
+    this.screamers.clear();
+    this.sniper.reset();
+    this.nightTwo.reset(); // Round 2
     this.mothership.reset();
     this.carArmory.reset();
     this.ute.loadState(d.ute); // build queue item 7: where the ute stood
@@ -2025,6 +2039,9 @@ export class Game {
     if (story) this.bugZapper.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.bigfootCave.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.megaNight.update(dt, playing && this.combat.alive);
+    if (story) this.nightTwo.update(dt, playing && this.combat.alive); // Round 2: Night 2 at the station
+    if (story) this.screamers.update(dt, playing && this.combat.alive);
+    if (story) this.sniper.update(dt, playing && this.combat.alive);
     if (story) this.mothership.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.carArmory.update(dt, controls, playing && this.combat.alive, !locked && !busy);
     if (story) this.uteChase.update(dt, controls, playing && this.combat.alive, !locked && !busy);

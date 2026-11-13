@@ -490,6 +490,21 @@ const RECIPES = {
     s.tone(o, { seconds: 0.9, wave: 'triangle', freq: 300, endFreq: 140, gain: 0.35 });
   },
   // The turret: heavier and harder than the rifle.
+  // Round 2: the Screamer's call: long, rising, with a rattle under it; heard a long way.
+  screamerCall(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9, 160);
+    s.tone(o, { seconds: 2.2, wave: 'sawtooth', freq: 520, endFreq: 1500, gain: 0.3, attack: 0.25, vibrato: 18 });
+    s.tone(o, { seconds: 2.2, wave: 'square', freq: 261, endFreq: 740, gain: 0.12, attack: 0.3, vibrato: 9 });
+    s.noiseBurst(o, { seconds: 2.0, type: 'bandpass', freq: 1800, endFreq: 3200, q: 2, gain: 0.3, attack: 0.3 });
+  },
+  // Round 2: Wyatt's lever-action from the tower: flatter than Tom's rifle, and from up there.
+  leverShot(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1, 120);
+    s.noiseBurst(o, { seconds: 0.3, freq: 3000, endFreq: 260, gain: 0.8 });
+    s.noiseBurst(o, { seconds: 0.04, type: 'highpass', freq: 2200, gain: 0.5 });
+    s.tone(o, { seconds: 0.22, freq: 110, endFreq: 50, gain: 0.6 });
+    setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.06, type: 'bandpass', freq: 1500, q: 3, gain: 0.25 }), 420); // the lever
+  },
   turret(s, pos) {
     const o = s.out(pos?.x, pos?.z, 1);
     s.noiseBurst(o, { seconds: 0.3, freq: 3500, endFreq: 250, gain: 0.9 });

@@ -20,7 +20,8 @@ describe('the hunting rifle (Session 10b, Aaron: kills by headshot)', () => {
   });
 
   it('kills the toughest zombie with a headshot', () => {
-    const toughest = Math.max(...Object.keys(z.levels).flatMap((l) => Object.keys(z.variants).map((v) => zombieHealth(l, v))));
+    // (Round 2: but for the Screamer, which is meant to take a lot of putting down: ai/Screamers.js.)
+    const toughest = Math.max(...Object.keys(z.levels).flatMap((l) => Object.keys(z.variants).filter((v) => v !== 'screamer').map((v) => zombieHealth(l, v))));
     expect(sniper.damage * config.weapons.headshotMultiplier).toBeGreaterThanOrEqual(toughest);
   });
 
