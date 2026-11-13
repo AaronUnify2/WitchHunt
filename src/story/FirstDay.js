@@ -100,6 +100,7 @@ export class FirstDay {
     this.nightfallDone = false;
     this.idle = 0; // seconds since the last step forward (for the nudges)
     this.nudged = new Set();
+    this.dawnWalkSaid = false; // plan #19: Junie's line on the walk out (updateDawnWalk)
     this.notifyFamily = false;
     this.lastStep = '';
     this.gateCall = 0; // seconds until Ellen will call Tom back from the locked gate again
@@ -243,6 +244,25 @@ export class FirstDay {
     if (day1) this.updateHome(dt);
     if (day1) this.updateNightfall(dt);
     if (this.night) this.updateNight1(dt);
+    this.updateDawnWalk();
+  }
+
+  // Round 1 plan #19: the long empty walk out on the morning after Night 1. Once Tom's well clear of the
+  // gate (config.firstDay.dawnWalk.distance from the station's middle), on foot or riding, Junie says what
+  // she's been turning over all night. Once; not over another line; not once he's reached the gas station.
+  updateDawnWalk() {
+    const w = this.fc.dawnWalk;
+    const d = this.dialogue;
+    if (!w || this.dawnWalkSaid || !this.progress.has('day2') || this.progress.has('gasStationVisited')) return;
+    if (d.heard?.has('day1.23')) {
+      this.dawnWalkSaid = true;
+      return;
+    }
+    if (this.cutscenes.active || this.subtitles?.busy) return;
+    const c = this.station.layout.centre;
+    const p = this.player.position;
+    if (Math.hypot(p.x - c.x, p.z - c.z) < w.distance) return;
+    this.dawnWalkSaid = d.say('day1.23') !== false;
   }
 
   // Session 15b (Aaron): the controls the game hasn't shown yet, as they're

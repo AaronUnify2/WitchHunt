@@ -4,7 +4,7 @@ Scope: main menu to the end of the military outpost. Nothing here is built; this
 
 ## Status (Nov 13): built
 
-Batches 1-3 are built and on `main`: items 1-19, except two small parts left out (moving one of Night 1's closing lines onto the Dawn 1 walk, item 19; and swapping the forecourt pack's fifth spot, item 12). Every new line is a draft (`draft: true`). Tests in `tests/firstThirdPlan.test.js` and `tests/outpost.test.js`; checked headless on seed 1234 (the dusk hold, night 2's planting at the plot and camera seven's report, the campsite figure, the forecourt pack unaware, Earl held). **None of it played by hand.**
+Batches 1-3 are built and on `main`: items 1-19. (The two small parts first left out were built on Nov 13, late: Junie's "She was singing" now comes on the Dawn 1 walk, 95 m out, instead of after Ellen's dawn line, item 19; and the forecourt pack's fifth spot is the one by the east pump, not the corner Tom comes round, item 12.) Every new line is a draft (`draft: true`). Tests in `tests/firstThirdPlan.test.js` and `tests/outpost.test.js`; checked headless on seed 1234 (the dusk hold, night 2's planting at the plot and camera seven's report, the campsite figure, the forecourt pack unaware, Earl held). **None of it played by hand.**
 
 **What to try in the play-test, in play order:**
 1. Day 1: the fire/aim/reload prompt when the shotgun's taken; the star on the torn shelter first; the tower's lines on their cues.

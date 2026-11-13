@@ -330,3 +330,16 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     for (const id of ['day2.figure', 'day2.figure.ellen']) expect(ids.has(id)).toBe(true);
   });
 });
+
+// Plan #19, the part left out until now: one of Night 1's closing lines comes on the walk out.
+describe("plan #19: Junie's line on the Dawn 1 walk", () => {
+  it('no longer follows the dawn line; it is cued, over the radio, a set way from home', async () => {
+    const dialogue = (await import('../src/data/dialogue.json')).default;
+    const { config } = await import('../src/config.js');
+    const by = new Map(dialogue.lines.map((l) => [l.id, l]));
+    expect(by.get('day1.21').next).toBeUndefined();
+    expect(by.get('day1.22').next).toBeUndefined();
+    expect(by.get('day1.23')).toMatchObject({ cued: true, channel: 'radio', speaker: 'junie' });
+    expect(config.firstDay.dawnWalk.distance).toBeGreaterThan(config.station.layout.fenceRadius + 40);
+  });
+});

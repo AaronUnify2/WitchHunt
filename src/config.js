@@ -3006,6 +3006,7 @@ export const config = {
     },
     // Skip intro: what Tom has at Dawn 1.
     skip: { shotgunShells: 0, rifleRounds: 16, scrap: 12, dawnLineDelay: 2.5, unheard: ['day1.21', 'day1.22', 'day1.23'] },
+    dawnWalk: { distance: 95 }, // Round 1 plan #19: metres from the station's middle, on the morning after Night 1, where Junie's line about the singing comes
   },
 
   // The roadside gas station (M9.3; encounters/GasStation.js,
