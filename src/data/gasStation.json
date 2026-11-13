@@ -110,8 +110,21 @@
     "phone": {
       "x": -6.6,
       "z": -5.2
+    },
+    "_extras": "Round 2 (the polish pass): the gift shop's dressing (render/GasStationProps.js giftShop), in the gas station's frame; the standing ones are solid (GasStation.buildColliders). coffee: the coffee counter on the back wall; magazines: a rack; bait: the LIVE BAIT chest; rods: fishing rods and a lure board; smokes: the shelves behind the counter; giftTable: Bigfoot souvenirs under the photo board; shirtRack: a round rail of T-shirts; spinner: the postcard rack by the door; papers: the newspaper stand; gumball: a gumball machine.",
+    "extras": {
+      "coffee": { "x": -2.6, "z": -10.12, "w": 1.6, "d": 0.55, "h": 0.92 },
+      "magazines": { "x": -0.7, "z": -10.2, "w": 1.3, "d": 0.4, "h": 1.5 },
+      "bait": { "x": 1.0, "z": -10.1, "w": 1.2, "d": 0.6, "h": 0.9 },
+      "rods": { "x": 2.6, "z": -10.3, "w": 1.1, "d": 0.25, "h": 2.0 },
+      "smokes": { "x": -7.75, "z": -4.5, "w": 0.3, "d": 1.9, "h": 2.0 },
+      "giftTable": { "x": -7.45, "z": -8.0, "w": 0.7, "d": 2.2, "h": 0.78 },
+      "shirtRack": { "x": -6.0, "z": -9.45, "r": 0.5 },
+      "spinner": { "x": -0.3, "z": -3.75, "r": 0.25 },
+      "papers": { "x": 3.15, "z": -3.45, "w": 0.55, "d": 0.4, "h": 0.7 },
+      "gumball": { "x": -3.72, "z": -10.15 }
     }
-  },
+},
   "office": {
     "desk": {
       "x": -4.2,

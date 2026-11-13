@@ -3113,6 +3113,10 @@ export const config = {
         shelf: 0x2a2a28,
         shelfDark: 0x1c1c1a,
         goods: [0x3a1c16, 0x1c2636, 0x3a3016, 0x1c301c, 0x302f2e, 0x423a26, 0x261c26],
+        // Round 2 (the polish pass): the gift shop (GasStationProps.giftShop).
+        plush: 0x33261a,
+        neonDead: 0x3a1c22,
+        mat: 0x24221e,
         coolerBody: 0x26282a,
         coolerGlass: 0x1a2428,
         carving: 0x3e2c1c,

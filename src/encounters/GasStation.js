@@ -238,6 +238,12 @@ export class GasStation {
     }
     this.line(grid, s.coolers.x, s.coolers.z0, s.coolers.x, s.coolers.z1, 0.45, low, fy + 2, true);
     this.block(grid, s.statue.x, s.statue.z, 0.8, 0.8, low, fy + 2, false);
+    // Round 2 (the polish pass): the gift shop's standing things (render/GasStationProps.js giftShop).
+    for (const [id, a] of Object.entries(s.extras ?? {})) {
+      if (a.r) this.block(grid, a.x, a.z, a.r * 1.5, a.r * 1.5, low, fy + 1.5, false);
+      else if (a.w) this.block(grid, a.x, a.z, a.w, a.d, low, fy + Math.min(a.h, 1.7), false);
+      else if (id === 'gumball') this.block(grid, a.x, a.z, 0.3, 0.3, low, fy + 1.2, false);
+    }
 
     const o = this.data.office;
     this.block(grid, o.desk.x, o.desk.z, 1.6, 0.8, low, fy + 0.8, false, o.desk.yaw);

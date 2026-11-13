@@ -63,6 +63,7 @@ export class GasStationProps {
     this.seed = 1;
     this.building();
     this.store();
+    this.giftShop();
     this.office();
     this.stockroom();
     this.forecourt();
@@ -417,15 +418,259 @@ export class GasStationProps {
       for (let i = 0; i < 16; i++) this.box(0.18, 0.1, 0.12, sh.x + (this.rand() - 0.5) * L, sh.z + 0.5 + this.rand() * 1.2, fy + 0.02, this.goodsColor(), this.rand() * 360);
       return;
     }
-    // Goods: rows of small boxes on each shelf, both faces, with gaps (looted).
+    // Goods: rows of small things on each shelf, both faces, with gaps (looted).
+    // Round 2 (the polish pass): not all one box: a packet with its label's band, tins in a pair (some
+    // stacked), bottles with their caps, a bag slumped against its neighbour.
     for (const h of [0.15, 0.58, 1.08]) {
       for (const side of [-0.17, 0.17]) {
         for (let zz = -L / 2 + 0.2; zz < L / 2 - 0.15; zz += 0.24) {
-          if (this.rand() < 0.45) continue;
-          const gh = 0.14 + this.rand() * 0.18;
-          this.box(0.2, gh, 0.18, sh.x, sh.z, fy, this.goodsColor(), yawDeg, { ox: side, oy: h, oz: zz });
+          if (this.rand() < 0.4) continue;
+          const at = { ox: side, oy: h, oz: zz };
+          const col = this.goodsColor();
+          const kind = this.rand();
+          if (kind < 0.45) {
+            const gh = 0.14 + this.rand() * 0.18;
+            this.box(0.2, gh, 0.18, sh.x, sh.z, fy, col, yawDeg, at);
+            this.box(0.206, gh * 0.3, 0.186, sh.x, sh.z, fy, this.goodsColor(), yawDeg, { ...at, oy: h + gh * 0.4 });
+          } else if (kind < 0.7) {
+            for (const dz of [-0.05, 0.05]) {
+              this.cyl(0.045, 0.11, sh.x, sh.z, fy, col, 7, { ...at, oz: zz + dz, yaw: yawDeg });
+              this.cyl(0.046, 0.03, sh.x, sh.z, fy, k.priceStrip, 7, { ...at, oy: h + 0.04, oz: zz + dz, yaw: yawDeg });
+            }
+            if (this.rand() < 0.4) this.cyl(0.045, 0.11, sh.x, sh.z, fy, col, 7, { ...at, oy: h + 0.11, yaw: yawDeg });
+          } else if (kind < 0.86) {
+            for (const dz of [-0.05, 0.045]) {
+              this.cyl(0.034, 0.17, sh.x, sh.z, fy, col, 6, { ...at, oz: zz + dz, yaw: yawDeg });
+              this.cyl(0.016, 0.07, sh.x, sh.z, fy, col, 5, { ...at, oy: h + 0.17, oz: zz + dz, yaw: yawDeg });
+              this.cyl(0.02, 0.02, sh.x, sh.z, fy, k.metal, 5, { ...at, oy: h + 0.24, oz: zz + dz, yaw: yawDeg });
+            }
+          } else {
+            this.box(0.19, 0.2, 0.09, sh.x, sh.z, fy, col, yawDeg, { ...at, rotX: 0.22 });
+            this.box(0.19, 0.03, 0.095, sh.x, sh.z, fy, k.priceStrip, yawDeg, { ...at, oy: h + 0.17, rotX: 0.22 });
+          }
         }
       }
+    }
+  }
+
+  // Round 2 (the polish pass; Aaron: "improve the aesthetic of... Earl's store"): the gift shop Earl kept
+  // (data store.extras; the standing ones are solid: GasStation.buildColliders). HOME OF BIGFOOT was a
+  // business: a coffee counter and a magazine rack along the back wall, the LIVE BAIT chest and a rack of
+  // rods; cigarettes and a dead beer sign behind the counter, the till's clutter; a table of souvenirs
+  // under his photographs (plush Bigfoots, mugs, folded shirts), a round rail of T-shirts, the postcard
+  // spinner and the paper stand by the door, a gumball machine; a string of pennants across the room; a
+  // mat inside the door. All of it dusty and dead, like the rest.
+  giftShop() {
+    const e = this.data.store.extras;
+    if (!e) return;
+    const k = this.cfg.colors;
+    const fy = this.floorY;
+    const goods = () => this.goodsColor();
+    if (e.coffee) {
+      const a = e.coffee;
+      this.box(a.w, a.h - 0.04, a.d, a.x, a.z, fy, k.counter);
+      this.box(a.w + 0.04, 0.04, a.d + 0.04, a.x, a.z, fy + a.h - 0.04, k.counterTop);
+      // The machine: its body, two glass pots on their plates, the basket.
+      this.box(0.5, 0.42, 0.3, a.x - 0.4, a.z - 0.08, fy + a.h, k.metal);
+      this.box(0.5, 0.06, 0.36, a.x - 0.4, a.z - 0.05, fy + a.h + 0.42, k.metal);
+      for (const dx of [-0.52, -0.28]) {
+        this.cyl(0.07, 0.13, a.x + dx, a.z + 0.14, fy + a.h + 0.02, k.coolerGlass, 8);
+        this.cyl(0.075, 0.02, a.x + dx, a.z + 0.14, fy + a.h, k.screen, 8);
+        this.box(0.03, 0.09, 0.02, a.x + dx + 0.085, a.z + 0.14, fy + a.h + 0.04, k.screen);
+      }
+      // Cups in two stacks, lids, a box of stirrers, the sugar; the donut case, three left in it.
+      for (const dx of [0.0, 0.14]) this.cyl(0.04, 0.26 - dx, a.x + dx, a.z + 0.02, fy + a.h, k.officePaper ?? k.plaster, 7, { top: 0.046 });
+      this.box(0.14, 0.08, 0.12, a.x + 0.02, a.z - 0.16, fy + a.h, goods());
+      this.box(0.38, 0.26, 0.3, a.x + 0.5, a.z - 0.04, fy + a.h, k.coolerGlass);
+      this.box(0.42, 0.03, 0.34, a.x + 0.5, a.z - 0.04, fy + a.h + 0.26, k.metal);
+      for (let i = 0; i < 3; i++) this.cyl(0.045, 0.03, a.x + 0.4 + i * 0.1, a.z - 0.04, fy + a.h + 0.04, k.carving, 7);
+      // The price list on the wall over it (a dark board, its lines), a stopped clock.
+      this.box(0.9, 0.5, 0.02, a.x - 0.2, a.z - a.d / 2 - 0.03, fy + 1.55, k.screen);
+      for (let i = 0; i < 5; i++) this.box(0.5 + (i % 3) * 0.1, 0.02, 0.012, a.x - 0.3 + (i % 2) * 0.04, a.z - a.d / 2 - 0.015, fy + 1.62 + i * 0.08, k.priceStrip);
+      this.cyl(0.16, 0.03, a.x + 0.62, a.z - a.d / 2 - 0.03, fy + 1.8, k.plaster, 10, { rotX: Math.PI / 2, oy: -0.015 });
+    }
+    if (e.gumball) {
+      const a = e.gumball;
+      this.cyl(0.13, 0.04, a.x, a.z, fy, k.metal, 8);
+      this.cyl(0.025, 0.7, a.x, a.z, fy + 0.04, k.metal, 6);
+      this.box(0.2, 0.2, 0.2, a.x, a.z, fy + 0.74, k.goods[0]);
+      this.cyl(0.13, 0.22, a.x, a.z, fy + 0.94, k.coolerGlass, 8, { top: 0.1 });
+      this.cyl(0.07, 0.04, a.x, a.z, fy + 1.16, k.goods[0], 7);
+    }
+    if (e.magazines) {
+      const a = e.magazines;
+      // A rack leaning back against the wall: four tiers, covers face out, some gone.
+      this.box(a.w, a.h, 0.04, a.x, a.z - a.d / 2 + 0.02, fy, k.shelfDark);
+      for (const s of [-1, 1]) this.box(0.03, a.h, a.d, a.x + s * (a.w / 2 - 0.015), a.z, fy, k.shelfDark);
+      for (let j = 0; j < 4; j++) {
+        const y = fy + 0.12 + j * 0.34;
+        this.box(a.w, 0.025, 0.16, a.x, a.z - a.d / 2 + 0.12 + (3 - j) * 0.05, y, k.shelf);
+        for (let i = 0; i < 5; i++) {
+          if (this.rand() < 0.3) continue;
+          const mx = a.x - a.w / 2 + 0.16 + i * ((a.w - 0.32) / 4);
+          const mz = a.z - a.d / 2 + 0.13 + (3 - j) * 0.05;
+          const col = goods();
+          this.box(0.2, 0.27, 0.012, mx, mz, y + 0.03, col, 0, { rotX: -0.22 });
+          this.box(0.16, 0.05, 0.014, mx, mz + 0.004, y + 0.24, k.plaster, 0, { rotX: -0.22 }); // its masthead
+          this.box(0.1, 0.1, 0.014, mx + 0.02, mz + 0.02, y + 0.08, goods(), 0, { rotX: -0.22 });
+        }
+      }
+    }
+    if (e.bait) {
+      const a = e.bait;
+      this.box(a.w, a.h, a.d, a.x, a.z, fy, k.iceChest);
+      this.box(a.w + 0.03, 0.06, a.d + 0.03, a.x, a.z, fy + a.h, k.iceLid);
+      this.box(0.3, 0.04, 0.04, a.x, a.z + a.d / 2 + 0.01, fy + a.h - 0.1, k.metal);
+      // LIVE BAIT, hand-lettered on a board over it (two words' worth of pale strokes), and a hook drawn under.
+      this.box(0.9, 0.36, 0.02, a.x, a.z - a.d / 2 + 0.02, fy + 1.5, k.carvingDark ?? k.shelfDark);
+      for (let i = 0; i < 4; i++) this.box(0.1, 0.11, 0.012, a.x - 0.32 + i * 0.13, a.z - a.d / 2 + 0.034, fy + 1.7, k.plaster);
+      for (let i = 0; i < 4; i++) this.box(0.1, 0.11, 0.012, a.x - 0.06 + i * 0.13, a.z - a.d / 2 + 0.034, fy + 1.54, k.plaster);
+      // Tubs of worms and a scoop on the lid.
+      for (let i = 0; i < 3; i++) this.cyl(0.06, 0.07, a.x - 0.35 + i * 0.16, a.z + 0.05, fy + a.h + 0.06, k.plaster, 7);
+      this.box(0.2, 0.03, 0.06, a.x + 0.3, a.z + 0.1, fy + a.h + 0.06, k.metal, 30);
+    }
+    if (e.rods) {
+      const a = e.rods;
+      this.box(a.w, 0.06, a.d, a.x, a.z, fy + 0.02, k.shelfDark);
+      this.box(a.w, 0.04, 0.1, a.x, a.z - 0.06, fy + 1.2, k.shelfDark);
+      for (let i = 0; i < 6; i++) {
+        const rx = a.x - a.w / 2 + 0.12 + i * ((a.w - 0.24) / 5);
+        const len = 1.7 + (i % 3) * 0.12;
+        this.box(0.016, len, 0.016, rx, a.z + 0.04, fy + 0.06, i % 2 ? k.shelfDark : k.carving, 0, { rotX: -0.06 });
+        this.cyl(0.035, 0.05, rx, a.z + 0.07, fy + 0.3, k.metal, 6, { rotX: Math.PI / 2 });
+      }
+      // The lure board over them: cards of lures on pegs.
+      this.box(a.w, 0.5, 0.02, a.x, a.z - a.d / 2 + 0.02, fy + 2.05, k.shelf);
+      for (let i = 0; i < 10; i++) {
+        const lx = a.x - a.w / 2 + 0.12 + (i % 5) * ((a.w - 0.24) / 4);
+        this.box(0.09, 0.14, 0.012, lx, a.z - a.d / 2 + 0.035, fy + 2.1 + Math.floor(i / 5) * 0.22, k.plaster);
+        this.box(0.03, 0.06, 0.016, lx, a.z - a.d / 2 + 0.04, fy + 2.13 + Math.floor(i / 5) * 0.22, goods());
+      }
+    }
+    if (e.smokes) {
+      const a = e.smokes;
+      // Shelves on the wall behind the counter: packs in rows, cartons under; lighters and jerky on the top.
+      this.box(a.w, a.h, a.d, a.x, a.z, fy, k.shelfDark);
+      for (let j = 0; j < 5; j++) {
+        const y = fy + 0.5 + j * 0.3;
+        this.box(a.w + 0.06, 0.02, a.d, a.x + 0.03, a.z, y, k.shelf);
+        for (let zz = -a.d / 2 + 0.09; zz < a.d / 2 - 0.05; zz += 0.085) {
+          if (this.rand() < 0.25) continue;
+          const col = goods();
+          this.box(0.03, j < 2 ? 0.1 : 0.12, 0.07, a.x + a.w / 2 + 0.03, a.z + zz, y + 0.02, col);
+          if (j >= 2) this.box(0.032, 0.035, 0.072, a.x + a.w / 2 + 0.03, a.z + zz, y + 0.105, k.plaster);
+        }
+      }
+      // The beer sign over it, dead: a dark board, the tube's loops.
+      this.box(0.04, 0.42, 0.9, a.x, a.z, fy + a.h + 0.2, k.screen);
+      for (const [dz, dy, w, h] of [[-0.26, 0.1, 0.22, 0.2], [0.02, 0.1, 0.22, 0.2], [0.28, 0.1, 0.18, 0.2], [0, 0.04, 0.76, 0.03]]) this.box(0.02, h, w, a.x + 0.03, a.z + dz, fy + a.h + 0.2 + dy, k.neonDead ?? k.calendarTop);
+      // On the counter: the lottery stand, a jar, the penny dish, a bell, a charity can, a stack of stickers.
+      const c = this.data.store.counter;
+      const cy = fy + c.height + 0.05;
+      this.box(0.3, 0.26, 0.16, c.x + 1.35, c.z - 0.12, cy, k.shelfDark, 0, { rotX: 0.2 });
+      for (let i = 0; i < 6; i++) this.box(0.08, 0.1, 0.012, c.x + 1.25 + (i % 3) * 0.1, c.z - 0.06 + Math.floor(i / 3) * 0.03, cy + 0.04 + Math.floor(i / 3) * 0.12, goods(), 0, { rotX: 0.2 });
+      this.cyl(0.07, 0.2, c.x + 0.3, c.z + 0.12, cy, k.coolerGlass, 8);
+      this.cyl(0.074, 0.03, c.x + 0.3, c.z + 0.12, cy + 0.2, k.metal, 8);
+      this.cyl(0.06, 0.025, c.x - 0.2, c.z + 0.18, cy, k.plaster, 8);
+      this.cyl(0.04, 0.04, c.x - 0.5, c.z + 0.15, cy, k.metal, 8, { top: 0.015 });
+      this.cyl(0.045, 0.12, c.x + 0.62, c.z + 0.2, cy, k.goods[3], 7);
+      for (let i = 0; i < 4; i++) this.box(0.24, 0.006, 0.08, c.x - 0.95, c.z + 0.1, cy + i * 0.006, i % 2 ? k.carving : k.plaster, 8 * i);
+    }
+    if (e.giftTable) {
+      const a = e.giftTable;
+      this.box(a.w, 0.05, a.d, a.x, a.z, fy + a.h - 0.05, k.wood);
+      for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) this.box(0.06, a.h - 0.05, 0.06, a.x + lx * (a.w / 2 - 0.06), a.z + lz * (a.d / 2 - 0.08), fy, k.wood);
+      this.box(a.w + 0.02, 0.3, a.d + 0.02, a.x, a.z, fy + a.h - 0.34, k.goods[1]); // its cloth, hanging
+      const ty = fy + a.h;
+      // A row of plush Bigfoots, sitting: a body, a head, arms, the feet out front.
+      for (let i = 0; i < 5; i++) {
+        const z = a.z - 0.9 + i * 0.24;
+        const s = 0.8 + (i % 3) * 0.14;
+        this.box(0.13 * s, 0.16 * s, 0.13 * s, a.x - 0.12, z, ty, k.plush ?? k.carving);
+        this.box(0.1 * s, 0.1 * s, 0.1 * s, a.x - 0.12, z, ty + 0.16 * s, k.plush ?? k.carving);
+        this.box(0.07 * s, 0.03, 0.035, a.x - 0.02, z - 0.04 * s, ty, k.carvingDark ?? k.shelfDark);
+        this.box(0.07 * s, 0.03, 0.035, a.x - 0.02, z + 0.04 * s, ty, k.carvingDark ?? k.shelfDark);
+      }
+      // Mugs with the footprint on, in two rows; snow globes; folded shirts in three stacks; a tin of badges.
+      for (let i = 0; i < 6; i++) this.cyl(0.04, 0.085, a.x + 0.02 + (i % 2) * 0.13, a.z + 0.34 + Math.floor(i / 2) * 0.12, ty, i % 3 ? k.plaster : k.goods[0], 7);
+      for (let i = 0; i < 3; i++) {
+        this.cyl(0.045, 0.02, a.x - 0.18, a.z + 0.36 + i * 0.13, ty, k.wood, 7);
+        this.cyl(0.04, 0.07, a.x - 0.18, a.z + 0.36 + i * 0.13, ty + 0.02, k.coolerGlass, 7, { top: 0.025 });
+      }
+      for (let st = 0; st < 3; st++) for (let i = 0; i < 3 + st; i++) this.box(0.26, 0.022, 0.2, a.x + 0.02, a.z + 0.72 + st * 0.0, ty + i * 0.023 + st * 0.0, [k.goods[0], k.goods[1], k.goods[3], k.goods[5]][(i + st) % 4], st * 14 - 10, { oz: st * 0.0 });
+      this.box(0.26, 0.022 * 4, 0.2, a.x - 0.02, a.z + 0.98, ty, k.goods[3], 6);
+      this.cyl(0.07, 0.03, a.x + 0.16, a.z - 0.02, ty, k.metal, 8);
+      // His sign for it, propped at the back: a board and its strokes.
+      this.box(0.02, 0.26, 0.6, a.x - a.w / 2 + 0.05, a.z + 0.05, ty + 0.3, k.carvingDark ?? k.shelfDark);
+      for (let i = 0; i < 5; i++) this.box(0.012, 0.1, 0.08, a.x - a.w / 2 + 0.065, a.z - 0.17 + i * 0.11, ty + 0.38, k.plaster);
+    }
+    if (e.shirtRack) {
+      const a = e.shirtRack;
+      this.cyl(0.03, 1.5, a.x, a.z, fy, k.metal, 6);
+      this.cyl(0.28, 0.03, a.x, a.z, fy, k.metal, 8);
+      this.put(new THREE.TorusGeometry(a.r - 0.06, 0.012, 4, 14).rotateX(Math.PI / 2), k.metal, a.x, a.z, fy + 1.5);
+      for (const yaw of [0, 90]) this.box(0.02, 0.02, (a.r - 0.06) * 2, a.x, a.z, fy + 1.49, k.metal, yaw);
+      // The shirts, hanging round it: gaps where they sold, or were taken.
+      for (let i = 0; i < 16; i++) {
+        if (this.rand() < 0.25) continue;
+        const ang = (i / 16) * 360;
+        const r = a.r - 0.06;
+        const rad = (ang * Math.PI) / 180;
+        const x = a.x + Math.sin(rad) * r;
+        const z = a.z + Math.cos(rad) * r;
+        const col = goods();
+        this.box(0.03, 0.56, 0.4, x, z, fy + 0.86, col, -ang + 90);
+        this.box(0.034, 0.16, 0.2, x, z, fy + 1.1, k.carving, -ang + 90); // the print on it
+        this.box(0.02, 0.06, 0.02, x, z, fy + 1.43, k.metal);
+      }
+    }
+    if (e.spinner) {
+      const a = e.spinner;
+      this.cyl(0.2, 0.03, a.x, a.z, fy, k.metal, 8);
+      this.cyl(0.02, 1.7, a.x, a.z, fy, k.metal, 6);
+      for (let j = 0; j < 5; j++) {
+        for (let i = 0; i < 4; i++) {
+          if (this.rand() < 0.2) continue;
+          const ang = i * 90 + j * 20;
+          const rad = (ang * Math.PI) / 180;
+          const x = a.x + Math.sin(rad) * (a.r - 0.08);
+          const z = a.z + Math.cos(rad) * (a.r - 0.08);
+          this.box(0.15, 0.11, 0.012, x, z, fy + 0.55 + j * 0.22, i % 2 ? k.photo : goods(), -ang, { rotX: -0.25 });
+          this.box(0.06, 0.07, 0.014, x, z, fy + 0.57 + j * 0.22, k.carving, -ang, { rotX: -0.25, ox: 0.02 }); // him, on every card
+        }
+      }
+      this.box(0.3, 0.08, 0.02, a.x, a.z, fy + 1.7, k.carvingDark ?? k.shelfDark);
+    }
+    if (e.papers) {
+      const a = e.papers;
+      this.box(a.w, a.h, a.d, a.x, a.z, fy, k.metal);
+      this.box(a.w - 0.06, 0.3, 0.02, a.x, a.z - a.d / 2 - 0.011, fy + 0.3, k.coolerGlass);
+      for (let i = 0; i < 5; i++) this.box(a.w - 0.12, 0.012, a.d - 0.1, a.x, a.z, fy + a.h + i * 0.012, i === 4 ? k.officePaper ?? k.plaster : k.plaster, i * 2);
+      this.box(a.w - 0.2, 0.014, 0.05, a.x, a.z - 0.08, fy + a.h + 0.06, k.screen); // the headline
+      this.box(0.16, 0.014, 0.12, a.x - 0.08, a.z + 0.05, fy + a.h + 0.06, k.photo);
+    }
+    // The mat inside the door; a wet-floor board folded against the wall by the coolers.
+    const b = this.data.building;
+    this.box(1.5, 0.015, 0.8, b.door.x, b.z1 - 0.65, fy + 0.012, k.mat ?? k.shelfDark);
+    this.box(1.3, 0.017, 0.12, b.door.x, b.z1 - 0.65, fy + 0.014, k.carving);
+    this.box(0.3, 0.6, 0.02, 6.9, b.z1 - 0.3, fy, k.goods[2], 0, { rotX: 0.12 });
+    // The pennants: a sagging string across the shop from wall to wall, a triangle every half metre.
+    const ceil = fy + b.height - 0.45;
+    const n = 26;
+    let prev = null;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const x = b.x0 + 0.5 + t * (b.x1 - b.x0 - 1.0);
+      const y = ceil - Math.sin(t * Math.PI) * 0.35 - Math.abs(Math.sin(t * Math.PI * 3)) * 0.08;
+      const z = -4.4 - t * 0.6;
+      if (prev) this.bar([prev[0], prev[1], prev[2]], [x, y, z], 0.004, k.metal);
+      if (i > 0 && i < n) {
+        const col = goods();
+        this.box(0.2, 0.09, 0.008, x, z, y - 0.09, col);
+        this.box(0.12, 0.08, 0.008, x, z, y - 0.17, col);
+        this.box(0.05, 0.07, 0.008, x, z, y - 0.24, col);
+      }
+      prev = [x, y, z];
     }
   }
 
