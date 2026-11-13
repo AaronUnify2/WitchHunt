@@ -664,3 +664,12 @@ describe("Aaron's play-test, Nov 14", () => {
     expect(drawer.gives.map((g) => g.item).sort()).toEqual(['pistolAmmo', 'rifleAmmo']);
   });
 });
+
+describe("Aaron's play-test, Nov 14: Junie's question", () => {
+  it('is answered by Wyatt, who is in the room with her (Ellen is at her board next door by day)', () => {
+    const by = new Map(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by.get('day1.13')).toMatchObject({ speaker: 'junie', next: 'day1.14' });
+    expect(by.get('day1.14')).toMatchObject({ speaker: 'wyatt', channel: 'face' });
+    expect(by.get('day1.14').text).toMatch(/ready for them/);
+  });
+});
