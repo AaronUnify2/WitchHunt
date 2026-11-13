@@ -41,6 +41,15 @@ export class Objectives {
     if (this.timer > 0) return;
     this.timer = 0.4;
     const next = this.work() ?? { id: 'none', text: '', at: null };
+    // Round 2, step 6: while the fog funnel's on, the marker points at the next clearing on the way, not
+    // straight through the fog (story/FogFunnel.js guide).
+    if (next.at && (next.ats?.length ?? 1) <= 1) {
+      const guided = this.g?.funnel?.guide?.(next.at);
+      if (guided && guided !== next.at) {
+        next.at = { x: guided.x, z: guided.z };
+        next.ats = [next.at];
+      }
+    }
     const changed = next.id !== this.current.id;
     this.current = next;
     if (changed) {

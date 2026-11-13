@@ -5616,7 +5616,9 @@ export const config = {
       { from: 'outpost', to: 'crashedPlane' },
       { from: 'crashedPlane', to: 'timeCapsule' },
       { from: 'timeCapsule', to: 'stairs', needs: 'stairsKnown' },
+      { from: 'stairs', to: 'crashedPlane', needs: 'junieFound' }, // the straight way home with her, once she's found
     ],
+    gate: 'outpost', // the clearing the objective's marker makes for when the goal is north of the cordon (FogFunnel.guide)
     half: 20,
     clearingPad: 8,
     placePad: 40, // the story's own places (the plane, the church, the stairs) have this much room round them instead

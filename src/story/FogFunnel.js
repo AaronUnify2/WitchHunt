@@ -85,7 +85,36 @@ export function funnelRoute(map, legs, has, pad, stopPad = pad) {
     lines: [...paths].map((k) => map.paths[k].points),
     discs: [...stops].map((i) => ({ x: map.clearings[i].x, z: map.clearings[i].z, r: map.clearings[i].radius + (places.has(i) ? stopPad : pad) })),
     ends,
+    pathIds: [...paths], // the map's pathways on the way (indices), and its clearings
+    nodes: [...stops],
   };
+}
+
+// The next place to head for on the way to a goal: the objective's marker shouldn't point through the fog.
+// route: funnelRoute()'s; (px, pz): Tom; goal: { x, z } (the step's own spot); gate: the clearing index to
+// make for when the goal's north of the cordon (the outpost's). Returns { x, z }: the next clearing along the
+// route's pathways toward the goal, or the goal itself once he's in its clearing (or it isn't on the route).
+export function nextStop(map, route, px, pz, goal, { cordonZ, gate = -1, near = 70, inside = 6 } = {}) {
+  if (!route?.nodes?.length || !goal) return goal;
+  const cl = map.clearings;
+  const nearest = (x, z) => route.nodes.reduce((best, i) => (best < 0 || Math.hypot(cl[i].x - x, cl[i].z - z) < Math.hypot(cl[best].x - x, cl[best].z - z) ? i : best), -1);
+  let end = nearest(goal.x, goal.z);
+  const north = cordonZ !== undefined && goal.z < cordonZ;
+  if (north && gate >= 0 && route.nodes.includes(gate)) end = gate;
+  else if (Math.hypot(cl[end].x - goal.x, cl[end].z - goal.z) > cl[end].radius + near) return goal; // not a place on the way
+  const here = nearest(px, pz);
+  const allowed = new Set(route.pathIds.map((k) => map.paths[k]));
+  const way = shortestWay(map, here, end, (p) => allowed.has(p));
+  const order = [here];
+  for (const k of way ?? []) order.push(map.paths[k].a === order[order.length - 1] ? map.paths[k].b : map.paths[k].a);
+  const c0 = cl[order[0]];
+  const d0 = Math.hypot(px - c0.x, pz - c0.z);
+  if (order.length === 1) return d0 < c0.radius + inside || !north ? goal : { x: c0.x, z: c0.z };
+  const c1 = cl[order[1]];
+  // He's in the nearest clearing, or already past it toward the next: the next. Else that one first.
+  const passed = d0 < c0.radius + inside || Math.hypot(px - c1.x, pz - c1.z) < Math.hypot(c0.x - c1.x, c0.z - c1.z);
+  const pick = passed ? order[1] : order[0];
+  return pick === end && !north ? goal : { x: cl[pick].x, z: cl[pick].z };
 }
 
 // How far outside the route a point is (negative: that far inside), and the nearest point of the route's
@@ -221,6 +250,16 @@ export class FogFunnel {
         if (this.caller.callFrom({ x: p.x + (ex / el) * f.callAhead, z: p.z + (ez / el) * f.callAhead })) this.called = f.callEvery;
       }
     }
+  }
+
+  // Where the objective's marker should point while the funnel's on (story/Objectives.js): the next clearing
+  // on the way, not straight through the fog. North of the cordon, or with the funnel off: the goal as it is.
+  guide(goal) {
+    if (!goal || !this.active || !this.route?.nodes?.length) return goal;
+    const p = this.player.position;
+    const cordonZ = this.map.cluster.cordonZ;
+    if (p.z <= cordonZ + this.fc.northMargin) return goal;
+    return nextStop(this.map, this.route, p.x, p.z, goal, { cordonZ, gate: this.map.clearings.findIndex((c) => c.key === this.fc.gate) });
   }
 
   overlayLine() {

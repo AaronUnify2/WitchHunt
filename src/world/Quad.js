@@ -279,15 +279,36 @@ export class Quad {
     for (const x of [-0.22, 0.22]) add(new THREE.CylinderGeometry(0.089, 0.089, 0.03, 9), k.frame, x, 0.975, 0.97, 0, Math.PI / 2);
     this.mesh = new THREE.Group();
     this.mesh.name = 'quad';
+    // Three draw calls: everything that doesn't glow is one mesh, coloured by vertex; the headlamps' lenses
+    // and the tail lamp are their own (they light up).
+    const body = [];
+    const tint = new THREE.Color();
     for (const [color, geos] of parts) {
-      const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshLambertMaterial({ color }));
-      geos.forEach((g) => g.dispose());
-      if (color === k.lamp) this.lampMesh = mesh; // its lenses glow while the headlamp's on
-      if (color === (k.tail ?? 0x4a100c)) this.tailMesh = mesh; // and its tail lamp
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      this.mesh.add(mesh);
+      const glows = color === k.lamp || color === (k.tail ?? 0x4a100c);
+      if (glows) {
+        const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshLambertMaterial({ color }));
+        geos.forEach((g) => g.dispose());
+        if (color === k.lamp) this.lampMesh = mesh; // its lenses glow while the headlamp's on
+        else this.tailMesh = mesh; // and its tail lamp
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        this.mesh.add(mesh);
+        continue;
+      }
+      tint.set(color);
+      for (const g of geos) {
+        const n = g.attributes.position.count;
+        const col = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) col.set([tint.r, tint.g, tint.b], i * 3);
+        g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        body.push(g);
+      }
     }
+    const bodyMesh = new THREE.Mesh(mergeGeometries(body), new THREE.MeshLambertMaterial({ vertexColors: true }));
+    body.forEach((g) => g.dispose());
+    bodyMesh.castShadow = true;
+    bodyMesh.receiveShadow = true;
+    this.mesh.add(bodyMesh);
     this.scene.add(this.mesh);
   }
 

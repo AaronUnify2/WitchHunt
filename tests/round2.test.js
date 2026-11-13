@@ -470,7 +470,7 @@ describe('step 5: the family at their stations', () => {
 });
 
 // ---- step 6: the fog funnel ----
-import { shortestWay, funnelRoute, outsideBy, fogAmount, funnelOn, FogFunnel } from '../src/story/FogFunnel.js';
+import { shortestWay, funnelRoute, outsideBy, fogAmount, funnelOn, nextStop, FogFunnel } from '../src/story/FogFunnel.js';
 
 describe('step 6: the fog funnel', () => {
   const f = config.fogFunnel;
@@ -489,18 +489,60 @@ describe('step 6: the fog funnel', () => {
       const idx = (k) => map.clearings.findIndex((c) => c.key === k);
       const route = funnelRoute(map, f.legs, all, f.clearingPad);
       expect(route.lines.length, `seed ${seed}`).toBeGreaterThanOrEqual(3);
-      expect(route.ends.length).toBe(3);
+      expect(route.ends.length).toBe(f.legs.length);
       for (const key of ['crashedPlane', 'timeCapsule', 'stairs']) {
         const c = map.clearings[idx(key)];
         expect(outsideBy(route, c.x, c.z, f.half).d, `${key} seed ${seed}`).toBeLessThan(-f.fogStart);
       }
       // The stairs' leg waits on the 1903 account.
-      const early = funnelRoute(map, f.legs, (x) => x !== 'stairsKnown', f.clearingPad);
+      const early = funnelRoute(map, f.legs, (x) => x !== 'stairsKnown' && x !== 'junieFound', f.clearingPad);
       const st = map.clearings[idx('stairs')];
       expect(outsideBy(early, st.x, st.z, f.half).d).toBeGreaterThan(0);
       // No pathway north of the cordon but the checkpoint's own.
       const way = shortestWay(map, idx('crashedPlane'), idx('timeCapsule'), (p) => !p.cluster || p.checkpoint);
       for (const k of way) expect(map.paths[k].cluster && !map.paths[k].checkpoint).toBeFalsy();
+    }
+  });
+
+  it("points the objective at the next clearing on the way, not through the fog, and at the gate when the goal's home", () => {
+    for (const seed of [1, 1234]) {
+      const map = makeMap(seed);
+      const at = (k) => map.clearings.find((c) => c.key === k);
+      const idx = (k) => map.clearings.findIndex((c) => c.key === k);
+      const route = funnelRoute(map, f.legs, all, f.clearingPad, f.placePad);
+      const opts = { cordonZ: map.cluster.cordonZ, gate: idx('outpost') };
+      const plane = at('crashedPlane');
+      const church = at('timeCapsule');
+      const stairs = at('stairs');
+      // From the plane, for the church: the next clearing on the pathways toward it (the church itself if it's next).
+      const first = nextStop(map, route, plane.x, plane.z, church, opts);
+      const way = shortestWay(map, idx('crashedPlane'), idx('timeCapsule'), (p) => !p.cluster || p.checkpoint);
+      const p0 = map.paths[way[0]];
+      const second = map.clearings[p0.a === idx('crashedPlane') ? p0.b : p0.a];
+      expect(first).toMatchObject({ x: second.x, z: second.z });
+      // In the church's own clearing: the goal as it is (a spot in it).
+      const spot = { x: church.x + 5, z: church.z - 3 };
+      expect(nextStop(map, route, church.x, church.z, spot, opts)).toBe(spot);
+      // Walking the stops in turn from the plane reaches the stairs: every stop is a clearing on the route, never the same twice.
+      let here = plane;
+      const seen = new Set();
+      for (let i = 0; i < 20 && here !== stairs; i++) {
+        const n = nextStop(map, route, here.x, here.z, stairs, opts);
+        const c = map.clearings.find((q) => q.x === n.x && q.z === n.z);
+        expect(c, `seed ${seed} step ${i}`).toBeDefined();
+        expect(seen.has(c)).toBe(false);
+        seen.add(c);
+        here = c;
+      }
+      expect(here).toBe(stairs);
+      // Home, from the stairs: toward the outpost's gate, never a point north of the cordon until he's there.
+      const home = map.clearings[map.homeIndex];
+      const back = nextStop(map, route, stairs.x, stairs.z, home, opts);
+      expect(back.z).toBeGreaterThan(map.cluster.cordonZ - 60);
+      expect(back).not.toBe(home);
+      // A goal that's nowhere on the way (a debug jaunt): left alone.
+      const off = { x: stairs.x + 400, z: stairs.z + 400 };
+      expect(nextStop(map, route, plane.x, plane.z, off, opts)).toBe(off);
     }
   });
 
