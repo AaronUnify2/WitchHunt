@@ -456,6 +456,15 @@ export class Vehicles {
     const found = rollLoot(v.def.loot[loot], v.lootRng);
     const at = v.spots[spot];
     let any = false;
+    // Round 2 (Aaron): an authored find (the sheriff's car's pistol, in its door): { weapon, rounds, text }.
+    for (const g of v.gives?.[loot] ?? []) {
+      if (!g.weapon || this.combat.weapons?.has?.(g.weapon)) continue;
+      any = true;
+      this.combat.giveWeapon(g.weapon, g.rounds ?? 0);
+      this.combat.hud.pickup(g.text ?? `${g.weapon}`);
+      this.combat.sfx.play('pickup');
+      this.bus.emit('vehicle:weapon', { vehicle: v, weapon: g.weapon });
+    }
     for (const { item, amount } of found) {
       any = true;
       // Whatever the player can't take (a full bag of kits, full armour) is left by the vehicle.

@@ -1536,6 +1536,7 @@ export const config = {
       cutShake: 0.011,
       cutPush: 0.06,
       stallDrop: 0.07,
+      fell: { roll: 1.3, yaw: 0.25, x: 0.05, y: -0.05 }, // Round 2: felling a tree: the bar over on its side, across the trunk
       chainSpeed: 9, // the chain's teeth: lengths of the bar a second at full revs
     },
     muzzleFlashSeconds: 0.05,
@@ -2871,6 +2872,7 @@ export const config = {
   // UI
   ui: {
     toastSeconds: 3,
+    toastRead: { base: 1.6, perWord: 0.42, max: 16 }, // Round 2 (Aaron: texts faded too fast to read): a toast stays at least base + perWord a word seconds (a 20-word text: 10 s)
     hintSeconds: 7, // Session 15b: a control prompt ("Click LS: sprint") stays this long, not counting cutscenes
   },
 
@@ -4720,6 +4722,10 @@ export const config = {
     wear: { cut: 0.02, foundAt: 0.55, warnAt: 0.25 }, // per second in a cut: about 50 s of cutting from sharp to dull; how sharp it's found (it's been in a man)
     noise: { rev: 55, idle: 10, every: 0.6 }, // metres; how often the revving's heard
     smoke: { every: 0.12 }, // seconds between puffs while it's stalled hot
+    // Round 2 (Aaron): it fells trees, as the dozer does. reach: metres from the eye to the trunk; facing:
+    // how squarely in front (a cosine); seconds: a sapling's cut at a sharp chain, plus the dozer's strain for
+    // the tree (x strainScale) for the tall and the thick; dustEvery: bites between puffs of sawdust.
+    trees: { reach: 2.1, facing: 0.8, seconds: 1.6, strainScale: 1.6, dustEvery: 2 },
   },
   // Session 28: the sawmill (an optional encounter; DESIGN.md "The sawmill"; the set:
   // render/sawmillModel.js, world/SawmillSite.js; the beat: encounters/Sawmill.js). Harlan Stover's
@@ -5572,6 +5578,11 @@ export const config = {
     post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
     map: { color: '#8cc4ec', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 }, // Session 16 (Aaron): blue (green read as the witch's)
   },
+
+  // Round 2 (Aaron): on foot deep in the trees (nothing open within `radius` metres), from day `fromDay`,
+  // `count` giant moths find Tom `first` seconds in and every `every` seconds after, `max` about at most;
+  // `loseAfter` seconds back near a path they leave. Not on a vehicle, indoors, or while an encounter has the moths.
+  deepForest: { enabled: true, fromDay: 2, radius: 14, checkEvery: 0.5, first: 12, every: 30, count: [1, 2], max: 4, loseAfter: 6 },
 
   // The station's ledger (M5): a full-screen book in the comms room.
   // Placeholder look; the pixel-font book is the UI session's (Session 19).

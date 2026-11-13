@@ -942,6 +942,14 @@ export class ViewModel {
     g.position.x += Math.sin(t * 1.7) * amp;
     g.position.y += Math.sin(t * 2.3 + 1) * amp;
     if (v.cutting) g.rotation.x += Math.sin(t * 0.9) * 0.03;
+    // Round 2: felling a tree, the bar goes over on its side and across.
+    const fell = v.fell ?? 0;
+    if (fell > 0.001) {
+      g.rotation.z += c.fell.roll * fell;
+      g.rotation.y += c.fell.yaw * fell;
+      g.position.x += c.fell.x * fell;
+      g.position.y += c.fell.y * fell;
+    }
     // The chain: the top run forward, the bottom run back.
     const slide = v.running ? (v.time * c.chainSpeed * 0.44 * (0.15 + 0.85 * k)) % model.spacing : 0;
     model.top.position.z = -slide;

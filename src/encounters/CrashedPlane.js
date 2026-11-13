@@ -581,7 +581,11 @@ export class CrashedPlane {
   // 3: the drops (each teaches something: the sidearm, ammo on B, the healing pool, the fence's power).
   loot() {
     const e = this.ec.drops;
-    this.combat.giveWeapon('pistol', e.pistolRounds);
+    // Round 2 (Aaron): the pistol is in the sheriff's car by the gas station now; here, rounds for it
+    // (and the pistol itself only if that car was never searched).
+    const hadPistol = this.combat.weapons.has?.('pistol');
+    if (hadPistol) this.combat.weapons.addAmmo('pistol', e.pistolRounds);
+    else this.combat.giveWeapon('pistol', e.pistolRounds);
     if (!this.combat.weapons.addAmmo('alienShells', e.alienShells)) this.combat.inventory.addAmmo?.('alienShells', e.alienShells);
     const inv = this.combat.inventory;
     const kept = inv.addKits('alienMed', 1);
@@ -592,7 +596,7 @@ export class CrashedPlane {
     this.timer = 0;
     // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at. (Session 33: what it's for
     // comes from Ellen once Junie's home: encounters/Stairs.js askForCell.)
-    this.combat.hud.pickup(`The pilot's pistol, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
+    this.combat.hud.pickup(`${hadPistol ? `The pilot's sidearm (${e.pistolRounds} pistol rounds)` : "The pilot's pistol"}, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
   }
 
   readLog() {

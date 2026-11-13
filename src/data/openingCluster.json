@@ -40,7 +40,7 @@
     "points": [[-495, 190], [-380, 196], [-260, 208], [-160, 214], [-100, 214], [-50, 222], [-5, 240], [10, 262], [10, 290], [10, 302]],
     "wrecks": [
       { "type": "sedan", "along": 410, "side": 5.2, "turn": 0.25 },
-      { "type": "police", "along": 345, "side": -5.4, "turn": 2.95 },
+      { "type": "police", "along": 345, "side": -5.4, "turn": 2.95, "gives": { "door": [{ "weapon": "pistol", "rounds": 12, "text": "The sheriff's pistol, in the door pocket, and a full magazine" }] } },
       { "type": "army", "along": 478, "side": -5.6, "turn": 0.2 }
     ]
   }

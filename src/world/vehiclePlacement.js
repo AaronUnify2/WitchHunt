@@ -175,7 +175,8 @@ export function placeVehicles(map, ground, data, cfg, rng, avoid = [], signs = [
     map.road.wrecks.forEach((w, i) => {
       const f = roadFrame(map.road, w.along);
       const v = { type: w.type, x: f.x + f.rx * w.side, z: f.z + f.rz * w.side, yaw: Math.atan2(f.tx, f.tz) + w.turn };
-      add(v, 'road', rules.path, rng.fork(`wreck-${i}`));
+      // Round 2 (Aaron: the pistol belongs in the police car): a wreck's authored finds (gives: { door | boot: [...] }).
+      if (add(v, 'road', rules.path, rng.fork(`wreck-${i}`)) && w.gives) placed[placed.length - 1].gives = w.gives;
     });
   }
 

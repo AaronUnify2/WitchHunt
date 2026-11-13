@@ -87,6 +87,7 @@ import { DemoMode } from '../demo/DemoMode.js';
 import { PlaceBeyond } from '../encounters/PlaceBeyond.js';
 import { Flyer } from '../ai/Flyer.js';
 import { Moths } from '../ai/Moths.js';
+import { DeepForest } from '../ai/DeepForest.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
 import { OldChurchSite } from '../world/OldChurchSite.js';
@@ -688,6 +689,7 @@ export class Game {
     this.clearing.init(this.scene, { world: this.world, mapUi: this.mapUi, colliders: this.colliders, sfx: this.combat.sfx, fx: this.combat.fx, player: this.player });
     this.dozer = new Dozer(this.cfg, this.bus);
     this.dozer.init({ ...ctx, clearing: this.clearing, vehicles: this.vehicles });
+    this.chainsaw.clearing = this.clearing; // Round 2: the chainsaw fells trees
     this.experimental = [this.ute, this.alienQuad, this.dozer];
     // Build queue item 1: the family's plan and the army's dozer (encounters/CordonDozer.js).
     this.cordonDozer = new CordonDozer(this.cfg, this.bus);
@@ -717,6 +719,9 @@ export class Game {
     // Session 25 (Aaron): giant moths to shoot (debug only).
     this.moths = new Moths(this.cfg, this.bus);
     this.moths.init({ scene: this.scene, player: this.player, combat: this.combat, ground: this.world.ground, sfx: this.combat.sfx, notify, rng: this.rng.fork('moths') });
+    // Round 2 (Aaron): the deep forest is dangerous on foot: a moth or two finds Tom there.
+    this.deepForest = new DeepForest(this.cfg, this.bus);
+    this.deepForest.init({ moths: this.moths, player: this.player, ground: this.world.ground, clock: this.clock, interiors: this.interiors, cutscenes: this.cutscenes, rng: this.rng.fork('deepForest') });
     // Session 25: the crashed plane's story beats (the grey, the quick draw, the Mothman).
     this.plane = new CrashedPlane(this.cfg, this.bus);
     this.plane.init({
@@ -2007,6 +2012,7 @@ export class Game {
     if (story) this.homeStop.update(dt, playing && this.combat.alive);
     if (first) this.roadNorth.update(dt, playing && this.combat.alive);
     if (first) this.flyer.update(dt, playing && this.combat.alive); // Session 22: the flyer spike
+    if (first && !this.demo.active) this.deepForest.update(dt, playing && this.combat.alive); // Round 2: moths in the deep forest
     if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
     if (first) this.comms.update(); // Session 26: the radio's reach

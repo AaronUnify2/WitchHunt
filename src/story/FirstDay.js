@@ -60,6 +60,10 @@ export class FirstDay {
     const flag = (id) => this.progress.has(id);
     this.unsubscribers = [
       this.bus.on('station:climbed', () => this.onTower()),
+      // Round 2 (Aaron): the rifle taken off the tower on Day 1: Wyatt owns up to the turkey.
+      this.bus.on('station:rifle', () => {
+        if (this.isDay1()) this.dialogue.play('day1.rifle.turkey');
+      }),
       this.bus.on('station:repaired', ({ barrier, via }) => {
         if (!this.isDay1() || barrier.kind !== 'fence') return;
         // Session 15b (Aaron): patched by hand at the fence: Wyatt says the ledger can do it too (line 11).
@@ -222,9 +226,10 @@ export class FirstDay {
     // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
     this.station.gateLocked = this.gateLocked();
     // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).
-    this.station.towerRifleLocked = this.clock.day === 1 && this.clock.phase === 'day';
-    // Session 15b (Aaron): the shovel by the door, once the witch has been seen burying something.
-    this.station.shovelLocked = !this.progress.has('night1');
+    // Round 2 (Aaron): the rifle on the tower and the shovel can be taken from the start of Day 1
+    // (Wyatt was up there after a turkey). Digging on Night 1 is still off, below.
+    this.station.towerRifleLocked = false;
+    this.station.shovelLocked = false;
     // Session 16 (Aaron): no digging the shelter's sigil up on Night 1 (the night ends with the talk).
     this.director.digLocked = this.clock.day === 1 && this.clock.phase === 'night';
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
@@ -497,7 +502,7 @@ export class FirstDay {
       n.tactics -= dt;
       if (n.tactics < 0) {
         this.dialogue.play('day1.night.shotgun');
-        this.dialogue.play('day1.night.tower');
+        this.dialogue.play(this.combat.weapons?.has?.(this.cfg.station.towerRifle.weapon) ? 'day1.night.tower.have' : 'day1.night.tower');
       }
     }
     if (n.clearIn >= 0 && !n.planted && n.feedIn < 0 && !n.offered) {

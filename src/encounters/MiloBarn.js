@@ -344,6 +344,9 @@ export class MiloBarn {
         this.launch(t);
       }
     } else if (m.state === 'throw' && m.timer > 0.95) m.state = 'idle';
+    // Round 2 (Aaron: he stayed bent over after the knives): a bow, or his huff, is held a moment, then he's
+    // back to what he does (the bounce on his toes; walking where he's going).
+    else if ((m.state === 'bow' || m.state === 'indignant') && m.timer > (this.ec.poseSeconds ?? 3.2) && this.state !== 'out') this.setMilo(this.manToday ? 'stand' : 'idle');
     if (this.siegeOn) this.siegeThrow(dt);
     // Where he's going: the act's chalk line, the gate, the morning's spot, or bounding about the yard near Tom.
     const man = this.manToday;

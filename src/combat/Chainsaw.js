@@ -48,6 +48,9 @@ export class Chainsaw {
     this.smoke = 0;
     this.running = false;
     this.warned = { dull: false, hot: false };
+    this.treeAt = null; // Round 2: the tree the bar's in: { index, cut, need }
+    this.treeHits = [];
+    this.dust = 0;
     this.combat?.sfx?.saw?.(false);
   }
 
@@ -115,6 +118,7 @@ export class Chainsaw {
     } else {
       this.tick = 0;
       this.cutting = false;
+      this.treeAt = null;
     }
     this.cutFor = this.cutting ? this.cutFor + dt : 0;
 
@@ -181,7 +185,11 @@ export class Chainsaw {
     const fz = w.forward.z / flat;
     const hits = meleeTargets(eye, fx, fz, w.targets(), c.reach, c.arcDegrees * DEG, c.cleave);
     this.cutting = hits.length > 0;
-    if (!hits.length) return;
+    if (!hits.length) {
+      this.biteTree(eye, fx, fz);
+      return;
+    }
+    this.treeAt = null;
     const b = biteOf(c, this.state.sharp);
     const weapon = { id: 'chainsaw', stagger: b.stagger, knockback: c.knockback };
     let first = true;
@@ -196,8 +204,54 @@ export class Chainsaw {
     this.player.kick(c.kickback);
   }
 
+  // Round 2 (Aaron: "the chainsaw needs to be able to chop down trees... the blade should shift sideways
+  // and the tree should fall just like it does with the bulldozer"). Nothing of the dead in front of the
+  // bar but a trunk: the bar goes over on its side into it, and after a few seconds (longer for the big
+  // ones: LandClearing.strainOf) the tree goes over, away from Tom. A thing he can do, not a way to cut
+  // trails: it's slow, it heats the saw and it dulls the chain like any cut.
+  biteTree(eye, fx, fz) {
+    const t = this.sc.trees;
+    const lc = this.clearing;
+    if (!t || !lc) {
+      this.treeAt = null;
+      return;
+    }
+    const near = lc.treesNear(eye.x + fx * t.reach * 0.5, eye.z + fz * t.reach * 0.5, t.reach * 0.5, this.treeHits);
+    let best = null;
+    for (const h of near) {
+      if (h.tree.felled) continue;
+      const dx = h.tree.x - eye.x;
+      const dz = h.tree.z - eye.z;
+      const d = Math.hypot(dx, dz) || 1;
+      if ((dx * fx + dz * fz) / d < t.facing) continue; // in front of the bar
+      if (!best || d < best.d) best = { index: h.index, tree: h.tree, d };
+    }
+    if (!best) {
+      this.treeAt = null;
+      return;
+    }
+    this.cutting = true;
+    if (this.treeAt?.index !== best.index) this.treeAt = { index: best.index, cut: 0, need: t.seconds + lc.strainOf(best.tree) * t.strainScale };
+    const sharp = this.sc.dullDamage + (1 - this.sc.dullDamage) * this.state.sharp;
+    this.treeAt.cut += this.sc.tick * sharp;
+    this.dust -= 1;
+    if (this.dust <= 0 && this.fx?.dust) {
+      this.dust = t.dustEvery;
+      this.fx.dust(best.tree.x - fx * 0.3, eye.y - 0.5, best.tree.z - fz * 0.3);
+    }
+    this.player.shake(this.sc.shake);
+    if (this.treeAt.cut >= this.treeAt.need) {
+      lc.fell(best.index, fx, fz);
+      this.bus.emit('chainsaw:felled', { index: best.index });
+      this.treeAt = null;
+      this.cutting = false;
+    }
+  }
+
   updateView(dt, inHand) {
     const v = this.view;
+    // The bar on its side while it's in a trunk.
+    v.fell = (v.fell ?? 0) + ((this.treeAt && this.cutting ? 1 : 0) - (v.fell ?? 0)) * Math.min(1, dt * 9);
     const s = this.state;
     v.time += dt * (0.3 + s.rev);
     v.rev = s.rev;

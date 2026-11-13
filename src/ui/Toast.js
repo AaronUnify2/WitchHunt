@@ -1,5 +1,12 @@
 // A short message at the top of the screen (controller connected, etc.).
 
+// Seconds to read `text` (pure): base + perWord a word, capped at max.
+export function readSeconds(text, r) {
+  if (!r) return 0;
+  const words = String(text ?? '').trim().split(/\s+/).filter(Boolean).length;
+  return Math.min(r.max, r.base + r.perWord * words);
+}
+
 export class Toast {
   constructor(uiConfig) {
     this.cfg = uiConfig;
@@ -13,10 +20,12 @@ export class Toast {
   }
 
   // seconds: how long it stays (default config.ui.toastSeconds).
+  // Round 2 (Aaron: the information at the top of the screen fades before it can be read): never
+  // shorter than the time to read it (config.ui.toastRead: a base plus so long a word, capped).
   show(text, seconds = this.cfg.toastSeconds) {
     this.el.textContent = text;
     this.el.classList.remove('hidden');
-    this.remaining = seconds;
+    this.remaining = Math.max(seconds, readSeconds(text, this.cfg.toastRead));
   }
 
   update(dt) {
