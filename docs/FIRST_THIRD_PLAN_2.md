@@ -77,3 +77,15 @@ The flow is good and the story beats land. Some stretches feel empty, the first 
 ## The polish list (Aaron: "we have some detail to spend"; artistic vision to Claude's judgment, reviewed in the morning)
 
 Along the way, as each place is touched: the cabin's interior; Earl's store's interior; the Pruitt farmhouse (decorated properly); the garage; better models for the quad bike, the mutant, the witch and the Screamer.
+
+## Status (Nov 13, night)
+
+- **Step 1 (quick wins): built.** Reading time, Milo, the pistol in the sheriff's car, the rifle and shovel on Day 1, deep-forest moths, the chainsaw felling trees.
+- **Step 2 (the garage and the quad): built.** `base/stationLayout.js` garageLayout, `render/garageModel.js`.
+- **Step 3 (restructure, part 1): built.** The shelter behind the store, the lever-action, `base/TowerSniper.js`, `ai/Screamers.js`, `encounters/NightTwo.js`, Ellen's call at Dawn 3.
+- **Step 4 (restructure, part 2): built.** The shut gate, `encounters/PruittFarm.js`, `render/pruittFarmModel.js`, the fence rip, the outpost's east arrival, the campsite without the shotgun.
+- **Step 5 (the family at their stations): not started.**
+- **Step 6 (the fog funnel): not started.**
+- **Polish list:** the garage and the farmhouse are dressed; the cabin, Earl's store, and the quad, mutant, witch and Screamer models are not started.
+
+Tests: `tests/round2.test.js`. Headless probes were run on seed 1234 for each step; nothing has been played by hand. MORNING.md has the play-test list.

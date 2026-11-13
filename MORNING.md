@@ -1,5 +1,44 @@
 # For Aaron
 
+**Round 2: your Nov 13 play-test notes. Steps 1 to 4 are built and on `main`.** The first third now runs: Day 1 with the quad and the rifle from the start, the shelter behind Earl's store, a real Night 2 with the Screamer and Wyatt on the tower, Ellen's call at dawn, the shut gate, the Pruitt farm and its moths, and into the outpost by the tear in its fence. 1379 tests pass and the build is clean. Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
+
+The plan and your answers: `docs/FIRST_THIRD_PLAN_2.md`.
+
+## What to try, in play order
+
+1. **Day 1.** The garage is inside the fence, west of the cabin: your quad's in its first bay, the workbench and the shovel in the middle one. Ellen won't open the gate until the rifle's come down from the tower with you (Wyatt owns up to the turkey). At the campsite there's no shotgun: the dead come out of the trees as the camcorder's tape ends.
+2. **Day 2.** The sheriff's car on the road has the pistol in its door. The storm shelter is 95 m up a track behind the store (Earl's own spade stands by the track if you left your shovel). Behind the hunting rifle in the safe is the old lever-action Earl let Wyatt shoot.
+3. **Night 2.** Get home: dusk waits for you. 45 seconds to fit a battery and spend scrap, then three acts: a horde up the campground trail, two mutants from either side, and the Screamer at the treeline south of the gate, calling five more every 15 seconds until it's down (about 800 health; every hit puts its next scream back). Wyatt shoots from the tower. Then camera seven's catch of the witch at the Pruitts' plot, and a fade to dawn.
+4. **Day 3.** Ellen's call. The checkpoint's main gate is chained; the family send you round by the Pruitts' farm, and the afternoon goes while they talk. At the farm the porch light's on and the wall round it is moving. Walk up, shoot from far off, or go round the side and shut Earl's generator down (torch off, or they come to you). Then look at the dead oak. Inside: Marcy's journal on the kitchen table, Earl's shotgun over the stove, and six things that only say something. Down the track, the family plot and what she buried there; then the tear in the army's fence, at night.
+5. **Anywhere.** Walk deep into the trees on foot from Day 2 and a moth or two finds you. The chainsaw fells trees (the bar goes over on its side). Info texts stay up long enough to read. Milo straightens up after his bow.
+
+## The things I'd look at first
+
+1. **Night 2's size and the Screamer.** Every number is a first guess (`config.night2`, `config.screamer`). Left alone for 150 seconds headless, the fence box ran flat at 85 seconds and a panel fell at 150; with you shooting it should hold, but only your play can say. **The station can't be overrun on that night for now** (`night2.cantFall`), as on the mega night: say when you want it real.
+2. **The porch at dusk.** The moths round the porch light are the best picture in the new stretch.
+3. **Wyatt on the tower.** He drops about one every eight seconds. Too much help, too little?
+4. **The Screamer and the mutant still wear stand-in looks** (the Screamer is a tall, bone-grey, white-haired zombie sprite). Their models are on the polish list below.
+
+## Placeholder, or not as you asked
+
+- **The Mothman's glimpse** is a first-person look at him crouched in the oak; he throws his wings wide, screams and is gone. It isn't staged beyond that.
+- **The shut gate's fade** jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
+- **The tear in the fence** is the chain gate's model with one leaf peeled back, not a fence of its own.
+- **The outpost by night from the east** uses the same waves and peak as before; only the arrival (its sweep, the first soldier on the track, two lines) is new. C-7 is on the far side now, found while exploring.
+- **Two small things left out of your notes so far:** none of the family's new stations (Ellen's board, Junie at the monitors) and no fog funnel after Junie's taken: steps 5 and 6.
+- All new lines and texts are drafts (`draft: true`), Marcy's journal included.
+
+## Not done yet (in order)
+
+- **Step 5:** Ellen at a desk with her string board (hints on the current goal), Junie at the monitors (tips on the enemies).
+- **Step 6:** after Junie's taken, fog shuts everything but the church and the stairs.
+- **The polish list:** the cabin's interior, Earl's store, better models for the quad, the mutant, the witch and the Screamer. The garage and the farmhouse are dressed already.
+- **Docs:** DESIGN.md hasn't been brought up to date with any of this; `docs/FIRST_THIRD_PLAN_2.md` is the record for now.
+
+---
+
+# Earlier: the build queue (Nov 12)
+
 **The build queue is done: all seven items are scaffolded and on `main`.** The story now plays from Day 1 to Sheriff in his garage: the family's plan and the dozer, the bug-zapper night, the Bigfoot cave, the mega night, the mothership, the Car Armory, and the ute chase home. 1332 tests pass and the build is clean. Every beat was run headless from start to end; **none of it has been played by hand or on the tablet.**
 
 **How to play any of it:** new game, then the debug menu's first section. "Continue story" has 22 entries, one for the start of each main story beat from the crashed plane to Sheriff home. They build on a fresh run, so start a new game before each.
