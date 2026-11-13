@@ -357,6 +357,155 @@ export function buildInterior(cabin, fy, k, box, rng) {
     add(0.4, 0.28, 0.3, dx + dk.w / 2 + 0.32, 0, dz + 0.02, k.plank, 0.2);
     add(0.36, 0.02, 0.26, dx + dk.w / 2 + 0.32, 0.27, dz + 0.02, k.paper, 0.2);
   }
+  // Round 2 (the polish pass; Aaron: "improve the aesthetic... the interior of the cabin"): a family has
+  // lived in this room for a season. Set dressing only (nothing here is solid but the trunk, a piece of
+  // furniture), all of it clear of the way from the front door to the comms door.
+  {
+    // (The walls' boards stand 0.02 proud of `inset`: these are their faces.)
+    const south = hd - inset - 0.02;
+    const partS = c.partZ + inset + 0.02; // the partition's main-room face
+    const east = hw - inset - 0.02;
+    const west = -hw + inset + 0.02;
+    // By the stove: a kettle on its top; a crate of split logs, more stacked against the wall; the axe.
+    add(0.2, 0.14, 0.2, sx - 0.1, 0.81, sz + 0.1, k.iron);
+    add(0.04, 0.05, 0.14, sx - 0.1, 0.95, sz + 0.1, k.iron);
+    add(0.1, 0.03, 0.03, sx + 0.04, 0.9, sz + 0.1, k.iron);
+    add(0.62, 0.3, 0.42, sx + 0.05, 0, sz + 1.0, k.plank);
+    for (let i = 0; i < 5; i++) add(0.11, 0.11, 0.38, sx - 0.17 + (i % 3) * 0.17, 0.3 + Math.floor(i / 3) * 0.1, sz + 1.0, shade(k.woodDark, 1.1 + (i % 2) * 0.35), 0.1 * i);
+    for (let i = 0; i < 6; i++) add(0.36, 0.1, 0.11, west + 0.24, 0.02 + Math.floor(i / 2) * 0.105, sz - 0.75 - (i % 2) * 0.12, shade(k.woodDark, 1.0 + ((i * 7) % 3) * 0.25));
+    add(0.035, 0.8, 0.035, west + 0.12, 0, sz + 0.62, k.plank); // the axe, leaning
+    add(0.05, 0.14, 0.16, west + 0.13, 0.7, sz + 0.62, k.iron);
+    // The kitchen: pans hung on a rail over the worktop; plates in a rack by the sink; a percolator on the
+    // camp stove; a tea towel over the cupboard door; four mugs and a bowl on the table.
+    add(1.5, 0.025, 0.025, kx + 0.3, 1.5, south - 0.05, k.metalDark);
+    for (let i = 0; i < 4; i++) {
+      const px = kx - 0.3 + i * 0.4;
+      const r = 0.2 - (i % 2) * 0.05;
+      add(0.02, 0.1, 0.02, px, 1.4, south - 0.05, k.metalDark);
+      add(r, r, 0.035, px, 1.4 - r, south - 0.05, i === 2 ? k.chrome : k.iron);
+      add(0.03, 0.14, 0.02, px, 1.26 - r, south - 0.04, k.iron);
+    }
+    add(0.3, 0.02, 0.2, -2.72, 0.91, kz, k.chrome);
+    for (let i = 0; i < 4; i++) add(0.015, 0.16, 0.16, -2.82 + i * 0.065, 0.93, kz, k.paper);
+    add(0.1, 0.2, 0.1, kx + 1.18, 1.01, kz, k.chrome);
+    add(0.04, 0.04, 0.04, kx + 1.18, 1.21, kz, k.metalDark);
+    add(0.24, 0.3, 0.015, kx + 0.5, 0.52, kz - kt.d / 2 - 0.005, k.blanketRed);
+    for (const [mx, mz, col] of [[-0.4, 0.2, k.mug], [0.42, -0.22, k.coatBlue], [0.1, 0.28, k.coatOlive], [-0.45, -0.25, k.paper]]) add(0.07, 0.085, 0.07, tx + mx, tb.h, tz + mz, col);
+    add(0.2, 0.06, 0.2, tx - 0.1, tb.h, tz - 0.18, k.chairPaint);
+    for (let i = 0; i < 3; i++) add(0.065, 0.06, 0.065, tx - 0.15 + i * 0.05, tb.h + 0.05, tz - 0.2 + (i % 2) * 0.05, i === 1 ? k.canGreen : k.canRed);
+    // Over the front door, inside: a rack of antlers on a plaque. Beside it: the fire poster (the bear in his
+    // hat, as a few blocks); the key hooks, a torch on charge.
+    add(0.34, 0.22, 0.03, 0, 2.38, south - 0.02, k.woodDark);
+    for (const s of [-1, 1]) {
+      add(0.3, 0.035, 0.035, s * 0.2, 2.55, south - 0.08, k.paper, 0);
+      for (let i = 0; i < 3; i++) add(0.03, 0.14 + i * 0.04, 0.03, s * (0.12 + i * 0.1), 2.56, south - 0.08, k.paper);
+    }
+    const poster = { x: -1.55, y: 1.25 };
+    add(0.58, 0.8, 0.012, poster.x, poster.y, south - 0.012, k.dangerModerate);
+    add(0.5, 0.14, 0.014, poster.x, poster.y + 0.62, south - 0.016, k.woodDark); // the lettering's band
+    add(0.3, 0.3, 0.016, poster.x, poster.y + 0.2, south - 0.018, k.woodDark); // the bear: head, hat, shoulders
+    add(0.4, 0.05, 0.018, poster.x, poster.y + 0.5, south - 0.02, k.plank);
+    add(0.24, 0.1, 0.018, poster.x, poster.y + 0.52, south - 0.022, k.plank);
+    add(0.46, 0.16, 0.016, poster.x, poster.y + 0.04, south - 0.018, k.coatBlue);
+    add(0.5, 0.08, 0.014, poster.x, poster.y + 0.03, south - 0.024, k.dangerExtreme);
+    add(0.3, 0.05, 0.03, fd + 0.3, 1.32, south - 0.02, k.woodDark);
+    for (let i = 0; i < 4; i++) add(0.015, 0.07, 0.01, fd + 0.19 + i * 0.07, 1.25, south - 0.03, i % 2 ? k.chrome : k.dangerModerate);
+    add(0.07, 0.24, 0.07, -fd - 0.25, 1.2, south - 0.06, k.dangerModerate);
+    add(0.09, 0.06, 0.09, -fd - 0.25, 1.44, south - 0.06, k.metalDark);
+    // The east end is the children's. A bookshelf on the partition wall: books, board games, the cassette
+    // player; the family's photographs over it.
+    const bs = { x: 4.95, w: 1.5, d: 0.26 };
+    add(bs.w, 1.3, 0.02, bs.x, 0, partS + 0.01, k.woodDark);
+    for (const s of [-1, 1]) add(0.03, 1.3, bs.d, bs.x + s * (bs.w / 2 - 0.015), 0, partS + bs.d / 2, k.woodDark);
+    for (let j = 0; j < 4; j++) {
+      const y = 0.04 + j * 0.42;
+      add(bs.w, 0.03, bs.d, bs.x, y, partS + bs.d / 2, k.woodDark);
+      if (j === 3) break;
+      if (j === 0) {
+        // Board games, flat, in a stack; a shoebox.
+        for (let i = 0; i < 4; i++) add(0.46, 0.05, 0.22, bs.x - 0.4, y + 0.03 + i * 0.052, partS + bs.d / 2, [k.canRed, k.coatBlue, k.dangerModerate, k.canGreen][i], 0.04 * i);
+        add(0.34, 0.14, 0.2, bs.x + 0.3, y + 0.03, partS + bs.d / 2, k.plank);
+        continue;
+      }
+      let x = bs.x - bs.w / 2 + 0.06;
+      for (let i = 0; x < bs.x + bs.w / 2 - (j === 2 ? 0.5 : 0.1); i++) {
+        const w = 0.03 + rng.range(0, 0.035);
+        const h = 0.2 + rng.range(0, 0.14);
+        add(w, h, 0.17, x + w / 2, y + 0.03, partS + bs.d / 2, [k.ledger, k.coatBlue, k.coatOlive, k.mapLow, k.blanketGrey, k.paper, k.canRed, k.woodDark][Math.floor(rng.range(0, 8))]);
+        x += w + 0.004;
+      }
+      if (j === 2) {
+        add(0.36, 0.2, 0.14, bs.x + 0.5, y + 0.03, partS + bs.d / 2, k.radio); // the cassette player, its speakers, its handle
+        for (const s of [-1, 1]) add(0.1, 0.1, 0.01, bs.x + 0.5 + s * 0.11, y + 0.07, partS + bs.d / 2 + 0.072, k.radioGrille);
+        add(0.3, 0.02, 0.02, bs.x + 0.5, y + 0.25, partS + bs.d / 2, k.metalDark);
+      }
+    }
+    for (const [px, py, pw, ph] of [[4.5, 1.55, 0.24, 0.3], [4.85, 1.62, 0.34, 0.24], [5.3, 1.56, 0.22, 0.28], [4.7, 1.98, 0.3, 0.22], [5.15, 1.98, 0.24, 0.24]]) {
+      add(pw + 0.04, ph + 0.04, 0.015, px, py - 0.02, partS + 0.01, k.woodDark);
+      add(pw, ph, 0.012, px, py, partS + 0.016, shade(k.blanketGrey, 0.9 + rng.range(0, 0.5)));
+      add(pw * 0.3, ph * 0.45, 0.01, px - pw * 0.12, py + ph * 0.1, partS + 0.022, k.paper); // somebody in it
+      add(pw * 0.22, ph * 0.34, 0.01, px + pw * 0.2, py + ph * 0.1, partS + 0.022, shade(k.paper, 0.8));
+    }
+    // Junie's drawings, taped up by the bunks (crayon on district notepaper); paper stars on a thread over them.
+    for (const [dz, dy, tone, tilt] of [[1.05, 1.0, k.dangerModerate, 0.06], [0.7, 1.22, k.paper, -0.05], [0.72, 0.84, k.paper, 0.04], [0.36, 1.05, k.dangerLow, -0.08]]) {
+      add(0.01, 0.2, 0.26, east - 0.012, dy, dz, tone, tilt);
+      add(0.012, 0.09, 0.1, east - 0.018, dy + 0.06, dz - 0.03, tone === k.paper ? k.canRed : k.coatBlue, tilt);
+      add(0.012, 0.03, 0.2, east - 0.018, dy + 0.01, dz, k.canGreen, tilt);
+    }
+    add(0.006, 0.006, 1.6, east - 0.03, 2.3, 1.0, k.paper);
+    for (let i = 0; i < 6; i++) add(0.012, 0.08, 0.08, east - 0.03, 2.16 + (i % 2) * 0.04, 0.3 + i * 0.28, i % 2 ? k.dangerModerate : k.paper);
+    // Wyatt's rods in the corner; a trunk under the south-east window with a folded blanket and his comics;
+    // a small rug by the bunks; a hurricane lamp hung from the east beam (its glass glows).
+    for (let i = 0; i < 3; i++) add(0.018, 1.9 + i * 0.1, 0.018, east - 0.12 - i * 0.07, 0, partS + 0.42 + i * 0.06, i === 1 ? k.woodDark : k.metalDark);
+    add(0.07, 0.07, 0.05, east - 0.12, 0.55, partS + 0.46, k.chrome);
+    const tr = c.furniture.find((f) => f.id === 'trunk');
+    if (tr) {
+      const trx = tr.x - c.x;
+      const trz = tr.z - c.z;
+      add(tr.w, tr.h - 0.04, tr.d, trx, 0, trz, k.coatOlive);
+      add(tr.w + 0.02, 0.05, tr.d + 0.02, trx, tr.h - 0.05, trz, shade(k.coatOlive, 0.8));
+      for (const s of [-1, 1]) add(0.04, tr.h - 0.04, tr.d + 0.01, trx + s * (tr.w / 2 - 0.12), 0, trz, k.metalDark);
+      add(0.5, 0.07, 0.3, trx - 0.18, tr.h, trz, k.blanketRed);
+      for (let i = 0; i < 3; i++) add(0.2, 0.008, 0.27, trx + 0.3, tr.h + i * 0.008, trz, [k.dangerModerate, k.coatBlue, k.canRed][i], 0.15 * i);
+    }
+    for (let i = 0; i < 3; i++) add(1.1 - i * 0.26, 0.008, 0.7 - i * 0.2, 3.5, 0.016 + i * 0.002, 2.5, [k.rugB, k.rugC, k.rugA][i]);
+    add(0.01, 0.34, 0.01, 4, H - 0.54, 1.2, k.metalDark);
+    add(0.14, 0.03, 0.14, 4, H - 0.58, 1.2, k.metalDark);
+    glow.push(b(0.1, 0.16, 0.1, 4, H - 0.74, 1.2, k.lanternGlass));
+    add(0.13, 0.03, 0.13, 4, H - 0.77, 1.2, k.metalDark);
+    // Snowshoes crossed on the west wall over the wood; the district's framed photograph of the lookout.
+    for (const s of [-1, 1]) {
+      add(0.02, 0.8, 0.26, west + 0.02, 1.55, 2.2, k.plank, s * 0.5);
+      add(0.022, 0.5, 0.16, west + 0.024, 1.7, 2.2, k.woodDark, s * 0.5);
+    }
+    add(0.02, 0.44, 0.56, west + 0.015, 1.4, 3.2, k.woodDark);
+    add(0.022, 0.36, 0.48, west + 0.02, 1.44, 3.2, k.mapMid);
+    add(0.024, 0.2, 0.06, west + 0.024, 1.46, 3.2, k.woodDark); // the tower in it
+    add(0.024, 0.07, 0.14, west + 0.024, 1.66, 3.2, k.woodDark);
+  }
+  // And in the comms room: the watch roster on the partition (four rows, a magnet in each); binders on a
+  // shelf over the cabinets; a thermos and a torch on them; notices pinned by the door; the aerial's cable
+  // up the back wall from the radio.
+  {
+    const partN = c.partZ - inset - 0.02;
+    const back = -hd + inset + 0.02;
+    const ro = { x: 0.9, y: 1.25, w: 1.0, h: 0.7 };
+    add(ro.w + 0.06, ro.h + 0.06, 0.015, ro.x, ro.y - 0.03, partN - 0.01, k.metalDark);
+    add(ro.w, ro.h, 0.012, ro.x, ro.y, partN - 0.018, k.paper);
+    for (let i = 1; i < 5; i++) add(ro.w, 0.006, 0.01, ro.x, ro.y + (i * ro.h) / 5, partN - 0.026, k.metalDark);
+    for (let i = 1; i < 4; i++) add(0.006, ro.h, 0.01, ro.x - ro.w / 2 + (i * ro.w) / 4 + 0.08, ro.y, partN - 0.026, k.metalDark);
+    [k.coatBlue, k.coatRed, k.coatOlive, k.dangerModerate].forEach((col, i) => add(0.06, 0.06, 0.02, ro.x - 0.05 + ((i * 3) % 4) * 0.25 - 0.1, ro.y + 0.04 + (i * ro.h) / 5, partN - 0.03, col));
+    const fcab = c.furniture.find((f) => f.id === 'cabinets');
+    const fx = fcab.x - c.x;
+    add(1.5, 0.03, 0.28, fx, 1.85, back + 0.15, k.beam);
+    for (let i = 0; i < 9; i++) add(0.07, 0.3, 0.22, fx - 0.66 + i * 0.085, 1.88, back + 0.14, [k.cabinet, k.ledger, k.coatBlue][i % 3]);
+    add(0.1, 0.28, 0.1, fx + 0.4, 1.32, back + 0.4, k.coatOlive); // the thermos
+    add(0.11, 0.05, 0.11, fx + 0.4, 1.6, back + 0.4, k.chrome);
+    add(0.22, 0.07, 0.07, fx - 0.3, 1.32, back + 0.45, k.dangerModerate, 0.4); // the torch
+    for (const [nx, ny, col] of [[0.0, 1.5, k.paper], [0.26, 1.42, k.dangerLow], [0.02, 1.2, k.paper], [0.3, 1.72, k.paper]]) add(0.2, 0.26, 0.01, cdx + cdw + 0.5 + nx, ny, partN - 0.012, col);
+    add(0.02, H - 1.5, 0.02, d.x - 0.82, 1.5, back + 0.03, k.metalDark);
+    add(0.5, 0.02, 0.02, d.x - 0.58, 1.5, back + 0.03, k.metalDark);
+  }
   // The bunks: a steel frame, two mattresses with wool blankets and pillows.
   const bk = c.furniture.find((f) => f.id === 'bunks');
   const bxl = bk.x - c.x;

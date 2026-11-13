@@ -226,6 +226,7 @@ function cabinLayout(centre, c, deskCfg) {
       { id: 'bunks', x: cx + hw - 1.15, z: cz + 2.45, w: 2.0, d: 0.9, h: 1.9 },
       { id: 'cabinets', x: cx + 1.5, z: cz - hd + 0.4, w: 1.45, d: 0.6, h: 1.32 },
       ...(board ? [board.desk] : []),
+      { id: 'trunk', x: cx + hw - 1.0, z: cz + hd - 0.42, w: 1.1, d: 0.5, h: 0.46 }, // Round 2 (the polish pass): under the south-east window
       ...(c.workbench ? [{ id: 'workbench', x: cx + c.workbench.x, z: cz + partZ + 0.08 + c.workbench.d / 2, w: c.workbench.w, d: c.workbench.d, h: c.workbench.h }] : []), // Session 28
     ],
     // Where the family wait out the night (placeholders until M8).
