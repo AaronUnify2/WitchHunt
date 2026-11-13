@@ -845,6 +845,7 @@ export const config = {
       },
     },
     rocks: {
+      from: { pruittFarm: 0.93 }, // Round 2: clearings whose rocks start further out than 0.55 of the radius (a house stands in the middle)
       sizeMin: 0.35,
       sizeMax: 1.1,
       squash: 0.6, // rocks are flattened vertically by this factor
@@ -5713,6 +5714,7 @@ export const config = {
         genBody: 0x4a1e16, genTank: 0x1e1e1e, fuelCan: 0x4a1c16, switchRed: 0x5a1612, cable: 0x121212, pole: 0x2e241a, oak: 0x26211c, oakScar: 0x4a4234, rope: 0x4a3f2a, rubber: 0x121212,
         sheet: 0x5a584e, sheetDark: 0x4a4a44, soil: 0x241c14, coop: 0x3e3426, coopDark: 0x1a1612, feather: 0x5e5a4e, bucket: 0x3a4044, mailbox: 0x33383a, bikeRed: 0x5a1a16,
         firewood: 0x3c2d1f, firewoodEnd: 0x51402c, rail: 0x3a3024, journal: 0x26364a, gunSteel: 0x1c1e20, gunWood: 0x3a2414,
+        pumpkin: 0x6a3410, pumpkinFace: 0x100804, // Round 2 (the polish pass): the children's jack-o'-lanterns on the porch
       },
     },
   },

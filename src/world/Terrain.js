@@ -228,7 +228,9 @@ export class Terrain {
       const n = own.int(r.perClearingMin, r.perClearingMax);
       for (let k = 0; k < n; k++) {
         const angle = own.range(0, Math.PI * 2);
-        const dist = c.radius * own.range(0.55, 1.05);
+        // Round 2: a clearing with a house in it keeps its rocks out at the edge (rocks.from: by key; a boulder
+        // stood in the Pruitts' children's room).
+        const dist = c.radius * own.range(r.from?.[c.key] ?? 0.55, 1.05);
         const x = c.x + Math.cos(angle) * dist;
         const z = c.z + Math.sin(angle) * dist;
         const size = own.range(r.sizeMin, r.sizeMax);

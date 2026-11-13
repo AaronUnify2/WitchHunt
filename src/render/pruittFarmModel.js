@@ -373,6 +373,168 @@ export function buildPruittFarm(cfg, { weather = null, heightAt = null } = {}) {
   b.box(0.06, 0.1, 0.05, c.plush, -8.24, F + 1.08, 2.0);
   b.spot('marks', P + 0.6, F, I.z);
 
+  // ---- Round 2 (the polish pass; Aaron: "spend some time decorating the farmhouse"): a second layer ----
+  // It's October the thirteenth, and four people lived here until last night. Nothing in this block is
+  // solid but the sideboard and the children's desk.
+  {
+    const front = H.z0 + 0.09; // the walls' inner faces
+    const back = H.z1 - 0.09;
+    const right = H.x1 - 0.09;
+    const partR = P + 0.07; // the partition, the main room's side
+    const partL = P - 0.07; // and the children's
+    // The main room. A sideboard on the front wall right of the door: a runner, the family Bible, a clock,
+    // two candlesticks, the telephone with its cord up the wall; over it a mirror and Marcy's sampler.
+    b.push(-3.9, F, front + 0.27);
+    b.box(1.6, 0.86, 0.46, c.cabinet, 0, 0.43, 0);
+    b.box(1.66, 0.04, 0.5, c.tableDark, 0, 0.88, 0);
+    for (const x of [-0.4, 0.4]) {
+      b.box(0.7, 0.3, 0.02, c.cabinetDark, x, 0.62, 0.235);
+      b.box(0.7, 0.34, 0.02, c.cabinetDark, x, 0.25, 0.235);
+      b.box(0.1, 0.03, 0.03, c.iron, x, 0.62, 0.25);
+    }
+    b.box(1.1, 0.01, 0.3, c.sheet, 0, 0.905, 0);
+    b.box(0.24, 0.07, 0.32, c.frame, -0.5, 0.945, 0.0, 0.15);
+    b.box(0.2, 0.26, 0.09, c.tableDark, 0.05, 1.04, -0.08);
+    b.put(new THREE.CylinderGeometry(0.07, 0.07, 0.012, 10), c.plate, 0.05, 1.07, -0.03, 0, Math.PI / 2);
+    for (const x of [-0.18, 0.28]) {
+      b.put(new THREE.CylinderGeometry(0.02, 0.035, 0.2, 6), c.kettle, x, 1.01, -0.1);
+      b.put(new THREE.CylinderGeometry(0.012, 0.012, 0.1, 5), c.pillow, x, 1.16, -0.1);
+    }
+    b.box(0.22, 0.09, 0.18, c.stove, 0.58, 0.955, 0.02, -0.3);
+    b.box(0.2, 0.05, 0.06, c.stove, 0.58, 1.02, 0.02, -0.3);
+    b.pop();
+    b.box(0.012, 0.9, 0.012, c.cable, -3.2, F + 1.4, front + 0.01);
+    b.box(0.6, 0.8, 0.03, c.frame, -4.3, F + 1.75, front);
+    b.box(0.52, 0.72, 0.032, c.glass, -4.3, F + 1.75, front + 0.004);
+    b.box(0.5, 0.4, 0.02, c.frame, -3.45, F + 1.8, front);
+    b.box(0.44, 0.34, 0.022, c.sheet, -3.45, F + 1.8, front + 0.004);
+    for (let i = 0; i < 3; i++) b.box(0.3 - (i % 2) * 0.06, 0.035, 0.024, i === 1 ? c.crayonRed : c.crayonBlue, -3.45, F + 1.9 - i * 0.09, front + 0.008);
+    b.box(0.34, 0.03, 0.024, c.crayonGreen, -3.45, F + 1.66, front + 0.008);
+    b.wall(-4.7, front + 0.27, -3.1, front + 0.27, 0, 0.26, F + 0.95);
+    // The school bags dropped inside the door, and two lunch boxes on the counter that never went.
+    b.put(pillowGeometry(0.3, 0.36, 0.18), c.coatRed, -5.25, F + 0.2, front + 0.22, 0.3);
+    b.put(pillowGeometry(0.28, 0.32, 0.16), c.coatBlue, -5.0, F + 0.18, front + 0.36, -0.5, 0, 0.3);
+    b.box(0.24, 0.16, 0.12, c.crayonRed, -2.9, F + 1.03, H.z1 - 0.42, 0.2);
+    b.box(0.24, 0.16, 0.12, c.crayonBlue, -2.62, F + 1.03, H.z1 - 0.5, -0.1);
+    // On the back wall over the counter: a shelf of Marcy's preserves, the jars in rows; a rail of pans.
+    b.box(2.4, 0.03, 0.2, c.shelf, -3.5, F + 1.75, back - 0.1);
+    for (let i = 0; i < 12; i++) {
+      const col = [c.crayonRed, c.jar, c.paperYellow, c.crayonGreen][i % 4];
+      b.put(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 7), col, -4.55 + i * 0.19, F + 1.84, back - 0.1);
+      b.put(new THREE.CylinderGeometry(0.052, 0.052, 0.02, 7), c.kettle, -4.55 + i * 0.19, F + 1.92, back - 0.1);
+    }
+    b.box(1.0, 0.02, 0.02, c.iron, -3.0, F + 1.5, back - 0.03);
+    for (let i = 0; i < 3; i++) {
+      b.put(new THREE.CylinderGeometry(0.11 - i * 0.015, 0.11 - i * 0.015, 0.03, 9), c.stove, -3.35 + i * 0.3, F + 1.34, back - 0.04, 0, Math.PI / 2);
+      b.box(0.025, 0.14, 0.015, c.stove, -3.35 + i * 0.3, F + 1.46, back - 0.04);
+    }
+    // Herbs and a string of peppers drying from the ceiling by the stove; a flypaper by the bulb.
+    for (let i = 0; i < 4; i++) {
+      const x = -6.4 + i * 0.28;
+      b.box(0.008, 0.2, 0.008, c.rope, x, F + W - 0.1, 7.5 - (i % 2) * 0.2);
+      b.put(pillowGeometry(0.12, 0.3, 0.1), i === 2 ? c.crayonRed : c.stalk, x, F + W - 0.34, 7.5 - (i % 2) * 0.2, i);
+    }
+    b.box(0.03, 0.6, 0.004, c.paperYellow, -3.9, F + W - 0.32, 4.9, 0.4);
+    // The stove's corner: the woodbox, kindling in it, a poker; a broom against the wall.
+    b.box(0.5, 0.34, 0.36, c.shelf, -6.15, F + 0.17, back - 0.24);
+    for (let i = 0; i < 4; i++) b.put(new THREE.CylinderGeometry(0.045, 0.045, 0.32, 6), i % 2 ? c.firewood : c.firewoodEnd, -6.3 + i * 0.1, F + 0.38, back - 0.24, 0, Math.PI / 2, 0);
+    b.box(0.02, 0.7, 0.02, c.iron, -7.6, F + 0.36, back - 0.1, 0, -0.12, 0);
+    b.box(0.03, 1.3, 0.03, c.rail, -2.25, F + 0.66, 7.3, 0, 0.12, 0);
+    b.put(pillowGeometry(0.3, 0.2, 0.08), c.stalk, -2.25, F + 0.12, 7.22);
+    // The right-hand wall: a calendar by the fridge, turned to October, days crossed off to the twelfth; the
+    // clock over the map.
+    b.box(0.014, 0.5, 0.36, c.paper, right, F + 1.55, 5.5);
+    b.box(0.016, 0.2, 0.36, c.curtainKitchen, right - 0.002, F + 1.7, 5.5);
+    for (let i = 0; i < 12; i++) b.box(0.018, 0.022, 0.022, c.crayonRed, right - 0.004, F + 1.5 - Math.floor(i / 6) * 0.06, 5.36 + (i % 6) * 0.055);
+    b.put(new THREE.CylinderGeometry(0.15, 0.15, 0.03, 12), c.frame, right, F + 2.15, 4.5, 0, 0, Math.PI / 2);
+    b.put(new THREE.CylinderGeometry(0.13, 0.13, 0.034, 12), c.sheet, right - 0.002, F + 2.15, 4.5, 0, 0, Math.PI / 2);
+    b.box(0.04, 0.09, 0.012, c.iron, right - 0.02, F + 2.19, 4.5);
+    b.box(0.04, 0.012, 0.07, c.iron, right - 0.02, F + 2.15, 4.53);
+    // The table: more of the meal: a second plate, a child's cup knocked over, the paper, salt and pepper,
+    // a homework sheet with its pencil.
+    b.push(-4.6, F, 4.6, 0.08);
+    b.put(new THREE.CylinderGeometry(0.12, 0.12, 0.015, 10), c.plate, 0.4, 0.795, 0.18);
+    b.put(new THREE.CylinderGeometry(0.035, 0.03, 0.09, 7), c.crayonRed, -0.1, 0.82, -0.26, 0, 0, Math.PI / 2);
+    b.box(0.34, 0.012, 0.26, c.paper, 0.05, 0.795, -0.05, 0.3);
+    b.box(0.2, 0.014, 0.05, c.photoFigures, 0.05, 0.798, -0.1, 0.3);
+    for (const x of [-0.02, 0.05]) b.put(new THREE.CylinderGeometry(0.02, 0.02, 0.07, 6), x < 0 ? c.sheet : c.stove, x - 0.55, 0.83, -0.3);
+    b.box(0.2, 0.008, 0.27, c.sheet, -0.5, 0.794, -0.12, -0.2);
+    b.box(0.14, 0.01, 0.012, c.paperYellow, -0.46, 0.802, -0.1, 0.5);
+    b.pop();
+    // The partition, the main room's side, by the stove: Earl's shelf of casts and notebooks, his camera and
+    // his field glasses; the newspaper he's in, framed.
+    b.box(0.2, 0.03, 0.9, c.shelf, partR + 0.1, F + 1.45, 6.65);
+    for (let i = 0; i < 2; i++) b.box(0.16, 0.04, 0.3, c.pillow, partR + 0.1, F + 1.49, 6.4 + i * 0.36, 0.1 * i);
+    for (let i = 0; i < 4; i++) b.box(0.15, 0.2 + (i % 2) * 0.03, 0.035, [c.journal, c.crayonBrown, c.cabinetDark, c.crayonGreen][i], partR + 0.1, F + 1.57, 6.95 + i * 0.04);
+    b.box(0.12, 0.09, 0.16, c.stove, partR + 0.1, F + 1.03, 6.25);
+    b.put(new THREE.CylinderGeometry(0.035, 0.035, 0.07, 7), c.stove, partR + 0.18, F + 1.03, 6.25, 0, 0, Math.PI / 2);
+    b.box(0.2, 0.03, 0.7, c.shelf, partR + 0.1, F + 0.97, 6.4);
+    b.box(0.1, 0.07, 0.15, c.stove, partR + 0.1, F + 1.02, 6.6);
+    b.box(0.03, 0.42, 0.34, c.frame, partR, F + 2.0, 6.65);
+    b.box(0.034, 0.36, 0.28, c.paper, partR + 0.003, F + 2.0, 6.65);
+    b.box(0.036, 0.05, 0.24, c.photoFigures, partR + 0.006, F + 2.13, 6.65);
+    b.box(0.036, 0.14, 0.12, c.photoFigures, partR + 0.006, F + 1.97, 6.58);
+    // The children's room. A desk under the front window with crayons and a drawing half done (the tall
+    // brown shape again, and four small ones beside it); its stool.
+    b.push(-10.6, F, front + 0.3);
+    b.box(1.0, 0.04, 0.5, c.table, 0, 0.6, 0);
+    for (const [x, z] of [[-0.45, -0.2], [0.45, -0.2], [-0.45, 0.2], [0.45, 0.2]]) b.box(0.05, 0.6, 0.05, c.tableDark, x, 0.3, z);
+    b.box(0.3, 0.008, 0.22, c.paper, -0.1, 0.626, 0.02, 0.2);
+    b.box(0.04, 0.01, 0.14, c.crayonBrown, -0.14, 0.632, 0.02, 0.2);
+    for (let i = 0; i < 4; i++) b.box(0.02, 0.01, 0.05, [c.crayonRed, c.crayonBlue, c.coatYellow, c.crayonGreen][i], -0.06 + i * 0.03, 0.632, 0.06, 0.2);
+    for (let i = 0; i < 6; i++) b.box(0.015, 0.015, 0.08, [c.crayonRed, c.crayonBlue, c.crayonGreen, c.coatYellow, c.crayonBrown, c.capRed][i], 0.2 + (i % 3) * 0.05, 0.63, -0.1 + Math.floor(i / 3) * 0.1, b.rand() * 3);
+    b.put(new THREE.CylinderGeometry(0.05, 0.05, 0.1, 7), c.mug, 0.38, 0.67, 0.12);
+    b.box(0.3, 0.03, 0.3, c.chair, 0.05, 0.38, 0.55);
+    for (const [x, z] of [[-0.12, 0.43], [0.22, 0.43], [-0.12, 0.67], [0.22, 0.67]]) b.box(0.035, 0.38, 0.035, c.tableDark, x, 0.19, z);
+    b.pop();
+    b.wall(-11.1, front + 0.3, -10.1, front + 0.3, 0, 0.28, F + 0.65);
+    // Between the beds: a night table with a lamp and a storybook left open; slippers; over the beds, their
+    // names in cut-out letters and what they've pinned up (a kite, drawings, a ribbon from the county fair).
+    b.box(0.4, 0.5, 0.36, c.cabinet, -10.2, F + 0.25, 7.95);
+    b.put(new THREE.CylinderGeometry(0.03, 0.05, 0.16, 7), c.kettle, -10.28, F + 0.58, 8.0);
+    b.put(new THREE.CylinderGeometry(0.06, 0.1, 0.12, 8, 1, true), c.paperYellow, -10.28, F + 0.72, 8.0);
+    b.box(0.22, 0.02, 0.16, c.paper, -10.12, F + 0.51, 7.88, 0.3);
+    b.box(0.11, 0.024, 0.16, c.crayonBlue, -10.17, F + 0.512, 7.86, 0.3);
+    for (const [x, z, yaw] of [[-10.9, 6.25, 0.2], [-10.78, 6.3, 0.5], [-9.4, 6.3, -0.2], [-9.28, 6.24, 0.1]]) b.box(0.09, 0.05, 0.2, x < -10 ? c.coatRed : c.coatBlue, x, F + 0.03, z, yaw);
+    for (const [x0, n, col] of [[-11.7, 4, c.crayonRed], [-9.35, 5, c.crayonBlue]]) for (let i = 0; i < n; i++) b.box(0.1, 0.14, 0.012, col, x0 + i * 0.14, F + 1.75 + (i % 2) * 0.02, back - 0.005, 0, 0, (i % 3) * 0.08 - 0.08);
+    b.box(0.5, 0.5, 0.012, c.coatYellow, -8.5, F + 1.75, back - 0.006, 0, 0, Math.PI / 4); // the kite, and its tail
+    for (let i = 0; i < 4; i++) b.box(0.06, 0.04, 0.012, i % 2 ? c.crayonRed : c.crayonBlue, -8.5 + (i % 2) * 0.05, F + 1.32 - i * 0.1, back - 0.006);
+    for (const [x, y, col] of [[-11.2, 1.3, c.paper], [-10.85, 1.36, c.paperYellow], [-10.7, 1.1, c.paper]]) {
+      b.box(0.24, 0.2, 0.012, col, x, F + y, back - 0.006, 0, 0, 0.06);
+      b.box(0.05, 0.12, 0.014, c.crayonBrown, x - 0.04, F + y, back - 0.01);
+      b.box(0.12, 0.03, 0.014, c.crayonGreen, x, F + y - 0.08, back - 0.01);
+    }
+    b.put(new THREE.CylinderGeometry(0.05, 0.05, 0.012, 8), c.crayonBlue, -9.9, F + 1.5, back - 0.006, 0, Math.PI / 2);
+    b.box(0.03, 0.14, 0.012, c.crayonBlue, -9.92, F + 1.4, back - 0.006, 0, 0, 0.2);
+    b.box(0.03, 0.14, 0.012, c.crayonBlue, -9.88, F + 1.4, back - 0.006, 0, 0, -0.2);
+    // A toy chest at the foot of the nearer bed, its lid up: a truck, blocks, a rope of a jump rope over the
+    // side; a shelf of picture books on the partition; clothes left where they were stepped out of.
+    b.box(0.7, 0.36, 0.4, c.coatBlue, -9.0, F + 0.18, 6.15);
+    b.box(0.7, 0.03, 0.4, c.cabinetDark, -9.0, F + 0.52, 5.97, 0, 1.2, 0);
+    b.box(0.24, 0.1, 0.12, c.crayonRed, -9.1, F + 0.4, 6.15, 0.4);
+    for (const s of [-1, 1]) b.put(new THREE.CylinderGeometry(0.035, 0.035, 0.14, 7), c.rubber, -9.1 + s * 0.07, F + 0.38, 6.15, 0.4, Math.PI / 2);
+    b.box(0.1, 0.1, 0.1, c.coatYellow, -8.8, F + 0.41, 6.2, 0.7);
+    b.box(0.012, 0.3, 0.012, c.rope, -8.66, F + 0.25, 6.3, 0, 0.2, 0.1);
+    b.box(0.2, 0.03, 0.8, c.shelf, partL - 0.1, F + 1.2, 3.4);
+    for (let i = 0; i < 12; i++) b.box(0.16, 0.2 + ((i * 5) % 3) * 0.03, 0.035 + (i % 2) * 0.012, [c.crayonRed, c.crayonBlue, c.coatYellow, c.crayonGreen, c.paper][i % 5], partL - 0.1, F + 1.32, 3.06 + i * 0.058);
+    b.put(pillowGeometry(0.4, 0.05, 0.3), c.coatRed, -9.7, F + 0.04, 4.3, 0.8);
+    b.put(pillowGeometry(0.3, 0.04, 0.22), c.sheetDark, -10.0, F + 0.035, 4.0, -0.4);
+    // The porch: October. Three pumpkins the children carved on the step's side, a sheaf of corn stalks tied
+    // to a post, a mat at the door.
+    const pz = FARM.porch.z0;
+    for (const [x, z, r, face] of [[-4.7, pz + 0.45, 0.2, true], [-4.3, pz + 0.3, 0.14, true], [-4.45, pz + 0.75, 0.11, false]]) {
+      b.put(new THREE.SphereGeometry(r, 9, 6).scale(1, 0.8, 1), c.pumpkin ?? c.breadTin, x, F + r * 0.8, z);
+      b.put(new THREE.CylinderGeometry(r * 0.1, r * 0.14, r * 0.3, 5), c.stalk, x, F + r * 1.7, z);
+      if (face) {
+        for (const s of [-1, 1]) b.box(r * 0.26, r * 0.22, 0.02, c.pumpkinFace ?? c.stove, x + s * r * 0.33, F + r * 1.0, z - r * 0.94);
+        b.box(r * 0.8, r * 0.16, 0.02, c.pumpkinFace ?? c.stove, x, F + r * 0.55, z - r * 0.97);
+      }
+    }
+    for (let i = 0; i < 5; i++) b.box(0.03, 1.7 + (i % 2) * 0.2, 0.03, c.stalk, -3.25 + (i - 2) * 0.05, F + 0.9, pz + 0.12 + (i % 2) * 0.05, 0, 0, (i - 2) * 0.05);
+    b.box(0.2, 0.04, 0.12, c.rope, -3.25, F + 1.0, pz + 0.14);
+    b.box(0.9, 0.02, 0.5, c.rugKids, D.x, F + 0.015, H.z0 - 0.4);
+  }
+
   // ---- the generator's lean-to on the right-hand wall, and its cables ----
   const G = FARM.generator;
   b.push(G.x, 0, G.z);
