@@ -26,7 +26,7 @@ export class Gates {
       if (g.kind !== 'checkpoint') ctx.colliders.insert(collider);
       // The torch's glare check sees a shut gate's frame and sign (Aaron:
       // they glared up close); off once it's open and swung aside.
-      const glare = g.kind === 'pipeGate' || g.kind === 'chainGate' ? { x: g.x, z: g.z, r: 0.05, vr: this.gc[g.kind].width / 2, top: ground.heightAt(g.x, g.z) + this.gc[g.kind].height + 0.5, noBody: true, glareOnly: true } : null;
+      const glare = g.kind === 'pipeGate' || g.kind === 'chainGate' || g.kind === 'fenceRip' ? { x: g.x, z: g.z, r: 0.05, vr: this.gc[g.kind].width / 2, top: ground.heightAt(g.x, g.z) + this.gc[g.kind].height + 0.5, noBody: true, glareOnly: true } : null;
       if (glare) ctx.colliders.insert(glare);
       return { ...g, collider, glare, open: false, told: 0 };
     });

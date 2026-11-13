@@ -73,14 +73,15 @@ describe('the campsite layout', () => {
     expect(Math.hypot(campsite.car.x, campsite.car.z)).toBeLessThan(f.radius);
   });
 
-  it('puts the camcorder in the torn tent and the shotgun in a green one (Session 15b, Aaron)', () => {
+  it('puts the camcorder in the torn tent; no shotgun at the camp (Round 2: it is at the Pruitt farm), rifle rounds instead', () => {
     const cam = campsite.searches.find((s) => s.gives?.some((g) => g.item === 'camcorder'));
-    const gun = campsite.searches.find((s) => s.gives?.some((g) => g.item === 'shotgun'));
     const tent = (id) => campsite.tents.find((t) => t.id === id);
     expect(tent(cam.id).slashed).toBe(true);
-    expect(tent(gun.id).slashed).toBeFalsy();
-    const c = tent(gun.id).color;
-    expect((c >> 8) & 255).toBeGreaterThan((c >> 16) & 255); // green over red
+    expect(campsite.searches.some((s) => s.gives?.some((g) => g.item === 'shotgun'))).toBe(false);
+    const all = campsite.searches.flatMap((s) => [...(s.gives ?? []), ...(s.loot ?? [])]);
+    expect(all.some((g) => g.item === 'shotgunAmmo')).toBe(false);
+    const sure = campsite.searches.flatMap((s) => s.gives ?? []).filter((g) => g.item === 'rifleAmmo').reduce((n, g) => n + (g.amount ?? 1), 0);
+    expect(sure).toBeGreaterThanOrEqual(10);
   });
 
   it("guarantees a first aid kit and the scrap to patch the torn fence", () => {
@@ -193,9 +194,8 @@ describe("the first day's cutscenes", () => {
 });
 
 describe('the starting kit', () => {
-  it("has no shotgun: it's the campsite's prize", () => {
+  it('has no shotgun (Round 2: it is the Pruitt farmhouse\'s)', () => {
     expect(config.weapons.startingLoadout).not.toContain('shotgun');
-    expect(campsite.searches.some((s) => s.gives?.some((g) => g.item === 'shotgun'))).toBe(true);
   });
 
   it("has no service rifle either: it waits at the top of the tower (Session 15b)", () => {
@@ -251,7 +251,7 @@ describe('Night 1, the first defence (Session 15b)', () => {
       expect(by[id].cued && by[id].draft).toBe(true);
     }
     expect(by['day1.night.tower'].text).toMatch(/tower/i);
-    expect(by['day1.night.shotgun'].text).toMatch(/shotgun/i);
+    expect(by['day1.night.shotgun'].text).toMatch(/fence/i); // (Round 2: no shotgun yet: the rifle, at the wire)
     for (const id of ['day1.16', 'day1.night.wave2', 'day1.night.wave3']) expect(by[id].text).toContain('{where}');
   });
   it('sends Tom to the gas station after camera six and at dawn, not to dig', () => {

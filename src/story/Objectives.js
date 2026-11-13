@@ -85,11 +85,14 @@ export class Objectives {
     // ---- Day 1 ----
     if (day1 || (clock.day === 1 && !has('night1Planted') && clock.phase !== 'night')) {
       if (!has('towerClimbed')) return step('tower', 'Go outside and climb the lookout tower. Ellen needs eyes on the woods.', L.tower.ladder);
+      // Round 2: the rifle comes down from the tower with him.
+      if (st.rifleOnTower) return step('towerRifle', "Take the rifle from the tower's platform. You'll want it out there.", L.tower.ladder);
       if (!has('campsiteVisited')) return step('campsite', 'Check on the campers at the campground, west of home.', clearing('campsite'));
       if (watching('camcorder')) return step('camcorder', "Watch the campers' camcorder (D-pad down).");
       // Plan #7: the fight first, while it's on (the shotgun taken before the camcorder).
       if (cs.waveStarted && !cs.waveCleared) return step('wave', 'Fight off the dead at the campground.');
-      if (!cs.shotgunFound || !cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
+      if (!cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
+      if (!cs.waveStarted) return step('search', "Search the campers' shelters.", this.nearestTent());
       if (!has('campsiteBattery') && g.combat.inventory.batteries <= 0 && !has('day1Battery')) return step('battery', "Take the battery from the campers' car for the fence.", cs.car);
       if (!has('day1Battery')) return step('fit', 'Take the battery home and fit it in the fence box, inside the gate.', L.fenceBox);
       const broken = st.state.segments.findIndex((s) => s.health <= 0);
@@ -172,6 +175,17 @@ export class Objectives {
     }
     // ---- the military outpost (Session 17, M9.4) ----
     const op = g.outpost;
+    // Round 2 (Aaron): the main gate's shut; the way in is by the Pruitts' farm and the tear in the fence.
+    const pf = g.farm;
+    if (pf?.frame && has('outpostCall') && !has('outpostCleared') && !op?.approachStarted) {
+      if (!has('farmCall')) return step('outpostGate', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', pf.roadGate);
+      if (!has('farmVisited')) return step('farm', "The main gate's shut. Take the track east of home to the Pruitts' farm: their land backs onto the army's fence.", pf.frame);
+      if (!has('farmMothsDone')) return steps('farmMoths', "The Pruitts' porch light is thick with moths. Kill them, or kill the light: Earl's generator is round the side of the house.", [pf.spot('steps'), pf.spot('generator')]);
+      if (!has('marcyJournal') || !has('shotgunFound')) return steps('farmHouse', "Search the Pruitts' house.", [has('marcyJournal') ? null : pf.spot('journal'), has('shotgunFound') ? null : pf.spot('shotgun')]);
+      const buried = pf.plotSigil();
+      if (buried) return step('plot', "Dig up what she buried in the Pruitts' family plot, down the track.", buried);
+      return step('outpostRip', "Go on down the track past the family plot, to the tear in the army's fence.", pf.rip ?? op?.frame);
+    }
     if (op?.frame && has('outpostCall') && !has('outpostCleared')) {
       if (!op.approachStarted) return step('outpost', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', frameToWorld(op.frame, 44, -33));
       // Session 19 round 3 (Aaron): the fight, the floodlights and the machine gun together, in any order.

@@ -124,6 +124,8 @@ export class Campsite {
   }
 
   reset() {
+    this.waveIn = -1; // Round 2: seconds until the wave (after the tape)
+    this.emergencyGiven = false;
     this.figureSent = false; // Plan #19
     this.figureTold = false;
     this.figure = null;
@@ -213,7 +215,13 @@ export class Campsite {
       this.pendingClip -= dt;
       if (this.pendingClip < 0) this.playClip();
     }
+    // Round 2: the wave, a moment after the tape (or after it's put away unwatched).
+    if (this.waveIn >= 0 && !this.waveStarted && !this.cutscenes?.active) {
+      this.waveIn -= dt;
+      if (this.waveIn < 0) this.startWave();
+    }
     this.updateWave(dt);
+    this.updateEmergencyRounds();
     this.updateDawnFigure(p);
     if (canInteract && this.combat.alive) this.updateInteraction(dt, input);
     else {
@@ -221,6 +229,21 @@ export class Campsite {
       this.hud.progress = 0;
       this.hold.update(dt, null, false, 1);
     }
+  }
+
+  // Round 2: the wave on, the rifle dry and no shovel: a camper's box of rounds by the fire, once
+  // (Day 1 can't be failed, so it mustn't be possible to be stuck in it).
+  updateEmergencyRounds() {
+    if (!this.waveStarted || this.waveCleared || this.emergencyGiven) return;
+    const w = this.combat.weapons;
+    if (!w || w.has?.('shovel')) return;
+    const rounds = (w.states?.rifle?.mag ?? 0) + (w.ammoRounds?.('rifle') ?? 0);
+    if (rounds > 0) return;
+    this.emergencyGiven = true;
+    const f = this.data.props.fire;
+    const at = frameToWorld(this.frame, f.x + 1.1, f.z - 0.6);
+    this.combat.pickups.drop('rifleAmmo', this.cc.emergencyRounds, at.x, this.ground.heightAt(at.x, at.z), at.z, 0);
+    this.dialogue?.play('day1.rounds');
   }
 
   // Plan #19: on the walk out on Day 2 (the longest empty leg), once a run: one of the dead standing at
@@ -340,6 +363,8 @@ export class Campsite {
 
   offerTape() {
     if (this.tapeWatched) return;
+    // Kept for later: they come anyway, a little after (the cars wait on the tape or the wave).
+    if (!this.waveStarted && !(this.waveIn >= 0)) this.waveIn = this.cc.waveAfterKeep;
     if (!this.watch?.offer({ id: 'camcorder', pad: 'D-pad down: play the camcorder', key: 'V: play the camcorder', play: () => this.playClip() })) {
       if (!this.watch) this.playClip();
     }
@@ -357,7 +382,12 @@ export class Campsite {
     this.watch?.cancel('camcorder');
     this.cutscenes.play('clip.camcorder', {
       anchors: { campsite: this.frameAnchor() },
-      onDone: () => this.dialogue.play('day1.07'),
+      // Round 2 (Aaron: the shotgun's at the Pruitt farm now; "that's not just okay, it's better"): the dead
+      // come out of the trees as the tape ends.
+      onDone: () => {
+        this.dialogue.play('day1.07');
+        this.waveIn = this.cc.waveAfterTape;
+      },
     });
   }
 

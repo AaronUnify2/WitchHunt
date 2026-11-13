@@ -241,3 +241,69 @@ describe('step 3: Wyatt on the tower', () => {
     expect(placed[1]).toBe(null);
   });
 });
+
+// ---- step 4: the campsite without the shotgun, the shut gate, the Pruitt farm, the outpost by its east side ----
+import { PruittFarm, porchMoths, afternoonAt, FARM_FLAGS } from '../src/encounters/PruittFarm.js';
+import { buildPruittFarm, FARM } from '../src/render/pruittFarmModel.js';
+import farmData from '../src/data/pruittFarm.json';
+import papersData from '../src/data/papers.json';
+import loreData from '../src/data/lore.json';
+import outpostData from '../src/data/outpost.json';
+import campsiteData from '../src/data/campsite.json';
+
+describe('step 4: Day 3 and the Pruitt farm', () => {
+  it('opens the back way from the shut main gate: the farm gate and the tear in the fence on farmCall, the main gate once the outpost is cleared', () => {
+    const gates = Object.fromEntries(clusterData.gates.map((g) => [g.id, g]));
+    expect(gates.outpostRoad.opensOn).toBe('outpostCleared');
+    expect(gates.outpostSide.kind).toBe('fenceRip');
+    expect(gates.outpostSide.opensOn).toBe('farmCall');
+    expect(gates.farmGate.opensOn).toBe('farmCall');
+    expect(config.map.gates.fenceRip).toBeTruthy();
+    const flags = new Set(progressData.flags.map((f) => f.id));
+    for (const f of FARM_FLAGS) expect(flags.has(f)).toBe(true);
+  });
+
+  it('moves the afternoon on at the gate, never back', () => {
+    expect(afternoonAt(100, 480, 70)).toBe(410);
+    expect(afternoonAt(450, 480, 70)).toBe(450);
+  });
+
+  it("knows what the porch's moths do: at the light they wait; near, they come; shot from far, they scatter; in the dark they leave, unless his torch is on", () => {
+    expect(porchMoths({ light: true, torch: false, near: false, shot: false, far: true })).toBe(null);
+    expect(porchMoths({ light: true, torch: true, near: true, shot: false, far: false })).toBe('attack');
+    expect(porchMoths({ light: true, torch: false, near: false, shot: true, far: true })).toBe('scatter');
+    expect(porchMoths({ light: true, torch: false, near: false, shot: true, far: false })).toBe('attack');
+    expect(porchMoths({ light: false, torch: false, near: false, shot: false, far: true })).toBe('leave');
+    expect(porchMoths({ light: false, torch: true, near: false, shot: false, far: true })).toBe('attack');
+  });
+
+  it('builds the farmhouse clear of the track on to the family plot, with every spot its beat needs', () => {
+    const m = buildPruittFarm(config.pruittFarm);
+    for (const name of ['porchLight', 'porch', 'steps', 'door', 'journal', 'shotgun', 'pantry', 'generator', 'oakTop', 'mailbox', ...farmData.looks.map((l) => l.spot), ...farmData.searches.map((s) => s.spot)]) expect(m.spots[name], name).toBeTruthy();
+    // The track on leaves ahead and to the right (x > 0 in the frame): the house is all to the left of it.
+    expect(FARM.house.x1).toBeLessThan(0);
+    expect(m.colliders.length).toBeGreaterThan(10);
+    expect(farmData.roost.length).toBeGreaterThanOrEqual(config.pruittFarm.moths.count);
+    for (const [, h] of farmData.roost) expect(h).toBeLessThan(FARM.house.floor + FARM.house.wall);
+    m.dispose();
+  });
+
+  it("has Marcy's journal (she believed him), Earl's shotgun, and the family's lines", () => {
+    const paper = papersData.papers.find((p) => p.id === 'marcyJournal');
+    expect(paper.pages.length).toBeGreaterThanOrEqual(3);
+    expect(paper.pages.map((p) => p.text).join(' ')).toMatch(/I believe|I know who I married/);
+    expect(loreData.items.find((i) => i.id === 'marcyJournal').paper).toBe('marcyJournal');
+    for (const id of ['farm.gate.wyatt', 'farm.gate.ellen', 'farm.gate.back', 'farm.gate.car', 'farm.arrive.wyatt', 'farm.arrive.ellen', 'farm.moths.wake', 'farm.moths.leave', 'farm.mothman.wyatt', 'farm.mothman.ellen', 'farm.mothman.ellenFled', 'farm.journal.ellen', 'farm.journal.wyatt', 'farm.shotgun.wyatt', 'farm.plot.wyatt', 'outpost.arrive.east', 'outpost.helmet.east']) expect(ids.has(id), id).toBe(true);
+    const cuts = new Set(cutsceneData.cutscenes.map((c) => c.id));
+    for (const c of ['fade.afternoon', 'sweep.farm', 'farm.mothman', 'sweep.outpostEast']) expect(cuts.has(c)).toBe(true);
+    expect(campsiteData.searches.some((s) => s.gives?.some((g) => g.item === 'shotgun'))).toBe(false);
+    expect(outpostData.firstHelmetEast.x).toBeLessThan(0);
+  });
+
+  it('is found from the clearing east of home', () => {
+    const map = makeMap(1234);
+    const f = PruittFarm.frame(map);
+    const home = map.clearings[map.homeIndex];
+    expect(f.x).toBeGreaterThan(home.x + 100);
+  });
+});

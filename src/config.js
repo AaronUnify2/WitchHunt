@@ -538,6 +538,7 @@ export const config = {
       pipeGate: { width: 5, wing: 7, height: 1.1, color: 0x3c3a22, post: 0x2c2a20, sign: 'PRIVATE \u2014 PRUITT LAND' },
       fallenTree: { length: 22, radius: 0.55, bark: 0x3a2c20, wood: 0x4e3e2a, branch: 0x2e241a }, // wood: the sawn faces, dull (paler glared)
       chainGate: { width: 6, wing: 9, height: 2.4, color: 0x26292b, chainLink: 0x2a2d30, sign: 'AUTHORIZED PERSONNEL ONLY' },
+      fenceRip: { width: 6, wing: 9, height: 2.4, color: 0x26292b, chainLink: 0x2a2d30, sign: 'QUARANTINE ZONE  NO ENTRY' }, // Round 2: the back way into the outpost, torn open (render/GateProps.js)
       signColor: 0x4a4438, // dark, like the signposts: pale boards glare under the torch (Aaron)
       signText: 0x9c8a6c,
     },
@@ -731,7 +732,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo', 'carArmory'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'pruittFarm', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo', 'carArmory'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -2990,7 +2991,7 @@ export const config = {
       holdRadius: 14, // its dead stay this close to it (they never march on the station)
     },
     // Skip intro: what Tom has at Dawn 1.
-    skip: { shotgunShells: 8, scrap: 12, dawnLineDelay: 2.5, unheard: ['day1.21', 'day1.22', 'day1.23'] },
+    skip: { shotgunShells: 0, rifleRounds: 16, scrap: 12, dawnLineDelay: 2.5, unheard: ['day1.21', 'day1.22', 'day1.23'] },
   },
 
   // The roadside gas station (M9.3; encounters/GasStation.js,
@@ -3221,6 +3222,7 @@ export const config = {
     c7Lull: 8, // seconds added to the approach's lull after C-7's lines (the next wave waits for them)
     resinOpenSeconds: 2.2, // Session 17: C-4's doors swinging open (the reveal)
     sweepDistance: 76, // metres from the centre: the arrival sweep (once the call's come). Plan #16: read again (was approach.start), 76 (was 70)
+    eastBeyond: 18, // Round 2: Tom this far east of the middle when the approach starts: he's come in by the tear in the fence (the cemetery track)
     sweepLatest: 62, // Plan #16: the sweep waits for Ellen's line, but not past this close
     gateLineDistance: 88, // Plan #16: 'come home if it goes bad' this close to the centre (the road gate is about 85)
     nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
@@ -4023,6 +4025,7 @@ export const config = {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
+    waveAfterTape: 1.2, waveAfterKeep: 7, emergencyRounds: 8, // Round 2: the wave comes this long after the tape ends (or after it's put away unwatched); rounds left by the fire if Tom runs dry with no shovel
     dawnFigure: { enabled: true, spawnAt: 70, callAt: 45 }, // Plan #19: Day 2's walk out: one of the dead at the cold fire (placed within spawnAt metres of the clearing's centre, outside it); Wyatt's line within callAt
     look: {
       tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
@@ -5600,6 +5603,44 @@ export const config = {
     firstPlotReport: { delay: 12, lead: 480 }, // Plan #10: the plot's camera, the first time: reported in `delay` s (her ritual's still on), marked `lead` s
     post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
     map: { color: '#8cc4ec', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 }, // Session 16 (Aaron): blue (green read as the witch's)
+  },
+
+  // Round 2 (Aaron's play-test, Nov 13): the Pruitt farm (encounters/PruittFarm.js; render/pruittFarmModel.js;
+  // data/pruittFarm.json). The old storm shelter clearing east of home: Earl and Marcy's house, the moths at
+  // the porch light, the Mothman's first glimpse, Marcy's journal, Earl's shotgun; Day 3's way into the outpost.
+  //  gate: the shut main gate's beat within `near` metres of it; the family's talk at least `talkMin` seconds.
+  //  clock: at the gate the day goes on to `dayLeft` seconds short of dusk; it then holds `holdBeforeDusk`
+  //  short until Tom reaches the farm (`holdMax` seconds held at most).
+  //  moths: `count` on the porch wall, placed with Tom within `mothsAt`; they come for him within `wakeAt`
+  //  of the porch; shot from beyond `scatterBeyond` most flee.
+  //  glimpse: the Mothman in the oak, with Tom within `within` metres and out of the house (`max` seconds at most).
+  //  plot: `moths` more to the sigil's glow at the family plot, Tom within `near` of it.
+  pruittFarm: {
+    radius: 24, arriveInset: 3, mothsAt: 75, interactRange: 1.5, shotgunShells: 8,
+    gate: { near: 15, talkMin: 6 },
+    clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
+    moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
+    glimpse: { within: 40, max: 8 },
+    plot: { near: 30, moths: 8 },
+    hold: { take: 0.8, look: 0.45, generator: 1.2 },
+    light: { color: 0xffc078, intensity: 7, distance: 11, decay: 1.2 },
+    look: {
+      weather: { maxLuma: 0.4, grime: 0.5 },
+      glow: { bulb: 0xffd9a0 },
+      colors: {
+        stone: 0x3c3a36, skirt: 0x2e2a24, floor: 0x4a3a28, floorDark: 0x2e2418, clap: 0x5c5a50, clapDark: 0x3e3c36, plaster: 0x55503f, trim: 0x3a3a34, glass: 0x2e3438,
+        curtain: 0x5a4a3a, curtainKitchen: 0x4a3028, curtainKids: 0x3a4a5a, door: 0x3a2a1e, screen: 0x24282a, iron: 0x1c1e20, ceiling: 0x4a4234, tin: 0x2a332e, tinDark: 0x202722, tinRust: 0x3e2c1e,
+        brick: 0x4a2a20, brickDark: 0x38201a, porch: 0x473a2a, porchWorn: 0x55462f, jar: 0x4a5048, mothDust: 0x6a6658, seat: 0x3e3226, seatDark: 0x2a2219, quilt: 0x5a2a26, quiltBlue: 0x2a3a52,
+        bootYellow: 0x5a4a14, bootBrown: 0x2e2016, stalk: 0x3a3a22, stove: 0x161616, stoveTop: 0x202022, kettle: 0x3a4044, shelf: 0x3e3020, shellBox: 0x5a2a1a,
+        cabinet: 0x4a4638, cabinetDark: 0x34312a, counter: 0x3a342a, sink: 0x50544e, plate: 0x5a5a52, breadTin: 0x4a3a1e, fridge: 0x55574f, paper: 0x625c4a, paperYellow: 0x5e5230,
+        crayonBrown: 0x3a2412, crayonGreen: 0x244a22, crayonRed: 0x5a1c16, crayonBlue: 0x1c2e5a, table: 0x4a3620, tableDark: 0x30231a, oilcloth: 0x4a2e26, mug: 0x2a3a4a, chair: 0x40301e,
+        shade: 0x2a3a2e, frame: 0x2a2018, photo: 0x4e4a3e, photoFigures: 0x2e2c28, capRed: 0x5a1a14, armchair: 0x3a3a24, armchairDark: 0x2a2a1a, rug: 0x4a2a22, rugKids: 0x2a3e4a, radio: 0x2a221a,
+        coatBrown: 0x3a2a1a, coatBlue: 0x24304a, coatRed: 0x5a1e1a, coatYellow: 0x5a4a16, bedFrame: 0x3a2c1e, pillow: 0x55524a, ball: 0x5a1e1a, plush: 0x3a2814,
+        genBody: 0x4a1e16, genTank: 0x1e1e1e, fuelCan: 0x4a1c16, switchRed: 0x5a1612, cable: 0x121212, pole: 0x2e241a, oak: 0x26211c, oakScar: 0x4a4234, rope: 0x4a3f2a, rubber: 0x121212,
+        sheet: 0x5a584e, sheetDark: 0x4a4a44, soil: 0x241c14, coop: 0x3e3426, coopDark: 0x1a1612, feather: 0x5e5a4e, bucket: 0x3a4044, mailbox: 0x33383a, bikeRed: 0x5a1a16,
+        firewood: 0x3c2d1f, firewoodEnd: 0x51402c, rail: 0x3a3024, journal: 0x26364a, gunSteel: 0x1c1e20, gunWood: 0x3a2414,
+      },
+    },
   },
 
   // Round 2 (Aaron's play-test, Nov 13): Night 2 at the station, a real defence (encounters/NightTwo.js).

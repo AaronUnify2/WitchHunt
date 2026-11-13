@@ -292,8 +292,30 @@ export class GateProps {
     };
   }
 
-  chainGate(holder, g) {
-    const k = this.cfg.chainGate;
+  // Round 2 (Aaron: "we could even make it a rip in the fence"): the outpost's fence where the Pruitts'
+  // land backs onto it: a chain-link gate nobody's opened in a year, and, once the family remember it,
+  // the place where the wire's been torn: one leaf peeled back off its frame and hanging, the other
+  // shoved in. Built as the chain gate; only how it stands "open" differs.
+  fenceRip(holder, g) {
+    const built = this.chainGate(holder, g, this.cfg.fenceRip);
+    return {
+      setOpen: (open) => {
+        built.setOpen(false);
+        if (!open) return;
+        for (const { hinge, side } of built.leaves) {
+          if (side < 0) {
+            hinge.rotation.set(0.0, -0.5, 0);
+          } else {
+            hinge.rotation.set(0.55, 1.15, -0.35);
+            hinge.position.y -= 0;
+          }
+        }
+        built.lock.visible = false;
+      },
+    };
+  }
+
+  chainGate(holder, g, k = this.cfg.chainGate) {
     const steel = this.mat(k.color);
     const tex = this.hold(chainLinkTexture(k.chainLink));
     const half = k.width / 2;
@@ -365,9 +387,12 @@ export class GateProps {
       holder.add(end);
     }
     return {
+      leaves,
+      lock,
+      sign,
       setOpen: (open) => {
         // Both leaves swing in, toward the outpost (+z along the path).
-        for (const { hinge, side } of leaves) hinge.rotation.y = open ? side * 1.5 : 0;
+        for (const { hinge, side } of leaves) hinge.rotation.set(0, open ? side * 1.5 : 0, 0);
         lock.visible = !open;
         sign.visible = !open;
       },

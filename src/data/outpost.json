@@ -19,6 +19,7 @@
     { "x": -15, "z": -15, "yaw": 160 }
   ],
   "firstHelmet": { "x": 40, "z": -31.5, "yaw": 113 },
+  "firstHelmetEast": { "x": -36, "z": -11, "toward": [-59, -17] },
   "tower": { "x": 11, "z": -6.5, "height": 7.2, "half": 1.6, "legs": 1.75 },
   "staging": {
     "gunPit": { "x": -8.5, "z": -10.5, "r": 1.7 },

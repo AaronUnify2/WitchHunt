@@ -138,7 +138,40 @@ export class Flyer {
 
   // ---- each frame --------------------------------------------------------------------------------
 
+  // Round 2 (the Pruitt farm's glimpse): shown standing somewhere for a moment: not flying, not a target.
+  // at: { x, y, z, facing } (null: where he is), state: a standing pose of MothmanRenderer ('perch', 'mantle').
+  perch(at, state = 'perch') {
+    if (this.active) return;
+    const k = this.look;
+    if (at) {
+      k.x = at.x;
+      k.y = at.y;
+      k.z = at.z;
+      k.facing = at.facing ?? 0;
+    }
+    k.state = state;
+    k.timer = 0;
+    k.pitch = 0;
+    k.roll = 0;
+    k.flash = 0;
+    k.active = true;
+    this.shown = true;
+  }
+
+  unperch() {
+    if (!this.shown) return;
+    this.shown = false;
+    if (this.active) return;
+    this.look.active = false;
+    this.renderer.update([this.look], 0);
+  }
+
   update(dt, playing) {
+    if (!this.active && this.shown) {
+      this.look.timer += dt;
+      this.renderer.update([this.look], dt);
+      return;
+    }
     if (!this.active) return;
     const f = this.fc;
     if (playing) this.fly(dt);

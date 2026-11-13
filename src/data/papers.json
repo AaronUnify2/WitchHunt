@@ -11,6 +11,7 @@
         }
       ]
     },
+    {"id": "marcyJournal", "kind": "diary", "head": "M. PRUITT", "pages": [{"date": "Sept 2, 2003", "text": "They laughed at Earl again at the feed store. He laughed with them, the way he does, and bought everybody coffee.\n\nHe told me in the truck it doesn't bother him. It bothers me."}, {"date": "Sept 19, 2003", "text": "I have lived with that man twenty-two years. He has never once lied to me. Not about money, not about his heart, not about what he sees out past the bottom field.\n\nIf Earl says there is something gentle in those woods, there is. And if he says something that isn't gentle has come, then I believe that too."}, {"date": "Oct 6, 2003", "text": "The soldiers cut across our bottom field again and left the fence down. Earl says the lights over the ridge aren't theirs.\n\nHe's digging the shelter deeper. The children think it's a game. I've packed a bag for each of them, and I've told them: if Daddy says run, you run to the shelter, and you do not stop."}, {"date": "Oct 14, 2003", "text": "Earl wants me to take the children to my sister's until it blows over. I told him we go together or not at all.\n\nSo I'll take the truck for supplies at first light and be back by dark, and then we all sit it out in his hole in the ground, like he wants.\n\nHe kissed me on the porch like we were nineteen. People can say what they like about Earl Pruitt. I know who I married."}]},
     {
       "id": "earlDiary",
       "kind": "diary",

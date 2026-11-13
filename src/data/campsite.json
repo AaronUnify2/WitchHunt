@@ -47,7 +47,7 @@
       ],
       "loot": [
         {
-          "item": "shotgunAmmo",
+          "item": "rifleAmmo",
           "chance": 0.5,
           "min": 2,
           "max": 3
@@ -79,7 +79,7 @@
           "max": 3
         },
         {
-          "item": "shotgunAmmo",
+          "item": "rifleAmmo",
           "chance": 0.5,
           "min": 2,
           "max": 3
@@ -94,7 +94,7 @@
       "seconds": 1.2,
       "gives": [
         {
-          "item": "shotgunAmmo",
+          "item": "rifleAmmo",
           "amount": 4
         }
       ],
@@ -116,8 +116,12 @@
       "seconds": 1.8,
       "gives": [
         {
-          "item": "shotgun",
-          "rounds": 8
+          "item": "rifleAmmo",
+          "amount": 10
+        },
+        {
+          "item": "scrap",
+          "amount": 4
         }
       ],
       "loot": []

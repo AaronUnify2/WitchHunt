@@ -291,7 +291,7 @@ export class FirstDay {
     }
     // Plan #7: fire, aim and reload the first time a gun's in hand (the shotgun, under Wyatt's 'behind you');
     // healing the first time Tom's hurt with a kit to use.
-    if (this.clock.day === 1 && this.combat.weapons?.has?.('shotgun') && !this.cutscenes.active) {
+    if (this.clock.day === 1 && this.combat.weapons?.has?.(this.cfg.station.towerRifle.weapon) && !this.player.platform && !this.cutscenes.active) {
       once('shoot', null, 'RT: fire  ·  LT: aim  ·  B: reload', 'Left click: fire  ·  Right click: aim  ·  R: reload');
     }
     const hp = this.combat.health;
@@ -313,7 +313,8 @@ export class FirstDay {
   }
 
   gateLocked() {
-    return this.clock.day === 1 && !this.progress.has('towerClimbed');
+    // Round 2: and until he's taken the rifle down with him (the campsite's dead are met with it now).
+    return this.clock.day === 1 && (!this.progress.has('towerClimbed') || this.station.rifleOnTower);
   }
 
   // Tom at the locked gate (or a panel that's down): Ellen calls him back to the tower.
@@ -649,7 +650,8 @@ export class FirstDay {
     // Session 20 (Aaron, #344): Skip intro hands over the shovel too (it leans by the door otherwise).
     if (this.station.shovelAtDoor) this.combat.giveWeapon(this.cfg.station.shovelByDoor.weapon);
     if (this.station.rifleOnTower) this.combat.giveWeapon(this.cfg.station.towerRifle.weapon); // Session 15b: it's on the tower otherwise
-    this.combat.giveWeapon('shotgun', this.fc.skip.shotgunShells);
+    // Round 2: no shotgun from the campsite any more (it's at the Pruitt farm): what the camp's rounds came to.
+    this.combat.weapons.addAmmo('rifle', this.fc.skip.rifleRounds ?? 0);
     this.combat.inventory.scrap = this.fc.skip.scrap;
     // Session 16: the comms room's first aid box, already searched (Session 20: into the healing pool).
     this.station.takeAidBox(true);

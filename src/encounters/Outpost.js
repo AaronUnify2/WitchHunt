@@ -172,6 +172,7 @@ export class Outpost {
 
   reset() {
     this.callHomeDue = false; // Plan #16
+    this.east = false; // Round 2: in by the tear in the fence
     this.pass = null; // Plan #18
     this.justUsDue = false; // Plan #17
     this.nightSize = null; // Plan #3: the fight's size, set once at the approach's start
@@ -430,23 +431,32 @@ export class Outpost {
     this.approachStarted = true;
     this.nightSize = null;
     this.nightSize = this.night;
-    this.bus.emit('outpost:approach');
+    // Round 2 (Aaron: in by the tear in the fence on the cemetery side): which side he's come in by. Its own
+    // sweep, the first helmet standing on that track, the family's lines for it.
+    this.east = this.local().x < -(this.oc.eastBeyond ?? Infinity);
+    this.bus.emit('outpost:approach', { east: this.east });
     if (!this.helmetDone) this.sendHelmet();
     // The lines after it (Session 16 gotcha: a line inside a skipped cutscene is cleared).
     const lines = () => {
-      this.dialogue?.play('outpost.arrive');
-      this.dialogue?.play('outpost.helmet');
+      this.dialogue?.play(this.east ? 'outpost.arrive.east' : 'outpost.arrive');
+      this.dialogue?.play(this.east ? 'outpost.helmet.east' : 'outpost.helmet');
     };
-    if (this.cutscenes && !this.cutscenes.active && this.cutscenes.play('sweep.outpost', { anchors: { outpost: frameAnchor(this.frame) }, onDone: lines })) return;
+    if (this.cutscenes && !this.cutscenes.active && this.cutscenes.play(this.east ? 'sweep.outpostEast' : 'sweep.outpost', { anchors: { outpost: frameAnchor(this.frame) }, onDone: lines })) return;
     lines();
   }
 
   // The first helmet: one army zombie standing on the road, looking up it.
   sendHelmet() {
     if (!this.enemies) return;
-    const h = this.data.firstHelmet;
+    const he = this.east ? this.data.firstHelmetEast : null;
+    const h = he ?? this.data.firstHelmet;
     const w = frameToWorld(this.frame, h.x, h.z);
-    const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'army', mode: 'linger', linger: { ...w, r: 1.2 }, facing: frameYaw(this.frame, h.yaw), authored: 'outpost' });
+    let facing = frameYaw(this.frame, h.yaw ?? 0);
+    if (he) {
+      const t = frameToWorld(this.frame, he.toward[0], he.toward[1]);
+      facing = Math.atan2(t.x - w.x, t.z - w.z);
+    }
+    const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'army', mode: 'linger', linger: { ...w, r: 1.2 }, facing, authored: 'outpost' });
     this.wave = z ? [z] : [];
     this.waveOut = 'helmet';
     this.waveAge = -1e9; // the first helmet waits for him, however long

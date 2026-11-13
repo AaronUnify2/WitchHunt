@@ -1,0 +1,81 @@
+{
+  "_note": "The Pruitt farm (Round 2; encounters/PruittFarm.js; render/pruittFarmModel.js). Every text is a draft for Aaron. looks: things in and round the house that say something when Tom looks at them (hold X): spot (a place in the set), prompt, text; nothing is taken. searches: hold-X searches with loot (gives: guaranteed). roost: where the porch's moths hang, in the farm's frame: [x, height above the ground, z, facing in degrees].",
+  "looks": [
+    {
+      "id": "mailbox",
+      "spot": "mailbox",
+      "prompt": "look at the mailbox",
+      "text": "PRUITT, in a child's paint. The flag's up. Nobody has come for the mail."
+    },
+    {
+      "id": "photos",
+      "spot": "photos",
+      "prompt": "look at the photographs",
+      "text": "The Pruitts, in frames off the gas station's own rack. Earl in his red cap in every one, grinning like he's won something. Marcy has her arm through his. Two children, squinting into the sun."
+    },
+    {
+      "id": "fridge",
+      "spot": "fridge",
+      "prompt": "look at the drawings",
+      "text": "Crayon drawings under magnets. A tall brown shape among the trees, waving. In a child's letters: DADDYS FRIEND."
+    },
+    {
+      "id": "map",
+      "spot": "map",
+      "prompt": "look at the map",
+      "text": "A county map, pinned and re-pinned. Earl's sightings in red ink, every one dated. Beside a few of them, in blue, in another hand: I saw it too."
+    },
+    {
+      "id": "beds",
+      "spot": "beds",
+      "prompt": "look at the children's beds",
+      "text": "Two small beds, made. A torch is gone from its hook by the door. The window is open, and there's a chair pulled up under it."
+    },
+    {
+      "id": "marks",
+      "spot": "marks",
+      "prompt": "look at the door frame",
+      "text": "Pencil marks up the door frame, a date beside each. The highest is from this spring."
+    }
+  ],
+  "searches": [
+    {
+      "id": "pantry",
+      "spot": "pantry",
+      "prompt": "search the pantry",
+      "seconds": 1.4,
+      "gives": [
+        {
+          "item": "firstAid",
+          "amount": 1
+        },
+        {
+          "item": "shotgunAmmo",
+          "amount": 6
+        },
+        {
+          "item": "scrap",
+          "amount": 5
+        }
+      ]
+    }
+  ],
+  "roost": [
+    [-6.0, 2.5, 1.36, 180],
+    [-5.5, 2.22, 1.36, 180],
+    [-6.5, 2.27, 1.36, 180],
+    [-5.1, 1.92, 1.36, 180],
+    [-6.9, 1.97, 1.36, 180],
+    [-6.0, 2.56, 0.9, 180],
+    [-5.3, 2.56, 0.5, 200],
+    [-6.8, 2.56, 0.4, 160],
+    [-6.1, 2.56, 0.0, 180],
+    [-5.0, 2.12, -0.55, 180],
+    [-7.0, 2.12, -0.55, 180],
+    [-4.6, 1.62, 1.36, 180],
+    [-7.5, 1.67, 1.36, 180],
+    [-6.0, 2.56, -0.4, 180],
+    [-5.7, 1.47, 1.36, 180],
+    [-6.4, 1.32, 1.36, 180]
+  ]
+}
