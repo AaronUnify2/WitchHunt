@@ -259,9 +259,11 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(after).toContain('day1.20');
     for (const id of after) expect(by[id]).toBeTruthy();
     expect(after.map((id) => by[id].text).join(' ')).toMatch(/gas station/i);
-    expect(after.length).toBe(3); // Aaron: three lines
-    expect(by['day1.night.after1'].text).toMatch(/Pruitt land/);
-    expect(by['day1.20'].text).toMatch(/stay well away/i);
+    // Aaron (Nov 14): fewer words after Night 1: nothing about keeping off the Pruitts' land, just the gas station.
+    expect(after).not.toContain('day1.night.after1');
+    expect(after.length).toBeLessThanOrEqual(2);
+    expect(by['day1.20'].text).toMatch(/gas station/i);
+    expect(by['day1.20'].text).not.toMatch(/stay well away|Pruitt land/i);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
     expect(by['day1.21'].text).toMatch(/gas station/i);
     expect(by['day1.night.feed'].text).toMatch(/live/i);

@@ -80,6 +80,9 @@ export class TowerSniper {
       this.bus.emit('wyatt:posted', { on: want });
     }
     if (!playing || !this.posted || this.clock.phase !== 'night') return;
+    // He shoots once the rifle's in his hands: Tom hands it over on the tower before Night 2 (wyattArmed;
+    // a run saved before that beat was built: night2Done).
+    if (!this.progress?.has('wyattArmed') && !this.progress?.has('night2Done')) return;
     this.sayIn = Math.max(0, this.sayIn - dt);
     this.timer -= dt;
     if (this.timer > 0) return;

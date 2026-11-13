@@ -73,7 +73,7 @@ const { chromium } = require('playwright');
         if (/watchtower|climb the tower/i.test(prompt) && !P.platform && !towerReady) ladderOk = false;
         const usePrompt = prompt && !(/watchtower/i.test(prompt) && !towerReady && !P.platform) && !skipPrompt.test(prompt) && (!at || dist < 9 || P.platform) && (ladderOk || !/climb the ladder/i.test(prompt));
         const onTower = Boolean(P.platform) && !g.shelter?.below;
-        B.hold = Boolean(usePrompt) || (onTower && /climb down|take the/i.test(prompt)) || ((id === 'tower' || id === 'towerRifle') && /climb|take the/i.test(prompt)) || (/talk to/i.test(prompt));
+        B.hold = Boolean(usePrompt) || (onTower && /climb down|take the|hand Wyatt/i.test(prompt)) || ((id === 'tower' || id === 'towerRifle' || id === 'night2Prep') && /climb the|take the|hand Wyatt/i.test(prompt)) || (/talk to/i.test(prompt));
         // a hold needs a release between actions: let go for a tick when the prompt changes, and every few seconds
         B.holdT = B.hold ? (B.holdT ?? 0) + 1 : 0;
         if (B.hold && ((prompt !== B.lastPrompt && /^Hold/.test(prompt)) || B.holdT > 48)) { B.hold = false; B.holdT = 0; }

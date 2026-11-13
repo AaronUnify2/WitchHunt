@@ -42,6 +42,7 @@ import { MarchRoutes } from './marchRoutes.js';
 import { playerSenses } from './detection.js';
 import { levelStats, clampLevel, speedRoll, speedFromRoll, pickVariant, planSpawn } from './zombieLevels.js';
 import { tierFor, capActive, nearbyStepDue } from './simTiers.js';
+import { buildHeight } from '../render/zombieLook.js';
 import { resolveCircles } from '../world/collision.js';
 
 const MODES = ['chase', 'search', 'wander', 'siege', 'march', 'linger', 'held', 'lured'];
@@ -159,6 +160,13 @@ export class EnemyManager {
       health: baseHealth * this.stats.health,
       rise: opts.rise,
     });
+    // Its hit shape is as tall as it's drawn (Aaron, Nov 14: shots at the Screamer's head went over the usual
+    // 1.8 m cylinder: it stands a quarter taller). Every zombie's build counts, a little; the Screamer's a lot.
+    if (!mutant && c.texture) {
+      const tall = buildHeight(variant, slot.lookSeed, c.texture);
+      slot.height *= tall;
+      slot.headBottom *= tall;
+    }
     slot.space = opts.space ?? null;
     slot.y = opts.space ? (opts.y ?? 0) : this.ground.heightAt(slot.x, slot.z);
     slot.speedRoll = roll;

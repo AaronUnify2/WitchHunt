@@ -1,5 +1,14 @@
 # For Aaron
 
+## Your Nov 14 play-test: four fixes, on `main`
+
+1. **Less talk after Night 1.** After the camera's clip it's two short lines (Ellen: "At first light, go to the gas station, Tom. See if the Pruitts are all right." Wyatt: the phone), and one at dawn ("We made it through. The gas station, Tom, just south of the campground."). Wyatt's "she buried something on Pruitt land" and Ellen's "we stay well away from it" are cut. Junie's "She was singing" still comes once on the ride out.
+2. **The rifle handover.** Back home at dusk, Wyatt's waiting on the tower. Fit your battery and spend your scrap, then climb up and hold X: "hand Wyatt Earl's rifle". He says his line, the picture fades, and Night 2 begins with you up there. Dusk waits for you; after 40 seconds he calls down for it, and after 150 he comes and takes it himself. (It was a 45-second timer.)
+3. **The Screamer's head.** Every zombie's hit shape was 1.8 m whatever its build, and the Screamer is drawn a quarter taller, so its head was above the box. Hit shapes now scale with the drawn height: the Screamer's is about 2.3 m, head from 1.8 m up.
+4. **Ammo.** The sheriff's car gives the pistol with 30 rounds (it was 12). In the Pruitts' farmhouse the sideboard's drawers hold 10 rifle rounds and 12 pistol rounds (the pantry still has 6 shells and a first aid kit).
+
+**What's at the family plot, for your next run:** once you've been to the farm and it's dusk or later, coming within 30 m of the sigil there sends 8 more moths at you (`pruittFarm.plot.moths`). I haven't changed that; say if you want fewer once you've seen it with your hands free.
+
 **Round 2 is all built and on `main`: your Nov 13 play-test notes (steps 1 to 6) and the polish list.** 1390 tests pass and the build is clean. Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
 
 The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md has a new section, "The first third as rebuilt".

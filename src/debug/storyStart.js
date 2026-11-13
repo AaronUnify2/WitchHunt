@@ -33,7 +33,7 @@ export const OUTPOST_CLEARED_FLAGS = [
 // Round 2 (Nov 13): what the rebuilt first third sets on the way there too (Wyatt's lever gun from the safe,
 // Night 2's defence, the back way by the Pruitts' farm), so the later beats don't trip over them. (Their own
 // list: these flags come later in data/progress.json than the outpost's.)
-export const ROUND2_FLAGS = ['wyattRifle', 'night2Prep', 'night2Started', 'night2Done', 'plotCamSeen', 'farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'plotMoths'];
+export const ROUND2_FLAGS = ['wyattRifle', 'wyattArmed', 'night2Prep', 'night2Started', 'night2Done', 'plotCamSeen', 'farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'plotMoths'];
 
 // The papers and tapes picked up and handed in by then (data/lore.json ids).
 export const OUTPOST_LORE = ['camcorder', 'earlNote', 'pruittDiary', 'pruittTapes', 'marcyJournal'];

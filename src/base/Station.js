@@ -696,6 +696,10 @@ export class Station {
     const range = sc.interactRange;
     if (this.player.platform?.room || this.player.platform?.outpost) return null; // Session 16: down in the storm shelter; Session 17: up the outpost's watchtower
     if (this.player.platform) {
+      // Round 2 (Aaron: "climb up in the tower, hand over the rifle, and then nighttime begins"): something an
+      // encounter offers up here first (Night 2's handover: encounters/NightTwo.js).
+      const extra = this.towerOffer?.(X);
+      if (extra) return extra;
       if (this.rifleOnTower && !this.towerRifleLocked) {
         const name = this.cfg.weapons[sc.towerRifle.weapon].name.toLowerCase();
         return { key: 'tower-rifle', prompt: `Hold ${X}: take the ${name}`, seconds: h.takeRifle, act: () => this.takeTowerRifle() };

@@ -92,3 +92,11 @@ Along the way, as each place is touched: the cabin's interior; Earl's store's in
 **Left open, for Aaron's call:** `night2.cantFall` (Night 2 can't be lost yet); every number in `config.night2`, `config.screamer`, `config.wyattTower`, `config.fogFunnel`, `config.deepForest`; all new lines and texts are drafts; the fence tear has its own torn model now (it is still a chain gate while shut). The two small round 1 pieces are built now (Junie's line on the Dawn 1 walk; the forecourt pack's fifth spot). The mega night's Screamers wear the new figure (at 40% health) but keep their own calling.
 
 Tests: `tests/round2.test.js` (35 tests), 1390 in all. Headless probes and screenshots were run on seed 1234 for each step; nothing has been played by hand. MORNING.md has the play-test list.
+
+## Nov 14: Aaron's first play of it
+
+- Too much talk after Night 1: cut to two lines after the clip and one at dawn, the gas station only (`firstDay.night1.afterClip`).
+- A beat for Wyatt's gun: Tom hands it over on the tower's platform and Night 2 falls with it (`NightTwo.handOver`, flag `wyattArmed`, `Station.towerOffer`).
+- The Screamer couldn't be headshot: hit shapes scale with the drawn build now (`zombieLook.buildHeight`, `EnemyManager.spawnZombie`).
+- Ran dry at the farm: 30 pistol rounds in the sheriff's car; rifle and pistol rounds in the farmhouse sideboard.
+

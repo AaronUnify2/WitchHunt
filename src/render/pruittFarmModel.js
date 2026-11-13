@@ -411,6 +411,7 @@ export function buildPruittFarm(cfg, { weather = null, heightAt = null } = {}) {
     for (let i = 0; i < 3; i++) b.box(0.3 - (i % 2) * 0.06, 0.035, 0.024, i === 1 ? c.crayonRed : c.crayonBlue, -3.45, F + 1.9 - i * 0.09, front + 0.008);
     b.box(0.34, 0.03, 0.024, c.crayonGreen, -3.45, F + 1.66, front + 0.008);
     b.wall(-4.7, front + 0.27, -3.1, front + 0.27, 0, 0.26, F + 0.95);
+    b.spot('sideboard', -3.9, F, front + 1.05); // (Aaron, Nov 14: Earl's spare rounds in its drawer: data/pruittFarm.json)
     // The school bags dropped inside the door, and two lunch boxes on the counter that never went.
     b.put(pillowGeometry(0.3, 0.36, 0.18), c.coatRed, -5.25, F + 0.2, front + 0.22, 0.3);
     b.put(pillowGeometry(0.28, 0.32, 0.16), c.coatBlue, -5.0, F + 0.18, front + 0.36, -0.5, 0, 0.3);

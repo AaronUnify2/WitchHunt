@@ -7,7 +7,7 @@
 //     goal is home. Dusk waits a while for Tom (the clock holds at the end of dusk, config
 //     night2.holdMax); if he walks in by day, the day fades to dusk as he comes through the gate.
 //  2. Prep (night2Prep), once he's inside the fence: Ellen's word on the board, Wyatt up the tower
-//     with Earl's lever gun, a box of the station's rifle rounds; `prepSeconds` to put a battery in
+//     with Earl's lever gun, a box of the station's rifle rounds; `prepMax` at most to put a battery in
 //     the fence box and spend scrap at the ledger. Then night.
 //  3. The night (night2Started), in three acts:
 //      - a horde up the campground trail, and a second group from the south behind it;
@@ -71,6 +71,8 @@ export class NightTwo {
     this.nightWatch?.scripted?.push(() => this.forecastPart());
     // The family plot's camera doesn't call while the fence is being fought over.
     if (this.trailCams) this.trailCams.holdReports = () => this.state === 'prep' || this.state === 'night' || (this.state === 'after' && this.afterT > 0);
+    // The handover on the tower's platform (Station.pickInteraction asks).
+    if (this.station) this.station.towerOffer = (X) => this.towerOffer(X);
     this.reset();
   }
 
@@ -89,6 +91,7 @@ export class NightTwo {
     if (!this.has('night2Done')) {
       this.progress?.setFlag('night2Started', false);
       this.progress?.setFlag('night2Prep', false);
+      this.progress?.setFlag('wyattArmed', false); // (the handover's part of the night: it comes again)
     }
     this.t = 0;
     this.act = 0;
@@ -182,6 +185,7 @@ export class NightTwo {
     this.fading = null;
     this.faded = null;
     if (to === 'dusk') this.startPrep();
+    if (to === 'night') this.start();
     if (to === 'dawn') this.finish();
   }
 
@@ -208,13 +212,45 @@ export class NightTwo {
     this.bus.emit('night2:prep');
   }
 
+  // Aaron (Nov 14): "a story beat when you get back to the ranger station where you hand over the rifle to
+  // Wyatt. Climb up in the tower, hand over the rifle, and then nighttime begins." The dusk holds while Tom
+  // gets ready (a battery, his scrap); Wyatt waits on the tower; the night falls when the lever gun's in his
+  // hands (handOver, from the tower's top: Station.towerOffer). Left too long (prepMax, or prepLate if it's
+  // night already), Wyatt comes for it himself and the night begins anyway.
   updatePrep(dt) {
     this.prepT += dt;
     this.holdPhase('dusk', 2);
+    if (this.cutscenes?.active || this.fading) return;
+    const n = this.nc;
+    if (!this.said.has('ask') && this.prepT > n.askAfter && !this.subtitles?.busy) {
+      this.said.add('ask');
+      this.dialogue?.play('night2.prep.ask');
+    }
     const late = this.clock.phase === 'night';
-    if (this.prepT < (late ? this.nc.prepLate : this.nc.prepSeconds)) return;
-    if (this.cutscenes?.active) return;
-    this.start();
+    if (this.prepT < (late ? n.prepLate : n.prepMax)) return;
+    this.handOver(false);
+  }
+
+  // The offer on the tower's platform while he's getting ready.
+  towerOffer(X) {
+    if (this.state !== 'prep' || this.fading || this.has('wyattArmed')) return null;
+    return { key: 'give-rifle', prompt: `Hold ${X}: hand Wyatt Earl's rifle`, seconds: this.nc.handSeconds, act: () => this.handOver(true) };
+  }
+
+  // The lever gun changes hands, and the light goes. byHand: Tom gave it to him up the tower.
+  handOver(byHand) {
+    if (this.state !== 'prep' || this.fading) return;
+    this.set('wyattArmed');
+    this.combat?.sfx?.play('loaded', this.player.position);
+    this.dialogue?.play(byHand ? 'night2.hand.wyatt' : 'night2.hand.late');
+    this.dialogue?.play('night2.hand.ellen');
+    this.bus.emit('night2:handover', { byHand });
+    if (this.clock.phase === 'night') {
+      this.start();
+      return;
+    }
+    this.fading = 'night';
+    if (!this.cutscenes?.play('fade.nightfall', { onDone: () => this.fadeDone('night') })) this.fadeDone('night');
   }
 
   // 3: the night.

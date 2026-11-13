@@ -55,6 +55,7 @@
     {"id": "junieFound", "about": "Session 26: Tom found Junie in the place beyond (three silent paths in a row). She follows him home; she can't be hurt."},
     {"id": "junieHome", "about": "Session 26/27 (story spine, beat 5): Tom has brought Junie home from the place beyond. The family are three again."},
     {"id": "wyattRifle", "about": "Round 2: the old lever-action from Earl's safe is Wyatt's: from now on he's up the lookout tower at night, sniping (base/TowerSniper.js)."},
+    {"id": "wyattArmed", "about": "Aaron (Nov 14): Tom has handed Wyatt the lever-action on the lookout tower (encounters/NightTwo.js handOver): Night 2 falls with it, and Wyatt shoots from then on (base/TowerSniper.js). Cleared on a load until that night's done."},
     {"id": "night2Prep", "about": "Round 2: Night 2 at the station: Tom's home with the rifles, getting ready (encounters/NightTwo.js). Cleared on a load until the night's done."},
     {"id": "night2Started", "about": "Round 2: Night 2's defence has begun."},
     {"id": "night2Done", "about": "Round 2: Night 2's defence is over and it's dawn: Ellen's call to the military checkpoint follows (encounters/Outpost.js)."},

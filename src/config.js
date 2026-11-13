@@ -2999,7 +2999,10 @@ export const config = {
       feedDelay: 3.5, // seconds from Ellen's "a trail cam's live" to camera six (Session 15b)
       // After the clip, in order (Session 15b): the family talk it over, then
       // the night fades to dawn this many seconds after the last line.
-      afterClip: ['day1.night.after1', 'day1.20', 'day1.night.after3'], // Aaron: three lines
+      // Aaron (Nov 14: "after night one there's too much dialogue... cut the lines about not going to the Pruitt
+      // land and just speak about going to the gas station"): two short lines (it was three, and the dawn's said
+      // it all again); Wyatt's 'she buried something on Pruitt land' (day1.night.after1) is cut.
+      afterClip: ['day1.20', 'day1.night.after3'],
       dawnAfterTalk: 2.5,
       holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
       holdRadius: 14, // its dead stay this close to it (they never march on the station)
@@ -5725,8 +5728,8 @@ export const config = {
 
   // Round 2 (Aaron's play-test, Nov 13): Night 2 at the station, a real defence (encounters/NightTwo.js).
   // Every number a first guess, to tune by play.
-  //  holdMax: seconds dusk waits for Tom to get home; prepSeconds: inside the fence before night (prepLate:
-  //  if night's already fallen); reserveRounds: rifle rounds handed over at prep.
+  //  holdMax: seconds dusk waits for Tom to get home; prepMax: the longest he has inside the fence before
+  //  night (prepLate: if night's already fallen); reserveRounds: rifle rounds handed over at prep.
   //  horde: `count` up the campground trail `first` seconds in, `second` more from the south `secondAfter`
   //  later, all risen `out` metres past the fence.
   //  mutants: one from each of `sides` (degrees round the fence from due south, + east), `gap` seconds
@@ -5736,7 +5739,10 @@ export const config = {
   //  The night's over when the Screamer's down and `endLeft` or fewer are left within `nearHome` of home
   //  (or `timeout`). cantFall: the station can't be overrun tonight (scaffolding for the first play-tests).
   night2: {
-    holdMax: 240, prepSeconds: 45, prepLate: 10, reserveRounds: 20, holdBeforeDawn: 25, cantFall: true,
+    // Aaron (Nov 14): the night falls when Tom hands Wyatt the lever gun on the tower. askAfter: seconds into
+    // the prep before Wyatt calls down for it; prepMax: he comes for it himself and the night begins anyway
+    // (prepLate: the same, if it's night already); handSeconds: the hold on the platform.
+    holdMax: 240, askAfter: 40, prepMax: 150, prepLate: 10, handSeconds: 1.0, reserveRounds: 20, holdBeforeDawn: 25, cantFall: true,
     horde: { first: 6, count: 10, out: 42, secondAfter: 22, second: 6 },
     mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 240, escort: 4 },
     screamer: { after: 80, side: 6, out: 44 },

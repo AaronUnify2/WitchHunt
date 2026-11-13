@@ -104,8 +104,16 @@ export function zombieLook(variant, seed, tex, blocks, table, out = {}) {
   out.bloodSeed = Math.floor(r(11) * bb.seeds);
   const b = look.build ?? tex.build; // (Round 2: a look's own build: the Screamer's, tall and wasted)
   out.width = b.width[0] + (b.width[1] - b.width[0]) * r(8);
-  out.height = b.height[0] + (b.height[1] - b.height[0]) * r(9);
+  out.height = buildHeight(variant, seed, tex);
   return out;
+}
+
+// How tall one zombie's build makes it (x the usual height): the same number zombieLook() gives, for the
+// things that must agree with the picture (its hit shape: ai/EnemyManager.js. Aaron, Nov 14: "you can't
+// headshot the Screamer, the bullets go right through... because it's so tall").
+export function buildHeight(variant, seed, tex) {
+  const b = tex.looks[variant]?.build ?? tex.build;
+  return b.height[0] + (b.height[1] - b.height[0]) * hash01(seed, 9);
 }
 
 function pick([start, count], u) {

@@ -614,3 +614,53 @@ describe('found by the bot play-through (Nov 13, late)', () => {
     expect(d).toBeGreaterThan(config.outpost.sweepDistance);
   });
 });
+
+// ---- Aaron's play-test, Nov 14 ----
+import { buildHeight } from '../src/render/zombieLook.js';
+import { rayEnemies } from '../src/combat/hitscan.js';
+import farmData from '../src/data/pruittFarm.json';
+
+describe("Aaron's play-test, Nov 14", () => {
+  it("makes a zombie's hit shape as tall as it's drawn: the Screamer's head can be shot", () => {
+    const tex = config.zombies.texture;
+    const tall = buildHeight('screamer', 7, tex);
+    expect(tall).toBeGreaterThanOrEqual(tex.looks.screamer.build.height[0]);
+    expect(tall).toBeLessThanOrEqual(tex.looks.screamer.build.height[1]);
+    const usual = buildHeight('citizen', 7, tex);
+    expect(usual).toBeGreaterThanOrEqual(tex.build.height[0]);
+    expect(usual).toBeLessThanOrEqual(tex.build.height[1]);
+    // Where its head is drawn: above the usual 1.8 m cylinder's top.
+    const z = config.zombies;
+    const headY = ((z.headBottom + z.height) / 2) * tall;
+    expect(headY).toBeGreaterThan(z.height);
+    // A level shot at that height: over the old shape, into the head of the new.
+    const shape = (k) => ({ x: 0, y: 0, z: -10, alive: true, targetable: true, hitRadius: z.hitRadius, headRadius: z.headRadius, height: z.height * k, headBottom: z.headBottom * k });
+    const origin = { x: 0, y: headY, z: 0 };
+    const dir = { x: 0, y: 0, z: -1 };
+    expect(rayEnemies(origin, dir, [shape(1)], 50)).toBeNull();
+    expect(rayEnemies(origin, dir, [shape(tall)], 50)).toMatchObject({ part: 'head' });
+  });
+
+  it('says less after Night 1: the gas station, twice, shortly', () => {
+    const by = new Map(dialogueData.lines.map((l) => [l.id, l]));
+    const said = [...config.firstDay.night1.afterClip, 'day1.21'].map((id) => by.get(id).text);
+    for (const t of said) expect(t).not.toMatch(/Pruitt land|stay well away|storm shelter/i);
+    expect(said.join(' ').split(/\s+/).length).toBeLessThan(45);
+    expect(by.get('day1.21').text).toMatch(/gas station/i);
+  });
+
+  it('has the handover: a flag, its lines, an ask and a longest wait', () => {
+    const n = config.night2;
+    expect(n.prepMax).toBeGreaterThan(n.askAfter);
+    expect(progressData.flags.some((f) => f.id === 'wyattArmed')).toBe(true);
+    for (const id of ['night2.prep.ask', 'night2.hand.wyatt', 'night2.hand.late', 'night2.hand.ellen']) expect(ids.has(id), id).toBe(true);
+    expect(dialogueData.lines.find((l) => l.id === 'night2.prep.ellen').text).toMatch(/Wyatt/);
+  });
+
+  it("gives more for the pistol: two spare magazines in the sheriff's car, Earl's spare rounds in the farmhouse", () => {
+    const police = clusterData.road.wrecks.find((w) => w.type === 'police');
+    expect(police.gives.door[0].rounds).toBeGreaterThanOrEqual(24);
+    const drawer = farmData.searches.find((s) => s.id === 'sideboard');
+    expect(drawer.gives.map((g) => g.item).sort()).toEqual(['pistolAmmo', 'rifleAmmo']);
+  });
+});

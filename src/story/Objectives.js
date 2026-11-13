@@ -179,7 +179,11 @@ export class Objectives {
         return step('night2', 'Hold the station.');
       }
       if (n2.state === 'after') return step('night2After', 'Hold the station.');
-      if (n2.state === 'prep') return step('night2Prep', "Night's nearly here. A battery in the fence box, your scrap into the fence at the ledger.", g.combat.inventory.batteries > 0 ? L.fenceBox : L.cabin.desk);
+      // Aaron (Nov 14): the night falls when Wyatt has the lever gun: a battery first if he's carrying one.
+      if (n2.state === 'prep') {
+        if (g.combat.inventory.batteries > 0) return step('night2Prep', "Night's nearly here. Fit the battery in the fence box, then take Earl's rifle up the tower to Wyatt.", L.fenceBox);
+        return step('night2Prep', "Climb the lookout tower and hand Wyatt Earl's rifle. Night falls when you do: spend your scrap at the ledger first.", L.tower.ladder);
+      }
       return step('night2Home', "It's getting dark. Get home to the station before night.", L.gate.mid);
     }
     // ---- the military outpost (Session 17, M9.4) ----
