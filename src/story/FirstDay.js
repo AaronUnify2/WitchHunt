@@ -270,7 +270,12 @@ export class FirstDay {
     if (this.progress.has('shelterCall') && !this.combat.weapons.has('shovel') && calm) {
       once('shovel', null, 'Fetch the shovel from beside the cabin door: it digs up what she buries', 'Fetch the shovel from beside the cabin door: it digs up what she buries');
     }
-    if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.cutscenes.active) {
+    // Round 2 (Aaron: "you should get a prompt to ride the quad bike at the beginning of the game"): once
+    // the tower's done and the campsite's the job, in the yard and on foot.
+    if (day1 && this.currentStep() === 'campsite' && zone >= 1 && !this.player.riding && this.quad && !this.cutscenes.active && calm) {
+      once('quad', 'day1.prompt.quad', 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');
+    }
+    if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.player.riding && !this.cutscenes.active) {
       // Walking (not running) a while outside the fence on the way.
       pr.walk = this.player.sprinting ? 0 : pr.walk + dt * (this.player.speed > 0.5 ? 1 : 0);
       if (pr.walk > this.fc.prompts.sprintAfter) once('sprint', 'day1.prompt.sprint', 'Click LS: sprint', 'Hold Shift: sprint');

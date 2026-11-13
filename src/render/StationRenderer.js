@@ -21,7 +21,8 @@ import { FamilyRenderer } from './FamilyRenderer.js';
 import { buildInterior } from './stationInterior.js';
 import { rackGunParts, rackSlot } from './rackGuns.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { pillowGeometry } from './propKit.js';
+import { pillowGeometry, weatherFor } from './propKit.js';
+import { buildGarage } from './garageModel.js';
 
 export class StationRenderer {
   constructor(stationConfig, rng, family) {
@@ -61,6 +62,7 @@ export class StationRenderer {
     this.buildTurret();
     this.buildGlow();
     this.buildFamily();
+    this.buildGarage();
     this.buildTowerRifle();
     this.buildShovel();
     this.buildRackGuns();
@@ -354,14 +356,44 @@ export class StationRenderer {
     this.group.add(mesh);
   }
 
+  // Round 2 (Aaron): the garage inside the west fence, there from the start (render/garageModel.js).
+  buildGarage() {
+    const G = this.layout.garage;
+    if (!G || !this.look.garage) return;
+    const { geometry } = buildGarage(G, this.look.garage, { weather: this.propsWeather ? weatherFor(this.propsWeather, { maxLuma: 0.34 }) : null });
+    if (!geometry) return;
+    const mesh = new THREE.Mesh(this.keep(geometry), this.lambert);
+    mesh.name = 'garage';
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.position.set(G.x, this.ground.heightAt(G.x, G.z), G.z);
+    mesh.rotation.y = G.yaw;
+    this.garage = mesh;
+    this.group.add(mesh);
+    // The work lamp over the bench: its tube glows, and it lights the middle bay (no shadows).
+    const gy = mesh.position.y;
+    const lampAt = G.local(G.bench.lx, G.bench.lz - 0.15);
+    const tube = this.box(1.15, 0.035, 0.1, lampAt.x, gy + 2.0, lampAt.z, this.look.windowGlow);
+    const glow = new THREE.Mesh(this.keep(tube), this.glowMaterial);
+    this.group.add(glow);
+    const gl = this.look.garageLight;
+    if (gl) {
+      const light = new THREE.PointLight(gl.color, gl.intensity, gl.distance, gl.decay);
+      light.position.set(lampAt.x, gy + 1.85, lampAt.z + 0.4);
+      this.group.add(light);
+      this.garageLight = light;
+    }
+  }
+
   // Session 15b (Aaron): the shovel leaning on the cabin's front wall by the
-  // door (config.station.shovelByDoor), until Tom takes it.
+  // door (config.station.shovelByDoor), until Tom takes it. Round 2: in the garage, by the workbench.
   buildShovel() {
     const s = this.cfg.shovelByDoor;
     if (!s) return;
     const d = this.layout.cabin.frontDoor;
-    const x = d.x + s.at[0];
-    const z = d.z + s.at[1];
+    const G = this.layout.garage;
+    const x = G ? G.shovel.x : d.x + s.at[0];
+    const z = G ? G.shovel.z : d.z + s.at[1];
     const parts = [
       this.box(0.06, 1.05, 0.06, 0, 0.28, 0, s.handle), // the shaft
       this.box(0.2, 0.06, 0.06, 0, 1.3, 0, s.handle), // the D-grip

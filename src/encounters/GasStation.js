@@ -780,11 +780,8 @@ export class GasStation {
     this.progress?.setFlag('shelterCall');
     this.shelterTalk = true;
     // Session 15b (Aaron): it's a long way to the Pruitts' gate: take Earl's quad. Session 17: on its own, a little later.
-    this.dialogue?.playLater?.('gas.quad', after + this.gc.lineGap, () => {
-      if (this.quadTold) return false;
-      this.quadTold = true;
-      return true;
-    });
+    // (Round 2: the quad is Tom's own, in the station's garage from the start: Wyatt's 'take Earl's quad' is gone.)
+    this.quadTold = true;
   }
 
   updateShelterTalk(l) {

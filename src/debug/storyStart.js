@@ -297,7 +297,7 @@ export function startFromLater(game, point) {
   if (point === 'sheriffHome' && g.uteChase?.garageAt) {
     // The ute pulled up in the garage's first bay.
     const bay = g.uteChase.bays[0];
-    g.ute.loadState({ x: bay.x, z: bay.z, heading: g.uteChase.garageAt.yaw });
+    g.ute.loadState({ x: bay.x, z: bay.z, heading: bay.heading ?? g.uteChase.garageAt.yaw });
     g.combat.inventory.addScrap?.(80); // (something to spend at his bench)
   }
   g.uteChase?.reset();

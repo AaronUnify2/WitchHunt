@@ -2450,11 +2450,19 @@ export const config = {
         // Session 28 (DESIGN.md "The ranger station"): the workbench, there from the start: in the main room,
         // against the comms room's wall, west of the way from the front door to the comms door (x: metres
         // east of the cabin's centre; w across, d out from the wall, h tall).
-        workbench: { x: -0.9, w: 1.8, d: 0.6, h: 0.9 },
+        // Round 2 (Aaron): the workbench moved out to the garage (layout.garage); null here.
+        workbench: null,
         doorApproach: 0.9, // metres either side of a door where zombies stand to attack or step through
         cornerMargin: 1.4, // zombies round the cabin's corners this far out
       },
       tower: { offsetX: 11, offsetZ: 0, height: 9, platformHalf: 1.7, legSpread: 1.6, revealRadius: 260 },
+      // Round 2 (Aaron: "the garage should be in the west side of the forest ranger compound within the
+      // fence... there from the beginning of the game, and the quad bike should be parked in there"): the
+      // rangers' vehicle shed, three open bays under one roof, its back to the cliff, its bays facing south
+      // onto the yard. offsetX / offsetZ: its centre from the fence's centre. Bay 0 is the east one (nearest
+      // the cabin): the quad's. Bay 1: the workbench along its back wall, the shovel leaning beside it.
+      // Bay 2: empty (the ute's, one day; Sheriff's bench).
+      garage: { offsetX: -17, offsetZ: -5.2, bays: 3, bayWidth: 4.2, depth: 6.4, frontHeight: 3.3, backHeight: 2.6, bench: { w: 2.4, d: 0.7, h: 0.92 } },
       turretPad: { offsetX: 3, offsetZ: 17 }, // south of the cabin, east of the gate path: it sees every fence panel (at -4, 10 the cabin hid the east end; Aaron, M5)
       fenceBox: { gateOffset: 3.2, inside: 2.2 }, // metres along the fence from the gate's edge, and inside it
       desk: { offsetX: -2.5, fromNorthWall: 0.7 }, // the ledger, radio and monitors in the comms room
@@ -2619,6 +2627,12 @@ export const config = {
       idleTurnRate: 60, // degrees per second, swinging back
     },
     look: {
+      // Round 2: the garage (render/garageModel.js). Dark, like the rest: the torch blows out anything light.
+      garage: {
+        slab: 0x2e2d2a, slabStain: 0x1c1b19, post: 0x33261b, beam: 0x2b2017, board: 0x3a2c1f, batten: 0x2c2118, tin: 0x25302a, tinDark: 0x1c2520, tinRust: 0x3a2a1c,
+        bench: 0x40301f, benchDark: 0x2a1f15, pegboard: 0x33291f, steel: 0x2c2f31, steelDark: 0x1a1c1d, red: 0x4a1c16, yellow: 0x4a3c10, green: 0x23341f, blue: 0x1e2a38,
+        rubber: 0x141414, tarp: 0x2b3a33, rope: 0x4a3f2a, barrel: 0x23303a, firewood: 0x3c2d1f, firewoodEnd: 0x51402c, sign: 0x2f2318, signBand: 0x4a3c10, glass: 0x4a4636, wire: 0x2c3034, can: 0x4a1c16,
+      },
       wood: 0x3a2a1e, // the tower's railing glared at 0x4a3626
       // Session 10b (Aaron: the watchtower still glared under the torch):
       // the tower's own, darker, weathered wood.
@@ -2651,6 +2665,7 @@ export const config = {
       // Session 13 (#147): the interior (render/stationInterior.js). Lit
       // (Aaron): a warm point light a room, dimmer while the fence has no charge.
       interiorLight: { color: 0xffb070, intensity: 9, distance: 8, decay: 1.2, unpowered: 0.6 }, // one a room
+      garageLight: { color: 0xffb070, intensity: 7, distance: 9, decay: 1.2 }, // Round 2: the work lamp over the garage's bench
       pine: 0x4a3622,
       beam: 0x2e2016,
       floorBoard: 0x3a2a1c,

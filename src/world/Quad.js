@@ -63,8 +63,10 @@ export class Quad {
     ];
   }
 
-  // Behind the gas station, by the stockroom's back door, nose to the trail.
+  // Round 2 (Aaron: "as a forest ranger, Tom should have it from the very beginning"): in its bay in the
+  // station's garage (homeSpot: { x, z, heading }), nose out. (Before: behind the gas station.)
   parkedSpot() {
+    if (this.homeSpot) return { x: this.homeSpot.x, z: this.homeSpot.z, heading: this.homeSpot.heading };
     const s = this.qc.parked;
     if (!this.frame) return { x: 0, z: 0, heading: 0 };
     const w = frameToWorld(this.frame, s.x, s.z);
@@ -505,7 +507,7 @@ export class Quad {
     cat.addItem('Quad bike: back behind the gas station', () => {
       if (this.riding) this.dismount();
       this.place(this.home.x, this.home.z, this.home.heading);
-      this.notify?.('The quad bike is back behind the gas station');
+      this.notify?.(this.homeSpot ? 'The quad bike is back in the garage' : 'The quad bike is back behind the gas station');
     });
   }
 

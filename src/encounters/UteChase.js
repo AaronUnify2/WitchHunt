@@ -129,7 +129,7 @@ export class UteChase {
       u.locked = false;
       if (u.stored && this.last) u.place(this.last.x, this.last.z, this.last.heading);
     }
-    this.garage.visible = this.has('sheriffHome');
+    if (this.garage) this.garage.visible = this.has('sheriffHome');
     this.setGarageSolid(this.has('sheriffHome'));
     if (this.has('sheriffHome')) this.settle();
   }
@@ -142,6 +142,19 @@ export class UteChase {
 
   buildGarage() {
     if (!this.scene || !this.station) return;
+    // Round 2 (Aaron: "the garage should be... within the fence. It should be there from the beginning"):
+    // the station's own garage (base/stationLayout.js garageLayout) is Sheriff's too: his bench in the
+    // west bay, the ute in it. No shed of this beat's own.
+    const SG = this.station.layout.garage;
+    if (SG) {
+      this.garage = null;
+      this.garageWalls = [];
+      this.garageAt = { x: SG.x, z: SG.z, yaw: SG.yaw };
+      const bx = -SG.w / 2 + SG.bayWidth * 2.5;
+      this.sheriffSpot = SG.local(bx - 1.3, SG.depth / 2 - 1.9);
+      this.bays = [SG.bays[2], SG.bays[1]];
+      return;
+    }
     const look = { colors: this.uc.garage.colors };
     const b = new SetBuilder(look, null, 51);
     const c = look.colors;

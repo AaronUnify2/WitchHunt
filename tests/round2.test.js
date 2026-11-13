@@ -59,3 +59,42 @@ describe('step 1: the quick wins', () => {
     expect(config.viewModel.saw.fell.roll).toBeGreaterThan(1);
   });
 });
+
+// ---- step 2: the garage and the quad ----
+import { makeMap, makeGround } from './mapFixture.js';
+import { stationLayout } from '../src/base/stationLayout.js';
+import { buildGarage } from '../src/render/garageModel.js';
+import { Quad } from '../src/world/Quad.js';
+
+describe('step 2: the garage inside the west fence', () => {
+  const map = makeMap(1234);
+  const L = stationLayout(map.clearings[map.homeIndex], makeGround(1234), config.station.layout);
+  const G = L.garage;
+
+  it('stands inside the fence, west of the cabin, its bays opening south onto the yard', () => {
+    expect(G).toBeTruthy();
+    expect(G.x).toBeLessThan(L.cabin.x - L.cabin.halfW - G.w / 2);
+    for (const p of [...G.posts, ...G.walls.flatMap((w) => [{ x: w.ax, z: w.az }, { x: w.bx, z: w.bz }])]) {
+      expect(Math.hypot(p.x - L.centre.x, p.z - L.centre.z)).toBeLessThan(L.radius - 1.5);
+    }
+    // The front posts are south of the back wall.
+    expect(G.posts[0].z).toBeGreaterThan(G.walls[0].az);
+    expect(G.bays).toHaveLength(3);
+  });
+
+  it("parks Tom's quad in bay 0 from the start, nose out", () => {
+    const q = Object.create(Quad.prototype);
+    Object.assign(q, { qc: config.quad, homeSpot: G.bays[0] });
+    const s = q.parkedSpot();
+    expect(s.x).toBe(G.bays[0].x);
+    // Heading: ahead is (-sin, -cos): out of the open front, to the south (+z).
+    expect(-Math.cos(s.heading)).toBeGreaterThan(0.9);
+    expect(ids.has('day1.prompt.quad')).toBe(true);
+  });
+
+  it('builds as one mesh', () => {
+    const { geometry } = buildGarage(G, config.station.look.garage);
+    expect(geometry.getAttribute('position').count).toBeGreaterThan(2000);
+    geometry.dispose();
+  });
+});

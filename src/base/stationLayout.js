@@ -76,9 +76,42 @@ export function stationLayout(home, ground, cfg) {
   const fenceBox = at(boxAngle, R - cfg.fenceBox.inside);
   fenceBox.angle = boxAngle;
 
-  const layout = { centre, radius: R, west, east, gateHalf, segments, gate, floods, cabin, tower, turretPad, fenceBox, at };
+  const garage = cfg.garage ? garageLayout(centre, cfg.garage) : null;
+  const layout = { centre, radius: R, west, east, gateHalf, segments, gate, floods, cabin, tower, turretPad, fenceBox, garage, at };
   layout.walls = cabin.walls;
   return layout;
+}
+
+// Round 2: the garage (pure). Its own frame: x across the bays (bay 0 at -x), z from the open front (-z)
+// to the back wall (+z); turned half round in the world, so the bays open south and bay 0 is the east one.
+// Returns { x, z, yaw, w, depth, bays: [{ x, z, heading }], bench: { x, z, w, d, h, stand }, shovel,
+// walls: [{ ax, az, bx, bz }], posts: [{ x, z }], local(x, z) }.
+export function garageLayout(centre, g) {
+  const x = centre.x + g.offsetX;
+  const z = centre.z + g.offsetZ;
+  const yaw = Math.PI;
+  const local = (lx, lz) => ({ x: x + lx * Math.cos(yaw) + lz * Math.sin(yaw), z: z - lx * Math.sin(yaw) + lz * Math.cos(yaw) });
+  const w = g.bays * g.bayWidth;
+  const hw = w / 2;
+  const hd = g.depth / 2;
+  const seg = (ax, az, bx, bz) => {
+    const a = local(ax, az);
+    const b = local(bx, bz);
+    return { ax: a.x, az: a.z, bx: b.x, bz: b.z };
+  };
+  const bayX = (i) => -hw + g.bayWidth * (i + 0.5);
+  // A vehicle in a bay noses out of the open front (the player's heading convention: ahead is (-sin, -cos)).
+  const out = local(0, -1);
+  const heading = Math.atan2(-(out.x - x), -(out.z - z));
+  const bays = Array.from({ length: g.bays }, (_, i) => ({ ...local(bayX(i), 0.2), heading }));
+  const bx = bayX(1);
+  const bz = hd - 0.12 - g.bench.d / 2;
+  const bench = { ...local(bx, bz), w: g.bench.w, d: g.bench.d, h: g.bench.h, lx: bx, lz: bz, stand: local(bx, bz - g.bench.d / 2 - 0.75) };
+  const shovel = { ...local(bx - g.bench.w / 2 - 0.45, hd - 0.42), lx: bx - g.bench.w / 2 - 0.45, lz: hd - 0.42 };
+  const walls = [seg(-hw, hd, hw, hd), seg(-hw, -hd + 0.3, -hw, hd), seg(hw, -hd + 0.3, hw, hd)];
+  const posts = [];
+  for (let i = 0; i <= g.bays; i++) posts.push(local(-hw + i * g.bayWidth, -hd + 0.15));
+  return { x, z, yaw, w, depth: g.depth, bayWidth: g.bayWidth, frontHeight: g.frontHeight, backHeight: g.backHeight, bays, bench, shovel, walls, posts, local };
 }
 
 function arcPiece(index, a0, a1) {

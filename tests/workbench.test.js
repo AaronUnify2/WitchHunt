@@ -23,29 +23,25 @@ function rig({ owned = true, sharp = 0.3, scrap = 10 } = {}) {
 }
 
 describe("the station's workbench", () => {
-  it("stands in the main room against the comms room's wall, clear of the doors", () => {
+  it("stands in the garage's middle bay against its back wall (Round 2: it moved out of the cabin)", () => {
+    const G = L.garage;
+    expect(bench).toBeUndefined();
+    expect(G.bench.w).toBeGreaterThan(1.5);
+    // Inside the fence, clear of the cabin.
     const c = L.cabin;
-    expect(bench).toBeTruthy();
-    expect(bench.z - bench.d / 2).toBeGreaterThan(c.z + c.partZ);
-    expect(bench.z + bench.d / 2).toBeLessThan(c.z + c.halfD);
-    // Clear of the comms door and of the way to it from the front door.
-    expect(bench.x + bench.w / 2).toBeLessThan(c.commsDoor.x - c.commsDoor.width / 2 - 1);
-    const t = (bench.z - c.frontDoor.z) / (c.commsDoor.z - c.frontDoor.z);
-    const wayX = c.frontDoor.x + (c.commsDoor.x - c.frontDoor.x) * t;
-    expect(wayX - (bench.x + bench.w / 2)).toBeGreaterThan(1.5);
-    // And of the other furniture.
-    for (const f of c.furniture) {
-      if (f === bench) continue;
-      const apart = Math.abs(f.x - bench.x) > (f.w + bench.w) / 2 + 0.3 || Math.abs(f.z - bench.z) > (f.d + bench.d) / 2 + 0.3;
-      expect(apart, f.id).toBe(true);
+    for (const w of G.walls) for (const [x, z] of [[w.ax, w.az], [w.bx, w.bz]]) {
+      expect(Math.hypot(x - L.centre.x, z - L.centre.z)).toBeLessThan(L.radius - 1.5);
+      expect(x).toBeLessThan(c.x - c.halfW - 2);
     }
-  });
-
-  it('has a place to stand at it, inside the room', () => {
-    const { st } = rig();
-    const s = st.benchSpot();
-    expect(s.z).toBeGreaterThan(bench.z + bench.d / 2);
-    expect(s.z).toBeLessThan(L.cabin.z + L.cabin.halfD - 0.5);
+    // Tom stands in front of it, inside the bay.
+    const st = Object.create(Station.prototype);
+    Object.assign(st, { sc: config.station, layout: L });
+    const spot = st.benchSpot();
+    expect(Math.hypot(spot.x - G.bench.x, spot.z - G.bench.z)).toBeGreaterThan(0.8);
+    expect(Math.hypot(spot.x - G.bench.x, spot.z - G.bench.z)).toBeLessThan(1.6);
+    // The quad's bay is the one nearest the cabin, and the shovel leans by the bench.
+    expect(G.bays[0].x).toBeGreaterThan(G.bays[2].x);
+    expect(Math.hypot(G.shovel.x - G.bench.x, G.shovel.z - G.bench.z)).toBeLessThan(2.2);
   });
 
   it('has nothing to offer until Tom has the chainsaw, or while its chain is sharp', () => {

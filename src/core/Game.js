@@ -567,7 +567,8 @@ export class Game {
     this.combat.promptSources.push(this.gasStation.hud);
     // Session 15b (M9.3 pass 3): Earl's quad bike, behind the gas station.
     this.quad = new Quad(this.cfg, this.bus);
-    this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, notify: (text) => this.toast.show(text) });
+    // Round 2 (Aaron): Tom's own quad, in the station's garage from the start (bay 0).
+    this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, homeSpot: this.station.layout.garage?.bays[0] ?? null, notify: (text) => this.toast.show(text) });
     this.combat.promptSources.push(this.quad.hud);
     this.mapUi.setQuad(this.quad); // Session 16 (Aaron): on the maps, in case Tom loses it
     this.vehicles.busy?.push(this.quad.hud);
@@ -646,6 +647,7 @@ export class Game {
       director: this.director,
       campsite: this.campsite,
       vehicles: this.vehicles,
+      quad: this.quad, // Round 2: the Day 1 prompt to ride it
       cutscenes: this.cutscenes,
       dialogue: this.dialogue,
       subtitles: this.subtitles,
@@ -1752,7 +1754,7 @@ export class Game {
     this.bus.emit('game:started', { seed: this.seed });
     this.firstDay.begin(mode ?? 'new');
     // Session 21 (Aaron): after Skip intro the quad waits just outside the station's gate, to ride to the gas station.
-    if (mode === 'skip') this.parkQuadAtStation();
+    if (mode === 'skip' && !this.station.layout.garage) this.parkQuadAtStation(); // Round 2: it's in the garage now
   }
 
   // Just outside the gate, off the path, nose south (config.quad.skipParked: metres south of the gate and to its side).

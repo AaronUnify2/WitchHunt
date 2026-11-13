@@ -99,6 +99,7 @@ export class Station {
     });
     this.turret.init();
     this.renderer = new StationRenderer(sc, this.rng.fork('station-look'), { cfg: this.cfg.family, ids: this.cfg.story.family });
+    this.renderer.propsWeather = this.cfg.props?.weather ?? null; // Round 2: the garage is weathered like the sets
     this.renderer.init(scene, this.layout, this.ground, this.state, this.floorY);
     this.ledger = new Ledger(this.cfg.ledger, this.bus);
     this.ledger.init(ctx.root, () => this.ledgerPages(), () => this.ledgerSummary());
@@ -207,6 +208,17 @@ export class Station {
     for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) solid(tw.x + dx * legs, tw.z + dz * legs, 0.15, tw.height);
     const pad = this.layout.turretPad;
     solid(pad.x, pad.z, 0.55, 0.3);
+    // Round 2: the garage: its back and end walls, its front posts, the workbench.
+    const G = this.layout.garage;
+    if (G) {
+      const gy = g.heightAt(G.x, G.z);
+      add(null, G.walls, gy - 0.5, gy + G.backHeight, true);
+      for (const p of G.posts) solid(p.x, p.z, 0.16, G.frontHeight);
+      const b = G.bench;
+      const e0 = G.local(b.lx - b.w / 2, b.lz);
+      const e1 = G.local(b.lx + b.w / 2, b.lz);
+      add(null, [{ ax: e0.x, az: e0.z, bx: e1.x, bz: e1.z }], gy - 0.5, gy + b.h, true);
+    }
     // Glare-only shapes (bodies walk through, shots pass): the torch dims on
     // them up close, as it does on rocks and signs (Aaron's M5 test: the
     // turret and the tower's railing glared).
@@ -366,7 +378,10 @@ export class Station {
   }
 
   // Session 28: the workbench in the main room (config.station.workbench): where Tom stands at it.
+  // Round 2 (Aaron): it's out in the garage now (layout.garage.bench).
   benchSpot() {
+    const G = this.layout.garage;
+    if (G) return { x: G.bench.stand.x, z: G.bench.stand.z };
     const f = this.layout.cabin.furniture.find((x) => x.id === 'workbench');
     return f ? { x: f.x, z: f.z + f.d / 2 + this.sc.workbench.standOff } : null;
   }
@@ -395,6 +410,8 @@ export class Station {
 
   // Where it leans: { x, z } (outside the front wall, east of the door).
   shovelSpot() {
+    const G = this.layout.garage;
+    if (G) return { x: G.shovel.x, z: G.shovel.z }; // Round 2 (Aaron): in the garage, by the workbench
     const d = this.layout.cabin.frontDoor;
     const a = this.sc.shovelByDoor.at;
     return { x: d.x + a[0], z: d.z + a[1] };
