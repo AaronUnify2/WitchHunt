@@ -42,6 +42,16 @@ The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md h
 - **The witch's charms are subtle.** She's unlit black by your rule, so the bones and twigs are a shade off black and read only up close.
 - All new lines and texts are drafts (`draft: true`), Marcy's journal and the board's 18 captions included.
 
+## A bot played it (Nov 13, late)
+
+Nothing's been played by hand, so I wrote a headless bot that starts a New Game and follows the objective marker with real button holds (`tools/playbot.cjs`; its header says how to run it). On two seeds it plays **Day 1 through to arriving at the crashed plane** without sticking and with no errors: the tower and the rifle, the campsite, the battery and the fence, Junie, Night 1, the whole gas station, the shelter, the safe, Night 2, the shut gate, the farm, the family plot, the tear, the outpost's fight, peak and compound, the checkpoint. It kills everything instantly and skips cutscenes, so it says the steps hand on to each other, not that the fights are fair.
+
+It found three real faults, all fixed:
+
+1. **Ellen's "if it goes bad out there, come home. Promise me."** was keyed to the main gate's distance and played in the middle of the talk at the chained gate. It waits for the back way now: after the farm, as you near the tear.
+2. **Cutting cross-country from the shut gate toward the farm** could clip the outpost's arrival circle and start its sweep and waves from outside the wire on the wrong side. With the gate chained, the arrival only starts from the east side (or right up at the wire).
+3. **On the quad you can reach the shut gate while it's still dawn,** and then the afternoon didn't go by (the clock jump only worked in the day phase). It does now.
+
 ## A bug found on the way
 
 A world boulder was standing in the Pruitts' children's room (the clearing's own rock scatter, in front of the open window and the chair). Fixed: that clearing's rocks stay at its edge now.

@@ -596,3 +596,21 @@ describe('step 6: the fog funnel', () => {
     expect(fun.amount).toBe(0);
   });
 });
+
+describe('found by the bot play-through (Nov 13, late)', () => {
+  it("doesn't start the outpost's arrival from the wrong side of the wire while the main gate is chained", async () => {
+    const src = readFileSync(new URL('../src/encounters/Outpost.js', import.meta.url), 'utf8');
+    // (The rule itself; the encounter's rig is in tests/outpost.test.js.)
+    expect(src).toMatch(/wrongSide = this\.progress\?\.has\('farmCall'\)/);
+    expect(config.outpost.eastBeyond).toBeGreaterThan(0);
+    // The shut gate stands inside Ellen's 'come home' line and outside the sweep's: hence both rules.
+    const map = makeMap(1234);
+    const { gateLayout } = await import('../src/world/gates.js');
+    const gates = gateLayout(map, clusterData.gates, config.map.gates);
+    const road = gates.find((g) => g.id === 'outpostRoad');
+    const op = map.clearings.find((c) => c.key === 'outpost');
+    const d = Math.hypot(road.x - op.x, road.z - op.z);
+    expect(d).toBeLessThan(config.outpost.gateLineDistance);
+    expect(d).toBeGreaterThan(config.outpost.sweepDistance);
+  });
+});

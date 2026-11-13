@@ -254,13 +254,16 @@ export class PruittFarm {
     // The afternoon goes while they talk it over.
     this.gate.fading = true;
     const done = () => this.gateDone();
-    if (this.clock.phase !== 'day' || !this.cutscenes?.play('fade.afternoon', { onDone: done })) done();
+    // (From the dawn too: on the quad he can be at the gate before the sun's up, and the afternoon must still go.)
+    const light = this.clock.phase === 'day' || this.clock.phase === 'dawn';
+    if (!light || !this.cutscenes?.play('fade.afternoon', { onDone: done })) done();
   }
 
   onFadeMid() {
     if (!this.gate?.fading || this.gate.faded) return;
     this.gate.faded = true;
     const c = this.clock;
+    if (c.phase === 'dawn') c.skipPhase?.();
     if (c.phase === 'day') c.phaseElapsed = afternoonAt(c.phaseElapsed, c.currentPhase.seconds, this.fc.clock.dayLeft);
   }
 

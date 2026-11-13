@@ -223,8 +223,12 @@ describe('the military outpost: the beats', () => {
     r.step(oc.callAfterDawn + 1);
     expect(r.flags.has('outpostCall')).toBe(true);
     // Plan #16: 'come home if it goes bad' waits for the road gate.
+    // Round 2: not at the shut main gate (it's inside that line): once he's been to the farm, on the back way.
     expect(r.played).toEqual(['outpost.call.ellen']);
     r.at(60, -55);
+    r.step(0.2);
+    expect(r.played).not.toContain('outpost.call.home');
+    r.progress.setFlag('farmVisited');
     r.step(0.2);
     expect(r.played).toContain('outpost.call.home');
     // Plan #3: Wyatt's word on the rounds comes at the outpost only (it was said up to four times).

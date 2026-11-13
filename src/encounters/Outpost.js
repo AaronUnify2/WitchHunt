@@ -383,12 +383,18 @@ export class Outpost {
     // no cutscenes, no next wave or peak (the dogfight fired when he scoped her from the tower).
     this.witchOn = this.witchBusy?.() ?? false;
     // Plan #16: 'come home if it goes bad' at the road gate.
-    if (this.callHomeDue && called && d < this.oc.gateLineDistance) {
+    // Round 2: the main gate's shut and 85 m out, inside that line: the words came in the middle of the talk
+    // at the chain. They wait for the back way now: once he's been to the farm, as he nears the tear.
+    if (this.callHomeDue && called && this.progress?.has('farmVisited') && d < this.oc.gateLineDistance) {
       this.callHomeDue = false;
       this.dialogue?.play('outpost.call.home');
     }
     // Plan #16: the sweep (and the first helmet) from sweepDistance, once Ellen's finished, never later than sweepLatest.
-    if (called && !this.approachStarted && d < this.oc.sweepDistance && (!this.talking() || d < this.oc.sweepLatest) && !this.witchOn) this.startApproach();
+    // Round 2: with the main gate chained (the family have sent him round: farmCall) the arrival is the east
+    // side's, by the tear. Skirting the wire to the north or west on the way to the farm starts nothing, unless
+    // he's somehow right up at it (sweepLatest).
+    const wrongSide = this.progress?.has('farmCall') && !this.progress?.has('outpostCleared') && l.x >= -(this.oc.eastBeyond ?? Infinity) && d >= this.oc.sweepLatest;
+    if (called && !this.approachStarted && !wrongSide && d < this.oc.sweepDistance && (!this.talking() || d < this.oc.sweepLatest) && !this.witchOn) this.startApproach();
     if (!this.entered && d <= this.frame.radius - this.oc.arriveInset) this.enter();
     if (this.approachStarted) {
       this.updateWaves(dt, d);
