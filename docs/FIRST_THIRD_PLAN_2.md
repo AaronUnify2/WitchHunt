@@ -65,3 +65,15 @@ The flow is good and the story beats land. Some stretches feel empty, the first 
 4. **The first third restructure, part 2:** Day 3's shut gate and the clock, the farmhouse (moths, the light, Marcy's journal, the shotgun, the plot's sigil, the Mothman glimpse), the fence rip into the outpost at night, the main gate on exploring, the campsite without the shotgun.
 5. **The family at their stations:** Ellen's board and hints, Junie's camera tips (many draft lines).
 6. **The middle third's fog funnel.**
+
+## Aaron's answers (Nov 13, late)
+
+1. The tower gun on Day 1 is the **service rifle**; the hunting rifle stays in Earl's safe.
+2. **Wyatt's gun:** a second, older rifle in Earl's safe, a worn lever-action Earl once let Wyatt shoot. Tom brings it home; Wyatt takes the tower from Night 2.
+3. **The campsite wave** starts when the camcorder is found (the dead come out of the trees as the tape ends). "Not just okay, better."
+4. Earl's quad in later beats becomes **Tom's quad**.
+5. **The Screamer:** about 800 HP, calls in a group every 15 s until killed, stays back behind the others.
+
+## The polish list (Aaron: "we have some detail to spend"; artistic vision to Claude's judgment, reviewed in the morning)
+
+Along the way, as each place is touched: the cabin's interior; Earl's store's interior; the Pruitt farmhouse (decorated properly); the garage; better models for the quad bike, the mutant, the witch and the Screamer.
