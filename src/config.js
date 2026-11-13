@@ -4617,7 +4617,7 @@ export const config = {
     screamerWaves: [2, 4], // ...a Screamer
     hangedWaves: [3], // ...a Hanged
     hollow: { reach: 2.2 }, // metres from the wire: it tears the panel in front of it down
-    screamer: { back: 34, first: 6, every: 9, calls: 3, maxCalls: 5 }, // it stands this far outside the fence; its first shriek after `first` seconds, then every `every`; each brings `calls` more
+    screamer: { back: 34, first: 6, every: 9, calls: 3, maxCalls: 5, healthScale: 0.4 }, // it stands this far outside the fence; its first shriek after `first` seconds, then every `every`; each brings `calls` more
     nearHome: 110, // the dead within this of home count as still attacking
     endLeft: 3, // every wave sent and this few left: dawn
     timeout: 420, // seconds: dawn comes anyway

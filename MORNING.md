@@ -48,7 +48,9 @@ A world boulder was standing in the Pruitts' children's room (the clearing's own
 
 ## Not done
 
-- Nothing on the plan. Two small round 1 pieces were never built (a Night 1 closing line moved to the Dawn 1 walk; the forecourt pack's fifth spot), and the mega night's stand-in Screamer could use the real one now.
+- Nothing on the plan. Two small round 1 pieces were never built (a Night 1 closing line moved to the Dawn 1 walk; the forecourt pack's fifth spot).
+- The mega night's two Screamers wear the new figure and its scream pose now, at 40% of Night 2's health (`megaNight.screamer.healthScale`); their calling is still the mega night's own.
+- The debug menu's "Continue story" starts now count Night 2 and the farm as done (and hand you Earl's shotgun), so the later beats start clean.
 
 ---
 

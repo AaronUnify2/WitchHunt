@@ -206,10 +206,12 @@ export class MegaNight {
     }
     // The Screamer: every few seconds it shrieks and more come to it.
     for (const s of this.screamers) {
+      if (s.z.screamT > 0) s.z.screamT -= dt; // (Round 2: its scream's pose: Zombie.frame)
       if (!s.z.alive || s.calls >= m.screamer.maxCalls) continue;
       s.t -= dt;
       if (s.t > 0) continue;
       s.t = m.screamer.every;
+      s.z.screamT = this.cfg.screamer?.poseSeconds ?? 2.4;
       this.sfx?.play('screech', s.z);
       s.calls++;
       if (!this.screamerSaid) {
@@ -251,8 +253,13 @@ export class MegaNight {
     }
     for (let k = 0; k < w.screamers; k++) {
       const at = around(m.screamer.back);
-      const z = this.enemies.spawnZombie(at.x, at.z, { mode: 'linger', facing: at.a + Math.PI, authored: 'screamer', linger: { x: at.x, z: at.z, r: 3 } });
-      if (z) this.screamers.push({ z, t: m.screamer.first, calls: 0 });
+      // Round 2: it wears the Screamer's own figure now (the variant), at a share of Night 2's health (there
+      // are two of them tonight, among much else).
+      const z = this.enemies.spawnZombie(at.x, at.z, { variant: 'screamer', mode: 'linger', facing: at.a + Math.PI, authored: 'screamer', linger: { x: at.x, z: at.z, r: 3 } });
+      if (z) {
+        if (typeof z.health === 'number') z.health *= m.screamer.healthScale ?? 1;
+        this.screamers.push({ z, t: m.screamer.first, calls: 0 });
+      }
     }
     for (let k = 0; k < w.hanged; k++) {
       // A stand-in: it comes down beside Tom if he's out under the trees; else at the gate.
