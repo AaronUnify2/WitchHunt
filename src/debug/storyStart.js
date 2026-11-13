@@ -30,8 +30,13 @@ export const OUTPOST_CLEARED_FLAGS = [
   'rifleClaimed', 'outpostCall', 'outpostEntered', 'outpostCleared',
 ];
 
+// Round 2 (Nov 13): what the rebuilt first third sets on the way there too (Wyatt's lever gun from the safe,
+// Night 2's defence, the back way by the Pruitts' farm), so the later beats don't trip over them. (Their own
+// list: these flags come later in data/progress.json than the outpost's.)
+export const ROUND2_FLAGS = ['wyattRifle', 'night2Prep', 'night2Started', 'night2Done', 'plotCamSeen', 'farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'plotMoths'];
+
 // The papers and tapes picked up and handed in by then (data/lore.json ids).
-export const OUTPOST_LORE = ['camcorder', 'earlNote', 'pruittDiary', 'pruittTapes'];
+export const OUTPOST_LORE = ['camcorder', 'earlNote', 'pruittDiary', 'pruittTapes', 'marcyJournal'];
 export const COMPOUND_LORE = ['fieldReport', 'outpostManifest'];
 
 // The opening encounters' saved states at the outpost's barricade (their loadState formats).
@@ -71,9 +76,17 @@ export function startFromOutpostCleared(game, { explored = false } = {}) {
   // Dawn 1, as Skip intro leaves it (the fence, the shovel, the rifle, the shotgun, the campsite done).
   if (!g.progress.has('day1Battery')) g.firstDay.skipIntro();
   for (const f of OUTPOST_CLEARED_FLAGS) g.progress.setFlag(f);
+  for (const f of ROUND2_FLAGS) g.progress.setFlag(f);
   // The shelter's sigil (Night 1's) is dug.
   const sigil = g.shelter.sigil();
   if (sigil) g.director.remove(sigil);
+  // Round 2: Night 2 is fought, the farm's been through (its moths gone, the generator left running, the
+  // plot's sigil dug), and Earl's shotgun's come down off its pegs.
+  g.nightTwo?.reset();
+  const plot = g.farm?.plotSigil?.();
+  if (plot) g.director.remove(plot);
+  g.farm?.loadState({ generator: true, looked: [], searched: [] });
+  if (!g.combat.weapons.has('shotgun')) g.combat.giveWeapon('shotgun', cfg.pruittFarm?.shotgunShells ?? 8);
   // Each encounter as it'd be by now, through its own load (as a Continue does).
   const op = g.outpost;
   const st = openingStates(cfg, { explored, waves: op.oc?.approach?.waves?.length ?? 1, crates: op.crates?.length ?? 0 });

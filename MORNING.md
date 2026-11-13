@@ -1,23 +1,36 @@
 # For Aaron
 
-**Round 2: your Nov 13 play-test notes. Steps 1 to 4 are built and on `main`.** The first third now runs: Day 1 with the quad and the rifle from the start, the shelter behind Earl's store, a real Night 2 with the Screamer and Wyatt on the tower, Ellen's call at dawn, the shut gate, the Pruitt farm and its moths, and into the outpost by the tear in its fence. 1379 tests pass and the build is clean. Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
+**Round 2 is all built and on `main`: your Nov 13 play-test notes (steps 1 to 6) and the polish list.** 1390 tests pass and the build is clean. Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
 
-The plan and your answers: `docs/FIRST_THIRD_PLAN_2.md`.
+The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md has a new section, "The first third as rebuilt".
 
 ## What to try, in play order
 
 1. **Day 1.** The garage is inside the fence, west of the cabin: your quad's in its first bay, the workbench and the shovel in the middle one. Ellen won't open the gate until the rifle's come down from the tower with you (Wyatt owns up to the turkey). At the campsite there's no shotgun: the dead come out of the trees as the camcorder's tape ends.
-2. **Day 2.** The sheriff's car on the road has the pistol in its door. The storm shelter is 95 m up a track behind the store (Earl's own spade stands by the track if you left your shovel). Behind the hunting rifle in the safe is the old lever-action Earl let Wyatt shoot.
-3. **Night 2.** Get home: dusk waits for you. 45 seconds to fit a battery and spend scrap, then three acts: a horde up the campground trail, two mutants from either side, and the Screamer at the treeline south of the gate, calling five more every 15 seconds until it's down (about 800 health; every hit puts its next scream back). Wyatt shoots from the tower. Then camera seven's catch of the witch at the Pruitts' plot, and a fade to dawn.
-4. **Day 3.** Ellen's call. The checkpoint's main gate is chained; the family send you round by the Pruitts' farm, and the afternoon goes while they talk. At the farm the porch light's on and the wall round it is moving. Walk up, shoot from far off, or go round the side and shut Earl's generator down (torch off, or they come to you). Then look at the dead oak. Inside: Marcy's journal on the kitchen table, Earl's shotgun over the stove, and six things that only say something. Down the track, the family plot and what she buried there; then the tear in the army's fence, at night.
-5. **Anywhere.** Walk deep into the trees on foot from Day 2 and a moth or two finds you. The chainsaw fells trees (the bar goes over on its side). Info texts stay up long enough to read. Milo straightens up after his bow.
+2. **The cabin, any time after the tower.** Ellen is at **a string board** in the main room, facing the front door (she's in the comms room from dusk to dawn). Hold X at the board to read what's pinned; it grows as the story goes. Talk to her when she has nothing new and she tells you **what the current goal is for, and why**. Junie is at the monitors: ask her and she gives **a tip about what's out there**, newest first.
+3. **Day 2.** The sheriff's car on the road has the pistol in its door. Earl's store is a gift shop inside now. The storm shelter is 95 m up a track behind it (Earl's own spade stands by the track). Behind the hunting rifle in the safe is the old lever-action Earl let Wyatt shoot.
+4. **Night 2.** Get home: dusk waits for you. 45 seconds to fit a battery and spend scrap, then three acts: a horde up the campground trail, two mutants from either side, and the Screamer at the treeline south of the gate, calling five more every 15 seconds until it's down (about 800 health; every hit puts its next scream back). Wyatt shoots from the tower. Then camera seven's catch of the witch at the Pruitts' plot, and a fade to dawn.
+5. **Day 3.** Ellen's call. The checkpoint's main gate is chained; the family send you round by the Pruitts' farm, and the afternoon goes while they talk. At the farm the porch light's on and the wall round it is moving. Walk up, shoot from far off, or go round the side and shut Earl's generator down (torch off, or they come to you). Then look at the dead oak. Inside: Marcy's journal on the kitchen table, Earl's shotgun over the stove, and six things that only say something. Down the track, the family plot and what she buried there; then the tear in the army's fence, at night.
+6. **After Junie's taken** (debug menu, "Continue story: Junie is taken", or play to it). South of the cordon, step off the way to the church and **the fog closes in until it's a wall**; it puts you back a step and the Caller calls from the way on. The stairs' leg opens once you've read the 1903 account. North of the cordon nothing changes. It lifts when Junie's home.
+7. **Anywhere.** Walk deep into the trees on foot from Day 2 and a moth or two finds you. The chainsaw fells trees. Info texts stay up long enough to read. Milo straightens up after his bow.
+
+## The polish pass: what to look at (debug menu, Models, for the first four)
+
+- **The mutant:** bone spurs along its spine, ribs through one flank, a long jaw, a tumour, a dead third arm, his belt and one work boot.
+- **The Screamer:** its own figure now: a long black gown torn to points, arms to its knees with claws, white hair to the waist, a jaw that drops. It throws its arms wide when it calls.
+- **The witch:** still a silhouette with no face. Stick figures and bones hang from a cord at her waist, a train of rags, spines down her back, a point at each shoulder.
+- **The quad:** rebuilt: knobbly tyres, shocks, an engine and pipe, shaped fenders, tube racks with a bedroll and a jerry can, bars with a gauge. Look down while riding.
+- **The cabin:** a kettle, logs and an axe by the stove; pans, plates and mugs; antlers over the door; the children's end with books, photographs, Junie's drawings and a trunk; the watch roster in the comms room.
+- **Earl's store:** a coffee counter, magazines, the LIVE BAIT chest, rods, cigarettes behind the counter, a table of Bigfoot souvenirs, a rail of T-shirts, pennants. The shelves' goods are tins, bottles and packets now.
+- **The Pruitts' farmhouse:** a sideboard and Marcy's sampler, school bags by the door, preserves, October's calendar crossed off to the twelfth, Earl's shelf of casts; the children's desk, toy chest and kite; three carved pumpkins on the porch.
 
 ## The things I'd look at first
 
 1. **Night 2's size and the Screamer.** Every number is a first guess (`config.night2`, `config.screamer`). Left alone for 150 seconds headless, the fence box ran flat at 85 seconds and a panel fell at 150; with you shooting it should hold, but only your play can say. **The station can't be overrun on that night for now** (`night2.cantFall`), as on the mega night: say when you want it real.
-2. **The porch at dusk.** The moths round the porch light are the best picture in the new stretch.
-3. **Wyatt on the tower.** He drops about one every eight seconds. Too much help, too little?
-4. **The Screamer and the mutant still wear stand-in looks** (the Screamer is a tall, bone-grey, white-haired zombie sprite). Their models are on the polish list below.
+2. **Ellen's and Junie's lines.** 56 objective lines and 15 tips, all drafts in my guess at their voices. They're the most words I've put in the family's mouths in one go, so they need your ear most.
+3. **The fog funnel's width.** The way is 20 m either side of the pathway and clear for the first 8 (`config.fogFunnel`). It passes through whatever clearings lie between the church and the stairs, so an optional encounter on that route is reachable.
+4. **The porch at dusk.** The moths round the porch light are the best picture in the new stretch.
+5. **Wyatt on the tower.** He drops about one every eight seconds. Too much help, too little?
 
 ## Placeholder, or not as you asked
 
@@ -25,15 +38,17 @@ The plan and your answers: `docs/FIRST_THIRD_PLAN_2.md`.
 - **The shut gate's fade** jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
 - **The tear in the fence** is the chain gate's model with one leaf peeled back, not a fence of its own.
 - **The outpost by night from the east** uses the same waves and peak as before; only the arrival (its sweep, the first soldier on the track, two lines) is new. C-7 is on the far side now, found while exploring.
-- **Two small things left out of your notes so far:** none of the family's new stations (Ellen's board, Junie at the monitors) and no fog funnel after Junie's taken: steps 5 and 6.
-- All new lines and texts are drafts (`draft: true`), Marcy's journal included.
+- **Ellen changes places only while you're outside the cabin**, so you never see her walk; she's simply at the board when you come back in.
+- **The witch's charms are subtle.** She's unlit black by your rule, so the bones and twigs are a shade off black and read only up close.
+- All new lines and texts are drafts (`draft: true`), Marcy's journal and the board's 18 captions included.
 
-## Not done yet (in order)
+## A bug found on the way
 
-- **Step 5:** Ellen at a desk with her string board (hints on the current goal), Junie at the monitors (tips on the enemies).
-- **Step 6:** after Junie's taken, fog shuts everything but the church and the stairs.
-- **The polish list:** the cabin's interior, Earl's store, better models for the quad, the mutant, the witch and the Screamer. The garage and the farmhouse are dressed already.
-- **Docs:** DESIGN.md hasn't been brought up to date with any of this; `docs/FIRST_THIRD_PLAN_2.md` is the record for now.
+A world boulder was standing in the Pruitts' children's room (the clearing's own rock scatter, in front of the open window and the chair). Fixed: that clearing's rocks stay at its edge now.
+
+## Not done
+
+- Nothing on the plan. Two small round 1 pieces were never built (a Night 1 closing line moved to the Dawn 1 walk; the forecourt pack's fifth spot), and the mega night's stand-in Screamer could use the real one now.
 
 ---
 

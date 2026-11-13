@@ -78,14 +78,17 @@ The flow is good and the story beats land. Some stretches feel empty, the first 
 
 Along the way, as each place is touched: the cabin's interior; Earl's store's interior; the Pruitt farmhouse (decorated properly); the garage; better models for the quad bike, the mutant, the witch and the Screamer.
 
-## Status (Nov 13, night)
+## Status (Nov 13, late night): everything on this plan is built and on `main`
 
 - **Step 1 (quick wins): built.** Reading time, Milo, the pistol in the sheriff's car, the rifle and shovel on Day 1, deep-forest moths, the chainsaw felling trees.
 - **Step 2 (the garage and the quad): built.** `base/stationLayout.js` garageLayout, `render/garageModel.js`.
 - **Step 3 (restructure, part 1): built.** The shelter behind the store, the lever-action, `base/TowerSniper.js`, `ai/Screamers.js`, `encounters/NightTwo.js`, Ellen's call at Dawn 3.
 - **Step 4 (restructure, part 2): built.** The shut gate, `encounters/PruittFarm.js`, `render/pruittFarmModel.js`, the fence rip, the outpost's east arrival, the campsite without the shotgun.
-- **Step 5 (the family at their stations): not started.**
-- **Step 6 (the fog funnel): not started.**
-- **Polish list:** the garage and the farmhouse are dressed; the cabin, Earl's store, and the quad, mutant, witch and Screamer models are not started.
+- **Step 5 (the family at their stations): built.** `story/FamilyStations.js`, `render/storyBoard.js`, `data/storyBoard.json` (18 pinned things); Ellen's `board.<step>` lines (56) and Junie's `tip` lines (15) in `data/dialogue.json`; FamilyTalk's "ask".
+- **Step 6 (the fog funnel): built.** `story/FogFunnel.js`, `config.fogFunnel`, `Sky.setWall`.
+- **The polish list: done, first pass.** The mutant (`render/mutantModel.js`), the Screamer (its own figure in `render/zombieSprite.js`, a scream pose), the witch (`render/WitchRenderer.js`: charms, a train, spines, still a silhouette), the quad (`world/Quad.js`), the cabin (`render/stationInterior.js`), Earl's store (`render/GasStationProps.js` giftShop), the Pruitts' farmhouse (a second layer). "Earl's quad" is "your quad" in the later beats.
+- **Docs:** `docs/DESIGN.md` has a section for these two rounds ("The first third as rebuilt") and notes at the places it supersedes.
 
-Tests: `tests/round2.test.js`. Headless probes were run on seed 1234 for each step; nothing has been played by hand. MORNING.md has the play-test list.
+**Left open, for Aaron's call:** `night2.cantFall` (Night 2 can't be lost yet); every number in `config.night2`, `config.screamer`, `config.wyattTower`, `config.fogFunnel`, `config.deepForest`; all new lines and texts are drafts; the fence tear is the chain gate's model with a peeled leaf. Two small round 1 pieces were never built (a Night 1 closing line moved onto the Dawn 1 walk; the forecourt pack's fifth spot). MegaNight's stand-in Screamer could use `ai/Screamers.js` now.
+
+Tests: `tests/round2.test.js` (35 tests), 1390 in all. Headless probes and screenshots were run on seed 1234 for each step; nothing has been played by hand. MORNING.md has the play-test list.

@@ -5619,6 +5619,7 @@ export const config = {
     ],
     half: 20,
     clearingPad: 8,
+    placePad: 40, // the story's own places (the plane, the church, the stairs) have this much room round them instead
     fogStart: 12,
     wall: { near: 1, far: 12, colourMix: 0.9 },
     mist: 1.6,

@@ -46,6 +46,33 @@ A snapshot for redesigning the mid-game and end-game: what a run is today, what'
 5. **Past the cordon** the map is the seeded frontier, but **none of its encounters are built**: every frontier clearing is a placeholder signpost (or a sigil ground). What works out there is the system layer: sigils and their marches home, the witch roaming and planting from her hut, trail cameras, abandoned cars, pathway fights with her, and the hut and the final battle (with charges from the outpost's armoury or the debug menu).
 6. **Every night** the witch plants (only inside the cluster until the cordon's crossed), sigils raise zombies that march on the station, and the station holds or falls whether Tom's home or away. Dawn autosaves.
 
+### The first third as rebuilt (Nov 13: rounds 1 and 2)
+
+*Supersedes items 2 to 4 above and the older "as built" notes they point to. The record of what was asked and why: `docs/FIRST_THIRD_PLAN.md` (round 1, pacing fixes) and `docs/FIRST_THIRD_PLAN_2.md` (round 2, Aaron's play-test notes). The first third now ends when the Mothman knocks Tom out at the crashed plane.*
+
+| When | Where | What happens |
+|---|---|---|
+| Day 1 | Home | Tom wakes; the tower. **The service rifle comes down with him** (Wyatt was shooting at a turkey); Ellen holds the gate until it does. **The quad is Tom's own**, in the first bay of **a garage inside the west fence**; the workbench and the shovel are in the middle bay. |
+| Day 1 | Campsite | The camcorder; **the dead come out of the trees as its tape ends** (no shotgun here any more); the battery; home; the fence; Junie. A figure stands at the campers' fire at dawn. |
+| Night 1 | Home | Three waves; camera six's clip; held sigils and a dawn report. |
+| Day 2 | Gas station | The pack (dulled sight, go round them), the mutant, the witch, six seconds of quiet. **The pistol is in the sheriff's car** on the road. The store is a gift shop inside. |
+| Day 2 | Storm shelter | **Behind the store**, 95 m up a track. Earl holds the hatch; his spade stands by the track; the sigil, the keys, the room, the tapes. |
+| Day 2 | The safe | The hunting rifle, and **the old lever-action Earl let Wyatt shoot** (`wyattRifle`). |
+| Night 2 | Home | **A real defence** (`encounters/NightTwo.js`): dusk waits for Tom; 45 s of prep; a horde, two mutants, **the Screamer** at the treeline (about 800 health, calls five every 15 s, put off by hits; `ai/Screamers.js`). **Wyatt snipes from the tower** (`base/TowerSniper.js`). Camera seven's catch of the witch at the Pruitts' plot. |
+| Day 3 | Home | **Ellen's call** to the outpost (moved from the safe). |
+| Day 3 | The main gate | Chained. The family send Tom the back way; the afternoon goes (`fade.afternoon`). |
+| Day 3, dusk | **The Pruitt farm** (new; `encounters/PruittFarm.js`) | Moths on the porch light (shoot, walk up, or kill the generator); **the Mothman glimpsed** in the dead oak; Marcy's journal (she believed him); **Earl's shotgun**; six things to look at; the family plot's sigil. |
+| Day 3, night | Outpost | In by **a tear in the fence** on the cemetery side. The same fight; **the main gate opens once the compound's explored**. |
+| | Crashed plane | As before. The Mothman knocks Tom out. |
+
+Also in these rounds:
+
+- **The family at their stations** (`story/FamilyStations.js`). Ellen works at **a string board** in the cabin's main room by day (18 things pinned as the story's flags are set, joined by red string; hold X to read the newest). Asked with nothing new to say, she gives **the current objective and why** (`board.<step>` lines). Junie stands at the comms desk and gives **tips on what's out there** (`tip` lines). Wyatt is on the tower at night.
+- **The fog funnel** (`story/FogFunnel.js`). From `junieTaken` to `junieHome`, south of the cordon Tom keeps to the route plane → church → (once `stairsKnown`) stairs. Off it the fog thickens to a wall and puts him back; the Caller calls from the way on. The north is untouched.
+- **Deep-forest moths** on foot off the paths (`ai/DeepForest.js`); **the chainsaw fells trees**; **info texts stay up by their length** (`ui.toastRead`); Milo straightens after his bow.
+- **The polish pass:** new detail on the mutant, the witch (still a silhouette), the Screamer (its own sprite) and the quad; the cabin, Earl's store and the Pruitts' farmhouse dressed.
+- **Still scaffolding:** `night2.cantFall` (the station can't be overrun on Night 2); the fence tear is the chain gate's model with a peeled leaf; every new line and text is a draft; none of it has been played by hand.
+
 ### Built (and reusable for the mid and end game)
 
 | Area | What's there |
@@ -154,7 +181,7 @@ The player is **Ranger Tom Hale**, a park ranger and a silent protagonist. First
 
 - **The shovel** leans by the cabin's front door (it can be taken once Night 1's clip has shown the witch burying something). Digging a sigil needs it.
 - **The service rifle** waits at the top of the lookout tower (5 + 10 rounds), there from the first climb but taken on Night 1 (its beat).
-- **The shotgun** is at the campsite (the green dome tent), with 8 shells.
+- **The shotgun** is Earl's, over the stove in the Pruitts' farmhouse (Round 2; it was at the campsite, in the green dome tent).
 - **The hunting rifle** is in Earl's gun safe (the gas station's stockroom), empty; its rounds are in the outpost's gun pit (10).
 - **The flare gun** is always to hand on Y; flares are found (police car boots, sometimes an army zombie). Carry 3. **Changed (Nov 8, not built):** no flares in the opening at all; they join the drop tables only once the Mothman's been met at the crashed plane (see Flares).
 - **First aid:** the comms room's first aid box holds 2 (once).
@@ -255,7 +282,7 @@ The original design, kept for reference: the player starts each run with the **s
 
 ### Vehicles Tom drives
 
-**Earl's quad bike** (built, Session 15b; Aaron: "too much walking and running"): behind the gas station by the stockroom's back door; Wyatt points it out after the witch sighting.
+**The quad bike** (built, Session 15b; Aaron: "too much walking and running"). **Round 2: it's Tom's own, in the station's garage from the start** (it was Earl's, behind the gas station by the stockroom's back door, pointed out by Wyatt after the witch sighting).
 
 - Hold X to get on (and, slowed right down, off). Left stick: gas, brake then reverse, steer (tighter slow). About 47 km/h on pathways, a third of that in the brush; trunks and walls stop it with a jolt; ridden into the dead at speed it knocks them down.
 - **No shooting from the saddle** (the gun's slung). Its engine draws the dead every 1.5 s, and **the witch is 1.6x faster while Tom rides**.
@@ -456,6 +483,7 @@ The sum of every defence's current value (each scales with its remaining health)
 
 - A workbench at the station, **there from the start**. Tom sharpens the chainsaw (from the sawmill) there for a little scrap. *(Proposed: it could also be where Sheriff's upgrades are bought before he arrives, or be folded into the garage; open.)*
   **As built (Session 28):** in the cabin's main room, against the comms room's wall. Hold X to file the chain sharp for 3 scrap (`config.station.workbench`). It only sharpens the chainsaw so far.
+  **Round 2:** it's out in the garage's middle bay now (`config.station.layout.garage`); Ellen's string board has its place in the cabin.
 
 ### The garage *(Aaron, Nov 8; designed, not built)*
 
@@ -909,7 +937,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 **As built (M9.2, Session 15, then Aaron's play-tests; OPEN_QUESTIONS #185-197, #304):** `encounters/Campsite.js`, `data/campsite.json` (laid out from where the path from home walks in), dressed in Session 19 (`CampsiteProps`).
 - **The walk out** passes the bloody wreck on the trail (the same every run, a window smashed); Wyatt and Ellen's first foreshadowing.
 - **Arrival:** the sweep starts at the clearing's edge, past the car to the torn tent and up over the camp; line 5.
-- **The searches** (hold X; the tents from their centres, 3.2 m): **the camcorder in the torn tent**, **the shotgun (+8 shells) in the green dome tent**, a first aid kit in the near tent, shells in a backpack, about 15 scrap for the fence across the camp.
+- **The searches** (hold X; the tents from their centres, 3.2 m): **the camcorder in the torn tent**, **the shotgun (+8 shells) in the green dome tent** *(Round 2: no shotgun here; that tent holds rifle rounds and scrap, and the wave starts as the camcorder's tape ends)*, a first aid kit in the near tent, shells in a backpack, about 15 scrap for the fence across the camp.
 - **The camcorder:** offered on D-pad down to play (the watch queue), lines 6-7 around it; about 8 s, never a clean frame of her. The cars can't be searched until the tape has played (or the wave's down).
 - **The wave:** 7 level-1 citizens from both flanks over 6 s when the shotgun's taken (line 8), lines 9-10 when they're down. Day 1 can't be failed (health stops at 20%).
 - **The campers' car:** a sure battery, the game's first battery pull.
@@ -1051,6 +1079,8 @@ The back office holds a heavy **gun safe**. Inside is the **hunting rifle** (the
 
 #### Storm shelter (every run; fixed opening cluster)
 
+*Round 2 (Nov 13): the shelter is behind Earl's store now, 95 m up a track from the gas station (a spur gate halfway), not in a clearing of its own off the home trail; its old clearing is the Pruitt farm. Earl's spade stands by the track. The rest of this section holds.*
+
 Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not yet agreed; confirm them before building (rule 10).
 
 **Built (Session 16; Aaron's calls).** Earl dug it himself, so it's **small and a bit shabby**. **12 citizens** hold the hatch through the day, Earl among them as a zombie (Session 13's call); while the sigil's in the ground more climb out of it, and once it's dug up they stop, and the family work out that **the sigils are raising the dead**. **Nothing indicates the children died:** the room is empty of them, Ellen says maybe they got away, and on the tape the kids run into the trees while she goes after Earl. The diary is read in a **paper close-up** (Earl's note at the gas station too). The room below is part of the main map (a platform under the hatch, no loading). See STATUS (Session 16) and OPEN_QUESTIONS #213-221.
@@ -1062,7 +1092,7 @@ Fleshed out with Aaron, Oct 16. Items marked *(proposed)* are suggestions not ye
 - **Earl:** put down, his keys glint where he fell; Ellen knows him by his red cap. The brass tag is the safe's combination.
 - **The hatch:** dug clear with the shovel, hauled open; climb down. **The room** is only the story now: the diary (in close-up, taken home) and the tapes. No loot, no usable radio or photos (Session 16, Aaron). Junie asks if Earl's kids are down there; Ellen: "Nobody's here. Maybe they got away."
 - **The tapes** are offered on D-pad down the moment they're taken (Session 17); handed in, they go on the monitors.
-- **On the ride back,** Wyatt calls Tom in for **a stop at home** (Session 18, `story/HomeStop.js`): inside the fence, Ellen and a hint point to the fence box or the ledger.
+- **On the ride back,** Wyatt calls Tom in for **a stop at home** (Session 18, `story/HomeStop.js`): inside the fence, Ellen and a hint point to the fence box or the ledger. *(Round 2: switched off, `homeStop.enabled: false`. Night 2's prep does this job.)*
 
 **Purpose.** Part of the fixed opening cluster, doing three jobs:
 

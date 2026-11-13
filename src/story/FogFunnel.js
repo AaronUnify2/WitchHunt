@@ -56,11 +56,14 @@ export function shortestWay(map, from, to, usable = () => true) {
 // the way, padded), ends: [{ x, z }] (each leg's far end, for the Caller to call from) }. legs: [{ from, to,
 // needs }] (clearing keys; needs: a flag that opens the leg). has(flag). South of the cordon only: the
 // cluster's own pathways aren't walked, but for the checkpoint's (the way in).
-export function funnelRoute(map, legs, has, pad) {
+// pad: metres past a clearing's edge that are still the way; stopPad: the same for the legs' own ends (the
+// plane, the church, the stairs: the story's places have more room round them).
+export function funnelRoute(map, legs, has, pad, stopPad = pad) {
   const index = (key) => map.clearings.findIndex((c) => c.key === key);
   const south = (p) => !p.cluster || p.checkpoint;
   const paths = new Set();
   const stops = new Set();
+  const places = new Set();
   const ends = [];
   for (const leg of legs) {
     if (leg.needs && !has(leg.needs)) continue;
@@ -75,10 +78,12 @@ export function funnelRoute(map, legs, has, pad) {
       stops.add(map.paths[k].b);
     }
     ends.push({ x: map.clearings[b].x, z: map.clearings[b].z });
+    places.add(a);
+    places.add(b);
   }
   return {
     lines: [...paths].map((k) => map.paths[k].points),
-    discs: [...stops].map((i) => ({ x: map.clearings[i].x, z: map.clearings[i].z, r: map.clearings[i].radius + pad })),
+    discs: [...stops].map((i) => ({ x: map.clearings[i].x, z: map.clearings[i].z, r: map.clearings[i].radius + (places.has(i) ? stopPad : pad) })),
     ends,
   };
 }
@@ -154,7 +159,7 @@ export class FogFunnel {
     const key = f.legs.map((l) => (l.needs && !this.has(l.needs) ? '0' : '1')).join('');
     if (key === this.routeKey && this.route) return;
     this.routeKey = key;
-    this.route = funnelRoute(this.map, f.legs, (x) => this.has(x), f.clearingPad);
+    this.route = funnelRoute(this.map, f.legs, (x) => this.has(x), f.clearingPad, f.placePad);
   }
 
   update(dt) {
