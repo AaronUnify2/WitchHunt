@@ -3495,7 +3495,10 @@ export const config = {
     // by it `presses` times to free the wheel (the effort drains if he stops).
     snare: { presses: 6, decay: 0.15, shake: 0.9, range: 2.2 },
     // Dark: the torch is right on the handlebars and the tank from the saddle (it glared them white).
-    look: { tyre: 0x121212, hub: 0x262626, frame: 0x1c1c1c, body: 0x2a3018, seat: 0x161412, rack: 0x161616, metal: 0x18191a, grip: 0x0e0e0e, lamp: 0x3a3a30 },
+    // Round 2 (the polish pass): more of it to colour: the plastics' darker panels, the engine, the pipe, the
+    // shocks' springs, the district's stripe, the gauge's face, the tail lamp (and its glow), the plate, and
+    // what's strapped on (rope, a jerry can, a tool box, a bedroll). Dark, as everything the torch meets.
+    look: { tyre: 0x101010, hub: 0x2a2a28, frame: 0x1a1a1a, body: 0x2a3018, bodyDark: 0x1c2112, seat: 0x161412, rack: 0x141414, metal: 0x26272a, grip: 0x0c0c0c, lamp: 0x3a3a30, engine: 0x2e2e2c, pipe: 0x3a2e24, spring: 0x4a3a12, stripe: 0x5a4a14, gauge: 0x3c3a2c, tail: 0x4a100c, tailGlow: 0x7a0c08, plate: 0x46463c, rope: 0x4a3c24, can: 0x4a1410, box: 0x2a2014, roll: 0x2c3438 },
   },
 
   // ---- Experimental vehicles (debug menu only: "Experimental vehicles") ----

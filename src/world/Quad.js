@@ -105,45 +105,185 @@ export class Quad {
 
   // ---- the model --------------------------------------------------------------------------------
 
+  // Round 2 (the polish pass; Aaron: "improve the model of the quad bike"): a ranger district's utility quad of
+  // the nineties, built from boxes and tubes: knobbly tyres on dished rims, A-arms and shocks, an engine with
+  // its fins and a pipe back to the muffler, footwells, shaped fenders with a cowl and twin headlamps, a tank
+  // with its cap and the district's stripe, a stepped saddle, tube racks front and rear (a coil of rope on the
+  // one, a jerry can, a bedroll and a tool box strapped on the other), a bull bar, bars with levers, a
+  // thumb throttle and a gauge, a tail lamp and a plate. Six meshes by colour were thirteen boxes; it's
+  // still one mesh per colour.
   buildMesh() {
     const k = this.qc.look;
     const parts = new Map();
-    const add = (geo, color, x, y, z, rx = 0, rz = 0) => {
+    const add = (geo, color, x, y, z, rx = 0, rz = 0, ry = 0) => {
       let g = geo.index ? geo.toNonIndexed() : geo;
       if (g !== geo) geo.dispose();
       g.deleteAttribute('uv');
       if (rx) g.rotateX(rx);
       if (rz) g.rotateZ(rz);
+      if (ry) g.rotateY(ry);
       g.translate(x, y, z);
       if (!parts.has(color)) parts.set(color, []);
       parts.get(color).push(g);
     };
-    const box = (w, h, d, x, y, z, color, rx = 0, rz = 0) => add(new THREE.BoxGeometry(w, h, d), color, x, y, z, rx, rz);
+    const box = (w, h, d, x, y, z, color, rx = 0, rz = 0, ry = 0) => add(new THREE.BoxGeometry(w, h, d), color, x, y, z, rx, rz, ry);
+    // A tube from a to b ([x, y, z]), r thick.
+    const tube = (a, b, r, color, sides = 6) => {
+      const d = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      const len = d.length();
+      const g = new THREE.CylinderGeometry(r, r, len, sides).toNonIndexed();
+      g.deleteAttribute('uv');
+      g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
+      g.translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+      if (!parts.has(color)) parts.set(color, []);
+      parts.get(color).push(g);
+    };
+    const body2 = k.bodyDark ?? k.frame;
     // Facing -z (as the player looks at yaw 0): the front is at -z.
     const W = this.qc.wheel;
     for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-      add(new THREE.CylinderGeometry(W.radius, W.radius, W.width, 14), k.tyre, sx * 0.58, W.radius, sz * 0.66, 0, Math.PI / 2);
-      add(new THREE.CylinderGeometry(W.radius * 0.5, W.radius * 0.5, W.width + 0.02, 10), k.hub, sx * 0.58, W.radius, sz * 0.66, 0, Math.PI / 2);
+      const x = sx * 0.58;
+      const z = sz * 0.66;
+      add(new THREE.CylinderGeometry(W.radius * 0.94, W.radius * 0.94, W.width, 16), k.tyre, x, W.radius, z, 0, Math.PI / 2);
+      // The tread: blocks round it, staggered.
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        const off = (i % 2 ? 1 : -1) * W.width * 0.2;
+        add(new THREE.BoxGeometry(W.width * 0.55, 0.045, 0.085), k.tyre, x + off, W.radius + Math.sin(a) * W.radius * 0.95, z + Math.cos(a) * W.radius * 0.95, -a + Math.PI / 2);
+      }
+      // The rim, dished, its hub and nuts.
+      add(new THREE.CylinderGeometry(W.radius * 0.56, W.radius * 0.56, W.width + 0.012, 12), k.hub, x, W.radius, z, 0, Math.PI / 2);
+      add(new THREE.CylinderGeometry(W.radius * 0.4, W.radius * 0.46, 0.03, 10), k.frame, x + sx * (W.width / 2 + 0.004), W.radius, z, 0, Math.PI / 2);
+      add(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 8), k.metal, x + sx * (W.width / 2 + 0.02), W.radius, z, 0, Math.PI / 2);
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + 0.4;
+        box(0.02, 0.025, 0.025, x + sx * (W.width / 2 + 0.022), W.radius + Math.sin(a) * 0.09, z + Math.cos(a) * 0.09, k.metal);
+      }
+      // Suspension: two arms from the frame to the wheel, a shock up to the body (its spring a brighter turn).
+      const inner = sx * 0.2;
+      const outer = sx * 0.43;
+      tube([inner, 0.34, z - 0.12], [outer, W.radius - 0.04, z], 0.022, k.frame);
+      tube([inner, 0.34, z + 0.12], [outer, W.radius - 0.04, z], 0.022, k.frame);
+      tube([sx * 0.26, 0.66, z + sz * -0.04], [sx * 0.4, W.radius + 0.02, z], 0.03, k.spring ?? k.metal, 7);
+      tube([sx * 0.26, 0.66, z + sz * -0.04], [sx * 0.33, 0.5, z + sz * -0.02], 0.02, k.frame);
     }
-    box(0.7, 0.28, 1.5, 0, 0.5, 0, k.frame); // the frame and engine
-    box(1.05, 0.12, 0.62, 0, 0.72, -0.62, k.body); // front fenders
-    box(1.05, 0.12, 0.62, 0, 0.72, 0.62, k.body); // rear fenders
-    box(0.58, 0.3, 0.7, 0, 0.78, -0.1, k.body); // the tank
-    box(0.42, 0.14, 0.7, 0, 0.92, 0.32, k.seat); // the seat
-    box(0.9, 0.04, 0.4, 0, 0.86, -0.82, k.rack); // front rack
-    box(0.9, 0.04, 0.42, 0, 0.86, 0.85, k.rack); // rear rack
-    box(0.06, 0.42, 0.06, 0, 0.96, -0.5, k.metal, -0.35); // the steering column
-    box(0.78, 0.04, 0.04, 0, 1.17, -0.58, k.metal); // the handlebars
-    box(0.1, 0.06, 0.06, -0.39, 1.17, -0.58, k.grip);
-    box(0.1, 0.06, 0.06, 0.39, 1.17, -0.58, k.grip);
-    box(0.24, 0.12, 0.06, 0, 0.82, -0.98, k.lamp); // the headlamp
-    box(0.3, 0.22, 0.22, 0, 1.0, 0.92, k.rack); // a fuel can on the rear rack
+    tube([-0.5, W.radius, 0.66], [0.5, W.radius, 0.66], 0.035, k.frame, 7); // the rear axle
+    // The frame: a cradle of tubes, the skid plate under it.
+    for (const sx of [-1, 1]) {
+      tube([sx * 0.2, 0.3, -0.78], [sx * 0.2, 0.3, 0.72], 0.028, k.frame);
+      tube([sx * 0.2, 0.3, -0.78], [sx * 0.18, 0.68, -0.7], 0.026, k.frame);
+      tube([sx * 0.2, 0.3, 0.72], [sx * 0.18, 0.7, 0.62], 0.026, k.frame);
+      tube([sx * 0.18, 0.68, -0.7], [sx * 0.18, 0.7, 0.62], 0.026, k.frame);
+    }
+    box(0.46, 0.02, 1.0, 0, 0.26, -0.05, k.metal);
+    // The engine: the cases, a finned barrel leaning forward, the airbox, the pipe round to the muffler.
+    box(0.4, 0.22, 0.44, 0, 0.42, 0.06, k.engine ?? k.metal);
+    box(0.24, 0.24, 0.24, 0, 0.6, -0.08, k.engine ?? k.metal, -0.2);
+    for (let i = 0; i < 5; i++) box(0.3, 0.012, 0.3, 0, 0.53 + i * 0.04, -0.08 - i * 0.008, k.frame, -0.2);
+    box(0.22, 0.14, 0.2, 0.02, 0.62, 0.24, k.frame);
+    tube([0.1, 0.62, -0.2], [0.26, 0.5, -0.24], 0.022, k.pipe ?? k.metal);
+    tube([0.26, 0.5, -0.24], [0.3, 0.46, 0.5], 0.022, k.pipe ?? k.metal);
+    tube([0.3, 0.5, 0.48], [0.3, 0.56, 0.98], 0.055, k.pipe ?? k.metal, 8);
+    tube([0.3, 0.56, 0.98], [0.3, 0.565, 1.03], 0.03, k.frame, 6);
+    // Footwells: a boarded plate each side, a peg, a heel guard.
+    for (const sx of [-1, 1]) {
+      box(0.2, 0.025, 0.52, sx * 0.4, 0.34, 0.06, k.frame);
+      for (let i = 0; i < 4; i++) box(0.18, 0.012, 0.03, sx * 0.4, 0.356, -0.14 + i * 0.13, k.metal);
+      box(0.2, 0.14, 0.025, sx * 0.4, 0.4, 0.33, body2, -0.3);
+      box(0.2, 0.2, 0.025, sx * 0.4, 0.43, -0.22, body2, 0.5);
+    }
+    // The plastics. Front: a fender over each wheel (a flat top, a lip dropping ahead, a skirt behind), the
+    // cowl between them with the lamps in its nose.
+    for (const sx of [-1, 1]) {
+      box(0.34, 0.045, 0.5, sx * 0.55, 0.74, -0.66, k.body);
+      box(0.34, 0.045, 0.2, sx * 0.55, 0.69, -0.98, k.body, 0.55);
+      box(0.34, 0.045, 0.22, sx * 0.55, 0.67, -0.34, k.body, -0.7);
+      box(0.045, 0.1, 0.5, sx * 0.71, 0.7, -0.66, body2);
+      // Rear: the same, squarer, a mudflap hanging from it.
+      box(0.36, 0.045, 0.56, sx * 0.55, 0.74, 0.68, k.body);
+      box(0.36, 0.045, 0.2, sx * 0.55, 0.68, 0.39, k.body, 0.7);
+      box(0.36, 0.045, 0.16, sx * 0.55, 0.71, 1.02, k.body, -0.45);
+      box(0.045, 0.1, 0.56, sx * 0.72, 0.7, 0.68, body2);
+      box(0.24, 0.16, 0.012, sx * 0.56, 0.58, 1.07, k.tyre);
+    }
+    box(0.44, 0.12, 0.5, 0, 0.74, -0.7, k.body);
+    box(0.44, 0.16, 0.22, 0, 0.72, -0.94, k.body, 0.45);
+    box(0.5, 0.05, 0.3, 0, 0.8, -0.62, body2);
+    // The tank: its sides, its shoulders, the cap; the district's stripe down each flank.
+    box(0.46, 0.2, 0.54, 0, 0.82, -0.14, k.body);
+    box(0.36, 0.07, 0.46, 0, 0.94, -0.14, k.body);
+    add(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 8), k.metal, 0, 0.99, -0.2);
+    for (const sx of [-1, 1]) {
+      box(0.006, 0.05, 0.44, sx * 0.233, 0.85, -0.14, k.stripe ?? k.rack);
+      box(0.3, 0.2, 0.46, sx * 0.1, 0.7, 0.3, body2); // the side panels under the seat
+    }
+    // The saddle: stepped, the pillion's half higher; piping along its edge.
+    box(0.36, 0.1, 0.34, 0, 0.94, 0.16, k.seat);
+    box(0.4, 0.12, 0.44, 0, 0.97, 0.52, k.seat);
+    box(0.3, 0.08, 0.14, 0, 0.93, -0.02, k.seat, 0.25);
+    box(0.41, 0.015, 0.45, 0, 0.92, 0.52, k.frame);
+    // The racks: tube frames, three slats across each. The front's low (it's in the rider's view).
+    const rack = (z0, z1, y) => {
+      for (const sx of [-1, 1]) {
+        tube([sx * 0.42, y, z0], [sx * 0.42, y, z1], 0.016, k.rack);
+        tube([sx * 0.3, y, (z0 + z1) / 2], [sx * 0.3, 0.76, (z0 + z1) / 2], 0.014, k.rack);
+      }
+      for (let i = 0; i < 4; i++) {
+        const z = z0 + ((z1 - z0) * i) / 3;
+        tube([-0.42, y, z], [0.42, y, z], i === 0 || i === 3 ? 0.016 : 0.012, k.rack);
+      }
+    };
+    rack(-1.0, -0.62, 0.86);
+    rack(0.64, 1.06, 0.87);
+    // The bull bar: two uprights, two bars, down to the frame.
+    for (const sx of [-1, 1]) {
+      tube([sx * 0.2, 0.34, -0.8], [sx * 0.24, 0.5, -1.08], 0.02, k.rack);
+      tube([sx * 0.24, 0.5, -1.08], [sx * 0.24, 0.78, -1.06], 0.02, k.rack);
+    }
+    tube([-0.24, 0.52, -1.08], [0.24, 0.52, -1.08], 0.02, k.rack);
+    tube([-0.24, 0.76, -1.06], [0.24, 0.76, -1.06], 0.02, k.rack);
+    // The headlamps: two lenses in the cowl's nose (they glow while the lamp's on), their surrounds.
+    for (const sx of [-1, 1]) {
+      box(0.15, 0.1, 0.03, sx * 0.11, 0.74, -1.035, k.lamp, 0.45);
+      box(0.17, 0.12, 0.02, sx * 0.11, 0.74, -1.02, body2, 0.45);
+    }
+    // The bars: the column up through the cowl, a riser, the bar, grips, a lever ahead of each, the thumb
+    // throttle on the right, a gauge with its face, the key.
+    tube([0, 0.78, -0.42], [0, 1.1, -0.56], 0.028, k.metal);
+    box(0.1, 0.05, 0.08, 0, 1.11, -0.57, k.frame);
+    tube([-0.36, 1.17, -0.56], [-0.12, 1.13, -0.58], 0.016, k.metal);
+    tube([0.36, 1.17, -0.56], [0.12, 1.13, -0.58], 0.016, k.metal);
+    tube([-0.12, 1.13, -0.58], [0.12, 1.13, -0.58], 0.016, k.metal);
+    for (const sx of [-1, 1]) {
+      tube([sx * 0.3, 1.165, -0.56], [sx * 0.43, 1.18, -0.555], 0.024, k.grip, 7);
+      tube([sx * 0.26, 1.17, -0.6], [sx * 0.42, 1.185, -0.635], 0.008, k.metal, 4);
+      box(0.03, 0.03, 0.05, sx * 0.26, 1.17, -0.58, k.frame);
+    }
+    box(0.04, 0.02, 0.05, 0.25, 1.15, -0.53, k.frame);
+    box(0.16, 0.09, 0.07, 0, 1.17, -0.62, k.frame, 0.5);
+    box(0.11, 0.055, 0.008, 0, 1.185, -0.588, k.gauge ?? k.lamp, 0.5);
+    box(0.02, 0.02, 0.02, 0.1, 1.12, -0.55, k.metal);
+    // The tail: a red lamp (it glows with the headlamp), the district's plate.
+    box(0.16, 0.06, 0.03, 0, 0.74, 1.1, k.tail ?? 0x4a100c);
+    box(0.2, 0.11, 0.012, 0, 0.62, 1.1, k.plate ?? k.lamp);
+    // What's strapped on. Front: a coil of rope, flat. Rear: a jerry can, a bedroll across, a tool box; straps.
+    add(new THREE.TorusGeometry(0.11, 0.028, 5, 12), k.rope ?? k.seat, -0.18, 0.895, -0.8, Math.PI / 2);
+    add(new THREE.TorusGeometry(0.1, 0.026, 5, 12), k.rope ?? k.seat, -0.17, 0.93, -0.8, Math.PI / 2);
+    box(0.22, 0.3, 0.14, -0.24, 1.035, 0.78, k.can ?? k.rack);
+    box(0.08, 0.04, 0.05, -0.24, 1.2, 0.76, k.can ?? k.rack);
+    add(new THREE.CylinderGeometry(0.02, 0.02, 0.05, 6), k.metal, -0.3, 1.2, 0.8);
+    box(0.36, 0.16, 0.2, 0.18, 0.965, 0.76, k.box ?? k.frame);
+    box(0.37, 0.02, 0.21, 0.18, 1.05, 0.76, k.metal);
+    box(0.08, 0.015, 0.02, 0.18, 1.07, 0.76, k.metal);
+    add(new THREE.CylinderGeometry(0.085, 0.085, 0.74, 9), k.roll ?? k.seat, 0, 0.975, 0.97, 0, Math.PI / 2);
+    for (const x of [-0.22, 0.22]) add(new THREE.CylinderGeometry(0.089, 0.089, 0.03, 9), k.frame, x, 0.975, 0.97, 0, Math.PI / 2);
     this.mesh = new THREE.Group();
     this.mesh.name = 'quad';
     for (const [color, geos] of parts) {
       const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshLambertMaterial({ color }));
       geos.forEach((g) => g.dispose());
-      if (color === k.lamp) this.lampMesh = mesh; // its lens glows while the headlamp's on
+      if (color === k.lamp) this.lampMesh = mesh; // its lenses glow while the headlamp's on
+      if (color === (k.tail ?? 0x4a100c)) this.tailMesh = mesh; // and its tail lamp
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       this.mesh.add(mesh);
@@ -168,6 +308,7 @@ export class Quad {
     this.lampOn = Boolean(on);
     if (this.lamp) this.lamp.intensity = this.lampOn ? this.qc.headlamp.intensity * (this.glare ?? 1) : 0;
     this.lampMesh?.material.emissive.setHex(this.lampOn ? this.qc.headlamp.lens : 0x000000);
+    this.tailMesh?.material.emissive.setHex(this.lampOn ? (this.qc.look.tailGlow ?? 0x7a0c08) : 0x000000);
   }
 
   // Sit it on the ground: pitched and rolled to the slope under its wheels.

@@ -14,7 +14,7 @@
 //     alien shells.
 //  3. The big core on its plinth in the core room: hold X to take it
 //     (shipCoreTaken).
-//  4. The hangar: Earl's quad, rebuilt (the alien quad's own model on a
+//  4. The hangar: the quad (Tom's own, since Round 2), rebuilt (the alien quad's own model on a
 //     cradle). Hold X: ride it down the beam: Tom's back at the crash site
 //     on the ground, the alien quad (world/AlienQuad.js) beside him
 //     (quadReturned). The pad takes him down without it, too.
@@ -298,8 +298,8 @@ export class Mothership {
       const at = (o) => this.toWorld(o.x, o.z);
       if (!this.has('shipCoreTaken') && dist(at(SHIP_PLACES.core)) < r + 0.9) return { key: 'core', prompt: `Hold ${X}: take the core off its plinth`, busy: 'Lifting it…', seconds: 1.6, act: () => this.takeCore() };
       if (!this.has('quadReturned') && dist(at(SHIP_PLACES.quad)) < r + 1.4) {
-        if (!this.has('shipCoreTaken')) return { key: 'quad-info', prompt: "Earl's quad. They've rebuilt it. The core first: that's what you came for", act: null };
-        return { key: 'quad', prompt: `Hold ${X}: get on Earl's quad and take it down the beam`, seconds: 1.2, act: () => this.takeQuad() };
+        if (!this.has('shipCoreTaken')) return { key: 'quad-info', prompt: "Your quad. They've rebuilt it. The core first: that's what you came for", act: null };
+        return { key: 'quad', prompt: `Hold ${X}: get on your quad and take it down the beam`, seconds: 1.2, act: () => this.takeQuad() };
       }
       if (dist(at(SHIP_PLACES.pad)) < r) return { key: 'down', prompt: `Hold ${X}: step onto the pad (down)`, seconds: 0.8, act: () => this.leave() };
       return null;
@@ -326,7 +326,7 @@ export class Mothership {
     const b = this.beamAt;
     this.alienQuad?.place?.(b.x + 4.5, b.z + 1, 0);
     this.sfx?.play('zap');
-    this.notify?.("Down the light on Earl's quad, or what they've made of it. It hums. It has guns");
+    this.notify?.("Down the light on your own quad, or what they've made of it. It hums. It has guns");
     this.dialogue?.play('ship.quad.wyatt');
     this.bus.emit('ship:quad');
   }

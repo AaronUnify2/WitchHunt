@@ -309,7 +309,7 @@ export class Objectives {
     if (has('megaNightDone') && ms?.ready && !has('shipCoreFitted')) {
       if (ms.inside) {
         if (!has('shipCoreTaken')) return step('shipCore', "Find what drives the ship. Deeper in.");
-        if (!has('quadReturned')) return step('shipQuad', "Earl's quad is in the hangar, at the far end.");
+        if (!has('quadReturned')) return step('shipQuad', 'Your quad is in the hangar, at the far end.');
         return step('shipDown', 'Back to the pad, and down.');
       }
       if (!has('shipCoreTaken')) return step(has('shipEntered') ? 'shipBack' : 'ufoGo', has('shipEntered') ? 'Go back up the beam for the core.' : 'Find the ship that came down in the south. Ellen wants what drives it for the fence.', ms.beamAt);

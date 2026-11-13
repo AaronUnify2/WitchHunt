@@ -339,7 +339,7 @@ export const VIEWER_MODELS = [
   {
     id: 'alienQuad',
     name: 'Alien quad (experimental)',
-    note: "Earl's quad as the greys rebuilt it: neon veins, glowing hubs, twin plasma emitters, a boost. Ride it from the debug menu: Experimental vehicles.",
+    note: "The quad as the greys rebuilt it: neon veins, glowing hubs, twin plasma emitters, a boost. Ride it from the debug menu: Experimental vehicles.",
     height: () => 1.1,
     startDistance: () => 4.2,
     poses: [
