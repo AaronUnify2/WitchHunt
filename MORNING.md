@@ -34,7 +34,7 @@ The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md h
 
 ## Placeholder, or not as you asked
 
-- **The Mothman's glimpse** is a first-person look at him crouched in the oak; he throws his wings wide, screams and is gone. It isn't staged beyond that.
+- **The Mothman's glimpse** is a first-person look across the yard: he's sitting on top of the dead oak against the dusk sky, red eyes, wings folded; he opens them, screams and is gone. I've now looked at it frame by frame and it reads better than I'd said: it's short, but it isn't a placeholder.
 - **The shut gate's fade** jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
 - **The tear in the fence** has its own model now: two flaps of wire peeled off their posts, the top rail snapped and hanging, loose strands, three gouges down a post, the sign hanging by a corner. Shut, it's still a chain gate.
 - **The outpost by night from the east** uses the same waves and peak as before; only the arrival (its sweep, the first soldier on the track, two lines) is new. C-7 is on the far side now, found while exploring.
