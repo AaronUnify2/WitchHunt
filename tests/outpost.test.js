@@ -219,7 +219,11 @@ describe('the military outpost: the beats', () => {
     expect(r.flags.has('outpostCall')).toBe(false); // after Wyatt's line on the safe
     r.step(1);
     expect(r.flags.has('outpostCall')).toBe(true);
-    expect(r.played).toEqual(['outpost.call.ellen', 'outpost.call.home']);
+    // Plan #16: 'come home if it goes bad' waits for the road gate.
+    expect(r.played).toEqual(['outpost.call.ellen']);
+    r.at(60, -55);
+    r.step(0.2);
+    expect(r.played).toContain('outpost.call.home');
     // Plan #3: Wyatt's word on the rounds comes at the outpost only (it was said up to four times).
     expect(r.later.map((l) => l.id)).not.toContain('outpost.call.wyatt');
   });
@@ -235,7 +239,7 @@ describe('the military outpost: the beats', () => {
   it('walks out: the first helmet standing on the road, then waves of 2, 4 and 6 army zombies (Session 17, Aaron: was too long) with the radio in the lulls', () => {
     const r = rig();
     r.flags.add('outpostCall');
-    r.at(50, -60);
+    r.at(40, -50); // (Plan #16: the sweep's from sweepDistance now)
     r.step(0.2);
     expect(r.o.approachStarted).toBe(true);
     expect(r.spawned).toHaveLength(1);
@@ -251,7 +255,12 @@ describe('the military outpost: the beats', () => {
     }
     expect(sizes).toEqual([...oc.approach.waves, 0]);
     expect(oc.approach.waves).toEqual([2, 4, 6]);
-    expect(r.spawned.slice(1).every((z) => z.variant === 'army' && z.mode === 'chase')).toBe(true);
+    expect(r.spawned.slice(1).every((z) => z.variant === 'army')).toBe(true);
+    // Plan #15: wave 2 found standing at its post (lingering); waves 1 and 3 come at him.
+    const w1 = r.spawned.slice(1, 3), w2 = r.spawned.slice(3, 7), w3 = r.spawned.slice(7, 13);
+    expect(w1.every((z) => z.mode === 'chase')).toBe(true);
+    expect(w2.every((z) => z.mode === 'linger')).toBe(true);
+    expect(w3.every((z) => z.mode === 'chase')).toBe(true);
     expect(r.o.approachDone).toBe(true);
     for (const id of ['outpost.helmetDown', 'outpost.lull1', 'outpost.lull2', 'outpost.lull2b', 'outpost.lull3', 'outpost.tower']) expect(r.played).toContain(id);
   });
@@ -259,7 +268,7 @@ describe('the military outpost: the beats', () => {
   it('sends bigger waves by night', () => {
     const r = rig({ phase: 'night' });
     r.flags.add('outpostCall');
-    r.at(50, -60);
+    r.at(40, -50); // (Plan #16: the sweep's from sweepDistance now)
     r.step(0.2);
     r.killAll();
     r.step(oc.approach.lull + 1);
@@ -269,7 +278,7 @@ describe('the military outpost: the beats', () => {
   it("doesn't send a wave again when Tom retreats and comes back (Session 17: that doubled the fight); one that's lost him or gone on too long counts as down", () => {
     const r = rig();
     r.flags.add('outpostCall');
-    r.at(50, -60);
+    r.at(40, -50); // (Plan #16: the sweep's from sweepDistance now)
     r.step(0.2);
     r.killAll();
     r.step(oc.approach.lull + 1);
@@ -278,7 +287,7 @@ describe('the military outpost: the beats', () => {
     r.at(0, -oc.approach.retreat - 20);
     r.step(0.5);
     const before = r.spawned.length;
-    r.at(50, -60);
+    r.at(40, -50); // (Plan #16: the sweep's from sweepDistance now)
     r.step(0.5);
     expect(r.spawned.length).toBe(before);
     expect(r.o.wavesCleared).toBe(0);
@@ -295,6 +304,10 @@ describe('the military outpost: the beats', () => {
     // A wave that goes on too long counts as down too.
     r.step(oc.approach.lull + 1);
     expect(r.o.waveOut).toBe(1);
+    // (Plan #15: wave 2's post waits for him; its clock starts once one's on to him.)
+    r.step(oc.approach.waveTimeout + 1);
+    expect(r.o.wavesCleared).toBe(1);
+    r.o.wave[0].mode = 'chase';
     r.step(oc.approach.waveTimeout + 1);
     expect(r.o.wavesCleared).toBe(2);
   });

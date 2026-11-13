@@ -130,6 +130,8 @@ export class StormShelter {
     this.keysAt = null; // where Earl fell (his keys), until they're taken
     this.keysTaken = false;
     this.duskHeld = 0; // Plan #9: seconds the day's been held short of dusk for the hatch fight
+    this.earlHeld = false; // Plan #14
+    this.earlSeen = false;
     this.sigilDug = false;
     this.risenTold = false;
     this.riseTimer = 0;
@@ -230,6 +232,7 @@ export class StormShelter {
     if (!this.hordeSent && d < this.frame.radius + this.sc.hordeDistance) this.sendHorde();
     if (!this.arrived && d <= this.frame.radius + this.sc.sweepDistance && !this.below && this.onPathIn(l)) this.arrive();
     this.updateRising(dt);
+    this.updateEarl();
     if (canInteract && input) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -288,6 +291,41 @@ export class StormShelter {
     const w = frameToWorld(this.frame, e.x, e.z);
     const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'earl', mode: 'linger', linger: { ...this.hatchAt, r: 1.6 }, facing: frameYaw(this.frame, e.yaw), authored: 'stormShelter' });
     if (z) this.earl = z;
+    // Plan #14: Earl stays at his hatch (shuffling on it, not frozen) until Tom comes right up, hurts him,
+    // or starts digging the hatch; the family know him before he's put down.
+    if (z && this.sc.earl) {
+      z.sightScale = 0;
+      z.deaf = true;
+      this.earlHeld = true;
+    }
+  }
+
+  // Plan #14: let Earl go (he comes for Tom).
+  releaseEarl() {
+    const z = this.earl;
+    this.earlHeld = false;
+    if (!z?.alive) return;
+    z.sightScale = 1;
+    z.deaf = false;
+    const p = this.player.position;
+    this.enemies?.brain?.chase(z, p.x, p.z, this.sc.horde.memory);
+  }
+
+  updateEarl() {
+    const z = this.earl;
+    const e = this.sc.earl;
+    if (!z?.alive || !e) return;
+    const p = this.player.position;
+    const d = Math.hypot(p.x - z.x, p.z - z.z);
+    if (this.earlHeld && (d < e.wakeAt || z.health < z.maxHealth || this.digging)) this.releaseEarl();
+    // The family see who's on the hatch once the crowd round it thins.
+    if (!this.earlSeen && d < e.seenAt) {
+      const standing = this.horde.filter((h) => h.alive).length;
+      if (standing <= e.seenWhenLeft || this.sigilDug) {
+        this.earlSeen = true;
+        this.dialogue?.play('shelter.earl.seen');
+      }
+    }
   }
 
   // While the sigil's in the ground the dead climb out of it, by day too, to keep the horde up.
@@ -334,7 +372,8 @@ export class StormShelter {
     this.props?.setKeys(this.keysAt);
     this.progress?.setFlag('earlDown');
     this.bus.emit('stormShelter:earlDown');
-    this.dialogue?.play('shelter.earl');
+    // Plan #14: recognised before he fell, the line after is short.
+    this.dialogue?.play(this.earlSeen ? 'shelter.earl.after' : 'shelter.earl');
   }
 
   sigilDugUp() {
@@ -360,8 +399,13 @@ export class StormShelter {
     this.progress?.setFlag('shelterVisited');
     this.bus.emit('stormShelter:arrived');
     if (!this.hordeSent) this.sendHorde();
-    if (!this.cutscenes?.active && this.cutscenes?.play('sweep.shelter', { anchors: { stormShelter: frameAnchor(this.frame) } })) return;
+    // Plan #14: on the quad as the sweep ends, Wyatt says to plough through them (the sweep's 32 m is for that).
+    const plough = () => {
+      if (this.player.riding) this.dialogue?.play('shelter.plough');
+    };
+    if (!this.cutscenes?.active && this.cutscenes?.play('sweep.shelter', { anchors: { stormShelter: frameAnchor(this.frame) }, onDone: plough })) return;
     this.dialogue?.play('shelter.arrive');
+    plough();
   }
 
   // ---- the hatch -------------------------------------------------------------------------------------
@@ -597,6 +641,7 @@ export class StormShelter {
       beenDown: this.beenDown,
       tapesWatched: this.tapesWatched,
       duskHeld: this.duskHeld, // Plan #9
+      earlSeen: this.earlSeen, // Plan #14
     };
   }
 
@@ -617,6 +662,7 @@ export class StormShelter {
     this.searched = new Set(d.searched ?? []);
     this.beenDown = Boolean(d.beenDown);
     this.duskHeld = Number.isFinite(d.duskHeld) ? d.duskHeld : 0;
+    this.earlSeen = Boolean(d.earlSeen);
     // An older save handed them in to watch: count those as watched. Else, taken and not watched: offered again.
     this.tapesWatched = Boolean(d.tapesWatched) || Boolean(this.lore?.handedIn?.includes('pruittTapes'));
     if (this.searched.has('tapes') && !this.tapesWatched) this.offerTapes();

@@ -2,6 +2,21 @@
 
 Scope: main menu to the end of the military outpost. Nothing here is built; this is a list to choose from.
 
+## Status (Nov 13): built
+
+Batches 1-3 are built and on `main`: items 1-19, except two small parts left out (moving one of Night 1's closing lines onto the Dawn 1 walk, item 19; and swapping the forecourt pack's fifth spot, item 12). Every new line is a draft (`draft: true`). Tests in `tests/firstThirdPlan.test.js` and `tests/outpost.test.js`; checked headless on seed 1234 (the dusk hold, night 2's planting at the plot and camera seven's report, the campsite figure, the forecourt pack unaware, Earl held). **None of it played by hand.**
+
+**What to try in the play-test, in play order:**
+1. Day 1: the fire/aim/reload prompt when the shotgun's taken; the star on the torn shelter first; the tower's lines on their cues.
+2. Night 1: the forecast shows "The dead in the woods" (not "a quiet night").
+3. Day 2 walk out: someone standing at the campers' fire.
+4. Gas station: the pack doesn't see you until you choose (Wyatt: "They haven't seen you"); shoot a pump. The mutant: Wyatt calls the head after three body hits, the back if you get behind it. After the witch, 6 s of quiet. The steps: phone, scanner, note, then the forecourt.
+5. The shelter: the hatch fight in daylight (the day stops 25 s short of dusk until you go down); on the quad, Wyatt says plough through; Earl stays on his hatch until you're close, and Wyatt knows him when the crowd thins. You climb out into dusk.
+6. The ride home: the dusk call and Ellen's "sit it out or go for the safe". Night 2: Ellen on the forecast; camera seven trips at the family plot (D-pad down for the feed); the sigil's on the map. Dawn: the toast says the fence charge and what's in the ground.
+7. The outpost: Ellen's "come home" at the road gate; the sweep after her line; C-7 never over a wave; wave 2 standing at its post round the gun pit; wave 3 out of the road gap in a column; the peak waits for Ellen's quarantine line; a sure battery in the near truck; "It's just us now" after the dogfight or the papers; at nightfall, Wyatt's "torch off and get down" as she comes through.
+
+**The thing to judge most:** with the dusk hold, going straight on from the shelter means meeting the outpost in the dark (34 dead, not 25).
+
 ## How far to trust this
 
 - Built from eight as-built maps of the code (in `maps/` beside this file), then four independent design lenses (rhythm, fights, dread and story, the night loop). The fifth lens (the player's seat) and all verification were done by hand to save usage.

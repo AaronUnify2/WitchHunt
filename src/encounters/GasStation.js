@@ -104,6 +104,8 @@ export class GasStation {
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       this.bus.on('gasStation:wake', () => this.wakeMutant()),
+      // Plan #13: the mutant's openings, named the first time they'd help (as the beetle's face is).
+      this.bus.on('enemy:hit', ({ zombie, part, killed }) => this.mutantHit(zombie, part, killed)),
       this.bus.on('quad:mounted', () => (this.quadTold = true)),
       // Session 18 (Aaron): the pumps go up when they're shot (or caught in a blast).
       this.bus.on('weapon:impact', (at) => this.pumpShot(at)),
@@ -123,6 +125,11 @@ export class GasStation {
     this.done = new Set(); // interactions done: phone, note, scanner, safe
     this.packSent = false;
     this.pack = [];
+    this.packUnaware = false; // Plan #12
+    this.hintsTold = new Set(); // Plan #13
+    this.mutantBodyHits = 0;
+    this.packTold = false;
+    this.pumpLitAny = false;
     this.arrived = false;
     this.mutant = null; // the authored mutant while it's up
     this.mutantState = 'waiting'; // waiting -> dormant -> awake -> down
@@ -306,6 +313,7 @@ export class GasStation {
     }
     this.updatePumps(dt);
     const l = this.local();
+    this.updatePack(l);
     const d = Math.hypot(l.x, l.z);
     const near = d < this.frame.radius + this.gc.packDistance;
     if (!this.packSent && near) this.sendPack();
@@ -358,6 +366,7 @@ export class GasStation {
     pump.fuse = fuse;
     const c = this.pumpCentre(i);
     this.combat?.sfx?.play('gasHiss', c);
+    this.pumpLitAny = true; // Plan #12
     this.bus.emit('gasStation:pumpLit', { index: i });
   }
 
@@ -401,7 +410,27 @@ export class GasStation {
       const w = frameToWorld(this.frame, s.x, s.z);
       const out = [];
       this.enemies.spawnPlanned({ type: 'single', count: 1 }, w.x, w.z, { ringMin: 0, ringMax: 1, mix: this.world.variantMixAt(w.x, w.z), mode: 'linger', linger: { x: centre.x, z: centre.z, r: this.gc.pack.lingerRadius }, rise: false, out });
+      // Plan #12: unaware until Tom chooses how to open (they saw him through the store and trickled to him).
+      for (const z of out) if (this.gc.pack.sight < 1) z.sightScale = this.gc.pack.sight;
       this.pack.push(...out);
+    }
+    this.packUnaware = this.gc.pack.sight < 1;
+  }
+
+  // Plan #12: one of them hurt or after him, or a pump lit: they all wake up to him.
+  updatePack(l) {
+    if (!this.packUnaware) return;
+    this.pack = this.pack.filter((z) => z.alive);
+    const woke = this.pumpLitAny || this.pack.length < this.gc.pack.count || this.pack.some((z) => z.mode === 'chase' || z.health < z.maxHealth);
+    if (woke) {
+      this.packUnaware = false;
+      for (const z of this.pack) z.sightScale = 1;
+      return;
+    }
+    // Wyatt, once, as Tom first comes out where he can see them.
+    if (!this.packTold && this.arrived && !this.inside(l) && !this.cutscenes?.active && Math.hypot(l.x, l.z - this.gc.pack.centreZ) < this.gc.pack.callAt) {
+      this.packTold = true;
+      this.dialogue?.play('gas.pack');
     }
   }
 
@@ -472,6 +501,36 @@ export class GasStation {
     this.bus.emit('gasStation:mutant');
   }
 
+  // Plan #13: three body hits and none to the head or its back: Wyatt shouts for the head.
+  mutantHit(zombie, part, killed) {
+    if (zombie?.kind !== 'mutant' || killed || this.hintsTold.has('head')) return;
+    if (part === 'head' || part === 'weak') {
+      this.mutantBodyHits = -Infinity;
+      return;
+    }
+    this.mutantBodyHits = (this.mutantBodyHits ?? 0) + 1;
+    if (this.mutantBodyHits >= this.gc.mutantHints.bodyHits) {
+      this.hintsTold.add('head');
+      this.dialogue?.play('mutant.hint.head');
+    }
+  }
+
+  // Plan #13: Tom behind an awake one, close: Wyatt sees the glow on its back.
+  mutantBackHint(z) {
+    const h = this.gc.mutantHints;
+    if (!h || this.hintsTold.has('back')) return;
+    const p = this.player.position;
+    const dx = p.x - z.x;
+    const dz = p.z - z.z;
+    const d = Math.hypot(dx, dz);
+    if (d > h.backRange || d < 0.1) return;
+    const ahead = (dx * Math.sin(z.facing) + dz * Math.cos(z.facing)) / d;
+    if (ahead < -Math.cos((h.backCone * Math.PI) / 180)) {
+      this.hintsTold.add('back');
+      this.dialogue?.play('mutant.hint.back');
+    }
+  }
+
   // Once it's up on its feet it comes for Tom (its charge, as any mutant noticing him).
   updateAwake() {
     const z = this.mutant;
@@ -479,6 +538,7 @@ export class GasStation {
       this.mutantDown();
       return;
     }
+    this.mutantBackHint(z);
     if (z.state !== 'wake' && z.mode !== 'chase') {
       const p = this.player.position;
       this.enemies.brain.chase(z, p.x, p.z, this.gc.mutant.memory);
@@ -794,6 +854,11 @@ export class GasStation {
     this.arrived = Boolean(d.arrived);
     this.packSent = false;
     this.pack = [];
+    this.packUnaware = false; // Plan #12
+    this.hintsTold = new Set(); // Plan #13
+    this.mutantBodyHits = 0;
+    this.packTold = false;
+    this.pumpLitAny = false;
     this.mutant = null;
     this.mutantState = d.mutant === 'down' ? 'down' : 'waiting';
     this.witchSeen = Boolean(d.witch);

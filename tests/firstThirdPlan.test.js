@@ -218,3 +218,113 @@ describe('the dawn report (plan #11)', () => {
     expect(ids.has('nights.boxFlat')).toBe(true);
   });
 });
+
+// ---- batch 3: encounter upgrades ----
+import { notices } from '../src/ai/detection.js';
+import { GasStation } from '../src/encounters/GasStation.js';
+import { Campsite } from '../src/encounters/Campsite.js';
+
+describe('the forecourt pack, unaware (plan #12)', () => {
+  it('sees much less far while dulled, and wakes when one is hurt or a pump is lit', () => {
+    const senses = { x: 0, z: 20, eyeY: 1.7, sight: 38, hearing: 0, touch: 2.5 };
+    const e = { x: 0, z: 0, y: 0, facing: 0 };
+    expect(notices(e, senses, config.detection)).toBe(true);
+    expect(notices({ ...e, sightScale: config.gasStation.pack.sight }, senses, config.detection)).toBe(false);
+    const g = Object.create(GasStation.prototype);
+    g.gc = config.gasStation;
+    const pack = Array.from({ length: 5 }, () => ({ alive: true, mode: 'linger', health: 60, maxHealth: 60, sightScale: 0.25 }));
+    Object.assign(g, { pack, packUnaware: true, pumpLitAny: false, packTold: true });
+    g.updatePack({ x: 0, z: 0 });
+    expect(g.packUnaware).toBe(true);
+    pack[2].health = 30;
+    g.updatePack({ x: 0, z: 0 });
+    expect(g.packUnaware).toBe(false);
+    expect(pack.every((z) => z.sightScale === 1)).toBe(true);
+    expect(ids.has('gas.pack')).toBe(true);
+  });
+});
+
+describe("the mutant's openings named (plan #13)", () => {
+  it('Wyatt calls the head after three body hits, once; not after a head hit', () => {
+    const g = Object.create(GasStation.prototype);
+    const played = [];
+    Object.assign(g, { gc: config.gasStation, dialogue: { play: (id) => played.push(id) }, hintsTold: new Set(), mutantBodyHits: 0 });
+    const m = { kind: 'mutant' };
+    for (let i = 0; i < 5; i++) g.mutantHit(m, 'body', false);
+    expect(played).toEqual(['mutant.hint.head']);
+    const g2 = Object.create(GasStation.prototype);
+    const p2 = [];
+    Object.assign(g2, { gc: config.gasStation, dialogue: { play: (id) => p2.push(id) }, hintsTold: new Set(), mutantBodyHits: 0 });
+    g2.mutantHit(m, 'head', false);
+    for (let i = 0; i < 5; i++) g2.mutantHit(m, 'body', false);
+    expect(p2).toEqual([]);
+  });
+
+  it('Wyatt sees the glow when Tom is close behind it', () => {
+    const g = Object.create(GasStation.prototype);
+    const played = [];
+    Object.assign(g, { gc: config.gasStation, dialogue: { play: (id) => played.push(id) }, hintsTold: new Set(), player: { position: { x: 0, z: -3 } } });
+    g.mutantBackHint({ x: 0, z: 0, facing: 0 }); // facing +z, Tom behind at -z
+    expect(played).toEqual(['mutant.hint.back']);
+  });
+});
+
+describe('Earl at his hatch (plan #14)', () => {
+  const shelter = (standing) => {
+    const s = Object.create(StormShelter.prototype);
+    const played = [];
+    const earl = { alive: true, x: 0, z: 0, health: 60, maxHealth: 60, sightScale: 0, deaf: true };
+    Object.assign(s, {
+      sc: config.stormShelter, earl, earlHeld: true, earlSeen: false, sigilDug: false, digging: false,
+      horde: Array.from({ length: 12 }, (_, i) => ({ alive: i < standing })),
+      player: { position: { x: 10, z: 0 } }, dialogue: { play: (id) => played.push(id) },
+      enemies: { brain: { chase() {} } },
+    });
+    return { s, played, earl };
+  };
+
+  it('stays put and unknowing until Tom is right there; the family know him once the crowd thins', () => {
+    const a = shelter(8);
+    a.s.updateEarl();
+    expect(a.s.earlHeld).toBe(true);
+    expect(a.played).toEqual([]);
+    const b = shelter(3);
+    b.s.updateEarl();
+    expect(b.played).toEqual(['shelter.earl.seen']);
+    b.s.player.position.x = 2;
+    b.s.updateEarl();
+    expect(b.s.earlHeld).toBe(false);
+    expect(b.earl.deaf).toBe(false);
+    for (const id of ['shelter.earl.seen', 'shelter.earl.after', 'shelter.plough']) expect(ids.has(id)).toBe(true);
+  });
+});
+
+describe('the outpost after the fight (plans #17 and #18)', () => {
+  it("has 'It's just us now' split off the all-clear, and the night pass's lines", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
+    expect(by['outpost.cleared.ellen']).not.toMatch(/just us/i);
+    expect(by['outpost.justUs']).toMatch(/just us/i);
+    for (const id of ['outpost.coming', 'outpost.passed.junie', 'outpost.passed.ellen']) expect(ids.has(id)).toBe(true);
+  });
+});
+
+describe('the figure at the campers\' fire (plan #19)', () => {
+  it('stands there once, on Day 2, as Tom comes near the camp', () => {
+    const c = Object.create(Campsite.prototype);
+    const spawned = [];
+    const flags = new Set(['day2']);
+    Object.assign(c, {
+      cc: config.campsite, data: campsiteData,
+      frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
+      clearing: { x: 0, z: 0, radius: 20 },
+      enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode }) },
+      progress: { has: (f) => flags.has(f) },
+      clock: { phase: 'day' }, dialogue: { play() {} }, figureSent: false, figureTold: false, figure: null,
+    });
+    c.updateDawnFigure({ x: 0, z: -40 });
+    c.updateDawnFigure({ x: 0, z: -40 });
+    expect(spawned).toHaveLength(1);
+    expect(spawned[0].mode).toBe('linger');
+    for (const id of ['day2.figure', 'day2.figure.ellen']) expect(ids.has(id)).toBe(true);
+  });
+});

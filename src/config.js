@@ -2980,11 +2980,12 @@ export const config = {
     arriveInset: 0, // metres inside the clearing's edge that count as arriving (the sweep)
     packDistance: 35, // metres outside the edge: the forecourt pack and the mutant are put there
     interactRange: 1.6, // metres to a search point or a thing to use (inside the store only)
-    pack: { count: 5, centreZ: 3.5, lingerRadius: 8 }, // DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
+    pack: { count: 5, centreZ: 3.5, lingerRadius: 8, sight: 0.25, callAt: 22 }, // Plan #12: sight: their eyes while unaware (x the usual); callAt: Wyatt's 'they haven't seen you' within this of them. DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
     mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
+    mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
     witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
@@ -3144,6 +3145,8 @@ export const config = {
       start: 105,
       firstHelmetAhead: 30, // metres ahead of Tom, on the road
       waves: [2, 4, 6], // Session 17 (Aaron: too many, a long drawn-out fight): was 3, 5, 8
+      shapes: ['ahead', 'post', 'file'], // Plan #15: 'ahead' as built; 'post': standing at their post round the gun pit; 'file': a column out of the road gap
+      postRing: 7, // Plan #15: metres round the gun pit the post lingers in
       lull: 9,
       spawnAhead: 42,
       spread: 14,
@@ -3195,7 +3198,11 @@ export const config = {
     beatGap: 15,
     c7Lull: 8, // seconds added to the approach's lull after C-7's lines (the next wave waits for them)
     resinOpenSeconds: 2.2, // Session 17: C-4's doors swinging open (the reveal)
-    sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
+    sweepDistance: 76, // metres from the centre: the arrival sweep (once the call's come). Plan #16: read again (was approach.start), 76 (was 70)
+    sweepLatest: 62, // Plan #16: the sweep waits for Ellen's line, but not past this close
+    gateLineDistance: 88, // Plan #16: 'come home if it goes bad' this close to the centre (the road gate is about 85)
+    nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
+    justUsLeaving: 26, // Plan #17: metres south of the centre (toward the checkpoint): 'It's just us now' plays here at the latest
     callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
@@ -3321,6 +3328,9 @@ export const config = {
       light: { ambientDay: 3.2, ambientNight: 1.1, ambientColor: 0x9a9080, fogColor: 0x080706, fogNear: 5, fogFar: 30 }, // ambientDay / ambientNight: daylight down the hatch by day, less by night (blended by the hour)
     },
     keysRange: 1.8,
+    // Plan #14: Earl stays at his hatch until Tom's within wakeAt metres (or hurts him, or digs the hatch);
+    // Wyatt knows him when Tom's within seenAt and seenWhenLeft or fewer of the twelve still stand.
+    earl: { wakeAt: 4, seenAt: 20, seenWhenLeft: 3 },
     // Plan #9: once the shelter's called, the day holds holdBeforeDusk seconds short of dusk until Tom
     // first goes down the hatch, leaves releaseDistance metres from it with the keys, or holdMax seconds held.
     duskHold: { holdBeforeDusk: 25, holdMax: 240, releaseDistance: 60 },
@@ -3988,6 +3998,7 @@ export const config = {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
+    dawnFigure: { enabled: true, spawnAt: 70, callAt: 45 }, // Plan #19: Day 2's walk out: one of the dead at the cold fire (placed within spawnAt metres of the clearing's centre, outside it); Wyatt's line within callAt
     look: {
       tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
       dome: { radius: 1.25, height: 1.15 },

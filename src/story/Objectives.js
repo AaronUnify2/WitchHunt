@@ -140,7 +140,12 @@ export class Objectives {
       if (!has('shelterVisited')) return step('shelter', "Go to the Pruitts' storm shelter, on their land east of home.", sh.frame);
       const sig = sh.sigil();
       if (sig) return step('shelterSigil', "Dig up the sigil beside the shelter's hatch.", sig);
-      if (!sh.keysTaken) return step('keys', sh.earlDown ? "Take Earl's keys from where he fell." : 'Put Earl down. His keys have the combination.', sh.earlDown ? sh.keysAt : (sh.earl ?? sh.hatchAt));
+      // Plan #14: 'Put Earl down' (and his marker) once the family have seen him; before that the dead at the hatch.
+      if (!sh.keysTaken) {
+        if (sh.earlDown) return step('keys', "Take Earl's keys from where he fell.", sh.keysAt);
+        if (sh.earlSeen || !sh.sc?.earl) return step('keys', 'Put Earl down. His keys have the combination.', sh.earl ?? sh.hatchAt);
+        return step('keys', 'Clear the dead off the hatch.', sh.hatchAt);
+      }
       if (sh.hatch !== 'open') return step('hatch', "Dig the shelter's hatch clear and open it.", sh.hatchAt);
       if (!sh.searched.has('diary') || !sh.searched.has('tapes')) return step('room', "Go down into the shelter. Find Earl's diary and the tape in his VCR.", sh.hatchAt);
     }

@@ -157,6 +157,9 @@ export class Outpost {
       // A round into a crate, or a blast near one, breaks it open.
       this.bus.on('weapon:impact', ({ x, y, z }) => this.crateShot(x, y, z)),
       this.bus.on('explosion', ({ x, z, radius }) => this.crateBlast(x, z, radius)),
+      this.bus.on('witch:noticed', () => {
+        if (this.pass) this.pass.noticed = true; // Plan #18
+      }),
       this.bus.on('beetle:hit', ({ part, killed }) => {
         if (part !== 'weak' && !killed && !this.told.has('beetleHint')) {
           this.told.add('beetleHint');
@@ -167,6 +170,9 @@ export class Outpost {
   }
 
   reset() {
+    this.callHomeDue = false; // Plan #16
+    this.pass = null; // Plan #18
+    this.justUsDue = false; // Plan #17
     this.nightSize = null; // Plan #3: the fight's size, set once at the approach's start
     this.peakAge = 0; // Plan #8: seconds since the peak's last burst
     this.callIn = -1; // seconds until Ellen's call (after Wyatt's line on the safe)
@@ -374,14 +380,22 @@ export class Outpost {
     // Session 17 (Aaron): while the witch is on Tom (story/WitchEscape.js), the outpost waits: no sweeps,
     // no cutscenes, no next wave or peak (the dogfight fired when he scoped her from the tower).
     this.witchOn = this.witchBusy?.() ?? false;
-    if (called && !this.approachStarted && d < this.oc.approach.start && !this.witchOn) this.startApproach();
+    // Plan #16: 'come home if it goes bad' at the road gate.
+    if (this.callHomeDue && called && d < this.oc.gateLineDistance) {
+      this.callHomeDue = false;
+      this.dialogue?.play('outpost.call.home');
+    }
+    // Plan #16: the sweep (and the first helmet) from sweepDistance, once Ellen's finished, never later than sweepLatest.
+    if (called && !this.approachStarted && d < this.oc.sweepDistance && (!this.talking() || d < this.oc.sweepLatest) && !this.witchOn) this.startApproach();
     if (!this.entered && d <= this.frame.radius - this.oc.arriveInset) this.enter();
     if (this.approachStarted) {
       this.updateWaves(dt, d);
       this.updatePeak(dt, l, d);
     }
     if (!this.cutscenes?.active && !this.talking()) this.beatGap = Math.max(0, this.beatGap - dt);
+    this.updateNightPass(d);
     this.updateScopeAsk();
+    this.updateJustUs(l);
     this.updateDogfight();
     this.updateSmoke();
     this.updateCompound(dt, l);
@@ -404,7 +418,8 @@ export class Outpost {
     this.progress?.setFlag('outpostCall');
     this.bus.emit('outpost:called');
     this.dialogue?.play('outpost.call.ellen');
-    this.dialogue?.play('outpost.call.home');
+    // Plan #16: her 'come home if it goes bad' at the road gate, not on top of the call (27 s of talk against an 8 s walk).
+    this.callHomeDue = true;
     // Plan #3: Wyatt's word on the rounds now comes only at the outpost (gunPitAsk, outpost.tower): it was said up to four times.
   }
 
@@ -441,6 +456,12 @@ export class Outpost {
   sendWave(index) {
     const a = this.oc.approach;
     const count = Math.round(a.waves[index] * (this.night ? a.nightScale : 1));
+    // Plan #15: waves 2 and 3 ask different things (counts, lulls and lines as before).
+    const shape = a.shapes?.[index] ?? 'ahead';
+    if (shape === 'post' || shape === 'file') {
+      this.sendShapedWave(index, count, shape);
+      return;
+    }
     const p = this.player.position;
     let dx = this.gapAt.x - p.x;
     let dz = this.gapAt.z - p.z;
@@ -473,6 +494,37 @@ export class Outpost {
     if (!out.length) this.waveDown();
   }
 
+  // Plan #15. 'post': found standing at their post round the gun pit, facing up the road (lingering, like
+  // the first helmet), so Tom has a first move; no timeout until one's on to him. 'file': out of the
+  // compound through the road gap one behind another, for a man at the gun pit with fresh hunting rounds.
+  sendShapedWave(index, count, shape) {
+    const a = this.oc.approach;
+    const pts = this.data.staging[shape] ?? [];
+    const p = this.player.position;
+    const out = [];
+    const pit = this.data.staging.gunPit;
+    const ring = frameToWorld(this.frame, pit.x, pit.z);
+    for (let i = 0; i < count && this.enemies && pts.length; i++) {
+      const [x, z] = pts[i % pts.length];
+      const k = Math.floor(i / pts.length);
+      const w = frameToWorld(this.frame, x + k * 1.2, z + k * 0.8);
+      const opts =
+        shape === 'post'
+          ? { variant: 'army', mode: 'linger', linger: { ...ring, r: a.postRing }, facing: frameYaw(this.frame, 180), authored: 'outpost' }
+          : { variant: 'army', mode: 'chase', authored: 'outpost', facing: Math.atan2(p.x - w.x, p.z - w.z) };
+      const zb = this.enemies.spawnZombie(w.x, w.z, opts);
+      if (!zb) continue;
+      if (shape === 'file') this.enemies.brain.chase(zb, p.x, p.z, a.memory);
+      out.push(zb);
+    }
+    this.wave = out;
+    this.waveOut = index;
+    this.waveAge = shape === 'post' ? -1e9 : 0; // the post waits for him, as the first helmet does
+    this.wavePost = shape === 'post';
+    this.bus.emit('outpost:wave', { index });
+    if (!out.length) this.waveDown();
+  }
+
   updateWaves(dt, d) {
     if (this.peakState !== 'none') return;
     const a = this.oc.approach;
@@ -480,6 +532,11 @@ export class Outpost {
       this.wave = this.wave.filter((z) => z.alive);
       // Session 17 (Aaron: the fight dragged on): a retreat no longer sends the wave again on his return
       // (the ones out followed him: that doubled it). A wave that's lost him, or gone on too long, counts as down.
+      // Plan #15: the post's timeout starts once one of them's on to him.
+      if (this.wavePost && this.wave.some((z) => z.mode === 'chase')) {
+        this.wavePost = false;
+        this.waveAge = 0;
+      }
       this.waveAge += dt;
       this.dropLost(this.wave, d);
       if (!this.wave.length || this.waveAge > a.waveTimeout) {
@@ -633,6 +690,8 @@ export class Outpost {
     this.bus.emit('outpost:cleared');
     this.dialogue?.play('outpost.cleared.ellen');
     this.dialogue?.play('outpost.cleared.wyatt');
+    // Plan #17: 'It's just us now' once he's seen why (the dogfight, or the report and C-4 or the manifest).
+    this.justUsDue = true;
     this.beat();
     // Session 19 round 3: the compound's beats in any order (the dogfight's ready now); Wyatt's ask to
     // look through the scope still waits for the beetles to be down, as a nudge, not a gate.
@@ -660,7 +719,59 @@ export class Outpost {
 
   // Quiet enough for the next beat that comes by itself.
   quiet() {
-    return this.beatGap <= 0 && !this.cutscenes?.active && !this.talking() && !this.witchOn;
+    return this.beatGap <= 0 && !this.cutscenes?.active && !this.talking() && !this.witchOn && !this.witchPassing();
+  }
+
+  // Plan #18: the cleared outpost is how she gets into the cluster. Once a night, with Tom in the clearing
+  // and the peak done, as the live witch comes up through the checkpoint, Wyatt warns him; if she passes
+  // without noticing him, Junie and Ellen say so. While she's close the dogfight and the scope ask wait.
+  // Noticed, ESCAPE THE WITCH runs as built.
+  updateNightPass(d) {
+    const np = this.oc.nightPass;
+    const w = this.witch;
+    if (!np || !w || this.peakState !== 'done') return;
+    const day = this.clock?.day ?? 0;
+    const p = this.pass;
+    if (p && p.day !== day) this.pass = null;
+    const out = w.alive && w.tier !== 'abstract' && (w.state === 'roaming' || w.state === 'planting');
+    const wd = Math.hypot(w.x - this.frame.x, w.z - this.frame.z);
+    if (!this.pass) {
+      if (!this.night || !out || d > this.frame.radius || wd > np.warnAt || this.cutscenes?.active) return;
+      this.pass = { day, closest: wd, noticed: false, done: false };
+      this.dialogue?.play('outpost.coming');
+      return;
+    }
+    if (this.pass.done) return;
+    this.pass.closest = Math.min(this.pass.closest, wd);
+    if (this.pass.noticed) {
+      this.pass.done = true;
+      return;
+    }
+    if (this.pass.closest < np.passedWithin && wd > np.holdWithin) {
+      this.pass.done = true;
+      this.dialogue?.play('outpost.passed.junie');
+      this.dialogue?.play('outpost.passed.ellen');
+    }
+  }
+
+  // Plan #18: she's close and hasn't seen him: nothing comes by itself.
+  witchPassing() {
+    const p = this.pass;
+    const w = this.witch;
+    return Boolean(p && !p.done && !p.noticed && w && Math.hypot(w.x - this.frame.x, w.z - this.frame.z) < this.oc.nightPass.holdWithin);
+  }
+
+  // Plan #17: Ellen's 'Nobody's coming. It's just us now', when the evidence is in, in a quiet moment;
+  // at the latest on the way out through the checkpoint.
+  updateJustUs(l) {
+    if (!this.justUsDue) return;
+    const seen = this.dogfightSeen || (this.searched.has('report') && (this.told.has('resinOpen') || this.searched.has('manifest')));
+    const leaving = l && l.z > this.oc.justUsLeaving;
+    if (!(seen || leaving) || this.cutscenes?.active) return;
+    if (!leaving && !this.quiet()) return;
+    this.justUsDue = false;
+    this.dialogue?.play('outpost.justUs');
+    this.beat();
   }
 
   updateScopeAsk() {
@@ -721,7 +832,7 @@ export class Outpost {
   // The first time the scope's raised up the tower (Session 17, Aaron: only there; no more crossing the
   // barricade). Up there without it seen, a hint says how; after the fight, Wyatt asks him to look.
   updateDogfight() {
-    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn || !this.dogfightReady) return;
+    if (this.dogfightSeen || !this.cutscenes || this.cutscenes.active || this.witchOn || !this.dogfightReady || this.witchPassing()) return;
     const w = this.combat?.weapons;
     if (!this.onTower) {
       this.scopeHinted = false;

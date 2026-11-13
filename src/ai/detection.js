@@ -104,8 +104,9 @@ export function notices(e, senses, cfg, chasing = false, ground = FLAT_GROUND) {
   const dz = senses.z - e.z;
   const dist = Math.hypot(dx, dz);
   if (dist <= senses.touch) return true;
-  if (dist <= senses.hearing) return true;
-  let sight = senses.sight * (chasing ? cfg.pursuit : 1);
+  if (dist <= senses.hearing && !e.deaf) return true; // Plan #14: deaf: an encounter's one who stays put (Earl at his hatch)
+  // Plan #12: an encounter can dull one's eyes for a while (the gas station's forecourt pack, unaware).
+  let sight = senses.sight * (chasing ? cfg.pursuit : 1) * (e.sightScale ?? 1);
   if (dist > sight) return false;
   // Behind it (outside its front half): seen from closer.
   const ahead = dist > 0 ? (dx * Math.sin(e.facing) + dz * Math.cos(e.facing)) / dist : 1;

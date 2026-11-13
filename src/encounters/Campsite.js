@@ -124,6 +124,9 @@ export class Campsite {
   }
 
   reset() {
+    this.figureSent = false; // Plan #19
+    this.figureTold = false;
+    this.figure = null;
     this.searched = new Set();
     this.arrived = false;
     this.camcorderFound = false;
@@ -211,12 +214,42 @@ export class Campsite {
       if (this.pendingClip < 0) this.playClip();
     }
     this.updateWave(dt);
+    this.updateDawnFigure(p);
     if (canInteract && this.combat.alive) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
       this.hud.progress = 0;
       this.hold.update(dt, null, false, 1);
     }
+  }
+
+  // Plan #19: on the walk out on Day 2 (the longest empty leg), once a run: one of the dead standing at
+  // the campers' cold fire, its back to the path from home. Wyatt sees it; Ellen says what it is once it
+  // turns or falls. Not a wave, not a revisit pack: a picture.
+  updateDawnFigure(p) {
+    const df = this.cc.dawnFigure;
+    if (!df?.enabled || !this.enemies || !this.progress) return;
+    const c = this.clearing;
+    const d = Math.hypot(p.x - c.x, p.z - c.z);
+    if (!this.figureSent) {
+      if (!this.progress.has('day2') || this.progress.has('gasStationVisited') || this.clock?.phase === 'night' || d > df.spawnAt || d < c.radius) return;
+      this.figureSent = true;
+      const f = this.data.props.fire;
+      const w = frameToWorld(this.frame, f.x, f.z + f.radius + 0.4);
+      const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'citizen', mode: 'linger', linger: { x: w.x, z: w.z, r: 0.8 }, rise: false, facing: frameYaw(this.frame, 0), authored: 'campsite' });
+      this.figure = z ?? null;
+      return;
+    }
+    const z = this.figure;
+    if (!z) return;
+    if (!this.figureTold && z.alive && z.mode !== 'chase' && d < df.callAt && !this.cutscenes?.active) {
+      this.figureTold = true;
+      this.dialogue?.play('day2.figure');
+    }
+    if (this.figureTold && (!z.alive || z.mode === 'chase')) {
+      this.figure = null;
+      this.dialogue?.play('day2.figure.ellen');
+    } else if (!z.alive) this.figure = null;
   }
 
   updateInteraction(dt, input) {
@@ -414,6 +447,7 @@ export class Campsite {
       wave: this.waveStarted,
       cleared: this.waveCleared,
       battery: this.batteryTaken,
+      figure: this.figureSent, // Plan #19
     };
   }
 
@@ -429,6 +463,7 @@ export class Campsite {
     this.waveStarted = Boolean(d.wave);
     this.waveCleared = Boolean(d.cleared) || this.waveStarted;
     this.batteryTaken = Boolean(d.battery);
+    this.figureSent = Boolean(d.figure);
     this.queue = [];
     this.wave = [];
     this.props.setSmoke(!this.arrived);
