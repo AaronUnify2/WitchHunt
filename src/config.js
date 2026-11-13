@@ -4272,6 +4272,7 @@ export const config = {
       throwSeconds: 0.62, // his wind-up, to the knife leaving his hand
       act: { first: 2.2, between: 2.6, flinchMove: 0.3, landAt: [[-0.42, 1.38], [0.42, 1.38], [0, 1.98]] }, // seconds to the first knife and between; metres Tom may drift; where they land (x, height): right shoulder, left shoulder, over the head
       deflectSeconds: 4.5, // "I was in character!", then out
+      bowSeconds: 2.6, // a bow, held, then up again
       chatterEvery: [14, 26], // seconds between his chatter while Tom's near
       donkeyFrom: 40, // metres: after the act, by day, the donkey stares from the station's treeline until Tom comes this near
     },

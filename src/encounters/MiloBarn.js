@@ -344,6 +344,7 @@ export class MiloBarn {
         this.launch(t);
       }
     } else if (m.state === 'throw' && m.timer > 0.95) m.state = 'idle';
+    if (m.state === 'bow' && m.timer > this.ec.bowSeconds) this.setMilo('idle'); // up again, and back to bounding about
     if (this.siegeOn) this.siegeThrow(dt);
     // Where he's going: the act's chalk line, the gate, the morning's spot, or bounding about the yard near Tom.
     const man = this.manToday;
