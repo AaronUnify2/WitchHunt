@@ -5,8 +5,7 @@
 //
 // It came in low from behind (-z) and tore a furrow through the trees:
 //  - the gouge: a long trench of churned earth with heaped banks, trees
-//    snapped off either side, their tops lying where they fell, panels
-//    and a wheel thrown clear;
+//    snapped off either side, panels and a wheel thrown clear;
 //  - the sheared wing, back along the gouge, leaning on a broken trunk,
 //    its gun pod scorched; the engine it lost, burnt, further back;
 //  - the tail, snapped off and rolled over, the fin canted up;
@@ -220,21 +219,6 @@ function snappedTrunk(b, x, z, r, high, lean) {
   b.pop();
 }
 
-// A fallen top: a trunk lying along `yaw`, a few broken branches.
-function fallenTop(b, x, z, yaw, len, r) {
-  const c = b.c;
-  b.pushOnGround(x, r * 0.8, z, yaw, 0, 0);
-  b.put(new THREE.CylinderGeometry(r * 0.45, r, len, 7).rotateX(Math.PI / 2), c.bark, 0, 0, 0, 0, 0.04, 0);
-  for (let i = 0; i < 6; i++) {
-    const t = (i + 0.5) / 6 - 0.5;
-    const bl = 0.7 + b.rand() * 1.1;
-    b.put(new THREE.CylinderGeometry(0.02, 0.06, bl, 5), c.bark, (i % 2 ? 1 : -1) * 0.25, 0.2 + b.rand() * 0.3, -t * len * 0.8, 0, 0.4 + b.rand() * 0.4, (i % 2 ? -1 : 1) * (0.9 + b.rand() * 0.4));
-    if (i % 2) b.put(new THREE.ConeGeometry(0.5, 1.1, 6), c.needles, (b.rand() - 0.5) * 0.9, 0.35, -t * len * 0.8 - 0.3, b.rand() * 3, 1.2, 0);
-  }
-  b.wall(0, -len / 2, 0, len / 2, 0, r, r * 2 + 0.2, false);
-  b.pop();
-}
-
 // ---- the set -----------------------------------------------------------------------------------
 
 export function buildCrashedPlane(look, { weather = null, heightAt = null } = {}) {
@@ -250,16 +234,13 @@ export function buildCrashedPlane(look, { weather = null, heightAt = null } = {}
     for (const s of [-1, 1]) earthHeap(b, wander + s * (1.6 + k * 0.6), z, 0.7, 0.18 + k * 0.3, 2, c.earth);
   }
 
-  // Snapped trees along it (taller, the further back: it was still coming down), and their tops.
+  // Snapped trees along it (taller, the further back: it was still coming down).
   snappedTrunk(b, -3.4, -21, 0.26, 4.6, 0.05);
   snappedTrunk(b, 3.8, -18.5, 0.3, 3.9, -0.04);
   snappedTrunk(b, -4.2, -15, 0.24, 3.0, 0.08);
   snappedTrunk(b, 4.6, -12.5, 0.28, 2.2, 0.03);
   snappedTrunk(b, -5.6, -8.2, 0.3, 1.25, -0.05); // the sheared wing leans on this one
   snappedTrunk(b, 4.2, -5.5, 0.25, 1.0, 0.1);
-  fallenTop(b, 6.5, -15.5, 0.5, 6, 0.24);
-  fallenTop(b, -7.5, -17.5, -0.8, 5.5, 0.22);
-  fallenTop(b, 7.2, -8.5, 1.9, 5, 0.2);
 
   // Thrown clear: skin panels, a main wheel on its leg.
   for (let i = 0; i < 16; i++) {
