@@ -88,6 +88,7 @@ export class Sky {
     this.time = 0;
     this.blood = 0; // M7: the blood night (setBlood)
     this.fogNight = 0; // Session 10: fog nights (setFogNight)
+    this.wall = 0; // Round 2, step 6: the fog funnel (setWall)
     this.baseNear = 1;
     this.baseFar = 2;
     // Session 10: the ground mist's colour and strength now (read by Atmosphere).
@@ -209,6 +210,12 @@ export class Sky {
     this.fogNight = Math.max(0, Math.min(1, amount));
   }
 
+  // Round 2, step 6: the fog funnel's wall (story/FogFunnel.js). amount 0..1; cfg: { near, far, colourMix }.
+  setWall(amount, cfg) {
+    this.wall = Math.max(0, Math.min(1, amount));
+    this.wallCfg = cfg;
+  }
+
   // hour: clock-face hour. Call after the camera has moved this frame.
   update(dt, hour, camera) {
     this.time += dt;
@@ -236,6 +243,15 @@ export class Sky {
     }
     this.fog.near = lerp(this.baseNear, Math.min(n.fogNear, this.baseNear), fn);
     this.fog.far = lerp(this.baseFar, Math.min(n.fogFar, this.baseFar), fn);
+    // Round 2, step 6: the fog funnel's wall closes it right in, the colour of the mist.
+    if (this.wall > 0) {
+      const w = this.wallCfg;
+      this.fog.color.lerp(s.mist, this.wall * w.colourMix);
+      s.skyTop.lerp(this.fog.color, this.wall);
+      s.horizon.lerp(this.fog.color, this.wall);
+      this.fog.near = lerp(this.fog.near, Math.min(w.near, this.fog.near), this.wall);
+      this.fog.far = lerp(this.fog.far, Math.min(w.far, this.fog.far), this.wall);
+    }
 
     this.domeUniforms.uTop.value.copy(s.skyTop);
     this.domeUniforms.uHorizon.value.copy(s.horizon);

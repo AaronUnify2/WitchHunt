@@ -94,6 +94,7 @@ import { DeepForest } from '../ai/DeepForest.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { PruittFarm } from '../encounters/PruittFarm.js';
 import { FamilyStations } from '../story/FamilyStations.js';
+import { FogFunnel } from '../story/FogFunnel.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
 import { OldChurchSite } from '../world/OldChurchSite.js';
 import { OldChurch } from '../encounters/OldChurch.js';
@@ -801,6 +802,9 @@ export class Game {
     // The Caller: south of the comms line, a voice in the family's (story/Caller.js).
     this.caller = new Caller(this.cfg, this.bus);
     this.caller.init({ dialogue: this.dialogue, subtitles: this.subtitles, comms: this.comms, progress: this.progress, player: this.player, clock: this.clock, sfx: this.combat.sfx, atmosphere: this.atmosphere, demo: this.demo, interiors: this.interiors, stairsAt: () => this.stairsSite?.place ?? null });
+    // Round 2, step 6: the fog funnel (from Junie's taking to her coming home, the south is the way to her).
+    this.funnel = new FogFunnel(this.cfg, this.bus);
+    this.funnel.init({ map: this.world.map, player: this.player, progress: this.progress, sky: this.sky, atmosphere: this.atmosphere, caller: this.caller, interiors: this.interiors, demo: this.demo, notify: (text) => this.toast.show(text) });
     // The old church and the time capsule (encounters/OldChurch.js).
     this.church = new OldChurch(this.cfg, this.bus);
     this.church.init({
@@ -1760,6 +1764,7 @@ export class Game {
     this.nightTwo.reset(); // Round 2
     this.farm.loadState(d.farm);
     this.stations.loadState(d.stations);
+    this.funnel.reset();
     this.mothership.reset();
     this.carArmory.reset();
     this.ute.loadState(d.ute); // build queue item 7: where the ute stood
@@ -2054,6 +2059,7 @@ export class Game {
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
     if (first) this.farm.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Round 2: the Pruitt farm
     if (first) this.stations.update(dt); // Round 2, step 5
+    if (first && playing) this.funnel.update(dt); // Round 2, step 6
     if (first) this.comms.update(); // Session 26: the radio's reach
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);

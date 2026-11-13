@@ -146,7 +146,8 @@ export class Atmosphere {
       t.strength = f.glareFactor;
     }
     // Session 26: the Caller's call brings the mist up even in clear weather (wrongFog.amount).
-    const puffAmount = Math.max(sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount), wrong ? wrong.amount * Math.max(wrong.inhale, wrong.exhale) : 0);
+    // Round 2, step 6: and so does the fog funnel's wall (wallMist: story/FogFunnel.js).
+    const puffAmount = Math.max(sky.mistAmount * (1 + (n.mistBoost - 1) * this.amount), wrong ? wrong.amount * Math.max(wrong.inhale, wrong.exhale) : 0, this.wallMist ?? 0);
     this.mist.update(dt, camera, puffAmount, sky.mistColor, sky.fog.far, { x: this.windDir.x, z: this.windDir.y }, t, wrong);
     const groundY = u.uMistShape.value.z;
     const ff = this.cfg.fireflies;

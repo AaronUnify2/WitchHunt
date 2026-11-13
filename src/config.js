@@ -5585,6 +5585,40 @@ export const config = {
 
   // Talking to the family face to face (M8): hold interact while looking
   // at one of them in the comms room.
+  // Round 2, step 6 (story/FogFunnel.js; Aaron: "after Junie's taken, Tom goes straight to the church, then
+  // the stairs. Everything else is blocked by an impassable fog, as if the Caller is steering him"): from
+  // `from` to `until` (flags), south of the cordon, Tom keeps to the route: the legs' pathways (from / to:
+  // clearing keys; needs: a flag that opens the leg), `half` metres either side of them, and their clearings
+  // (clearingPad metres past their edges). The fog starts fogStart metres inside the route's edge and is a
+  // wall at it (wall: the sky's fog near / far there, and how far its colour goes to the mist's); mist: how
+  // much ground mist it raises. At the edge he's put back `push` metres inside (not if he's more than `deep`
+  // outside: a debug teleport); the line shows at most every tellEvery seconds; the Caller calls from
+  // callAhead metres along the way on at most every callEvery. northMargin: metres south of the cordon
+  // before any of it applies. Every number a first guess.
+  fogFunnel: {
+    enabled: true,
+    from: 'junieTaken',
+    until: 'junieHome',
+    legs: [
+      { from: 'outpost', to: 'crashedPlane' },
+      { from: 'crashedPlane', to: 'timeCapsule' },
+      { from: 'timeCapsule', to: 'stairs', needs: 'stairsKnown' },
+    ],
+    half: 20,
+    clearingPad: 8,
+    fogStart: 12,
+    wall: { near: 1, far: 12, colourMix: 0.9 },
+    mist: 1.6,
+    ease: 2.5,
+    push: 0.35,
+    deep: 9,
+    tellEvery: 22,
+    callEvery: 45,
+    callAhead: 38,
+    northMargin: 6,
+    text: "The fog is a wall here. You can't see your own hands in it. There's no way through", // draft
+  },
+
   // Round 2, step 5 (story/FamilyStations.js): the family at their stations. Ellen works at her string
   // board in the main room by day (turning to Tom when he's within turnRange, at turnRate radians a second),
   // and waits in the comms room with the others at night; Junie watches the monitors at the comms desk.

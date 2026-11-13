@@ -468,3 +468,89 @@ describe('step 5: the family at their stations', () => {
     expect(talk.hud.prompt).toBe('');
   });
 });
+
+// ---- step 6: the fog funnel ----
+import { shortestWay, funnelRoute, outsideBy, fogAmount, funnelOn, FogFunnel } from '../src/story/FogFunnel.js';
+
+describe('step 6: the fog funnel', () => {
+  const f = config.fogFunnel;
+  const all = () => true;
+
+  it('is on from the night Junie is taken until she is home', () => {
+    const has = (list) => (x) => list.includes(x);
+    expect(funnelOn(has([]), f.from, f.until)).toBe(false);
+    expect(funnelOn(has(['junieTaken']), f.from, f.until)).toBe(true);
+    expect(funnelOn(has(['junieTaken', 'junieHome']), f.from, f.until)).toBe(false);
+  });
+
+  it('finds the way from the checkpoint to the plane, the church and the stairs on every seed, south of the cordon', () => {
+    for (const seed of [1, 7, 1234, 4242]) {
+      const map = makeMap(seed);
+      const idx = (k) => map.clearings.findIndex((c) => c.key === k);
+      const route = funnelRoute(map, f.legs, all, f.clearingPad);
+      expect(route.lines.length, `seed ${seed}`).toBeGreaterThanOrEqual(3);
+      expect(route.ends.length).toBe(3);
+      for (const key of ['crashedPlane', 'timeCapsule', 'stairs']) {
+        const c = map.clearings[idx(key)];
+        expect(outsideBy(route, c.x, c.z, f.half).d, `${key} seed ${seed}`).toBeLessThan(-f.fogStart);
+      }
+      // The stairs' leg waits on the 1903 account.
+      const early = funnelRoute(map, f.legs, (x) => x !== 'stairsKnown', f.clearingPad);
+      const st = map.clearings[idx('stairs')];
+      expect(outsideBy(early, st.x, st.z, f.half).d).toBeGreaterThan(0);
+      // No pathway north of the cordon but the checkpoint's own.
+      const way = shortestWay(map, idx('crashedPlane'), idx('timeCapsule'), (p) => !p.cluster || p.checkpoint);
+      for (const k of way) expect(map.paths[k].cluster && !map.paths[k].checkpoint).toBeFalsy();
+    }
+  });
+
+  it('is clear on the path, thickens toward the edge, and is a wall at it', () => {
+    const route = { lines: [[{ x: 0, z: 0 }, { x: 100, z: 0 }]], discs: [{ x: 100, z: 0, r: 30 }], ends: [{ x: 100, z: 0 }] };
+    expect(outsideBy(route, 50, 0, 20).d).toBe(-20);
+    expect(outsideBy(route, 50, 26, 20).d).toBeCloseTo(6);
+    expect(outsideBy(route, 100, 25, 20).d).toBeCloseTo(-5); // in the clearing
+    expect(fogAmount(-20, 12)).toBe(0);
+    expect(fogAmount(-6, 12)).toBeCloseTo(0.5);
+    expect(fogAmount(0, 12)).toBe(1);
+    expect(fogAmount(5, 12)).toBe(1);
+  });
+
+  it('puts Tom back inside the edge, tells him once, and leaves the north alone', () => {
+    const map = makeMap(1234);
+    const flags = new Set(['junieTaken']);
+    const told = [];
+    const sky = { setWall: (a) => (sky.a = a) };
+    const player = { position: { x: 0, z: 0 }, riding: null, platform: null };
+    const fun = new FogFunnel(config, new EventBus());
+    fun.init({ map, player, progress: { has: (x) => flags.has(x) }, sky, atmosphere: {}, caller: null, interiors: { inside: false }, notify: (t) => told.push(t) });
+    const plane = map.clearings.find((c) => c.key === 'crashedPlane');
+    // In the plane's clearing: clear.
+    Object.assign(player.position, { x: plane.x, z: plane.z });
+    for (let i = 0; i < 40; i++) fun.update(0.1);
+    expect(fun.active).toBe(true);
+    expect(fun.amount).toBeLessThan(0.01);
+    // Walk off it, away from every pathway, until the wall: he never gets more than a step past the edge.
+    let far = -Infinity;
+    for (let i = 0; i < 600; i++) {
+      const o = outsideBy(fun.route, player.position.x, player.position.z, f.half);
+      const l = Math.hypot(player.position.x - o.x, player.position.z - o.z) || 1;
+      player.position.x += ((player.position.x - o.x) / l || 1) * 0.3;
+      player.position.z += ((player.position.z - o.z) / l || 0) * 0.3;
+      fun.update(1 / 30);
+      far = Math.max(far, outsideBy(fun.route, player.position.x, player.position.z, f.half).d);
+    }
+    expect(far).toBeLessThan(0.1);
+    expect(fun.amount).toBeGreaterThan(0.8);
+    expect(told).toEqual([f.text]);
+    // North of the cordon: nothing.
+    Object.assign(player.position, { x: 300, z: map.cluster.cordonZ - 40 });
+    for (let i = 0; i < 60; i++) fun.update(0.1);
+    expect(fun.amount).toBe(0);
+    // Junie home: off, wherever he is.
+    flags.add('junieHome');
+    Object.assign(player.position, { x: 300, z: map.cluster.cordonZ + 200 });
+    for (let i = 0; i < 60; i++) fun.update(0.1);
+    expect(fun.active).toBe(false);
+    expect(fun.amount).toBe(0);
+  });
+});
