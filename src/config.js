@@ -1734,8 +1734,8 @@ export const config = {
       // One block of 8 facing rows per variant and hairstyle, in this
       // order (the shader picks the block). A hairstyle changes the
       // outline, so each gets its own block; colours are free.
-      variantOrder: ['citizen', 'police', 'army', 'mib', 'earl'],
-      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'] },
+      variantOrder: ['citizen', 'police', 'army', 'mib', 'earl', 'screamer'],
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'], screamer: ['long'] },
       // The trucker cap (a hairstyle, Session 13): the crown and peak in
       // the hair's colour (so the caps vary), the foam front panel fixed.
       truckerFront: 0x4a4840,
@@ -1823,9 +1823,10 @@ export const config = {
         // a faded red trucker cap (his 'hair'), grey stubble and sideburns,
         // a tan work shirt with chest pockets, a belt, jeans. One look,
         // whatever the seed (one colour per part).
-        // Round 2: the Screamer: the citizens' long-haired shape, tall and wasted (its own build), bone-grey
-        // skin, white hair, what's left of a black dress or coat. (A stand-in look until its own model.)
-        screamer: { as: 'citizen', hairs: ['long'], shirt: [0x121014, 0x18141a], trousers: [0x0e0c10], hair: [0x8a8880, 0x76746c], skin: [0x7e7a70, 0x86826f], longSleeves: 1, plaid: 0, build: { width: [0.82, 0.88], height: [1.24, 1.3] } },
+        // Round 2: the Screamer: its own figure (zombieSprite.js: kit.screamer): tall and wasted (its own
+        // build), bone-grey skin, white hair to its waist, the rags of a long black gown, arms to its knees
+        // ending in claws, pits for eyes (pit) and a jaw that drops to its chest when it screams.
+        screamer: { screamer: true, pit: 0x060405, shirt: [0x121014, 0x18141a], trousers: [0x0e0c10], hair: [0x8a8880, 0x76746c], skin: [0x7e7a70, 0x86826f], longSleeves: 0, plaid: 0, build: { width: [0.86, 0.92], height: [1.24, 1.3] } },
         earl: {
           shirt: [0x3e3220],
           trousers: [0x1c2638],
@@ -1911,6 +1912,9 @@ export const config = {
       bone: 0x7a7260, // spurs and claws
       jeans: 0x1c2638, // its torn jeans
       shirt: 0x3a3830, // the strip of shirt left on it
+      belt: 0x1a1410, // Round 2: his belt and his boot's sole
+      buckle: 0x6a644e,
+      boot: 0x241a12, // the one work boot left on it
       hitFlash: [2.2, 0.6, 0.6], // its colour while flashing
       poseRate: 14, // how fast it blends into a new pose (per second)
       slamSeconds: 0.16, // the club coming down once the swipe lands
@@ -2130,6 +2134,7 @@ export const config = {
     look: {
       height: 2.3, // metres
       shadow: 0x030304, // her whole body, unlit
+      bone: 0x443e30, // Round 2: what's bone and twig on her (the charms at her waist, the spines down her back): unlit too, just off her black
       eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
       thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
       // Session 13: her rags (render/WitchRenderer.js). Metres and seconds.

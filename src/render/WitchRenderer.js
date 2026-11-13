@@ -22,6 +22,12 @@
 // vertex shader (aFlutter: how free each vertex hangs), sway as she floats,
 // stream out behind her as she moves and whip about as she contorts.
 //
+// Round 2 (the polish pass; Aaron: "improve the model of the witch"; still only a silhouette, no face): more
+// for the outline to say. A cord round her waist hung with her own work: stick figures tied from twigs,
+// small bones, swinging as she moves. A train of long rags dragging behind the cloak. A ridge of knuckled
+// spines down her back and a ragged point at each shoulder, so her profile is serrated. Small bones on
+// threads from the crown's tips. All of it in the parts she already had: no more draw calls.
+//
 // Ten draw calls (skirt, torso, head, eyes, three per arm) plus the torch
 // shadow, only while she's out and near. The ritual ring (two glowing
 // rings on the ground) is two more.
@@ -58,10 +64,14 @@ export class WitchRenderer {
     // Unlit: the torch can't light her or glint off her. Fog still applies.
     this.material = new THREE.MeshBasicMaterial({ color: c.shadow });
     // The rags' flutter: sway (metres), trail (metres back), rate.
-    this.clothUniforms = { uTime: { value: 0 }, uCloth: { value: new THREE.Vector3() } };
+    // Round 2: uBone: the colour of what's bone and twig on her (aBone: how much; the rest is her shadow).
+    this.clothUniforms = { uTime: { value: 0 }, uCloth: { value: new THREE.Vector3() }, uBone: { value: new THREE.Color(c.bone ?? 0x24211b) } };
     this.material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.clothUniforms);
       shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\n${CLOTH_PARS}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${CLOTH_VERTEX}`);
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform vec3 uBone;\nvarying float vBone;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = mix( diffuseColor.rgb, max( uBone, diffuseColor.rgb ), vBone );');
     };
     this.material.customProgramCacheKey = () => 'witch-rags';
 
@@ -223,7 +233,44 @@ export class WitchRenderer {
     cloth(cloak, (x, y, z) => Math.pow(Math.max(0, 1.42 - y) / 1.4, 1.6), rng);
     const under = new THREE.CylinderGeometry(0.16, 0.26, 1.1, 6);
     under.translate(0, 0.55, 0);
-    return this.merge([cloak, under], thin);
+    // Round 2: the cord round her waist, and what hangs from it: stick figures and bones on threads, each
+    // swinging free of the cloak (its flutter grows down its thread).
+    const extras = [];
+    const belt = new THREE.CylinderGeometry(0.205, 0.215, 0.03, 10, 1, true).toNonIndexed();
+    belt.translate(0, 1.34, 0);
+    extras.push(belt);
+    const charms = 6;
+    for (let i = 0; i < charms; i++) {
+      const a = (i / charms) * Math.PI * 2 + rng.range(-0.3, 0.3);
+      const drop = rng.range(0.16, 0.42);
+      const r = 0.265 + drop * 0.26; // the cloak widens under it
+      const isBone = i % 3 === 2;
+      const parts = (isBone ? boneCharm(rng) : stickCharm(rng)).map((p) => bony(p, isBone ? 1 : 0.55));
+      const thread = new THREE.BoxGeometry(0.008, drop, 0.008).toNonIndexed();
+      thread.translate(0, -drop / 2, 0);
+      for (const g of [thread, ...parts.map((p) => p.translate(0, -drop, 0))]) {
+        g.rotateY(-a + Math.PI / 2 + rng.range(-0.5, 0.5));
+        g.translate(Math.cos(a) * r, 1.33, Math.sin(a) * r);
+        cloth(g, (x, y) => Math.min(1, Math.max(0, 1.33 - y) * 1.5), rng);
+        extras.push(g);
+      }
+    }
+    // The train: long rags from the back of the cloak, down and out behind her along the ground.
+    for (let i = 0; i < 5; i++) {
+      const len = rng.range(0.7, 1.25);
+      const w = rng.range(0.05, 0.11);
+      const g = new THREE.PlaneGeometry(w, len, 1, 5).toNonIndexed();
+      const p = g.attributes.position;
+      for (let k = 0; k < p.count; k++) {
+        const t = 0.5 - p.getY(k) / len; // 0 at its top, 1 at its end
+        p.setX(k, p.getX(k) * (1 - t * 0.75) + Math.sin(t * 5 + i) * 0.02);
+        p.setZ(k, -t * t * (0.35 + i * 0.05)); // it lies back as it falls
+      }
+      g.translate((i - 2) * 0.1 + rng.range(-0.03, 0.03), 0.62 - len / 2 + rng.range(0, 0.2), -0.3);
+      cloth(g, (x, y) => Math.min(1, Math.max(0, 0.9 - y) * 1.3), rng);
+      extras.push(g);
+    }
+    return this.merge([cloak, under, ...extras], thin);
   }
 
   // Chest and shawl, from the waist up (the waist joint is the origin).
@@ -240,7 +287,25 @@ export class WitchRenderer {
     cloth(shawl, (x, y) => Math.max(0, 0.35 - y) * 0.9, rng);
     const neck = new THREE.BoxGeometry(0.06, 0.16, 0.06);
     neck.translate(0, 0.68, 0.05);
-    return this.merge([chest, shawl, neck], thin);
+    // Round 2: knuckled spines down her back, through the shawl, the longest between her shoulders; and a
+    // ragged point of the shawl standing up at each shoulder.
+    const extras = [];
+    for (let i = 0; i < 6; i++) {
+      const y = 0.12 + i * 0.1;
+      const len = 0.07 + Math.sin((i / 5) * Math.PI) * 0.09 + rng.range(-0.01, 0.02);
+      const spine = new THREE.ConeGeometry(0.022, len, 4).toNonIndexed();
+      spine.rotateX(-Math.PI / 2 - 0.5 + i * 0.06);
+      spine.translate(rng.range(-0.012, 0.012), y, -0.11 - len * 0.42 - Math.sin((i / 5) * Math.PI) * 0.03);
+      extras.push(bony(spine, 0.7));
+    }
+    for (const s of [-1, 1]) {
+      const point = new THREE.ConeGeometry(0.06, rng.range(0.2, 0.3), 4, 2).toNonIndexed();
+      point.rotateZ(-s * 0.75);
+      point.translate(s * 0.27, 0.66, -0.01);
+      cloth(point, (x, y) => Math.max(0, y - 0.62) * 1.4, rng);
+      extras.push(point);
+    }
+    return this.merge([chest, shawl, neck, ...extras], thin);
   }
 
   // Head, jaw, a ragged hood with a drooping point, lank hair hanging to
@@ -288,6 +353,23 @@ export class WitchRenderer {
       gnarledStick(crown, rng, { x: t * 0.12, y: 0.27, z: 0.06 }, splay, rng.range(-0.3, 0.1), len, 0.026, Math.abs(t) > 0.1 ? 2 : 1);
     }
     for (const g of crown) rigid(g);
+    // Round 2: small bones on threads from the crown, turning in the air.
+    for (let i = 0; i < 4; i++) {
+      const t = (i + 0.5) / 4 - 0.5;
+      const x = t * 0.62 + rng.range(-0.04, 0.04);
+      const top = 0.52 + rng.range(-0.06, 0.1) - Math.abs(t) * 0.12;
+      const drop = rng.range(0.1, 0.2);
+      const thread = new THREE.BoxGeometry(0.006, drop, 0.006).toNonIndexed();
+      thread.translate(x, top - drop / 2, 0.04);
+      const bone = new THREE.BoxGeometry(0.014, 0.07, 0.014).toNonIndexed();
+      bone.rotateZ(rng.range(-0.5, 0.5));
+      bone.translate(x, top - drop - 0.03, 0.04);
+      bony(bone);
+      for (const g of [thread, bone]) {
+        cloth(g, (px, py) => Math.min(1, Math.max(0, top - py) * 3), rng);
+        crown.push(g);
+      }
+    }
     // The body is thinned; the crown keeps its full width.
     const thinned = body.map((g) => {
       const f = g.index ? g.toNonIndexed() : g;
@@ -732,10 +814,13 @@ export class WitchRenderer {
 const CLOTH_PARS = /* glsl */ `
   attribute float aFlutter;
   attribute float aPhase;
+  attribute float aBone;
+  varying float vBone;
   uniform float uTime;
   uniform vec3 uCloth;
 `;
 const CLOTH_VERTEX = /* glsl */ `
+  vBone = aBone;
   float wcPhase = aPhase * 6.2832;
   float wcT = uTime * uCloth.z;
   transformed.x += sin( wcT + wcPhase + position.y * 4.0 ) * uCloth.x * aFlutter;
@@ -758,6 +843,13 @@ function cloth(g, weight, rng) {
   }
   g.setAttribute('aFlutter', new THREE.BufferAttribute(flutter, 1));
   g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+  if (!g.attributes.aBone) g.setAttribute('aBone', new THREE.BufferAttribute(new Float32Array(p.count), 1));
+  return g;
+}
+
+// Round 2: mark a geometry as bone or twig (amount 0..1: how far from her shadow toward the bone colour).
+function bony(g, amount = 1) {
+  g.setAttribute('aBone', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count).fill(amount), 1));
   return g;
 }
 
@@ -766,7 +858,40 @@ function rigid(g) {
   const n = g.attributes.position.count;
   g.setAttribute('aFlutter', new THREE.BufferAttribute(new Float32Array(n), 1));
   g.setAttribute('aPhase', new THREE.BufferAttribute(new Float32Array(n), 1));
+  if (!g.attributes.aBone) g.setAttribute('aBone', new THREE.BufferAttribute(new Float32Array(n), 1));
   return g;
+}
+
+// Round 2: a stick figure tied from twigs, hanging from the origin (its top) down -y: a body, a crossed
+// pair of arms, two splayed legs, a loop of a head. Returns its pieces (non-indexed, unmarked).
+function stickCharm(rng) {
+  const w = 0.017;
+  const h = rng.range(0.19, 0.27);
+  const out = [];
+  const stick = (len, x, y, rot) => {
+    const g = new THREE.BoxGeometry(w, len, w).toNonIndexed();
+    g.rotateZ(rot);
+    g.translate(x, y, 0);
+    out.push(g);
+  };
+  stick(h * 0.62, 0, -h * 0.4, rng.range(-0.08, 0.08)); // the body
+  stick(h * 0.6, 0, -h * 0.3, Math.PI / 2 + rng.range(-0.2, 0.2)); // the arms
+  stick(h * 0.5, -h * 0.13, -h * 0.84, 0.5); // the legs
+  stick(h * 0.5, h * 0.13, -h * 0.84, -0.5);
+  for (const [x, y, rot] of [[-0.03, -0.06, 0.6], [0.03, -0.06, -0.6], [0, -0.02, Math.PI / 2]]) stick(h * 0.3, x * (h / 0.16), y * (h / 0.16), rot); // the head: a triangle
+  return out;
+}
+
+// Round 2: two small bones tied crosswise, hanging from the origin.
+function boneCharm(rng) {
+  const out = [];
+  for (const rot of [rng.range(0.3, 0.7), -rng.range(0.6, 1.1)]) {
+    const g = new THREE.BoxGeometry(0.018, rng.range(0.09, 0.13), 0.018).toNonIndexed();
+    g.rotateZ(rot);
+    g.translate(0, -0.05, 0);
+    out.push(g);
+  }
+  return out;
 }
 
 // A gnarled stick of the crown into `out`: three bending segments from

@@ -74,10 +74,11 @@ describe('zombie looks', () => {
           expect(look[part]).toBeGreaterThanOrEqual(start);
           expect(look[part]).toBeLessThan(start + count);
         }
-        expect(look.width).toBeGreaterThanOrEqual(tex.build.width[0]);
-        expect(look.width).toBeLessThanOrEqual(tex.build.width[1]);
-        expect(look.height).toBeGreaterThanOrEqual(tex.build.height[0]);
-        expect(look.height).toBeLessThanOrEqual(tex.build.height[1]);
+        const build = tex.looks[v]?.build ?? tex.build; // (Round 2: a look can have its own build: the Screamer's)
+        expect(look.width).toBeGreaterThanOrEqual(build.width[0]);
+        expect(look.width).toBeLessThanOrEqual(build.width[1]);
+        expect(look.height).toBeGreaterThanOrEqual(build.height[0]);
+        expect(look.height).toBeLessThanOrEqual(build.height[1]);
         expect([0, 1]).toContain(look.sleeves);
         expect([0, 1, 2]).toContain(look.pattern);
       }

@@ -206,21 +206,121 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   const hunch = 5 * side + pose.lunge * side; // head and shoulders forward
   const torsoHalf = 15 * Math.abs(front) + 8 * Math.abs(side);
   const hx = cx + hunch + pose.lean * side * 0.3; // the head's centre
-  const hy = headY + Math.abs(pose.lunge) * 0.3;
+  // Round 2 (the polish pass): the Screamer (kit.screamer) has its own figure: gaunt, in the rags of a long
+  // black gown torn to points at the hem, bare thin legs under it; arms hanging to its knees, the hands
+  // long claws; white hair to its waist; a narrow skull with pits for eyes and a jaw that drops to its
+  // chest. Its attack wind-up frame is its scream (ai/Screamers.js holds it): head back, arms flung wide.
+  const scr = Boolean(kit.screamer);
+  const screaming = scr && pose.armUp > 0.9;
+  const hy = headY + Math.abs(pose.lunge) * 0.3 - (screaming ? 3 : 0);
 
   const legs = () => {
-    ctx.fillStyle = paint.part('trousers');
+    ctx.fillStyle = paint.part(scr ? 'skin' : 'trousers');
+    const half = scr ? 2.2 : 4;
     for (const s of [-1, 1]) {
       const swing = pose.stride * s * 9 * side;
       const lift = pose.stride * s * 4 * Math.abs(front);
-      const x = cx + s * 5 * Math.abs(front) + swing * 0.5;
+      const x = cx + s * (scr ? 4 : 5) * Math.abs(front) + swing * 0.5;
       ctx.beginPath();
-      ctx.moveTo(x - 4, hipY);
-      ctx.lineTo(x + 4, hipY);
-      ctx.lineTo(x + 3 + swing, ground - Math.max(0, lift));
-      ctx.lineTo(x - 4 + swing, ground - Math.max(0, lift));
+      ctx.moveTo(x - half, hipY);
+      ctx.lineTo(x + half, hipY);
+      ctx.lineTo(x + half - 1 + swing, ground - Math.max(0, lift));
+      ctx.lineTo(x - half + swing, ground - Math.max(0, lift));
       ctx.closePath();
       ctx.fill();
+      // A long bare foot.
+      if (scr) ctx.fillRect(Math.round(x - half + swing + side * 1), Math.round(ground - Math.max(0, lift) - 2), Math.round(5 + Math.abs(side) * 3), 2);
+    }
+  };
+
+  // The Screamer's gown: from the waist to the shins, flaring, its hem torn into points; trailing behind it
+  // in profile. The shirt's part (so it takes the look's black), darker toward the hem.
+  const gown = () => {
+    const top = hipY - 8;
+    const hem = ground - 16;
+    const half0 = torsoHalf * 0.62;
+    const half1 = torsoHalf * 0.62 + 7;
+    const drag = -side * 7 - pose.stride * side * 2;
+    const teeth = 6;
+    ctx.fillStyle = paint.part('shirt');
+    ctx.beginPath();
+    ctx.moveTo(cx - half0, top);
+    ctx.lineTo(cx + half0, top);
+    ctx.lineTo(cx + half1 + Math.max(0, drag), hem);
+    for (let i = teeth; i >= 0; i--) {
+      const x = cx - half1 + Math.min(0, drag) + ((half1 * 2 + Math.abs(drag)) * i) / teeth;
+      const long = [9, 3, 12, 5, 10, 2, 8][i];
+      ctx.lineTo(x + ((half1 * 2 + Math.abs(drag)) / teeth) * 0.5, hem + (i < teeth ? 1 : 0));
+      ctx.lineTo(x, hem + long);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.save();
+    ctx.clip(); // (the gown only: not the legs under it)
+    ctx.fillStyle = paint.part('hem');
+    ctx.fillRect(cx - half1 - 10, hem - 8, half1 * 2 + 20, 24);
+    // A slit up the front, the dark showing through.
+    if (!fromBehind && Math.abs(side) < 0.8) {
+      ctx.beginPath();
+      ctx.moveTo(cx + side * 4, top + 14);
+      ctx.lineTo(cx + side * 4 + 2.5, hem + 10);
+      ctx.lineTo(cx + side * 4 - 2.5, hem + 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  };
+
+  // The Screamer's arms: thin, hanging to its knees (flung wide and back as it screams; reaching as it
+  // strikes), each hand three long claws.
+  const longArms = (behind) => {
+    ctx.lineCap = 'round';
+    for (const s of [-1, 1]) {
+      const far = side > 0.3 ? s < 0 : side < -0.3 ? s > 0 : false;
+      if (behind !== (far || front < -0.2)) continue;
+      const sx = cx + hunch * 0.6 + s * torsoHalf * 0.72 * Math.max(Math.abs(front), 0.25);
+      const sy = shoulderY + 3;
+      let handX = sx + s * 3 * Math.abs(front) + side * (5 + pose.stride * s * 5);
+      let handY = hipY + 17 + (s > 0 ? 1 : -1) * pose.stride * 2;
+      let elbowOut = s * 3 * Math.abs(front) - side * 3;
+      if (screaming) {
+        handX = sx + s * (17 * Math.abs(front) + 3) - side * 9;
+        handY = sy + 4;
+        elbowOut = s * 6 * Math.abs(front) - side * 8;
+      } else if (pose.lunge > 2) {
+        handX = sx + 30 * side + pose.lunge * side - s * 4 * Math.max(0, front);
+        handY = sy + 14;
+        elbowOut = 0;
+      }
+      const a = { x: sx, y: sy };
+      const b = { x: handX, y: handY };
+      const c = { x: (sx + handX) / 2 + elbowOut, y: (sy + handY) / 2 + (screaming ? 9 : 2) };
+      const elbow = quadAt(a, c, b, 0.5);
+      ctx.lineWidth = 3.4;
+      ctx.strokeStyle = paint.part('sleeve', behind);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo((a.x + c.x) / 2, (a.y + c.y) / 2, elbow.x, elbow.y);
+      ctx.stroke();
+      ctx.lineWidth = 2.6;
+      ctx.strokeStyle = paint.part('skin', behind);
+      ctx.beginPath();
+      ctx.moveTo(elbow.x, elbow.y);
+      ctx.quadraticCurveTo((c.x + b.x) / 2, (c.y + b.y) / 2, b.x, b.y);
+      ctx.stroke();
+      // The claws: three, fanned along the forearm's line.
+      const dx = b.x - elbow.x;
+      const dy = b.y - elbow.y;
+      const l = Math.hypot(dx, dy) || 1;
+      ctx.lineWidth = 1.3;
+      for (const f of [-0.5, 0, 0.5]) {
+        const ux = dx / l - (dy / l) * f;
+        const uy = dy / l + (dx / l) * f;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x + ux * 8, b.y + uy * 8);
+        ctx.stroke();
+      }
     }
   };
 
@@ -414,7 +514,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   const hangingHair = () => {
     ctx.fillStyle = paint.part('hair');
     if (kit.hair === 'long') {
-      const bottom = shoulderY + 12;
+      const bottom = scr ? hipY - 2 : shoulderY + 12; // the Screamer's: to its waist
       if (fromBehind) {
         ctx.beginPath();
         ctx.ellipse(hx, hy, 8, 8.5, 0, Math.PI, Math.PI * 2);
@@ -430,6 +530,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.moveTo(hx + back - half, hy - 4);
         ctx.lineTo(hx + back + half, hy - 4);
         ctx.lineTo(hx + back + half + 1, bottom - 6 + Math.abs(side) * 4);
+        if (scr) ctx.lineTo(hx + back, bottom - 12); // ragged: parted into two hanks
         ctx.lineTo(hx + back - half - 1, bottom - 6 + Math.abs(side) * 4);
         ctx.closePath();
         ctx.fill();
@@ -455,7 +556,15 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   const head = () => {
     ctx.fillStyle = paint.part('skin');
     ctx.beginPath();
-    ctx.ellipse(hx, hy, 7 - 1.5 * Math.abs(side), 8, 0, 0, Math.PI * 2);
+    if (scr) {
+      // A narrow skull, and the jaw dropped under it (to its chest as it screams).
+      ctx.ellipse(hx, hy, 6 - 1.2 * Math.abs(side), 8.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      if (!fromBehind) {
+        ctx.beginPath();
+        ctx.ellipse(hx + side * 3, hy + (screaming ? 11 : 8), 4 - Math.abs(side), screaming ? 7 : 5, 0, 0, Math.PI * 2);
+      }
+    } else ctx.ellipse(hx, hy, 7 - 1.5 * Math.abs(side), 8, 0, 0, Math.PI * 2);
     ctx.fill();
     // Hair on the head: a cap on top (the whole back of the head from
     // behind); balding, only round the sides and back.
@@ -493,13 +602,28 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.beginPath();
         ctx.moveTo(x - 2, hy - 5);
         ctx.lineTo(x + 2, hy - 5);
-        ctx.lineTo(x + 1.5 + s, hy + 9);
-        ctx.lineTo(x - 2 + s, hy + 9);
+        ctx.lineTo(x + 1.5 + s, hy + (scr ? 30 : 9));
+        ctx.lineTo(x - 2 + s, hy + (scr ? 26 : 9));
         ctx.closePath();
         ctx.fill();
       }
     }
-    if (!fromBehind) {
+    if (scr && !fromBehind) {
+      // Pits for eyes, a pale point deep in each; the mouth a tall black gape, two teeth at its top.
+      const ex = hx + side * 3;
+      const spread = 2.6 * Math.max(0, front);
+      ctx.fillStyle = paint.fixed(kit.pit ?? 0x060405);
+      ctx.fillRect(Math.round(ex - spread - 1.5), Math.round(hy - 3), 3, 3);
+      if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1.5), Math.round(hy - 3), 3, 3);
+      ctx.beginPath();
+      ctx.ellipse(ex, hy + (screaming ? 10 : 7.5), 2.6 - Math.abs(side) * 0.6, screaming ? 6.5 : 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = paint.fixed(t.eyes);
+      ctx.fillRect(Math.round(ex - spread - 0.5), Math.round(hy - 2), 1, 1);
+      if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 0.5), Math.round(hy - 2), 1, 1);
+      ctx.fillRect(Math.round(ex - 1.5), Math.round(hy + (screaming ? 4 : 4)), 1, 2);
+      ctx.fillRect(Math.round(ex + 0.5), Math.round(hy + (screaming ? 4 : 4)), 1, 2);
+    } else if (!fromBehind) {
       // Pale eyes and a dark open mouth, sliding round with the angle.
       const ex = hx + side * 3.5;
       const spread = 3 * Math.max(0, front);
@@ -575,12 +699,15 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   };
 
   if (!fromBehind) hangingHair();
-  arms(true);
+  if (scr) longArms(true);
+  else arms(true);
   legs();
   torso();
+  if (scr) gown();
   if (fromBehind) hangingHair();
   head();
-  arms(false);
+  if (scr) longArms(false);
+  else arms(false);
 
   // Simple lighting: lit from the upper left (moonlight), as the trees
   // are. The picture only: the mask says what a texel is, not how lit.

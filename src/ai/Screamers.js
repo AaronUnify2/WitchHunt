@@ -66,6 +66,7 @@ export class Screamers {
       const z = s.z;
       if (!z.alive) continue;
       s.age += dt;
+      if (z.screamT > 0) z.screamT -= dt; // the scream's pose (Zombie.frame)
       const near = Math.hypot(p.x - z.x, p.z - z.z);
       // Tom's on top of it, or it's screamed itself out: it comes in.
       if (!s.comingIn && (near < c.wakeAt || s.calls >= c.maxCalls || s.age > c.comeInAfter)) this.comeIn(s, near < c.wakeAt);
@@ -81,6 +82,7 @@ export class Screamers {
     const c = this.sc;
     const z = s.z;
     s.calls++;
+    z.screamT = c.poseSeconds ?? 2.4;
     this.sfx?.play('screamerCall', z);
     const p = this.player.position;
     const d = Math.hypot(p.x - z.x, p.z - z.z);

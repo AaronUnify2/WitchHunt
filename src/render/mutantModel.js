@@ -5,6 +5,13 @@
 // on its back with the weak spot, a raw sac, nested in it; torn jeans and a
 // strip of shirt from its old life.
 //
+// Round 2 (the polish pass; Aaron: "improve the model of the mutant"): more of what it was and what it's
+// becoming, all of it readable in silhouette and by torch: a ridge of bone spurs breaking out along its
+// spine and over the hump; the wasted side's ribs showing through split skin; a jaw that's grown too long,
+// hanging crooked, with a row of teeth; a tumour swelling one side of its skull shut over the eye; a small
+// dead arm, the start of a third, hanging under the wasted one; his belt still on him with its buckle, and
+// the shirt's tails hanging from it in strips; one work boot left, the other foot bare and clawed.
+//
 // Built at load from simple shapes (ellipsoid masses, tapered tubes along
 // the limbs, spurs), made lumpy with noise, skinned to a small skeleton so
 // the flesh bends at the joints, and painted with vertex colours (mottled
@@ -66,7 +73,19 @@ const MASSES = [
   ['head', null, 0, 2.2, 0.22, 0.15, 0.17, 0.16, 'skin', 0.018, null],
   ['head', null, 0, 2.26, 0.33, 0.13, 0.045, 0.06, 'skinDark', 0.01, null],
   ['head', null, 0, 2.14, 0.35, 0.065, 0.05, 0.03, 'mouth', 0, null],
-  ['head', null, 0, 2.06, 0.29, 0.1, 0.06, 0.1, 'skin', 0.01, null],
+  ['head', null, 0.02, 2.03, 0.3, 0.105, 0.07, 0.11, 'skin', 0.01, null], // the jaw, grown long, hanging crooked
+  ['head', null, 0.03, 1.985, 0.34, 0.075, 0.035, 0.07, 'skinDark', 0.006, null],
+  ['head', null, -0.11, 2.27, 0.2, 0.1, 0.11, 0.11, 'raw', 0.02, null], // a tumour swelling the club side of its skull
+  ['head', null, -0.15, 2.2, 0.27, 0.06, 0.06, 0.06, 'skinDark', 0.012, null],
+  // His belt, still on him, and its buckle; the shirt's tails hanging from it in strips.
+  ['hips', null, 0, 1.13, 0, 0.375, 0.045, 0.285, 'belt', 0.004, null],
+  ['hips', null, 0.02, 1.13, 0.275, 0.05, 0.04, 0.02, 'buckle', 0, null],
+  ['hips', null, -0.2, 0.93, 0.24, 0.07, 0.16, 0.02, 'shirt', 0.012, null],
+  ['hips', null, 0.24, 0.98, 0.2, 0.05, 0.12, 0.02, 'shirt', 0.01, null],
+  ['hips', null, 0.3, 0.9, -0.14, 0.06, 0.19, 0.02, 'shirt', 0.012, null],
+  ['hips', null, -0.1, 0.95, -0.27, 0.08, 0.15, 0.02, 'shirt', 0.012, null],
+  // A small dead arm under the wasted one: the start of a third. Its hand, three knuckles.
+  ['chest', null, 0.5, 1.5, 0.2, 0.035, 0.04, 0.04, 'skinDark', 0.006, null],
   // The club: a swollen fist, its knuckles forward.
   ['wristR', null, -0.88, 0.5, 0.3, 0.24, 0.22, 0.25, 'skinDark', 0.045, null],
   ['wristR', null, -0.78, 0.44, 0.48, 0.075, 0.07, 0.075, 'skinDark', 0.01, null],
@@ -80,7 +99,10 @@ const MASSES = [
   ['wristL', null, 0.71, 0.68, 0.32, 0.028, 0.028, 0.028, 'skinDark', 0, null],
   // Feet.
   ['ankleR', null, -0.27, 0.06, 0.08, 0.11, 0.065, 0.19, 'skinDark', 0.015, null],
-  ['ankleL', null, 0.27, 0.06, 0.08, 0.11, 0.065, 0.19, 'skinDark', 0.015, null],
+  // The left: one work boot left on it, its sole and its toe cap.
+  ['ankleL', null, 0.27, 0.075, 0.08, 0.125, 0.085, 0.215, 'boot', 0.01, null],
+  ['ankleL', null, 0.27, 0.025, 0.09, 0.13, 0.03, 0.225, 'belt', 0, null],
+  ['ankleL', null, 0.27, 0.19, 0.0, 0.11, 0.1, 0.12, 'boot', 0.01, null],
 ];
 
 // Eyes: small, pale, a steady glow (aGlow.y).
@@ -103,6 +125,13 @@ const LIMBS = [
   ['kneeL', 'ankleL', 0.13, 0.09, 'shin', 0.02, 0.25],
 ];
 
+// Round 2: limp growths skinned to one bone (no joint of their own): [bone, from x, y, z, to x, y, z, radius
+// at from, at to, paint, lumps]: the dead third arm, upper and fore.
+const GROWTHS = [
+  ['chest', 0.4, 1.62, 0.12, 0.47, 1.52, 0.17, 0.045, 0.032, 'skinDark', 0.008],
+  ['chest', 0.47, 1.52, 0.17, 0.5, 1.5, 0.2, 0.032, 0.022, 'skin', 0.006],
+];
+
 
 // Bone spurs out of the club and the club side's shoulder: [bone, base x, y, z, tip x, y, z, radius].
 const SPURS = [
@@ -111,6 +140,43 @@ const SPURS = [
   ['wristR', -0.98, 0.38, 0.44, -1.1, 0.32, 0.62, 0.035],
   ['elbowR', -0.98, 1.0, 0.18, -1.18, 1.06, 0.12, 0.035],
   ['chest', -0.66, 2.02, -0.06, -0.8, 2.22, -0.14, 0.04],
+  // Round 2: a ridge of them breaking out along the spine and over the hump, crooked, the tallest at its top.
+  ['spine', 0.02, 1.36, -0.24, 0.03, 1.4, -0.42, 0.03],
+  ['chest', -0.03, 1.62, -0.3, -0.06, 1.66, -0.5, 0.034],
+  ['chest', 0.16, 2.12, -0.42, 0.24, 2.3, -0.6, 0.04],
+  ['chest', -0.1, 2.26, -0.36, -0.16, 2.52, -0.5, 0.045],
+  ['chest', 0.08, 2.3, -0.16, 0.12, 2.56, -0.2, 0.04],
+  ['chest', -0.3, 2.22, -0.14, -0.4, 2.44, -0.16, 0.034],
+  ['chest', 0.34, 2.14, -0.16, 0.48, 2.3, -0.2, 0.03],
+  // One through the club's elbow, one out of the club side's forearm.
+  ['elbowR', -0.92, 1.22, 0.06, -1.06, 1.34, -0.08, 0.03],
+  ['elbowR', -1.02, 0.84, 0.3, -1.2, 0.86, 0.36, 0.03],
+  // The bare right foot's claws.
+  ['ankleR', -0.33, 0.04, 0.24, -0.35, 0.02, 0.36, 0.022],
+  ['ankleR', -0.27, 0.04, 0.26, -0.27, 0.02, 0.39, 0.024],
+  ['ankleR', -0.21, 0.04, 0.24, -0.19, 0.02, 0.36, 0.022],
+  // The dead arm's three fingers.
+  ['chest', 0.5, 1.49, 0.22, 0.5, 1.43, 0.27, 0.01],
+  ['chest', 0.52, 1.49, 0.21, 0.54, 1.44, 0.25, 0.01],
+  ['chest', 0.48, 1.49, 0.21, 0.47, 1.44, 0.26, 0.009],
+];
+
+// Round 2: the wasted side's ribs, showing through split skin: bars of bone curving round its left flank
+// ([y, how far round they start and end (radians from the front, toward its left)]; they lie on the chest's
+// and the belly's masses); and its teeth: a crooked row along the long jaw ([x, height]).
+const RIBS = [
+  [1.74, 0.55, 2.0],
+  [1.65, 0.6, 2.1],
+  [1.56, 0.7, 2.1],
+  [1.47, 0.8, 2.0],
+];
+const TEETH = [
+  [-0.055, 0.034],
+  [-0.03, 0.05],
+  [-0.004, 0.03],
+  [0.02, 0.055],
+  [0.045, 0.036],
+  [0.07, 0.044],
 ];
 
 // Build the skinned geometry. look: config.mutant.look. Returns { geometry }
@@ -138,6 +204,42 @@ export function buildMutantGeometry(look) {
   }
   for (const [bone, ax, ay, az, bx, by, bz, r] of SPURS) {
     parts.push(finish(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r, 0.004, 5, 2), { bone, paint: paint.bone, key: 'bone', lumps: 0, glow: [0, 0], colours: paint }));
+  }
+  // Round 2: the dead arm; the ribs (each a bar of short straight runs round the flank, a dark split of raw
+  // flesh behind it); the teeth, up from the long jaw.
+  for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key, lumps] of GROWTHS) {
+    parts.push(finish(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, 7, 3, 0.1), { bone, paint: paint[key], key, lumps, glow: [0, 0], colours: paint }));
+  }
+  const ribPaint = paint.bone.clone().lerp(paint.skin, 0.4);
+  // The body's half-width and half-depth at a height: the chest's mass or the belly's, whichever's wider there.
+  const girth = (y) => {
+    const of = (cy, rx, ry, rz) => {
+      const k = Math.sqrt(Math.max(0, 1 - ((y - cy) / ry) ** 2));
+      return [rx * k, rz * k];
+    };
+    const a = of(1.67, 0.52, 0.34, 0.38);
+    const b = of(1.27, 0.4, 0.3, 0.34);
+    return a[0] > b[0] ? [a[0], a[1], 0.12] : [b[0], b[1], 0.08];
+  };
+  for (const [y, a0, a1] of RIBS) {
+    const runs = 8;
+    const at = (a) => {
+      const yy = y - (a - a0) * 0.07; // they slope down toward the back
+      const [rx, rz, cz] = girth(yy);
+      return new THREE.Vector3(Math.sin(a) * (rx + 0.006), yy, cz + Math.cos(a) * (rz + 0.006));
+    };
+    for (let i = 0; i < runs; i++) {
+      const p0 = at(a0 + ((a1 - a0) * i) / runs);
+      const p1 = at(a0 + ((a1 - a0) * (i + 1)) / runs);
+      parts.push(finish(tube(p0, p1, 0.017, 0.017, 5, 1), { bone: 'chest', other: 'spine', share: 0.3, paint: ribPaint, key: 'bone', lumps: 0, glow: [0, 0], colours: paint }));
+      // The split it shows through: raw and dark, just under it.
+      const lo0 = p0.clone().setY(p0.y - 0.026);
+      const lo1 = p1.clone().setY(p1.y - 0.026);
+      parts.push(finish(tube(lo0, lo1, 0.012, 0.012, 4, 1), { bone: 'chest', other: 'spine', share: 0.3, paint: paint.mouth, key: 'mouth', lumps: 0, glow: [0, 0], colours: paint }));
+    }
+  }
+  for (const [x, h] of TEETH) {
+    parts.push(finish(tube(new THREE.Vector3(x + 0.02, 2.0, 0.385 - Math.abs(x) * 0.5), new THREE.Vector3(x + 0.02 + x * 0.1, 2.0 + h, 0.39 - Math.abs(x) * 0.5), 0.011, 0.003, 4, 1), { bone: 'head', paint: paint.bone, key: 'bone', lumps: 0, glow: [0, 0], colours: paint }));
   }
   const geometry = mergeGeometries(parts);
   for (const p of parts) p.dispose();
@@ -198,6 +300,9 @@ function paints(look) {
     shin: c(look.skin), // torn jeans: skin below the knee, rags above (paintVertex)
     shirtBand: c(look.skin), // a strip of shirt across the chest (paintVertex)
     shirt: c(look.shirt),
+    belt: c(look.belt ?? 0x1a1410),
+    buckle: c(look.buckle ?? 0x6a644e),
+    boot: c(look.boot ?? 0x241a12),
   };
 }
 
@@ -291,7 +396,7 @@ function paintVertex(o, p, n, out) {
   const c = o.colours;
   out.copy(o.paint);
   const bare = o.key === 'skin' || o.key === 'skinDark' || o.key === 'shin' || o.key === 'shirtBand';
-  let cloth = o.key === 'jeans';
+  let cloth = o.key === 'jeans' || o.key === 'shirt' || o.key === 'belt' || o.key === 'boot' || o.key === 'buckle';
   // The jeans' legs, torn off ragged above the knee.
   if (o.key === 'shin' && p.y > 0.42 + noise3(p.x * 20, p.y * 3, p.z * 20) * 0.14) {
     out.copy(c.jeans);

@@ -188,6 +188,7 @@ export class EnemyManager {
     slot.helmetOff = false;
     // Round 1 plan #12 / #14: an encounter's dulled senses; a reused slot starts clear.
     slot.sightScale = 1;
+    slot.screamT = 0; // Round 2: the Screamer's scream pose (ai/Screamers.js)
     slot.deaf = false;
     this.brain.reset(slot, opts.mode ?? 'chase');
     return slot;

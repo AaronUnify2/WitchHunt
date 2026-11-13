@@ -386,6 +386,7 @@ export class Zombie {
       case 'burrow':
         return f.walk[0];
       case 'walk':
+        if (this.screamT > 0) return f.attackWindup; // Round 2: the Screamer, screaming (ai/Screamers.js)
         return f.walk[Math.floor(this.walked * this.cfg.walkFrameRate * f.walk.length) % f.walk.length];
       case 'attack':
         return this.struck ? f.attackStrike : f.attackWindup;
