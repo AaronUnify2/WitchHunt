@@ -251,10 +251,10 @@ export class MiloBarn {
       this.timer = 0;
       this.dialogue?.play('milo.stage', {}, false);
     }
-    // The gates afterwards: Tom near them, either side (never once he's been thrown out).
+    // The gates afterwards: once he's let Tom in they stay open (never once he's been thrown out).
     if (this.state === 'gates' || this.state === 'letIn') this.gateWant = this.scene_ === 'open' ? 1 : 0;
     else if (this.manToday) this.gateWant = 1; // the morning after, he's left them open
-    else if (this.has('miloGates') && !refused) this.gateWant = dGate < 7 ? 1 : 0;
+    else if (this.has('miloGates') && !refused) this.gateWant = 1;
     else this.gateWant = 0;
     if (refused && !inside && dGate < 6 && !this.subtitles?.busy && this.timer > 12) {
       this.timer = 0;
@@ -351,7 +351,7 @@ export class MiloBarn {
     let goal = this.goal;
     if (man) goal = this.morningSpot();
     else if (this.act || (this.has('miloGates') && this.local().z > this.bc.barn.z - this.bc.barn.depth / 2 - 1)) goal = this.site.spots.throwFrom;
-    else if (this.gateWant > 0 || this.state === 'gates') goal = this.gateSpot();
+    else if (this.gateWant > this.gateOpen || this.state === 'gates' || this.state === 'letIn') goal = this.gateSpot(); // at the gates only while there's a gate to open
     if (goal && !['throw', 'bow', 'indignant'].includes(m.state)) {
       const dx = goal.x - m.x;
       const dz = goal.z - m.z;
