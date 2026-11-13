@@ -106,3 +106,115 @@ describe('Day 1: the tape before the gun (plan #7)', () => {
     expect(config.firstDay.prompts.healBelow).toBeGreaterThan(0);
   });
 });
+
+// ---- batch 2: Night 2 is when the loop arrives ----
+import { StormShelter } from '../src/encounters/StormShelter.js';
+import { TrailCams } from '../src/story/TrailCams.js';
+import { placeTrailCams, camSees } from '../src/story/trailCamPlacement.js';
+import { Rng } from '../src/core/Rng.js';
+import { EventBus } from '../src/core/EventBus.js';
+import clusterData from '../src/data/openingCluster.json';
+import progressData from '../src/data/progress.json';
+import { makeMap } from './mapFixture.js';
+
+describe("Day 2's dusk waits for the hatch (plan #9)", () => {
+  const h = config.stormShelter.duskHold;
+  const shelter = (flags = ['shelterCall']) => {
+    const s = Object.create(StormShelter.prototype);
+    s.sc = config.stormShelter;
+    s.clock = { phase: 'day', currentPhase: { seconds: 480 }, phaseElapsed: 470 };
+    s.progress = { has: (f) => flags.includes(f) };
+    s.player = { position: { x: 0, z: 0 } };
+    s.hatchAt = { x: 0, z: 0 };
+    s.beenDown = false;
+    s.keysTaken = false;
+    s.duskHeld = 0;
+    return s;
+  };
+
+  it('holds the day short of dusk once the shelter is called, until Tom goes down', () => {
+    const s = shelter();
+    s.holdDusk(1 / 30);
+    expect(s.clock.phaseElapsed).toBe(480 - h.holdBeforeDusk);
+    s.beenDown = true;
+    s.clock.phaseElapsed = 470;
+    s.holdDusk(1 / 30);
+    expect(s.clock.phaseElapsed).toBe(470);
+  });
+
+  it('not before the call, not for ever, and not once he has left with the keys', () => {
+    const before = shelter([]);
+    before.holdDusk(1 / 30);
+    expect(before.clock.phaseElapsed).toBe(470);
+    const long = shelter();
+    long.duskHeld = h.holdMax;
+    long.holdDusk(1 / 30);
+    expect(long.clock.phaseElapsed).toBe(470);
+    const gone = shelter();
+    gone.keysTaken = true;
+    gone.player.position.x = h.releaseDistance + 5;
+    gone.holdDusk(1 / 30);
+    expect(gone.clock.phaseElapsed).toBe(470);
+  });
+
+  it('has dusk versions of the home stop lines', () => {
+    for (const id of ['home.stop.call.dusk', 'home.stop.night']) expect(ids.has(id)).toBe(true);
+  });
+});
+
+describe('camera seven at the family plot (plan #10)', () => {
+  const map = makeMap(1234);
+  const cams = placeTrailCams(map, new Rng('1234:trailcams'), config.trailCams, clusterData.trailCams);
+
+  it('is fixed at the plot, sees its centre, and the frontier keeps its five', () => {
+    const seven = cams.find((c) => c.id === 7);
+    expect(seven?.fixed).toBe(true);
+    expect(seven?.story).toBe(true);
+    const plot = map.clearings.find((c) => c.cluster && c.key === 'familyCemetery');
+    expect(camSees(seven, plot.x, plot.z, config.trailCams.range)).toBe(true);
+    expect(cams.filter((c) => !c.fixed)).toHaveLength(config.trailCams.count - clusterData.trailCams.length);
+    expect(progressData.flags.some((f) => f.id === 'plotCamSeen')).toBe(true);
+    for (const id of ['trailcam.plot', 'nights.forecast.2']) expect(ids.has(id)).toBe(true);
+  });
+
+  it('the first report from it is quick, spoken, and offers the feed on D-pad down; later ones are toasts', () => {
+    const bus = new EventBus();
+    const flags = new Set();
+    const t = Object.create(TrailCams.prototype);
+    Object.assign(t, { cfg: config, tc: config.trailCams, bus, rng: new Rng('x'), time: 0, reports: [], lastSighting: null });
+    const played = [];
+    const offers = [];
+    const toasts = [];
+    Object.assign(t, {
+      witch: { x: 0, z: 0, state: 'planting' },
+      clock: { day: 2, hourOfDay: 21 },
+      progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) },
+      dialogue: { play: (id) => played.push(id) },
+      watch: { offer: (o) => offers.push(o) },
+      notify: (x) => toasts.push(x),
+    });
+    const cam = { id: 7, name: 'Camera 7', x: 0, z: 0, facing: 0, story: true, sightings: [], cooldown: 0 };
+    t.caught(cam);
+    expect(t.reports[0].at).toBe(config.trailCams.firstPlotReport.delay);
+    t.report(cam, cam.sightings[0]);
+    expect(played).toEqual(['trailcam.plot']);
+    expect(offers).toHaveLength(1);
+    expect(toasts).toHaveLength(0);
+    expect(flags.has('plotCamSeen')).toBe(true);
+    t.report(cam, cam.sightings[0]);
+    expect(toasts).toHaveLength(1);
+  });
+});
+
+describe('the dawn report (plan #11)', () => {
+  it("says the fence box's charge, damaged panels and what's still in the ground", () => {
+    const n = Object.create(NightWatch.prototype);
+    n.station = { state: { charge: 0, capacity: 300, segments: [{ health: 500, max: 500 }, { health: 200, max: 500 }] } };
+    n.director = { sigils: { list: [{ known: true }] }, describe: () => 'at the family cemetery' };
+    const r = n.dawnReport();
+    expect(r).toMatch(/Fence charge 0 of 300/);
+    expect(r).toMatch(/1 fence panel damaged/);
+    expect(r).toMatch(/1 sigil still in the ground \(at the family cemetery\)/);
+    expect(ids.has('nights.boxFlat')).toBe(true);
+  });
+});

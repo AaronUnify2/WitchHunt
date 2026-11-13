@@ -73,7 +73,7 @@ export class NightWatch {
 
   // What's happened while you were away (shown when you're back).
   newLog() {
-    this.log = { attacks: 0, zombies: 0, damage: 0, broke: [], rounds: 0, kills: 0 };
+    this.log = { attacks: 0, zombies: 0, damage: 0, broke: [], rounds: 0, kills: 0, chargeAtStart: this.station?.state?.charge ?? null };
     this.brokenAtStart = new Set();
     if (this.station) for (const b of this.station.state.barriers()) if (b.health <= 0) this.brokenAtStart.add(b.id);
   }
@@ -500,8 +500,26 @@ export class NightWatch {
     if (log.attacks === 0) return;
     const broke = log.broke.length ? `Broken: ${log.broke.join(', ')}.` : 'Nothing broke.';
     const turret = log.rounds >= 1 ? ` The turret fired ${Math.round(log.rounds)} rounds and took down ${log.kills}.` : '';
-    this.notify(`While you were away: ${log.attacks} attack${log.attacks === 1 ? '' : 's'} by ${log.zombies} zombies. ${broke}${turret}`);
+    // Plan #11: what it cost the fence box.
+    const st = this.station?.state;
+    const charge = st && log.chargeAtStart !== null ? ` Fence charge ${Math.round(log.chargeAtStart)} → ${Math.round(st.charge)}.` : '';
+    this.notify(`While you were away: ${log.attacks} attack${log.attacks === 1 ? '' : 's'} by ${log.zombies} zombies. ${broke}${turret}${charge}`);
     this.newLog();
+  }
+
+  // Plan #11: the dawn toast's second line: what the night cost, and what's still in the ground.
+  dawnReport() {
+    const st = this.station?.state;
+    if (!st) return '';
+    const parts = [`Fence charge ${Math.round(st.charge)} of ${Math.round(st.capacity)}`];
+    const damaged = st.segments.filter((g) => g.health < g.max).length;
+    if (damaged) parts.push(`${damaged} fence panel${damaged === 1 ? '' : 's'} damaged`);
+    const sigils = this.director?.sigils?.list ?? [];
+    if (sigils.length) {
+      const where = sigils.length === 1 && sigils[0].known ? ` (${this.director.describe?.(sigils[0]) || 'marked'})` : '';
+      parts.push(`${sigils.length} sigil${sigils.length === 1 ? '' : 's'} still in the ground${where}`);
+    }
+    return parts.join('  ·  ');
   }
 
   checkAlarm(phase) {

@@ -129,6 +129,7 @@ export class StormShelter {
     this.earlDown = false;
     this.keysAt = null; // where Earl fell (his keys), until they're taken
     this.keysTaken = false;
+    this.duskHeld = 0; // Plan #9: seconds the day's been held short of dusk for the hatch fight
     this.sigilDug = false;
     this.risenTold = false;
     this.riseTimer = 0;
@@ -217,6 +218,7 @@ export class StormShelter {
   update(dt, input, playing, canInteract) {
     this.props?.update(dt);
     if (!this.frame) return;
+    this.holdDusk(dt);
     this.animateHatch(dt);
     if (!playing) {
       this.hud.prompt = '';
@@ -234,6 +236,27 @@ export class StormShelter {
       this.hud.progress = 0;
       this.digging = false;
       this.hold.update(dt, null, false, 1);
+    }
+  }
+
+  // Plan #9 (the first-third plan): the hatch fight was staged for daylight ('In daylight', Ellen says),
+  // but Day 2's script doesn't fit Day 2. Like Day 1's 17:00 hold and Night 1's hold short of dawn,
+  // once the shelter's been called the day stops `holdBeforeDusk` seconds short of dusk until Tom
+  // first goes down the hatch (the last seconds run out while he's in the room, its clock showing
+  // them), he leaves with Earl's keys without going down, or `holdMax` held seconds have passed.
+  holdDusk(dt) {
+    const h = this.sc.duskHold;
+    const c = this.clock;
+    if (!h || !c || c.phase !== 'day' || this.beenDown || this.duskHeld >= h.holdMax) return;
+    if (!this.progress?.has('shelterCall')) return;
+    if (this.keysTaken && this.hatchAt) {
+      const p = this.player.position;
+      if (Math.hypot(p.x - this.hatchAt.x, p.z - this.hatchAt.z) > h.releaseDistance) return;
+    }
+    const at = c.currentPhase.seconds - h.holdBeforeDusk;
+    if (c.phaseElapsed > at) {
+      this.duskHeld += Math.min(dt, c.phaseElapsed - at);
+      c.phaseElapsed = at;
     }
   }
 
@@ -573,6 +596,7 @@ export class StormShelter {
       searched: [...this.searched],
       beenDown: this.beenDown,
       tapesWatched: this.tapesWatched,
+      duskHeld: this.duskHeld, // Plan #9
     };
   }
 
@@ -592,6 +616,7 @@ export class StormShelter {
     this.props?.setHatch(this.hatch, this.hatchOpen);
     this.searched = new Set(d.searched ?? []);
     this.beenDown = Boolean(d.beenDown);
+    this.duskHeld = Number.isFinite(d.duskHeld) ? d.duskHeld : 0;
     // An older save handed them in to watch: count those as watched. Else, taken and not watched: offered again.
     this.tapesWatched = Boolean(d.tapesWatched) || Boolean(this.lore?.handedIn?.includes('pruittTapes'));
     if (this.searched.has('tapes') && !this.tapesWatched) this.offerTapes();

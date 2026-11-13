@@ -17,7 +17,7 @@ export function placeTrailCams(map, rng, cfg, fixed = []) {
     const c = map.clearings.find((x) => x.cluster && x.key === f.near);
     const x = c.x + f.dx;
     const z = c.z + f.dz;
-    return { id: f.id, name: `Camera ${f.id}`, x, z, facing: Math.atan2(x - c.x, z - c.z), clearingId: c.id, fixed: true };
+    return { id: f.id, name: `Camera ${f.id}`, x, z, facing: Math.atan2(x - c.x, z - c.z), clearingId: c.id, fixed: true, ...(f.story ? { story: true } : {}) }; // Plan #10: story: the plot's camera
   });
   const seeded = placeSeeded(map, rng, { ...cfg, count: cfg.count - pinned.length });
   return [...seeded, ...pinned];

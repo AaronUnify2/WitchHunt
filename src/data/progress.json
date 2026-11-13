@@ -54,6 +54,7 @@
     {"id": "stairsClimbed", "about": "Session 26 (story spine, beat 5): Tom has climbed the stairs into the place beyond."},
     {"id": "junieFound", "about": "Session 26: Tom found Junie in the place beyond (three silent paths in a row). She follows him home; she can't be hurt."},
     {"id": "junieHome", "about": "Session 26/27 (story spine, beat 5): Tom has brought Junie home from the place beyond. The family are three again."},
+    {"id": "plotCamSeen", "about": "Plan #10: camera seven at the family plot has caught the witch for the first time (story/TrailCams.js): Ellen's call and the feed on D-pad down came once."},
     {"id": "cellAsked", "about": "Session 33: after the homecoming, Ellen has asked for the plane's alien power cell for the fence (encounters/Stairs.js updateCellAsk). The goal is the fence box (or back to the plane for it)."},
     {"id": "familyPlan", "about": "Build queue item 1: the family have told Tom the plan in the cabin (the Keeper is Earl's Bigfoot; his maps are in the storm shelter). encounters/CordonDozer.js."},
     {"id": "earlMaps", "about": "Build queue item 1: Earl's maps of the north ridge taken from the storm shelter's corkboard and read: the cave is at the end of the old road; the plan needs the army's dozer."},

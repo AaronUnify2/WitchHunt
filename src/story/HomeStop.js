@@ -49,7 +49,8 @@ export class HomeStop {
     }
     if (!this.called && d < this.hc.callDistance) {
       this.called = true;
-      this.dialogue?.play('home.stop.call');
+      // Plan #9: at dusk or after dark, the call says so.
+      this.dialogue?.play(this.late() ? 'home.stop.call.dusk' : 'home.stop.call');
       this.bus.emit('homeStop:called');
     }
     // On past home to the gas station without stopping: it's skipped, never pointed back to.
@@ -61,8 +62,16 @@ export class HomeStop {
     this.progress.setFlag('homeStop');
     const battery = (this.combat?.inventory?.batteries ?? 0) > 0;
     this.dialogue?.play(battery ? 'home.stop.battery' : 'home.stop.ledger');
+    // Plan #9: with night coming, the choice: sit it out behind the wire, or go on for the safe.
+    if (this.late()) this.dialogue?.play('home.stop.night');
     this.hint?.(this.hc.hintPad, this.hc.hintKey);
     this.bus.emit('homeStop:made');
+  }
+
+  // Dusk or night (Plan #9).
+  late() {
+    const ph = this.clock?.phase;
+    return ph === 'dusk' || ph === 'night';
   }
 
   saveState() {

@@ -39,6 +39,13 @@ export class TrailCams {
     this.lastSighting = null;
     this.mapUi.setTrailCams(this.list, this.tc.map, () => this.time);
     this.build(scene);
+    // Plan #10: a sigil she plants where a fixed cluster camera sees it is on the map (the family watched it go in).
+    this.unsubscribers = [
+      this.bus.on('witch:planted', ({ sigil, scripted }) => {
+        if (scripted || !sigil) return;
+        if (this.list.some((c) => c.fixed && camSees(c, sigil.x, sigil.z, this.tc.range))) sigil.known = true;
+      }),
+    ];
     // Session 14 (Aaron: the boxes glared): the torch's glare check sees each
     // camera, so the beam dims on it up close. Bodies and shots pass.
     for (const cam of this.list) ctx.colliders?.insert({ x: cam.x, z: cam.z, r: 0.12, vr: 0.3, top: cam.y + this.tc.post.height, noBody: true, glareOnly: true });
@@ -101,7 +108,9 @@ export class TrailCams {
   // She's on camera: the report comes later.
   caught(cam) {
     const w = this.witch;
-    const d = this.tc.reportDelay;
+    // Plan #10: the plot's camera, the first time: the family see it quickly, while her ritual's still on.
+    const first = this.firstPlotReport(cam);
+    const d = first ? { min: this.tc.firstPlotReport.delay, max: this.tc.firstPlotReport.delay } : this.tc.reportDelay;
     cam.cooldown = this.tc.cooldown;
     const sighting = { x: w.x, z: w.z, state: w.state, night: this.clock.day, hour: this.clock.hourOfDay, time: this.time };
     cam.sightings.push(sighting);
@@ -115,8 +124,24 @@ export class TrailCams {
     cam.leadUntil = this.time + this.tc.leadSeconds;
     this.lastSighting = { cam, sighting };
     this.sfx?.play('radioCrackle');
-    this.notify(`${cam.name.toUpperCase()}: something moved past it. It's marked on your map`);
+    if (this.firstPlotReport(cam)) this.reportPlot(cam, sighting);
+    else this.notify(`${cam.name.toUpperCase()}: something moved past it. It's marked on your map`);
     this.bus.emit('witch:trailCam', { cam, sighting });
+  }
+
+  // Plan #10: the first time the family plot's camera (a 'story' camera) catches her, before the cordon.
+  firstPlotReport(cam) {
+    return Boolean(cam.story && this.tc.firstPlotReport && this.progress && !this.progress.has('plotCamSeen') && !this.progress.has('crossedCordon'));
+  }
+
+  // Ellen calls it, the camera stays marked longer, and the feed waits on D-pad down (never forced, as camera six's).
+  reportPlot(cam, sighting) {
+    this.progress.setFlag('plotCamSeen');
+    cam.leadUntil = this.time + this.tc.firstPlotReport.lead;
+    this.dialogue?.play('trailcam.plot');
+    const anchors = { trailCam: { x: cam.x, z: cam.z, yaw: cam.facing } };
+    const play = () => this.cutscenes?.play('clip.sighting', { anchors, osd: { name: cam.name.toUpperCase() } });
+    this.watch?.offer({ id: `trailCam${cam.id}`, pad: `D-pad down: watch ${cam.name.toLowerCase()}`, key: `V: watch ${cam.name.toLowerCase()}`, play });
   }
 
   // ---- debug and overlay ------------------------------------------------------------------
@@ -151,6 +176,7 @@ export class TrailCams {
   }
 
   dispose() {
+    for (const off of this.unsubscribers ?? []) off();
     this.mesh.removeFromParent();
     this.geometry.dispose();
     this.material.dispose();

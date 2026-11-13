@@ -236,7 +236,10 @@ export class ZombieDirector {
     const w = this.world;
     const taken = planned.length ? [...this.sigils.list, ...planned] : this.sigils.list;
     const plannedGrounds = new Set(planned.map((s) => s.groundId));
-    return chooseSigilSpot(w.map, w.ground, taken, null, this.cfg.planter, this.plantRng, (id) => this.sigils.groundFree(id) && !plannedGrounds.has(id), this.plantArea?.() ?? null);
+    // Plan #10: her first real planting (night 2, before the cordon) goes to the cluster's sigil ground,
+    // under camera seven, the same on every run, as the rest of the opening is.
+    const planter = this.forceGround?.() ? { ...this.cfg.planter, groundChance: 1 } : this.cfg.planter;
+    return chooseSigilSpot(w.map, w.ground, taken, null, planter, this.plantRng, (id) => this.sigils.groundFree(id) && !plannedGrounds.has(id), this.plantArea?.() ?? null);
   }
 
   // Debug: one sigil by her rules, at once (no witch walking there).

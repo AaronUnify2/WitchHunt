@@ -141,6 +141,7 @@ body {
 
 /* Toast */
 .toast {
+  white-space: pre-line; /* Plan #11: the dawn toast's second line */
   position: absolute;
   top: var(--safe);
   left: 50%;

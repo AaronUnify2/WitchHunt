@@ -3321,6 +3321,9 @@ export const config = {
       light: { ambientDay: 3.2, ambientNight: 1.1, ambientColor: 0x9a9080, fogColor: 0x080706, fogNear: 5, fogFar: 30 }, // ambientDay / ambientNight: daylight down the hatch by day, less by night (blended by the hour)
     },
     keysRange: 1.8,
+    // Plan #9: once the shelter's called, the day holds holdBeforeDusk seconds short of dusk until Tom
+    // first goes down the hatch, leaves releaseDistance metres from it with the keys, or holdMax seconds held.
+    duskHold: { holdBeforeDusk: 25, holdMax: 240, releaseDistance: 60 },
     hold: { digHatch: 2.6, openHatch: 1.0, climbDown: 0.8, climbUp: 0.8, keys: 0.8 },
     look: {
       // Session 19 (style pass 2): the keys' glint and the colouring book's pale pages stay bright (on purpose); rust on the hatch and the tins.
@@ -5546,7 +5549,7 @@ export const config = {
   // and middle bands. They report the witch only if she passes one, after
   // a delay, and the map marks the camera, not her: a lead, never a tracker.
   trailCams: {
-    count: 6,
+    count: 7, // Plan #10: was 6 (camera seven at the family plot is fixed; the frontier keeps its five)
     bands: ['north', 'middle'],
     minSpacing: 120, // metres between cameras
     fromCentre: 0.6, // fraction of a clearing's radius: the camera's post sits at its edge, facing in
@@ -5554,6 +5557,7 @@ export const config = {
     cooldown: 90, // seconds before the same camera can report her again
     reportDelay: { min: 25, max: 60 }, // seconds from her passing to the family's call
     leadSeconds: 240, // how long the map marks the camera after a report
+    firstPlotReport: { delay: 12, lead: 480 }, // Plan #10: the plot's camera, the first time: reported in `delay` s (her ritual's still on), marked `lead` s
     post: { height: 1.6, color: 0x2a241c, box: 0x1c2219, led: 0xff3020 }, // darker (Aaron, Session 14: the boxes glared)
     map: { color: '#8cc4ec', leadColor: '#ff6a4a', screenPixels: 6, minimapPixels: 4 }, // Session 16 (Aaron): blue (green read as the witch's)
   },

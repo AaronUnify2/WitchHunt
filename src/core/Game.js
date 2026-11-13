@@ -511,6 +511,8 @@ export class Game {
     const cordonZ = this.world.map.cluster.cordonZ;
     const margin = this.cfg.witch.clusterPlantMargin;
     this.director.plantArea = () => (this.progress.has('crossedCordon') ? null : (x, z) => z < cordonZ - margin);
+    // Plan #10: her first real night out (night 2), she buries it at the family plot, under camera seven.
+    this.director.forceGround = () => this.clock.day === this.cfg.witch.firstNight && !this.progress.has('crossedCordon');
     // Running from her (Aaron): a short leash in the early game.
     const pursuit = this.cfg.witch.pursuit;
     this.witch.pursuitLeash = () => (this.progress.has('crossedCordon') ? pursuit.leashLate : pursuit.leashEarly);
@@ -584,6 +586,7 @@ export class Game {
       paper: this.paper,
       card: this.card, // Session 20
       interiors: this.interiors, // Session 21: the room below is an interior
+      clock: this.clock, // Plan #9: Day 2's dusk waits for Tom to go down the hatch
       notify: (text) => this.toast.show(text),
     });
     this.combat.promptSources.push(this.shelter.hud);
@@ -624,8 +627,11 @@ export class Game {
       progress: this.progress,
       dialogue: this.dialogue,
       combat: this.combat,
+      clock: this.clock, // Plan #9: the stop's dusk lines
       hint: (pad, key) => this.hints.show(this.input.activeDevice === 'gamepad' ? pad : key, this.cfg.homeStop.hintSeconds),
     });
+    // Plan #10: the trail cams' first report from the family plot speaks and offers the feed (made before these).
+    Object.assign(this.trailCams, { progress: this.progress, dialogue: this.dialogue, watch: this.watch, cutscenes: this.cutscenes });
     this.firstDay = new FirstDay(this.cfg, this.bus);
     this.firstDay.init({
       watch: this.watch,
@@ -1418,7 +1424,13 @@ export class Game {
       bus.on('run:newRequested', () => this.newRun()),
       // M6: autosave at each dawn; the save goes when the run ends (permadeath).
       bus.on('phase:dawn', () => {
-        if (this.cfg.save.autosaveAtDawn && this.state === 'running' && this.combat.alive && this.autosave()) this.toast.show(`Dawn: night ${this.clock.day} survived. Game saved`);
+        if (this.cfg.save.autosaveAtDawn && this.state === 'running' && this.combat.alive && this.autosave()) {
+          // Plan #11: and what the night cost.
+          const report = this.nightWatch?.dawnReport?.() ?? '';
+          this.toast.show(`Dawn: night ${this.clock.day} survived. Game saved${report ? `\n${report}` : ''}`, report ? this.cfg.ui.toastSeconds * 2 : undefined);
+        }
+        // Plan #11: the first dawn the fence box is flat, Wyatt says so.
+        if (this.state === 'running' && this.clock.day > 1 && this.station.state.charge <= 0 && !this.dialogue.heard?.has('nights.boxFlat')) this.dialogue.play('nights.boxFlat');
       }),
       bus.on('player:died', () => {
         this.saves.clear();

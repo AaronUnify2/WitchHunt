@@ -19,7 +19,8 @@
     { "a": "gasStation", "b": "bigfootCave", "road": "north" }
   ],
   "trailCams": [
-    { "id": 6, "near": "stormShelter", "dx": -11, "dz": -10 }
+    { "id": 6, "near": "stormShelter", "dx": -11, "dz": -10 },
+    { "id": 7, "near": "familyCemetery", "dx": -8, "dz": -7, "story": true }
   ],
   "gates": [
     { "id": "shelterSpur", "kind": "pipeGate", "path": ["home", "stormShelter"], "at": 78, "opensOn": "shelterCall", "locked": "Padlocked. A sign on the gate: PRIVATE \u2014 PRUITT LAND." },
