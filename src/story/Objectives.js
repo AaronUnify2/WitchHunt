@@ -87,8 +87,9 @@ export class Objectives {
       if (!has('towerClimbed')) return step('tower', 'Go outside and climb the lookout tower. Ellen needs eyes on the woods.', L.tower.ladder);
       if (!has('campsiteVisited')) return step('campsite', 'Check on the campers at the campground, west of home.', clearing('campsite'));
       if (watching('camcorder')) return step('camcorder', "Watch the campers' camcorder (D-pad down).");
-      if (!cs.shotgunFound || !cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
+      // Plan #7: the fight first, while it's on (the shotgun taken before the camcorder).
       if (cs.waveStarted && !cs.waveCleared) return step('wave', 'Fight off the dead at the campground.');
+      if (!cs.shotgunFound || !cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
       if (!has('campsiteBattery') && g.combat.inventory.batteries <= 0 && !has('day1Battery')) return step('battery', "Take the battery from the campers' car for the fence.", cs.car);
       if (!has('day1Battery')) return step('fit', 'Take the battery home and fit it in the fence box, inside the gate.', L.fenceBox);
       const broken = st.state.segments.findIndex((s) => s.health <= 0);
@@ -114,14 +115,22 @@ export class Objectives {
       };
       const door = frameToWorld(gas.frame, gas.data.building.door.x, gas.data.building.z1);
       if (gas.mutantState !== 'down') return step('gasInside', 'Search the gas station for the Pruitts.', door);
-      if (!gas.witchSeen) return step('gasLook', 'Look round the gas station.', door);
-      if (!gas.done.has('phone')) return step('phone', "Try the phone on the gas station's counter.", at('phone'));
-      if (!gas.done.has('scanner')) {
-        // Session 18 (Aaron): it runs off a car battery.
-        if (gas.done.has('scannerTried') && g.combat.inventory.batteries <= 0) return step('scannerBattery', "Earl's scanner needs a car battery. Take one from a car on the forecourt.", gas.sureCar ?? at('scanner'));
-        return step('scanner', gas.done.has('scannerTried') ? "Wire the battery into Earl's scanner in the stockroom." : "Try Earl's scanner in the stockroom, out back.", at('scanner'));
+      // Plan #4: the steps follow the gate (shelterCall: the witch seen and the note read). Until then:
+      // phone, scanner (its battery errand takes Tom out onto the forecourt, where she's seen), note,
+      // and last, if she's still not been seen, the forecourt out front. Once the gate's open, on to the shelter.
+      if (!has('shelterCall')) {
+        if (!gas.done.has('phone')) return step('phone', "Try the phone on the gas station's counter.", at('phone'));
+        if (!gas.done.has('scanner')) {
+          // Session 18 (Aaron): it runs off a car battery.
+          if (gas.done.has('scannerTried') && g.combat.inventory.batteries <= 0) return step('scannerBattery', "Earl's scanner needs a car battery. Take one from a car on the forecourt.", gas.sureCar ?? at('scanner'));
+          return step('scanner', gas.done.has('scannerTried') ? "Wire the battery into Earl's scanner in the stockroom." : "Try Earl's scanner in the stockroom, out back.", at('scanner'));
+        }
+        if (!gas.done.has('note')) return step('note', "Look round Earl's office. There's a note on the desk.", at('note'));
+        if (!gas.witchSeen) {
+          const fc = gas.data.forecourt;
+          return step('gasLook', 'Check the forecourt out front before you go.', frameToWorld(gas.frame, 0, (fc.z0 + fc.z1) / 2));
+        }
       }
-      if (!gas.done.has('note')) return step('note', "Look round Earl's office. There's a note on the desk.", at('note'));
     }
 
     // ---- the shovel and the storm shelter ----
@@ -305,6 +314,11 @@ export class Objectives {
   nearestTent() {
     const cs = this.g.campsite;
     const p = this.g.player.position;
+    // Plan #7: the slashed shelter (the camcorder) first, where the sweep ends: the tape before the gun.
+    if (!cs.camcorderFound) {
+      const tape = (cs.points ?? []).find((pt) => !cs.searched.has(pt.id) && (pt.gives ?? []).some((g) => g.item === 'camcorder'));
+      if (tape) return tape;
+    }
     let best = null;
     let bestD = Infinity;
     for (const pt of cs.points ?? []) {

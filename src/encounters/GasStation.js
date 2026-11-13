@@ -459,7 +459,8 @@ export class GasStation {
     const near = this.inside(l) && l.z > this.data.building.partitionZ && Math.hypot(l.x - m.x, l.z - m.z) < w.near;
     if (!(inAisle || near) || this.cutscenes?.active) return;
     const anchor = { x: z.x, z: z.z, yaw: 0, dy: this.gc.mutant.lookHeight };
-    if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor } })) this.wakeMutant();
+    // Plan #8: skipped before its wake event, it wakes anyway (it used to stay asleep and the reveal played again).
+    if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor }, onDone: () => this.wakeMutant() })) this.wakeMutant();
   }
 
   wakeMutant() {
@@ -545,12 +546,18 @@ export class GasStation {
       return { ...p, yaw: Math.atan2(store.x - p.x, store.z - p.z), dy: this.gc.witch.lookHeight }; // she faces the store
     };
     const done = () => {
-      this.dialogue?.play('gas.witch.ellen');
-      if (this.done.has('note')) this.dialogue?.play('gas.witch.junie');
-      else this.junieDue = true;
+      // Plan #5: a few seconds of quiet after she runs before anyone speaks (the gate and the star move at once).
+      const q = this.gc.witch.quietAfter ?? 0;
+      const gap = this.gc.lineGap;
+      if (this.dialogue?.playLater && q > 0) this.dialogue.playLater('gas.witch.ellen', q, () => true);
+      else this.dialogue?.play('gas.witch.ellen');
+      if (this.done.has('note')) {
+        if (this.dialogue?.playLater && q > 0) this.dialogue.playLater('gas.witch.junie', q + gap, () => true);
+        else this.dialogue?.play('gas.witch.junie');
+      } else this.junieDue = true;
       // Session 17 (Aaron: one idea at a time): the phone a while later, if it's not been tried.
-      this.dialogue?.playLater?.('gas.phone.hint', this.gc.lineGap, () => !this.done.has('phone'));
-      this.checkShelterCall();
+      this.dialogue?.playLater?.('gas.phone.hint', q + 2 * gap, () => !this.done.has('phone'));
+      this.checkShelterCall(q + 2 * gap);
     };
     const played = this.cutscenes?.play('gas.witch', {
       anchors: { gasStation: frameAnchor(this.frame), herSpot: at(w.x, w.z), herRun: at(w.runTo.x, w.runTo.z) },
@@ -708,12 +715,12 @@ export class GasStation {
   // Session 15b (Aaron): with the witch seen and Earl's note read, the
   // family send Tom out to the Pruitts' shelter (its spur opens), and say
   // more as he leaves: the shovel by the cabin's door, and that it's a weapon.
-  checkShelterCall() {
+  checkShelterCall(after = 0) {
     if (!this.witchSeen || !this.done.has('note') || this.progress?.has('shelterCall')) return;
     this.progress?.setFlag('shelterCall');
     this.shelterTalk = true;
     // Session 15b (Aaron): it's a long way to the Pruitts' gate: take Earl's quad. Session 17: on its own, a little later.
-    this.dialogue?.playLater?.('gas.quad', this.gc.lineGap, () => {
+    this.dialogue?.playLater?.('gas.quad', after + this.gc.lineGap, () => {
       if (this.quadTold) return false;
       this.quadTold = true;
       return true;

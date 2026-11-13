@@ -220,9 +220,8 @@ describe('the military outpost: the beats', () => {
     r.step(1);
     expect(r.flags.has('outpostCall')).toBe(true);
     expect(r.played).toEqual(['outpost.call.ellen', 'outpost.call.home']);
-    // Session 17 (Aaron: one idea at a time): Wyatt's word on the rounds comes later, on its own.
-    expect(r.later.map((l) => l.id)).toEqual(['outpost.call.wyatt']);
-    expect(r.later[0].s).toBeGreaterThan(10);
+    // Plan #3: Wyatt's word on the rounds comes at the outpost only (it was said up to four times).
+    expect(r.later.map((l) => l.id)).not.toContain('outpost.call.wyatt');
   });
 
   it('stays quiet until the call', () => {
@@ -709,5 +708,70 @@ describe("Session 18 (Aaron's notes): the outpost's beats given time to breathe"
     expect(d).toBeGreaterThan(30);
     expect(d).toBeLessThan(40);
     expect(c7.z).toBeLessThan(outpost.tower.z); // north of it
+  });
+});
+
+describe('the military outpost: the first-third plan, batch 1', () => {
+  const oc = config.outpost;
+  it("waits for the lull after wave 3 before the peak, so Ellen's quarantine line isn't talked over (plan #1)", () => {
+    const r = rig();
+    r.flags.add('outpostCall');
+    r.o.approachStarted = true;
+    r.o.helmetDone = true;
+    r.o.wavesCleared = oc.approach.waves.length - 1;
+    r.o.roundsTaken = true;
+    r.at(2, outpost.barricade.z - 15); // inside the trigger, outside the rush
+    r.o.waveOut = oc.approach.waves.length - 1;
+    r.o.wave = [];
+    r.step(0.2); // wave 3 down
+    expect(r.o.approachDone).toBe(true);
+    expect(r.o.peakState).toBe('none');
+    r.step(oc.approach.lull + 0.5);
+    expect(r.o.peakState).toBe('running');
+  });
+
+  it('still starts the peak at once if Tom rushes the line (plan #1)', () => {
+    const r = rig();
+    r.flags.add('outpostCall');
+    r.o.lull = 9;
+    r.at(2, outpost.barricade.z - 2);
+    r.step(0.2);
+    expect(r.o.peakState).toBe('running');
+  });
+
+  it('sets the fight to day or night size once, when the approach starts, and saves it (plan #3)', () => {
+    const r = rig({ phase: 'day' });
+    r.flags.add('outpostCall');
+    r.o.startApproach();
+    expect(r.o.night).toBe(false);
+    r.o.clock.phase = 'night';
+    expect(r.o.night).toBe(false);
+    const saved = r.o.saveState();
+    expect(saved.night).toBe(false);
+    const r2 = rig({ phase: 'night' });
+    r2.o.loadState(saved);
+    expect(r2.o.night).toBe(false);
+  });
+
+  it('lets the gun pit be searched while its machine gun is still dead (plan #2)', () => {
+    const r = rig();
+    const gp = outpost.searches.find((s) => s.id === 'gunPit');
+    r.o.roundsTaken = true; // (the rounds box sits beside it and comes first)
+    r.at(gp.x, gp.z);
+    const pick = r.o.pick('X');
+    expect(pick?.key).toBe('gunPit');
+  });
+
+  it("counts the peak's last stuck ones as strays after a while, so the checkpoint can't stay shut (plan #8)", () => {
+    const r = rig();
+    r.o.peakState = 'running';
+    r.o.peakLeft = 0;
+    r.o.approachStarted = true;
+    const stuck = { alive: true, x: r.o.frame.x, z: r.o.frame.z, mode: 'chase', authored: 'outpost' };
+    r.o.peak = [stuck];
+    r.at(0, -20);
+    r.step(oc.peak.timeout + 1);
+    expect(r.o.peakState).toBe('done');
+    expect(stuck.authored).toBe(null);
   });
 });

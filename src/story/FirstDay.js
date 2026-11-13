@@ -281,6 +281,15 @@ export class FirstDay {
         }
       }
     }
+    // Plan #7: fire, aim and reload the first time a gun's in hand (the shotgun, under Wyatt's 'behind you');
+    // healing the first time Tom's hurt with a kit to use.
+    if (this.clock.day === 1 && this.combat.weapons?.has?.('shotgun') && !this.cutscenes.active) {
+      once('shoot', null, 'RT: fire  ·  LT: aim  ·  B: reload', 'Left click: fire  ·  Right click: aim  ·  R: reload');
+    }
+    const hp = this.combat.health;
+    if (hp && hp.value < this.fc.prompts.healBelow && (this.combat.inventory?.healing ?? 0) > 0 && !this.cutscenes.active) {
+      once('heal', null, 'D-pad right: heal', 'H: heal');
+    }
     if (this.clock.day === 1 && this.clock.phase === 'night' && zone <= 1 && this.flashlight && !this.flashlight.on && !this.cutscenes.active) {
       once('torch', 'day1.prompt.torch', 'D-pad left: flashlight', 'L: flashlight');
     }

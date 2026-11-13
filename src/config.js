@@ -1970,6 +1970,7 @@ export const config = {
     awayRadius: 150, // metres from the station: beyond this you're away and attacks are resolved, not fought
     awayHysteresis: 8,
     forecastSeconds: 14, // the dusk forecast panel stays this long (the ledger's Forecast tab keeps it)
+    forecastHold: { combatRange: 30, maxSeconds: 120 }, // Plan #6: the panel waits while a zombie's after Tom this close, or he's underground; shown by this many seconds into the night at the latest
     alarmFraction: 0.5, // DESIGN.md: the alarm when security falls below this x the security at dusk
     // The margin table (base/nightResolver.js, DESIGN.md).
     resolver: {
@@ -2937,7 +2938,7 @@ export const config = {
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
     // Session 15b (Aaron): control prompts as they're first needed. sprintAfter:
     // seconds of walking outside the fence on the way to the campsite.
-    prompts: { sprintAfter: 6, wreckDistance: 9 }, // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
+    prompts: { sprintAfter: 6, wreckDistance: 9, healBelow: 70 }, // Plan #7: healBelow: health under which 'D-pad right: heal' shows once (with a kit to use). // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,
@@ -2984,7 +2985,7 @@ export const config = {
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
     mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
-    witch: { delay: 1.2, lookHeight: 1.5 }, // seconds after Tom's back on the forecourt; where the camera looks on her
+    witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
@@ -3158,7 +3159,7 @@ export const config = {
     // the barricade line, or as soon as he's at the line whatever the
     // approach. In `bursts` a few seconds apart. Down: outpostCleared (the
     // checkpoint opens).
-    peak: { count: 12, nightScale: 1.25, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60 },
+    peak: { count: 12, nightScale: 1.25, trigger: 28, rush: 6, bursts: 3, burstEvery: 2.5, memory: 60, timeout: 180 }, // Plan #8: timeout: seconds after the last burst before any left count as strays
     // The watchtower: rounds in the snipers' nest (DESIGN: guaranteed), the climb.
     tower: { rounds: 10 },
     // The gun pit's machine gun (Session 17, Aaron: a taste of the turret
@@ -3185,8 +3186,8 @@ export const config = {
     // opens sets all the rest off together, `stagger` seconds apart (the nearest first).
     crates: { autoBreak: 8, pryRange: 1.5, hearScratch: 10, stagger: [1, 2] },
     c7Distance: 9, // metres from the Mothman's container's torn-open end: its sweep (Session 18: it's by the road in, 35 m north-east of the tower)
-    c7MaxNear: 2, // Session 18 (Aaron): the sweep plays with at most this many of the dead about (never from the quad)
-    gunPitAskAfter: 6, // Session 18 (Aaron): seconds after the first helmet's down: Wyatt asks if the machine gun's rounds fit Earl's rifle
+    c7MaxNear: 0, // Plan #3: was 2 (wave 1 by day is 2, so C-7 could play mid-wave). Session 18 (Aaron): the sweep plays with at most this many of the dead about (never from the quad)
+    gunPitAskAfter: 14, // Plan #3: was 6 (12 s between radio subjects). Session 18 (Aaron): seconds after the first helmet's down: Wyatt asks if the machine gun's rounds fit Earl's rifle
     // Session 18 (Aaron: after the fight it all "layers on top of each other"): after each of the
     // compound's beats (the all-clear, the beetles, C-4, C-7, the dogfight) the next one that comes by
     // itself (the beetles' crates, Wyatt's ask to scope, C-7's sweep) waits this many quiet seconds
@@ -3195,7 +3196,7 @@ export const config = {
     c7Lull: 8, // seconds added to the approach's lull after C-7's lines (the next wave waits for them)
     resinOpenSeconds: 2.2, // Session 17: C-4's doors swinging open (the reveal)
     sweepDistance: 70, // metres from the centre: the arrival sweep (once the call's come)
-    callRoundsAfter: 30, // Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
+    callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
     arriveInset: 6, // metres inside the clearing's edge: outpostEntered

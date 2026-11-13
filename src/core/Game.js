@@ -421,6 +421,7 @@ export class Game {
       player: this.player,
       clock: this.clock,
       dialogue: this.dialogue,
+      interiors: this.interiors, // Plan #6: the forecast waits while Tom's underground
       notify: (text) => this.toast.show(text),
       dismissHint: () => (this.input.activeDevice === 'gamepad' ? 'Press A to dismiss' : 'Press Enter to dismiss'), // Session 25
     });

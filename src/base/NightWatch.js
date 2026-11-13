@@ -22,7 +22,7 @@
 // Events: 'night:forecast' { forecast }, 'night:attack' { zombies, result,
 // applied }, 'night:alarm'.
 
-import { nightDanger } from './danger.js';
+import { nightDanger, marchSpeed, threatPerZombie } from './danger.js';
 import { verdict, resolveAttack } from './nightResolver.js';
 import { secondsOfFire } from './turretMath.js';
 import { angleOf } from './stationLayout.js';
@@ -125,7 +125,30 @@ export class NightWatch {
     const marches = this.enemies.marches;
     const sigils = [...d.sigils.list, ...this.plannedSigils()];
     const describe = (s) => (s.planned ? 'The witch is out to plant a sigil' : capitalise(d.describe(s) || 'a sigil'));
-    return nightDanger(sigils, (s) => marches.remaining(s.x, s.z), describe, this.level, this.cfg, this.nightSeconds);
+    const out = nightDanger(sigils, (s) => marches.remaining(s.x, s.z), describe, this.level, this.cfg, this.nightSeconds);
+    // Plan #6: a sigil that holds its dead round it (Night 1's, at the shelter) sends none marching: it adds nothing.
+    sigils.forEach((s, i) => {
+      if (!(s.hold > 0)) return;
+      const p = out.parts[i];
+      out.total -= p.value;
+      Object.assign(p, { value: 0, marchers: 0, held: true });
+    });
+    // Plan #6: Night 1's strays (FirstDay's waves) are on the board, so its one lesson isn't "a quiet night".
+    const strays = this.firstNightStrays();
+    if (strays) {
+      out.parts.push(strays);
+      out.total += strays.value;
+    }
+    return out;
+  }
+
+  // Night 1's scripted waves as a line on the forecast (before any sigil is planted).
+  firstNightStrays() {
+    const w = this.cfg.firstDay?.night1?.waves;
+    if (!w || this.clock?.day !== 1 || this.director?.sigils?.list?.length) return null;
+    const n = w.count * w.size;
+    const walk = w.distance / marchSpeed(this.cfg, 1);
+    return { label: 'The dead in the woods', marchers: n, arriving: 1, firstArrival: w.firstDelay + walk, value: n * threatPerZombie(1, this.cfg) };
   }
 
   // The witch's sigils still to come tonight: [{ x, z, delay, planned }],
@@ -207,7 +230,9 @@ export class NightWatch {
   // "Scarecrow field: about 8 zombies, the first around 9:40pm (16)".
   sigilLine(p, label = true) {
     const n = Math.round(p.marchers * p.arriving);
-    const text = n <= 0 ? 'too far to reach the station tonight' : `about ${n} zombies, the first around ${this.hourText(p.firstArrival)} (${p.value.toFixed(0)})`;
+    const text = p.held
+      ? 'its dead stay where they rise: none will march on the station'
+      : n <= 0 ? 'too far to reach the station tonight' : `about ${n} zombies, the first around ${this.hourText(p.firstArrival)} (${p.value.toFixed(0)})`;
     return label ? `${p.label}: ${text}` : text;
   }
 
@@ -244,6 +269,20 @@ export class NightWatch {
     this.el.classList.add('hidden');
   }
 
+  // Plan #6: the dusk forecast waits for a quiet moment: no fight on (a zombie after Tom close by),
+  // not underground; at the latest `forecastHold.maxSeconds` into the night.
+  forecastHeld(phase) {
+    const h = this.nc.forecastHold;
+    if (!h) return false;
+    if (phase === 'night' && this.clock.phaseElapsed > h.maxSeconds) return false;
+    if (this.interiors?.inside) return true;
+    const p = this.player.position;
+    for (const z of this.enemies?.living ?? []) {
+      if (z.alive && z.mode === 'chase' && Math.hypot(z.x - p.x, z.z - p.z) < h.combatRange) return true;
+    }
+    return false;
+  }
+
   // ---- each frame ----------------------------------------------------------------------
 
   update(dt, phase, playing) {
@@ -261,7 +300,7 @@ export class NightWatch {
       this.reportReturn();
     }
 
-    if (this.forecastDue && !this.inCutscene) {
+    if (this.forecastDue && !this.inCutscene && !this.forecastHeld(phase)) {
       this.forecastDue = false;
       this.showForecast();
     }

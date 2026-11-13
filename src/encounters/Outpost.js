@@ -167,6 +167,8 @@ export class Outpost {
   }
 
   reset() {
+    this.nightSize = null; // Plan #3: the fight's size, set once at the approach's start
+    this.peakAge = 0; // Plan #8: seconds since the peak's last burst
     this.callIn = -1; // seconds until Ellen's call (after Wyatt's line on the safe)
     this.approachStarted = false;
     this.helmetDone = false;
@@ -212,23 +214,28 @@ export class Outpost {
   }
 
   // The truck across the barricade's gap has a sure battery, no alarm (DESIGN: a jeep's battery).
+  // Plan #2: both trucks: the near one (before the barricade) for the gun or the generator, the compound's after.
   sureBattery() {
     if (!this.vehicles?.list || !this.data.trucks.length) return;
-    const s = frameToWorld(this.frame, this.data.trucks[0].x, this.data.trucks[0].z);
-    let best = null;
-    let bestD = 4;
-    for (const v of this.vehicles.list) {
-      const d = Math.hypot(v.x - s.x, v.z - s.z);
-      if (d < bestD) {
-        best = v;
-        bestD = d;
+    this.sureTrucks = [];
+    for (const t of this.data.trucks) {
+      const s = frameToWorld(this.frame, t.x, t.z);
+      let best = null;
+      let bestD = 4;
+      for (const v of this.vehicles.list) {
+        const d = Math.hypot(v.x - s.x, v.z - s.z);
+        if (d < bestD) {
+          best = v;
+          bestD = d;
+        }
       }
+      if (!best) continue;
+      best.battery = true;
+      best.hasBattery = true;
+      best.alarm = false;
+      this.sureTrucks.push(best);
     }
-    if (!best) return;
-    best.battery = true;
-    best.hasBattery = true;
-    best.alarm = false;
-    this.sureTruck = best;
+    this.sureTruck = this.sureTrucks[0] ?? null;
   }
 
   // ---- what's solid ------------------------------------------------------------------------------
@@ -337,6 +344,8 @@ export class Outpost {
   }
 
   get night() {
+    // Plan #3: set once when the approach starts, so one fight doesn't change size part-way (saved).
+    if (this.nightSize !== null && this.nightSize !== undefined) return this.nightSize;
     const ph = this.clock?.phase;
     return ph === 'night' || ph === 'dusk';
   }
@@ -396,14 +405,15 @@ export class Outpost {
     this.bus.emit('outpost:called');
     this.dialogue?.play('outpost.call.ellen');
     this.dialogue?.play('outpost.call.home');
-    // Session 17 (Aaron: one idea at a time): Wyatt's word on the rounds comes on its own, later.
-    this.dialogue?.playLater?.('outpost.call.wyatt', this.oc.callRoundsAfter, () => !this.roundsTaken);
+    // Plan #3: Wyatt's word on the rounds now comes only at the outpost (gunPitAsk, outpost.tower): it was said up to four times.
   }
 
   // ---- the approach -------------------------------------------------------------------------------------
 
   startApproach() {
     this.approachStarted = true;
+    this.nightSize = null;
+    this.nightSize = this.night;
     this.bus.emit('outpost:approach');
     if (!this.helmetDone) this.sendHelmet();
     // The lines after it (Session 16 gotcha: a line inside a skipped cutscene is cleared).
@@ -479,6 +489,8 @@ export class Outpost {
       return;
     }
     if (this.approachDone) {
+      // Plan #1: the lull after wave 3 counts down too (the peak waits for it).
+      if (this.lull > 0 && !this.cutscenes?.active) this.lull -= dt;
       // The radio suggests the gun pit's rounds (DESIGN edge case: the barricade's hard without them).
       if (!this.roundsTaken && !this.towerTold) {
         this.towerTold = true;
@@ -548,10 +560,10 @@ export class Outpost {
       const toLine = this.toLine(l);
       const near = Math.abs(l.x) < 40 && toLine < pk.trigger;
       // Session 18 (Aaron): the dogfight comes last now (after the compound), so the peak doesn't wait for it.
-      const free = true;
+      // Plan #1: and not over the lull's line (Ellen's quarantine line): the lull since the last wave, and quiet.
+      const free = this.lull <= 0 && !this.talking();
       const ready =
-        free &&
-        ((this.approachDone && this.roundsTaken && near) || (this.approachDone && toLine < pk.trigger * 0.45 && Math.abs(l.x) < 40) || (toLine < pk.rush && Math.abs(l.x) < 40));
+        (free && ((this.approachDone && this.roundsTaken && near) || (this.approachDone && toLine < pk.trigger * 0.45 && Math.abs(l.x) < 40))) || (toLine < pk.rush && Math.abs(l.x) < 40);
       if (ready && !this.cutscenes?.active && !this.witchOn) this.startPeak();
       return;
     }
@@ -562,7 +574,14 @@ export class Outpost {
     if (this.peakLeft > 0) {
       this.burstTimer -= dt;
       if (this.burstTimer <= 0) this.sendBurst();
+      this.peakAge = 0;
       return;
+    }
+    // Plan #8: one stuck soldier can't hold the checkpoint shut for ever.
+    this.peakAge += dt;
+    if (this.peak.length && this.peakAge > (pk.timeout ?? Infinity)) {
+      for (const z of this.peak) z.authored = null;
+      this.peak = [];
     }
     if (!this.peak.length) this.peakDown();
   }
@@ -1102,6 +1121,11 @@ export class Outpost {
     const tu = this.turretAt();
     if (this.turret.state === 'dead' && dist(tu) < this.oc.turret.fitRange) {
       if ((this.combat?.inventory?.batteries ?? 0) > 0) return { key: 'turret', prompt: `Hold ${X}: fit a battery to the machine gun`, busy: 'Wiring it in…', seconds: this.oc.turret.fitSeconds, act: () => this.fitTurret() };
+      // Plan #2: the gun pit's own search (same spot) first, then the information prompt.
+      if (!this.searched.has('gunPit')) {
+        const gp = this.points.find((pt) => pt.id === 'gunPit');
+        if (gp && dist(gp) < this.oc.interactRange) return { key: gp.id, prompt: `Hold ${X}: ${gp.label}`, busy: 'Searching…', seconds: h.search, act: () => this.search(gp) };
+      }
       return { key: 'turret-info', prompt: "A machine gun on its mount, its battery dead. It'd take a car battery", act: null };
     }
     // Session 19 (Aaron): the generator by the barricade's floodlights.
@@ -1227,6 +1251,7 @@ export class Outpost {
       auto: this.autoBroken,
       told: [...this.told],
       floods: this.floodsOn, // Session 19
+      night: this.nightSize, // Plan #3
       turret: this.turret.state === 'dead' ? 'dead' : this.turret.state === 'spent' || this.turret.state === 'hot' ? 'spent' : `live:${this.turret.rounds}`,
     };
   }
@@ -1257,6 +1282,7 @@ export class Outpost {
       if (this.crateCols?.[i]) this.crateCols[i].off = true;
     });
     this.autoBroken = Boolean(d.auto);
+    this.nightSize = typeof d.night === 'boolean' ? d.night : null;
     this.told = new Set(d.told ?? []);
     this.resinOpen = this.told.has('resinOpen') ? 1 : 0;
     this.scopeAskDue = this.dogfightReady && !this.dogfightSeen; // Session 18
