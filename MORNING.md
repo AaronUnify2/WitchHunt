@@ -36,7 +36,7 @@ The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md h
 
 - **The Mothman's glimpse** is a first-person look at him crouched in the oak; he throws his wings wide, screams and is gone. It isn't staged beyond that.
 - **The shut gate's fade** jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
-- **The tear in the fence** is the chain gate's model with one leaf peeled back, not a fence of its own.
+- **The tear in the fence** has its own model now: two flaps of wire peeled off their posts, the top rail snapped and hanging, loose strands, three gouges down a post, the sign hanging by a corner. Shut, it's still a chain gate.
 - **The outpost by night from the east** uses the same waves and peak as before; only the arrival (its sweep, the first soldier on the track, two lines) is new. C-7 is on the far side now, found while exploring.
 - **Ellen changes places only while you're outside the cabin**, so you never see her walk; she's simply at the board when you come back in.
 - **The witch's charms are subtle.** She's unlit black by your rule, so the bones and twigs are a shade off black and read only up close.

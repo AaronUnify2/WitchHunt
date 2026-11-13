@@ -296,21 +296,86 @@ export class GateProps {
   // land backs onto it: a chain-link gate nobody's opened in a year, and, once the family remember it,
   // the place where the wire's been torn: one leaf peeled back off its frame and hanging, the other
   // shoved in. Built as the chain gate; only how it stands "open" differs.
+  // Round 2, the polish pass: torn, it's its own thing, not a gate with a leaf peeled back. The two leaves
+  // go; in their place the wire as something left it: a flap peeled inward off the left post and sagging, a
+  // flap folded outward off the right with its top corner hanging, the top rail snapped (one half bent down,
+  // the other hanging from its post to the ground), the bottom rail kicked aside, loose strands, three
+  // gouges down the right post, a strip of somebody's sleeve on the wire. The
+  // sign hangs by one corner.
   fenceRip(holder, g) {
-    const built = this.chainGate(holder, g, this.cfg.fenceRip);
+    const k = this.cfg.fenceRip;
+    const built = this.chainGate(holder, g, k);
+    const half = k.width / 2;
+    const H = k.height;
+    const y0 = this.localGround(holder, 0, 0) + 0.05;
+    const steel = this.mat(k.color);
+    const tex = this.hold(chainLinkTexture(k.chainLink));
+    const flapMat = (w, h) => {
+      const t = this.hold(tex.clone());
+      t.needsUpdate = true;
+      t.repeat.set(w / 0.25, h / 0.25);
+      return this.mat(0xffffff, { map: t, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    };
+    const torn = new THREE.Group();
+    torn.visible = false;
+    holder.add(torn);
+    const bar = (w, h, d, x, y, z, rx = 0, ry = 0, rz = 0, mat = steel) => {
+      const m = new THREE.Mesh(this.box(w, h, d), mat);
+      m.position.set(x, y0 + y, z);
+      m.rotation.set(rx, ry, rz);
+      m.castShadow = true;
+      torn.add(m);
+      return m;
+    };
+    // A flap of wire hinged at a post (x: the post; w wide, h tall), swung by `yaw` and slumped by `sag`.
+    const flap = (x, w, h, yaw, sag, lift = 0) => {
+      const hinge = new THREE.Group();
+      hinge.position.set(x, y0 + lift, 0);
+      hinge.rotation.set(0, yaw, sag, 'YXZ');
+      const dir = x < 0 ? 1 : -1;
+      const mesh = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(w, h)), flapMat(w, h));
+      mesh.position.set((dir * w) / 2, h / 2, 0);
+      hinge.add(mesh);
+      torn.add(hinge);
+      return { hinge, dir, w, h };
+    };
+    // Left: peeled inward (toward the outpost), slumping. Right: folded outward, its top corner hanging off it.
+    flap(-half, 1.9, H - 0.25, -1.05, 0.1);
+    const right = flap(half, 1.5, H - 0.6, 0.85, -0.14);
+    const corner = new THREE.Group();
+    corner.position.set(right.dir * right.w, right.h, 0);
+    corner.rotation.set(1.9, 0, 0.5);
+    const cm = new THREE.Mesh(this.hold(new THREE.PlaneGeometry(1.0, 0.9)), flapMat(1.0, 0.9));
+    cm.position.set((right.dir * 1.0) / 2 - right.dir * 0.3, -0.4, 0);
+    corner.add(cm);
+    right.hinge.add(corner);
+    // The top rail, snapped: the left half bent down into the gap, the right hanging from its post to the ground.
+    bar(1.9, 0.06, 0.06, -half + 0.9, H - 0.28, 0.25, 0, -0.28, -0.3);
+    bar(2.5, 0.06, 0.06, half - 0.75, H / 2 + 0.1, -0.35, 0, 0.4, 1.02);
+    // The bottom rail: one half where it was, the other kicked round into the outpost.
+    bar(1.3, 0.06, 0.06, -half + 0.7, 0.05, 0.05, 0, -0.15, 0);
+    bar(1.6, 0.06, 0.06, 1.3, 0.04, 1.1, 0, 1.1, 0.03);
+    // Loose strands, hanging from the bent rail and the flaps' edges.
+    const strand = this.mat(k.chainLink);
+    for (const [x, y, z, len, rz, rx] of [[-1.5, H - 0.75, 0.42, 0.7, 0.15, 0.1], [-1.2, H - 0.95, 0.5, 0.5, -0.2, 0], [-1.85, H - 0.55, 0.33, 0.9, 0.05, -0.1], [-0.95, H - 1.15, 0.56, 0.35, 0.3, 0.2], [1.9, H - 1.0, -0.5, 0.6, -0.12, 0], [2.3, H - 0.7, -0.3, 0.8, 0.1, 0.15], [1.5, 1.2, -0.75, 0.45, 0.4, 0]]) {
+      bar(0.014, len, 0.014, x, y - len / 2, z, rx, 0, rz, strand);
+    }
+    // Three gouges down the right post.
+    const dark = this.mat(0x0b0b0b);
+    for (let i = 0; i < 3; i++) bar(0.03, 0.62, 0.17, half + 0.1, 1.5 - i * 0.02, -0.005 - 0.0, 0, 0, 0.42, dark).position.x += (i - 1) * 0.11;
+    // A strip of an olive sleeve caught on the left flap's edge.
+    bar(0.05, 0.34, 0.012, -1.62, 1.25, 0.86, 0.2, -1.0, 0.25, this.mat(0x2f3a24));
+    const signAt = { x: built.sign.position.x, y: built.sign.position.y, rz: built.sign.rotation.z };
     return {
       setOpen: (open) => {
         built.setOpen(false);
-        if (!open) return;
-        for (const { hinge, side } of built.leaves) {
-          if (side < 0) {
-            hinge.rotation.set(0.0, -0.5, 0);
-          } else {
-            hinge.rotation.set(0.55, 1.15, -0.35);
-            hinge.position.y -= 0;
-          }
-        }
-        built.lock.visible = false;
+        torn.visible = Boolean(open);
+        for (const { hinge } of built.leaves) hinge.visible = !open;
+        built.lock.visible = !open;
+        // The sign: square on the gate while it's whole; torn, hanging by one corner off the left wing.
+        built.sign.visible = true;
+        built.sign.position.set(open ? -half - 1.6 : signAt.x, open ? signAt.y - 0.35 : signAt.y, built.sign.position.z);
+        built.sign.rotation.z = open ? -0.5 : signAt.rz;
       },
     };
   }

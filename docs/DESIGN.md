@@ -71,7 +71,7 @@ Also in these rounds:
 - **The fog funnel** (`story/FogFunnel.js`). From `junieTaken` to `junieHome`, south of the cordon Tom keeps to the route plane → church → (once `stairsKnown`) stairs. Off it the fog thickens to a wall and puts him back; the Caller calls from the way on. The north is untouched.
 - **Deep-forest moths** on foot off the paths (`ai/DeepForest.js`); **the chainsaw fells trees**; **info texts stay up by their length** (`ui.toastRead`); Milo straightens after his bow.
 - **The polish pass:** new detail on the mutant, the witch (still a silhouette), the Screamer (its own sprite) and the quad; the cabin, Earl's store and the Pruitts' farmhouse dressed.
-- **Still scaffolding:** `night2.cantFall` (the station can't be overrun on Night 2); the fence tear is the chain gate's model with a peeled leaf; every new line and text is a draft; none of it has been played by hand.
+- **Still scaffolding:** `night2.cantFall` (the station can't be overrun on Night 2); every new line and text is a draft; none of it has been played by hand.
 
 ### Built (and reusable for the mid and end game)
 
