@@ -307,3 +307,164 @@ describe('step 4: Day 3 and the Pruitt farm', () => {
     expect(f.x).toBeGreaterThan(home.x + 100);
   });
 });
+
+// ---- step 5: the family at their stations ----
+import { ellenAtBoard, pinned, nextToRead, pickTip } from '../src/story/FamilyStations.js';
+import { boardItemParts } from '../src/render/storyBoard.js';
+import { stationLayout, zoneOf } from '../src/base/stationLayout.js';
+import { FamilyTalk } from '../src/story/FamilyTalk.js';
+import boardData from '../src/data/storyBoard.json';
+import progressData from '../src/data/progress.json';
+import { readFileSync } from 'node:fs';
+
+describe('step 5: the family at their stations', () => {
+  const map5 = makeMap(1234);
+  const layout = stationLayout(map5.clearings[map5.homeIndex], makeGround(1234), config.station.layout);
+  const cabin = layout.cabin;
+
+  it("puts Ellen's board in the main room facing the front door, clear of the way to the comms door, and Junie at the comms desk", () => {
+    const b = cabin.board;
+    expect(zoneOf(layout, b.stand.x, b.stand.z)).toBe(2);
+    expect(zoneOf(layout, b.look.x, b.look.z)).toBe(2);
+    expect(zoneOf(layout, cabin.junieSpot.x, cabin.junieSpot.z)).toBe(3);
+    // The dead's way in: the front door's inner spot to the comms door's outer one. Nothing of hers within 0.8 m of it.
+    const a = cabin.frontDoor.inner;
+    const c = cabin.commsDoor.outer;
+    const off = (p) => {
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * (c.x - a.x) + (p.z - a.z) * (c.z - a.z)) / ((c.x - a.x) ** 2 + (c.z - a.z) ** 2)));
+      return Math.hypot(p.x - (a.x + (c.x - a.x) * t), p.z - (a.z + (c.z - a.z) * t));
+    };
+    expect(off(b.stand)).toBeGreaterThan(0.8);
+    expect(off({ x: b.desk.x + b.desk.w / 2, z: b.desk.z })).toBeGreaterThan(0.8);
+    expect(cabin.furniture.some((f) => f.id === 'ellenDesk')).toBe(true);
+    // The board fits on the wall west of the comms door.
+    expect(b.x + b.w / 2).toBeLessThan(cabin.commsDoor.x - cabin.commsDoor.width / 2);
+    expect(b.bottom + b.h).toBeLessThan(cabin.wallHeight - 0.3);
+  });
+
+  it('has Ellen at the board by day and in the comms room from dusk to dawn', () => {
+    expect(ellenAtBoard('day')).toBe(true);
+    expect(ellenAtBoard('dawn')).toBe(true);
+    expect(ellenAtBoard('dusk')).toBe(false);
+    expect(ellenAtBoard('night')).toBe(false);
+    expect(ellenAtBoard('day', false)).toBe(false);
+    expect(ellenAtBoard('day', true, true)).toBe(false); // the opening: still at the radio
+  });
+
+  it('pins things to the board as the story sets their flags, every one on the cork and on a real flag', () => {
+    const flags = new Set(progressData.flags.map((f) => f.id));
+    const b = config.station.layout.cabin.board;
+    const seen = new Set();
+    for (const it of boardData.items) {
+      expect(seen.has(it.id), it.id).toBe(false);
+      seen.add(it.id);
+      if (it.flag) expect(flags.has(it.flag), it.id).toBe(true);
+      expect(config.familyStations.kinds[it.kind], it.id).toBeDefined();
+      expect(it.text.length, it.id).toBeGreaterThan(20);
+      const r = Math.hypot(it.size[0], it.size[1]) / 2;
+      expect(it.at[0] - r, it.id).toBeGreaterThan(-0.02);
+      expect(it.at[0] + r, it.id).toBeLessThan(b.w + 0.02);
+      expect(it.at[1] - r, it.id).toBeGreaterThan(-0.02);
+      expect(it.at[1] + r, it.id).toBeLessThan(b.h + 0.02);
+      for (const [x, y] of [...(it.to ?? []), ...(it.pins ?? [])]) {
+        expect(x).toBeGreaterThan(0);
+        expect(x).toBeLessThan(b.w);
+        expect(y).toBeGreaterThan(0);
+        expect(y).toBeLessThan(b.h);
+      }
+      const parts = boardItemParts(it, config.familyStations);
+      expect(parts.length, it.id).toBeGreaterThan(1);
+      for (const g of parts) g.dispose();
+    }
+    expect(pinned(boardData.items, () => false)).toEqual(['county', 'family']);
+    expect(pinned(boardData.items, (f) => f === 'marcyJournal')).toEqual(['county', 'family', 'marcy']);
+    expect(pinned(boardData.items, () => true).length).toBe(boardData.items.length);
+  });
+
+  it('reads the newest unread thing off the board first, then goes round them', () => {
+    const shown = ['county', 'family', 'campers'];
+    const read = new Set();
+    expect(nextToRead(shown, read, null)).toBe('campers');
+    read.add('campers');
+    expect(nextToRead(shown, read, 'campers')).toBe('family');
+    read.add('family');
+    read.add('county');
+    expect(nextToRead(shown, read, 'county')).toBe('family');
+    expect(nextToRead(shown, read, 'campers')).toBe('county');
+    expect(nextToRead([], read, null)).toBe(null);
+  });
+
+  it("has a line for Ellen on every step of the first third she could be asked about, each saying why", () => {
+    const src = readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
+    const steps = [...src.matchAll(/steps?\('([a-zA-Z0-9]+)'/g)].map((m) => m[1]);
+    const upTo = steps.indexOf('planeFlare');
+    expect(upTo).toBeGreaterThan(30);
+    const away = new Set(['camcorder', 'wave', 'planeFlare']); // (mid-clip, mid-fight: never at home)
+    for (const s of new Set(steps.slice(0, upTo))) if (!away.has(s)) expect(ids.has(`board.${s}`), s).toBe(true);
+    expect(ids.has('board.none')).toBe(true);
+    for (const l of dialogueData.lines.filter((x) => x.id.startsWith('board.'))) {
+      expect(l).toMatchObject({ speaker: 'ellen', channel: 'face', cued: true, repeatable: true, draft: true });
+      expect(steps.includes(l.id.slice(6)) || l.id === 'board.none', l.id).toBe(true);
+    }
+  });
+
+  it("gives Junie's newest unheard tip first, only ones the story has earned, then round them again", () => {
+    const tips = dialogueData.lines.filter((l) => l.tip);
+    expect(tips.length).toBeGreaterThan(10);
+    const flags = new Set(progressData.flags.map((f) => f.id));
+    for (const l of tips) {
+      expect(l).toMatchObject({ speaker: 'junie', channel: 'face', cued: true, draft: true });
+      for (const f of l.when?.all ?? []) expect(flags.has(f), l.id).toBe(true);
+    }
+    const facts = (list) => ({ night: 1, phase: 'day', flags: new Set(list), milestones: [], scripts: new Set() });
+    const heard = new Set();
+    // Day 1, nothing seen yet: the general ones only.
+    expect(pickTip(tips, facts([]), heard, null).id).toBe('tip.head');
+    heard.add('tip.head');
+    expect(pickTip(tips, facts([]), heard, 'tip.head').id).toBe('tip.dead');
+    heard.add('tip.dead');
+    expect(pickTip(tips, facts([]), heard, 'tip.dead').id).toBe('tip.head'); // round again
+    // The Screamer seen: that's what she talks about first.
+    expect(pickTip(tips, facts(['night2Done', 'day1Battery']), heard, 'tip.dead').id).toBe('tip.screamer');
+    expect(pickTip([], facts([]), heard, null)).toBe(null);
+  });
+
+  it('lets Tom ask someone with nothing new, and only talks to someone in the room with him', () => {
+    const cfg = config;
+    const talk = new FamilyTalk(cfg, new EventBus());
+    const fig = (x, z) => ({ position: { x, y: 0, z }, visible: true });
+    const figures = [fig(0, -2), fig(50, 50), fig(1, -2)];
+    const played = [];
+    let reachable = true;
+    const sub = { busy: false, talking: null, current: null, advance() {} };
+    const scene = { add() {} };
+    Object.assign(talk, {});
+    // (No three scene: stand in for init's meshes.)
+    talk.dialogue = { hasNew: () => false, talkTo: () => null };
+    talk.subtitles = sub;
+    talk.player = { camera: { position: { x: 0, y: 1.6, z: 0 } }, yaw: 0 };
+    talk.figures = figures;
+    talk.ids = cfg.story.family;
+    talk.hold = { progress: 0, update: (dt, key, down) => Boolean(key && down) };
+    talk.hud = { prompt: '', progress: 0 };
+    talk.baseY = [0, 0, 0];
+    talk.time = 0;
+    talk.checkTimer = 99;
+    talk.talkingTo = null;
+    talk.markers = [];
+    talk.reach = () => reachable;
+    talk.ask = (id) => (id === 'ellen' ? { prompt: "ask Ellen what's next", play: () => played.push(id) } : null);
+    void scene;
+    const input = { activeDevice: 'gamepad', isDown: () => false, wasPressed: () => false };
+    talk.update(0.1, input, true);
+    expect(talk.hud.prompt).toBe("Hold X: ask Ellen what's next");
+    talk.update(0.1, { ...input, isDown: () => true }, true);
+    expect(played).toEqual(['ellen']);
+    expect(talk.talkingTo).toBe('ellen');
+    // Not through a wall.
+    talk.talkingTo = null;
+    reachable = false;
+    talk.update(0.1, input, true);
+    expect(talk.hud.prompt).toBe('');
+  });
+});

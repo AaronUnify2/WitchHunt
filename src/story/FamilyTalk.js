@@ -9,6 +9,12 @@
 //    moves on to the next.
 // The figures are the station's placeholders (StationRenderer.family);
 // their real look is Session 13's (#148).
+//
+// Round 2, step 5: they aren't all in the comms room any more (Ellen at her
+// board, Wyatt up the tower): reach(i) says whether Tom's in the same room
+// as figure i. And someone with nothing new of their own can still be asked
+// (ask(id) -> { prompt, play() }: story/FamilyStations.js: Ellen about the
+// objective, Junie about what's out there).
 
 import * as THREE from 'three';
 import { HoldAction } from '../player/HoldAction.js';
@@ -23,7 +29,8 @@ export class FamilyTalk {
   }
 
   // ctx: { dialogue, subtitles, player, figures: [Object3D] (in config.story.family's
-  // order), inRoom() (Tom is in the comms room with them: no talking through walls) }.
+  // order), inRoom() (Tom is in the comms room with them: no talking through walls),
+  // reach(i) (Tom's in the room figure i is in; without it, inRoom()), ask(id) }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.ids = this.cfg.story.family;
@@ -62,6 +69,7 @@ export class FamilyTalk {
     let bestD = Infinity;
     this.figures.forEach((f, i) => {
       if (!f.visible) return; // Session 26: someone who isn't there (Junie, taken)
+      if (this.reach ? !this.reach(i) : !this.inRoom()) return;
       const dx = f.position.x - p.x;
       const dz = f.position.z - p.z;
       const d = Math.hypot(dx, dz);
@@ -81,10 +89,12 @@ export class FamilyTalk {
     this.time += dt;
     const sub = this.subtitles;
     if (this.talkingTo !== null && !sub.busy) this.talkingTo = null;
-    const i = canTalk && this.inRoom() ? this.facing() : -1;
+    const i = canTalk ? this.facing() : -1;
     // Session 18 (Aaron: the game opened on "talk to Wyatt", and he'd nothing to say): only someone with
     // something new to say is offered (mid-conversation, whoever's talking).
     const id = i >= 0 && (this.talkingTo === this.ids[i] || this.dialogue.hasNew(this.ids[i])) ? this.ids[i] : null;
+    // Round 2, step 5: nothing new of their own, but they can be asked.
+    const ask = i >= 0 && !id && this.talkingTo === null && !sub.busy ? this.ask?.(this.ids[i]) : null;
     const X = input.activeDevice === 'gamepad' ? 'X' : 'E';
     const name = id ? this.cfg.story.speakers[id].name : '';
     if (this.talkingTo !== null && id) {
@@ -98,6 +108,12 @@ export class FamilyTalk {
       this.hud.prompt = `Hold ${X}: talk to ${name}`;
       this.hud.progress = this.hold.progress;
       if (done && this.dialogue.talkTo(id)) this.talkingTo = id;
+    } else if (ask) {
+      const who = this.ids[i];
+      const done = this.hold.update(dt, `ask:${who}`, input.isDown('interact'), this.fc.holdSeconds);
+      this.hud.prompt = `Hold ${X}: ${ask.prompt}`;
+      this.hud.progress = this.hold.progress;
+      if (done && ask.play()) this.talkingTo = who;
     } else {
       this.hud.prompt = '';
       this.hud.progress = 0;

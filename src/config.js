@@ -2457,6 +2457,14 @@ export const config = {
         // east of the cabin's centre; w across, d out from the wall, h tall).
         // Round 2 (Aaron): the workbench moved out to the garage (layout.garage); null here.
         workbench: null,
+        // Round 2, step 5 (Aaron: "Ellen at a desk with a string board... Junie at the comms table watching
+        // the cameras"): Ellen's board, on the comms room's wall where the workbench stood, facing the front
+        // door: a cork board (x: its middle, metres east of the cabin's centre; w wide, h tall, its bottom
+        // edge `bottom` above the floor), a writing desk under its west end, and where she stands (stand: x,
+        // and metres out from the wall). What's pinned to it: data/storyBoard.json (story/FamilyStations.js).
+        board: { x: -1.3, w: 2.4, h: 1.25, bottom: 0.98, desk: { x: -1.8, w: 1.3, d: 0.55, h: 0.76 }, stand: { x: -0.25, out: 0.9 } },
+        // Junie's place at the comms desk: at its west end, watching the monitors (from the desk's middle).
+        junieSpot: { x: -1.12, z: 0.42 },
         doorApproach: 0.9, // metres either side of a door where zombies stand to attack or step through
         cornerMargin: 1.4, // zombies round the cabin's corners this far out
       },
@@ -5577,6 +5585,26 @@ export const config = {
 
   // Talking to the family face to face (M8): hold interact while looking
   // at one of them in the comms room.
+  // Round 2, step 5 (story/FamilyStations.js): the family at their stations. Ellen works at her string
+  // board in the main room by day (turning to Tom when he's within turnRange, at turnRate radians a second),
+  // and waits in the comms room with the others at night; Junie watches the monitors at the comms desk.
+  // The board's pinned things show as the story's flags are set (checked every checkEvery seconds); looking
+  // at the board (within lookRange of its foot, holding for lookSeconds) reads the newest of them.
+  familyStations: {
+    enabled: true,
+    turnRange: 3.6,
+    turnRate: 3.2,
+    checkEvery: 0.5,
+    lookRange: 1.7,
+    lookSeconds: 0.45,
+    string: 0x8a1a14, // the red string, and its pins
+    stringWidth: 0.008,
+    pin: 0x9a2018,
+    // The things' colours by kind (dim: the torch glare rule).
+    kinds: { photo: 0x6a6a64, polaroid: 0x7c786a, note: 0x7a7458, card: 0x6e6858, sketch: 0x76746a, map: 0x4e5a40, print: 0x5c6468, page: 0x74694e },
+    ink: 0x24221e,
+  },
+
   familyTalk: {
     range: 2.4, // metres
     lookAngle: 28, // degrees either side of the view

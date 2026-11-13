@@ -93,6 +93,7 @@ import { Moths } from '../ai/Moths.js';
 import { DeepForest } from '../ai/DeepForest.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { PruittFarm } from '../encounters/PruittFarm.js';
+import { FamilyStations } from '../story/FamilyStations.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
 import { OldChurchSite } from '../world/OldChurchSite.js';
 import { OldChurch } from '../encounters/OldChurch.js';
@@ -733,6 +734,15 @@ export class Game {
     this.farm.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, moths: this.moths, flyer: this.flyer, flashlight: this.flashlight, lore: this.lore, paper: this.paper, card: this.card, gates: this.gates, director: this.director, vehicles: this.vehicles, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.combat.promptSources.push(this.farm.hud);
     this.vehicles.busy?.push(this.farm.hud);
+    // Round 2, step 5: the family at their stations (Ellen's string board, Junie at the monitors).
+    this.stations = new FamilyStations(this.cfg, this.bus);
+    this.stations.init(this.scene, { station: this.station, player: this.player, clock: this.clock, progress: this.progress, dialogue: this.dialogue, objective: () => this.objectives?.current, notify });
+    this.familyTalk.reach = (i) => {
+      const f = this.station.renderer.family[i];
+      const zone = zoneOf(this.station.layout, this.player.position.x, this.player.position.z);
+      return zone >= 2 && zoneOf(this.station.layout, f.position.x, f.position.z) === zone;
+    };
+    this.familyTalk.ask = (id) => this.stations.ask(id);
     // Session 25: the crashed plane's story beats (the grey, the quick draw, the Mothman).
     this.plane = new CrashedPlane(this.cfg, this.bus);
     this.plane.init({
@@ -1664,6 +1674,7 @@ export class Game {
       ute: this.ute.saveState(), // build queue item 7: where the ute stands (optional; null until it's in the world)
       megaNight: this.megaNight.saveState(), // build queue item 4: the scorched ring's place (optional)
       farm: this.farm.saveState(), // Round 2: the Pruitt farm (optional)
+      stations: this.stations.saveState(), // Round 2, step 5: what's been read off Ellen's board (optional)
       dozer: this.dozer.saveState(), // build queue item 1: where the dozer stands (optional; null until it's in the world)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
       homeStop: this.homeStop.saveState(), // Session 18 (optional)
@@ -1748,6 +1759,7 @@ export class Game {
     this.sniper.reset();
     this.nightTwo.reset(); // Round 2
     this.farm.loadState(d.farm);
+    this.stations.loadState(d.stations);
     this.mothership.reset();
     this.carArmory.reset();
     this.ute.loadState(d.ute); // build queue item 7: where the ute stood
@@ -2041,6 +2053,7 @@ export class Game {
     if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
     if (first) this.farm.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Round 2: the Pruitt farm
+    if (first) this.stations.update(dt); // Round 2, step 5
     if (first) this.comms.update(); // Session 26: the radio's reach
     if (story) this.junieTaken.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding); // Session 26
     if (story) this.church.update(dt, controls, playing && this.combat.alive, !locked && !busy && !this.player.riding);
@@ -2108,6 +2121,7 @@ export class Game {
     this.moths.dispose();
     this.plane.dispose();
     this.farm.dispose();
+    this.stations.dispose();
     this.junieTaken.dispose();
     this.church.dispose();
     this.churchSite.dispose();

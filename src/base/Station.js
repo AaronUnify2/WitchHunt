@@ -261,6 +261,14 @@ export class Station {
       grid.insert(col);
       return col;
     });
+    // Round 2, step 5: and where they stand at their stations (Ellen at her board, Junie at the monitors):
+    // off until they're there (placeFamily with spot.solid).
+    this.stationColliders = [c.board?.stand, null, c.junieSpot].map((f) => {
+      if (!f) return null;
+      const col = { x: f.x, z: f.z, r: 0.25, base: this.floorY - 0.5, top: this.floorY + 1.7, off: true };
+      grid.insert(col);
+      return col;
+    });
     this.syncColliders();
   }
 
@@ -540,8 +548,11 @@ export class Station {
   setPresent(i, present) {
     const fig = this.renderer.family?.[i];
     if (fig) fig.visible = present;
+    const away = Boolean(this.familyAway?.[i]);
     const col = this.familyColliders?.[i];
-    if (col) col.off = !present;
+    if (col) col.off = !present || away;
+    const at = this.stationColliders?.[i];
+    if (at) at.off = !present || !this.familySolid?.[i];
   }
 
   // Round 2 (Aaron: "Wyatt should jump up onto the tower and snipe zombies"; Ellen at her board, Junie at
@@ -561,6 +572,11 @@ export class Station {
     if (col) col.off = Boolean(spot) || !person.mesh.visible;
     this.familyAway ??= [];
     this.familyAway[i] = Boolean(spot);
+    // At a station with a body to it (spot.solid: Ellen at her board, Junie at the monitors).
+    this.familySolid ??= [];
+    this.familySolid[i] = Boolean(spot?.solid);
+    const stood = this.stationColliders?.[i];
+    if (stood) stood.off = !spot?.solid || !person.mesh.visible;
     this.bus.emit('family:placed', { index: i, y: at.y, away: Boolean(spot) });
   }
 
@@ -716,6 +732,14 @@ export class Station {
     const bench = this.benchSpot(); // Session 28
     if (bench) offer(dist(bench), this.benchOffer(X));
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
+    // Round 2, step 5: things other systems offer here (Ellen's board: story/FamilyStations.js):
+    // { at: { x, z }, range, offer(X) -> an entry or null }.
+    for (const s of this.extraSpots ?? []) {
+      const dd = dist(s.at);
+      if (dd > (s.range ?? range)) continue;
+      const entry = s.offer(X);
+      if (entry) offer(dd, entry);
+    }
     const found = this.combat.weapons.found.length; // Session 25: just to look at
     offer(dist(this.rackSpot()), { key: 'gun-rack', prompt: `The gun rack: ${found === 0 ? 'no guns found yet' : `the ${found === 1 ? 'gun' : `${found} guns`} you've found`}. ${X === 'X' ? 'D-pad down' : 'G'}: the weapon cross`, act: null });
     offer(dist(L.tower.ladder), { key: 'tower-up', prompt: `Hold ${X}: climb the lookout tower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() });

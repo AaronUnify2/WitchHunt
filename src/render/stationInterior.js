@@ -311,6 +311,52 @@ export function buildInterior(cabin, fy, k, box, rng) {
     add(0.2, 0.015, 0.16, wx - 0.05, wb.h, wz + 0.1, k.blanketRed, 0.4);
     add(0.26, 0.015, 0.02, wx + 0.3, wb.h, wz + 0.05, k.chrome, 0.5);
   }
+  // Round 2, step 5: Ellen's string board on the comms room's wall, facing the front door: the cork in a
+  // dark frame, a strip light clipped over it; her writing desk under its west end (a notebook, the station's
+  // incident forms in a stack, a box of pins, a ball of red string, Earl's cassette recorder, her mug, a
+  // pencil jar); a chair pushed back. What's pinned to it is its own meshes (render/storyBoard.js).
+  if (c.board) {
+    const bd = c.board;
+    const bx = bd.x - c.x;
+    const bz = bd.z - c.z;
+    const cork = k.cork ?? 0x5a4028;
+    add(bd.w + 0.1, bd.h + 0.1, 0.02, bx, bd.bottom - 0.05, bz + 0.005, k.woodDark);
+    // The cork, in tiles, a shade apart.
+    const cols = 6;
+    const rows = 3;
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) add(bd.w / cols - 0.004, bd.h / rows - 0.004, 0.012, bx - bd.w / 2 + (i + 0.5) * (bd.w / cols), bd.bottom + j * (bd.h / rows) + 0.002, bz + 0.016, shade(cork, 0.86 + rng.range(0, 0.26)));
+    // The strip light over it: a bracket each end, its tin hood, the tube.
+    for (const s of [-1, 1]) add(0.02, 0.02, 0.2, bx + s * 0.7, bd.bottom + bd.h + 0.12, bz + 0.1, k.metalDark);
+    add(1.5, 0.03, 0.12, bx, bd.bottom + bd.h + 0.14, bz + 0.2, k.lampShade);
+    glow.push(b(1.36, 0.02, 0.04, bx, bd.bottom + bd.h + 0.12, bz + 0.2, k.bulb));
+    // The desk: a top on four legs, a drawer under it.
+    const dk = bd.desk;
+    const dx = dk.x - c.x;
+    const dz = dk.z - c.z;
+    add(dk.w, 0.04, dk.d, dx, dk.h - 0.04, dz, k.tableTop);
+    for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) add(0.05, dk.h - 0.04, 0.05, dx + lx * (dk.w / 2 - 0.05), 0, dz + lz * (dk.d / 2 - 0.05), k.woodDark);
+    add(dk.w * 0.5, 0.1, dk.d - 0.08, dx - dk.w * 0.18, dk.h - 0.15, dz, k.woodDark);
+    add(0.1, 0.02, 0.02, dx - dk.w * 0.18, dk.h - 0.11, dz + dk.d / 2 - 0.03, k.chrome);
+    // On it: the notebook, open, a pencil across it; the forms; the pins; the string; the recorder; the mug; the jar.
+    add(0.3, 0.012, 0.22, dx - 0.2, dk.h, dz + 0.04, k.ledger, 0.12);
+    for (const s of [-1, 1]) add(0.135, 0.008, 0.2, dx - 0.2 + s * 0.072, dk.h + 0.012, dz + 0.04, k.paper, 0.12);
+    add(0.16, 0.008, 0.008, dx - 0.16, dk.h + 0.02, dz + 0.06, k.pinRed, 0.7);
+    for (let i = 0; i < 4; i++) add(0.21, 0.004, 0.29, dx + 0.28, dk.h + i * 0.004, dz - 0.06, shade(k.paper, 0.86 + i * 0.05), 0.05 * i - 0.08);
+    add(0.09, 0.03, 0.06, dx + 0.02, dk.h, dz - 0.16, k.metalDark);
+    add(0.075, 0.006, 0.045, dx + 0.02, dk.h + 0.03, dz - 0.16, k.pinRed);
+    add(0.07, 0.07, 0.07, dx - 0.5, dk.h, dz - 0.14, k.pinRed, 0.5);
+    add(0.008, 0.008, 0.2, dx - 0.44, dk.h, dz - 0.02, k.pinRed, 0.9);
+    add(0.2, 0.05, 0.13, dx + 0.5, dk.h, dz + 0.12, k.radio, -0.3);
+    add(0.09, 0.006, 0.06, dx + 0.5, dk.h + 0.05, dz + 0.12, k.radioGrille, -0.3);
+    for (const s of [-1, 1]) add(0.03, 0.012, 0.02, dx + 0.5 + s * 0.05, dk.h + 0.05, dz + 0.17, k.chrome, -0.3);
+    add(0.08, 0.1, 0.08, dx - 0.52, dk.h, dz + 0.16, k.mug);
+    add(0.06, 0.09, 0.06, dx + 0.56, dk.h, dz - 0.18, k.chrome);
+    for (let i = 0; i < 3; i++) add(0.008, 0.16, 0.008, dx + 0.55 + i * 0.012, dk.h + 0.02, dz - 0.18 + i * 0.01, [k.pinRed, k.plank, k.metalDark][i]);
+    chair(dx - 0.1, dz + 0.62, Math.PI + 0.35, k.plank);
+    // A cardboard box of the station's files on the floor by the desk, its flaps open.
+    add(0.4, 0.28, 0.3, dx + dk.w / 2 + 0.32, 0, dz + 0.02, k.plank, 0.2);
+    add(0.36, 0.02, 0.26, dx + dk.w / 2 + 0.32, 0.27, dz + 0.02, k.paper, 0.2);
+  }
   // The bunks: a steel frame, two mattresses with wool blankets and pillows.
   const bk = c.furniture.find((f) => f.id === 'bunks');
   const bxl = bk.x - c.x;

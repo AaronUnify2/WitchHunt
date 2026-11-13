@@ -182,6 +182,24 @@ function cabinLayout(centre, c, deskCfg) {
     hinge: { x: cx + cd0, z: cz + partZ },
   };
   const desk = { x: cx + deskCfg.offsetX, z: cz - hd + deskCfg.fromNorthWall };
+  // Round 2, step 5: Ellen's string board on the comms room's wall (the main room's side), its desk, where
+  // she stands at it (facing: toward the board's middle) and where Tom stands to read it; Junie's place at
+  // the comms desk, facing the monitors.
+  const B = c.board;
+  const wallZ = cz + partZ + 0.115; // the partition's main-room face
+  const board = B
+    ? {
+        x: cx + B.x,
+        z: wallZ,
+        w: B.w,
+        h: B.h,
+        bottom: B.bottom,
+        desk: { id: 'ellenDesk', x: cx + B.desk.x, z: wallZ + B.desk.d / 2, w: B.desk.w, d: B.desk.d, h: B.desk.h },
+        stand: { x: cx + B.stand.x, z: wallZ + B.stand.out, facing: Math.atan2(B.x + B.w * 0.1 - B.stand.x, -B.stand.out) },
+        look: { x: cx + B.x + B.w * 0.12, z: wallZ + 0.9 },
+      }
+    : null;
+  const junieSpot = c.junieSpot ? { x: desk.x + c.junieSpot.x, z: desk.z + c.junieSpot.z, facing: Math.atan2(-c.junieSpot.x * 0.55, -c.junieSpot.z - 0.6) } : null;
   return {
     x: cx,
     z: cz,
@@ -195,6 +213,8 @@ function cabinLayout(centre, c, deskCfg) {
     frontDoor,
     commsDoor,
     desk,
+    board,
+    junieSpot,
     // Session 13 (#147): the furniture you can't walk through (world
     // coordinates; w across x, d along z, h tall), kept clear of the
     // zombies' way in from the front door to the comms door. The rest of
@@ -205,6 +225,7 @@ function cabinLayout(centre, c, deskCfg) {
       { id: 'table', x: cx - 2.8, z: cz + 2.0, w: 1.3, d: 0.85, h: 0.76 },
       { id: 'bunks', x: cx + hw - 1.15, z: cz + 2.45, w: 2.0, d: 0.9, h: 1.9 },
       { id: 'cabinets', x: cx + 1.5, z: cz - hd + 0.4, w: 1.45, d: 0.6, h: 1.32 },
+      ...(board ? [board.desk] : []),
       ...(c.workbench ? [{ id: 'workbench', x: cx + c.workbench.x, z: cz + partZ + 0.08 + c.workbench.d / 2, w: c.workbench.w, d: c.workbench.d, h: c.workbench.h }] : []), // Session 28
     ],
     // Where the family wait out the night (placeholders until M8).
