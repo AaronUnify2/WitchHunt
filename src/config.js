@@ -2468,6 +2468,10 @@ export const config = {
         // door: a cork board (x: its middle, metres east of the cabin's centre; w wide, h tall, its bottom
         // edge `bottom` above the floor), a writing desk under its west end, and where she stands (stand: x,
         // and metres out from the wall). What's pinned to it: data/storyBoard.json (story/FamilyStations.js).
+        // Nov 14 (Aaron): the station plan, a live poster of the ledger's fence plan, on the same wall between
+        // Ellen's board and the comms door (base/fencePoster.js): x its middle, w x h, bottom above the floor;
+        // out: where Tom stands to use it, metres out from the wall.
+        poster: { x: 1.5, w: 1.3, h: 1.12, bottom: 1.04, out: 0.9 },
         board: { x: -1.3, w: 2.4, h: 1.25, bottom: 0.98, desk: { x: -1.8, w: 1.3, d: 0.55, h: 0.76 }, stand: { x: -0.25, out: 0.9 } },
         // Junie's place at the comms desk: at its west end, watching the monitors (from the desk's middle).
         junieSpot: { x: -1.12, z: 0.42 },
@@ -2569,6 +2573,9 @@ export const config = {
     },
     // Hold interact this long (seconds).
     hold: { repair: 1.5, build: 2.5, battery: 2, ledger: 0.35, climb: 1, load: 1, install: 2.5, takeRifle: 0.6, releaseDrain: 2 }, // releaseDrain: let go and the bar empties this many times faster than it fills (Aaron)
+    // Nov 14 (Aaron): the station plan poster on the cabin wall (base/fencePoster.js): redrawn every `refresh`
+    // seconds while Tom's within `near` metres; its canvas size; how much it glows (so it reads at night).
+    poster: { refresh: 0.5, near: 14, pixels: [1024, 884], glow: 0.35, frame: 0x3a2c1f },
     interactRange: 2.2,
     // Session 15b (Aaron): the service rifle leans on the lookout tower's
     // north rail until Tom takes it (it's out of the starting kit). It's

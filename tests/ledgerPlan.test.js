@@ -150,3 +150,42 @@ describe("the D-pad on the fence tab's plan (Session 15b, Aaron)", () => {
     expect(at(planMove(page, bar, 0, -1)).ring).toBe('fence');
   });
 });
+
+// Nov 14 (Aaron): the same plan as a poster on the cabin wall, live, between Ellen's board and the comms door.
+import { posterSvg } from '../src/base/fencePoster.js';
+import { readFileSync } from 'node:fs';
+
+describe('the station plan poster', () => {
+  it("hangs on the comms room's wall in the main room, clear of Ellen's board and the comms door", () => {
+    const { layout } = station();
+    const c = layout.cabin;
+    const p = c.poster;
+    expect(p).toBeTruthy();
+    expect(p.z).toBeCloseTo(c.board.z);
+    const boardRight = c.board.x + c.board.w / 2;
+    const doorLeft = c.commsDoor.x - c.commsDoor.width / 2;
+    expect(p.x - p.w / 2).toBeGreaterThan(boardRight + 0.2);
+    expect(p.x + p.w / 2).toBeLessThan(doorLeft - 0.2);
+    expect(p.spot.z).toBeGreaterThan(p.z); // Tom stands in the main room to use it
+    expect(p.bottom + p.h).toBeLessThan(c.wallHeight);
+  });
+
+  it('draws the live plan: every part in its colour, and the numbers', () => {
+    const st = station(42, 1);
+    st.state.segments[0].health = 0;
+    const svg = posterSvg(buildFencePlan(st), { scrap: 42, charge: 10, capacity: 100, batteries: 1 });
+    expect(svg).toMatch(/^<svg xmlns/);
+    expect(svg).toContain('STATION PLAN');
+    expect(svg).toContain('SCRAP 42');
+    expect(svg).toContain('BATTERIES 1');
+    expect(svg).toMatch(/class="fence[^"]*down"/);
+    expect(svg).toContain('.down .shape');
+  });
+
+  it('is held X at to open the fence plan on its own, and the hints point to it', () => {
+    const src = readFileSync(new URL('../src/base/Station.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/key: 'poster'[^\n]*this\.ledger\.open\('fence'\)/);
+    const obj = readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
+    expect(obj).toContain('station plan on the cabin wall');
+  });
+});

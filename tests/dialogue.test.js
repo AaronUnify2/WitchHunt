@@ -289,6 +289,7 @@ describe('cut lines', () => {
     // And it really plays: Wyatt's line at the top of the tower, then Ellen's (Junie's smoke line is cut).
     const { d, shown } = makeDialogue(dialogueData, { withFamily: false });
     d.play('day1.03');
-    expect(shown.map((s) => s.line.id)).toEqual(['day1.03', 'day1.map']);
+    expect(shown.map((s) => s.line.id)).toEqual(['day1.03', 'day1.map', 'day1.prompt.quad']);
+    expect(shown[2].text).toMatch(/quad bike/);
   });
 });

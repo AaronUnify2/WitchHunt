@@ -107,7 +107,7 @@ export class Objectives {
       const broken = st.state.segments.findIndex((s) => s.health <= 0);
       if (broken >= 0) {
         const s = L.segments[broken];
-        return step('repair', 'Patch the torn fence (hold X at it, or use the ledger).', L.at((s.a0 + s.a1) / 2, L.radius));
+        return step('repair', 'Patch the torn fence (hold X at it, or at the station plan on the cabin wall).', L.at((s.a0 + s.a1) / 2, L.radius));
       }
       return step('junie', 'Go inside. Junie wants to talk to you.', L.cabin.frontDoor);
     }
@@ -182,7 +182,7 @@ export class Objectives {
       // Aaron (Nov 14): the night falls when Wyatt has the lever gun: a battery first if he's carrying one.
       if (n2.state === 'prep') {
         if (g.combat.inventory.batteries > 0) return step('night2Prep', "Night's nearly here. Fit the battery in the fence box, then take Earl's rifle up the tower to Wyatt.", L.fenceBox);
-        return step('night2Prep', "Climb the lookout tower and hand Wyatt Earl's rifle. Night falls when you do: spend your scrap at the ledger first.", L.tower.ladder);
+        return step('night2Prep', "Climb the lookout tower and hand Wyatt Earl's rifle. Night falls when you do: spend your scrap at the station plan in the cabin first.", L.tower.ladder);
       }
       return step('night2Home', "It's getting dark. Take Earl's lever-action home to Wyatt before night.", L.gate.mid);
     }

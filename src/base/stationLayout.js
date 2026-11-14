@@ -199,6 +199,9 @@ function cabinLayout(centre, c, deskCfg) {
         look: { x: cx + B.x + B.w * 0.12, z: wallZ + 0.9 },
       }
     : null;
+  // Nov 14: the station plan poster on the same wall (base/fencePoster.js), and where Tom stands to use it.
+  const P = c.poster;
+  const poster = P ? { x: cx + P.x, z: wallZ, w: P.w, h: P.h, bottom: P.bottom, spot: { x: cx + P.x, z: wallZ + P.out } } : null;
   const junieSpot = c.junieSpot ? { x: desk.x + c.junieSpot.x, z: desk.z + c.junieSpot.z, facing: Math.atan2(-c.junieSpot.x * 0.55, -c.junieSpot.z - 0.6) } : null;
   return {
     x: cx,
@@ -214,6 +217,7 @@ function cabinLayout(centre, c, deskCfg) {
     commsDoor,
     desk,
     board,
+    poster,
     junieSpot,
     // Session 13 (#147): the furniture you can't walk through (world
     // coordinates; w across x, d along z, h tall), kept clear of the

@@ -32,6 +32,7 @@ import { Turret } from './Turret.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { segmentCollider } from '../world/collision.js';
 import { StationRenderer } from '../render/StationRenderer.js';
+import { FencePoster } from './fencePoster.js';
 import { Ledger } from '../ui/Ledger.js';
 import { DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { buildFencePlan } from './fencePlan.js';
@@ -103,6 +104,11 @@ export class Station {
     this.renderer.init(scene, this.layout, this.ground, this.state, this.floorY);
     this.ledger = new Ledger(this.cfg.ledger, this.bus);
     this.ledger.init(ctx.root, () => this.ledgerPages(), () => this.ledgerSummary());
+    // Nov 14 (Aaron): the station plan on the cabin wall, live, held X at to open the fence plan (fencePoster.js).
+    if (this.layout.cabin.poster && sc.poster) {
+      this.poster = new FencePoster(sc.poster, this.layout.cabin.poster);
+      this.poster.init(scene, this.floorY, () => buildFencePlan(this), () => ({ scrap: this.combat.inventory.scrap, charge: Math.round(this.state.charge), capacity: this.state.capacity, batteries: this.combat.inventory.batteries }));
+    }
     this.hold = new HoldAction(sc.hold.releaseDrain);
     this.hold.init();
     this.hud = { prompt: '', progress: 0 }; // read by Combat's HUD each frame
@@ -660,6 +666,7 @@ export class Station {
     this.renderer.rackGuns = this.combat.weapons.found; // Session 25: the guns Tom's found (Session 23, #343: its guns)
     this.renderer.gateLocked = this.gateLocked;
     this.renderer.update(dt, cameraPosition, daylight, this.turret);
+    this.poster?.update(dt, this.player.position);
   }
 
   // ---- interactions -----------------------------------------------------------------
@@ -735,6 +742,7 @@ export class Station {
     }
     const bench = this.benchSpot(); // Session 28
     if (bench) offer(dist(bench), this.benchOffer(X));
+    if (c.poster) offer(dist(c.poster.spot), { key: 'poster', prompt: `Hold ${X}: the station plan (repair the fence, fit a battery, reinforce the doors)`, seconds: h.ledger, act: () => this.ledger.open('fence') });
     offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     // Round 2, step 5: things other systems offer here (Ellen's board: story/FamilyStations.js):
     // { at: { x, z }, range, offer(X) -> an entry or null }.
@@ -1268,6 +1276,7 @@ export class Station {
     for (const off of this.unsubscribers ?? []) off();
     this.enemies.station = null;
     this.ledger.dispose();
+    this.poster?.dispose();
     this.renderer.dispose();
   }
 }

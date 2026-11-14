@@ -286,13 +286,17 @@ export class FirstDay {
     const calm = !this.cutscenes.active && !this.subtitles?.busy;
     const step = day1 ? this.currentStep() : null;
     if ((step === 'fit' || step === 'repair') && zone >= 1 && !this.fenceWhole() && calm) {
-      once('fence', null, 'The torn fence: hold X at it, or repair it from the ledger in the comms room', 'The torn fence: hold E at it, or repair it from the ledger in the comms room');
+      once('fence', null, 'The torn fence: hold X at it, or at the station plan on the cabin wall', 'The torn fence: hold E at it, or at the station plan on the cabin wall');
     }
     // (Round 2: the shovel's in the garage from Day 1, and Earl's spade stands at his shelter: no 'fetch it' hint.)
     // Round 2 (Aaron: "you should get a prompt to ride the quad bike at the beginning of the game"): once
     // the tower's done and the campsite's the job, in the yard and on foot.
-    if (day1 && this.currentStep() === 'campsite' && zone >= 1 && !this.player.riding && this.quad && !this.cutscenes.active && calm) {
-      once('quad', 'day1.prompt.quad', 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');
+    // Nov 14 (Aaron: someone says "quad bike" as soon as possible after the tower, before he leaves the compound):
+    // Wyatt says it in the chain straight after the tower view (day1.03 -> day1.map -> day1.prompt.quad), and the
+    // button shows as soon as the tower's done, wherever he is; the line again only if he somehow didn't hear it.
+    const quadStep = this.currentStep();
+    if (day1 && (quadStep === 'towerRifle' || quadStep === 'campsite') && this.progress?.has?.('towerClimbed') !== false && !this.player.riding && this.quad && !this.cutscenes.active) {
+      once('quad', this.dialogue.heard?.has('day1.prompt.quad') || this.subtitles?.busy ? null : 'day1.prompt.quad', 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');
     }
     if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.player.riding && !this.cutscenes.active) {
       // Walking (not running) a while outside the fence on the way.
