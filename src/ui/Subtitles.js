@@ -31,13 +31,17 @@ export class Subtitles {
     this.queue = [];
     this.current = null;
     this.gap = 0;
+    this.time = 0;
   }
 
   // entry: { speaker (id), text, radio, urgent, line (the data line, if
   // any), onStart(), onDone(), caller (Session 26: the Caller's tell), dir
   // (Session 26: words under the line, e.g. "From the trees, behind you") }. Urgent entries go to the front.
+  // Aaron (Nov 14: "by the time Wyatt said 'get away from it'..."): fresh (seconds): a line that's only worth
+  // saying now: if it's still waiting behind others after that long, it's dropped unsaid.
   show(entry) {
     const e = { ...entry, done: false, shown: 0, hold: 0, blipCount: 0 };
+    if (entry.fresh > 0) e.staleAt = (this.time ?? 0) + entry.fresh;
     if (e.urgent) this.queue.unshift(e);
     else this.queue.push(e);
     // Too many waiting: the oldest waiting lines go (they've gone stale).
@@ -83,11 +87,14 @@ export class Subtitles {
   }
 
   update(dt) {
+    this.time = (this.time ?? 0) + dt;
     if (!this.current) {
       if (this.gap > 0) {
         this.gap -= dt;
         return;
       }
+      // (Lines gone stale while they waited are dropped.)
+      while (this.queue.length && this.queue[0].staleAt !== undefined && this.time > this.queue[0].staleAt) this.drop(this.queue.shift());
       if (this.queue.length === 0) return;
       this.begin(this.queue.shift());
     }

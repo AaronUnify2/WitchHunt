@@ -269,7 +269,9 @@ describe('the military outpost: the beats', () => {
     expect(w2.every((z) => z.mode === 'linger')).toBe(true);
     expect(w3.every((z) => z.mode === 'chase')).toBe(true);
     expect(r.o.approachDone).toBe(true);
-    for (const id of ['outpost.helmetDown', 'outpost.lull1', 'outpost.lull2', 'outpost.lull2b', 'outpost.lull3', 'outpost.tower']) expect(r.played).toContain(id);
+    for (const id of ['outpost.helmetDown', 'outpost.lull2', 'outpost.lull2b', 'outpost.lull3']) expect(r.played).toContain(id);
+    expect(r.played).not.toContain('outpost.tower'); // (Wyatt asks about the gun pit once: outpost.gunPitAsk)
+    expect(r.played).not.toContain('outpost.lull1'); // Aaron (Nov 14): less talk between the waves
   });
 
   it('sends bigger waves by night', () => {
@@ -544,7 +546,7 @@ describe('the compound (pass 4)', () => {
     expect(pick.key).toBe('resin');
     pick.act();
     expect(played).toContain('outpost.resin');
-    expect(r.played.filter((x) => x === 'outpost.resin.wyatt')).toHaveLength(1);
+    expect(r.played.filter((x) => x === 'outpost.resin.ellen')).toHaveLength(1); // Aaron (Nov 14): one line (Wyatt's is cut)
     r.step(config.outpost.resinOpenSeconds + 0.5);
     expect(r.o.resinOpen).toBe(1);
     expect(r.o.pick('X')?.key).not.toBe('resin');
@@ -652,7 +654,7 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
     p.act();
     expect(r.o.turret.state).toBe('live');
     expect(r.o.combat.inventory.batteries).toBe(0);
-    expect(r.played).toContain('outpost.turret.on');
+    expect(r.played).not.toContain('outpost.turret.on'); // Aaron (Nov 14): cut (it can be seen shooting)
   });
 
   it('fires its rounds (Session 18: 25) at the dead in range, overheats, and blows up (once)', () => {
@@ -673,7 +675,7 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
     expect(r.o.turret.state).toBe('spent');
     expect(r.charges.blasts).toHaveLength(1);
     expect(r.charges.blasts[0].e.radius).toBe(tc.blast.radius);
-    expect(r.played).toContain('outpost.turret.hot');
+    expect(r.played).not.toContain('outpost.turret.hot'); // Aaron (Nov 14): cut (its smoke says it)
     r.o.combat.inventory.batteries = 1;
     r.at(outpost.staging.gunPit.x + 1, outpost.staging.gunPit.z);
     expect(r.o.pick('X')?.key ?? '').not.toMatch(/turret/);
@@ -703,7 +705,7 @@ describe("Session 18 (Aaron's notes): the outpost's beats given time to breathe"
     expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1); // the rest wait for him
     const second = r.o.crates.findIndex((x) => x === 'whole');
     r.o.breakCrate(second);
-    expect(r.played).toContain('outpost.crates.burst');
+    expect(r.played).not.toContain('outpost.crates.burst'); // Aaron (Nov 14): cut (Ellen's line says it)
     expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(2);
     r.step(cc.stagger[1] * (n - 1) + 0.5);
     expect(r.o.crates.every((x) => x === 'broken')).toBe(true);

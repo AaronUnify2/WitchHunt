@@ -1846,8 +1846,7 @@
           "at": 0,
           "do": "lookAt",
           "target": "outpostResin",
-          "rate": 1.6,
-          "pitch": 0.02
+          "rate": 6
         },
         {
           "at": 1.3,

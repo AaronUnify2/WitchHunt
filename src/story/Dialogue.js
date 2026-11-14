@@ -164,6 +164,7 @@ export class Dialogue {
         text: fillTemplate(l.text, vars),
         radio,
         urgent: i === 0 && Boolean(line.urgent),
+        fresh: l.fresh, // seconds it may wait behind other lines before it's not worth saying (ui/Subtitles.js)
         line: l,
         caller: Boolean(l.caller || vars.caller), // Session 26: the Caller's tell
         dir: vars.dir ?? null, // Session 26: which way a call from the trees came from

@@ -138,6 +138,10 @@ export class Outpost {
     const atC4 = (dz) => frameToWorld(this.frame, c4.x + Math.sin(a4) * dz, c4.z + Math.cos(a4) * dz);
     this.resinDoorAt = atC4(CONTAINER.length / 2 + 1.0);
     const body = atC4(CONTAINER.length / 2 - 1.1);
+    // Aaron (Nov 14: "if you were looking down, you don't actually see the alien's head"): where Tom's stood
+    // for the reveal: back from the doors on the container's line, looking in at it.
+    this.resinBody = body;
+    this.resinViewAt = atC4(CONTAINER.length / 2 + 2.3);
     this.cutscenes?.namedAnchors?.set('outpostResin', () => ({ ...body, yaw: 0, dy: CONTAINER.deck - 0.7 }));
     const c7 = container('mothman');
     const c7w = frameToWorld(this.frame, c7.x, c7.z);
@@ -444,8 +448,10 @@ export class Outpost {
     if (!this.helmetDone) this.sendHelmet();
     // The lines after it (Session 16 gotcha: a line inside a skipped cutscene is cleared).
     const lines = () => {
+      // Aaron (Nov 14: "just a little bit too much dialogue" at the outpost): by the tear, one line (the soldier
+      // on the track is there to be seen).
       this.dialogue?.play(this.east ? 'outpost.arrive.east' : 'outpost.arrive');
-      this.dialogue?.play(this.east ? 'outpost.helmet.east' : 'outpost.helmet');
+      if (!this.east) this.dialogue?.play('outpost.helmet');
     };
     if (this.cutscenes && !this.cutscenes.active && this.cutscenes.play(this.east ? 'sweep.outpostEast' : 'sweep.outpost', { anchors: { outpost: frameAnchor(this.frame) }, onDone: lines })) return;
     lines();
@@ -566,10 +572,8 @@ export class Outpost {
       // Plan #1: the lull after wave 3 counts down too (the peak waits for it).
       if (this.lull > 0 && !this.cutscenes?.active) this.lull -= dt;
       // The radio suggests the gun pit's rounds (DESIGN edge case: the barricade's hard without them).
-      if (!this.roundsTaken && !this.towerTold) {
-        this.towerTold = true;
-        this.dialogue?.play('outpost.tower');
-      }
+      // (Aaron, Nov 14: said once now: Wyatt's ask about the gun pit, after the helmet. This one's cut.)
+      if (!this.roundsTaken && !this.towerTold) this.towerTold = true;
       return;
     }
     if (d > a.start || this.witchOn) return; // away, or the witch is on him: the next waits
@@ -609,7 +613,8 @@ export class Outpost {
     }
     this.wavesCleared = Math.max(this.wavesCleared, was + 1);
     this.bus.emit('outpost:waveDown', { index: was });
-    const lines = [['outpost.lull1'], ['outpost.lull2', 'outpost.lull2b'], ['outpost.lull3']][was] ?? [];
+    // Aaron (Nov 14): less talk between the waves: nothing after the first.
+    const lines = [[], ['outpost.lull2', 'outpost.lull2b'], ['outpost.lull3']][was] ?? [];
     for (const id of lines) this.dialogue?.play(id);
   }
 
@@ -1009,7 +1014,7 @@ export class Outpost {
       if (k > 0) t += cc.stagger[0] + Math.random() * (cc.stagger[1] - cc.stagger[0]);
       return { index: e.i, in: t };
     });
-    if (this.burst.length) this.dialogue?.play('outpost.crates.burst');
+    // (Aaron, Nov 14: Ellen's 'something's breaking out of those crates' says it: Wyatt's line here is cut.)
   }
 
   // Session 17 (Aaron): haul C-4's doors open: they swing out, and the camera turns onto what's inside.
@@ -1019,8 +1024,15 @@ export class Outpost {
     this.resinOpen = 0;
     this.combat?.sfx?.play('door', this.resinDoorAt);
     this.bus.emit('outpost:resin');
+    // He steps back and looks up at it: whatever he was looking at, the body's whole in the picture.
+    const pl = this.player;
+    if (pl?.teleport && !pl.riding && this.resinViewAt) {
+      const v = this.resinViewAt;
+      const b = this.resinBody;
+      pl.teleport(v.x, v.z, Math.atan2(v.x - b.x, v.z - b.z));
+      pl.pitch = 0;
+    }
     const lines = () => {
-      this.dialogue?.play('outpost.resin.wyatt');
       this.dialogue?.play('outpost.resin.ellen');
       this.beat();
     };
@@ -1031,7 +1043,6 @@ export class Outpost {
     this.told.add('c7');
     this.bus.emit('outpost:c7');
     const lines = () => {
-      this.dialogue?.play('outpost.c7.wyatt');
       this.dialogue?.play('outpost.c7.ellen');
       this.beat();
       // Session 18: on the road in, mid-approach: the next wave waits for its lines.
@@ -1057,7 +1068,6 @@ export class Outpost {
     this.combat?.sfx?.play('battery');
     this.combat?.sfx?.play('turretTurn', this.turretAt());
     this.bus.emit('outpost:turret', { state: 'live' });
-    this.dialogue?.play('outpost.turret.on');
   }
 
   updateTurret(dt) {
@@ -1099,8 +1109,7 @@ export class Outpost {
       if (t.rounds <= 0) {
         t.state = 'hot';
         t.timer = tc.overheat;
-        this.bus.emit('outpost:turret', { state: 'hot' });
-        this.dialogue?.play('outpost.turret.hot');
+        this.bus.emit('outpost:turret', { state: 'hot' }); // (its smoke says it: Wyatt's line is cut)
       }
     } else if (t.state === 'hot') {
       t.timer -= dt;
@@ -1217,7 +1226,6 @@ export class Outpost {
     this.props?.setFloodsOn(true);
     this.combat?.sfx?.play('battery');
     this.bus.emit('outpost:floods', { on: true });
-    this.dialogue?.play('outpost.floods.on');
   }
 
   // ---- interactions ----------------------------------------------------------------------------------
@@ -1297,7 +1305,7 @@ export class Outpost {
         this.props?.setTaken('report', true);
         this.lore?.give('fieldReport');
         {
-          const after = () => this.dialogue?.play('outpost.report');
+          const after = () => {}; // (Aaron, Nov 14: Ellen's 'bring that report home' is cut)
           const read = () => {
             this.combat?.sfx?.play('paper');
             if (!this.paper?.open('fieldReport', { device: this.device, take: true, onClose: after })) after();

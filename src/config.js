@@ -4455,7 +4455,15 @@ export const config = {
       floor: 0.1, // the Mothman's fight: Tom can't drop below 10% health; reaching it, he blacks out
       // Session 32 (Aaron): he can't be driven off here (Flyer `unbeatable`): the fight always ends at the floor
       // and the blackout, and the script's last move repeats until it does.
-      mothmanScript: ['flyover', 'flyover', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive'],
+      // Aaron (Nov 14: "he kind of flies around, then he swoops... that story beat drags. The fight's allowed to
+      // feel unfair... make him super aggressive and overwhelming"): one pass low over Tom's head, then dive
+      // after dive with hardly a breath between, each taking half his health (mothmanTune replaces the flyer's
+      // own numbers for this fight: Flyer.send tune). Each rake that lands makes the next worse (strikeRamp), so
+      // healing can't keep up: he's down in three dives, about twelve seconds, five or six if he heals through
+      // them. mothmanMax: seconds after which he goes down whatever's happened.
+      mothmanScript: ['flyover', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive', 'dive'],
+      mothmanTune: { arriveSeconds: 0.6, startDistance: 55, circleSeconds: [1.0, 1.8], circleRadius: 13, circleHeight: 8, circleSpeed: 24, flyoverHeight: 3.2, flyoverPast: 22, flyoverSpeed: 34, diveSpeed: 33, strikeRange: 2.8, strikeDamage: 30, strikeRamp: 9, climbDistance: 13, climbSpeed: 27, steer: 6 },
+      mothmanMax: 35,
     },
     look: {
       weather: { rust: [0x24262a], grimeHeight: 0.5, keepBright: [] },

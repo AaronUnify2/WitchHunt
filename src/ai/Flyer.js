@@ -63,7 +63,11 @@ export class Flyer {
   // ---- starting and stopping ----------------------------------------------------------------------
 
   // In from far off, on its script. Session 25: opts { script } (the crashed plane's Mothman, story: true).
+  // Aaron (Nov 14): opts.tune: numbers that replace the flyer's own for this one fight (the plane's Mothman:
+  // faster, closer, far harder: config.crashedPlane.encounter.mothmanTune). stop() puts the usual ones back.
   send(opts = {}) {
+    this.baseFc ??= this.fc;
+    this.fc = opts.tune ? { ...this.baseFc, ...opts.tune } : this.baseFc;
     const f = this.fc;
     this.script = opts.script ?? f.script;
     this.story = Boolean(opts.story);
@@ -76,13 +80,14 @@ export class Flyer {
     this.v.x = this.v.y = this.v.z = 0;
     this.health = f.health;
     this.index = 0;
+    this.strikes = 0;
     this.active = true;
     this.hurt = false;
     this.target.targetable = true;
     this.look.active = true;
     this.look.mothPose = null;
     this.begin('circle');
-    this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]) + 3;
+    this.moveTimer = this.rng.range(f.circleSeconds[0], f.circleSeconds[1]) + (f.arriveSeconds ?? 3);
   }
 
   // Build queue item 2: hooked on a cable (the dozer's winch at the station). It thrashes round `at`
@@ -98,6 +103,7 @@ export class Flyer {
   }
 
   stop() {
+    if (this.baseFc) this.fc = this.baseFc;
     this.tethered = null;
     this.active = false;
     this.target.targetable = false;
@@ -228,8 +234,10 @@ export class Flyer {
       const aim = { x: t.x, y: t.y + f.diveAt, z: t.z };
       const d = steerTo(this.p, this.v, aim, f.diveSpeed, f.steer * 1.6, dt);
       if (d < f.strikeRange) {
-        this.combat.hurtPlayer(f.strikeDamage, 1.5);
-        this.bus.emit('flyer:struck', { damage: f.strikeDamage });
+        // (strikeRamp: each rake that lands, the next is this much worse: a fight that can't be healed through.)
+        const damage = f.strikeDamage + (f.strikeRamp ?? 0) * this.strikes++;
+        this.combat.hurtPlayer(damage, 1.5);
+        this.bus.emit('flyer:struck', { damage });
         this.strikeShow = f.strikeShowSeconds;
         this.begin('climb');
       } else if (this.p.y < t.y + 0.3) {

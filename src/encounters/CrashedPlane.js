@@ -257,6 +257,10 @@ export class CrashedPlane {
         case 'standoff':
           this.updateStandoff(dt);
           break;
+        case 'mothman':
+          // Aaron (Nov 14): it never drags: however it's gone, he's down by mothmanMax seconds after it arrives.
+          if (this.flyer?.active && (this.mothmanT += dt) > (this.ec.mothmanMax ?? Infinity)) this.blackout();
+          break;
         case 'quickdraw':
           this.faceTom();
           g.state = 'aim';
@@ -310,8 +314,10 @@ export class CrashedPlane {
     this.bus.emit('plane:seen');
     const [a, b] = this.ec.sweepLines;
     const lines = () => {
-      this.later.push({ t: a, fn: () => this.dialogue?.play('plane.sweep.wyatt') });
-      this.later.push({ t: b, fn: () => this.dialogue?.play('plane.sweep.ellen') });
+      // Aaron (Nov 14: "by the time Ellen told me to go slow and don't let it see me, I had already been seen"):
+      // one short line, at once (Wyatt's is cut).
+      this.later.push({ t: Math.min(a, 0.2), fn: () => this.dialogue?.play('plane.sweep.ellen') });
+      void b;
     };
     if (!this.cutscenes?.play('sweep.crashedPlane', { onDone: lines })) lines();
   }
@@ -619,10 +625,11 @@ export class CrashedPlane {
 
   startMothman() {
     const fl = this.flyer;
+    this.mothmanT = 0;
     this.combat.setHealthFloor('crashedPlane', this.ec.floor, () => this.blackout());
     this.offLeft = this.bus.on('flyer:left', () => this.mothmanGone());
     // Session 32 (Aaron: "he has to knock you unconscious"): he can't be driven off.
-    fl.send({ script: this.ec.mothmanScript, story: true, unbeatable: true });
+    fl.send({ script: this.ec.mothmanScript, story: true, unbeatable: true, tune: this.ec.mothmanTune });
     this.dialogue?.play('plane.mothman.ellen');
   }
 

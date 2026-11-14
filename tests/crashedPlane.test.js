@@ -30,7 +30,13 @@ describe('the crashed plane (Session 25)', () => {
 
   it('a 10% health floor for the Mothman: the scripted blackout', () => {
     expect(ec.floor).toBe(0.1);
-    expect(ec.mothmanScript.slice(0, 3)).toEqual(['flyover', 'flyover', 'dive']); // a flyover, a second, then the full attack
+    expect(ec.mothmanScript.slice(0, 3)).toEqual(['flyover', 'dive', 'dive']); // a flyover, a second, then the full attack
+    // Aaron (Nov 14): overwhelming: one pass, then dives that each take about half his health, seconds apart.
+    const tune = config.crashedPlane.encounter.mothmanTune;
+    expect(tune.strikeDamage).toBeGreaterThan(config.spikes.flyer.strikeDamage);
+    expect(tune.circleSeconds[1]).toBeLessThan(config.spikes.flyer.circleSeconds[0]);
+    expect(tune.strikeDamage * 3 + tune.strikeRamp * 3).toBeGreaterThan(config.health.max); // three rakes: 30 + 39 + 48
+    expect(config.crashedPlane.encounter.mothmanMax).toBeLessThanOrEqual(45);
   });
 
   it('its flags, lines, cutscenes and the pilot\'s log are all there', () => {
