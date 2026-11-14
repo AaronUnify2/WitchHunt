@@ -83,6 +83,7 @@ export function startFromOutpostCleared(game, { explored = false } = {}) {
   // Round 2: Night 2 is fought, the farm's been through (its moths gone, the generator left running, the
   // plot's sigil dug), and Earl's shotgun's come down off its pegs.
   g.nightTwo?.reset();
+  g.lore?.pass?.('leverRifle'); // (Wyatt has it)
   const plot = g.farm?.plotSigil?.();
   if (plot) g.director.remove(plot);
   g.farm?.loadState({ generator: true, looked: [], searched: [] });

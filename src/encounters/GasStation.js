@@ -830,7 +830,10 @@ export class GasStation {
       w.pools[w.ammoType(id)].rounds = Math.max(0, stored - (this.cfg.weapons[id].startReserve ?? 0));
     }
     // Round 2 (Aaron): and an old lever-action behind it, the one Earl once let Wyatt shoot: Wyatt's, for the tower.
-    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds), and an old lever-action with a box of shells: the one Earl let Wyatt shoot`);
+    // Aaron (Nov 14: "another rifle that doesn't have a model and doesn't go in your inventory... a bit
+    // confusing"): it's a thing Tom carries now, with its own card: Earl's lever-action, for Wyatt.
+    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds)`);
+    if (this.lore?.give('leverRifle')) this.card?.show('leverRifle', { take: () => {}, keep: () => {} }, this.device);
     this.progress?.setFlag('wyattRifle');
     this.progress?.setFlag('rifleClaimed');
     this.dialogue?.play('gas.safe.open');

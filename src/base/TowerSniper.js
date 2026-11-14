@@ -49,6 +49,8 @@ export class TowerSniper {
 
   reset() {
     this.posted = false;
+    this.holding = false;
+    if (this.rifle) this.rifle.visible = false;
     this.timer = this.wc.every;
     this.sayIn = 0;
     this.force = false; // an encounter wants him up there now (Night 2's dusk)
@@ -71,8 +73,34 @@ export class TowerSniper {
     return { x, y, z, facing: Math.atan2(x - c.x, z - c.z) };
   }
 
+  // Is the rifle his yet? Tom hands it over on the tower before Night 2 (a run saved before that beat: night2Done).
+  get armed() {
+    return Boolean(this.progress?.has('wyattArmed') || this.progress?.has('night2Done'));
+  }
+
+  // Aaron (Nov 14: "we don't have a model for the rifle to hand to Wyatt, so he's just standing there shooting
+  // bullets out of his chest"): Earl's lever-action, in his hands while he's posted with it: a small mesh on
+  // his figure (walnut stock and fore-end, a blued receiver, barrel and magazine tube, the lever's loop), and
+  // his arms up to it (FamilyRenderer's 'aim').
+  showRifle(on) {
+    const fr = this.station.renderer?.familyRenderer;
+    const person = fr?.people?.[WYATT];
+    if (!person) return;
+    if (on && !this.rifle) this.rifle = buildLeverRifle(this.wc.rifle);
+    if (this.rifle) {
+      if (on && this.rifle.parent !== person.mesh) person.mesh.add(this.rifle);
+      this.rifle.visible = on;
+    }
+    fr.setPose?.(WYATT, on ? 'aim' : 'stand');
+  }
+
   update(dt, playing) {
     const want = this.wanted();
+    const hold = want && this.armed;
+    if (hold !== this.holding) {
+      this.holding = hold;
+      this.showRifle(hold);
+    }
     if (want !== this.posted) {
       this.posted = want;
       this.station.placeFamily(WYATT, want ? this.spot() : null);
@@ -80,9 +108,8 @@ export class TowerSniper {
       this.bus.emit('wyatt:posted', { on: want });
     }
     if (!playing || !this.posted || this.clock.phase !== 'night') return;
-    // He shoots once the rifle's in his hands: Tom hands it over on the tower before Night 2 (wyattArmed;
-    // a run saved before that beat was built: night2Done).
-    if (!this.progress?.has('wyattArmed') && !this.progress?.has('night2Done')) return;
+    // He shoots once the rifle's in his hands.
+    if (!this.armed) return;
     this.sayIn = Math.max(0, this.sayIn - dt);
     this.timer -= dt;
     if (this.timer > 0) return;
@@ -105,7 +132,8 @@ export class TowerSniper {
       person.facing = yaw;
       person.mesh.rotation.y = yaw;
     }
-    this.from.set(s.x + Math.sin(yaw) * 0.5, s.y + 1.35, s.z + Math.cos(yaw) * 0.5);
+    const m = this.wc.rifle?.muzzle ?? [0.5, 1.35];
+    this.from.set(s.x + Math.sin(yaw) * m[0], s.y + m[1], s.z + Math.cos(yaw) * m[0]); // the rifle's muzzle
     const hit = this.rng.chance(w.hitChance);
     const head = hit && this.rng.chance(w.headChance);
     const chest = (target.y ?? this.ground.heightAt(target.x, target.z)) + (target.headBottom ?? 1.5) * (head ? 1.05 : 0.6);
@@ -130,3 +158,35 @@ export class TowerSniper {
     return this.posted ? 'wyatt: on the tower' : '';
   }
 }
+
+// Earl's lever-action as Wyatt holds it: a group in his figure's own space (feet at the origin, facing +z),
+// up at his right shoulder, pointing where he faces. k: config.wyattTower.rifle.
+export function buildLeverRifle(k) {
+  const group = new THREE.Group();
+  group.name = 'wyatt rifle';
+  const wood = new THREE.MeshLambertMaterial({ color: k.wood });
+  const steel = new THREE.MeshLambertMaterial({ color: k.steel });
+  const box = (w, h, d, x, y, z, mat, rx = 0) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    mesh.position.set(x, y, z);
+    mesh.rotation.x = rx;
+    mesh.castShadow = true;
+    group.add(mesh);
+    return mesh;
+  };
+  // Along +z from the butt at his shoulder: stock, receiver, fore-end, barrel and the tube under it.
+  box(0.045, 0.11, 0.3, 0, -0.035, -0.1, wood, 0.12); // the stock, dropping to the butt
+  box(0.04, 0.085, 0.2, 0, 0, 0.14, steel); // the receiver
+  box(0.012, 0.06, 0.09, 0, -0.07, 0.1, steel, -0.5); // the lever's loop
+  box(0.012, 0.012, 0.11, 0, -0.1, 0.08, steel);
+  box(0.042, 0.05, 0.22, 0, -0.012, 0.35, wood); // the fore-end
+  box(0.022, 0.022, 0.56, 0, 0.012, 0.52, steel); // the barrel
+  box(0.018, 0.018, 0.44, 0, -0.018, 0.5, steel); // the magazine tube
+  box(0.008, 0.02, 0.012, 0, 0.032, 0.78, steel); // the front sight
+  box(0.02, 0.03, 0.04, 0, 0.05, 0.1, steel); // the hammer
+  group.position.set(k.at[0], k.at[1], k.at[2]);
+  group.rotation.set(k.tilt ?? 0, k.yaw ?? 0, 0);
+  group.visible = false;
+  return group;
+}
+

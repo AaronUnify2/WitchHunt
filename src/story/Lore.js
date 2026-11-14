@@ -58,8 +58,19 @@ export class Lore {
     if (!item || this.carrying.includes(id) || this.handedIn.includes(id)) return false;
     this.carrying.push(id);
     // Session 17 (Aaron): a tape's watched on the spot (D-pad down); handed in, it stays on the monitors.
-    this.notify?.(item.kind === 'tape' ? `Picked up: ${item.name}. Hand it in at the comms room to keep it on the monitors` : `Picked up: ${item.name}. Hand it in at the comms room`);
+    // Aaron (Nov 14): a thing carried for someone (kind 'gift': Earl's lever-action, for Wyatt) isn't handed in.
+    if (item.kind === 'gift') this.notify?.(`Picked up: ${item.name}. It's for ${item.for}`);
+    else this.notify?.(item.kind === 'tape' ? `Picked up: ${item.name}. Hand it in at the comms room to keep it on the monitors` : `Picked up: ${item.name}. Hand it in at the comms room`);
     this.bus.emit('lore:picked', { id });
+    return true;
+  }
+
+  // A gift's given to whoever it was for (or was, before this run got here): it's no longer carried.
+  pass(id) {
+    if (!this.byId.has(id) || this.handedIn.includes(id)) return false;
+    this.carrying = this.carrying.filter((c) => c !== id);
+    this.handedIn.push(id);
+    this.bus.emit('lore:passed', { id });
     return true;
   }
 
@@ -101,7 +112,8 @@ export class Lore {
     if (this.carrying.length === 0) rows.push({ label: 'Nothing to hand in', value: 'lore items you find come here', action: null });
     for (const id of this.carrying) {
       const item = this.byId.get(id);
-      rows.push({ label: `Hand in: ${item.name}`, value: item.kind, action: () => this.handIn(id) });
+      if (item.kind === 'gift') rows.push({ label: `Carrying: ${item.name}`, value: `for ${item.for}`, action: null });
+      else rows.push({ label: `Hand in: ${item.name}`, value: item.kind, action: () => this.handIn(id) });
     }
     rows.push({ label: 'THE MONITORS', value: this.clips.length ? `${this.clips.length} clip${this.clips.length === 1 ? '' : 's'}` : 'nothing recorded yet', action: null });
     // Newest first.

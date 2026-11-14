@@ -64,7 +64,7 @@ export class FamilyRenderer {
   }
 
   // A pose for one of them (cutscenes, the viewer): 'stand', 'walk',
-  // 'kneel' or 'down'.
+  // 'kneel' or 'down'; 'aim' (Wyatt on the tower, his rifle up).
   setPose(i, pose) {
     const p = this.people[i];
     if (!p || p.pose === pose) return;
@@ -134,6 +134,21 @@ export class FamilyRenderer {
         set('elbowL', -0.55);
         set('elbowR', -0.55);
         set('head', -0.08, sway * 2);
+        break;
+      }
+      case 'aim': {
+        // Aaron (Nov 14: Wyatt "standing there shooting bullets out of his chest"): a rifle at the shoulder: the
+        // right hand back at the grip, the left out under the fore-end, his cheek down on the stock; breathing.
+        const breath = Math.sin(t * 1.4) * 0.012;
+        set('spine', 0.05 + breath);
+        set('chest', 0.04);
+        set('shoulderR', -0.45, 0.3, -0.2);
+        set('elbowR', -1.9);
+        set('shoulderL', -1.3, 0, -0.45);
+        set('elbowL', -0.25);
+        set('neck', 0.1, 0, -0.1);
+        set('kneeL', 0.1);
+        set('hipL', -0.08);
         break;
       }
       case 'kneel':

@@ -2048,6 +2048,8 @@ body.in-cutscene .vhud {
 .inspect-item.look-book { --w: 5.2rem; --h: 7rem; --d: 1.4rem; }
 .inspect-item.look-report { --w: 5.4rem; --h: 7rem; --d: 0.3rem; }
 .inspect-item.look-device { --w: 4.6rem; --h: 4.6rem; --d: 1.8rem; }
+.inspect-item.look-rifle { --w: 12rem; --h: 1.4rem; --d: 0.55rem; }
+.inspect-item.look-rifle .inspect-face.front::after { left: 46%; right: 2%; top: 22%; height: 34%; }
 .inspect-item.look-note .inspect-face.front::after,
 .inspect-item.look-report .inspect-face.front::after { top: 12%; height: 6%; left: 12%; right: 40%; }
 @keyframes inspect-turn {

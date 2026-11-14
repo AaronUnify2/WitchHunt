@@ -241,6 +241,7 @@ export class NightTwo {
   handOver(byHand) {
     if (this.state !== 'prep' || this.fading) return;
     this.set('wyattArmed');
+    if (this.lore?.pass?.('leverRifle')) this.combat?.hud?.pickup?.("Wyatt has Earl's lever-action");
     this.combat?.sfx?.play('loaded', this.player.position);
     this.dialogue?.play(byHand ? 'night2.hand.wyatt' : 'night2.hand.late');
     this.dialogue?.play('night2.hand.ellen');

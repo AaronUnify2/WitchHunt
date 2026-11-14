@@ -184,7 +184,7 @@ export class Objectives {
         if (g.combat.inventory.batteries > 0) return step('night2Prep', "Night's nearly here. Fit the battery in the fence box, then take Earl's rifle up the tower to Wyatt.", L.fenceBox);
         return step('night2Prep', "Climb the lookout tower and hand Wyatt Earl's rifle. Night falls when you do: spend your scrap at the ledger first.", L.tower.ladder);
       }
-      return step('night2Home', "It's getting dark. Get home to the station before night.", L.gate.mid);
+      return step('night2Home', "It's getting dark. Take Earl's lever-action home to Wyatt before night.", L.gate.mid);
     }
     // ---- the military outpost (Session 17, M9.4) ----
     const op = g.outpost;

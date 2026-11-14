@@ -27,6 +27,7 @@
         "line": "Torn off a notepad, left on the desk where he knew someone would look. (draft)"
       }
     },
+    {"id": "leverRifle", "name": "Earl's lever-action", "from": "gasStation", "kind": "gift", "for": "Wyatt", "card": {"look": "rifle", "color": "#3a2a1c", "label": "#4a4e52", "line": "An old .30-30 from the back of Earl's safe, the bluing worn to grey, a box of shells taped to the stock. Earl let Wyatt shoot it once. It isn't yours: take it home and up the lookout tower to him. (draft)"}},
     {"id": "marcyJournal", "name": "Marcy Pruitt's journal", "from": "pruittFarm", "kind": "item", "paper": "marcyJournal", "card": {"look": "book", "color": "#3a4a5a", "label": "#c9b98a", "line": "Marcy's journal, left open on the kitchen table, her pen beside it. (draft)"}},
     {
       "id": "pruittDiary",
