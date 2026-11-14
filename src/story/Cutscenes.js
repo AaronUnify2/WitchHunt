@@ -184,6 +184,11 @@ export class Cutscenes {
     // A skipped cutscene's own lines go with it (as before Session 17).
     if (skipped && this.speaksDuring(cur.data)) this.subtitles.clear();
     // Session 17: a linesAfter one's lines now (a skipped one's too: they're the family's reaction).
+    // Aaron (Nov 14): skipped early, the lines it hadn't reached yet come too (the tower's view: a new player
+    // must be able to skip it and miss nothing).
+    if (!this.speaksDuring(cur.data)) {
+      for (const e of cur.data.tracks ?? []) if (e.do === 'line' && e.at > cur.t) cur.after.push([e.line, cur.opts.vars ?? {}, e.radio ?? null]);
+    }
     for (const [line, vars, radio] of cur.after) this.dialogue.play(line, vars, radio);
     this.zombieList.length = 0;
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);

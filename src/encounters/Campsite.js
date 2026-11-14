@@ -440,7 +440,9 @@ export class Campsite {
     this.waveCleared = true;
     this.wave = [];
     this.bus.emit('campsite:cleared');
-    this.dialogue.play('day1.09'); // and line 10 after it
+    // Aaron (Nov 14): just the objective. (Wyatt's 'they just kept coming' and Ellen's preamble are cut: by the
+    // time the battery was asked for, Tom could be out of the campground.)
+    this.dialogue.play('day1.10');
   }
 
   // ---- skip intro and saving ------------------------------------------------------------------

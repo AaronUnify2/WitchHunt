@@ -53,7 +53,7 @@ import { Cutscenes } from '../story/Cutscenes.js';
 import { Lore } from '../story/Lore.js';
 import { daylightLevel } from '../ai/detection.js';
 import { DebugOverlay } from '../debug/DebugOverlay.js';
-import { DebugMenu, DEBUG } from '../debug/DebugMenu.js';
+import { DebugMenu, DEBUG, ENEMY_TABS } from '../debug/DebugMenu.js';
 import { ModelViewer } from '../debug/ModelViewer.js';
 import { StartScreen } from '../ui/StartScreen.js';
 import { Toast } from '../ui/Toast.js';
@@ -1067,6 +1067,43 @@ export class Game {
 
   // M8: flags about the world now, for lines' conditions (DESIGN.md
   // "Dialogue system": base damaged, zombie level 4+).
+  // Aaron (Nov 14): "add to the debug menu the ability to spawn all the new types of zombies". Enemies >
+  // Zombies: the Screamer (the real one: it calls the dead), a mutant, and three of each kind of the dead
+  // (police, army, the Men in Black's, loggers, miners, moonshiners, Earl), ahead of Tom.
+  addSpawnItems(menu) {
+    const tab = menu.tab(DEBUG.enemies, ENEMY_TABS.zombies);
+    const ahead = (dist, side = 0) => {
+      const p = this.player.position;
+      const yaw = this.player.yaw;
+      const fx = -Math.sin(yaw);
+      const fz = -Math.cos(yaw);
+      return { x: p.x + fx * dist + fz * side, z: p.z + fz * dist - fx * side };
+    };
+    const E = this.combat.enemies;
+    tab.addItem('Spawn the Screamer 22 m ahead (it screams and calls five every 15 s)', () => {
+      const at = ahead(22);
+      const p = this.player.position;
+      const s = this.screamers.spawn(at.x, at.z, { faceX: p.x, faceZ: p.z, authored: 'debug' });
+      this.toast.show(s ? `Debug: a Screamer, ${Math.round(s.z.health)} health` : 'Debug: no room for it');
+    });
+    tab.addItem('Spawn a mutant 14 m ahead', () => {
+      const at = ahead(14);
+      const z = E.spawnZombie(at.x, at.z, { kind: 'mutant', mode: 'chase' });
+      this.toast.show(z ? `Debug: a mutant, ${Math.round(z.health)} health` : 'Debug: no room for it');
+    });
+    for (const variant of Object.keys(this.cfg.zombies.variants)) {
+      if (variant === 'screamer') continue;
+      tab.addItem(`Spawn 3 ${variant} dead 10 m ahead`, () => {
+        let n = 0;
+        for (const side of [-2, 0, 2]) {
+          const at = ahead(10, side);
+          if (E.spawnZombie(at.x, at.z, { variant, mode: 'chase' })) n++;
+        }
+        this.toast.show(`Debug: ${n} ${variant}`);
+      });
+    }
+  }
+
   storyFlags() {
     const flags = [...(this.progress?.flags.list() ?? [])]; // M9.1: story progress, by name
     if (this.director.effectiveLevel >= 4) flags.push('zombieLevel4');
@@ -1187,6 +1224,7 @@ export class Game {
     this.atmosphere.addDebugItems(menu, (text) => this.toast.show(text));
     this.cutscenes.addDebugItems(menu);
     this.viewer.addDebugItems(menu);
+    this.addSpawnItems(menu);
     this.dialogue.addDebugItems(menu);
     this.trailCams.addDebugItems(menu);
     this.lore.addDebugItems(menu);

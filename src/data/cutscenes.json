@@ -568,7 +568,7 @@
           "sfx": "witchSong"
         },
         {
-          "at": 2.8,
+          "at": 2.3,
           "do": "move",
           "actor": "her",
           "anchor": "herRun",
@@ -580,24 +580,26 @@
           "seconds": 0.9
         },
         {
-          "at": 2.8,
+          "at": 2.3,
           "do": "lookAt",
           "target": "herRun",
           "rate": 1.6
         },
         {
-          "at": 2.9,
+          "at": 2.4,
           "do": "sfx",
           "sfx": "witchRush"
         }
       ],
-      "duration": 4.6,
+      "duration": 3.25,
       "jolt": true
     },
     {
       "id": "day1.tower",
       "name": "Day 1: the view from the lookout tower (first person)",
       "style": "firstPerson",
+      "linesAfter": true,
+      "_cut": "Aaron (Nov 14): nobody speaks in it now (linesAfter: the lines below play once it ends, skipped or not), so a new player can skip it without fearing they will miss what to do: the UFO, the smoke, done in half the time.",
       "_note": "M9.2: the first climb on Day 1 (FirstDay). Anchors from FirstDay: southLight (far to the south, toward Ground Zero, at the edge of sight), campsite / smoke (the thin wisp over the campsite's trees, drawn along the line to it at the edge of the fog). Session 25 (Aaron): the red light is now the craft itself: the UFO hangs over the far south for about 2 s, lights on, then zips off (up and away east, accelerating, gone in under a second); Wyatt asks, Ellen says it's the military (it isn't). Then the pan to the smoke: Wyatt spots the campers' car and Junie the smoke (lines 3-4). Tom steps clear of the platform's corner posts first.",
       "actors": [
         {
@@ -719,18 +721,18 @@
           "line": "tower.light.ellen"
         },
         {
-          "at": 10.0,
+          "at": 4.1,
           "do": "lookAt",
           "target": "campsite",
-          "rate": 0.8
+          "rate": 1.1
         },
         {
-          "at": 11.2,
+          "at": 4.2,
           "do": "line",
           "line": "day1.03"
         }
       ],
-      "duration": 14.2
+      "duration": 7.4
     },
     {
       "id": "clip.camcorder",

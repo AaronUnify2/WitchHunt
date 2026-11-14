@@ -1868,7 +1868,7 @@ export const config = {
     speedMin: 0.36, // fixed range (multiples of the player's sprint), whatever the level
     speedMax: 0.48,
     attackReach: 1.9,
-    attackWindup: 0.9, // slow, heavy swipe: time to back off
+    attackWindup: 0.4, // Aaron (Nov 14): "say it takes him 2 seconds to bring his fist down, make it 0.4" (it was 0.9)
     attackRecover: 1.3,
     attackDamage: 30,
     turnRate: 3,
@@ -1918,7 +1918,7 @@ export const config = {
       boot: 0x241a12, // the one work boot left on it
       hitFlash: [2.2, 0.6, 0.6], // its colour while flashing
       poseRate: 14, // how fast it blends into a new pose (per second)
-      slamSeconds: 0.16, // the club coming down once the swipe lands
+      slamSeconds: 0.12, // the club coming down once the swipe lands
       lyingDepth: 1.2, // metres a corpse sinks
       wakeSeconds: 2.2, // the authored mutant unfolding to its full height (state 'wake')
       twitchesPerSecond: 1.3, // dormant: how often it might twitch
@@ -5703,7 +5703,7 @@ export const config = {
     clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
     glimpse: { within: 40, max: 8 },
-    plot: { near: 30, moths: 8 },
+    plot: { near: 30, moths: 5 }, // Aaron (Nov 14): three fewer (it was 8, on top of the dead there)
     hold: { take: 0.8, look: 0.45, generator: 1.2 },
     light: { color: 0xffc078, intensity: 7, distance: 11, decay: 1.2 },
     look: {

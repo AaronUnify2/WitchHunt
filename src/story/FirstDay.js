@@ -115,6 +115,8 @@ export class FirstDay {
 
   // mode: 'new' (the opening), 'skip' (Skip intro), 'continue' (a save: nothing to start).
   begin(mode) {
+    // Aaron (Nov 14): his torch is on as a run starts (the first seconds mustn't be too dark to read).
+    if (mode === 'skip' || mode === 'new') this.flashlight?.setOn?.(true);
     if (mode === 'skip') this.skipIntro();
     else if (mode === 'new') this.playOpening();
   }
@@ -182,9 +184,8 @@ export class FirstDay {
         smoke,
         tower: { x: t.x, z: t.z, yaw: yawTo(light) },
       },
-      onDone: (skipped) => {
-        // Session 16 (Aaron): skipped, the campsite's lines still play (where to go next).
-        if (skipped && !this.dialogue.heard?.has('day1.03')) this.dialogue.play('day1.03');
+      onDone: () => {
+        // (Aaron, Nov 14: the family's lines come after it now, skipped or not: the cutscene's linesAfter.)
         this.mapPrompt('campsite'); // Session 15b (Aaron): the campsite's on the map now: the map's button
       },
     });
