@@ -1,6 +1,30 @@
 # For Aaron
 
-## Your Nov 14 play-test: four fixes, on `main`
+## Your second Nov 14 play-through: all 17 notes, on `main`
+
+1402 tests pass and the build is clean. Each change was run headless and looked at in screenshots; **none of it has been played by hand.** In play order:
+
+1. **Torch on at spawn.** New Game (and the skip start) begin with Tom's flashlight on.
+2. **The tower's first view** is 7 seconds: the light in the south, then the smoke over the campground. Nobody speaks during it; Wyatt's, Ellen's and Junie's lines all come afterwards, whether you skip it or not, so a new player can skip and miss nothing.
+3. **The campground fight.** Ellen says one thing: "Tom, bring me their car's battery. I can supercharge our fence with it."
+4. **Night 1's security panel.** Ellen's "this is how we stay alive" wall of text is cut.
+5. **Day 2: the Screamer at the campers' fire** (your call left to me). Riding out to Earl's, within 30 m of the campground the camera goes to it for 5 seconds (skippable): its back to you across the camp, in low, it turns round and screams, and three of the dead come up out of the dirt beside it. Then **it sinks back into the ground**: the three it called come for you, and Ellen has one line ("It called them up and went to ground, Tom. Remember that voice."). I kept it from being a fight because it has about 800 health and you have one rifle that morning; it's Night 2's. If you'd rather it stayed and fought, say so (`campsite.dawnFigure`).
+6. **The mutant's swing** lands 0.4 seconds after it starts (`mutant.attackWindup`).
+7. **The witch at the gas station** ends about 2 seconds sooner, before she reaches the trees.
+8. **Earl's lever-action is a real thing you carry.** Taking it from the safe shows its own card (a gift, for Wyatt), it sits in the ledger as "Carrying: ... for Wyatt", and the dusk objective reads "Take Earl's lever-action home to Wyatt before night." Handing it over on the tower takes it off you.
+9. **Wyatt holds a rifle.** A lever-action model in his hands, his arms up to it, and his shots leave from its muzzle.
+10. **Day 3 has no trip to the chained gate.** A few seconds into the dawn after Night 2, Ellen sends you to the Pruitts' farm to see whether Marcy's all right, and the afternoon goes by. At the farm: the moths, then **step out into the yard** (the objective puts you where the dead oak is in plain sight; a cold light comes up on the Mothman while he's shown, so he reads in the dark). Six seconds after he's gone Ellen calls: the army's compound, and the gap in the fence out the back of Earl's place. **The family plot's sigil is the next step on the way**, then the tear in the fence.
+11. **The family plot:** 5 moths (it was 8).
+12. **The compound: much less talk.** Ten lines are cut (the helmets, the lull, the tower, the crates, the resin and C-7 asides, the turret and floodlight confirmations, the report) and one is shortened. The lines that only make sense in the moment ("It's smoking, Dad, get away from it", the beetle hint, the turret and floodlight hints) are **dropped unsaid if they can't start within a few seconds**, so nothing arrives after the thing it's about.
+13. **The body in the resin.** Opening C-4's doors now steps Tom back to a spot with a clear view and turns the camera onto it.
+14. **The plane.** Ellen has one line, the moment you arrive: "That's not one of ours, Tom. Go slow. Don't let it see you first."
+15. **The Mothman at the plane is brutal now.** One low pass, then he dives straight away and keeps diving: 30 damage on the first rake and 9 more each time after. Standing your ground with full health and armour you're down in about 9 seconds (three rakes). If you somehow last 35 seconds he ends it anyway. Numbers: `crashedPlane.encounter.mothmanTune`.
+16. **Debug menu, Enemies > Zombies:** spawn a Screamer, a mutant, or three of each kind of the dead.
+17. **The scanner's battery** comes from the sheriff's car when it's within reach of the gas station (the step, the hint and Ellen's board line all point there).
+
+**Things only your hands can judge:** whether the Mothman's 9 seconds feels like a climax or a cheat; whether the Screamer leaving is a good tease or a let-down; and the new and changed lines, all still drafts.
+
+## Your first Nov 14 play-test: four fixes
 
 1. **Less talk after Night 1.** After the camera's clip it's two short lines (Ellen: "At first light, go to the gas station, Tom. See if the Pruitts are all right." Wyatt: the phone), and one at dawn ("We made it through. The gas station, Tom, just south of the campground."). Wyatt's "she buried something on Pruitt land" and Ellen's "we stay well away from it" are cut. Junie's "She was singing" still comes once on the ride out.
 2. **The rifle handover.** Back home at dusk, Wyatt's waiting on the tower. Fit your battery and spend your scrap, then climb up and hold X: "hand Wyatt Earl's rifle". He says his line, the picture fades, and Night 2 begins with you up there. Dusk waits for you; after 40 seconds he calls down for it, and after 150 he comes and takes it himself. (It was a 45-second timer.)
@@ -9,9 +33,7 @@
 
 5. **Junie's question on Day 1** ("Are they going to come here?") is answered by Wyatt now, who's in the room with her: "They'll come. But the fence is live again, and we'll be ready for them." It was Ellen, calling it through the wall from her board.
 
-**What's at the family plot, for your next run:** once you've been to the farm and it's dusk or later, coming within 30 m of the sigil there sends 8 more moths at you (`pruittFarm.plot.moths`). I haven't changed that; say if you want fewer once you've seen it with your hands free.
-
-**Round 2 is all built and on `main`: your Nov 13 play-test notes (steps 1 to 6) and the polish list.** 1390 tests pass and the build is clean. Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
+**Round 2 is all built and on `main`: your Nov 13 play-test notes (steps 1 to 6) and the polish list.** Every step was run headless on one seed with screenshots; **none of it has been played by hand.**
 
 The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md has a new section, "The first third as rebuilt".
 
@@ -19,9 +41,9 @@ The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md h
 
 1. **Day 1.** The garage is inside the fence, west of the cabin: your quad's in its first bay, the workbench and the shovel in the middle one. Ellen won't open the gate until the rifle's come down from the tower with you (Wyatt owns up to the turkey). At the campsite there's no shotgun: the dead come out of the trees as the camcorder's tape ends.
 2. **The cabin, any time after the tower.** Ellen is at **a string board** in the main room, facing the front door (she's in the comms room from dusk to dawn). Hold X at the board to read what's pinned; it grows as the story goes. Talk to her when she has nothing new and she tells you **what the current goal is for, and why**. Junie is at the monitors: ask her and she gives **a tip about what's out there**, newest first.
-3. **Day 2.** The sheriff's car on the road has the pistol in its door. Earl's store is a gift shop inside now. The storm shelter is 95 m up a track behind it (Earl's own spade stands by the track). Behind the hunting rifle in the safe is the old lever-action Earl let Wyatt shoot.
-4. **Night 2.** Get home: dusk waits for you. 45 seconds to fit a battery and spend scrap, then three acts: a horde up the campground trail, two mutants from either side, and the Screamer at the treeline south of the gate, calling five more every 15 seconds until it's down (about 800 health; every hit puts its next scream back). Wyatt shoots from the tower. Then camera seven's catch of the witch at the Pruitts' plot, and a fade to dawn.
-5. **Day 3.** Ellen's call. The checkpoint's main gate is chained; the family send you round by the Pruitts' farm, and the afternoon goes while they talk. At the farm the porch light's on and the wall round it is moving. Walk up, shoot from far off, or go round the side and shut Earl's generator down (torch off, or they come to you). Then look at the dead oak. Inside: Marcy's journal on the kitchen table, Earl's shotgun over the stove, and six things that only say something. Down the track, the family plot and what she buried there; then the tear in the army's fence, at night.
+3. **Day 2.** The sheriff's car on the road has the pistol in its door. Earl's store is a gift shop inside now. The storm shelter is 95 m up a track behind it (Earl's own spade stands by the track). Behind the hunting rifle in the safe is the old lever-action Earl let Wyatt shoot: you carry it home for him. On the ride out, the Screamer is at the campers' fire (above).
+4. **Night 2.** Get home: dusk waits for you. Fit a battery and spend scrap, climb the tower and hand Wyatt the lever-action, then three acts: a horde up the campground trail, two mutants from either side, and the Screamer at the treeline south of the gate, calling five more every 15 seconds until it's down (about 800 health; every hit puts its next scream back). Wyatt shoots from the tower. Then camera seven's catch of the witch at the Pruitts' plot, and a fade to dawn.
+5. **Day 3.** Ellen sends you to the Pruitts' farm for Marcy, and the afternoon goes by (there's no trip to the chained gate any more). At the farm the porch light's on and the wall round it is moving. Walk up, shoot from far off, or go round the side and shut Earl's generator down (torch off, or they come to you). Then step out into the yard and look at the dead oak; Ellen's call about the compound follows. Inside: Marcy's journal on the kitchen table, Earl's shotgun over the stove, and six things that only say something. Down the track, the family plot and what she buried there; then the tear in the army's fence, at night.
 6. **After Junie's taken** (debug menu, "Continue story: Junie is taken", or play to it). South of the cordon, step off the way to the church and **the fog closes in until it's a wall**; it puts you back a step and the Caller calls from the way on. The stairs' leg opens once you've read the 1903 account. North of the cordon nothing changes. It lifts when Junie's home.
 7. **Anywhere.** Walk deep into the trees on foot from Day 2 and a moth or two finds you. The chainsaw fells trees. Info texts stay up long enough to read. Milo straightens up after his bow.
 
@@ -46,7 +68,7 @@ The plan, your answers and the status: `docs/FIRST_THIRD_PLAN_2.md`. DESIGN.md h
 ## Placeholder, or not as you asked
 
 - **The Mothman's glimpse** is a first-person look across the yard: he's sitting on top of the dead oak against the dusk sky, red eyes, wings folded; he opens them, screams and is gone. I've now looked at it frame by frame and it reads better than I'd said: it's short, but it isn't a placeholder.
-- **The shut gate's fade** jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
+- **The fade after Ellen's dawn call** on Day 3 jumps the clock to late afternoon; the day then holds until you reach the farm (5 minutes at most).
 - **The tear in the fence** has its own model now: two flaps of wire peeled off their posts, the top rail snapped and hanging, loose strands, three gouges down a post, the sign hanging by a corner. Shut, it's still a chain gate.
 - **The outpost by night from the east** uses the same waves and peak as before; only the arrival (its sweep, the first soldier on the track, two lines) is new. C-7 is on the far side now, found while exploring.
 - **Ellen changes places only while you're outside the cabin**, so you never see her walk; she's simply at the board when you come back in.

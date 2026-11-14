@@ -46,24 +46,24 @@ A snapshot for redesigning the mid-game and end-game: what a run is today, what'
 5. **Past the cordon** the map is the seeded frontier, but **none of its encounters are built**: every frontier clearing is a placeholder signpost (or a sigil ground). What works out there is the system layer: sigils and their marches home, the witch roaming and planting from her hut, trail cameras, abandoned cars, pathway fights with her, and the hut and the final battle (with charges from the outpost's armoury or the debug menu).
 6. **Every night** the witch plants (only inside the cluster until the cordon's crossed), sigils raise zombies that march on the station, and the station holds or falls whether Tom's home or away. Dawn autosaves.
 
-### The first third as rebuilt (Nov 13: rounds 1 and 2)
+### The first third as rebuilt (Nov 13: rounds 1 and 2; Nov 14: two play-tests)
 
 *Supersedes items 2 to 4 above and the older "as built" notes they point to. The record of what was asked and why: `docs/FIRST_THIRD_PLAN.md` (round 1, pacing fixes) and `docs/FIRST_THIRD_PLAN_2.md` (round 2, Aaron's play-test notes). The first third now ends when the Mothman knocks Tom out at the crashed plane.*
 
 | When | Where | What happens |
 |---|---|---|
 | Day 1 | Home | Tom wakes; the tower. **The service rifle comes down with him** (Wyatt was shooting at a turkey); Ellen holds the gate until it does. **The quad is Tom's own**, in the first bay of **a garage inside the west fence**; the workbench and the shovel are in the middle bay. |
-| Day 1 | Campsite | The camcorder; **the dead come out of the trees as its tape ends** (no shotgun here any more); the battery; home; the fence; Junie. A figure stands at the campers' fire at dawn. |
+| Day 1 | Campsite | The camcorder; **the dead come out of the trees as its tape ends** (no shotgun here any more); the battery; home; the fence; Junie. Ellen says one line in the fight. |
 | Night 1 | Home | Three waves; camera six's clip; held sigils and a dawn report. |
+| Day 2 | The ride out | **The Screamer at the campers' cold fire** (`day2.screamer`): shown, it screams, three of the dead rise, it sinks back into the ground. |
 | Day 2 | Gas station | The pack (dulled sight, go round them), the mutant, the witch, six seconds of quiet. **The pistol is in the sheriff's car** on the road. The store is a gift shop inside. |
 | Day 2 | Storm shelter | **Behind the store**, 95 m up a track. Earl holds the hatch; his spade stands by the track; the sigil, the keys, the room, the tapes. |
-| Day 2 | The safe | The hunting rifle, and **the old lever-action Earl let Wyatt shoot** (`wyattRifle`). |
-| Night 2 | Home | **A real defence** (`encounters/NightTwo.js`): dusk waits for Tom; 45 s of prep; a horde, two mutants, **the Screamer** at the treeline (about 800 health, calls five every 15 s, put off by hits; `ai/Screamers.js`). **Wyatt snipes from the tower** (`base/TowerSniper.js`). Camera seven's catch of the witch at the Pruitts' plot. |
-| Day 3 | Home | **Ellen's call** to the outpost (moved from the safe). |
-| Day 3 | The main gate | Chained. The family send Tom the back way; the afternoon goes (`fade.afternoon`). |
-| Day 3, dusk | **The Pruitt farm** (new; `encounters/PruittFarm.js`) | Moths on the porch light (shoot, walk up, or kill the generator); **the Mothman glimpsed** in the dead oak; Marcy's journal (she believed him); **Earl's shotgun**; six things to look at; the family plot's sigil. |
+| Day 2 | The safe | The hunting rifle, and **the old lever-action Earl let Wyatt shoot** (`wyattRifle`): a carried gift (`leverRifle`) until it's handed over. |
+| Night 2 | Home | **A real defence** (`encounters/NightTwo.js`): dusk waits for Tom; prep, then **Tom hands Wyatt the lever-action on the tower** and night falls (`wyattArmed`); a horde, two mutants, **the Screamer** at the treeline (about 800 health, calls five every 15 s, put off by hits; `ai/Screamers.js`). **Wyatt snipes from the tower** (`base/TowerSniper.js`). Camera seven's catch of the witch at the Pruitts' plot. |
+| Day 3, dawn | Home | **Ellen sends Tom to the Pruitts' farm** to see about Marcy (`farm.call.ellen`, flag `farmCall`); the afternoon goes (`fade.afternoon`). There is no trip to the chained main gate. |
+| Day 3, dusk | **The Pruitt farm** (new; `encounters/PruittFarm.js`) | Moths on the porch light (shoot, walk up, or kill the generator); out in the yard, **the Mothman glimpsed** in the dead oak (lit while he's shown); then **Ellen's call about the compound** and the gap in the fence behind Earl's; Marcy's journal (she believed him); **Earl's shotgun**; six things to look at; the family plot's sigil. |
 | Day 3, night | Outpost | In by **a tear in the fence** on the cemetery side. The same fight; **the main gate opens once the compound's explored**. |
-| | Crashed plane | As before. The Mothman knocks Tom out. |
+| | Crashed plane | One line from Ellen on arrival. **The Mothman is overwhelming** (one pass, then dive after dive; down in about 9 s) and knocks Tom out. |
 
 Also in these rounds:
 

@@ -99,4 +99,18 @@ Tests: `tests/round2.test.js` (35 tests), 1390 in all. Headless probes and scree
 - A beat for Wyatt's gun: Tom hands it over on the tower's platform and Night 2 falls with it (`NightTwo.handOver`, flag `wyattArmed`, `Station.towerOffer`).
 - The Screamer couldn't be headshot: hit shapes scale with the drawn build now (`zombieLook.buildHeight`, `EnemyManager.spawnZombie`).
 - Ran dry at the farm: 30 pistol rounds in the sheriff's car; rifle and pistol rounds in the farmhouse sideboard.
+- Junie's "Are they going to come here?" is answered by Wyatt (`day1.14`), who's in the room.
+
+## Nov 14: Aaron's second play of it (17 notes, all done)
+
+- **Less talk.** The campground fight is one line (`day1.10`); Night 1's panel line (`day1.15`) is cut; the outpost loses ten lines and shortens one; the plane's arrival is one line at once (`plane.sweep.ellen`). Lines that only make sense in the moment carry `fresh` (seconds): still waiting in the subtitle queue after that long, they're dropped unsaid (`ui/Subtitles.js`).
+- **The tower's first view** (`day1.tower`) is 7.4 s and `linesAfter`; `Cutscenes.stop` also delivers the lines a skipped one hadn't reached.
+- **Torch on at spawn** (`FirstDay.begin`). **Debug spawns** for the Screamer, a mutant and each variant (`Game.addSpawnItems`).
+- **The Screamer at the campers' fire** on Day 2's ride out (`Campsite.updateDawnFigure`, cutscene `day2.screamer`, `campsite.dawnFigure`): shown, it screams, three rise, it burrows. Not a fight.
+- **The mutant's swing:** `mutant.attackWindup: 0.4`. **`gas.witch`** is 3.25 s.
+- **Earl's lever-action** is a lore item of kind `gift` (`leverRifle`): a card at the safe, a ledger row, passed on at the handover (`Lore.pass`). **Wyatt holds it** on the tower (`TowerSniper.buildLeverRifle`, FamilyRenderer's `aim` pose, `wyattTower.rifle`).
+- **Day 3 restructured.** No trip to the chained gate. `PruittFarm.updateCall`: after `night2Done`, a few seconds into dawn, `farm.call.ellen`, `fade.afternoon`, flag `farmCall`. Objectives: `farm` → `farmMoths` → `farmYard` (the oak in sight) → `farmHouse`; the outpost call comes 6 s after `mothmanGlimpsed` (`outpost.call.ellen`, `outpost.call.sigil`), then `plot` → `outpostRip`. The tear opens on `outpostCall`. A light comes up on the Mothman during his glimpse (`pruittFarm.glimpse.light`). `NightTwo.ensurePlot` plants the plot's sigil if the night ended without it.
+- **The family plot:** 5 moths. **The resin body:** Tom is put at `resinViewAt` and the camera turns to it.
+- **The Mothman at the plane:** `crashedPlane.encounter.mothmanScript` (one flyover, then dives), `mothmanTune` (strike 30, +9 a rake), `mothmanMax: 35`. About 9.4 s to the blackout from full health.
+- **The scanner's battery** comes from the sheriff's car when it's within `gasStation.sheriffCarWithin`.
 
