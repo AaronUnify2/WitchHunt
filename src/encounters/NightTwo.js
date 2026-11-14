@@ -404,7 +404,10 @@ export class NightTwo {
       this.afterT -= dt;
       if (this.afterT > 0) return;
       // The family plot's camera, held back while the fight was on; else the family's own word.
-      const camera = this.trailCams?.releaseHeld?.() ?? false;
+      // Aaron (Nov 14): Ellen sends Tom to dig that sigil up on his way to the fence, so it's always there: if
+      // the witch didn't get to the plot tonight (a short night), it's in the ground all the same, and the
+      // camera's caught her at it.
+      const camera = (this.trailCams?.releaseHeld?.() ?? false) || this.ensurePlot();
       this.dialogue?.play(camera ? 'night2.after.camera' : 'night2.after.ellen');
       this.dialogue?.play('night2.after.wyatt');
       this.talkT = this.nc.talkMin;
@@ -414,6 +417,25 @@ export class NightTwo {
     if (this.talkT > 0 || this.subtitles?.busy || this.dialogue?.pending?.length) return;
     this.fading = 'dawn';
     if (!this.cutscenes?.play('fade.dawn', { onDone: () => this.fadeDone('dawn') })) this.fadeDone('dawn');
+  }
+
+  // What she buried in the Pruitts' family plot tonight: there already, or put there now. True if it's there.
+  ensurePlot() {
+    const plot = this.world?.map?.clearings.find((c) => c.cluster && c.key === 'familyCemetery');
+    const d = this.director;
+    if (!plot || !d?.plant) return false;
+    const near = (s) => Math.hypot(s.x - plot.x, s.z - plot.z) < plot.radius + 6;
+    let sigil = d.sigils?.list.find(near) ?? null;
+    if (!sigil) {
+      const x = plot.x + 2.5;
+      const z = plot.z + 1.5;
+      sigil = d.plant({ x, z, y: this.world.ground.heightAt(x, z), groundId: -1, clearingId: plot.id });
+      if (sigil) this.bus.emit('witch:planted', { sigil, scripted: true });
+    }
+    if (!sigil) return false;
+    sigil.known = true; // camera seven saw it go in: it's on the map
+    this.set('plotCamSeen');
+    return true;
   }
 
   finish() {

@@ -252,11 +252,11 @@ import outpostData from '../src/data/outpost.json';
 import campsiteData from '../src/data/campsite.json';
 
 describe('step 4: Day 3 and the Pruitt farm', () => {
-  it('opens the back way from the shut main gate: the farm gate and the tear in the fence on farmCall, the main gate once the outpost is cleared', () => {
+  it("opens the farm's gate on the call to the farm, the tear in the fence on the call to the outpost (after the Mothman), the main gate once the outpost is cleared", () => {
     const gates = Object.fromEntries(clusterData.gates.map((g) => [g.id, g]));
     expect(gates.outpostRoad.opensOn).toBe('outpostCleared');
     expect(gates.outpostSide.kind).toBe('fenceRip');
-    expect(gates.outpostSide.opensOn).toBe('farmCall');
+    expect(gates.outpostSide.opensOn).toBe('outpostCall');
     expect(gates.farmGate.opensOn).toBe('farmCall');
     expect(config.map.gates.fenceRip).toBeTruthy();
     const flags = new Set(progressData.flags.map((f) => f.id));
@@ -293,7 +293,7 @@ describe('step 4: Day 3 and the Pruitt farm', () => {
     expect(paper.pages.length).toBeGreaterThanOrEqual(3);
     expect(paper.pages.map((p) => p.text).join(' ')).toMatch(/I believe|I know who I married/);
     expect(loreData.items.find((i) => i.id === 'marcyJournal').paper).toBe('marcyJournal');
-    for (const id of ['farm.gate.wyatt', 'farm.gate.ellen', 'farm.gate.back', 'farm.gate.car', 'farm.arrive.wyatt', 'farm.arrive.ellen', 'farm.moths.wake', 'farm.moths.leave', 'farm.mothman.wyatt', 'farm.mothman.ellen', 'farm.mothman.ellenFled', 'farm.journal.ellen', 'farm.journal.wyatt', 'farm.shotgun.wyatt', 'farm.plot.wyatt', 'outpost.arrive.east', 'outpost.helmet.east']) expect(ids.has(id), id).toBe(true);
+    for (const id of ['farm.call.ellen', 'outpost.call.sigil', 'farm.arrive.wyatt', 'farm.arrive.ellen', 'farm.moths.wake', 'farm.moths.leave', 'farm.mothman.wyatt', 'farm.mothman.ellen', 'farm.mothman.ellenFled', 'farm.journal.ellen', 'farm.journal.wyatt', 'farm.shotgun.wyatt', 'farm.plot.wyatt', 'outpost.arrive.east', 'outpost.helmet.east']) expect(ids.has(id), id).toBe(true);
     const cuts = new Set(cutsceneData.cutscenes.map((c) => c.id));
     for (const c of ['fade.afternoon', 'sweep.farm', 'farm.mothman', 'sweep.outpostEast']) expect(cuts.has(c)).toBe(true);
     expect(campsiteData.searches.some((s) => s.gives?.some((g) => g.item === 'shotgun'))).toBe(false);
@@ -671,5 +671,41 @@ describe("Aaron's play-test, Nov 14: Junie's question", () => {
     expect(by.get('day1.13')).toMatchObject({ speaker: 'junie', next: 'day1.14' });
     expect(by.get('day1.14')).toMatchObject({ speaker: 'wyatt', channel: 'face' });
     expect(by.get('day1.14').text).toMatch(/ready for them/);
+  });
+});
+
+import { oakInSight } from '../src/encounters/PruittFarm.js';
+import { FARM } from '../src/render/pruittFarmModel.js';
+
+describe("Aaron's second play, Nov 14: Day 3 without the trip to the gate", () => {
+  it("sends Tom to the farm for Marcy, and to the outpost only once the Mothman's been seen", () => {
+    const by = new Map(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by.get('farm.call.ellen').text).toMatch(/Marcy/);
+    expect(by.get('farm.call.ellen').text).not.toMatch(/army|checkpoint|outpost/i);
+    expect(by.get('outpost.call.ellen').text).toMatch(/gap in their fence/);
+    expect(by.get('outpost.call.sigil').text).toMatch(/dig up/i);
+    for (const id of ['farm.gate.wyatt', 'farm.gate.ellen', 'farm.gate.back', 'board.outpostGate']) expect(by.has(id), id).toBe(false);
+    const src = readFileSync(new URL('../src/encounters/Outpost.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/id === 'mothmanGlimpsed' && on/);
+    expect(src).not.toMatch(/id === 'night2Done' && on/);
+    const obj = readFileSync(new URL('../src/story/Objectives.js', import.meta.url), 'utf8');
+    expect(obj).not.toMatch(/step\('outpostGate'/);
+    expect(obj).toMatch(/step\('farmYard'/);
+  });
+
+  it('waits for a clear view of the dead oak before the Mothman is shown', () => {
+    const H = FARM.house;
+    expect(oakInSight({ x: (H.x0 + H.x1) / 2, z: (H.z0 + H.z1) / 2 })).toBe(false); // in the kitchen
+    expect(oakInSight({ x: FARM.door.x, z: H.z0 - 0.5 })).toBe(false); // on the porch, under its roof
+    expect(oakInSight({ x: H.x0 - 4, z: 5 })).toBe(false); // the far side of the house
+    expect(oakInSight({ x: 2.5, z: -3.5 })).toBe(true); // out in the front yard (the goal's spot)
+    expect(oakInSight({ x: FARM.oak.x - 4, z: FARM.oak.z })).toBe(true); // beside it
+    expect(config.pruittFarm.glimpse.light).toBeGreaterThan(0);
+  });
+
+  it("points the scanner's battery errand at the sheriff's car, where the pistol is", () => {
+    expect(config.gasStation.sheriffCarWithin).toBeGreaterThan(55);
+    const police = clusterData.road.wrecks.find((w) => w.type === 'police');
+    expect(police.gives.door[0].weapon).toBe('pistol');
   });
 });

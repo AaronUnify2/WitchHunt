@@ -30,7 +30,7 @@
     { "id": "gasStationTrail", "kind": "fallenTree", "path": ["campsite", "gasStation"], "t": 0.5, "opensOn": "day2", "locked": "A fallen oak blocks the trail. Too big to climb with a pack." },
     { "id": "roadNorth", "kind": "fallenTree", "road": 45, "line": "north", "opensOn": "day2", "locked": "Another oak down, across the road this time. Too big to climb with a pack." },
     { "id": "outpostRoad", "kind": "chainGate", "road": 432, "opensOn": "outpostCleared", "locked": "Chained shut from the inside. MILITARY CHECKPOINT \u2014 AUTHORIZED PERSONNEL ONLY. Nobody answers." },
-    { "id": "outpostSide", "kind": "fenceRip", "path": ["familyCemetery", "outpost"], "t": 0.72, "opensOn": "farmCall", "locked": "Chain-link and razor wire. QUARANTINE ZONE \u2014 NO ENTRY." },
+    { "id": "outpostSide", "kind": "fenceRip", "path": ["familyCemetery", "outpost"], "t": 0.72, "opensOn": "outpostCall", "locked": "Chain-link and razor wire. QUARANTINE ZONE \u2014 NO ENTRY." },
     { "id": "checkpoint", "kind": "checkpoint", "opensOn": "outpostCleared", "locked": "The checkpoint's gate is shut. Nobody's answering." }
   ],
   "roadNorth": {

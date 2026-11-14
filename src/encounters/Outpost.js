@@ -157,7 +157,9 @@ export class Outpost {
       // Session 17 (Aaron): Ellen sends Tom the moment the safe opens.
       this.bus.on('story:flag', ({ id, on }) => {
         // Round 2 (Aaron): the call comes at the dawn after Night 2's defence (it was at the safe).
-        if (id === 'night2Done' && on && !this.progress?.has('outpostCall')) this.callIn = this.oc.callAfterDawn;
+        // Aaron (Nov 14): the outpost comes up once the Mothman's been seen at the Pruitts' farm (it was the dawn
+        // after Night 2, and a trip to the chained main gate).
+        if (id === 'mothmanGlimpsed' && on && !this.progress?.has('outpostCall')) this.callIn = this.oc.callAfterGlimpse ?? this.oc.callAfterDawn;
       }),
       // A round into a crate, or a blast near one, breaks it open.
       this.bus.on('weapon:impact', ({ x, y, z }) => this.crateShot(x, y, z)),
@@ -430,6 +432,7 @@ export class Outpost {
     this.progress?.setFlag('outpostCall');
     this.bus.emit('outpost:called');
     this.dialogue?.play('outpost.call.ellen');
+    this.dialogue?.play('outpost.call.sigil');
     // Plan #16: her 'come home if it goes bad' at the road gate, not on top of the call (27 s of talk against an 8 s walk).
     this.callHomeDue = true;
     // Plan #3: Wyatt's word on the rounds now comes only at the outpost (gunPitAsk, outpost.tower): it was said up to four times.
@@ -1436,7 +1439,7 @@ export class Outpost {
 
   // An older save with the rifle claimed but no call: make the call now.
   checkCall() {
-    if (this.progress?.has('night2Done') && !this.progress?.has('outpostCall')) this.callIn = 1; // Round 2: after Night 2
+    if (this.progress?.has('mothmanGlimpsed') && !this.progress?.has('outpostCall')) this.callIn = 1; // (the call was due: after the farm's glimpse)
   }
 
   // ---- debug -------------------------------------------------------------------------------------------

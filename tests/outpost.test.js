@@ -215,16 +215,18 @@ describe('the military outpost: the beats', () => {
 
   it("sends Tom the moment the safe opens (Aaron), with Ellen's word to come home if it goes bad", () => {
     const r = rig();
-    // Round 2 (Aaron): the call comes at the dawn after Night 2's defence (it was at the safe).
+    // Aaron (Nov 14): the call comes once the Mothman's been seen at the Pruitts' farm (it was the dawn after
+    // Night 2, and before that the safe).
     r.progress.setFlag('rifleClaimed');
-    r.step(1);
-    expect(r.flags.has('outpostCall')).toBe(false);
     r.progress.setFlag('night2Done');
     r.step(oc.callAfterDawn + 1);
+    expect(r.flags.has('outpostCall')).toBe(false);
+    r.progress.setFlag('mothmanGlimpsed');
+    r.step(oc.callAfterGlimpse + 1);
     expect(r.flags.has('outpostCall')).toBe(true);
     // Plan #16: 'come home if it goes bad' waits for the road gate.
     // Round 2: not at the shut main gate (it's inside that line): once he's been to the farm, on the back way.
-    expect(r.played).toEqual(['outpost.call.ellen']);
+    expect(r.played).toEqual(['outpost.call.ellen', 'outpost.call.sigil']);
     r.at(60, -55);
     r.step(0.2);
     expect(r.played).not.toContain('outpost.call.home');

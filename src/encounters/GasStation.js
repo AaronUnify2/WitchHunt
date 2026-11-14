@@ -172,6 +172,12 @@ export class GasStation {
         bestD = d;
       }
     }
+    // Aaron (Nov 14): with no trip up the road to the chained gate, nothing sent Tom past the sheriff's car and
+    // its pistol. The scanner's battery is the errand that does: the sure car is the sheriff's, just up the road
+    // (the goal points at it; its door has the pistol). A forecourt car's battery still works.
+    const R = this.gc.sheriffCarWithin ?? 0;
+    const sheriff = this.vehicles.list.filter((v) => v.gives && Math.hypot(v.x - this.frame.x, v.z - this.frame.z) < R).sort((a, b) => Math.hypot(a.x - this.frame.x, a.z - this.frame.z) - Math.hypot(b.x - this.frame.x, b.z - this.frame.z))[0];
+    if (sheriff) best = sheriff;
     if (!best) return;
     best.battery = true;
     best.hasBattery = true;

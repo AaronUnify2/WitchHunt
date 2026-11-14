@@ -134,7 +134,7 @@ export class Objectives {
         if (!gas.done.has('phone')) return step('phone', "Try the phone on the gas station's counter.", at('phone'));
         if (!gas.done.has('scanner')) {
           // Session 18 (Aaron): it runs off a car battery.
-          if (gas.done.has('scannerTried') && g.combat.inventory.batteries <= 0) return step('scannerBattery', "Earl's scanner needs a car battery. Take one from a car on the forecourt.", gas.sureCar ?? at('scanner'));
+          if (gas.done.has('scannerTried') && g.combat.inventory.batteries <= 0) return step('scannerBattery', gas.sureCar?.gives ? "Earl's scanner needs a car battery. The sheriff's car is just up the road: take its, and look inside." : "Earl's scanner needs a car battery. Take one from a car on the forecourt.", gas.sureCar ?? at('scanner'));
           return step('scanner', gas.done.has('scannerTried') ? "Wire the battery into Earl's scanner in the stockroom." : "Try Earl's scanner in the stockroom, out back.", at('scanner'));
         }
         if (!gas.done.has('note')) return step('note', "Look round Earl's office. There's a note on the desk.", at('note'));
@@ -190,17 +190,23 @@ export class Objectives {
     const op = g.outpost;
     // Round 2 (Aaron): the main gate's shut; the way in is by the Pruitts' farm and the tear in the fence.
     const pf = g.farm;
-    if (pf?.frame && has('outpostCall') && !has('outpostCleared') && !op?.approachStarted) {
-      if (!has('farmCall')) return step('outpostGate', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', pf.roadGate);
-      if (!has('farmVisited')) return step('farm', "The main gate's shut. Take the track east of home to the Pruitts' farm: their land backs onto the army's fence.", pf.frame);
+    // Aaron (Nov 14): no trip to the chained main gate. The dawn after Night 2 they send him to the farm, to see
+    // if Marcy's all right (farmCall); the outpost comes up once the Mothman's been seen there (outpostCall).
+    if (pf?.frame && has('farmCall') && !has('outpostCleared') && !op?.approachStarted) {
+      if (!has('farmVisited')) return step('farm', "Go to the Pruitts' farm, up the track east of home. See if Marcy's all right.", pf.frame);
       if (!has('farmMothsDone')) return steps('farmMoths', "The Pruitts' porch light is thick with moths. Kill them, or kill the light: Earl's generator is round the side of the house.", [pf.spot('steps'), pf.spot('generator')]);
+      if (!has('mothmanGlimpsed')) return step('farmYard', "Step out into the Pruitts' yard. Something's in the dead oak.", pf.spot('yard'));
       if (!has('marcyJournal') || !has('shotgunFound')) return steps('farmHouse', "Search the Pruitts' house.", [has('marcyJournal') ? null : pf.spot('journal'), has('shotgunFound') ? null : pf.spot('shotgun')]);
-      const buried = pf.plotSigil();
-      if (buried) return step('plot', "Dig up what she buried in the Pruitts' family plot, down the track.", buried);
-      return step('outpostRip', "Go on down the track past the family plot, to the tear in the army's fence.", pf.rip ?? op?.frame);
+      if (has('outpostCall')) {
+        const buried = pf.plotSigil();
+        if (buried) return step('plot', "Dig up what she buried in the Pruitts' family plot, down the track. The army's fence is just past it.", buried);
+        return step('outpostRip', "Go on down the track past the family plot, to the gap in the army's fence.", pf.rip ?? op?.frame);
+      }
+      // (The few seconds before Ellen's call to the outpost: the same goal, nothing to point at.)
+      if (has('mothmanGlimpsed')) return step('farmHouse', "Search the Pruitts' house.");
     }
     if (op?.frame && has('outpostCall') && !has('outpostCleared')) {
-      if (!op.approachStarted) return step('outpost', 'Take the road past the gas station to the military checkpoint. Tell them the witch is loose.', frameToWorld(op.frame, 44, -33));
+      if (!op.approachStarted) return step('outpost', "Go in by the gap in the army's fence, past the Pruitts' family plot.", pf?.rip ?? frameToWorld(op.frame, 44, -33));
       // Session 19 round 3 (Aaron): the fight, the floodlights and the machine gun together, in any order.
       const extras = [];
       const jobs = [];

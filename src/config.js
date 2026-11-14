@@ -3018,6 +3018,7 @@ export const config = {
     floorLift: 0.18, // the store's floor this far above the highest ground under it
     // Pass 2 (Session 15b): the beats.
     arriveInset: 0, // metres inside the clearing's edge that count as arriving (the sweep)
+    sheriffCarWithin: 90, // Aaron (Nov 14): the sheriff's car (its pistol) within this of the store is the scanner's sure battery: the goal points at it
     packDistance: 35, // metres outside the edge: the forecourt pack and the mutant are put there
     interactRange: 1.6, // metres to a search point or a thing to use (inside the store only)
     pack: { count: 5, centreZ: 3.5, lingerRadius: 8, sight: 0.25, callAt: 22 }, // Plan #12: sight: their eyes while unaware (x the usual); callAt: Wyatt's 'they haven't seen you' within this of them. DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
@@ -3249,7 +3250,8 @@ export const config = {
     gateLineDistance: 88, // Plan #16: 'come home if it goes bad' this close to the centre (the road gate is about 85)
     nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
     justUsLeaving: 26, // Plan #17: metres south of the centre (toward the checkpoint): 'It's just us now' plays here at the latest
-    callAfterDawn: 9, // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
+    callAfterDawn: 9,
+    callAfterGlimpse: 6, // Aaron (Nov 14): seconds after the Mothman's glimpse at the farm before Ellen sends Tom on to the outpost // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
     callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)
@@ -5707,10 +5709,10 @@ export const config = {
   //  plot: `moths` more to the sigil's glow at the family plot, Tom within `near` of it.
   pruittFarm: {
     radius: 24, arriveInset: 3, mothsAt: 75, interactRange: 1.5, shotgunShells: 8,
-    gate: { near: 15, talkMin: 6 },
+    call: { after: 8, talkMin: 3 }, // Aaron (Nov 14): seconds into the dawn after Night 2 before Ellen's call to the farm; and of her line before the day fades by
     clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
-    glimpse: { within: 40, max: 8 },
+    glimpse: { within: 40, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)
     plot: { near: 30, moths: 5 }, // Aaron (Nov 14): three fewer (it was 8, on top of the dead there)
     hold: { take: 0.8, look: 0.45, generator: 1.2 },
     light: { color: 0xffc078, intensity: 7, distance: 11, decay: 1.2 },

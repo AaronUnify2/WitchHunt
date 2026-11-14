@@ -59,6 +59,7 @@ const { chromium } = require('playwright');
         let at = o.at; const ats = o.ats ?? [];
         if (ats.length > 1) { B.ati = (B.ati ?? 0); if (B.since % 12 < 5 * DT) B.ati++; at = ats[B.ati % ats.length]; }
         if (id === 'junie' || id === 'plan') { const zone = 0; const f = g.station.renderer.family[2].visible ? g.station.renderer.family[2].position : g.station.renderer.family[0].position; at = { x: f.x + 0.6, z: f.z + 1.0, face: f }; }
+        if (id === 'farmYard' && g.farm?.spots?.yard) at = g.farm.spots.yard;
         if (id === 'gasInside' && g.gasStation.frame) { const F = g.gasStation.frame; const k = Math.floor(B.since / 4) % 3; const spots = [[1.6, -4.5], [2.0, -7.2], [5.0, -7.4]]; const w = { x: F.x + F.rx * spots[k][0] + F.fx * spots[k][1], z: F.z + F.rz * spots[k][0] + F.fz * spots[k][1] }; if (Number.isFinite(w.x)) at = w; for (const z of E.living) if (z.kind === 'mutant' && z.state !== 'dormant') E.damage(z, 99999, 'body', { stagger: 0, knockback: 0 }, { x: z.x, y: 1, z: z.z }, { x: px, z: pz }); }
         // down in the storm shelter: every point there is to search, then the ladder
         let ladderOk = true;

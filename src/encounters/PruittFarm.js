@@ -26,7 +26,7 @@
 // (farmCall, farmVisited, farmMothsDone, mothmanGlimpsed, marcyJournal, shotgunFound, plotMoths) and
 // what's been looked at and searched, the generator's state. Off in Demo mode.
 //
-// Events: 'farm:gate', 'farm:arrived', 'farm:moths' { killed, fled }, 'farm:mothman', 'farm:journal', 'farm:shotgun'.
+// Events: 'farm:call', 'farm:arrived', 'farm:moths' { killed, fled }, 'farm:mothman', 'farm:journal', 'farm:shotgun'.
 
 import * as THREE from 'three';
 import farmData from '../data/pruittFarm.json';
@@ -41,6 +41,33 @@ export const FARM_FLAGS = ['farmCall', 'farmVisited', 'farmMothsDone', 'mothmanG
 const GROUP = 'porch';
 
 // ---- the pure parts (tested) ----------------------------------------------------------------
+
+// Can Tom see the dead oak's top from l ({ x, z } in the farm's frame)? Not from inside the house or under
+// its porch, and not with the house between them (Aaron, Nov 14: the glimpse waits for a clear view).
+export function oakInSight(l, pad = 0.4) {
+  const H = FARM.house;
+  const x0 = H.x0 - pad;
+  const x1 = H.x1 + pad;
+  const z0 = FARM.porch.z0 - pad; // (the porch's roof hides it too)
+  const z1 = H.z1 + pad;
+  if (l.x > x0 && l.x < x1 && l.z > z0 && l.z < z1) return false;
+  // The sight line against that box (a slab test).
+  const dx = FARM.oak.x - l.x;
+  const dz = FARM.oak.z - l.z;
+  let t0 = 0;
+  let t1 = 1;
+  for (const [p, d, lo, hi] of [[l.x, dx, x0, x1], [l.z, dz, z0, z1]]) {
+    if (Math.abs(d) < 1e-9) {
+      if (p <= lo || p >= hi) return true;
+      continue;
+    }
+    const a = (lo - p) / d;
+    const b = (hi - p) / d;
+    t0 = Math.max(t0, Math.min(a, b));
+    t1 = Math.min(t1, Math.max(a, b));
+  }
+  return t0 >= t1;
+}
 
 // What the porch's moths do when something changes (pure). light: the porch light is on; torch: Tom's is;
 // near: he's within wakeAt of the porch; shot: one of them was hit; far: he's beyond scatterBeyond.
@@ -106,6 +133,18 @@ export class PruittFarm {
       for (const c of this.colliderList) this.colliders?.insert(c);
       // The two bulbs' light (the generator's): the porch, and over the kitchen table.
       const L = this.fc.light;
+      // The glimpse's light on the oak's top: always in the scene, dark until then (switching a light on and
+      // off makes three.js rebuild its shaders: a hitch).
+      {
+        const o = this.spots.oakTop;
+        const k = this.fc.glimpse;
+        this.oakLight = new THREE.PointLight(k.lightColor, 0, k.lightReach, 1.0);
+        const cx = this.frame.x - o.x;
+        const cz = this.frame.z - o.z;
+        const cl = Math.hypot(cx, cz) || 1;
+        this.oakLight.position.set(o.x + (cx / cl) * 3, o.y + 1.2, o.z + (cz / cl) * 3);
+        scene.add(this.oakLight);
+      }
       this.lights = ['porchLight', 'bulb'].map((name) => {
         const light = new THREE.PointLight(L.color, L.intensity, L.distance, L.decay);
         const s = this.spots[name];
@@ -146,7 +185,8 @@ export class PruittFarm {
   }
 
   reset() {
-    this.gate = null; // the gate beat: { t, said }
+    this.gate = null; // the call's beat: { t, fading, faded }
+    this.callT = 0;
     this.heldDay = 0;
     this.roosted = false;
     this.mothsOut = false; // ours are in the air
@@ -159,6 +199,7 @@ export class PruittFarm {
     this.plotSaid = false;
     this.device = 'gamepad';
     this.applyGenerator();
+    if (this.oakLight) this.oakLight.intensity = 0;
     if (this.model) {
       this.model.parts.journal.visible = !this.has('marcyJournal');
       this.model.parts.shotgun.visible = !this.has('shotgunFound');
@@ -214,7 +255,7 @@ export class PruittFarm {
       this.hud.prompt = '';
       return;
     }
-    this.updateGate(dt);
+    this.updateCall(dt);
     this.updateClock(dt);
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
@@ -233,28 +274,27 @@ export class PruittFarm {
     }
   }
 
-  // 1: the shut gate.
-  updateGate(dt) {
-    if (!this.has('outpostCall') || this.has('farmCall')) return;
-    const g = this.roadGate;
-    if (!g) return;
-    const p = this.player.position;
+  // 1: the call. Aaron (Nov 14: the trip to the chained main gate was "quite a boring little story beat...
+  // After [the night] they say go to the Pruitt farmhouse to see if Marcy is okay"): a few seconds into the dawn
+  // after Night 2, Ellen sends him to bed and then to the farm; the picture fades and the day goes by, so
+  // he's on the track as the light's going. (The outpost isn't mentioned until the Mothman's been seen:
+  // Outpost.call, on mothmanGlimpsed.)
+  updateCall(dt) {
+    if (!this.has('night2Done') || this.has('farmCall')) return;
     if (!this.gate) {
-      if (Math.hypot(p.x - g.x, p.z - g.z) > this.fc.gate.near || this.cutscenes?.active) return;
+      this.callT = (this.callT ?? 0) + dt;
+      if (this.callT < this.fc.call.after || this.cutscenes?.active || this.subtitles?.busy || this.dialogue?.pending?.length) return;
       this.gate = { t: 0, faded: false };
-      this.dialogue?.play('farm.gate.wyatt');
-      this.dialogue?.play('farm.gate.ellen');
-      this.dialogue?.play('farm.gate.back');
-      this.bus.emit('farm:gate');
+      this.dialogue?.play('farm.call.ellen');
+      this.bus.emit('farm:call');
       return;
     }
     this.gate.t += dt;
-    if (this.gate.t < this.fc.gate.talkMin || this.subtitles?.busy || this.dialogue?.pending?.length || this.cutscenes?.active) return;
+    if (this.gate.t < this.fc.call.talkMin || this.subtitles?.busy || this.dialogue?.pending?.length || this.cutscenes?.active) return;
     if (this.gate.fading) return;
-    // The afternoon goes while they talk it over.
+    // He sleeps; the day goes.
     this.gate.fading = true;
     const done = () => this.gateDone();
-    // (From the dawn too: on the quad he can be at the gate before the sun's up, and the afternoon must still go.)
     const light = this.clock.phase === 'day' || this.clock.phase === 'dawn';
     if (!light || !this.cutscenes?.play('fade.afternoon', { onDone: done })) done();
   }
@@ -271,8 +311,6 @@ export class PruittFarm {
     if (this.has('farmCall')) return;
     this.onFadeMid();
     this.set('farmCall');
-    // The sheriff's car, if its pistol's still in it.
-    if (!this.combat?.weapons?.has?.('pistol') && this.vehicles?.list?.some((v) => v.gives && !v.searched?.door)) this.dialogue?.play('farm.gate.car');
   }
 
   // The day waits short of dusk for him to reach the farm (a while).
@@ -348,14 +386,20 @@ export class PruittFarm {
   }
 
   // 3: the Mothman in the oak, for a moment.
+  // Aaron (Nov 14: "so long as the tree is in your line of sight... it's a bit hard to see him in the dark, or
+  // if there's anything blocking our point of view"): it waits until Tom's out from under the porch with
+  // nothing of the house between him and the oak's top (oakInSight), and for its few seconds a cold light
+  // comes up on him (glimpse.light: the moon through the cloud), whatever the generator's doing.
   updateGlimpse(dt, l, d) {
     if (this.glimpse) {
       this.glimpse.t += dt;
-      if (this.glimpse.t > this.fc.glimpse.max) this.glimpseDone();
+      const g = this.fc.glimpse;
+      if (this.oakLight) this.oakLight.intensity = g.light * Math.min(1, this.glimpse.t / g.lightIn);
+      if (this.glimpse.t > g.max) this.glimpseDone();
       return;
     }
     if (!this.has('farmMothsDone') || this.has('mothmanGlimpsed') || this.cutscenes?.active || this.subtitles?.busy) return;
-    if (d > this.fc.glimpse.within || this.inHouse(l) || !this.flyer?.perch) {
+    if (d > this.fc.glimpse.within || !oakInSight(l) || !this.flyer?.perch) {
       if (!this.flyer?.perch && !this.inHouse(l) && d <= this.fc.glimpse.within) this.glimpseDone();
       return;
     }
@@ -378,6 +422,7 @@ export class PruittFarm {
   glimpseDone() {
     if (this.has('mothmanGlimpsed')) return;
     this.glimpse = null;
+    if (this.oakLight) this.oakLight.intensity = 0;
     this.flyer?.unperch?.();
     this.set('mothmanGlimpsed');
     this.dialogue?.play(this.killed > 0 ? 'farm.mothman.ellen' : 'farm.mothman.ellenFled');
@@ -504,13 +549,13 @@ export class PruittFarm {
 
   addDebugItems(menu) {
     const cat = menu.category(DEBUG.story);
-    cat.addItem("The Pruitt farm: Day 3 at the shut gate (Ellen's call made)", () => {
-      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'night2Done', 'outpostCall']) this.set(f);
-      const g = this.roadGate;
-      if (g) this.player.teleport(g.x - g.tx * 22, g.z - g.tz * 22, 0);
+    cat.addItem("The Pruitt farm: the dawn after Night 2 (Ellen's call to the farm is due)", () => {
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done']) this.set(f);
+      this.callT = 0;
+      this.gate = null;
     });
     cat.addItem('The Pruitt farm: at the track in, at dusk (the back way known)', () => {
-      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'night2Done', 'outpostCall', 'farmCall']) this.set(f);
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'farmCall']) this.set(f);
       const e = this.frame.entrance;
       this.player.teleport(e.x - this.frame.fx * 14, e.z - this.frame.fz * 14, Math.atan2(-this.frame.fx, -this.frame.fz));
     });
@@ -531,5 +576,6 @@ export class PruittFarm {
     this.model?.group.removeFromParent();
     this.model?.dispose();
     for (const l of this.lights ?? []) l.removeFromParent();
+    this.oakLight?.removeFromParent();
   }
 }
