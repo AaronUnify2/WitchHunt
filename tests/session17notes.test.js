@@ -140,7 +140,8 @@ describe('cutscenes talk as they play, but the dogfight (Aaron, after trying non
     const speaks = (c) => Cutscenes.prototype.speaksDuring.call(null, c);
     const quiet = cutsceneData.cutscenes.filter((c) => !speaks(c)).map((c) => c.id);
     // Aaron (Nov 14): and the tower's first view: nobody speaks in it, so a new player can skip it and miss nothing.
-    expect(quiet.sort()).toEqual(['clip.dogfight', 'day1.tower']);
+    // And the Screamer at the campers' fire (a picture of it, with nothing said over it).
+    expect(quiet.sort()).toEqual(['clip.dogfight', 'day1.tower', 'day2.screamer']);
     const tower = cutsceneData.cutscenes.find((c) => c.id === 'day1.tower');
     expect(tower.duration).toBeLessThan(9);
     for (const t of tower.tracks.filter((e) => e.do === 'line')) expect(t.at).toBeLessThan(tower.duration);

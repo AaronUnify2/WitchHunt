@@ -4053,7 +4053,13 @@ export const config = {
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
     waveAfterTape: 1.2, waveAfterKeep: 7, emergencyRounds: 8, // Round 2: the wave comes this long after the tape ends (or after it's put away unwatched); rounds left by the fire if Tom runs dry with no shovel
-    dawnFigure: { enabled: true, spawnAt: 70, callAt: 45 }, // Plan #19: Day 2's walk out: one of the dead at the cold fire (placed within spawnAt metres of the clearing's centre, outside it); Wyatt's line within callAt
+    // Plan #19, then Aaron (Nov 14: "one of the new types of zombies standing at the campground at the campfire and
+    // ... another little cutscene just to show it off"): Day 2's ride out: a Screamer at the campers' cold fire (placed
+    // once Tom's within spawnAt metres of the clearing's centre, outside it). Within showAt its cutscene
+    // (day2.screamer): it screams, `rise` of the dead come up within `ring` metres of it and come for Tom, and it
+    // goes back into the ground (not a fight: it's Night 2's). screamSeconds: its pose held. at: where it stands, in the
+    // campsite's frame (the open ground on the path's side of the fire's log reflector).
+    dawnFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8 },
     look: {
       tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
       dome: { radius: 1.25, height: 1.15 },

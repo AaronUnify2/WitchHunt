@@ -225,6 +225,7 @@ describe('the dawn report (plan #11)', () => {
 import { notices } from '../src/ai/detection.js';
 import { GasStation } from '../src/encounters/GasStation.js';
 import { Campsite } from '../src/encounters/Campsite.js';
+import cutscenes from '../src/data/cutscenes.json';
 
 describe('the forecourt pack, unaware (plan #12)', () => {
   it('sees much less far while dulled, and wakes when one is hurt or a pump is lit', () => {
@@ -314,20 +315,42 @@ describe('the figure at the campers\' fire (plan #19)', () => {
   it('stands there once, on Day 2, as Tom comes near the camp', () => {
     const c = Object.create(Campsite.prototype);
     const spawned = [];
+    const said = [];
     const flags = new Set(['day2']);
     Object.assign(c, {
       cc: config.campsite, data: campsiteData,
       frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
       clearing: { x: 0, z: 0, radius: 20 },
-      enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode }) },
+      enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 1, maxHealth: 1, burrow() { this.gone = true; } }) },
       progress: { has: (f) => flags.has(f) },
-      clock: { phase: 'day' }, dialogue: { play() {} }, figureSent: false, figureTold: false, figure: null,
+      clock: { phase: 'day' }, dialogue: { play: (id) => said.push(id) }, figureSent: false, figure: null,
+      player: { position: { x: 0, z: -25 } },
     });
     c.updateDawnFigure({ x: 0, z: -40 });
     c.updateDawnFigure({ x: 0, z: -40 });
     expect(spawned).toHaveLength(1);
     expect(spawned[0].mode).toBe('linger');
-    for (const id of ['day2.figure', 'day2.figure.ellen']) expect(ids.has(id)).toBe(true);
+    expect(ids.has('day2.figure.ellen')).toBe(true);
+    // Nov 14 (Aaron: a new enemy at the campfire, and a cutscene to show it off): it's the Screamer. Near it
+    // (no cutscene system here: straight to the end of it) it screams, the dead rise, it goes to ground.
+    expect(spawned[0].variant).toBe('screamer');
+    const figure = c.figure;
+    c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
+    expect(spawned).toHaveLength(1 + config.campsite.dawnFigure.rise);
+    expect(spawned.slice(1).every((o) => o.rise && o.mode === 'chase')).toBe(true);
+    expect(figure.gone).toBe(true);
+    expect(c.figure).toBe(null);
+    expect(said).toEqual(['day2.figure.ellen']);
+    c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
+    expect(spawned).toHaveLength(1 + config.campsite.dawnFigure.rise); // once
+  });
+
+  it('has a cutscene to show it off, whose scream is the encounter\'s', () => {
+    const cs = cutscenes.cutscenes.find((x) => x.id === 'day2.screamer');
+    expect(cs.world).toBe('run'); // it screams and they rise while the camera's on it
+    expect(cs.camera.every((k) => k.anchor === 'campScreamer')).toBe(true);
+    expect(cs.tracks.some((t) => t.do === 'emit' && t.event === 'campsite:scream')).toBe(true);
+    expect(cs.duration).toBeLessThanOrEqual(6);
   });
 });
 

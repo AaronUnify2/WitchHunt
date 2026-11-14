@@ -109,6 +109,8 @@ export class Campsite {
     this.reset();
     this.unsubscribers = [
       this.bus.on('player:hurt', () => this.hold.interrupt()),
+      this.bus.on('campsite:turn', () => this.figureTurn()), // day2.screamer's emits
+      this.bus.on('campsite:scream', () => this.figureScream()),
       // The wave's zombies, off the list as they fall (a pool slot can come back as another).
       this.bus.on('enemy:killed', ({ zombie }) => {
         const i = this.wave.indexOf(zombie);
@@ -222,7 +224,7 @@ export class Campsite {
     }
     this.updateWave(dt);
     this.updateEmergencyRounds();
-    this.updateDawnFigure(p);
+    this.updateDawnFigure(p, dt);
     if (canInteract && this.combat.alive) this.updateInteraction(dt, input);
     else {
       this.hud.prompt = '';
@@ -246,10 +248,13 @@ export class Campsite {
     this.dialogue?.play('day1.rounds');
   }
 
-  // Plan #19: on the walk out on Day 2 (the longest empty leg), once a run: one of the dead standing at
-  // the campers' cold fire, its back to the path from home. Wyatt sees it; Ellen says what it is once it
-  // turns or falls. Not a wave, not a revisit pack: a picture.
-  updateDawnFigure(p) {
+  // Plan #19: on the ride out on Day 2 (the longest empty leg), once a run: something standing at the
+  // campers' cold fire. Aaron (Nov 14: "one of the new types of zombies standing at the campground at the
+  // campfire and ... another little cutscene just to show it off"): it's the Screamer, before Night 2 sends
+  // one at the fence. Tom comes near and the camera goes to it (day2.screamer): it screams, a few of the
+  // dead come up out of the dirt round it and come for him, and it sinks back into the ground. Not a
+  // fight (it's Night 2's): a look at it, and what it does.
+  updateDawnFigure(p, dt = 0) {
     const df = this.cc.dawnFigure;
     if (!df?.enabled || !this.enemies || !this.progress) return;
     const c = this.clearing;
@@ -257,22 +262,87 @@ export class Campsite {
     if (!this.figureSent) {
       if (!this.progress.has('day2') || this.progress.has('gasStationVisited') || this.clock?.phase === 'night' || d > df.spawnAt || d < c.radius) return;
       this.figureSent = true;
-      const f = this.data.props.fire;
-      const w = frameToWorld(this.frame, f.x, f.z + f.radius + 0.4);
-      const z = this.enemies.spawnZombie(w.x, w.z, { variant: 'citizen', mode: 'linger', linger: { x: w.x, z: w.z, r: 0.8 }, rise: false, facing: frameYaw(this.frame, 0), authored: 'campsite' });
+      const at = df.at ?? [0.3, -1.9];
+      const w = frameToWorld(this.frame, at[0], at[1]);
+      // Its back to the path from home, looking into the fire.
+      const facing = frameYaw(this.frame, 0);
+      const z = this.enemies.spawnZombie(w.x, w.z, { variant: df.variant ?? 'screamer', mode: 'linger', linger: { x: w.x, z: w.z, r: 0.8 }, rise: false, facing, authored: 'campsite' });
+      if (z) {
+        z.sightScale = 0; // it stands there until it's shown
+        z.deaf = true;
+      }
       this.figure = z ?? null;
+      this.figureFacing = facing;
+      this.figureShown = false;
+      this.figureScreamed = false;
       return;
     }
     const z = this.figure;
     if (!z) return;
-    if (!this.figureTold && z.alive && z.mode !== 'chase' && d < df.callAt && !this.cutscenes?.active) {
-      this.figureTold = true;
-      this.dialogue?.play('day2.figure');
-    }
-    if (this.figureTold && (!z.alive || z.mode === 'chase')) {
+    if (z.screamT > 0) z.screamT -= dt; // the scream's pose (Zombie.frame)
+    if (!z.alive) {
       this.figure = null;
-      this.dialogue?.play('day2.figure.ellen');
-    } else if (!z.alive) this.figure = null;
+      return;
+    }
+    // Rooted to its spot, turned the way the beat wants (the brain turns it toward its goal: ZombieBrain's linger).
+    if (z.mode === 'linger') {
+      z.pace = 0;
+      z.goalX = z.x + Math.sin(this.figureFacing) * 6;
+      z.goalZ = z.z + Math.cos(this.figureFacing) * 6;
+      z.hasGoal = true;
+    }
+    if (this.figureShown || this.cutscenes?.active) return;
+    // Shot from up the path before he's near: no picture, it screams and goes.
+    const stirred = z.mode === 'chase' || z.health < z.maxHealth;
+    if (d < (df.showAt ?? 30) || stirred) this.showFigure(p, stirred);
+  }
+
+  showFigure(p, stirred = false) {
+    const z = this.figure;
+    this.figureShown = true;
+    if (this.player?.riding) this.player.riding.speed = 0; // the quad stops for it
+    const done = () => this.figureLeaves();
+    // (The anchor's z runs out of the camp's open side, the way Tom comes: the campsite's frame, turned round.)
+    const anchors = { campScreamer: { x: z.x, z: z.z, yaw: frameAnchor(this.frame).yaw + Math.PI } };
+    if (stirred || !this.cutscenes?.play('day2.screamer', { anchors, onDone: done })) done();
+  }
+
+  // It turns round, out of the camp (the cutscene's emit, a beat before the scream).
+  figureTurn() {
+    if (this.figure) this.figureFacing = frameYaw(this.frame, 180);
+  }
+
+  // The scream (the cutscene's emit; skipped before it, or no cutscene: as it ends).
+  figureScream() {
+    const z = this.figure;
+    const df = this.cc.dawnFigure;
+    if (!z?.alive || this.figureScreamed) return;
+    this.figureScreamed = true;
+    const p = this.player.position;
+    this.figureTurn();
+    if (!this.cutscenes?.active) z.facing = this.figureFacing = Math.atan2(p.x - z.x, p.z - z.z); // no picture: at Tom
+    z.screamT = df.screamSeconds ?? 2.8;
+    this.combat?.sfx?.play('screamerCall', z);
+    const [r0, r1] = df.ring ?? [3, 5.5];
+    for (let i = 0; i < (df.rise ?? 3); i++) {
+      // Round it, on the open side of the fire.
+      const a = this.figureFacing + (i - ((df.rise ?? 3) - 1) / 2) * 1.5;
+      const r = r0 + ((r1 - r0) * ((i * 7) % 3)) / 2;
+      const x = z.x + Math.sin(a) * r;
+      const zz = z.z + Math.cos(a) * r;
+      const risen = this.enemies.spawnZombie(x, zz, { variant: 'citizen', mode: 'chase', rise: true, facing: Math.atan2(p.x - x, p.z - zz), authored: 'campsite' });
+      if (risen) this.enemies.alert?.(risen.x, risen.z, 1);
+    }
+    this.bus?.emit('campsite:screamed', {});
+  }
+
+  figureLeaves() {
+    const z = this.figure;
+    if (!z) return;
+    this.figureScream();
+    if (z.alive) z.burrow?.();
+    this.figure = null;
+    this.dialogue?.play('day2.figure.ellen');
   }
 
   updateInteraction(dt, input) {
