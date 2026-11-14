@@ -244,3 +244,51 @@ describe('the dialogue system', () => {
     expect(d2.heard.size).toBe(0);
   });
 });
+
+// Nov 14 (Aaron: players find the in-game talk too much): a line can be "cut" in the data. It's never said;
+// its "next" plays in its place, so an exchange still carries on; and it's never picked, asked or played on an event.
+describe('cut lines', () => {
+  const data = {
+    lines: [
+      { id: 'head', cut: true, speaker: 'wyatt', channel: 'radio', text: 'cut head', next: 'mid' },
+      { id: 'mid', speaker: 'ellen', channel: 'radio', text: 'kept', next: 'gone' },
+      { id: 'gone', cut: true, speaker: 'junie', channel: 'radio', text: 'cut tail', next: 'end' },
+      { id: 'end', speaker: 'wyatt', channel: 'radio', text: 'last' },
+      { id: 'alone', cut: true, speaker: 'ellen', channel: 'radio', text: 'nothing after' },
+      { id: 'face', cut: true, speaker: 'junie', channel: 'face', text: 'never picked' },
+      { id: 'event', cut: true, on: 'phase:dawn', speaker: 'ellen', channel: 'radio', text: 'never on dawn' },
+    ],
+  };
+
+  it('steps over cut lines in a chain, and says nothing for a cut line on its own', () => {
+    const { d, shown } = makeDialogue(data);
+    expect(d.play('head')).toBe(true);
+    expect(shown.map((s) => s.text)).toEqual(['kept', 'last']);
+    shown.length = 0;
+    expect(d.play('alone')).toBe(false);
+    expect(d.say('alone', {}, true)).toBe(false);
+    expect(shown).toEqual([]);
+  });
+
+  it('never picks a cut line face to face or on an event', () => {
+    const { d, bus, shown } = makeDialogue(data);
+    expect(d.hasNew('junie')).toBe(false);
+    expect(d.talkTo('junie')).toBe(null);
+    bus.emit('phase:dawn', {});
+    expect(shown).toEqual([]);
+  });
+
+  it('the real data: Ellen says early that things go on the map, and says it again at her board', () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['day1.map'].text).toMatch(/on your map/i);
+    expect(by['day1.03'].next).toBe('day1.map');
+    for (const id of ['board.campsite', 'board.gasStation', 'board.shelter', 'board.farm', 'board.plane', 'board.caveGo', 'board.ufoGo', 'board.armoryGo']) {
+      expect(by[id].text).toMatch(/map/i);
+    }
+    for (const l of dialogueData.lines) if (l.cut) expect(l.text).toBeTruthy(); // cut, not deleted: easy to bring back
+    // And it really plays: Wyatt's line at the top of the tower, then Ellen's (Junie's smoke line is cut).
+    const { d, shown } = makeDialogue(dialogueData, { withFamily: false });
+    d.play('day1.03');
+    expect(shown.map((s) => s.line.id)).toEqual(['day1.03', 'day1.map']);
+  });
+});

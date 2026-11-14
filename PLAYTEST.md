@@ -718,6 +718,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **His bench:** hold X three times with scrap in hand. Then: "Continue story: Sheriff home" goes straight here.
 - [ ] **Save and Continue** with the ute parked somewhere: it's where you left it.
 
+**Round 83: the dialogue cut (Nov 14).** New Game, and play as far as you like. Every line that changed is in docs/DIALOGUE_CUT_NOV14.md.
+- [ ] **Day 1:** after the tower view, Wyatt's line, then Ellen: "The campground's on your map, Tom." Nobody nudges you after that. Do you still know where to go?
+- [ ] **Hold X at Ellen's board** on any step: one short line, and "It's on your map" if the step has a place.
+- [ ] **Read her board** later on (hold X at its foot): new cards from the family's plan onwards, and the field report says what was in the containers.
+- [ ] **Overall:** does it feel quieter but not empty? Note any moment you missed a line that was cut.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

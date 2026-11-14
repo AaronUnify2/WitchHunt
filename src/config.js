@@ -5771,7 +5771,7 @@ export const config = {
   // multiplier). at: where he stands on the platform, from its middle. Lines when he drops one, now and then.
   // rifle (Nov 14): Earl's lever-action in his hands (TowerSniper.buildLeverRifle): at: the butt, in his figure's
   // own space (m; he faces +z, his right is -x); muzzle: [metres ahead of him, metres up] the tracer starts from.
-  wyattTower: { enabled: true, rifle: { at: [-0.1, 1.25, 0.16], tilt: 0, yaw: 0, wood: 0x5a3a22, steel: 0x23262b, muzzle: [0.95, 1.27] }, at: [-0.9, 1.0], every: 3.2, range: 62, damage: 45, hitChance: 0.72, headChance: 0.3, stagger: 0.35, knockback: 0.3, sayChance: 0.5, sayEvery: 28, lines: ['wyatt.tower.1', 'wyatt.tower.2', 'wyatt.tower.3'] },
+  wyattTower: { enabled: true, rifle: { at: [-0.1, 1.25, 0.16], tilt: 0, yaw: 0, wood: 0x5a3a22, steel: 0x23262b, muzzle: [0.95, 1.27] }, at: [-0.9, 1.0], every: 3.2, range: 62, damage: 45, hitChance: 0.72, headChance: 0.3, stagger: 0.35, knockback: 0.3, sayChance: 0.5, sayEvery: 28, lines: ['wyatt.tower.1', 'wyatt.tower.2'] },
 
   // Round 2 (Aaron: "Let's send a screamer. I vote we make it really strong too"): ai/Screamers.js. Its health
   // is zombies.variants.screamer (x zombies.health). first / every: seconds to its first scream and between

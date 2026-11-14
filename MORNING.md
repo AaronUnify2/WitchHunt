@@ -1,5 +1,17 @@
 # For Aaron
 
+## Players' feedback: too much in-game dialogue
+
+All of it is built. 1405 tests pass, the build is clean, and the play-bot runs from New Game to the crashed plane with no errors. **None of it has been played by hand.**
+
+1. **60% less in-game talk.** In-game lines (radio, face to face, and captions outside cutscenes) went from 6,983 words to 2,811, and from 453 lines to 299. **Cutscenes are untouched.** Unprompted chatter took the biggest cuts. Lines you ask for (Ellen at her board, Junie's tips, the family after you hand something in) were mostly shortened.
+2. **No more nudges.** Every "Dad, the shelter's behind his store" hint is gone. The objective and the map marker say it.
+3. **Ellen and your map.** Early on, straight after Wyatt's line from the tower: "The campground's on your map, Tom. Anything we learn, I'll put on there." Hold X at her board on any step and she says what's next in one line, plus "It's on your map" wherever there's a place. She now has an answer for every step to Sheriff's garage.
+4. **Her board says more.** Eight new cards for the story after Earl's maps (the Keeper, the dozer, the zapper, the Blessing, the mega night, the core, the Armory files, Sheriff). The field report card now lists what was in the containers, and Marcy's says her truck never came back.
+5. **Nothing is lost.** A cut line stays in `dialogue.json` word for word, marked `"cut": true`. Delete that to bring it back. **docs/DIALOGUE_CUT_NOV14.md** lists every cut and every shortened line, before and after.
+
+**For you to judge:** whether anything you liked is gone (the list makes it quick to check), and whether the Caller's voice in the south is too often (I left how often it calls alone).
+
 ## Your second Nov 14 play-through: all 17 notes, on `main`
 
 1402 tests pass and the build is clean. Each change was run headless and looked at in screenshots; **none of it has been played by hand.** In play order:

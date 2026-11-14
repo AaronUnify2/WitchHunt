@@ -95,7 +95,8 @@ describe('the storm shelter', () => {
   it('says the sigils raise the dead once it is dug up, and nothing says the children died (Aaron)', () => {
     const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
     expect(by['shelter.dug.ellen']).toMatch(/raising the dead/);
-    expect(by['shelter.below.ellen']).toMatch(/got away/);
+    // Nov 14 (less talk): Ellen's "maybe they got away" down in the shelter is cut; Junie says it on Earl's tape.
+    expect(by['tape.junie']).toMatch(/got away/);
     const all = dialogueData.lines.filter((l) => l.id.startsWith('shelter.')).map((l) => l.text).join(' ');
     expect(all).not.toMatch(/kids? (are|is) dead|children died|bodies/i);
   });

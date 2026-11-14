@@ -133,6 +133,9 @@ export class Dialogue {
   // radio: over the radio (a "radio" line, or a "face" line while Tom's
   // away from the family); null works it out. force: past the rate limit.
   deliver(line, vars = {}, force = false, radio = null) {
+    // Nov 14 (Aaron: "too much dialogue"): a line marked "cut" is never said; its "next" plays in its place.
+    line = this.uncut(line);
+    if (!line) return false;
     const overRadio = radio ?? (line.channel === 'radio' || (line.channel === 'face' && !this.withFamily()));
     // Session 26: a smashed radio, or the south past the comms line, carries no family voice (story/Comms.js);
     // and someone who isn't there (Junie, taken) says nothing (captions on a clip still show).
@@ -150,11 +153,18 @@ export class Dialogue {
     return true;
   }
 
-  // On screen, with its "next" lines straight after (each if it can play).
+  // The line itself, or (if it's cut) the first of its "next" lines that isn't: null if they're all cut.
+  uncut(line) {
+    for (let l = line, n = 0; l && n < 24; l = this.byId.get(l.next), n++) if (!l.cut) return l;
+    return null;
+  }
+
+  // On screen, with its "next" lines straight after (each if it can play; cut ones are stepped over).
   show(line, vars, radio) {
     const chain = [line];
     const facts = this.facts();
-    for (let l = this.byId.get(line.next); l && chain.length < 12; l = this.byId.get(l.next)) { // Session 26: up to twelve (the family's account)
+    for (let l = this.byId.get(line.next), n = 0; l && chain.length < 12 && n < 24; l = this.byId.get(l.next), n++) { // Session 26: up to twelve (the family's account)
+      if (l.cut) continue;
       if (!playable({ ...l, script: undefined }, facts, this.heard)) break;
       chain.push(l);
     }

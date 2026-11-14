@@ -404,7 +404,7 @@ describe('step 5: the family at their stations', () => {
     expect(ids.has('board.none')).toBe(true);
     for (const l of dialogueData.lines.filter((x) => x.id.startsWith('board.'))) {
       expect(l).toMatchObject({ speaker: 'ellen', channel: 'face', cued: true, repeatable: true, draft: true });
-      expect(steps.includes(l.id.slice(6)) || l.id === 'board.none', l.id).toBe(true);
+      expect(steps.includes(l.id.slice(6)) || src.includes(`'${l.id.slice(6)}'`) || l.id === 'board.none', l.id).toBe(true); // (Nov 14: or a step named in a ternary, e.g. ufoGo)
     }
   });
 

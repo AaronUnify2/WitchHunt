@@ -1,5 +1,14 @@
 # Handover
 
+## Newest: the dialogue cut (Nov 14)
+
+Players said the in-game talk was overwhelming (the cutscenes are fine). In-game dialogue is down 60% by words. **Keep it down:** a new line has to earn its place, and nothing nudges the player where the objective and map already do.
+- `"cut": true` on a line in `dialogue.json`: never said, never picked; if it has a `"next"`, that plays in its place (`Dialogue.uncut`, `show`; `dialoguePicker.playable`). Delete the field to bring it back.
+- Every `hint.*` is cut. `Objectives.breadcrumb` still runs but finds nothing to say.
+- Ellen's board answers (`board.<step>`) say "It's on your map" where the step has a place. New steps need a `board.<step>` line (tests/round2.test.js checks the first third).
+- Her board (`storyBoard.json`) runs to `sheriffHome` now. The free spots left on the cork, if a card is wanted: about (0.11, 0.11), (0.31, 0.11), (0.77, 0.11), (1.85, 0.11), (2.25, 0.11) in board metres, 0.17 x 0.13 each.
+- The list of every change: docs/DIALOGUE_CUT_NOV14.md. OPEN_QUESTIONS #766-771, PLAYTEST round 83, MORNING.
+
 ## DO THIS FIRST: the build queue is DONE (items 1-7). Next: Aaron's big play-test, then a debug and design session on each encounter
 
 **Where things stand:** everything is on `main` (and `ccr-6a92a61d-p69ruf`). 1332 tests pass and the build is clean. The story plays from Day 1 to `sheriffHome` (Sheriff in his garage). All seven queue items were built in one sitting on Nov 12, each run headless from start to end, **none played by hand or on the tablet**. For Aaron: MORNING.md (a section an item), PLAYTEST rounds 76-82, OPEN_QUESTIONS #691-765.

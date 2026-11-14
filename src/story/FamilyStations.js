@@ -174,7 +174,7 @@ export class FamilyStations {
       return { prompt: "ask Ellen what's next", play: () => d.play(id, {}, false) };
     }
     if (speaker === 'junie') {
-      this.tips ??= d.lines.filter((l) => l.tip);
+      this.tips ??= d.lines.filter((l) => l.tip && !l.cut);
       const line = pickTip(this.tips, d.facts(), d.heard, this.lastTip);
       if (!line) return null;
       return {

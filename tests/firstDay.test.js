@@ -266,7 +266,8 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(by['day1.20'].text).not.toMatch(/stay well away|Pruitt land/i);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
     expect(by['day1.21'].text).toMatch(/gas station/i);
-    expect(by['day1.night.feed'].text).toMatch(/live/i);
+    // Nov 14 (less talk): Ellen's warning before camera six is cut; the feed's objective says it.
+    expect(by['day1.night.feed'].cut).toBe(true);
   });
 
   it('fades the night to dawn after the talk', () => {

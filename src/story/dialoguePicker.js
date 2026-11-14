@@ -37,9 +37,9 @@ export function recency(line, facts) {
 }
 
 // Can this line play now? Its script is live, its conditions hold, and
-// it hasn't been heard (unless it's repeatable).
+// it hasn't been heard (unless it's repeatable), and it isn't cut (Nov 14).
 export function playable(line, facts, heard) {
-  return scriptLive(line, facts) && conditionsMet(line, facts) && (line.repeatable || !heard.has(line.id));
+  return !line.cut && scriptLive(line, facts) && conditionsMet(line, facts) && (line.repeatable || !heard.has(line.id));
 }
 
 // What `speaker` says when you talk to them face to face: the unheard
@@ -61,7 +61,7 @@ export function pickLine(lines, speaker, facts, heard, followers = followerIds(l
     }
   });
   if (best) return best;
-  return lines.find((l) => l.speaker === speaker && l.idle && scriptLive(l, facts) && conditionsMet(l, facts)) ?? null;
+  return lines.find((l) => l.speaker === speaker && l.idle && !l.cut && scriptLive(l, facts) && conditionsMet(l, facts)) ?? null;
 }
 
 // Has `speaker` something new to say (the new-line marker)? Idle lines don't count.

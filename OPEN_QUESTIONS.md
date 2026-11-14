@@ -1,5 +1,7 @@
 # Open questions
 
+**The dialogue cut (Nov 14):** players found the in-game talk too much. In-game lines are 60% fewer words; Ellen sends things to your map; her board says more. My calls are #766-771 below. Every line that changed: docs/DIALOGUE_CUT_NOV14.md.
+
 **The build queue (Nov 12):** beats 6 to 10 scaffolded one item at a time (your ask: items 1-7, then the big play-test). Calls from #691, grouped by item.
 
 **Session 33 (Nov 12):** your play-through notes, part 2 (the place beyond to Junie home), all six built, with your answers; and the four questions left from part 1, answered at the start. What they settled, and my calls in building them, are #669-690 below.
@@ -19,6 +21,19 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## The dialogue cut (Nov 14)
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 766 | **What counts as in-game dialogue?** | Radio calls, face-to-face lines and captions outside cutscenes: 453 lines, 6,983 words. Lines a cutscene plays are untouched. Examine-text (what Tom reads off things) and the papers aren't dialogue and weren't touched. | `src/data/dialogue.json` |
+| 767 | **60% of what?** | Words: 6,983 down to 2,811 (60%), lines 453 down to 299. Unprompted talk (radio calls, nudges) was cut hardest; lines you ask for (X at Ellen, Junie's tips, the family after a hand-in) were mostly shortened. | docs/DIALOGUE_CUT_NOV14.md |
+| 768 | **Cut, not deleted.** | A cut line stays in the file word for word with `"cut": true`. It's never said; if it had a `"next"`, that plays in its place. Delete the field to bring it back. | `Dialogue.uncut`, `dialoguePicker.playable` |
+| 769 | **Every family nudge (`hint.*`) is cut.** | The objective text and the map marker already say where to go; Ellen says it again if you hold X at her board. If someone gets stuck in a play-test, that's the place to look first. | `story/Objectives.js` `breadcrumb` (still wired: it finds nothing to say) |
+| 770 | **Where Ellen first says she'll use your map.** | Straight after Wyatt's line at the top of the tower, over the radio: "The campground's on your map, Tom. Anything we learn, I'll put on there." (It replaces Junie's smoke line.) Her board answers say "It's on your map" wherever the step has a place, and there are new answers for the late steps (the zapper to Sheriff's garage). | `day1.map`, `board.*` |
+| 771 | **Her board after Earl's maps.** | Eight new cards, pinned by the story's flags: the Keeper (familyPlan), the dozer (dozerHome), the zapper (mothmanZapped), the Blessing (blessingBuried), the mega night (megaNightDone), the core (shipCoreFitted), the Armory files (armoryDocs), Sheriff (sheriffHome). The field report, Marcy's journal and the ridge map say more. All drafts. | `src/data/storyBoard.json` |
+
+**Not changed, your call:** the Caller (the voice in the trees) calls every 26-46 s at night south of the comms line. That's a lot of on-screen text too. It's a mechanic more than dialogue, so I left how often it calls alone (`config.caller.every`). I tightened some of its lines.
 
 ## The build queue: scaffolding for beats 6 to 10 (Nov 12)
 
