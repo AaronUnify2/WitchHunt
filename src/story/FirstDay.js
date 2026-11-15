@@ -309,9 +309,11 @@ export class FirstDay {
     // touch the ground off the tower (the first moment he can act on them, still inside the compound), not
     // in a burst on the platform: Wyatt's line, then Ellen's map line (day1.03 -> day1.map).
     const offTower = day1 && (quadStep === 'towerRifle' || quadStep === 'campsite') && !this.player.platform && this.progress?.has?.('towerClimbed') !== false;
-    if (offTower && !this.cutscenes.active && !this.dialogue.heard?.has('day1.03') && !pr.shown.has('departure')) {
-      pr.shown.add('departure');
-      this.dialogue.play('day1.03');
+    // Nov 15 (Aaron, after playing it: "a fast 'take the quad bike to check on the campers'"): the quad bike is the
+    // first thing said after the tower's view (the cutscene's line); the UFO's exchange waits for the ride out.
+    if (day1 && quadStep === 'campsite' && zone === 0 && !this.cutscenes.active && !pr.shown.has('ufoTalk')) {
+      pr.shown.add('ufoTalk');
+      this.dialogue.play('tower.light.wyatt');
     }
     if (offTower && !this.player.riding && this.quad && !this.cutscenes.active) {
       once('quad', null, 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');

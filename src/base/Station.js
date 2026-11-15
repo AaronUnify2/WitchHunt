@@ -742,11 +742,14 @@ export class Station {
     }
     const bench = this.benchSpot(); // Session 28
     if (bench) offer(dist(bench), this.benchOffer(X));
-    if (c.poster) offer(dist(c.poster.spot), { key: 'poster', prompt: `Hold ${X}: the station plan (repair the fence, fit a battery, reinforce the doors)`, seconds: h.ledger, act: () => this.ledger.open('fence') });
-    offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
+    // Nov 15 (Aaron: Ellen's board and the poster could be used through the comms room's wall): the room you're in.
+    const room = zoneOf(L, p.x, p.z); // 2: the main room, 3: the comms room
+    if (c.poster && room === 2) offer(dist(c.poster.spot), { key: 'poster', prompt: `Hold ${X}: the station plan (repair the fence, fit a battery, reinforce the doors)`, seconds: h.ledger, act: () => this.ledger.open('fence') });
+    if (room === 3) offer(dist(c.desk), { key: 'ledger', prompt: `Hold ${X}: open the ledger`, seconds: h.ledger, act: () => this.ledger.open() });
     // Round 2, step 5: things other systems offer here (Ellen's board: story/FamilyStations.js):
     // { at: { x, z }, range, offer(X) -> an entry or null }.
     for (const s of this.extraSpots ?? []) {
+      if (s.zone !== undefined && s.zone !== room) continue; // (Nov 15: not through a wall)
       const dd = dist(s.at);
       if (dd > (s.range ?? range)) continue;
       const entry = s.offer(X);

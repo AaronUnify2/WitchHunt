@@ -94,3 +94,29 @@ describe('pickup cards, one after another (Nov 15)', () => {
     expect(plane).toContain("show('planeCell'");
   });
 });
+
+describe('a queued card and the press that closed the last one (Nov 15, Aaron: "both close from a single A press")', () => {
+  it('waits for the button to be let go before the next card takes a press', () => {
+    const card = new InspectCard(null);
+    card.el = { classList: { add() {}, remove() {} } };
+    card.itemEl = { style: { setProperty() {} } };
+    card.nameEl = {};
+    card.lineEl = {};
+    card.render = () => {};
+    const closed = [];
+    card.show('huntingRifle', { ok: () => closed.push('rifle') });
+    card.show('leverRifle', { ok: () => closed.push('lever') });
+    let down = true;
+    const input = { activeDevice: 'gamepad', wasPressed: (a) => down && a === 'menuConfirm', isDown: (a) => down && a === 'menuConfirm' };
+    // The same press over several steps (sub-steps of one frame, or a held button).
+    for (let i = 0; i < 5; i++) card.update(0, input);
+    expect(closed).toEqual(['rifle']);
+    expect(card.isOpen).toBe(true);
+    down = false;
+    card.update(0, input);
+    expect(card.isOpen).toBe(true); // let go: armed, still up
+    down = true;
+    card.update(0, input);
+    expect(closed).toEqual(['rifle', 'lever']);
+  });
+});

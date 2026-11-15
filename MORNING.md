@@ -1,5 +1,12 @@
 # For Aaron
 
+## Your Nov 15 play-through: four fixes
+
+1. **The safe's two cards** each take their own press now. A new card waits for the button to be let go before it listens (the one press was being read twice).
+2. **Through the wall:** Ellen's board and the station plan answer only from the main room, and the desk's ledger only from the comms room.
+3. **The tower to the quad bike, fast:** straight after the tower's view, Wyatt: "Take the quad bike, Dad. Check on the campers." Then Ellen's map line. The turkey line is gone again, and the UFO exchange ("Dad, that light over the south this morning. What was it?" / Ellen: the military... "I know better") plays on the ride out, the first time you leave the fence. Say if you'd rather it went altogether.
+4. **No forecast panel on nights 1 to 3.** From night 4 it's back (the ledger's Forecast tab still has the numbers every night). `config.nights.forecastFromNight`.
+
 ## Night 1's dialogue (the plan you approved)
 
 1. **When the last of the dead is down**, Wyatt: "The fence held, Dad." (His promise to Junie, kept; the fight's end marked before Ellen's camera warning, about 4 seconds later.)

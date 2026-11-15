@@ -210,6 +210,13 @@ export class NightWatch {
   showForecast() {
     const f = this.forecast();
     this.duskSecurity = f.sec.total;
+    // Nov 15 (Aaron: "way too much text on the screen when the security stats pop up... the first few nights are
+    // scripted"): no panel before night `forecastFromNight`; the numbers are still worked out (and on the
+    // ledger's Forecast tab), and 'night:forecast' still fires (Night 2's line hangs on it).
+    if ((this.clock?.day ?? 1) < (this.nc.forecastFromNight ?? 1)) {
+      this.bus.emit('night:forecast', { forecast: f, hidden: true });
+      return f;
+    }
     const sign = f.margin >= 0 ? '+' : '';
     const sec = f.sec.parts
       .filter((p) => p.value >= 0.05)

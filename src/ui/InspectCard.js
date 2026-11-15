@@ -146,10 +146,18 @@ export class InspectCard {
     if (!this.isOpen && this.queue.length && !this.blocked?.()) {
       const next = this.queue.shift();
       this.showNow(next);
+      // Nov 15 (Aaron: "both close from a single A press"): the press that closed the last one mustn't close
+      // this one: it waits for the buttons to be let go first.
+      this.waitRelease = true;
       input?.swallowHeld?.();
       return true;
     }
     if (!this.isOpen) return false;
+    if (this.waitRelease) {
+      const held = ['menuConfirm', 'menuBack', 'watch'].some((a) => input?.isDown?.(a) || input?.wasPressed?.(a));
+      if (held) return true;
+      this.waitRelease = false;
+    }
     if (input.activeDevice && input.activeDevice !== this.device) {
       this.device = input.activeDevice;
       this.render();

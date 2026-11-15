@@ -320,18 +320,21 @@ describe("the opening's dialogue, spawn to the campground (Nov 15)", () => {
     expect(lookingAt(p(Math.PI / 2), { x: -10, z: 0 }, 35)).toBe(true);
   });
 
-  it('keeps the tower to the UFO; the campers, the quad bike and the map come off the tower', () => {
+  it('says the quad bike first after the tower (Nov 15, Aaron after playing it); the UFO talk waits for the ride out', () => {
     const tower = cutsceneData2.cutscenes.find((c) => c.id === 'day1.tower');
-    expect(tower.tracks.filter((t) => t.do === 'line').map((t) => t.line)).toEqual(['tower.light.wyatt', 'tower.light.ellen']);
+    expect(tower.linesAfter).toBe(true);
+    expect(tower.tracks.filter((t) => t.do === 'line').map((t) => t.line)).toEqual(['day1.03']);
     const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
     expect(by['day1.03'].text).toMatch(/quad bike/);
+    expect(by['day1.03'].text).toMatch(/campers/);
     expect(by['day1.03'].next).toBe('day1.map');
     expect(by['day1.02'].text.split(' ').length).toBeLessThanOrEqual(9);
-    expect(by['day1.rifle.turkey'].cut).toBeUndefined();
+    expect(by['day1.rifle.turkey'].cut).toBe(true);
+    expect(by['tower.light.wyatt'].next).toBe('tower.light.ellen');
     expect(by['day1.wreck.wyatt'].cut).toBeUndefined();
     expect(by['day1.wreck.ellen'].cut).toBe(true);
     const src = readFileSync(new URL('../src/story/FirstDay.js', import.meta.url), 'utf8');
-    expect(src).toMatch(/!this\.player\.platform[\s\S]{0,200}'day1\.03'|'departure'[\s\S]{0,80}day1\.03/);
+    expect(src).toMatch(/'ufoTalk'[\s\S]{0,80}tower\.light\.wyatt/);
   });
 });
 

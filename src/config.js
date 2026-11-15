@@ -1980,6 +1980,7 @@ export const config = {
   nights: {
     awayRadius: 150, // metres from the station: beyond this you're away and attacks are resolved, not fought
     awayHysteresis: 8,
+    forecastFromNight: 4, // Nov 15 (Aaron): no forecast panel on nights 1-3 (they're scripted)
     forecastSeconds: 14, // the dusk forecast panel stays this long (the ledger's Forecast tab keeps it)
     forecastHold: { combatRange: 30, maxSeconds: 120 }, // Plan #6: the panel waits while a zombie's after Tom this close, or he's underground; shown by this many seconds into the night at the latest
     alarmFraction: 0.5, // DESIGN.md: the alarm when security falls below this x the security at dusk

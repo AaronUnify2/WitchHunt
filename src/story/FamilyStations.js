@@ -81,6 +81,7 @@ export class FamilyStations {
     this.station.extraSpots.push({
       at: this.boardAt.look,
       range: this.fc.lookRange,
+      zone: 2, // Nov 15 (Aaron): from the main room only, not through the comms room's wall
       offer: (X) => (this.shown.length ? { key: 'story-board', prompt: `Hold ${X}: look at Ellen's board${this.unread() ? ' (something new)' : ''}`, seconds: this.fc.lookSeconds, act: () => this.look() } : null),
     });
   }

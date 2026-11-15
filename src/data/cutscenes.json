@@ -708,17 +708,12 @@
         {
           "at": 0.6,
           "do": "line",
-          "line": "tower.light.wyatt"
+          "line": "day1.03"
         },
         {
           "at": 3.5,
           "do": "hide",
           "actor": "ufo"
-        },
-        {
-          "at": 4.0,
-          "do": "line",
-          "line": "tower.light.ellen"
         },
         {
           "at": 4.1,
