@@ -348,3 +348,16 @@ describe("the gas station's dialogue (Nov 15, the plan Aaron approved)", () => {
     expect(src).toMatch(/this\.broadcast\?\.length \|\| this\.dialogue\?\.subtitles\?\.busy\) return;/); // the witch waits for quiet
   });
 });
+
+describe("Night 1's dialogue (Nov 15, the plan Aaron approved)", () => {
+  it("marks the night's end with Wyatt's kept promise, and waits a few seconds after camera six", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['day1.night.clear'].cut).toBeUndefined();
+    expect(by['day1.night.clear'].text).toBe('The fence held, Dad.');
+    expect(by['day1.14'].text).toMatch(/ready/);
+    expect(config.firstDay.night1.quietAfterClip).toBeGreaterThanOrEqual(3);
+    const src = readFileSync(new URL('../src/story/FirstDay.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/playLater\(id, quiet\)/);
+    expect(src).toContain('n.dawnIn = quiet + this.fc.night1.dawnAfterTalk');
+  });
+});

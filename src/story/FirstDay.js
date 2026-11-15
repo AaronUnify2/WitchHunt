@@ -661,10 +661,16 @@ export class FirstDay {
         sigil.known = true; // on the map now
         this.progress.setFlag('night1');
         // Session 15b (Aaron): they talk it over, then the gas station at first light.
-        for (const id of this.fc.night1.afterClip) this.dialogue.play(id);
+        // Nov 15 (Night 1's dialogue plan, Aaron approved): a few quiet seconds after camera six before the plan
+        // for the morning (the reveal gets its silence); dawn waits for them.
+        const quiet = this.fc.night1.quietAfterClip ?? 0;
+        for (const id of this.fc.night1.afterClip) {
+          if (quiet > 0 && this.dialogue.playLater) this.dialogue.playLater(id, quiet);
+          else this.dialogue.play(id);
+        }
         this.mapPrompt('sigil'); // Session 15b (Aaron): the button for the map, as Wyatt says it's on it
         n.talked = true;
-        n.dawnIn = this.fc.night1.dawnAfterTalk;
+        n.dawnIn = quiet + this.fc.night1.dawnAfterTalk;
       },
     });
   }

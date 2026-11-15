@@ -1,5 +1,11 @@
 # For Aaron
 
+## Night 1's dialogue (the plan you approved)
+
+1. **When the last of the dead is down**, Wyatt: "The fence held, Dad." (His promise to Junie, kept; the fight's end marked before Ellen's camera warning, about 4 seconds later.)
+2. **After camera six**, 4 quiet seconds before Ellen's "At first light..." and Wyatt's phone line; dawn waits for them.
+3. Unchanged: the campground, the battery line, Junie's question and Wyatt's answer, the first wave's call, Ellen's patching-through line, the camera six cutscene, the dawn line.
+
 ## The crashed plane's dialogue (the plan you approved)
 
 1. **The grey goes down:** the toast is just "Quick draw!" or "The grey is down."; Wyatt's "It dropped something, Dad. It's glowing." stays, so it isn't said twice at once.

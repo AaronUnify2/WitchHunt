@@ -3010,6 +3010,7 @@ export const config = {
       // land and just speak about going to the gas station"): two short lines (it was three, and the dawn's said
       // it all again); Wyatt's 'she buried something on Pruitt land' (day1.night.after1) is cut.
       afterClip: ['day1.20', 'day1.night.after3'],
+      quietAfterClip: 4, // Nov 15 (Night 1's plan): seconds of quiet after camera six before the family's lines
       dawnAfterTalk: 2.5,
       holdBeforeDawn: 20, // the night holds this many seconds short of dawn until she's planted
       holdRadius: 14, // its dead stay this close to it (they never march on the station)
