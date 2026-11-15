@@ -83,3 +83,17 @@ describe('the toasts and cards pass (Nov 15, Aaron approved)', () => {
     expect(n2).not.toContain("notify?.('The yard goes quiet')");
   });
 });
+
+describe('the joins pass (Nov 15)', () => {
+  it("spaces the wreck after other talk, drops Ellen's quarantine word at the shelter, cuts the doubled 'come home', and uses fewer names", () => {
+    expect(config.firstDay.prompts.wreckQuiet).toBeGreaterThan(0);
+    expect(config.gasStation.scannerReactWithin).toBeGreaterThan(config.gasStation.scannerHear);
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['night2.homeward'].cut).toBe(true);
+    const ellen = dialogueData.lines.filter((l) => !l.cut && l.speaker === 'ellen' && /^(day1|gas|shelter|night|farm|outpost|plane)/.test(l.id) && !l.id.startsWith('board.'));
+    const named = ellen.filter((l) => /\bTom\b/.test(l.text)).length;
+    expect(named / ellen.length).toBeLessThan(0.7);
+    const fd = readFileSync(new URL('../src/story/FirstDay.js', import.meta.url), 'utf8');
+    expect(fd).toContain('this.dialogue.quietFor ?? 99) >= this.fc.prompts.wreckQuiet');
+  });
+});

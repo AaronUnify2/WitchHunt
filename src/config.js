@@ -2984,7 +2984,7 @@ export const config = {
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
     // Session 15b (Aaron): control prompts as they're first needed. sprintAfter:
     // seconds of walking outside the fence on the way to the campsite.
-    prompts: { sprintAfter: 6, wreckDistance: 22, wreckLook: 35, healBelow: 70 }, // Nov 15: the wreck's line once it's within wreckDistance and within wreckLook degrees of where he faces (on the quad too). // Plan #7: healBelow: health under which 'D-pad right: heal' shows once (with a kit to use). // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
+    prompts: { sprintAfter: 6, wreckDistance: 22, wreckLook: 35, wreckQuiet: 3, wreckDue: 10, healBelow: 70 }, // Nov 15: the wreck's line once it's within wreckDistance and within wreckLook degrees of where he faces (on the quad too). // Plan #7: healBelow: health under which 'D-pad right: heal' shows once (with a kit to use). // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,
@@ -3040,7 +3040,7 @@ export const config = {
     mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
     witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
-    scannerGap: 2.5, scannerAfter: 4, scannerHear: 25, // (scannerHear: metres from the scanner the chatter carries) // Nov 15: seconds of static between the scanner's bits of chatter; before Ellen's word after them
+    scannerGap: 2.5, scannerAfter: 4, scannerHear: 25, scannerReactWithin: 60, // (scannerHear: metres from the scanner the chatter carries) // Nov 15: seconds of static between the scanner's bits of chatter; before Ellen's word after them
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad
@@ -3263,6 +3263,7 @@ export const config = {
     nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
     justUsLeaving: 26, // Plan #17: metres south of the centre (toward the checkpoint): 'It's just us now' plays here at the latest
     callAfterDawn: 9,
+    dogfightAfterGap: 2, // Nov 15: seconds after the dogfight's cutscene before Ellen's line on the plane
     callAfterGlimpse: 20, callFightRange: 30, // Nov 15 (the farm's plan): 20 quiet seconds in a row (no line, no cutscene, nothing hostile within callFightRange m), not 6 // Aaron (Nov 14): seconds after the Mothman's glimpse at the farm before Ellen sends Tom on to the outpost // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
     callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)

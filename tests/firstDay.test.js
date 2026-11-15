@@ -265,7 +265,7 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(by['day1.20'].text).toMatch(/gas station/i);
     expect(by['day1.20'].text).not.toMatch(/stay well away|Pruitt land/i);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
-    expect(by['day1.21'].text).toBe('We made it through, Tom.'); // Nov 15: the night line already said where
+    expect(by['day1.21'].text).toBe('We made it through.'); // Nov 15: the night line already said where (and the joins pass: fewer names)
     // Nov 15 (Aaron): Ellen says she's patching the feed through (it was cut on Nov 14).
     expect(by['day1.night.feed'].cut).toBeUndefined();
     expect(by['day1.night.feed'].text).toMatch(/patching it through/i);

@@ -472,7 +472,8 @@ describe('the dogfight (pass 3)', () => {
     r.step(0.5);
     expect(played).toBe(1);
     expect(r.o.dogfightSeen).toBe(true);
-    expect(r.played).toContain('outpost.dogfight.after');
+    // Nov 15 (the joins pass): a breath after the cutscene, then Ellen's line.
+    expect(r.later.map((l) => l.id)).toContain('outpost.dogfight.after');
   });
 });
 

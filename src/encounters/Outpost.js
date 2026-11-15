@@ -888,7 +888,9 @@ export class Outpost {
     const p = this.player.position;
     const eye = this.onTower ? this.towerEye() : { x: p.x, z: p.z, y: this.ground.heightAt(p.x, p.z) };
     const after = () => {
-      this.dialogue?.play('outpost.dogfight.after');
+      // Nov 15 (the joins pass): a breath after the cutscene's last line (also Ellen's) before hers.
+      if (this.dialogue?.playLater) this.dialogue.playLater('outpost.dogfight.after', this.oc.dogfightAfterGap ?? 2);
+      else this.dialogue?.play('outpost.dogfight.after');
       this.beat();
       this.bus.emit('outpost:dogfight');
     };

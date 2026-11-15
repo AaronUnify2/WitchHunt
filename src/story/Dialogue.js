@@ -200,6 +200,8 @@ export class Dialogue {
   update(dt, playing) {
     if (!playing) return;
     this.time += dt;
+    // Nov 15 (the joins pass): seconds since anyone last spoke, for a line that wants a breath before it.
+    this.quietFor = this.subtitles?.busy || this.pending.length ? 0 : (this.quietFor ?? 0) + dt;
     if (this.later.length && !this.subtitles?.busy) {
       const i = this.later.findIndex((l) => l.at <= this.time);
       if (i >= 0) {

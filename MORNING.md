@@ -1,5 +1,14 @@
 # For Aaron
 
+## The joins pass (the last of the first third)
+
+Read end to end from a full bot run, New Game to the plane, every line with its time:
+1. **Leaving the compound on Day 1:** the wreck line waits for 3 quiet seconds after the UFO exchange (it could make three in a row), and lapses if you're long past it.
+2. **Gas station to shelter:** if you've gone on (more than 60 m from Earl's scanner), Ellen's "Quarantine..." is dropped too: it was landing in the shelter's fight.
+3. **The safe to home:** Ellen's "It's getting dark, Tom. Come home." is cut; Wyatt's "Bring it home, Dad. Please." says it straight before.
+4. **After the dogfight:** 2 seconds after the cutscene before Ellen's plane line (her cutscene line and hers ran together).
+5. **Fewer names:** Ellen said "Tom" in 17 of her 22 lines in a row, Wyatt "Dad" in 13 of his. "Tom" is gone from 9 of hers and "Dad" from 4 of his; they stay where they matter ("Get down, Tom!", first address, Wyatt's "I didn't miss this time, Dad.").
+
 ## The toasts and cards pass (the plan you approved)
 
 The game-wide fixes (everywhere, not just the first third):

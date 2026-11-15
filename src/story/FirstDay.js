@@ -330,7 +330,12 @@ export class FirstDay {
       // Session 16: the bloody wreck that's always there (or any car, if it didn't fit).
       const wreck = this.vehicles.list.some((v) => v.bloody);
       const seen = this.vehicles.list.some((v) => (wreck ? v.bloody : v !== this.campsite.car) && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance && lookingAt(this.player, v, this.fc.prompts.wreckLook));
-      if (seen) {
+      // Nov 15 (the joins pass): after a breath (the UFO's exchange can just have played as he left the fence):
+      // due for a few seconds once seen, said once it's been quiet a moment; gone if he's long past it.
+      if (seen && pr.wreckSince === undefined) pr.wreckSince = 0;
+      if (pr.wreckSince !== undefined) pr.wreckSince += dt;
+      if (pr.wreckSince !== undefined && pr.wreckSince > this.fc.prompts.wreckDue) pr.shown.add('wreck');
+      else if (pr.wreckSince !== undefined && (this.dialogue.quietFor ?? 99) >= this.fc.prompts.wreckQuiet && !this.subtitles?.busy) {
         pr.shown.add('wreck');
         this.dialogue.play('day1.wreck.wyatt');
       }

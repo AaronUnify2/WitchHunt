@@ -768,7 +768,10 @@ export class GasStation {
     // Out of earshot of Earl's scanner (it's in his stockroom): the rest of the chatter's lost; Ellen's word stays.
     const sc = this.spots?.find((x) => x.id === 'scanner');
     const p = this.player?.position;
-    if (sc && p && Math.hypot(p.x - sc.x, p.z - sc.z) > this.gc.scannerHear) this.broadcast = this.broadcast.filter((id) => !id.startsWith('gas.scanner.1'));
+    const away = sc && p ? Math.hypot(p.x - sc.x, p.z - sc.z) : 0;
+    if (away > this.gc.scannerHear) this.broadcast = this.broadcast.filter((id) => !id.startsWith('gas.scanner.1'));
+    // Nov 15 (the joins pass): gone on to the shelter: Ellen's word on it is dropped too (it landed in the fight there).
+    if (away > this.gc.scannerReactWithin) this.broadcast = [];
     if (!this.broadcast.length) return;
     if (this.dialogue?.subtitles?.busy || this.cutscenes?.active) {
       this.broadcastWait = this.broadcast.length === 1 ? this.gc.scannerAfter : this.gc.scannerGap;
