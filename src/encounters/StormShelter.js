@@ -413,7 +413,9 @@ export class StormShelter {
     this.progress?.setFlag('earlDown');
     this.bus.emit('stormShelter:earlDown');
     // Plan #14: recognised before he fell, the line after is short.
-    this.dialogue?.play(this.earlSeen ? 'shelter.earl.after' : 'shelter.earl');
+    // Nov 15: only if Wyatt's line was actually said (it's dropped when it goes stale): otherwise Ellen names him.
+    const named = this.dialogue?.heard ? this.dialogue.heard.has('shelter.earl.seen') : this.earlSeen;
+    this.dialogue?.play(named ? 'shelter.earl.after' : 'shelter.earl');
   }
 
   sigilDugUp() {
@@ -504,8 +506,8 @@ export class StormShelter {
       this.beenDown = true;
       this.progress?.setFlag('shelterEntered');
       // Aaron: nothing says the children died; maybe they got away.
+      // Nov 15 (the shelter's dialogue plan, Aaron approved): Junie's question alone, unanswered: Earl's tape answers it.
       this.dialogue?.play('shelter.below.junie');
-      this.dialogue?.play('shelter.below.ellen');
     }
   }
 

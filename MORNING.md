@@ -1,5 +1,13 @@
 # For Aaron
 
+## The storm shelter's dialogue (the plan you approved)
+
+A light touch: about 80 words (69 before), only where something was missing.
+1. **The first time down into the shelter**, Junie asks: "Dad? Are Earl's kids down there?" Nobody answers. Her line on Earl's tape does ("Maybe they got away").
+2. **Riding past home**, Wyatt: "You're passing home, Dad. Stop in and see to the fence." (and the same at dusk). Ellen's lines at home that gave the reason were cut on Nov 14.
+3. **Wyatt naming Earl** is dropped if it can't play within 6 seconds (a fight, someone else talking). Then Ellen names him when he goes down ("The red cap. That was Earl. Oh, Earl.").
+4. Unchanged: the rising, the sigil revelation, "Oh, Earl.", the quiet while you take the keys, dig the hatch and pick up the diary and tape, the tape cutscene, Ellen's line at dusk.
+
 ## The gas station's dialogue (the plan you approved)
 
 About the same words as before (118 against 119), with no wall of text:

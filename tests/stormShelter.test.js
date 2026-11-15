@@ -101,3 +101,19 @@ describe('the storm shelter', () => {
     expect(all).not.toMatch(/kids? (are|is) dead|children died|bodies/i);
   });
 });
+
+// Nov 15 (the shelter's dialogue plan, Aaron approved).
+import { readFileSync as readSrc } from 'node:fs';
+describe("the storm shelter's dialogue (Nov 15)", () => {
+  it("asks Junie's question below and leaves it for the tape; the home stop says why; Earl's recognition can go stale", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['shelter.below.junie'].cut).toBeUndefined();
+    expect(by['shelter.below.ellen'].cut).toBe(true);
+    expect(by['tape.junie'].text).toMatch(/got away/);
+    expect(by['home.stop.call'].text).toMatch(/fence/);
+    expect(by['home.stop.call.dusk'].text).toMatch(/fence/);
+    expect(by['shelter.earl.seen'].fresh).toBe(6);
+    const src = readSrc(new URL('../src/encounters/StormShelter.js', import.meta.url), 'utf8');
+    expect(src).toContain("heard.has('shelter.earl.seen')");
+  });
+});
