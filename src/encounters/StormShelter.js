@@ -595,7 +595,8 @@ export class StormShelter {
     this.keysTaken = true;
     this.props?.setKeys(null);
     this.combat?.sfx?.play('pickup');
-    this.combat?.hud?.pickup?.("Earl's keys (a brass tag: the safe's combination)");
+    // Nov 15 (the toasts and cards pass): the shelter's beat, and the key to the safe: its own card.
+    if (!this.card?.show('earlKeys', { ok: () => {} }, this.device)) this.combat?.hud?.pickup?.("Earl's keys (a brass tag: the safe's combination)");
     this.progress?.setFlag('earlCombination');
     this.bus.emit('stormShelter:keys');
     this.dialogue?.play('shelter.keys.wyatt');

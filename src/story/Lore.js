@@ -59,8 +59,10 @@ export class Lore {
     this.carrying.push(id);
     // Session 17 (Aaron): a tape's watched on the spot (D-pad down); handed in, it stays on the monitors.
     // Aaron (Nov 14): a thing carried for someone (kind 'gift': Earl's lever-action, for Wyatt) isn't handed in.
-    if (item.kind === 'gift') this.notify?.(`Picked up: ${item.name}. It's for ${item.for}`);
-    else this.notify?.(item.kind === 'tape' ? `Picked up: ${item.name}. Hand it in at the comms room to keep it on the monitors` : `Picked up: ${item.name}. Hand it in at the comms room`);
+    // (Nov 15: a gift's card says who it's for: no toast.)
+    if (item.kind === 'gift') {
+      if (!item.card) this.notify?.(`Picked up: ${item.name}. It's for ${item.for}`);
+    } else this.notify?.(item.kind === 'tape' ? `Picked up: ${item.name}. Hand it in at the comms room to keep it on the monitors` : `Picked up: ${item.name}. Hand it in at the comms room`);
     this.bus.emit('lore:picked', { id });
     return true;
   }

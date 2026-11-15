@@ -34,3 +34,52 @@ describe("Night 2's dialogue and its prep step (Nov 15, Aaron)", () => {
     expect(n2.indexOf("play('night2.after.wyatt')")).toBeLessThan(n2.indexOf("play(camera ? 'night2.after.camera'"));
   });
 });
+
+import { Toast, readSeconds } from '../src/ui/Toast.js';
+import { Hud } from '../src/ui/Hud.js';
+describe('the toasts and cards pass (Nov 15, Aaron approved)', () => {
+  const fakeEl = () => ({ textContent: '', classList: { add() {}, remove() {} } });
+
+  it('keeps a pickup line up as long as it takes to read, and holds it while something covers it', () => {
+    const hud = new Hud(config.hud);
+    hud.pickupLines = [];
+    hud.renderPickups = () => {};
+    hud.cfg.pickupLines = 4;
+    hud.pickup('+4 shells');
+    hud.pickup("Earl's keys (a brass tag: the safe's combination)");
+    const [short, long] = hud.pickupLines;
+    expect(short.timer).toBe(config.hud.pickupSeconds);
+    expect(long.timer).toBeCloseTo(readSeconds(long.text, config.hud.pickupRead));
+    expect(long.timer).toBeGreaterThan(short.timer);
+    let held = true;
+    hud.hold = () => held;
+    hud.updatePickups(10);
+    expect(hud.pickupLines).toHaveLength(2); // a card's up: nothing runs out
+    held = false;
+    hud.updatePickups(10);
+    expect(hud.pickupLines).toHaveLength(0);
+  });
+
+  it("queues a toast behind the one showing, and doesn't run one out under a card", () => {
+    const t = new Toast(config.ui);
+    t.el = fakeEl();
+    t.remaining = 0;
+    t.show('Picked up: the camcorder. Hand it in at the comms room');
+    t.show('Dawn, after night 1');
+    expect(t.el.textContent).toMatch(/camcorder/);
+    t.update(100, true); // held
+    expect(t.el.textContent).toMatch(/camcorder/);
+    t.update(100, false);
+    expect(t.el.textContent).toBe('Dawn, after night 1');
+    t.show('Dawn, after night 1'); // the same again isn't queued
+    expect(t.queue).toHaveLength(0);
+  });
+
+  it("gives Earl's keys a card, and cuts the doubled messages", () => {
+    const sh = readFileSync(new URL('../src/encounters/StormShelter.js', import.meta.url), 'utf8');
+    expect(sh).toContain("show('earlKeys'");
+    const n2 = readFileSync(new URL('../src/encounters/NightTwo.js', import.meta.url), 'utf8');
+    expect(n2).not.toContain("notify?.('Something at the treeline is screaming");
+    expect(n2).not.toContain("notify?.('The yard goes quiet')");
+  });
+});

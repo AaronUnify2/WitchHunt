@@ -2846,7 +2846,8 @@ export const config = {
     hitMarkerSeconds: 0.18,
     hurtVignetteSeconds: 0.5,
     lowHealth: 30, // the health bar pulses at or below this
-    pickupSeconds: 2.5, // each "+4 shotgun shells" line stays this long
+    pickupSeconds: 2.5, // each "+4 shotgun shells" line stays at least this long
+    pickupRead: { base: 1.6, perWord: 0.42, max: 12 }, // Nov 15: and as long as it takes to read (as config.ui.toastRead)
     pickupLines: 4,
   },
 
@@ -2914,6 +2915,7 @@ export const config = {
   // UI
   ui: {
     toastSeconds: 3,
+    toastQueue: 3, // Nov 15: toasts waiting behind the one showing, at most
     toastRead: { base: 1.6, perWord: 0.42, max: 16 }, // Round 2 (Aaron: texts faded too fast to read): a toast stays at least base + perWord a word seconds (a 20-word text: 10 s)
     hintSeconds: 7, // Session 15b: a control prompt ("Click LS: sprint") stays this long, not counting cutscenes
   },

@@ -741,7 +741,8 @@ export class GasStation {
     if (!this.combat?.inventory?.useBattery?.()) {
       this.done.delete('scanner');
       this.combat?.sfx.play('denied');
-      this.notify?.("Earl's scanner: dead. He ran it off a car battery.");
+      // Nov 15: the toast only from the second try: the first time, Wyatt says it.
+      if (this.done.has('scannerTried')) this.notify?.("Earl's scanner: dead. He ran it off a car battery.");
       if (!this.done.has('scannerTried')) {
         this.done.add('scannerTried');
         this.dialogue?.play('gas.scanner.dead');
@@ -858,7 +859,7 @@ export class GasStation {
     // Round 2 (Aaron): and an old lever-action behind it, the one Earl once let Wyatt shoot: Wyatt's, for the tower.
     // Aaron (Nov 14: "another rifle that doesn't have a model and doesn't go in your inventory... a bit
     // confusing"): it's a thing Tom carries now, with its own card: Earl's lever-action, for Wyatt.
-    this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds)`);
+    // (Nov 15: no pickup line: the hunting rifle's card says it's empty.)
     // Nov 15 (Aaron: one card for both was confusing: "this rifle isn't for you", then you've got a rifle): two
     // cards, the hunting rifle (Tom's), then the present for Wyatt.
     this.card?.show('huntingRifle', { ok: () => {} }, this.device);

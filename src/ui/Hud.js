@@ -9,6 +9,8 @@
 
 const ARMOUR_TYPES = ['ballistic', 'energy', 'nature'];
 
+import { readSeconds } from './Toast.js';
+
 export class Hud {
   constructor(hudConfig) {
     this.cfg = hudConfig;
@@ -103,7 +105,9 @@ export class Hud {
 
   // A line in the pickup feed, e.g. "+4 shotgun shells".
   pickup(text) {
-    this.pickupLines.push({ text, timer: this.cfg.pickupSeconds });
+    // Nov 15 (the toasts and cards pass, Aaron approved): as long as it takes to read (the toasts' rule), never
+    // under pickupSeconds: a long line ("Earl's keys (a brass tag...)") was gone in 2.5 s like "+4 shells".
+    this.pickupLines.push({ text, timer: Math.max(this.cfg.pickupSeconds, readSeconds(text, this.cfg.pickupRead)) });
     while (this.pickupLines.length > this.cfg.pickupLines) this.pickupLines.shift();
     this.renderPickups();
   }
@@ -119,6 +123,7 @@ export class Hud {
 
   updatePickups(dt) {
     if (this.pickupLines.length === 0) return;
+    if (this.hold?.()) return; // Nov 15: held while a card, a paper or a cutscene is up (Game sets hold)
     for (const line of this.pickupLines) line.timer -= dt;
     const before = this.pickupLines.length;
     this.pickupLines = this.pickupLines.filter((l) => l.timer > 0);

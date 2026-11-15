@@ -524,7 +524,7 @@ export class PruittFarm {
     this.set('shotgunFound');
     if (this.model) this.model.parts.shotgun.visible = false;
     this.combat.giveWeapon('shotgun', this.fc.shotgunShells);
-    this.combat.hud?.pickup?.(`Earl's shotgun (+${this.combat.weapons.ammoRounds?.('shotgun') ?? this.fc.shotgunShells} shells)`);
+    // (Nov 15: no pickup line: its card says it.)
     this.combat.sfx?.play('loaded');
     this.dialogue?.play('farm.shotgun.wyatt');
     this.card?.show('earlShotgun', { ok: () => {} }, this.device); // Nov 15 (the farm's plan): the farm's reward gets its card

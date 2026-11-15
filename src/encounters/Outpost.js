@@ -1189,7 +1189,7 @@ export class Outpost {
     const n = this.oc.tower.rounds;
     if (this.combat) {
       if (!this.combat.weapons.addAmmo('sniper', n)) this.combat.inventory.addAmmo('sniper', n);
-      this.combat.hud.pickup(`+${n} hunting rifle rounds`);
+      if (!this.card) this.combat.hud.pickup(`+${n} hunting rifle rounds`); // (Nov 15: the comms hut's card says it)
       this.combat.sfx.play('pickup');
     }
     this.bus.emit('outpost:rounds');
@@ -1369,8 +1369,9 @@ export class Outpost {
   takeCharge() {
     this.props?.setTaken('charge', true);
     const n = this.explosives?.give(1) ?? 0;
-    if (n > 0) this.combat?.hud.pickup('An explosive charge (and its detonator)');
-    else {
+    if (n > 0) {
+      if (!this.card) this.combat?.hud.pickup('An explosive charge (and its detonator)'); // (Nov 15: its card says it)
+    } else {
       // Carrying all he can: it stays where it was (Nov 15: the comms hut; searched again for it).
       this.searched.delete('armoury');
       this.notify?.("You can't carry another charge.");

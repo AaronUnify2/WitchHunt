@@ -1,5 +1,18 @@
 # For Aaron
 
+## The toasts and cards pass (the plan you approved)
+
+The game-wide fixes (everywhere, not just the first third):
+1. **Pickup lines stay as long as they take to read** (the toasts' rule: 1.6 s + 0.42 s a word), never under 2.5 s. They were all 2.5 s, long or short.
+2. **Toasts and pickup lines wait** while a card, a paper or a cutscene is up, instead of running out behind it.
+3. **A new toast waits its turn** behind the one showing (up to three), instead of replacing it.
+
+And in the first third:
+4. **Earl's keys get a card** ("A brass tag on the ring, numbers stamped in it: the combination to his safe.").
+5. **No doubled messages:** the Screamer's toast (Ellen and the objective say it), the scanner's "dead" toast on the first try (Wyatt says it), the toasts and lines for things that have cards (Earl's shotgun, the comms hut's rounds and charge, the present for Wyatt, the hunting rifle's "no rounds"), and "The yard goes quiet" (Wyatt's line ends Night 2).
+
+The campground's shotgun stays a pickup line (a card would freeze the ambush), now readable.
+
 ## Night 2's dialogue (the plan you approved) and its prep step
 
 1. **The prep step just asks for Wyatt:** "Take Earl's lever-action up the lookout tower to Wyatt. Night falls when you do." The battery and the scrap are yours to see to or not (Ellen's board answer says the same).

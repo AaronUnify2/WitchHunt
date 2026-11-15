@@ -336,7 +336,7 @@ export class NightTwo {
   onScream() {
     if (this.state !== 'night' || this.said.has('scream')) return;
     this.said.add('scream');
-    this.notify?.('Something at the treeline is screaming, and they answer it. Put it down');
+    // (Nov 15: its toast is cut: Ellen's line and the objective say it.)
     this.dialogue?.play('night2.screamer.junie');
     this.dialogue?.play('night2.screamer.ellen');
   }
@@ -395,7 +395,7 @@ export class NightTwo {
     this.restoreOverrun();
     // What's left of tonight's dead are strays now (dawn thins them like any).
     for (const z of this.enemies.living) if (z.authored === 'night2') z.authored = null;
-    this.notify?.('The yard goes quiet');
+    // (Nov 15: 'The yard goes quiet' is cut: Wyatt's line marks the end.)
   }
 
   updateAfter(dt) {
