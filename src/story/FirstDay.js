@@ -44,6 +44,16 @@ import { StormShelter } from '../encounters/StormShelter.js';
 import { zoneOf, compassName } from '../base/stationLayout.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
+// Nov 15: is `target` ({ x, z }) on screen ahead of Tom: within `degrees` either side of where he faces (pure)?
+// (The forward of yaw is -sin, -cos: Player.js.)
+export function lookingAt(player, target, degrees = 35) {
+  const dx = target.x - player.position.x;
+  const dz = target.z - player.position.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const yaw = player.yaw ?? 0;
+  return (-Math.sin(yaw) * dx - Math.cos(yaw) * dz) / d > Math.cos((degrees * Math.PI) / 180);
+}
+
 export class FirstDay {
   constructor(cfg, bus) {
     this.cfg = cfg;
@@ -295,23 +305,32 @@ export class FirstDay {
     // Wyatt says it in the chain straight after the tower view (day1.03 -> day1.map -> day1.prompt.quad), and the
     // button shows as soon as the tower's done, wherever he is; the line again only if he somehow didn't hear it.
     const quadStep = this.currentStep();
-    if (day1 && (quadStep === 'towerRifle' || quadStep === 'campsite') && this.progress?.has?.('towerClimbed') !== false && !this.player.riding && this.quad && !this.cutscenes.active) {
-      once('quad', this.dialogue.heard?.has('day1.prompt.quad') || this.subtitles?.busy ? null : 'day1.prompt.quad', 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');
+    // Nov 15 (the opening's dialogue plan, Aaron approved): the campers' car and the quad bike come as Tom's feet
+    // touch the ground off the tower (the first moment he can act on them, still inside the compound), not
+    // in a burst on the platform: Wyatt's line, then Ellen's map line (day1.03 -> day1.map).
+    const offTower = day1 && (quadStep === 'towerRifle' || quadStep === 'campsite') && !this.player.platform && this.progress?.has?.('towerClimbed') !== false;
+    if (offTower && !this.cutscenes.active && !this.dialogue.heard?.has('day1.03') && !pr.shown.has('departure')) {
+      pr.shown.add('departure');
+      this.dialogue.play('day1.03');
+    }
+    if (offTower && !this.player.riding && this.quad && !this.cutscenes.active) {
+      once('quad', null, 'Your quad bike is in the garage, west of the cabin: hold X beside it to ride', 'Your quad bike is in the garage, west of the cabin: hold E beside it to ride');
     }
     if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.player.riding && !this.cutscenes.active) {
       // Walking (not running) a while outside the fence on the way.
       pr.walk = this.player.sprinting ? 0 : pr.walk + dt * (this.player.speed > 0.5 ? 1 : 0);
       if (pr.walk > this.fc.prompts.sprintAfter) once('sprint', 'day1.prompt.sprint', 'Click LS: sprint', 'Hold Shift: sprint');
-      // Session 15b (Aaron): the wrecked car on the trail out: the first sign something's wrong.
-      if (!pr.shown.has('wreck') && this.vehicles?.list) {
-        // Session 16: the bloody wreck that's always there (or any car, if it didn't fit).
-        const wreck = this.vehicles.list.some((v) => v.bloody);
-        const near = this.vehicles.list.some((v) => (wreck ? v.bloody : v !== this.campsite.car) && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance);
-        if (near) {
-          pr.shown.add('wreck');
-          this.dialogue.play('day1.wreck.wyatt');
-          this.dialogue.play('day1.wreck.ellen');
-        }
+    }
+    // Session 15b (Aaron): the wrecked car on the trail out: the first sign something's wrong. Nov 15 (the
+    // opening's plan): on foot or on the quad, once it's near and on screen (lookingAt); Wyatt's question only,
+    // left unanswered.
+    if (day1 && this.currentStep() === 'campsite' && zone === 0 && !this.cutscenes.active && !pr.shown.has('wreck') && this.vehicles?.list) {
+      // Session 16: the bloody wreck that's always there (or any car, if it didn't fit).
+      const wreck = this.vehicles.list.some((v) => v.bloody);
+      const seen = this.vehicles.list.some((v) => (wreck ? v.bloody : v !== this.campsite.car) && Math.hypot(v.x - p.x, v.z - p.z) < this.fc.prompts.wreckDistance && lookingAt(this.player, v, this.fc.prompts.wreckLook));
+      if (seen) {
+        pr.shown.add('wreck');
+        this.dialogue.play('day1.wreck.wyatt');
       }
     }
     // Plan #7: fire, aim and reload the first time a gun's in hand (the shotgun, under Wyatt's 'behind you');

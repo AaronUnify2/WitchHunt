@@ -1,5 +1,15 @@
 # For Aaron
 
+## The opening, spawn to the campground (the plan you approved)
+
+About 90 in-game words (95 before), never more than two lines in a row, and each beat reacts to something you can see:
+1. **Waking:** Ellen's cutscene line is untouched; after it, just "Climb the tower, Tom. Tell me what's out there."
+2. **On the tower:** only the UFO exchange (Wyatt, Ellen). Then quiet.
+3. **Taking the rifle:** Wyatt: "Sorry, Dad. I left it up there. Missed a turkey."
+4. **Feet back on the ground:** Wyatt: "The campers' car's still down at the campground, Dad. Take the quad bike, it's in the garage." Ellen: "It's on your map, Tom. Anything we learn, I'll put on there."
+5. **The wreck on the trail:** once it's near and on screen (on foot or on the quad), Wyatt: "That car on the trail, Dad. Is that blood?" Nobody answers.
+6. **Junie on Day 1 morning** (ask her): "I saw their smoke from my window last night, Dad. It's gone now." Her tips about the dead wait until you've met them at the campground.
+
 ## Your Nov 15 notes: the feed, the scope, cards, the outpost without beetles, forest beetles, the shovel
 
 1. **Night 1's camera feed.** Ellen again, before it plays: "Tom, one of the trail cams just tripped. I'm patching it through to you. You've got to see this."

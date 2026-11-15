@@ -446,14 +446,20 @@ describe('step 5: the family at their stations', () => {
     }
     const facts = (list) => ({ night: 1, phase: 'day', flags: new Set(list), milestones: [], scripts: new Set() });
     const heard = new Set();
-    // Day 1, nothing seen yet: the general ones only.
-    expect(pickTip(tips, facts([]), heard, null).id).toBe('tip.head');
+    // Day 1 morning, nothing seen yet (Nov 15, the opening's plan): only the smoke she saw from her window,
+    // and nothing about the dead.
+    expect(pickTip(tips, facts([]), heard, null).id).toBe('day1.04');
+    heard.add('day1.04');
+    expect(pickTip(tips, facts([]), heard, 'day1.04').id).toBe('day1.04'); // the one she has, again
+    // The campground cleared: the dead, then round again.
+    const seen = ['campsiteVisited', 'campsiteCleared'];
+    expect(pickTip(tips, facts(seen), heard, null).id).toBe('tip.head');
     heard.add('tip.head');
-    expect(pickTip(tips, facts([]), heard, 'tip.head').id).toBe('tip.dead');
+    expect(pickTip(tips, facts(seen), heard, 'tip.head').id).toBe('tip.dead');
     heard.add('tip.dead');
-    expect(pickTip(tips, facts([]), heard, 'tip.dead').id).toBe('tip.head'); // round again
+    expect(pickTip(tips, facts(seen), heard, 'tip.dead').id).toBe('tip.head'); // round again
     // The Screamer seen: that's what she talks about first.
-    expect(pickTip(tips, facts(['night2Done', 'day1Battery']), heard, 'tip.dead').id).toBe('tip.screamer');
+    expect(pickTip(tips, facts([...seen, 'night2Done', 'day1Battery']), heard, 'tip.dead').id).toBe('tip.screamer');
     expect(pickTip([], facts([]), heard, null)).toBe(null);
   });
 

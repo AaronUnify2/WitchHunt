@@ -305,3 +305,32 @@ describe("Day 1's locked gate (Session 15b)", () => {
     expect(line.text).toMatch(/tower/i);
   });
 });
+
+// Nov 15 (the opening's dialogue plan, Aaron approved).
+import { lookingAt } from '../src/story/FirstDay.js';
+import { readFileSync } from 'node:fs';
+import cutsceneData2 from '../src/data/cutscenes.json';
+
+describe("the opening's dialogue, spawn to the campground (Nov 15)", () => {
+  it('knows whether a thing is on screen ahead of Tom (the wreck waits for it)', () => {
+    const p = (yaw) => ({ position: { x: 0, z: 0 }, yaw });
+    expect(lookingAt(p(0), { x: 0, z: -10 }, 35)).toBe(true); // yaw 0 faces -z
+    expect(lookingAt(p(0), { x: 0, z: 10 }, 35)).toBe(false);
+    expect(lookingAt(p(0), { x: 10, z: -2 }, 35)).toBe(false);
+    expect(lookingAt(p(Math.PI / 2), { x: -10, z: 0 }, 35)).toBe(true);
+  });
+
+  it('keeps the tower to the UFO; the campers, the quad bike and the map come off the tower', () => {
+    const tower = cutsceneData2.cutscenes.find((c) => c.id === 'day1.tower');
+    expect(tower.tracks.filter((t) => t.do === 'line').map((t) => t.line)).toEqual(['tower.light.wyatt', 'tower.light.ellen']);
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['day1.03'].text).toMatch(/quad bike/);
+    expect(by['day1.03'].next).toBe('day1.map');
+    expect(by['day1.02'].text.split(' ').length).toBeLessThanOrEqual(9);
+    expect(by['day1.rifle.turkey'].cut).toBeUndefined();
+    expect(by['day1.wreck.wyatt'].cut).toBeUndefined();
+    expect(by['day1.wreck.ellen'].cut).toBe(true);
+    const src = readFileSync(new URL('../src/story/FirstDay.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/!this\.player\.platform[\s\S]{0,200}'day1\.03'|'departure'[\s\S]{0,80}day1\.03/);
+  });
+});

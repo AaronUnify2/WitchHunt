@@ -725,11 +725,6 @@
           "do": "lookAt",
           "target": "campsite",
           "rate": 1.1
-        },
-        {
-          "at": 4.2,
-          "do": "line",
-          "line": "day1.03"
         }
       ],
       "duration": 7.4

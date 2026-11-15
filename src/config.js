@@ -2981,7 +2981,7 @@ export const config = {
     tower: { lightDistance: 0.92, lightHeight: 24, smokeLookHeight: 10, smokeDistance: 0.8, sideStep: 0.95 },
     // Session 15b (Aaron): control prompts as they're first needed. sprintAfter:
     // seconds of walking outside the fence on the way to the campsite.
-    prompts: { sprintAfter: 6, wreckDistance: 9, healBelow: 70 }, // Plan #7: healBelow: health under which 'D-pad right: heal' shows once (with a kit to use). // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
+    prompts: { sprintAfter: 6, wreckDistance: 22, wreckLook: 35, healBelow: 70 }, // Nov 15: the wreck's line once it's within wreckDistance and within wreckLook degrees of where he faces (on the quad too). // Plan #7: healBelow: health under which 'D-pad right: heal' shows once (with a kit to use). // wreckDistance: metres from a car on the way out: the family see it (the first foreshadowing)
     // Nudges: seconds stuck on a step before a family member says what's next.
     nudges: { tower: 75, campsite: 150, battery: 20, fit: 60, repair: 45 },
     // Session 15b (Aaron): once the fence is patched and the battery's in,

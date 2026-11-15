@@ -286,10 +286,11 @@ describe('cut lines', () => {
       expect(by[id].text).toMatch(/map/i);
     }
     for (const l of dialogueData.lines) if (l.cut) expect(l.text).toBeTruthy(); // cut, not deleted: easy to bring back
-    // And it really plays: Wyatt's line at the top of the tower, then Ellen's (Junie's smoke line is cut).
+    // And it really plays: Wyatt's line off the tower, then Ellen's.
     const { d, shown } = makeDialogue(dialogueData, { withFamily: false });
     d.play('day1.03');
-    expect(shown.map((s) => s.line.id)).toEqual(['day1.03', 'day1.map', 'day1.prompt.quad']);
-    expect(shown[2].text).toMatch(/quad bike/);
+    // Nov 15 (the opening's plan): Wyatt's line has the quad bike in it now; Ellen's map line follows.
+    expect(shown.map((s) => s.line.id)).toEqual(['day1.03', 'day1.map']);
+    expect(shown[0].text).toMatch(/quad bike/);
   });
 });
