@@ -324,6 +324,7 @@ export class GasStation {
       return;
     }
     this.updatePumps(dt);
+    this.updateBroadcast(dt);
     const l = this.local();
     this.updatePack(l);
     const d = Math.hypot(l.x, l.z);
@@ -602,7 +603,9 @@ export class GasStation {
       return;
     }
     this.witchIn -= dt;
-    if (this.witchIn > 0 || this.cutscenes?.active) return;
+    // Nov 15 (the gas station's dialogue plan, Aaron approved): she waits till nobody's talking (the scanner's
+    // chatter, its battery errand being what takes Tom out front), so she lands in quiet.
+    if (this.witchIn > 0 || this.cutscenes?.active || this.broadcast?.length || this.dialogue?.subtitles?.busy) return;
     this.showWitch();
   }
 
@@ -749,10 +752,33 @@ export class GasStation {
     this.combat?.sfx.play('battery');
     this.combat?.sfx.play('radioStatic');
     this.combat?.hud?.pickup?.('A battery wired into the scanner');
-    for (const id of this.gc.scannerLines) this.dialogue?.play(id);
-    this.dialogue?.playLater?.('gas.scanner.wyatt', this.gc.lineGap);
+    // Nov 15 (the gas station's dialogue plan): the chatter as overheard radio, a few seconds of static between
+    // the bits, and Ellen's word only after it ends (updateBroadcast); not four subtitles in a row.
+    this.broadcast = [...this.gc.scannerLines];
+    this.broadcastWait = 0;
     this.progress?.setFlag('scannerHeard');
     this.bus.emit('gasStation:scanner');
+  }
+
+  // Nov 15: the scanner's chatter, one bit at a time: each waits for the last to finish, then
+  // gc.scannerGap seconds of static (the last, Ellen's, gc.scannerAfter).
+  updateBroadcast(dt) {
+    if (!this.broadcast?.length) return;
+    // Out of earshot of Earl's scanner (it's in his stockroom): the rest of the chatter's lost; Ellen's word stays.
+    const sc = this.spots?.find((x) => x.id === 'scanner');
+    const p = this.player?.position;
+    if (sc && p && Math.hypot(p.x - sc.x, p.z - sc.z) > this.gc.scannerHear) this.broadcast = this.broadcast.filter((id) => !id.startsWith('gas.scanner.1'));
+    if (!this.broadcast.length) return;
+    if (this.dialogue?.subtitles?.busy || this.cutscenes?.active) {
+      this.broadcastWait = this.broadcast.length === 1 ? this.gc.scannerAfter : this.gc.scannerGap;
+      return;
+    }
+    this.broadcastWait -= dt;
+    if (this.broadcastWait > 0) return;
+    const id = this.broadcast.shift();
+    if (this.broadcast.length || id.startsWith('gas.scanner.1')) this.combat?.sfx.play('radioStatic');
+    this.dialogue?.play(id);
+    this.broadcastWait = this.gc.scannerGap;
   }
 
   // Earl's note: Session 16 (Aaron), read in close-up (ui/PaperNote.js);
@@ -839,7 +865,7 @@ export class GasStation {
     if (this.lore?.give('leverRifle')) this.card?.show('leverRifle', { ok: () => {} }, this.device);
     this.progress?.setFlag('wyattRifle');
     this.progress?.setFlag('rifleClaimed');
-    this.dialogue?.play('gas.safe.open');
+    this.dialogue?.play('gas.safe.open'); // (Nov 15: cut: the card says it)
     this.dialogue?.play('gas.safe.lever');
   }
 

@@ -680,7 +680,9 @@ describe("Aaron's play-test, Nov 14", () => {
     const said = [...config.firstDay.night1.afterClip, 'day1.21'].map((id) => by.get(id).text);
     for (const t of said) expect(t).not.toMatch(/Pruitt land|stay well away|storm shelter/i);
     expect(said.join(' ').split(/\s+/).length).toBeLessThan(45);
-    expect(by.get('day1.21').text).toMatch(/gas station/i);
+    // Nov 15 (the gas station's plan): the night line gives the directions; the dawn line is just relief.
+    expect(by.get('day1.20').text).toMatch(/gas station/i);
+    expect(by.get('day1.21').text).not.toMatch(/gas station/i);
   });
 
   it('has the handover: a flag, its lines, an ask and a longest wait', () => {

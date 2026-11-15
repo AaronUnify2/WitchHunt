@@ -1,5 +1,15 @@
 # For Aaron
 
+## The gas station's dialogue (the plan you approved)
+
+About the same words as before (118 against 119), with no wall of text:
+1. **Dawn:** Ellen just says "We made it through, Tom." (The night line already said where to go.)
+2. **Earl's scanner:** the three bits of army chatter play like overheard radio, a few seconds of static between them. If you walk out of earshot (25 m), the rest is lost. After it, a pause, then Ellen: "Quarantine. I sat in briefings where they used that word, Tom."
+3. **The witch** waits until nobody's talking, so she lands in quiet. After her, Ellen: "That was her, Tom. The woman from camera six."
+4. **Junie, once the note's read:** "The note says the shelter, Dad. That's where she was burying." (The story's reason to go there; the Night 1 lines that placed her at the shelter were cut.)
+5. **The safe:** Wyatt's "hunting rifle" line is gone (its card says it); his lever-gun "Please" stays.
+6. Unchanged: the mutant (silence after the fight), the phone, the scanner's battery line, "Stop, Dad. By the pumps", Junie's "She was singing", Earl's note.
+
 ## The opening, spawn to the campground (the plan you approved)
 
 About 90 in-game words (95 before), never more than two lines in a row, and each beat reacts to something you can see:

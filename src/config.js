@@ -3036,6 +3036,7 @@ export const config = {
     mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
     witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
+    scannerGap: 2.5, scannerAfter: 4, scannerHear: 25, // (scannerHear: metres from the scanner the chatter carries) // Nov 15: seconds of static between the scanner's bits of chatter; before Ellen's word after them
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject
     shelterTalkDistance: 10, // Session 15b: metres past the clearing's edge, leaving: the family's word about the shelter and the shovel
     backDoor: { openDistance: 1.8, swingSeconds: 0.6 }, // Session 15b (Aaron): the stockroom's back door opens for Tom, out onto the quad

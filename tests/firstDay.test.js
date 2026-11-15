@@ -265,7 +265,7 @@ describe('Night 1, the first defence (Session 15b)', () => {
     expect(by['day1.20'].text).toMatch(/gas station/i);
     expect(by['day1.20'].text).not.toMatch(/stay well away|Pruitt land/i);
     expect(by['day1.20'].text).not.toMatch(/dig/i);
-    expect(by['day1.21'].text).toMatch(/gas station/i);
+    expect(by['day1.21'].text).toBe('We made it through, Tom.'); // Nov 15: the night line already said where
     // Nov 15 (Aaron): Ellen says she's patching the feed through (it was cut on Nov 14).
     expect(by['day1.night.feed'].cut).toBeUndefined();
     expect(by['day1.night.feed'].text).toMatch(/patching it through/i);
@@ -332,5 +332,19 @@ describe("the opening's dialogue, spawn to the campground (Nov 15)", () => {
     expect(by['day1.wreck.ellen'].cut).toBe(true);
     const src = readFileSync(new URL('../src/story/FirstDay.js', import.meta.url), 'utf8');
     expect(src).toMatch(/!this\.player\.platform[\s\S]{0,200}'day1\.03'|'departure'[\s\S]{0,80}day1\.03/);
+  });
+});
+
+describe("the gas station's dialogue (Nov 15, the plan Aaron approved)", () => {
+  it("has Ellen's briefing line, camera six, and Junie's reason for the shelter; the safe's rifle line is the card's", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['gas.scanner.2'].text).toMatch(/briefings/);
+    expect(by['gas.witch.ellen'].text).toMatch(/camera six/);
+    expect(by['gas.witch.junie'].cut).toBeUndefined();
+    expect(by['gas.witch.junie'].text).toMatch(/shelter/);
+    expect(by['gas.safe.open'].cut).toBe(true);
+    const src = readFileSync(new URL('../src/encounters/GasStation.js', import.meta.url), 'utf8');
+    expect(src).toContain('updateBroadcast(dt)');
+    expect(src).toMatch(/this\.broadcast\?\.length \|\| this\.dialogue\?\.subtitles\?\.busy\) return;/); // the witch waits for quiet
   });
 });
