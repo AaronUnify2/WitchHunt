@@ -1,5 +1,11 @@
 # For Aaron
 
+## Night 2's dialogue (the plan you approved) and its prep step
+
+1. **The prep step just asks for Wyatt:** "Take Earl's lever-action up the lookout tower to Wyatt. Night falls when you do." The battery and the scrap are yours to see to or not (Ellen's board answer says the same).
+2. **The night's end:** Wyatt first, "I didn't miss this time, Dad." (paying off his "I won't miss this time" at the handover, and no longer a second "held" after Night 1's), then Ellen's camera seven: the night ends on the hook to the farm.
+3. Unchanged: the lever gun line, "Come home", "She's out tonight" (it does the forecast panel's job now), the rifle reminder, the handover, the barks, the first mutant's and the Screamer's calls, the silences.
+
 ## Your Nov 15 play-through: four fixes
 
 1. **The safe's two cards** each take their own press now. A new card waits for the button to be let go before it listens (the one press was being read twice).

@@ -409,8 +409,10 @@ export class NightTwo {
       // the witch didn't get to the plot tonight (a short night), it's in the ground all the same, and the
       // camera's caught her at it.
       const camera = (this.trailCams?.releaseHeld?.() ?? false) || this.ensurePlot();
-      this.dialogue?.play(camera ? 'night2.after.camera' : 'night2.after.ellen');
+      // Nov 15 (Night 2's dialogue plan, Aaron approved): Wyatt's relief first (his handover promise kept), then
+      // Ellen's camera seven: the night ends on the hook.
       this.dialogue?.play('night2.after.wyatt');
+      this.dialogue?.play(camera ? 'night2.after.camera' : 'night2.after.ellen');
       this.talkT = this.nc.talkMin;
       return;
     }
