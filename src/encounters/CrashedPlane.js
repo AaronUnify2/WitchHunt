@@ -553,7 +553,7 @@ export class CrashedPlane {
     this.bus.emit('plane:greyDown', { quick });
     this.sfx?.play('mothDie', g);
     // Session 33 (Aaron): said the moment it goes down, so he searches it the first time.
-    this.notify?.(quick ? 'Quick draw: it never got its shot off. Something fell from its hand, glowing' : 'The grey is down. Something fell from its hand, glowing');
+    this.notify?.(quick ? 'Quick draw!' : 'The grey is down.'); // Nov 15: short; Wyatt points at what it dropped
     this.dialogue?.play(quick ? 'plane.quick.wyatt' : 'plane.down.wyatt');
   }
 
@@ -602,9 +602,10 @@ export class CrashedPlane {
     this.timer = 0;
     // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at. (Session 33: what it's for
     // comes from Ellen once Junie's home: encounters/Stairs.js askForCell.)
-    this.combat.hud.pickup(`${hadPistol ? `The pilot's sidearm (${e.pistolRounds} pistol rounds)` : "The pilot's pistol"}, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
-    // Nov 15 (Aaron: the pickup line's gone before you can read it): the power cell gets its own card.
-    this.card?.show('planeCell', { ok: () => {} }, this.device);
+    // Nov 15 (the plane's dialogue plan, Aaron approved): one card for all of it, read at his own pace (the 30-word
+    // toast went before it could be read, and hid "hold B to choose them").
+    const line = `A small power cell, warm and humming. ${hadPistol ? `The pilot's sidearm: ${e.pistolRounds} pistol rounds` : "The pilot's pistol"}. ${e.alienShells} alien shells (hold B to choose them). An alien med kit${kept ? '' : ' (sent home: your healing is full)'}.`;
+    if (!this.card?.show('planeCell', { ok: () => {}, line }, this.device)) this.combat.hud.pickup(line);
   }
 
   readLog() {

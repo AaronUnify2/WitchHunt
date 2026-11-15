@@ -95,7 +95,7 @@ export class InspectCard {
     this.itemEl.style.setProperty('--item-color', c.color ?? '#555');
     this.itemEl.style.setProperty('--item-label', c.label ?? '#ddd');
     this.nameEl.textContent = c.title ?? item.name; // (Nov 15: a card can say it differently)
-    this.lineEl.textContent = c.line ?? '';
+    this.lineEl.textContent = handlers.line ?? c.line ?? ''; // (Nov 15: a caller can word it for what was found)
     this.render();
     this.el.classList.remove('hidden');
     if (typeof document !== 'undefined' && document.pointerLockElement) document.exitPointerLock?.();

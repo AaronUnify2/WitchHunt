@@ -1,5 +1,14 @@
 # For Aaron
 
+## The crashed plane's dialogue (the plan you approved)
+
+1. **The grey goes down:** the toast is just "Quick draw!" or "The grey is down."; Wyatt's "It dropped something, Dad. It's glowing." stays, so it isn't said twice at once.
+2. **Searching it:** one card, "What the grey dropped" (the power cell, the pilot's sidearm or pistol, the alien shells and "hold B to choose them", the med kit), instead of a 30-word toast plus the cell's card.
+3. **The flare has its reason back:** "The pilot had a flare gun, Dad. Fire one. Someone might be looking for that plane." (Ellen's "That isn't a rescue" in the cutscene answers it.)
+4. Unchanged: "Go slow", "Get down, Tom!", the knee-board card, the cutscenes, the silent Mothman fight. The unused "It's gone... Come home" line is cut.
+
+**Not checked headless:** the bot can't do the stand-off, so the new card and the flare line are covered by tests only.
+
 ## The outpost's dialogue (the plan you approved, six passes)
 
 1. **After the dogfight** (skipped or not), Ellen: "The plane came down past the cordon, Tom. If anyone's alive in it..." The crash now leads somewhere.

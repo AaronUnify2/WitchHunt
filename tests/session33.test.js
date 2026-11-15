@@ -1,4 +1,5 @@
 // Session 33: Aaron's play-through notes, part 2 (the place beyond to Junie home), and his four answers.
+import dialogueData from '../src/data/dialogue.json';
 import { describe, it, expect, vi } from 'vitest';
 import { config } from '../src/config.js';
 import { EventBus } from '../src/core/EventBus.js';
@@ -338,7 +339,9 @@ describe('what the grey dropped', () => {
     expect(r.pl.drop.visible).toBe(false);
     r.pl.hitGrey(40, 'body');
     expect(r.set.has('planeGreyDown')).toBe(true);
-    expect(r.said.at(-1)).toMatch(/Something fell from its hand, glowing/);
+    // Nov 15 (the plane's plan): the toast just says it's down; Wyatt's line says what it dropped.
+    expect(r.said.at(-1)).toMatch(/Quick draw!|The grey is down\./);
+    expect(dialogueData.lines.find((l) => l.id === 'plane.drop.wyatt').text).toMatch(/dropped something/);
     r.tick(0.1);
     expect(r.pl.drop.visible).toBe(true);
     expect(r.pl.dropSpot.y).toBeGreaterThan(0.5); // still in the air
@@ -499,5 +502,17 @@ describe('ridden home on the quad', () => {
     expect(flags.has('junieHome')).toBe(true);
     expect(quad.mesh.children.length).toBe(0); // she's off it, and gone indoors
     expect(s.junie).toBeNull();
+  });
+});
+
+describe("the crashed plane's dialogue (Nov 15, the plan Aaron approved)", () => {
+  it("gives the flare its reason, words the drop's card for what was found, and drops the unused line", async () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['plane.flare.wyatt'].text).toMatch(/looking for that plane/);
+    expect(by['plane.drivenOff.ellen'].cut).toBe(true);
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(new URL('../src/encounters/CrashedPlane.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/show\('planeCell', \{ ok: \(\) => \{\}, line \}/);
+    expect(src).toContain('hold B to choose them');
   });
 });
