@@ -3259,7 +3259,7 @@ export const config = {
     nightPass: { warnAt: 120, holdWithin: 60, passedWithin: 45 }, // Plan #18: her pass at nightfall: Wyatt's warning within warnAt of the centre; beats wait while she's within holdWithin; she 'passed' once she's come within passedWithin and gone back past holdWithin unnoticing
     justUsLeaving: 26, // Plan #17: metres south of the centre (toward the checkpoint): 'It's just us now' plays here at the latest
     callAfterDawn: 9,
-    callAfterGlimpse: 6, // Aaron (Nov 14): seconds after the Mothman's glimpse at the farm before Ellen sends Tom on to the outpost // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
+    callAfterGlimpse: 20, callFightRange: 30, // Nov 15 (the farm's plan): 20 quiet seconds in a row (no line, no cutscene, nothing hostile within callFightRange m), not 6 // Aaron (Nov 14): seconds after the Mothman's glimpse at the farm before Ellen sends Tom on to the outpost // Round 2: seconds after Night 2's dawn: Ellen's call to adventure (after the dawn lines)
     callRoundsAfter: 30, // (Plan #3: no longer played.) Session 17: seconds after Ellen's call, Wyatt on the soldiers' rounds (on its own)
     // (Session 18: Wyatt's ask to look through the scope now waits for beatGap's quiet, not a fixed time.)
     combatRange: 30, // metres: a living zombie or beetle this close is a fight on (the C-7 sweep waits)

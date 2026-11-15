@@ -8,6 +8,7 @@ import { EventBus } from '../src/core/EventBus.js';
 import { frameToWorld } from '../src/world/clearingFrame.js';
 import outpost from '../src/data/outpost.json';
 import progressData from '../src/data/progress.json';
+import { readFileSync } from 'node:fs';
 import dialogueData from '../src/data/dialogue.json';
 import cutsceneData from '../src/data/cutscenes.json';
 import lootData from '../src/data/loot.json';
@@ -763,5 +764,31 @@ describe('the military outpost: the first-third plan, batch 1', () => {
     r.step(oc.peak.timeout + 1);
     expect(r.o.peakState).toBe('done');
     expect(stuck.authored).toBe(null);
+  });
+});
+
+describe("the farm's dialogue (Nov 15, the plan Aaron approved)", () => {
+  it('holds the outpost call after the Mothman until it has been quiet for a while (no line, no fight)', () => {
+    const r = rig();
+    const subs = { busy: true };
+    r.o.dialogue.subtitles = subs;
+    r.progress.setFlag('rifleClaimed');
+    r.progress.setFlag('night2Done');
+    r.progress.setFlag('mothmanGlimpsed');
+    r.step(config.outpost.callAfterGlimpse + 5);
+    expect(r.flags.has('outpostCall')).toBe(false); // someone's still talking
+    subs.busy = false;
+    r.step(config.outpost.callAfterGlimpse - 2);
+    expect(r.flags.has('outpostCall')).toBe(false);
+    r.step(3);
+    expect(r.flags.has('outpostCall')).toBe(true);
+    expect(config.outpost.callAfterGlimpse).toBeGreaterThanOrEqual(15);
+  });
+
+  it("answers Marcy's question at her journal, and gives Earl's shotgun its card", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['farm.journal.ellen'].text).toMatch(/truck/);
+    const src = readFileSync(new URL('../src/encounters/PruittFarm.js', import.meta.url), 'utf8');
+    expect(src).toContain("show('earlShotgun'");
   });
 });

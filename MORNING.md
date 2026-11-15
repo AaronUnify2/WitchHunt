@@ -1,5 +1,12 @@
 # For Aaron
 
+## The farm's dialogue (the plan you approved)
+
+1. **The Mothman gets its silence.** Ellen's outpost call now waits for 20 quiet seconds in a row after him (no line showing, no cutscene, no moths about, none of the dead within 30 m), instead of coming 6 seconds after. Your order is the same: Mothman, then the call.
+2. **Marcy's journal answers why you came:** "She believed him, Tom. Marcy never laughed at Earl. Her truck's gone."
+3. **Earl's twelve-gauge gets a card** (it was a toast that went before you could read it).
+4. Unchanged: the dawn lines, the call to the farm, the moving wall, Junie on the moths, Ellen's warning after the Mothman, the plot.
+
 ## The storm shelter's dialogue (the plan you approved)
 
 A light touch: about 80 words (69 before), only where something was missing.

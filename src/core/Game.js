@@ -637,6 +637,7 @@ export class Game {
     this.witchEscape = new WitchEscape(this.cfg, this.bus);
     this.witchEscape.init({ witch: this.witch, player: this.player, progress: this.progress, dialogue: this.dialogue, alert: this.alert, quad: this.quad, outpost: this.outpost });
     this.outpost.witchBusy = () => this.witchEscape.engaged;
+    this.outpost.mothsAbout = () => Boolean(this.moths?.active && !this.moths.leaving); // Nov 15: the call waits out a fight with them
     this.outpost.witch = this.witch; // Plan #18: her pass through the cleared outpost at nightfall
     // Session 18 (Aaron): a stop at home on the ride back from the storm shelter.
     this.homeStop = new HomeStop(this.cfg, this.bus);

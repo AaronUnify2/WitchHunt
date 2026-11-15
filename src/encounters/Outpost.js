@@ -159,7 +159,10 @@ export class Outpost {
         // Round 2 (Aaron): the call comes at the dawn after Night 2's defence (it was at the safe).
         // Aaron (Nov 14): the outpost comes up once the Mothman's been seen at the Pruitts' farm (it was the dawn
         // after Night 2, and a trip to the chained main gate).
-        if (id === 'mothmanGlimpsed' && on && !this.progress?.has('outpostCall')) this.callIn = this.oc.callAfterGlimpse ?? this.oc.callAfterDawn;
+        if (id === 'mothmanGlimpsed' && on && !this.progress?.has('outpostCall')) {
+          this.callIn = this.oc.callAfterGlimpse ?? this.oc.callAfterDawn;
+          this.callWaitsForQuiet = true;
+        }
       }),
       // A round into a crate, or a blast near one, breaks it open.
       this.bus.on('weapon:impact', ({ x, y, z }) => this.crateShot(x, y, z)),
@@ -379,7 +382,12 @@ export class Outpost {
       return;
     }
     if (this.callIn >= 0) {
-      this.callIn -= dt;
+      // Nov 15 (the farm's dialogue plan, Aaron approved): after the Mothman, the call waits for quiet seconds in a
+      // row: no line showing, no cutscene, no fight round Tom (the dead close, or moths about).
+      const p = this.player.position;
+      const busy = this.callWaitsForQuiet && (this.cutscenes?.active || this.dialogue?.subtitles?.busy || this.mothsAbout?.() || this.enemies?.living?.some((z) => z.alive && Math.hypot(z.x - p.x, z.z - p.z) < this.oc.callFightRange));
+      if (busy) this.callIn = this.oc.callAfterGlimpse;
+      else this.callIn -= dt;
       if (this.callIn < 0) this.call();
     }
     const l = this.local();

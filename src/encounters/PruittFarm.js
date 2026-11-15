@@ -527,6 +527,7 @@ export class PruittFarm {
     this.combat.hud?.pickup?.(`Earl's shotgun (+${this.combat.weapons.ammoRounds?.('shotgun') ?? this.fc.shotgunShells} shells)`);
     this.combat.sfx?.play('loaded');
     this.dialogue?.play('farm.shotgun.wyatt');
+    this.card?.show('earlShotgun', { ok: () => {} }, this.device); // Nov 15 (the farm's plan): the farm's reward gets its card
     this.bus.emit('farm:shotgun');
   }
 

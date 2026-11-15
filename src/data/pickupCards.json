@@ -3,6 +3,7 @@
   "items": [
     {"id": "huntingRifle", "name": "Earl's hunting rifle", "card": {"look": "rifle", "color": "#2e2a26", "label": "#5a5e62", "line": "A bolt-action with a proper scope, for the long shots. It's empty: Earl never found the right rounds. Yours, from now on."}},
     {"id": "planeCell", "name": "The glowing power cell", "card": {"look": "device", "color": "#1c3a3c", "label": "#7ae0e8", "line": "Whatever that creature was, this kept it going. It's warm, and it hums."}},
+    {"id": "earlShotgun", "name": "Earl's twelve-gauge", "card": {"look": "rifle", "color": "#3a2a1c", "label": "#4a4e52", "line": "Off the pegs in the Pruitts' kitchen, a box of shells beside it. Up close, nothing stays standing."}},
     {"id": "outpostRounds", "name": "Hunting rifle rounds", "card": {"look": "tape", "color": "#4a3c22", "label": "#c8b070", "line": "A box of rounds that fit Earl's hunting rifle, on the shelf in the comms hut."}},
     {"id": "outpostCharge", "name": "An explosive charge, with its detonator", "card": {"look": "device", "color": "#3a3a2a", "label": "#c04030", "line": "Army issue, from the comms hut. Set it, walk away, press the button. Save it for something big."}}
   ]
