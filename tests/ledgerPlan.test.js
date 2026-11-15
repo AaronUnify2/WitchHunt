@@ -189,3 +189,16 @@ describe('the station plan poster', () => {
     expect(obj).toContain('station plan on the cabin wall');
   });
 });
+
+describe("the desk's ledger without the fence (Nov 15)", () => {
+  it('leaves a page marked own out of the book, but opens it on its own', async () => {
+    const { Ledger } = await import('../src/ui/Ledger.js');
+    const l = new Ledger(config.ledger, { emit() {} });
+    l.getPages = () => [{ id: 'fence', own: true, title: 'Fence', rows: [] }, { id: 'turret', title: 'Turret', rows: [] }];
+    expect(l.pages().map((p) => p.id)).toEqual(['turret']);
+    l.only = 'fence';
+    expect(l.pages().map((p) => p.id)).toEqual(['fence']);
+    const src = readFileSync(new URL('../src/base/Station.js', import.meta.url), 'utf8');
+    expect(src).toMatch(/id: 'fence', title: 'Fence', own: true/);
+  });
+});

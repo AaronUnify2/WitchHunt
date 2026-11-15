@@ -69,7 +69,8 @@ export class Ledger {
   // The pages to show: the whole book, or the one page opened on its own.
   pages() {
     const all = this.getPages();
-    return this.only ? all.filter((p) => p.id === this.only) : all;
+    // Nov 15 (Aaron): a page marked `own` only opens on its own (the fence plan: the station plan poster's).
+    return this.only ? all.filter((p) => p.id === this.only) : all.filter((p) => !p.own);
   }
 
   // What the focus can land on, in order: the rows (not headings), then the plan's parts.

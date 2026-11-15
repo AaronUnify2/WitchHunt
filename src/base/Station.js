@@ -1091,7 +1091,8 @@ export class Station {
     security.push({ label: 'Total', value: sec.total.toFixed(1), action: null });
 
     return [
-      { id: 'fence', title: 'Fence', rows: fence, plan: buildFencePlan(this) },
+      // Nov 15 (Aaron): the fence is managed from the station plan poster only (own: not a tab in the desk's book).
+      { id: 'fence', title: 'Fence', own: true, rows: fence, plan: buildFencePlan(this) },
       { id: 'turret', title: t.available ? 'Turret' : 'Turret \u{1F512}', rows: turret },
       { id: 'upgrades', title: 'Upgrades', rows: upgrades },
       { id: 'security', title: 'Security', rows: security },

@@ -4,7 +4,7 @@
 
 1. **"Quad bike" straight after the tower.** Wyatt's line from the top of the tower, then Ellen's map line, then Wyatt: "Take the quad bike, Dad. It's in the garage." The "hold X beside it to ride" button shows as soon as the tower's done, wherever you are (it used to wait until you were back in the yard with the rifle and nobody talking, so it often came too late).
 2. **The station plan.** A poster on the comms room's wall in the main room, between Ellen's board and the comms door. It's the ledger's fence diagram, live: panels, gate, barricades, doors and the fence box in their colours, with scrap, charge and batteries along the top. Hold X at it to open that plan, and repair the fence, fit a battery, or reinforce the comms (or front) door from there. The hints that sent you to "the ledger in the comms room" for the fence now send you to the station plan.
-3. **The desk's ledger is still there** for everything else (turret, upgrades, security, forecast, monitors, papers). It still has the fence tab too. Say if you'd rather that came off it.
+3. **The desk's ledger no longer has a fence tab** (your call): the fence is managed from the station plan only. The ledger keeps the turret, upgrades, security, forecast, monitors and papers.
 
 ## Players' feedback: too much in-game dialogue
 
