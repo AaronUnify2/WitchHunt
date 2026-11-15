@@ -4,6 +4,9 @@
 // `every` seconds, a few at most; back near a path they lose interest. Uses the giant moths
 // (ai/Moths.js) in the open air, and stands aside whenever an encounter is using them (a habitat
 // set, a roost, or a swarm it didn't send). config.deepForest.
+// Nov 15 (Aaron: "if you go off the path for a little bit, it'll spawn a beetle if you're off the path too
+// long"): a giant beetle too (ai/Beetles.js, its own set), out of the ground behind him, after `beetle.first`
+// seconds deep, then every `beetle.every`, `beetle.max` alive at most. Ones left far behind are cleared.
 
 // Is (x, z) deep in the trees? Nothing open within `radius`: the spot itself and two rings round it (pure).
 export function deepInForest(ground, x, z, radius, open = 0.08) {
@@ -24,7 +27,7 @@ export class DeepForest {
     this.bus = bus;
   }
 
-  // ctx: { moths, player, ground, clock, interiors, cutscenes, rng, blocked() }.
+  // ctx: { moths, player, ground, clock, interiors, cutscenes, rng, blocked(), beetles (ai/Beetles.js, or none) }.
   init(ctx) {
     Object.assign(this, ctx);
     this.reset();
@@ -36,6 +39,44 @@ export class DeepForest {
     this.timer = 0; // seconds deep since the last ones came
     this.out = 0; // seconds out of the deep with ours still about
     this.ours = false; // the moths about are the forest's own
+    this.beetleTimer = 0; // Nov 15: seconds deep since the last beetle
+    this.beetleSent = false;
+    this.beetles?.clear();
+  }
+
+  // Nov 15: a beetle out of the ground behind Tom, now and then, while he's deep in the trees.
+  updateBeetles(dt, deep) {
+    const bc = this.dc.beetle;
+    const bs = this.beetles;
+    if (!bc || !bs) return;
+    const p = this.player.position;
+    // Clear the dead and the ones left far behind.
+    for (let i = bs.list.length - 1; i >= 0; i--) {
+      const b = bs.list[i];
+      const far = Math.hypot(b.x - p.x, b.z - p.z) > bc.loseDistance;
+      if (far || (!b.alive && (b.deadFor = (b.deadFor ?? 0) + dt) > bc.corpseSeconds)) bs.list.splice(i, 1);
+    }
+    if (!deep) {
+      this.beetleTimer = Math.max(0, this.beetleTimer - dt * 2);
+      return;
+    }
+    this.beetleTimer += dt;
+    if (this.beetleTimer < (this.beetleSent ? bc.every : bc.first)) return;
+    this.beetleTimer = 0; // (at the most already: the next one waits a full spell after one's gone)
+    if (bs.living.length >= bc.max) return;
+    // Behind him (where he isn't looking), a little to one side, on ground that's still deep forest.
+    const yaw = this.player.yaw ?? 0;
+    for (let k = 0; k < 6; k++) {
+      const a = yaw + Math.PI + this.rng.range(-0.9, 0.9);
+      const d = this.rng.range(bc.distance[0], bc.distance[1]);
+      const x = p.x - Math.sin(a) * d;
+      const z = p.z - Math.cos(a) * d;
+      if (this.ground.openAt(x, z) > 0.08) continue;
+      bs.spawn(x, z, Math.atan2(p.x - x, p.z - z));
+      this.beetleSent = true;
+      this.bus.emit('deepForest:beetle', { x, z });
+      return;
+    }
   }
 
   // Somebody else's moths, or somewhere they don't belong.
@@ -49,6 +90,7 @@ export class DeepForest {
   }
 
   update(dt, playing) {
+    this.beetles?.update(dt, playing);
     if (!playing || !this.dc?.enabled) return;
     const m = this.moths;
     if (this.ours && !m.active) this.ours = false; // all shot, or gone
@@ -56,6 +98,7 @@ export class DeepForest {
       // Mounted up, gone indoors: ours give up.
       if (this.ours && m.active && !m.leaving && !m.habitat) m.dismiss();
       this.timer = 0;
+      this.beetleTimer = 0;
       return;
     }
     this.check -= dt;
@@ -64,6 +107,7 @@ export class DeepForest {
       const p = this.player.position;
       this.deep = deepInForest(this.ground, p.x, p.z, this.dc.radius);
     }
+    this.updateBeetles(dt, this.deep);
     if (!this.deep) {
       this.timer = Math.max(0, this.timer - dt * 2);
       if (this.ours && m.active && !m.leaving) {
@@ -87,6 +131,6 @@ export class DeepForest {
   }
 
   overlayLine() {
-    return `deep forest: ${this.deep ? 'deep' : 'no'}${this.ours ? ' (moths out)' : ''}`;
+    return `deep forest: ${this.deep ? 'deep' : 'no'}${this.ours ? ' (moths out)' : ''}${this.beetles?.living.length ? ` (${this.beetles.living.length} beetle)` : ''}`;
   }
 }

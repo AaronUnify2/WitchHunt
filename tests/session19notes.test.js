@@ -48,8 +48,8 @@ describe("Aaron's notes", () => {
     const c = outpost.compound.comms;
     expect(a.face).toBe(1);
     expect(Math.abs(a.x - (c.x + c.w / 2 + 0.36))).toBeLessThan(0.05);
-    const s = outpost.searches.find((x) => x.id === 'armoury');
-    expect(s.x).toBeGreaterThan(a.x);
+    // (Nov 15: the lockers are empty now: the charge is in the comms hut, with the report.)
+    expect(outpost.searches.find((x) => x.id === 'armoury')).toBeUndefined();
   });
 
   it('the outpost has a generator out in the open and floodlights on from the start at its gates and C-7', () => {
@@ -133,7 +133,7 @@ describe('round 3: the generator at the tower, the outpost on the map', async ()
   it('after: explore the compound, every point of interest at once', () => {
     const s = objectivesFor(fake({ flags: ['outpostCleared'], op: { peakState: 'done' } }));
     expect(s.id).toBe('outpostCompound');
-    expect(s.ats.length).toBe(7);
+    expect(s.ats.length).toBe(6); // (Nov 15: the armoury lockers are off the list: their charge is in the comms hut)
   });
   it('once everything is seen to: the checkpoint', () => {
     const op = { peakState: 'done', told: new Set(['beetlesDone', 'resinOpen', 'c7']), searched: new Set(['armoury', 'report', 'manifest']), dogfightSeen: true };

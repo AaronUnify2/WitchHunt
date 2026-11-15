@@ -27,6 +27,34 @@ describe('step 1: the quick wins', () => {
     for (const id of ['day1.rifle.turkey', 'day1.night.tower.have']) expect(ids.has(id)).toBe(true);
   });
 
+  it('sends a beetle out of the ground behind Tom when he stays off the paths too long (Nov 15), and clears ones left behind', () => {
+    const bc = config.deepForest.beetle;
+    const spawned = [];
+    const beetles = {
+      list: [],
+      get living() { return this.list.filter((b) => b.alive); },
+      spawn(x, z, f) { const b = { x, z, f, alive: true }; this.list.push(b); spawned.push(b); return b; },
+      update() {},
+      clear() { this.list.length = 0; },
+    };
+    const moths = { active: false, leaving: false, habitat: null, moths: [], send: (n) => n, dismiss() {} };
+    const player = { position: { x: 0, z: 0 }, riding: null, yaw: 0 };
+    const d = new DeepForest(config, new EventBus());
+    d.init({ moths, player, ground: { openAt: () => 0 }, clock: { day: 2 }, rng: { int: (a) => a, range: (a, b) => (a + b) / 2 }, beetles });
+    for (let t = 0; t < bc.first - 1; t += 0.25) d.update(0.25, true);
+    expect(spawned).toHaveLength(0);
+    for (let t = 0; t < 2; t += 0.25) d.update(0.25, true);
+    expect(spawned).toHaveLength(1);
+    const b = spawned[0];
+    expect(Math.hypot(b.x, b.z)).toBeGreaterThan(bc.distance[0] - 0.01);
+    for (let t = 0; t < bc.every * (bc.max + 2); t += 0.25) d.update(0.25, true);
+    expect(beetles.living.length).toBe(bc.max); // never more than max alive
+    // Back on a path and far away: they're cleared.
+    player.position.x = bc.loseDistance + 50;
+    d.update(1, true);
+    expect(beetles.list.length).toBe(0);
+  });
+
   it('knows the deep forest from a path side', () => {
     const allTrees = { openAt: () => 0 };
     const pathNear = { openAt: (x) => (x > 10 ? 1 : 0) };

@@ -833,7 +833,10 @@ export class GasStation {
     // Aaron (Nov 14: "another rifle that doesn't have a model and doesn't go in your inventory... a bit
     // confusing"): it's a thing Tom carries now, with its own card: Earl's lever-action, for Wyatt.
     this.combat?.hud.pickup(`${this.cfg.weapons[id].name} (no rounds)`);
-    if (this.lore?.give('leverRifle')) this.card?.show('leverRifle', { take: () => {}, keep: () => {} }, this.device);
+    // Nov 15 (Aaron: one card for both was confusing: "this rifle isn't for you", then you've got a rifle): two
+    // cards, the hunting rifle (Tom's), then the present for Wyatt.
+    this.card?.show('huntingRifle', { ok: () => {} }, this.device);
+    if (this.lore?.give('leverRifle')) this.card?.show('leverRifle', { ok: () => {} }, this.device);
     this.progress?.setFlag('wyattRifle');
     this.progress?.setFlag('rifleClaimed');
     this.dialogue?.play('gas.safe.open');

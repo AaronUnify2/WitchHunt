@@ -221,10 +221,10 @@ export class Outpost {
     for (let i = 0; i < this.crates.length; i++) this.props?.setCrate(i, false);
     for (const c of this.crateCols ?? []) c.off = false;
     this.climbs = 0;
-    this.props?.setTaken('rounds', false);
+    this.props?.setTaken('rounds', true); // (Nov 15: the rounds are in the comms hut: the gun pit's box is empty)
     this.props?.setTaken('report', false);
     this.props?.setTaken('manifest', false);
-    this.props?.setTaken('charge', false);
+    this.props?.setTaken('charge', true); // (Nov 15: in the comms hut now: the lockers stay empty)
   }
 
   // The truck across the barricade's gap has a sure battery, no alarm (DESIGN: a jeep's battery).
@@ -720,7 +720,9 @@ export class Outpost {
     this.beat();
     // Session 19 round 3: the compound's beats in any order (the dogfight's ready now); Wyatt's ask to
     // look through the scope still waits for the beetles to be down, as a nudge, not a gate.
-    if (this.told.has('beetlesDone') && !this.dogfightSeen) this.scopeAskDue = true;
+    // Nov 15 (Aaron: "we definitely need a hint to look through the scope from the top of the tower"; the
+    // beetles are gone): Wyatt asks as soon as it's quiet after the barricade.
+    if (!this.dogfightSeen) this.scopeAskDue = true;
   }
 
   // ---- pacing (Session 18, Aaron: "they're just not getting time to breathe") ---------------------------
@@ -1254,8 +1256,7 @@ export class Outpost {
     }
     if (this.player.platform) return null;
     if (dist(this.ladderAt) < 1.3) return { key: 'tower-up', prompt: `Hold ${X}: climb the watchtower`, busy: 'Climbing…', seconds: h.climb, act: () => this.climbUp() };
-    // Session 18 (Aaron): the hunting rifle's rounds are in the gun pit's ammo box now (not up the tower).
-    if (!this.roundsTaken && dist(this.roundsAt()) < this.oc.interactRange + 0.6) return { key: 'rounds', prompt: `Hold ${X}: take the rounds from the gun's ammo box`, busy: 'Taking…', seconds: h.rounds, act: () => this.takeRounds() };
+    // (Nov 15, Aaron: the hunting rifle's rounds are in the comms hut now, with the charge and the report.)
     // The gun pit's machine gun (Session 17).
     const tu = this.turretAt();
     if (this.turret.state === 'dead' && dist(tu) < this.oc.turret.fitRange) {
@@ -1277,7 +1278,7 @@ export class Outpost {
     let best = null;
     let bestD = this.oc.interactRange;
     for (const pt of this.points) {
-      if (this.searched.has(pt.id)) continue;
+      if (this.searched.has(pt.id) && !(pt.id === 'report' && !this.searched.has('armoury'))) continue; // (Nov 15: back for a charge that didn't fit)
       const d = dist(pt);
       if (d < bestD) {
         best = pt;
@@ -1298,6 +1299,12 @@ export class Outpost {
   }
 
   search(pt) {
+    // Nov 15: back at the comms hut for the charge he couldn't carry the first time.
+    if (pt.id === 'report' && this.searched.has('report')) {
+      this.searched.add('armoury');
+      if (this.takeCharge()) this.card?.show('outpostCharge', { ok: () => {} }, this.device);
+      return;
+    }
     // Session 18 (Aaron): everything's searched once; the papers are taken (read them again from the ledger).
     this.searched.add(pt.id);
     switch (pt.id) {
@@ -1305,6 +1312,8 @@ export class Outpost {
         this.takeCharge();
         break;
       case 'report':
+        // Nov 15 (Aaron): the comms hut holds the captain's field report, the hunting rifle's rounds and the
+        // armoury's charge: a card for each, one after another.
         this.props?.setTaken('report', true);
         this.lore?.give('fieldReport');
         {
@@ -1313,7 +1322,16 @@ export class Outpost {
             this.combat?.sfx?.play('paper');
             if (!this.paper?.open('fieldReport', { device: this.device, take: true, onClose: after })) after();
           };
-          if (!this.card?.show('fieldReport', { read, keep: after }, this.device)) read(); // Session 20: its inspect card
+          const carded = this.card?.show('fieldReport', { read, keep: after }, this.device); // Session 20: its inspect card
+          if (!this.roundsTaken) {
+            this.takeRounds();
+            this.card?.show('outpostRounds', { ok: () => {} }, this.device);
+          }
+          if (!this.searched.has('armoury')) {
+            this.searched.add('armoury');
+            if (this.takeCharge()) this.card?.show('outpostCharge', { ok: () => {} }, this.device);
+          }
+          if (!carded) read();
         }
         break;
       case 'manifest':
@@ -1345,14 +1363,14 @@ export class Outpost {
     const n = this.explosives?.give(1) ?? 0;
     if (n > 0) this.combat?.hud.pickup('An explosive charge (and its detonator)');
     else {
-      // Carrying all he can: it stays in the locker.
+      // Carrying all he can: it stays where it was (Nov 15: the comms hut; searched again for it).
       this.searched.delete('armoury');
-      this.props?.setTaken('charge', false);
       this.notify?.("You can't carry another charge.");
-      return;
+      return false;
     }
     this.combat?.sfx.play('pickup');
     this.dialogue?.play('outpost.charge');
+    return true;
   }
 
   loot(pt) {
@@ -1409,10 +1427,10 @@ export class Outpost {
     this.peakState = d.peak === 'done' ? 'done' : 'none';
     this.entered = Boolean(d.entered);
     this.searched = new Set(d.searched ?? []);
-    this.props?.setTaken('rounds', this.roundsTaken);
+    this.props?.setTaken('rounds', true);
     this.props?.setTaken('report', this.searched.has('report'));
     this.props?.setTaken('manifest', this.searched.has('manifest'));
-    this.props?.setTaken('charge', this.searched.has('armoury'));
+    this.props?.setTaken('charge', true);
     // Broken crates stay broken (their beetles aren't saved: gone into the woods, or down).
     (d.crates ?? []).forEach((b, i) => {
       if (!b || i >= this.crates.length) return;

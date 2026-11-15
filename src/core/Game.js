@@ -217,6 +217,7 @@ export class Game {
     this.lore.paper = this.paper; // Session 17 (Aaron): papers handed in are read again from the ledger
     // Session 20 (Aaron): special items get an inspect card (watch, read, or keep for later).
     this.card = new InspectCard(this.bus);
+    this.card.blocked = () => this.paper?.isOpen; // Nov 15: a queued card waits for a paper a card opened
     this.card.init(root, this.combat.sfx);
     // Session 25 (Aaron): Tom carries every gun; D-pad down (nothing to watch) brings up the weapon cross.
     this.weaponCross = new WeaponCross(cfg.weapons);
@@ -576,6 +577,15 @@ export class Game {
     // Round 2 (Aaron): Tom's own quad, in the station's garage from the start (bay 0).
     this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, homeSpot: this.station.layout.garage?.bays[0] ?? null, notify: (text) => this.toast.show(text) });
     this.combat.promptSources.push(this.quad.hud);
+    // Nov 15 (Aaron: he kept forgetting the shovel): it rides on the quad's rear rack, and getting on the quad
+    // takes it once it's his to take (after Night 1's clip). Earl's spade at his shelter is still there too.
+    if (this.cfg.station.shovelByDoor && this.quad.mesh) {
+      this.quad.strapShovel(this.cfg.station.shovelByDoor);
+      this.station.shovelOnQuad = true;
+      this.bus.on('quad:mounted', () => {
+        if (this.station.shovelAtDoor && !this.station.shovelLocked) this.station.takeShovel();
+      });
+    }
     this.mapUi.setQuad(this.quad); // Session 16 (Aaron): on the maps, in case Tom loses it
     this.vehicles.busy?.push(this.quad.hud);
     this.explosives.busy?.push?.(this.quad.hud);
@@ -729,7 +739,10 @@ export class Game {
     this.moths.init({ scene: this.scene, player: this.player, combat: this.combat, ground: this.world.ground, sfx: this.combat.sfx, notify, rng: this.rng.fork('moths') });
     // Round 2 (Aaron): the deep forest is dangerous on foot: a moth or two finds Tom there.
     this.deepForest = new DeepForest(this.cfg, this.bus);
-    this.deepForest.init({ moths: this.moths, player: this.player, ground: this.world.ground, clock: this.clock, interiors: this.interiors, cutscenes: this.cutscenes, rng: this.rng.fork('deepForest') });
+    // Nov 15 (Aaron): the deep forest's own beetles (the outpost's crates are gone).
+    this.forestBeetles = new Beetles(this.cfg, this.bus);
+    this.forestBeetles.init(this.scene, { player: this.player, combat: this.combat, colliders: this.colliders, ground: this.world.ground });
+    this.deepForest.init({ moths: this.moths, player: this.player, ground: this.world.ground, clock: this.clock, interiors: this.interiors, cutscenes: this.cutscenes, rng: this.rng.fork('deepForest'), beetles: this.forestBeetles });
     // Round 2 (Aaron's play-test, Nov 13): the Pruitt farm, Day 3's way into the outpost.
     this.farm = new PruittFarm(this.cfg, this.bus);
     this.farm.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, moths: this.moths, flyer: this.flyer, flashlight: this.flashlight, lore: this.lore, paper: this.paper, card: this.card, gates: this.gates, director: this.director, vehicles: this.vehicles, demo: this.demo, notify, drawDistance: () => this.drawDistance });
@@ -2069,6 +2082,7 @@ export class Game {
     this.dialogue.update(dt, playing);
     this.trailCams.update(dt, playing);
     this.station.update(dt, input, playing, this.clock.phase, this.player.camera.position, daylight);
+    if (this.station.shovelOnQuad) this.quad.shovelVisible = this.station.shovelAtDoor; // Nov 15: strapped to the rack till he has it
     this.vehicles.update(dt, input, playing && !locked);
     if (!this.demo.active) this.nightWatch.update(dt, this.clock.phase, playing); // Session 22: the demo sends its own
     this.progress.update(dt, playing && first);

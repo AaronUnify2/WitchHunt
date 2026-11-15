@@ -603,6 +603,8 @@ export class CrashedPlane {
     // Session 32 (Aaron): the power cell is a quiet drop: named, not pointed at. (Session 33: what it's for
     // comes from Ellen once Junie's home: encounters/Stairs.js askForCell.)
     this.combat.hud.pickup(`${hadPistol ? `The pilot's sidearm (${e.pistolRounds} pistol rounds)` : "The pilot's pistol"}, ${e.alienShells} alien shells (hold B to choose them), an alien med kit${kept ? '' : ' (sent home: your healing is full)'}, and a small alien power cell`);
+    // Nov 15 (Aaron: the pickup line's gone before you can read it): the power cell gets its own card.
+    this.card?.show('planeCell', { ok: () => {} }, this.device);
   }
 
   readLog() {

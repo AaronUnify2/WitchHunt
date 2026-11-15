@@ -5790,7 +5790,9 @@ export const config = {
   // Round 2 (Aaron): on foot deep in the trees (nothing open within `radius` metres), from day `fromDay`,
   // `count` giant moths find Tom `first` seconds in and every `every` seconds after, `max` about at most;
   // `loseAfter` seconds back near a path they leave. Not on a vehicle, indoors, or while an encounter has the moths.
-  deepForest: { enabled: true, fromDay: 2, radius: 14, checkEvery: 0.5, first: 12, every: 30, count: [1, 2], max: 4, loseAfter: 6 },
+  // Nov 15 (Aaron): and a beetle now and then (beetle: seconds deep before the first, between the next; at most
+  // `max` alive; metres behind him they come up; cleared once `loseDistance` away, or dead this long).
+  deepForest: { enabled: true, fromDay: 2, radius: 14, checkEvery: 0.5, first: 12, every: 30, count: [1, 2], max: 4, loseAfter: 6, beetle: { first: 25, every: 45, max: 2, distance: [9, 15], loseDistance: 70, corpseSeconds: 20 } },
 
   // The station's ledger (M5): a full-screen book in the comms room.
   // Placeholder look; the pixel-font book is the UI session's (Session 19).

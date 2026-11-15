@@ -1,5 +1,19 @@
 # For Aaron
 
+## Your Nov 15 notes: the feed, the scope, cards, the outpost without beetles, forest beetles, the shovel
+
+1. **Night 1's camera feed.** Ellen again, before it plays: "Tom, one of the trail cams just tripped. I'm patching it through to you. You've got to see this."
+2. **The scope at the outpost.** Wyatt asks as soon as it's quiet after the barricade: "Dad, get up the watchtower and look through Earl's scope." (It used to wait until every beetle was dead.) Up the tower, the on-screen hint still says which button.
+3. **Cards for pickups** (one button, "A: got it"; they wait their turn, one after another):
+   - the grey's **power cell** at the plane;
+   - **the safe:** first "Earl's hunting rifle" (yours, empty), then "A present for Wyatt: Earl's lever-action";
+   - **the comms hut** at the outpost: the captain's field report, then the hunting rifle rounds, then the explosive charge with its detonator.
+4. **The outpost is simpler.** No beetle crates. The rifle rounds and the charge are in the comms hut with the report: one search, three cards. The gun pit's ammo box and the armoury lockers are empty, and the goals say "find rounds for Earl's rifle in the comms hut".
+5. **Beetles in the deep forest.** Like the moths: on foot, off the paths for 25 seconds, one comes up out of the ground behind you; another every 45 seconds you stay out there, two at most. They're cleared once you're well away (`config.deepForest.beetle`).
+6. **The shovel rides on the quad.** It's strapped along the quad's rear rack, and getting on the quad takes it, so you can't leave without it. (I didn't think that was too in your face: it's where a ranger would keep it.)
+
+**Not checked by eye:** the shovel on the rack (my screenshot was before dawn, too dark to judge), and the beetles in the forest (the tests and the bot cover the logic, not the look).
+
 ## The quad bike, and the station plan on the wall
 
 1. **"Quad bike" straight after the tower.** Wyatt's line from the top of the tower, then Ellen's map line, then Wyatt: "Take the quad bike, Dad. It's in the garage." The "hold X beside it to ride" button shows as soon as the tower's done, wherever you are (it used to wait until you were back in the yard with the rifle and nobody talking, so it often came too late).

@@ -219,8 +219,8 @@ export class Objectives {
         jobs.push('put a battery in the machine gun');
       }
       if (!op.roundsTaken) {
-        extras.push(op.roundsAt());
-        jobs.push("find rounds for Earl's rifle in the gun pit");
+        extras.push(op.points.find((x) => x.id === 'report') ?? op.roundsAt());
+        jobs.push("find rounds for Earl's rifle in the comms hut");
       }
       const also = jobs.length ? ` ${jobs.join(', ').replace(/^./, (c) => c.toUpperCase())}.` : '';
       if (op.peakState === 'none') return steps('outpostFight', `Defeat the dead at the outpost.${also}`, [op.gapAt, ...extras]);
@@ -235,11 +235,10 @@ export class Objectives {
       if (!op.told.has('beetlesDone')) (op.crateAt ?? []).forEach((at, i) => op.crates[i] === 'whole' && list.push(at));
       if (!op.told.has('resinOpen')) list.push(op.resinDoorAt);
       if (!op.told.has('c7') && !op.told.has('c7Visited')) list.push(op.c7At);
-      if (!op.searched.has('armoury')) list.push(pt('armoury'));
       if (!op.searched.has('report')) list.push(pt('report'));
       if (!op.searched.has('manifest') && pt('manifest')) list.push(pt('manifest'));
       if (!op.dogfightSeen) list.push(op.ladderAt);
-      if (list.filter(Boolean).length) return steps('outpostCompound', "Explore the outpost's compound: the crates, the containers, the lockers, the comms hut, and the view from the watchtower.", list);
+      if (list.filter(Boolean).length) return steps('outpostCompound', "Explore the outpost's compound: the containers, the comms hut, and the view from the watchtower.", list);
       return step('cross', 'The checkpoint is open. Go through, into the south.', g.world.map.cluster.checkpoint);
     }
     // ---- the crashed plane (Session 25) ----

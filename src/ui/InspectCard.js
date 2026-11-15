@@ -20,9 +20,12 @@
 // Events: 'inspect:opened' { id }, 'inspect:closed' { id, choice }.
 
 import loreData from '../data/lore.json';
+import pickupCards from '../data/pickupCards.json';
 
 // The words on the card's buttons (exported for the tests).
-export function cardActions({ watch, read, take }, pad = true) {
+export function cardActions({ watch, read, take, ok }, pad = true) {
+  // Nov 15 (Aaron: the pickup text is gone before you can read it): a pickup's card has just the one button.
+  if (ok) return [{ id: 'ok', label: `${pad ? 'A' : 'Enter'}: got it` }];
   const out = [];
   if (watch) out.push({ id: 'watch', label: `${pad ? 'D-pad ▼' : 'V'}: watch it` });
   if (read) out.push({ id: 'read', label: `${pad ? 'A' : 'Enter'}: read it` });
@@ -32,9 +35,11 @@ export function cardActions({ watch, read, take }, pad = true) {
 }
 
 export class InspectCard {
-  constructor(bus, data = loreData) {
+  // extra: cards that aren't lore (Nov 15: pickups worth a card: data/pickupCards.json).
+  constructor(bus, data = loreData, extra = pickupCards) {
     this.bus = bus;
-    this.byId = new Map(data.items.map((i) => [i.id, i]));
+    this.byId = new Map([...(extra?.items ?? []), ...data.items].map((i) => [i.id, i]));
+    this.queue = []; // Nov 15: cards asked for while one's up, shown in turn
   }
 
   init(root, sfx) {
@@ -63,7 +68,7 @@ export class InspectCard {
       e.preventDefault();
       e.stopPropagation();
       const b = e.target.closest('[data-choice]');
-      this.choose(b ? b.dataset.choice : 'keep');
+      this.choose(b ? b.dataset.choice : this.handlers?.ok ? 'ok' : 'keep');
     };
     this.el.addEventListener('pointerup', this.onPointerUp);
   }
@@ -74,7 +79,13 @@ export class InspectCard {
 
   show(id, handlers = {}, device = 'gamepad') {
     const item = this.byId.get(id);
-    if (!item?.card || !this.el || this.isOpen) return false;
+    if (!item?.card || !this.el) return false;
+    // Nov 15 (Aaron: two cards at the safe, three at the comms hut): one already up, or waiting on something
+    // else (a paper a card opened): this one waits its turn.
+    if (this.isOpen || this.queue.length || this.blocked?.()) {
+      this.queue.push({ id, handlers, device });
+      return true;
+    }
     this.item = item;
     this.handlers = handlers;
     this.device = device;
@@ -83,7 +94,7 @@ export class InspectCard {
     this.itemEl.className = `inspect-item look-${c.look ?? 'box'}`;
     this.itemEl.style.setProperty('--item-color', c.color ?? '#555');
     this.itemEl.style.setProperty('--item-label', c.label ?? '#ddd');
-    this.nameEl.textContent = item.name;
+    this.nameEl.textContent = c.title ?? item.name; // (Nov 15: a card can say it differently)
     this.lineEl.textContent = c.line ?? '';
     this.render();
     this.el.classList.remove('hidden');
@@ -91,6 +102,14 @@ export class InspectCard {
     this.sfx?.play('pickup');
     this.bus?.emit('inspect:opened', { id });
     return true;
+  }
+
+  // The next waiting card, past the queue check.
+  showNow({ id, handlers, device }) {
+    const q = this.queue;
+    this.queue = [];
+    this.show(id, handlers, device);
+    this.queue = q;
   }
 
   render() {
@@ -124,6 +143,12 @@ export class InspectCard {
   // Before the world's step (after the paper's: a card that opens a paper
   // mustn't hand it the same press). Returns true while it holds the game.
   update(dt, input) {
+    if (!this.isOpen && this.queue.length && !this.blocked?.()) {
+      const next = this.queue.shift();
+      this.showNow(next);
+      input?.swallowHeld?.();
+      return true;
+    }
     if (!this.isOpen) return false;
     if (input.activeDevice && input.activeDevice !== this.device) {
       this.device = input.activeDevice;
@@ -131,6 +156,7 @@ export class InspectCard {
     }
     const h = this.handlers;
     if (h.watch && input.wasPressed('watch')) this.choose('watch', input);
+    else if (h.ok && (input.wasPressed('menuConfirm') || input.wasPressed('menuBack'))) this.choose('ok', input);
     else if ((h.read || h.take) && input.wasPressed('menuConfirm')) this.choose(h.read ? 'read' : 'take', input);
     else if (input.wasPressed('menuBack')) this.choose('keep', input);
     return this.isOpen;

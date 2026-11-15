@@ -518,6 +518,41 @@ export class Quad {
     this.bus.emit('quad:mounted');
   }
 
+  // Nov 15 (Aaron: "I forgot to get the shovel when I get the quad bike... could we lean the shovel on the
+  // quad bike?"): the station's shovel strapped along the rear rack until Tom takes it (Station.shovelOnQuad;
+  // getting on the quad takes it once it's his to take). look: config.station.shovelByDoor's colours.
+  strapShovel(look) {
+    if (!this.mesh || this.shovelMesh) return;
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    const parts = [
+      [new THREE.BoxGeometry(0.05, 1.05, 0.05).translate(0, 0.28, 0), look.handle], // the shaft
+      [new THREE.BoxGeometry(0.18, 0.05, 0.05).translate(0, 0.83, 0), look.handle], // the D-grip
+      [new THREE.BoxGeometry(0.24, 0.3, 0.03).translate(0, -0.4, 0), look.blade], // the blade
+    ].map(([g, hex]) => {
+      const c = new THREE.Color(hex);
+      const n = g.attributes.position.count;
+      const col = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      return g;
+    });
+    const geo = mergeGeometries(parts);
+    parts.forEach((g) => g.dispose());
+    const m = new THREE.Mesh(geo, mat);
+    m.name = 'quadShovel';
+    m.castShadow = true;
+    // Lengthwise along the rear rack's right-hand rail, the blade flat at the back.
+    m.position.set(0.3, 0.92, 0.82);
+    m.rotation.set(Math.PI / 2, 0, Math.PI / 2, 'YXZ');
+    m.visible = false;
+    this.shovelMesh = m;
+    this.mesh.add(m);
+  }
+
+  set shovelVisible(on) {
+    if (this.shovelMesh) this.shovelMesh.visible = Boolean(on);
+  }
+
   dismount() {
     if (!this.riding) return;
     this.riding = false;

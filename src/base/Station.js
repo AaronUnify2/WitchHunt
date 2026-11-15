@@ -662,7 +662,7 @@ export class Station {
     }
     this.ledger.update(dt, input, playing);
     this.renderer.towerRifleVisible = this.rifleOnTower;
-    this.renderer.shovelVisible = this.shovelAtDoor;
+    this.renderer.shovelVisible = this.shovelAtDoor && !this.shovelOnQuad; // (Nov 15: on the quad's rack instead)
     this.renderer.rackGuns = this.combat.weapons.found; // Session 25: the guns Tom's found (Session 23, #343: its guns)
     this.renderer.gateLocked = this.gateLocked;
     this.renderer.update(dt, cameraPosition, daylight, this.turret);
@@ -724,7 +724,7 @@ export class Station {
 
     const c = L.cabin;
     // Session 15b (Aaron): it can't be taken until the witch has been seen burying (Night 1's clip).
-    if (this.shovelAtDoor && !this.shovelLocked) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
+    if (this.shovelAtDoor && !this.shovelLocked && !this.shovelOnQuad) offer(dist(this.shovelSpot()), { key: 'shovel', prompt: `Hold ${X}: take the shovel`, seconds: h.takeRifle, act: () => this.takeShovel() });
     // Session 25 (Aaron): no prompt for the box while Tom's at full health
     // (the game starts beside it); he can take from it once he's hurt.
     // Session 32 (Aaron: "now I can't interact with the first aid kit at all"): that hid it for good at full

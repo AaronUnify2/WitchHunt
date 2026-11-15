@@ -323,15 +323,27 @@ describe('the military outpost: the beats', () => {
     expect(r.o.wavesCleared).toBe(2);
   });
 
-  it('keeps the rounds in the gun pit (Session 18), and the tower is just for climbing', () => {
+  it('keeps the rounds in the comms hut with the report and the charge, a card for each (Nov 15), and the tower is just for climbing', () => {
     const r = rig();
+    const cards = [];
+    r.o.card = { show: (id, h) => (cards.push(id), true) };
+    expect(r.o.points.some((p) => p.id === 'armoury')).toBe(false);
+    const hut = r.o.points.find((p) => p.id === 'report');
+    expect(hut.label).toMatch(/comms hut/);
+    r.player.position.x = hut.x;
+    r.player.position.z = hut.z;
+    const pick = r.o.pick('X');
+    expect(pick.key).toBe('report');
+    pick.act();
+    expect(r.ammo.sniper).toBe(oc.tower.rounds);
+    expect(r.o.roundsTaken).toBe(true);
+    expect(r.charges.n).toBe(1);
+    expect(cards).toEqual(['fieldReport', 'outpostRounds', 'outpostCharge']);
+    expect(r.o.pick('X')?.key).not.toBe('report');
+    // Nothing to take at the gun pit's ammo box any more.
     const at = r.o.roundsAt();
     r.player.position.x = at.x;
     r.player.position.z = at.z;
-    const pick = r.o.pick('X');
-    expect(pick.key).toBe('rounds');
-    pick.act();
-    expect(r.ammo.sniper).toBe(oc.tower.rounds);
     expect(r.o.pick('X')?.key).not.toBe('rounds');
     r.o.climbUp();
     expect(r.o.onTower).toBe(true);
@@ -340,7 +352,6 @@ describe('the military outpost: the beats', () => {
     r.o.climbDown();
     expect(r.o.onTower).toBe(false);
   });
-
   it("brings the barricade's peak once the approach and the rounds are done (Session 18: up the tower too)", () => {
     const r = rig();
     r.flags.add('outpostCall');
@@ -370,12 +381,10 @@ describe('the military outpost: the beats', () => {
     expect(r.o.peakState).toBe('running');
   });
 
-  it('gives one explosive charge from the armoury, and saves and loads its beats', () => {
+  it('gives one explosive charge from the comms hut, and saves and loads its beats', () => {
     const r = rig();
-    const arm = r.o.points.find((p) => p.id === 'armoury');
-    r.o.search(arm);
+    r.o.search(r.o.points.find((p) => p.id === 'report'));
     expect(r.charges.n).toBe(1);
-    r.o.roundsTaken = true;
     r.o.helmetDone = true;
     r.o.wavesCleared = 2;
     const s = JSON.parse(JSON.stringify(r.o.saveState()));
@@ -469,33 +478,14 @@ describe('the dogfight (pass 3)', () => {
 describe('the compound (pass 4)', () => {
   const ai = config.beetles.ai;
 
-  it('breaks a crate shot into, and its beetle claws out, facing Tom', () => {
+  it('has no beetle crates any more (Nov 15, Aaron: too ambitious; the beetles go elsewhere)', () => {
     const r = rig();
-    r.at(2, 14);
-    const c = r.o.crateAt[0];
-    r.bus.emit('weapon:impact', { x: c.x + 0.3, y: c.y + 0.6, z: c.z - 0.2 });
-    expect(r.o.crates[0]).toBe('broken');
-    expect(r.o.crateCols[0].off).toBe(true);
-    const b = r.o.beetles.list[0];
-    expect(b.state).toBe('emerge');
-    expect(r.played).toContain('outpost.crate');
-    // Shots far off don't.
-    r.bus.emit('weapon:impact', { x: c.x + 30, y: c.y, z: c.z });
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
-    // The weapons can hit it.
-    expect(r.o.combat.weapons.extraTargets[0].group).toContain(b);
-  });
-
-  it('lets one out on its own the first time Tom comes near (DESIGN: the fight always happens)', () => {
-    const r = rig();
-    r.at(-3, 8);
-    r.step(0.3);
-    expect(r.o.crates.every((x) => x === 'whole')).toBe(true);
-    const [x, z] = outpost.compound.crates[0];
-    r.at(x - 4, z);
-    r.step(0.3);
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
-    expect(r.o.autoBroken).toBe(true);
+    expect(outpost.compound.crates).toEqual([]);
+    expect(r.o.crateAt).toEqual([]);
+    r.at(10, 20);
+    r.step(3);
+    expect(r.o.beetles.list).toHaveLength(0);
+    expect(r.played).not.toContain('outpost.crate');
   });
 
   it("shrugs off shots to the shell, not to the face; it's hit by a ray from the front only", () => {
@@ -562,14 +552,11 @@ describe('the compound (pass 4)', () => {
     expect(cutsceneData.cutscenes.some((c) => c.id === 'sweep.outpostC7')).toBe(true);
   });
 
-  it('keeps its broken crates and one-off beats over a save', () => {
+  it('keeps its one-off beats over a save', () => {
     const r = rig();
-    r.o.breakCrate(2);
     r.o.told.add('c7');
     const q = rig();
     q.o.loadState(JSON.parse(JSON.stringify(r.o.saveState())));
-    expect(q.o.crates[2]).toBe('broken');
-    expect(q.o.crateCols[2].off).toBe(true);
     expect(q.o.told.has('c7')).toBe(true);
   });
 });
@@ -693,27 +680,6 @@ describe("the gun pit's machine gun (Session 17, Aaron)", () => {
 });
 
 describe("Session 18 (Aaron's notes): the outpost's beats given time to breathe", () => {
-  it('lets one beetle out as Tom comes near; the second crate opened sets off all the rest, a second or two apart', () => {
-    const r = rig();
-    const cc = config.outpost.crates;
-    const n = r.o.crateAt.length;
-    const c = r.o.crateAt[0];
-    r.player.position.x = c.x + 2;
-    r.player.position.z = c.z;
-    r.o.beatGap = 5; // Session 18 (Aaron, after playing it): it doesn't wait for a quiet spell
-    r.step(1);
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1);
-    r.step(5);
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(1); // the rest wait for him
-    const second = r.o.crates.findIndex((x) => x === 'whole');
-    r.o.breakCrate(second);
-    expect(r.played).not.toContain('outpost.crates.burst'); // Aaron (Nov 14): cut (Ellen's line says it)
-    expect(r.o.crates.filter((x) => x === 'broken')).toHaveLength(2);
-    r.step(cc.stagger[1] * (n - 1) + 0.5);
-    expect(r.o.crates.every((x) => x === 'broken')).toBe(true);
-    expect(r.o.beetles.list.length).toBe(n);
-    expect(r.played.filter((id) => id === 'outpost.crate')).toHaveLength(1);
-  });
 
   it('waits a quiet spell after the all-clear before the next beat comes by itself', () => {
     const r = rig();
