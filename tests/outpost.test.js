@@ -792,3 +792,15 @@ describe("the farm's dialogue (Nov 15, the plan Aaron approved)", () => {
     expect(src).toContain("show('earlShotgun'");
   });
 });
+
+describe("the outpost's dialogue (Nov 15, the plan Aaron approved)", () => {
+  it("says where the plane went after the dogfight, gives the all-clear when the witch has passed, and drops the crate line", () => {
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
+    expect(by['outpost.dogfight.after'].cut).toBeUndefined();
+    expect(by['outpost.dogfight.after'].text).toMatch(/plane/);
+    expect(by['outpost.passed.junie'].cut).toBeUndefined();
+    expect(by['outpost.passed.ellen'].cut).toBe(true);
+    expect(by['outpost.crate'].cut).toBe(true);
+    expect(by['outpost.justUs'].cut).toBe(true);
+  });
+});

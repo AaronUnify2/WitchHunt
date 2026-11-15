@@ -1,5 +1,12 @@
 # For Aaron
 
+## The outpost's dialogue (the plan you approved, six passes)
+
+1. **After the dogfight** (skipped or not), Ellen: "The plane came down past the cordon, Tom. If anyone's alive in it..." The crash now leads somewhere.
+2. **The witch passing at night:** once she's gone by without seeing you, Junie: "She didn't see you." (The all-clear: you know you can move.)
+3. **Ellen's crate line is cut** (no crates now).
+4. Unchanged: the silent entrance, the helmet lesson, the quarantine lull, "nobody to report to", the comms hut, the clipboard, the resin body, the scope ask, the dogfight cutscene, the overheating gun.
+
 ## The farm's dialogue (the plan you approved)
 
 1. **The Mothman gets its silence.** Ellen's outpost call now waits for 20 quiet seconds in a row after him (no line showing, no cutscene, no moths about, none of the dead within 30 m), instead of coming 6 seconds after. Your order is the same: Mothman, then the call.
