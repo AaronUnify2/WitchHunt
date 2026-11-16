@@ -385,8 +385,10 @@
     ]
   },
   "fireGroup": {
-    "_note": "Nov 16 (Aaron: 'when the player arrives, 4 zombies are in the campground, standing near the campfire'): placed as Tom comes within spawnAt metres of the clearing's centre on Day 1, standing round the fire facing it (frame spots); they turn to him at the end of the arrival sweep (campsite:fireTurn) and come for him as it ends. Shot from up the path, they come at once.",
+    "_note": "Nov 16 (Aaron: 'when the player arrives, 4 zombies are in the campground, standing near the campfire'): placed as Tom comes within spawnAt metres of the clearing's centre on Day 1, standing round the fire facing it (frame spots); they turn to him at the end of the arrival sweep (campsite:fireTurn) and come for him as it ends. Shot from up the path, they come at once. Nov 16 (the sweep came too late: they could already see Tom): with them waiting, the sweep plays once Tom is within the furthest any of them could notice him (ai/detection.js noticeReach, at the zombie level) plus arriveBuffer metres, measured from the fire; they're placed at spawnAt metres from the fire, or the sweep's distance + spawnLead if that's further, so they're always there first.",
     "spawnAt": 60,
+    "arriveBuffer": 10,
+    "spawnLead": 15,
     "spots": [
       [
         -1.75,

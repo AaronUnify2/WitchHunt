@@ -41,6 +41,20 @@ export function sightDistance(p, cfg, notice = 1) {
   return d;
 }
 
+// The furthest (metres) a zombie that isn't chasing yet could notice the player, whatever the light: the worst
+// case of sightDistance (standing in the open, sprinting, torch on or off, any daylight), footsteps and touch,
+// in front of it (behind it only sees less). For scripted beats that must start before anything can notice
+// him (the campground's arrival sweep). notice: the zombie level's.
+export function noticeReach(cfg, notice = 1) {
+  let d = Math.max(cfg.touch ?? 0, hearingDistance({ crouched: false, sprinting: true, speed: Infinity }, cfg, notice));
+  for (let i = 0; i <= 20; i++) {
+    for (const torchOn of [false, true]) {
+      d = Math.max(d, sightDistance({ daylight: i / 20, torchOn, crouched: false, sprinting: true, undergrowth: 0 }, cfg, notice));
+    }
+  }
+  return d;
+}
+
 // Crouched with the torch off in the brush (M6, Aaron: sneaking).
 export function isHidden(p, cfg) {
   const h = cfg.hidden;

@@ -35,6 +35,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { CampsiteProps } from '../render/CampsiteProps.js';
 import { Rng } from '../core/Rng.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { noticeReach } from '../ai/detection.js';
 
 export class Campsite {
   constructor(cfg, bus, data = campsiteData) {
@@ -232,7 +233,10 @@ export class Campsite {
     const c = this.clearing;
     const inside = Math.hypot(p.x - c.x, p.z - c.z) <= c.radius - this.cc.arriveInset;
     this.updateFire(p, dt);
-    if (inside && !this.arrived) this.arrive();
+    // Nov 16: with the dead at the fire waiting, the sweep plays as Tom comes within their reach (plus a margin),
+    // before any of them could notice him, not at the clearing's edge.
+    const nearFire = this.fireSent && !this.fireAwake && Math.hypot(p.x - this.fireAt.x, p.z - this.fireAt.z) <= this.fireArriveDistance();
+    if ((inside || nearFire) && !this.arrived) this.arrive();
     if (this.pendingClip >= 0) {
       this.pendingClip -= dt;
       if (this.pendingClip < 0) this.playClip();
@@ -539,13 +543,11 @@ export class Campsite {
   updateFire(p, dt) {
     const fg = this.data.fireGroup;
     if (!fg || !this.enemies) return;
-    const c = this.clearing;
     if (!this.fireSent) {
       if (this.arrived || this.progress?.has('campsiteVisited') || this.clock?.day !== 1) return;
-      if (Math.hypot(p.x - c.x, p.z - c.z) > fg.spawnAt) return;
+      const fire = this.fireSpot();
+      if (Math.hypot(p.x - fire.x, p.z - fire.z) > this.fireSpawnDistance()) return;
       this.fireSent = true;
-      const f = this.data.props.fire;
-      const fire = frameToWorld(this.frame, f.x, f.z);
       this.fireAt = fire;
       for (const [x, z] of fg.spots) {
         const w = frameToWorld(this.frame, x, z);
@@ -576,6 +578,32 @@ export class Campsite {
       }
     }
     if (this.fire.every((z) => !z.alive)) this.fireDown();
+  }
+
+  // The campfire, in the world.
+  fireSpot() {
+    const f = this.data.props.fire;
+    return frameToWorld(this.frame, f.x, f.z);
+  }
+
+  // How far from the fire the arrival sweep plays (Nov 16): the furthest any of the dead round it could notice
+  // Tom (ai/detection.js noticeReach, at the zombie level's notice), from the one standing furthest out, plus
+  // fireGroup.arriveBuffer metres. It follows the detection model, so it stays ahead of it if that changes.
+  fireArriveDistance() {
+    const fg = this.data.fireGroup;
+    const fire = this.fireSpot();
+    let ring = 0;
+    for (const [x, z] of fg.spots) {
+      const w = frameToWorld(this.frame, x, z);
+      ring = Math.max(ring, Math.hypot(w.x - fire.x, w.z - fire.z));
+    }
+    return noticeReach(this.enemies.detCfg, this.enemies.stats?.notice ?? 1) + ring + (fg.arriveBuffer ?? 10);
+  }
+
+  // How far from the fire they're placed: spawnAt, or further, so they always stand there before the sweep's due.
+  fireSpawnDistance() {
+    const fg = this.data.fireGroup;
+    return Math.max(fg.spawnAt, this.fireArriveDistance() + (fg.spawnLead ?? 15));
   }
 
   // The sweep's last shot: their heads come up off the fire, toward him.
