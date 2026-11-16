@@ -12,7 +12,7 @@ describe('the grey as a boss (Nov 16)', () => {
     const body = config.weapons.sniper.damage;
     const head = body * config.crashedPlane.encounter.hit.headshotMultiplier;
     // the shield takes several shots (no head bonus through it), and then the health several more
-    expect(Math.ceil(b.shield / body)).toBeGreaterThanOrEqual(5);
+    expect(Math.ceil(b.shield / body)).toBeGreaterThanOrEqual(3); // Nov 16 rebalance: shield halved (5 shots before)
     expect(Math.ceil(b.health / head)).toBeGreaterThanOrEqual(3);
   });
 

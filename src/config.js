@@ -1860,7 +1860,7 @@ export const config = {
   // the real model is the art pass). Level 3+, rolled per single spawn.
   mutant: {
     poolSize: 4, // at most this many at once (also its render pool)
-    health: 600, // Nov 16 (Aaron: "double the health of mutants"; it was 300): about 10x a citizen, before the level's multiplier
+    health: 480, // Nov 16 rebalance: -20% (600 before). Nov 16 (Aaron: "double the health of mutants"; it was 300): about 10x a citizen, before the level's multiplier
     radius: 0.6,
     hitRadius: 0.55,
     height: 2.5,
@@ -1871,7 +1871,7 @@ export const config = {
     attackReach: 1.9,
     attackWindup: 0.4, // Aaron (Nov 14): "say it takes him 2 seconds to bring his fist down, make it 0.4" (it was 0.9)
     attackRecover: 0.8, // Nov 16 (Aaron: it attacks more often): 1.3 before
-    attackDamage: 30,
+    attackDamage: 24, // Nov 16 rebalance: -20% (30 before); its moves scale by this over moves.baseDamage
     turnRate: 4.5, // Nov 16 (more aggressive targeting): 3 before
     staggerScale: 0.25, // shrugs off most of a hit's stun
     knockbackScale: 0.2,
@@ -3067,7 +3067,7 @@ export const config = {
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
-    mutant: { health: 480, lookHeight: 0.4, memory: 30, riseSeconds: 1.0 },
+    mutant: { health: 384, lookHeight: 0.4, memory: 30, riseSeconds: 1.0 },
     // Nov 16 (Aaron): gas.mutant: it knocks Tom back down the aisle (jab: `back` metres west, to no less than minX,
     // on the aisle's line z), charges, and throws him out of the front door onto the forecourt (thrown: to x, z
     // in the station's frame, in seconds, lifting him hop metres), then follows out of the door (follow). The two
@@ -4115,7 +4115,7 @@ export const config = {
     // third zombie mutant by the campfire surrounded by 5 zombies"): the dawn figure is a mutant now, crouched at
     // the fire (at, its back to the path), with the dead standing round it (escortSpots, in the campsite's frame).
     // Its cutscene day2.mutant; then a fight. (variant 'screamer' brings back Plan #19's beat.)
-    dawnFigure: { enabled: true, variant: 'mutant', at: [0, -0.9], health: 480, spawnAt: 70, showAt: 30, escortSpots: [[-2.4, -0.4], [2.5, -0.2], [-1.9, 2.6], [1.9, 2.7], [0.3, 3.3]] },
+    dawnFigure: { enabled: true, variant: 'mutant', at: [0, -0.9], health: 384, spawnAt: 70, showAt: 30, escortSpots: [[-2.4, -0.4], [2.5, -0.2], [-1.9, 2.6], [1.9, 2.7], [0.3, 3.3]] },
     // Nov 16: and Wyatt's box from the tower at Day 2's dawn (the morning is rifle and shovel only).
     dawnBox: { rounds: 20 },
     look: {
@@ -4514,7 +4514,7 @@ export const config = {
       // range m while the shield's up, every s: damage, push m/s). cache: rounds in the wreck's cargo by the kit.
       boss: {
         name: 'THE GREY', caption: 'The Grey', captionSub: 'The crashed plane',
-        health: 450, shield: 250, shieldRadius: 1.15, shieldDelay: 4, shieldRefill: 2.5, shieldColor: 0x7fd8ff, afterImage: 0x9a7cff,
+        health: 450, shield: 125, shieldRadius: 1.15, shieldDelay: 4, shieldRefill: 2.5, shieldColor: 0x7fd8ff, afterImage: 0x9a7cff,
         flit: { every: [1.5, 3.0], everyBare: [0.9, 1.8], hitBare: [0.25, 0.6], dash: [4, 8], ring: [4, 15], seconds: 0.16 },
         shots: { every: [1.8, 3.0], aim: 0.5 },
         ray: { first: 7, every: 12, charge: 1.2, lock: 0.25, range: 28, halfAngle: 20, seconds: 5, hitAt: 0.15, sweep: 0.5, travel: 0.6, rings: 7, color: 0xb070ff },
@@ -5834,7 +5834,7 @@ export const config = {
     // (prepLate: the same, if it's night already); handSeconds: the hold on the platform.
     holdMax: 240, askAfter: 40, prepMax: 150, prepLate: 10, handSeconds: 1.0, reserveRounds: 20, holdBeforeDawn: 25, cantFall: true,
     horde: { first: 6, count: 10, out: 42, secondAfter: 22, second: 6 },
-    mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 480, escort: 4 }, // Nov 16: health doubled (240 before)
+    mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 384, escort: 4 }, // Nov 16: health doubled (240 before); rebalance -20% (480 before)
     screamer: { after: 80, side: 6, out: 44 },
     nearHome: 95, endLeft: 2, timeout: 480, afterDelay: 4, talkMin: 6,
   },

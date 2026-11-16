@@ -26,10 +26,10 @@ function run(zb, player, seconds = 4) {
 }
 
 describe('the mutant (Nov 16)', () => {
-  it('has twice the health it had', () => {
-    expect(config.mutant.health).toBe(600);
-    expect(config.gasStation.mutant.health).toBe(480);
-    expect(config.night2.mutants.health).toBe(480);
+  it('has its rebalanced health (20% under the doubled figure)', () => {
+    expect(config.mutant.health).toBe(480);
+    expect(config.gasStation.mutant.health).toBe(384);
+    expect(config.night2.mutants.health).toBe(384);
   });
 
   it('every blow has a wind-up to read', () => {
