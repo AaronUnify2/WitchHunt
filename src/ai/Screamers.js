@@ -15,7 +15,16 @@
 // One controller for every Screamer about (Night 2's, the mega night's). Its zombie is the pool's
 // (variant 'screamer': config.zombies.variants.screamer; its look config.zombies.texture.looks.screamer).
 //
-// Events: 'screamer:spawned' { zombie }, 'screamer:screamed' { zombie, called }, 'screamer:down' { zombie }.
+//  - Nov 16 (Aaron: "When the screamer is screaming the player should be blasted backwards by a powerful
+//    wind"): while it screams, Tom within config.screamer.wind.range (and in the open: not in a room, not
+//    up the tower) is shoved away from it, hardest up close: walking into it is a crawl. Dust streams past.
+//  - Nov 16 ("a snake like, open mouthed, jaw unhinged strike attack, it's okay to stretch the model"): come
+//    in on him, within strike.reach it rears (strike.rear s, its neck drawing up, the jaw dropping: the tell),
+//    then lunges up to strike.travel m in a blink, neck out long and jaw unhinged (its sprite stretched), and
+//    hangs there strike.recover s after: the window for its head.
+//
+// Events: 'screamer:spawned' { zombie }, 'screamer:screamed' { zombie, called }, 'screamer:down' { zombie },
+// 'screamer:strike' { zombie }.
 
 export class Screamers {
   constructor(cfg, bus) {
@@ -48,7 +57,7 @@ export class Screamers {
     if (!zb) return null;
     zb.sightScale = 0;
     zb.deaf = true;
-    const entry = { z: zb, t: this.sc.first, calls: 0, age: 0, comingIn: false };
+    const entry = { z: zb, t: this.sc.first, calls: 0, age: 0, comingIn: false, wind: 0, strike: null, strikeCool: 0, dustT: 0 };
     this.list.push(entry);
     this.bus.emit('screamer:spawned', { zombie: zb });
     return entry;
@@ -68,6 +77,16 @@ export class Screamers {
       s.age += dt;
       if (z.screamT > 0) z.screamT -= dt; // the scream's pose (Zombie.frame)
       const near = Math.hypot(p.x - z.x, p.z - z.z);
+      if (z.screamT > 0) this.blow(s, dt, near);
+      s.strikeCool = Math.max(0, (s.strikeCool ?? 0) - dt);
+      if (s.strike) {
+        this.updateStrike(s, dt);
+        continue;
+      }
+      if (s.comingIn && c.strike && z.state === 'walk' && z.mode === 'chase' && near <= c.strike.reach && near > 0.6 && s.strikeCool <= 0) {
+        this.startStrike(s);
+        continue;
+      }
       // Tom's on top of it, or it's screamed itself out: it comes in.
       if (!s.comingIn && (near < c.wakeAt || s.calls >= c.maxCalls || s.age > c.comeInAfter)) this.comeIn(s, near < c.wakeAt);
       if (s.comingIn) continue;
@@ -97,6 +116,99 @@ export class Screamers {
     }
     if (out.length) this.enemies.formMarch(out, { leader: null, radius: this.cfg.zombies.horde.radius });
     this.bus.emit('screamer:screamed', { zombie: z, called: out.length });
+  }
+
+  // The scream's wind: Tom shoved away from it (Player.push, a little each frame: it builds against his walk).
+  blow(s, dt, near) {
+    const w = this.sc.wind;
+    const P = this.player;
+    if (!w || near > w.range || near < 0.1 || P.space || P.platform || P.riding) return;
+    const z = s.z;
+    const k = Math.pow(1 - near / w.range, w.falloff ?? 0.7);
+    const ux = (P.position.x - z.x) / near;
+    const uz = (P.position.z - z.z) / near;
+    P.push(ux * w.strength * k * dt, uz * w.strength * k * dt);
+    P.shake(w.shake * k);
+    s.dustT -= dt;
+    if (s.dustT <= 0 && this.fx?.emitDir) {
+      s.dustT = w.dustEvery;
+      // Dust and leaves streaming past him, from it.
+      const y = P.position.y + 1.2;
+      this.fx.emitDir(P.position.x - ux * 4, y, P.position.z - uz * 4, w.dust, this.dustColour ?? (this.dustColour = { r: 0.42, g: 0.38, b: 0.3 }), w.dustSpeed, ux, uz, 0.35);
+    }
+  }
+
+  startStrike(s) {
+    const z = s.z;
+    const st = this.sc.strike;
+    const p = this.player.position;
+    z.state = 'move';
+    z.move = { kind: 'snake', phase: 'rear', t: 0, scripted: true };
+    z.facing = Math.atan2(p.x - z.x, p.z - z.z);
+    s.strike = { phase: 'rear', t: 0, aimX: p.x, aimZ: p.z, fromX: z.x, fromZ: z.z, hit: false };
+    z.stretch = st.rearStretch;
+    this.sfx?.play('screamerHiss', z);
+    this.bus.emit('screamer:strike', { zombie: z });
+  }
+
+  updateStrike(s, dt) {
+    const z = s.z;
+    const st = this.sc.strike;
+    const k = s.strike;
+    const p = this.player.position;
+    k.t += dt;
+    if (k.phase === 'rear') {
+      // Reared back, swaying, its head tracking him (the tell).
+      k.aimX = p.x;
+      k.aimZ = p.z;
+      z.facing = Math.atan2(p.x - z.x, p.z - z.z);
+      if (k.t >= st.rear) {
+        const d = Math.hypot(k.aimX - z.x, k.aimZ - z.z) || 1;
+        const go = Math.max(0, Math.min(st.travel, d - st.stopShort));
+        k.fromX = z.x;
+        k.fromZ = z.z;
+        k.toX = z.x + ((k.aimX - z.x) / d) * go;
+        k.toZ = z.z + ((k.aimZ - z.z) / d) * go;
+        k.phase = 'lunge';
+        k.t = 0;
+        z.move.phase = 'lunge';
+        z.stretch = st.stretch;
+        z.stretchW = 0.92;
+        this.sfx?.play('swipe', z);
+      }
+      return;
+    }
+    if (k.phase === 'lunge') {
+      const u = Math.min(1, k.t / st.lunge);
+      z.x = k.fromX + (k.toX - k.fromX) * u;
+      z.z = k.fromZ + (k.toZ - k.fromZ) * u;
+      if (!k.hit && Math.hypot(p.x - z.x, p.z - z.z) <= st.hitRange) {
+        k.hit = true;
+        const d = Math.hypot(p.x - z.x, p.z - z.z) || 1;
+        this.enemies.onStrike?.(z, null, { damage: st.damage, push: { x: ((p.x - z.x) / d) * st.push, z: ((p.z - z.z) / d) * st.push }, hop: st.hop, shake: 2.2, kind: 'snake' });
+      }
+      if (u >= 1) {
+        k.phase = 'recover';
+        k.t = 0;
+      }
+      return;
+    }
+    // Hanging there, neck out, slowly drawing back: shoot it in the head.
+    z.stretch = 1 + (st.stretch - 1) * Math.max(0, 1 - k.t / st.recover);
+    z.stretchW = 1;
+    if (k.t >= st.recover) this.endStrike(s);
+  }
+
+  endStrike(s) {
+    const z = s.z;
+    s.strike = null;
+    s.strikeCool = this.sc.strike.cooldown;
+    z.stretch = 1;
+    z.stretchW = 1;
+    if (z.alive) {
+      z.move = null;
+      z.state = 'walk';
+    }
   }
 
   comeIn(s, atTom) {

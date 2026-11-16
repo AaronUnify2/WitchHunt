@@ -131,11 +131,17 @@ export function updateMove(z, m, player, dt, onStrike) {
     z.state = 'walk';
     return;
   }
+  if (mv.scripted) {
+    // A puppet (the gas station's cutscene; the Screamer's strike): posed, moved and ended by whoever set it.
+    mv.t += dt;
+    z.timer += dt;
+    z.impact = null;
+    return;
+  }
   const spec = m[mv.kind];
   mv.t += dt;
   z.timer += dt;
   z.impact = null;
-  if (mv.scripted) return; // a cutscene's puppet (the gas station's): posed, moved and ended by its encounter
   switch (mv.phase) {
     case 'windup': {
       // Turning on him (where he'll be at the blow) until just before it.

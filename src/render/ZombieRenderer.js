@@ -305,8 +305,8 @@ export class ZombieRenderer {
       if (!z.active || z.kind === 'mutant' || (z.tier ?? 'active') !== tier) continue;
       if (cullDistance < Infinity && Math.hypot(z.x - camera.x, z.z - camera.z) > cullDistance) continue;
       const look = this.lookOf(z);
-      const height = this.spriteHeight * look.height;
-      const width = this.spriteWidth * look.width;
+      const height = this.spriteHeight * look.height * (z.stretch ?? 1); // Nov 16: the Screamer's neck out in its strike
+      const width = this.spriteWidth * look.width * (z.stretchW ?? 1);
       const y = z.y - z.sink * height;
       this.matrix.makeScale(width, height, width).setPosition(z.x, y, z.z);
       this.mesh.setMatrixAt(n, this.matrix);

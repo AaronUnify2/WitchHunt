@@ -5836,7 +5836,16 @@ export const config = {
   // screams; calls: how many of the dead rise to each, within ring metres of it, not past maxAlive living
   // within countWithin of home; hitDelay: each hit puts the next scream back this long (to maxDelay);
   // wakeAt: Tom this close and it comes for him; maxCalls / comeInAfter: then it walks on the fence itself.
-  screamer: { first: 5, every: 15, calls: 5, ring: [3, 9], maxAlive: 26, countWithin: 110, hitDelay: 1.6, maxDelay: 22, wakeAt: 9, maxCalls: 8, comeInAfter: 150, linger: 2.5, speedRange: [0.3, 0.36], shake: 0.25, shakeWithin: 70 },
+  screamer: { first: 5, every: 15, calls: 5, ring: [3, 9], maxAlive: 26, countWithin: 110, hitDelay: 1.6, maxDelay: 22, wakeAt: 9, maxCalls: 8, comeInAfter: 150, linger: 2.5, speedRange: [0.3, 0.36], shake: 0.25, shakeWithin: 70,
+    // Nov 16 (Aaron): the scream's wind (ai/Screamers.js blow): within range m, Tom is pushed away at up to
+    // strength m/s per second (falling off with distance to the power falloff; it builds against his walk:
+    // Player.push fades at player.shove.decay), the view shaking; dust every dustEvery s.
+    wind: { range: 30, strength: 26, falloff: 0.7, shake: 0.5, dustEvery: 0.06, dust: 6, dustSpeed: 14 },
+    // Nov 16 (Aaron): its snake strike: within reach (coming in), it rears for `rear` s, lunges up to travel m
+    // in `lunge` s (stopping stopShort of him), hitting within hitRange; hangs there `recover` s. stretch: its
+    // sprite's height as it lunges (rearStretch as it rears).
+    strike: { reach: 4.5, rear: 0.55, lunge: 0.2, travel: 3.6, stopShort: 0.8, hitRange: 1.6, damage: 25, push: 6, hop: 1.5, recover: 1.2, cooldown: 2.5, stretch: 1.3, rearStretch: 1.12 },
+  },
 
   // Round 2 (Aaron): on foot deep in the trees (nothing open within `radius` metres), from day `fromDay`,
   // `count` giant moths find Tom `first` seconds in and every `every` seconds after, `max` about at most;

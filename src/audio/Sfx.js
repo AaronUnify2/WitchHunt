@@ -458,6 +458,12 @@ const RECIPES = {
       setTimeout(() => s.ready && s.tone(o, { seconds: 0.14, freq: 70, endFreq: 38, gain: 0.7 }), i * 170);
     }
   },
+  // Nov 16: the Screamer rearing to strike: a long rattling hiss.
+  screamerHiss(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 4200, endFreq: 2600, q: 2, gain: 0.5, attack: 0.05 });
+    s.tone(o, { seconds: 0.55, wave: 'sawtooth', freq: 180, endFreq: 260, gain: 0.12, vibrato: 18 });
+  },
   // Nov 16: the mutant's leap landing, or its slam into the ground: a deep thump and a crack of earth.
   mutantSlam(s, pos) {
     const o = s.out(pos?.x, pos?.z, 1.1);

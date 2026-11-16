@@ -25,7 +25,9 @@ export const ZOMBIE_FRAMES = {
   stagger: 6,
   dying: [7, 8, 9, 10],
   corpse: 10,
-  count: 11,
+  strikeRear: 11, // Nov 16: the Screamer's snake strike: reared back, the jaw dropping
+  strikeLunge: 12, // and the lunge: neck out long, the jaw unhinged
+  count: 13,
 };
 
 // Session 15b: dormant (the gas station's authored mutant, crouched and still) and wake (unfolding).
@@ -410,8 +412,10 @@ export class Zombie {
       case 'walk':
         if (this.screamT > 0) return f.attackWindup; // Round 2: the Screamer, screaming (ai/Screamers.js)
         return f.walk[Math.floor(this.walked * this.cfg.walkFrameRate * f.walk.length) % f.walk.length];
-      case 'attack':
       case 'move':
+        if (this.move?.kind === 'snake') return this.move.phase === 'rear' ? f.strikeRear : f.strikeLunge; // Nov 16: the Screamer's strike
+        return this.struck ? f.attackStrike : f.attackWindup;
+      case 'attack':
         return this.struck ? f.attackStrike : f.attackWindup;
       case 'stagger':
         return f.stagger;

@@ -160,6 +160,9 @@ function poseFor(col) {
   if (col === F.attackWindup) return { stride: 0.4, bob: 0, armUp: 1, lunge: -2, lean: -2, fall: 0 };
   if (col === F.attackStrike) return { stride: -0.6, bob: 0, armUp: -0.6, lunge: 6, lean: 5, fall: 0 };
   if (col === F.stagger) return { stride: 0.2, bob: 1, armUp: 0.3, lunge: -4, lean: -6, fall: 0 };
+  // Nov 16: the Screamer's snake strike (others draw these as a lunge): reared back, then thrust out.
+  if (col === F.strikeRear) return { stride: 0.3, bob: 0, armUp: 0.5, lunge: -3, lean: -5, fall: 0, rear: 1 };
+  if (col === F.strikeLunge) return { stride: -0.8, bob: 0, armUp: -0.3, lunge: 9, lean: 6, fall: 0, strike: 1 };
   const dying = F.dying.indexOf(col);
   return { stride: 0, bob: 0, armUp: 0.2, lunge: 0, lean: -3, fall: (dying + 1) / F.dying.length };
 }
@@ -212,7 +215,16 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   // chest. Its attack wind-up frame is its scream (ai/Screamers.js holds it): head back, arms flung wide.
   const scr = Boolean(kit.screamer);
   const screaming = scr && pose.armUp > 0.9;
-  const hy = headY + Math.abs(pose.lunge) * 0.3 - (screaming ? 3 : 0);
+  // Nov 16 (Aaron: "a snake like, open mouthed, jaw unhinged strike attack, it's okay to stretch the model"):
+  // reared, its neck draws up long and the jaw drops; striking, the head is thrust out on a long neck (in
+  // profile) or swells at you (from the front), the jaw hanging open to its breastbone.
+  const rear = scr && pose.rear ? 1 : 0;
+  const strike = scr && pose.strike ? 1 : 0;
+  const jaw = strike ? 1.8 : rear ? 1 : screaming ? 0.6 : 0;
+  const hy = headY + Math.abs(pose.lunge) * 0.3 - (screaming ? 3 : 0) - rear * 11 + strike * 1;
+  const neckX = cx + hunch * 0.6;
+  const hxs = hx - rear * side * 3 + strike * side * 13;
+  const headScale = 1 + strike * 0.3 * Math.max(0, front);
 
   const legs = () => {
     ctx.fillStyle = paint.part(scr ? 'skin' : 'trousers');
@@ -554,17 +566,31 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   };
 
   const head = () => {
+    const hh = scr ? hxs : hx; // Nov 16: the Screamer's head moves with its strike
     ctx.fillStyle = paint.part('skin');
     ctx.beginPath();
     if (scr) {
-      // A narrow skull, and the jaw dropped under it (to its chest as it screams).
-      ctx.ellipse(hx, hy, 6 - 1.2 * Math.abs(side), 8.5, 0, 0, Math.PI * 2);
+      // Nov 16: the neck, drawn out long for the strike.
+      if (rear || strike) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 4.2;
+        ctx.strokeStyle = paint.part('skin');
+        ctx.beginPath();
+        ctx.moveTo(neckX, shoulderY + 2);
+        ctx.quadraticCurveTo((neckX + hxs) / 2 - side * 2 * rear, (shoulderY + hy) / 2 - 2, hxs, hy + 4);
+        ctx.stroke();
+        ctx.restore();
+        ctx.beginPath();
+      }
+      // A narrow skull, and the jaw dropped under it (to its chest as it screams; unhinged as it strikes).
+      ctx.ellipse(hxs, hy, (6 - 1.2 * Math.abs(side)) * headScale, 8.5 * headScale, 0, 0, Math.PI * 2);
       ctx.fill();
       if (!fromBehind) {
         ctx.beginPath();
-        ctx.ellipse(hx + side * 3, hy + (screaming ? 11 : 8), 4 - Math.abs(side), screaming ? 7 : 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(hxs + side * 3, hy + (8 + 6 * jaw) * headScale, (4 - Math.abs(side) + jaw) * headScale, (5 + 4.5 * jaw) * headScale, side * 0.3 * jaw, 0, Math.PI * 2);
       }
-    } else ctx.ellipse(hx, hy, 7 - 1.5 * Math.abs(side), 8, 0, 0, Math.PI * 2);
+    } else ctx.ellipse(hh, hy, 7 - 1.5 * Math.abs(side), 8, 0, 0, Math.PI * 2);
     ctx.fill();
     // Hair on the head: a cap on top (the whole back of the head from
     // behind); balding, only round the sides and back.
@@ -577,28 +603,28 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.fillStyle = paint.fixed(kit.stubble);
         for (const s of [-1, 1]) {
           if (s * side > 0.5) continue;
-          ctx.fillRect(Math.round(hx + s * (5.5 - Math.abs(side) * 2) - side * 2 - 1), Math.round(hy - 4), 2, 5);
+          ctx.fillRect(Math.round(hh + s * (5.5 - Math.abs(side) * 2) - side * 2 - 1), Math.round(hy - 4), 2, 5);
         }
       }
     } else if (kit.hair === 'balding') {
-      if (fromBehind) ctx.ellipse(hx, hy + 1, 7, 6.5, 0, -0.15, Math.PI + 0.15);
+      if (fromBehind) ctx.ellipse(hh, hy + 1, 7, 6.5, 0, -0.15, Math.PI + 0.15);
       else {
         for (const s of [-1, 1]) {
           if (s * side > 0.5) continue; // the far side is hidden by the head
-          ctx.ellipse(hx + s * (5.5 - Math.abs(side) * 2) - side * 2, hy - 0.5, 2, 3.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(hh + s * (5.5 - Math.abs(side) * 2) - side * 2, hy - 0.5, 2, 3.5, 0, 0, Math.PI * 2);
         }
       }
     } else if (fromBehind) {
-      ctx.ellipse(hx, hy, 7, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(hh, hy, 7, 8, 0, 0, Math.PI * 2);
     } else {
-      ctx.ellipse(hx - side * 2, hy - 4, 7, 4.5, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(hh - side * 2, hy - 4, 7, 4.5, 0, Math.PI, Math.PI * 2);
     }
     ctx.fill();
     // Long hair: locks down past the cheeks, seen from the front.
     if (kit.hair === 'long' && !fromBehind) {
       for (const s of [-1, 1]) {
         if (s * side > 0.5) continue;
-        const x = hx + s * (6 - Math.abs(side) * 2) - side * 2.5;
+        const x = hh + s * (6 - Math.abs(side) * 2) - side * 2.5;
         ctx.beginPath();
         ctx.moveTo(x - 2, hy - 5);
         ctx.lineTo(x + 2, hy - 5);
@@ -610,13 +636,13 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     }
     if (scr && !fromBehind) {
       // Pits for eyes, a pale point deep in each; the mouth a tall black gape, two teeth at its top.
-      const ex = hx + side * 3;
-      const spread = 2.6 * Math.max(0, front);
+      const ex = hxs + side * 3;
+      const spread = 2.6 * Math.max(0, front) * headScale;
       ctx.fillStyle = paint.fixed(kit.pit ?? 0x060405);
       ctx.fillRect(Math.round(ex - spread - 1.5), Math.round(hy - 3), 3, 3);
       if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1.5), Math.round(hy - 3), 3, 3);
       ctx.beginPath();
-      ctx.ellipse(ex, hy + (screaming ? 10 : 7.5), 2.6 - Math.abs(side) * 0.6, screaming ? 6.5 : 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex, hy + (7.5 + 5.5 * jaw) * headScale, (2.6 - Math.abs(side) * 0.6 + jaw * 1.2) * headScale, (4 + 4.2 * jaw) * headScale, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = paint.fixed(t.eyes);
       ctx.fillRect(Math.round(ex - spread - 0.5), Math.round(hy - 2), 1, 1);
@@ -625,7 +651,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.fillRect(Math.round(ex + 0.5), Math.round(hy + (screaming ? 4 : 4)), 1, 2);
     } else if (!fromBehind) {
       // Pale eyes and a dark open mouth, sliding round with the angle.
-      const ex = hx + side * 3.5;
+      const ex = hh + side * 3.5;
       const spread = 3 * Math.max(0, front);
       if (kit.shades !== undefined) {
         // Men in Black: sunglasses, and their arm back to the ear in profile.
@@ -634,7 +660,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         const right = Math.round(ex + (spread > 0.5 ? spread + 2 : 1.5));
         ctx.fillRect(left, Math.round(hy - 3), right - left, 3);
         if (Math.abs(side) > 0.3) {
-          const ear = hx - side * 3;
+          const ear = hh - side * 3;
           ctx.fillRect(Math.round(Math.min(ex, ear)), Math.round(hy - 3), Math.round(Math.abs(ex - ear)), 1);
         }
       } else {
@@ -650,12 +676,12 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.fillStyle = paint.fixed(kit.stubble);
         const rx = 7 - 1.5 * Math.abs(side);
         for (let y = Math.round(hy + 1); y <= Math.round(hy + 8); y++) {
-          for (let x = Math.round(hx - rx); x <= Math.round(hx + rx); x++) {
-            const u = (x + 0.5 - hx) / rx;
+          for (let x = Math.round(hh - rx); x <= Math.round(hh + rx); x++) {
+            const u = (x + 0.5 - hh) / rx;
             const v = (y + 0.5 - hy) / 8;
             if (u * u + v * v > 0.95 || (x + y) % 2) continue;
             if (y >= Math.round(hy + 3) && y < Math.round(hy + 5) && Math.abs(x + 0.5 - ex) < 2.5) continue; // the mouth
-            if (side > 0.3 && x + 0.5 < hx - 1) continue; // in profile, the jaw's front half
+            if (side > 0.3 && x + 0.5 < hh - 1) continue; // in profile, the jaw's front half
             ctx.fillRect(x, y, 1, 1);
           }
         }
@@ -665,35 +691,35 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     if (kit.hat === 'cap') {
       ctx.fillStyle = paint.fixed(kit.hatColor);
       ctx.beginPath();
-      ctx.ellipse(hx - side, hy - 5, 7.5, 4, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(hh - side, hy - 5, 7.5, 4, 0, Math.PI, Math.PI * 2);
       ctx.fill();
-      ctx.fillRect(hx - 7.5 - side, hy - 6, 15, 2);
-      if (!fromBehind) ctx.fillRect(Math.round(hx + side * 6 - 4), hy - 5, 8 + Math.abs(side) * 3, 2); // the peak
+      ctx.fillRect(hh - 7.5 - side, hy - 6, 15, 2);
+      if (!fromBehind) ctx.fillRect(Math.round(hh + side * 6 - 4), hy - 5, 8 + Math.abs(side) * 3, 2); // the peak
     } else if (kit.hat === 'helmet') {
       ctx.fillStyle = paint.fixed(kit.hatColor);
       ctx.beginPath();
-      ctx.ellipse(hx - side, hy - 3, 9, 7.5, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(hh - side, hy - 3, 9, 7.5, 0, Math.PI, Math.PI * 2);
       ctx.fill();
-      ctx.fillRect(hx - 9.5 - side, hy - 4, 19, 2); // the rim
+      ctx.fillRect(hh - 9.5 - side, hy - 4, 19, 2); // the rim
     } else if (kit.hair === 'trucker') {
       // A trucker cap: a tall crown and peak in the hair's colour, the foam
       // front panel fixed (from behind: the mesh back and its strap gap).
       ctx.fillStyle = paint.part('hair');
       ctx.beginPath();
-      ctx.ellipse(hx - side, hy - 3.5, 7.5, 7, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(hh - side, hy - 3.5, 7.5, 7, 0, Math.PI, Math.PI * 2);
       ctx.fill();
-      ctx.fillRect(Math.round(hx - 7.5 - side), Math.round(hy - 4), 15, 2); // the band
+      ctx.fillRect(Math.round(hh - 7.5 - side), Math.round(hy - 4), 15, 2); // the band
       if (fromBehind) {
         ctx.fillStyle = paint.part('skin');
-        ctx.fillRect(Math.round(hx - 2), Math.round(hy - 4), 4, 2); // the strap's gap
+        ctx.fillRect(Math.round(hh - 2), Math.round(hy - 4), 4, 2); // the strap's gap
       } else {
         ctx.fillStyle = paint.fixed(t.truckerFront);
         ctx.beginPath();
-        ctx.ellipse(hx + side * 3.5, hy - 4.5, 5.5 * front + 2.5 * side, 5.5, 0, Math.PI, Math.PI * 2);
+        ctx.ellipse(hh + side * 3.5, hy - 4.5, 5.5 * front + 2.5 * side, 5.5, 0, Math.PI, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = paint.part('hair');
-        ctx.fillRect(Math.round(hx + side * 6 - 5), Math.round(hy - 4), Math.round(10 + Math.abs(side) * 3), 2); // the peak, curved down a touch
-        ctx.fillRect(Math.round(hx + side * 6 - 4), Math.round(hy - 2), Math.round(8 + Math.abs(side) * 4), 1);
+        ctx.fillRect(Math.round(hh + side * 6 - 5), Math.round(hy - 4), Math.round(10 + Math.abs(side) * 3), 2); // the peak, curved down a touch
+        ctx.fillRect(Math.round(hh + side * 6 - 4), Math.round(hy - 2), Math.round(8 + Math.abs(side) * 4), 1);
       }
     }
   };

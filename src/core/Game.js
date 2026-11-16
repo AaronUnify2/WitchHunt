@@ -994,7 +994,7 @@ export class Game {
     // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js).
     // Round 2 (Aaron's play-test, Nov 13): the Screamer; Wyatt up the tower; Night 2's defence at the station.
     this.screamers = new Screamers(this.cfg, this.bus);
-    this.screamers.init({ enemies: this.combat.enemies, world: this.world, station: this.station, player: this.player, sfx: this.combat.sfx, shake: (a) => this.player.shake?.(a) });
+    this.screamers.init({ enemies: this.combat.enemies, world: this.world, station: this.station, player: this.player, sfx: this.combat.sfx, shake: (a) => this.player.shake?.(a), fx: this.combat.fx, colliders: this.colliders });
     this.sniper = new TowerSniper(this.cfg, this.bus);
     this.sniper.init({ station: this.station, enemies: this.combat.enemies, clock: this.clock, progress: this.progress, fx: this.combat.fx, sfx: this.combat.sfx, dialogue: this.dialogue, rng: this.rng.fork('wyatt'), ground: this.world.ground });
     this.nightTwo = new NightTwo(this.cfg, this.bus);

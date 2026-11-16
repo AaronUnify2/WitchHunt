@@ -117,6 +117,30 @@ export class CombatFx {
     this.emit(x, y, z, b.sparksPerZap ?? 10, this.sparkColor, b.speed * 1.3);
   }
 
+  // Nov 16 (the Screamer's wind): particles thrown along (dirX, dirZ), fanned by spread radians.
+  emitDir(x, y, z, count, color, speed, dirX, dirZ, spread = 0.4) {
+    const b = this.cfg.blood;
+    const base = Math.atan2(dirZ, dirX);
+    for (let k = 0; k < count; k++) {
+      const i = this.next;
+      this.next = (this.next + 1) % b.poolSize;
+      const theta = base + this.rng.range(-spread, spread);
+      const s = speed * this.rng.range(0.6, 1);
+      this.positions[i * 3] = x + this.rng.range(-1.5, 1.5);
+      this.positions[i * 3 + 1] = y + this.rng.range(-0.6, 1.2);
+      this.positions[i * 3 + 2] = z + this.rng.range(-1.5, 1.5);
+      this.velocity[i * 3] = Math.cos(theta) * s;
+      this.velocity[i * 3 + 1] = this.rng.range(0, 0.25) * s;
+      this.velocity[i * 3 + 2] = Math.sin(theta) * s;
+      this.life[i] = b.seconds * this.rng.range(0.6, 1);
+      const shadeK = this.rng.range(0.7, 1.2);
+      this.baseColor[i * 3] = color.r * shadeK;
+      this.baseColor[i * 3 + 1] = color.g * shadeK;
+      this.baseColor[i * 3 + 2] = color.b * shadeK;
+    }
+    this.active = b.poolSize;
+  }
+
   emit(x, y, z, count, color, speed) {
     const b = this.cfg.blood;
     for (let k = 0; k < count; k++) {
