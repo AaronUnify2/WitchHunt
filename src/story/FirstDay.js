@@ -248,7 +248,7 @@ export class FirstDay {
     // Session 16 (Aaron): no digging the shelter's sigil up on Night 1 (the night ends with the talk).
     this.director.digLocked = this.clock.day === 1 && this.clock.phase === 'night';
     // Session 15b (Aaron): no searching cars or pulling batteries on Day 1 until the tape's been seen.
-    // (Or once the campsite's wave is down: Ellen's asked for the battery by then, tape or no tape.)
+    // (Or once the campsite's wave is down. Nov 16: the battery brings the wave now, so the tape comes first.)
     if (this.vehicles) this.vehicles.locked = this.clock.day === 1 && !this.campsite.tapeSeen && !this.progress.has('campsiteCleared');
     if (!playing) return;
     this.updateSkip(dt);
@@ -507,7 +507,7 @@ export class FirstDay {
     const has = (id) => this.progress.has(id);
     if (has('day1Battery')) return this.fenceWhole() ? 'done' : 'repair';
     if (has('campsiteBattery') || this.combat.inventory.batteries > 0) return 'fit';
-    if (has('campsiteCleared')) return 'battery';
+    if (has('campsiteCleared') || this.campsite?.tapeSeen) return 'battery'; // Nov 16: the battery's asked for off the tape
     if (has('campsiteVisited')) return 'search';
     if (has('towerClimbed')) return 'campsite';
     return 'tower';

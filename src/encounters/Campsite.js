@@ -10,7 +10,10 @@
 //  2. The search: hold-X search points (data/campsite.json): the cooler
 //     by the entrance, the tents, a backpack. Each teaches a pickup.
 //  3. The camcorder (in the cooler, near the entrance): Ellen's line 6,
-//     then the clip (clip.camcorder; Session 16: it waits for D-pad down), then her line 7.
+//     then the clip (clip.camcorder; Session 16: it waits for D-pad down), then her line 7 and,
+//     straight after it, line 10 (bring me their car's battery). Nov 16: nothing else comes off the tape.
+//  3b. The battery: pulling the campers' car's battery on Day 1 (the cars are locked till the tape's
+//     played) brings the horde out of the trees (campsite.horde). Leave without it and they never come.
 //  4. The shotgun (in the torn tent, deep in the camp): the instant it's
 //     taken the wave bursts from the treeline (line 8): 7 level-1 citizens
 //     from both flanks, a few seconds apart, coming straight for Tom.
@@ -129,17 +132,11 @@ export class Campsite {
         const j = this.fire.indexOf(zombie);
         if (j >= 0) this.fire.splice(j, 1);
       }),
-      this.bus.on('vehicle:battery', ({ vehicle }) => {
-        if (vehicle === this.car && !this.batteryTaken) {
-          this.batteryTaken = true;
-          this.bus.emit('campsite:battery');
-        }
-      }),
+      this.bus.on('vehicle:battery', ({ vehicle }) => this.onBattery(vehicle)),
     ];
   }
 
   reset() {
-    this.waveIn = -1; // Round 2: seconds until the wave (after the tape)
     this.emergencyGiven = false;
     this.figureSent = false; // Plan #19
     this.figureTold = false;
@@ -240,13 +237,6 @@ export class Campsite {
     if (this.pendingClip >= 0) {
       this.pendingClip -= dt;
       if (this.pendingClip < 0) this.playClip();
-    }
-    // Round 2: the wave, a moment after the tape (or after it's put away unwatched).
-    if (this.waveIn >= 0 && !this.waveStarted && !this.cutscenes?.active) {
-      this.waveIn -= dt;
-      // Nov 16: the tape kept, not watched: they come as he makes to leave, if not before.
-      const leaving = this.tapeKept && Math.hypot(p.x - c.x, p.z - c.z) > c.radius - (this.cc.leaveInset ?? 2.5);
-      if (this.waveIn < 0 || leaving) this.startWave();
     }
     this.updateWave(dt);
     this.updateEmergencyRounds();
@@ -688,9 +678,7 @@ export class Campsite {
 
   offerTape() {
     if (this.tapeWatched) return;
-    this.tapeKept = true;
-    // Kept for later: they come anyway, a little after (the cars wait on the tape or the wave).
-    if (!this.waveStarted && !(this.waveIn >= 0)) this.waveIn = this.cc.waveAfterKeep;
+    // Kept for later: the prompt waits (the cars stay locked till it's played).
     if (!this.watch?.offer({ id: 'camcorder', pad: 'D-pad down: play the camcorder', key: 'V: play the camcorder', play: () => this.playClip() })) {
       if (!this.watch) this.playClip();
     }
@@ -708,14 +696,19 @@ export class Campsite {
     this.watch?.cancel('camcorder');
     this.cutscenes.play('clip.camcorder', {
       anchors: { campsite: this.frameAnchor() },
-      // Round 2 (Aaron: the shotgun's at the Pruitt farm now; "that's not just okay, it's better"): the dead
-      // come out of the trees as the tape ends.
-      onDone: () => {
-        this.dialogue.play('day1.07');
-        this.tapeKept = false;
-        this.waveIn = this.cc.waveAfterTape;
-      },
+      // Nov 16 (Aaron): the tape and its dialogue play out on their own: line 7, then line 10 (its "next": the
+      // battery). The dead come when the battery's pulled, not off the tape.
+      onDone: () => this.dialogue.play('day1.07'),
     });
+  }
+
+  // A battery pulled from a car: the campers' (once). Nov 16 (Aaron: the horde cut off the tape's dialogue): on
+  // Day 1 it's what brings the horde out of the trees.
+  onBattery(vehicle) {
+    if (vehicle !== this.car || this.batteryTaken) return;
+    this.batteryTaken = true;
+    this.bus.emit('campsite:battery');
+    if (this.arrived && this.clock?.day === 1) this.startWave();
   }
 
   findShotgun(rounds) {
@@ -733,7 +726,8 @@ export class Campsite {
   // Nov 16 (Aaron: "focus is put on the camper's car with the collect the battery to supercharge the fence
   // dialogue, however this time we spawn a horde of zombies in the trees behind the car and let them emerge
   // from the edge of the forest"): the horde, in groups out of the treeline behind the car (between Tom and
-  // home), the first as its cutscene (campsite.horde) starts. Ellen asks for the battery in it.
+  // home), the first as its cutscene (campsite.horde) starts. Nov 16: started by pulling the car's battery (Ellen
+  // asked for it after the tape), so nothing more's said about the battery here.
   startWave() {
     if (this.waveStarted) return;
     this.waveStarted = true;
@@ -761,7 +755,6 @@ export class Campsite {
       // Off the cutscene: all of them on him (the cutscene's start made the far ones forget).
       const p = this.player.position;
       for (const z of this.wave) if (z.alive) this.enemies.brain.chase(z, p.x, p.z, 30);
-      if (!this.dialogue?.heard?.has?.('day1.10')) this.dialogue?.play('day1.10');
     };
     if (this.cutscenes?.active || !this.cutscenes?.play('campsite.horde', { anchors: { campsite: this.frameAnchor() }, onDone: done })) {
       this.dialogue.play('day1.08');
@@ -790,8 +783,6 @@ export class Campsite {
     this.waveCleared = true;
     this.wave = [];
     this.bus.emit('campsite:cleared');
-    // Nov 16: Ellen asked for the battery as they came (the horde's cutscene); nothing more's said.
-    if (!this.dialogue?.heard?.has?.('day1.10')) this.dialogue.play('day1.10');
   }
 
   // ---- skip intro and saving ------------------------------------------------------------------

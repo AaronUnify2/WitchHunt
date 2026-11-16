@@ -103,7 +103,6 @@ export class Objectives {
       // Plan #7: the fight first, while it's on (the shotgun taken before the camcorder).
       if (cs.waveStarted && !cs.waveCleared) return step('wave', 'Fight off the dead at the campground.');
       if (!cs.camcorderFound) return step('search', "Search the campers' shelters.", this.nearestTent());
-      if (!cs.waveStarted) return step('search', "Search the campers' shelters.", this.nearestTent());
       if (!has('campsiteBattery') && g.combat.inventory.batteries <= 0 && !has('day1Battery')) return step('battery', "Take the battery from the campers' car for the fence.", cs.car);
       if (!has('day1Battery')) return step('fit', 'Take the battery home and fit it in the fence box, inside the gate.', L.fenceBox);
       const broken = st.state.segments.findIndex((s) => s.health <= 0);

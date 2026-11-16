@@ -4102,7 +4102,7 @@ export const config = {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
-    waveAfterTape: 1.2, waveAfterKeep: 20, leaveInset: 2.5, emergencyRounds: 8, // Round 2: the wave comes this long after the tape ends (or after it's put away unwatched); rounds left by the fire if Tom runs dry with no shovel Nov 16: kept unwatched, the horde comes after waveAfterKeep, or as soon as he makes for the edge (leaveInset metres in from it)
+    emergencyRounds: 8, // rounds left by the fire if Tom runs dry with no shovel. Nov 16: the wave comes off pulling the campers' car's battery (encounters/Campsite.js), not off the tape
     // Plan #19, then Aaron (Nov 14: "one of the new types of zombies standing at the campground at the campfire and
     // ... another little cutscene just to show it off"): Day 2's ride out: a Screamer at the campers' cold fire (placed
     // once Tom's within spawnAt metres of the clearing's centre, outside it). Within showAt its cutscene

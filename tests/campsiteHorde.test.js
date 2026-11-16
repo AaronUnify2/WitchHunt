@@ -1,0 +1,76 @@
+// Nov 16 (Aaron): the campground's footage and its dialogue play out on their own; the horde comes when the
+// campers' car battery is pulled, and not at all if Tom leaves without it.
+import { describe, it, expect } from 'vitest';
+import { Campsite } from '../src/encounters/Campsite.js';
+import dialogueData from '../src/data/dialogue.json';
+import cutsceneData from '../src/data/cutscenes.json';
+
+const all = (o, out = []) => {
+  if (Array.isArray(o)) o.forEach((v) => all(v, out));
+  else if (o && typeof o === 'object') {
+    if (typeof o.id === 'string') out.push(o);
+    Object.values(o).forEach((v) => all(v, out));
+  }
+  return out;
+};
+const line = (id) => all(dialogueData).find((l) => l.id === id);
+const cutscene = (id) => all(cutsceneData).find((c) => c.id === id);
+
+const site = (day = 1) => {
+  const s = Object.create(Campsite.prototype);
+  const said = [];
+  const emitted = [];
+  let waves = 0;
+  Object.assign(s, {
+    car: { id: 'car' },
+    arrived: true,
+    batteryTaken: false,
+    tapeWatched: false,
+    clock: { day },
+    bus: { emit: (name) => emitted.push(name) },
+    dialogue: { play: (id) => said.push(id) },
+    cutscenes: { play: (_id, o) => (o.onDone(), true), current: null },
+    frameAnchor: () => ({}),
+    startWave: () => waves++,
+  });
+  return { s, said, emitted, waves: () => waves };
+};
+
+describe('the campground footage and the horde (Nov 16)', () => {
+  it('the footage ends on its own lines: that was no animal, then the battery', () => {
+    const { s, said, waves } = site();
+    s.playClip();
+    expect(said).toEqual(['day1.07']);
+    expect(line('day1.07').next).toBe('day1.10');
+    expect(waves()).toBe(0);
+  });
+
+  it("the horde's cutscene no longer asks for the battery", () => {
+    const lines = cutscene('campsite.horde').tracks.filter((t) => t.do === 'line').map((t) => t.line);
+    expect(lines).not.toContain('day1.10');
+  });
+
+  it("pulling the campers' battery on Day 1 brings the horde, once", () => {
+    const { s, emitted, waves } = site();
+    s.onBattery({ id: 'another car' });
+    expect(waves()).toBe(0);
+    s.onBattery(s.car);
+    s.onBattery(s.car);
+    expect(emitted).toEqual(['campsite:battery']);
+    expect(waves()).toBe(1);
+  });
+
+  it('not on a later day', () => {
+    const { s, waves } = site(2);
+    s.onBattery(s.car);
+    expect(s.batteryTaken).toBe(true);
+    expect(waves()).toBe(0);
+  });
+
+  it('keeping the tape for later sets nothing off', () => {
+    const { s, waves } = site();
+    s.watch = { offer: () => true };
+    s.offerTape();
+    expect(waves()).toBe(0);
+  });
+});
