@@ -832,6 +832,29 @@ export class Campsite {
 
   addDebugItems(menu) {
     const day1 = menu.category(DEBUG.firstDay);
+    // Nov 16: start points for the scenes changed (from a New Run; a Skip intro run is past Day 1).
+    day1.addItem('Nov 16 start: Day 1, the campground ahead (tower done, rifle in hand)', () => {
+      if (this.arrived) return this.notify('The campground is done this run: start a New Run first');
+      this.progress.setFlag('towerClimbed');
+      this.station?.takeTowerRifle?.();
+      if (!this.combat.weapons.has?.('rifle')) this.combat.giveWeapon('rifle');
+      const s = this.retrySpot();
+      const f = this.frame;
+      this.player.teleport(s.x - f.fx * 18, s.z - f.fz * 18, s.yaw);
+      this.notify('Day 1: walk in to the campground');
+    });
+    day1.addItem('Nov 16 start: Day 2 morning, the mutant at the campground ahead', () => {
+      this.progress.setFlag('day2');
+      while (this.clock && this.clock.phase !== 'day') this.clock.skipPhase();
+      this.figureSent = false;
+      this.figureShown = false;
+      this.dawnAwake = false;
+      this.mutantTurned = false;
+      const s = this.retrySpot();
+      const f = this.frame;
+      this.player.teleport(s.x - f.fx * 45, s.z - f.fz * 45, s.yaw);
+      this.notify('Day 2: walk in to the campground');
+    });
     day1.addItem('Campsite: teleport to the path in', () => {
       const f = this.frame;
       const e = f.entrance;

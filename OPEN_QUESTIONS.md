@@ -1,5 +1,7 @@
 # Open questions
 
+**The first third's cutscenes and fights (Nov 16):** the plan you approved (docs/FIRST_THIRD_PLAN_3.md), all built, with your four answers (death at the campground with a retry; new sprite frames for the Screamer; no fuel bowser; captions only). My calls in building it are #772-783 below.
+
 **The dialogue cut (Nov 14):** players found the in-game talk too much. In-game lines are 60% fewer words; Ellen sends things to your map; her board says more. My calls are #766-771 below. Every line that changed: docs/DIALOGUE_CUT_NOV14.md.
 
 **The build queue (Nov 12):** beats 6 to 10 scaffolded one item at a time (your ask: items 1-7, then the big play-test). Calls from #691, grouped by item.
@@ -21,6 +23,23 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## The first third's cutscenes and fights (Nov 16)
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 772 | **The fire group on Day 1.** | Four citizens round the fire, placed as you come within 60 m on Day 1. They turn at the sweep's last shot and come as it ends (skipped too); shot from up the path, they come at once. | `campsite.json` fireGroup; `Campsite.updateFire` |
+| 773 | **The horde.** | A lead (slow, so it's in the first shot), then 8 out of the trees behind the car (-172 to -128 degrees, 3-7 m into the trees), then 6 more 16 s later from both sides. 15 in all with the lead; 19 with the fire's four. | `campsite.json` wave |
+| 774 | **The tape kept, not watched.** | The horde comes 20 s after, or the moment you make for the edge. | `config.campsite.waveAfterKeep`, `leaveInset` |
+| 775 | **Dying at the campground.** | The Day 1 floor is off from arriving to the horde's end. A save is made as you come in (with you put back 7 m up the path); dying, the screen offers to try again from it (a reload on the same map). Past the horde, an ordinary save there, and no more retry. | `Game.checkpoint`, `config.firstDay.campsiteCanKill` |
+| 776 | **Day 2's ammo.** | Wyatt's box of 20 rifle rounds as Day 2's flag is set (a pickup line, no dialogue). | `config.campsite.dawnBox` |
+| 777 | **The Day 2 mutant's health.** | 480, as the other placed mutants (the wandering ones are 600). | `config.campsite.dawnFigure.health` |
+| 778 | **The Screamer's beat at dawn.** | Kept in config, off (`screamerFigure`). Its line `day2.figure.ellen` no longer plays. | `config.campsite` |
+| 779 | **The gas station's two blows.** | 8 and 14 damage, landing as the cutscene ends (nothing lands during one), never taking you under 30. | `config.gasStation.mutantScript` |
+| 780 | **The mutant's numbers.** | Blows (level 1): slam 28, backhand 18, spin 14 x2, leap 26. Wind-ups 0.45-0.6 s. Leap 4.5-14 m, 35% a second-or-so at range, always after 2 s still or 0.8 s blocked. Chain 45%, up to 3. Its old swipe recovers 0.8 s (1.3), charges every 2 s (3), turns faster. | `config.mutant.moves` |
+| 781 | **What sets off a car or a pump.** | Its blows, its charges and its landings within reach of one. The family's own vehicles aren't cars in that list. | `Vehicles.onMutantImpact`, `GasStation.pumpStruck` |
+| 782 | **The Screamer's wind and strike.** | Wind within 30 m while it screams (not in a room or up the tower); strength 26 (34 blew a standing man 10 m). Strike within 4.5 m: rear 0.55 s, lunge 3.6 m in 0.2 s, 25 damage, hangs 1.2 s, 2.5 s between. It was 804 health, now under twice a mutant's (the test said over): left as it is. | `config.screamer.wind`, `strike` |
+| 783 | **The grey's numbers.** | Shield 250, health 450 (hunting rifle: 5 shots on the shield, 3 heads or 9 bodies after). Shield back after 4 s untouched, full in 2.5 s. Ray first 7 s in, then every 12 s; 28 m cone, 20 degrees each side; caught at its start and blocked by the wreck. Arcs within 7 m: 12 damage every 0.9 s. Cache: 10 hunting rifle, 8 shotgun, 12 pistol rounds. A quick-draw hit only pops the shield (no kill). | `config.crashedPlane.encounter.boss` |
 
 ## The dialogue cut (Nov 14)
 

@@ -1,6 +1,8 @@
 # Witch Hunt: Status
 
-Last updated: Nov 14, 2026: **The dialogue cut** (players: too much in-game talk). In-game lines 60% fewer words (6,983 to 2,811); every `hint.*` nudge cut; Ellen says early, and at her board, that things go on your map; 8 new board cards after Earl's maps. Lines are cut with `"cut": true` (Dialogue.uncut), not deleted. The full list: docs/DIALOGUE_CUT_NOV14.md. 1405 tests pass.
+Last updated: Nov 16, 2026: **The first third's cutscenes and fights** (the plan Aaron approved: docs/FIRST_THIRD_PLAN_3.md). Day 1's campground: the dead at the fire, the horde behind the car (a trailer cutscene), death with a retry; Day 2: a mutant at the fire; the gas station's mutant throws Tom out of the door; the mutant's moveset (ai/mutantMoves.js) and double health; the Screamer's wind and snake strike; the grey as a boss (encounters/greyBoss.js); trailer captions (debug). 1451 tests pass.
+
+Before that: Nov 14, 2026: **The dialogue cut** (players: too much in-game talk). In-game lines 60% fewer words (6,983 to 2,811); every `hint.*` nudge cut; Ellen says early, and at her board, that things go on your map; 8 new board cards after Earl's maps. Lines are cut with `"cut": true` (Dialogue.uncut), not deleted. The full list: docs/DIALOGUE_CUT_NOV14.md. 1405 tests pass.
 
 Before that: Nov 12, 2026: **The build queue** (Aaron: items 1-7 as scaffolding, then the big play-test). Done so far: all seven items (the plan and the dozer; the bug-zapper night; the Bigfoot cave; the mega night; the mothership; the Car Armory and Sheriff; the ute chase and the garage). 1332 tests pass. Each item's section is under "What exists".
 

@@ -1,5 +1,16 @@
 # Handover
 
+## Newest: the first third's cutscenes and fights (Nov 16)
+
+The plan Aaron approved is docs/FIRST_THIRD_PLAN_3.md; what to try is PLAYTEST round 84; the calls are OPEN_QUESTIONS #772-783. What's new to know:
+- **Player.push / glideTo / scramble** (`player/Player.js`): a fading shove (walls stop it), a scripted carry for cutscenes, and reversed controls (on foot). Cleared by `clearShoves` (reset, death).
+- **Cutscene `caption` event** and `cutscenes.caption(title, sub, s)`: shown only while `Cutscenes.trailerCaptions` (debug menu, Cutscenes) is on.
+- **The mutant's moves** (`ai/mutantMoves.js`, config `mutant.moves`): state `'move'` on the Zombie; `scripted: true` makes it a puppet (the gas station's cutscene, the Screamer's strike). EnemyManager reports `mutant:impact` (cars, pumps), `mutant:landed`, `mutant:move`; `enemy:strike` carries `hit` { damage, push, hop }.
+- **Retry points** (`Game.checkpoint`, `retryPoint`): only Day 1's campground uses one. A death with one offers "try again" (pending choice `'retry'` across the reload).
+- **The Screamer's strike** has two atlas columns (`ZOMBIE_FRAMES.strikeRear`, `strikeLunge`; count 13); `z.stretch` scales a sprite's height.
+- **The grey** (`encounters/greyBoss.js`) runs from the quick draw; `Hud.boss(fraction, { name, shield })`, `Hud.scramble(left, of)`.
+- Headless checks: a small harness took screenshots of each scene (not committed); `tools/playbot.cjs 1234 step:plane` still runs clean.
+
 ## Newest: the dialogue cut (Nov 14)
 
 Players said the in-game talk was overwhelming (the cutscenes are fine). In-game dialogue is down 60% by words. **Keep it down:** a new line has to earn its place, and nothing nudges the player where the objective and map already do.

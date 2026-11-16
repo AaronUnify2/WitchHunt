@@ -553,6 +553,7 @@ export class Game {
       clock: this.clock, // Plan #19
       notify: (text) => this.toast.show(text),
       onCheckpoint: (spot) => this.checkpoint('campsite', spot), // Nov 16: Day 1's retry point
+      station: this.station, // Nov 16: its debug start (the tower's rifle)
     });
     this.combat.promptSources.push(this.campsite.hud);
     // Session 15b (M9.3 pass 1): the gas station's set.

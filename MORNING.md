@@ -1,5 +1,17 @@
 # For Aaron
 
+## The first third's cutscenes and fights (Nov 16, the plan you approved)
+
+All built and pushed (branch `ccr-65ee77ef-39vmuk`), each checked headless with screenshots; a bot run New Game to the plane is clean. Try it from the debug menu: First day, the three "Nov 16 start" items; and Cutscenes, "Trailer captions" before you record.
+1. **Day 1:** four dead at the fire end the arrival sweep; after the tape, the horde out of the trees behind the car (a new cutscene for the trailer: one breaking out of the brush in the first second). More rounds. **You can die there**, with a retry from the campground.
+2. **Day 2:** a mutant at the campers' fire with five dead round it, and its sweep. Wyatt's box of rounds at dawn.
+3. **Gas station:** it knocks Tom back, charges, and backhands him out of the door onto the forecourt.
+4. **The mutant:** double health; slam, backhand, spin, leap; aims ahead, chains, punishes standing still; sets off cars and pumps.
+5. **The Screamer:** a wind as it screams; a snake strike, neck out and jaw unhinged.
+6. **The grey:** a boss bar, an orb shield that recharges, blinks, the mind scramble ray (controls reversed 5 s) and lightning arcs up close.
+
+PLAYTEST round 84 lists what to try; OPEN_QUESTIONS #772-783 has every number and where to change it.
+
 ## The joins pass (the last of the first third)
 
 Read end to end from a full bot run, New Game to the plane, every line with its time:

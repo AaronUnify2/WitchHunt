@@ -1089,6 +1089,15 @@ export class GasStation {
   addDebugItems(menu) {
     if (!this.frame) return;
     const cat = menu.category(DEBUG.firstDay);
+    // Nov 16: a start point for the mutant's new cutscene (from any run that hasn't put it down yet).
+    cat.addItem('Nov 16 start: the gas station, its mutant asleep down the aisle', () => {
+      this.progress?.setFlag('day2');
+      if (this.mutantState === 'down') return this.notify?.('Its mutant is down this run: start a New Run first');
+      const w = frameToWorld(this.frame, 1.6, 4);
+      const door = frameToWorld(this.frame, 1.6, -3);
+      this.player.teleport(w.x, w.z, Math.atan2(-(door.x - w.x), -(door.z - w.z)));
+      this.notify?.('The gas station: in through the door, down the right-hand aisle');
+    });
     const f = this.frame;
     const b = this.data.building;
     const tp = (x, z, facing, text) => () => {
