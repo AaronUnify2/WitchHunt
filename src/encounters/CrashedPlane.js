@@ -34,6 +34,7 @@
 // Events: 'plane:standoff', 'plane:greyDown' { quick }, 'plane:flare',
 // 'plane:mothmanGone' { drivenOff }, 'plane:done'.
 
+import { GreyBoss } from './greyBoss.js';
 import * as THREE from 'three';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { toWorld } from '../world/CrashSite.js';
@@ -126,6 +127,8 @@ export class CrashedPlane {
     this.cutscenes?.liveTargets?.set('grey', () => ({ x: this.grey.x, y: this.grey.y + 1.0, z: this.grey.z }));
     this.cutscenes?.namedAnchors?.set('crashSite', () => ({ x: this.crashSite.place.x, z: this.crashSite.place.z, yaw: this.crashSite.place.yaw + Math.PI }));
     this.buildDrop();
+    // Nov 16 (Aaron: "this needs to play like a boss fight"): from the quick draw on (encounters/greyBoss.js).
+    this.boss = new GreyBoss(this.cfg, { scene: this.scene, player: this.player, combat: this.combat, colliders: this.colliders, ground: this.ground, sfx: this.sfx, crashSite: this.crashSite, bus: this.bus, hasLineTo: (from, to) => this.lineClear(from, to) });
     this.bus.on('player:respawned', () => this.reset());
     this.reset();
   }
@@ -214,6 +217,8 @@ export class CrashedPlane {
     this.greyHealth = this.ec.greyHealth;
     this.mothmanOn = false;
     this.flareSuggested = false;
+    this.boss?.stop();
+    this.cacheDropped = false;
     this.combat.clearHealthFloor?.('crashedPlane');
     if (!this.ready) return;
     this.placeGrey();
@@ -262,15 +267,20 @@ export class CrashedPlane {
           if (this.flyer?.active && (this.mothmanT += dt) > (this.ec.mothmanMax ?? Infinity)) this.blackout();
           break;
         case 'quickdraw':
+          if (this.boss.active) this.boss.passive(dt);
           this.faceTom();
           g.state = 'aim';
           if (this.timer >= this.ec.quickDraw) this.firstShot();
           break;
         case 'scramble':
+          if (this.boss.active) this.boss.passive(dt);
           this.updateScramble();
           break;
         case 'shootout':
           this.updateShootout(dt);
+          break;
+        case 'boss':
+          this.updateBoss(dt);
           break;
         case 'down':
           if (!this.flareSuggested && this.has('planeLooted') && this.timer > this.ec.flareAfter) {
@@ -292,6 +302,11 @@ export class CrashedPlane {
     t.x = g.x;
     t.y = g.y;
     t.z = g.z;
+    // Nov 16: its orb is what's hit while it's up (bigger than the grey; no head through it).
+    const orb = this.boss?.active && this.boss.shieldUp;
+    const h = this.ec.hit;
+    t.hitRadius = orb ? this.ec.boss.shieldRadius * 0.85 : h.hitRadius;
+    t.height = orb ? 0.7 + this.ec.boss.shieldRadius * 0.85 : h.height;
     // Hold X: the drops, the log, the flare.
     if (canInteract && input && playing) this.updateInteraction(dt, input);
     else {
@@ -389,11 +404,14 @@ export class CrashedPlane {
       }
     }
     if (!this.cutscenes?.active && this.timer > 0.2) {
-      // Control's back: the quick draw.
+      // Control's back: the quick draw. Nov 16: its shield blooms round it (the boss fight's start).
       this.player.fovMultiplier = 1;
       this.state = 'quickdraw';
       this.timer = 0;
       this.target.targetable = true;
+      this.boss.start(this.grey);
+      this.cutscenes?.caption?.(this.ec.boss.caption, this.ec.boss.captionSub, 2.6);
+      this.dropCache();
     }
   }
 
@@ -417,11 +435,48 @@ export class CrashedPlane {
     g.state = 'ambush';
     if (k >= 1) {
       g.y = this.ground.heightAt(g.x, g.z);
-      this.state = 'shootout';
+      // Nov 16: the boss fight (the shootout's kept for the record, unused).
+      this.state = 'boss';
       this.timer = 0;
-      this.phase = 'hide';
-      this.phaseTimer = this.range(this.ec.shootout.hideSeconds);
     }
+  }
+
+  // Nov 16: the fight (encounters/greyBoss.js runs it; its pistol shots are still this file's).
+  updateBoss(dt) {
+    const g = this.grey;
+    if (this.boss.update(dt) === 'fire') this.greyFire(this.rng() < this.ec.shootout.hitChance);
+    g.y = this.ground.heightAt(g.x, g.z);
+  }
+
+  // Nov 16: rounds for the fight in the wreck's cargo, by the survival kit (once a fight).
+  dropCache() {
+    if (this.cacheDropped) return;
+    this.cacheDropped = true;
+    const c = this.ec.boss.cache;
+    const kit = this.spot('kit');
+    c.items.forEach(([item, amount], i) => {
+      const a = (i / c.items.length) * Math.PI * 2;
+      const x = kit.x + Math.sin(a) * c.spread;
+      const z = kit.z + Math.cos(a) * c.spread;
+      this.combat.pickups?.drop?.(item, amount, x, this.ground.heightAt(x, z), z, 0);
+    });
+  }
+
+  // Nothing solid between from and to (its pistol shots, its ray).
+  lineClear(from, to) {
+    const f = { x: from.x, y: (from.y ?? 0) + 1.1, z: from.z };
+    const tx = to.x;
+    const ty = (to.y ?? 0) + 1.2;
+    const tz = to.z;
+    const dx = tx - f.x;
+    const dy = ty - f.y;
+    const dz = tz - f.z;
+    const d = Math.hypot(dx, dy, dz) || 1;
+    const dir = { x: dx / d, y: dy / d, z: dz / d };
+    this.colliders.query((f.x + tx) / 2, (f.z + tz) / 2, d / 2 + 2, this.blockers);
+    const g = this.grey;
+    const blocked = rayBlockers(f, dir, this.blockers.filter((c) => Math.hypot(c.x - g.x, c.z - g.z) > (c.r ?? 0) + 0.6 || !c.seg), d, this.ground);
+    return blocked >= d - 0.6;
   }
 
   // Out past the wing's tip: the direction along the wing, from the bench toward its tip.
@@ -523,10 +578,20 @@ export class CrashedPlane {
 
   hitGrey(amount, part) {
     const g = this.grey;
-    if (!['quickdraw', 'scramble', 'shootout'].includes(this.state)) return false;
+    if (!['quickdraw', 'scramble', 'shootout', 'boss'].includes(this.state)) return false;
     g.flash = this.cfg.aliens.grey.hitFlashSeconds;
-    // The quick draw: one good hit inside the window drops it.
+    // The quick draw: one good hit inside the window. Nov 16: it shatters the shield as it blooms (no kill).
     const quick = this.state === 'quickdraw' && inQuickDraw(this.timer, this.ec.quickDraw);
+    if (this.boss.active) {
+      if (quick && this.boss.shieldUp) {
+        this.boss.shatter();
+        this.notify?.('Quick draw! Its shield is down.');
+        return false;
+      }
+      if (!this.boss.hit(amount, part, this.ec.hit.headshotMultiplier)) return false;
+      this.greyDown(false);
+      return true;
+    }
     this.greyHealth -= quick ? 1e6 : amount;
     if (this.greyHealth > 0) {
       if (this.state === 'shootout' && this.phase !== 'hide') {
@@ -542,6 +607,7 @@ export class CrashedPlane {
 
   greyDown(quick) {
     const g = this.grey;
+    this.boss?.stop();
     this.faceTom(); // Session 33: it goes down facing him, and what it drops lands on his side of it
     g.state = 'dying';
     g.timer = 0;

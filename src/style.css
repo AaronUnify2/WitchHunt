@@ -2435,3 +2435,41 @@ body.in-cutscene .radio-status {
   text-transform: uppercase;
   color: #d9b36a;
 }
+
+/* Nov 16: the grey's shield over its health (Halo-style), and the mind scramble's warning. */
+.hud-boss-bar { position: relative; }
+.hud-boss-shield {
+  position: absolute;
+  left: 0;
+  top: -2px;
+  bottom: -2px;
+  width: 0;
+  background: rgba(120, 210, 255, 0.85);
+  box-shadow: 0 0 8px rgba(120, 210, 255, 0.8);
+  transition: width 0.15s;
+}
+.hud-scramble {
+  position: absolute;
+  top: calc(var(--safe) + 9rem);
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #e2b8ff;
+  font-size: 0.8em;
+  letter-spacing: 0.4em;
+  text-shadow: 0 0 6px #7a2cff;
+  animation: scrambleWobble 0.6s ease-in-out infinite alternate;
+}
+.hud-scramble-bar { width: 9rem; height: 0.3rem; margin: 0.3rem auto 0; background: rgba(0, 0, 0, 0.6); }
+.hud-scramble-bar span { display: block; height: 100%; background: #b070ff; }
+@keyframes scrambleWobble { from { transform: translateX(-52%) skewX(-6deg); } to { transform: translateX(-48%) skewX(6deg); } }
+body.scrambled::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(120, 40, 220, 0.45) 100%);
+  animation: scrambleVignette 0.9s ease-in-out infinite alternate;
+}
+@keyframes scrambleVignette { from { opacity: 0.6; } to { opacity: 1; } }

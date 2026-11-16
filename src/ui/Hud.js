@@ -29,7 +29,8 @@ export class Hud {
       <div class="hud-dig"><span></span></div>
       <div class="hud-pickups"></div>
       <div class="hud-station hidden"></div>
-      <div class="hud-boss hidden"><div class="hud-boss-name">THE WITCH</div><div class="hud-boss-bar"><span></span></div></div>
+      <div class="hud-boss hidden"><div class="hud-boss-name">THE WITCH</div><div class="hud-boss-bar"><span></span><i class="hud-boss-shield"></i></div></div>
+      <div class="hud-scramble hidden"><div class="hud-scramble-text">SCRAMBLED</div><div class="hud-scramble-bar"><span></span></div></div>
       <div class="hud-alarm hidden"><span class="hud-alarm-arrow">&#9650;</span><span class="hud-alarm-text"></span></div>
       <div class="hud-vitals">
         <div class="hud-hidden">&#9673; HIDDEN</div>
@@ -64,6 +65,10 @@ export class Hud {
     this.alarmEl = q('.hud-alarm');
     this.bossEl = q('.hud-boss');
     this.bossBarEl = q('.hud-boss-bar span');
+    this.bossNameEl = q('.hud-boss-name');
+    this.bossShieldEl = q('.hud-boss-shield');
+    this.scrambleEl = q('.hud-scramble');
+    this.scrambleBarEl = q('.hud-scramble-bar span');
     this.alarmArrowEl = q('.hud-alarm-arrow');
     this.alarmTextEl = q('.hud-alarm-text');
     this.pickupLines = []; // { text, timer }
@@ -151,11 +156,27 @@ export class Hud {
 
   // M7: the witch's health bar, top centre, while you're fighting her.
   // fraction: 0..1, or null to hide it.
-  boss(fraction) {
+  // Nov 16 (the grey's fight): opts { name, shield (0..1: a blue bar over the health, Halo-style) }.
+  boss(fraction, opts = null) {
     const f = fraction === null ? null : Math.round(fraction * 200) / 200;
     this.set('boss', f, (v) => {
       this.bossEl.classList.toggle('hidden', v === null);
       if (v !== null) this.bossBarEl.style.width = `${v * 100}%`;
+    });
+    this.set('bossName', fraction === null ? null : (opts?.name ?? 'THE WITCH'), (v) => {
+      if (v !== null) this.bossNameEl.textContent = v;
+    });
+    const sh = opts?.shield === undefined || fraction === null ? 0 : Math.round(opts.shield * 200) / 200;
+    this.set('bossShield', sh, (v) => (this.bossShieldEl.style.width = `${v * 100}%`));
+  }
+
+  // Nov 16 (the grey's mind scramble ray): seconds of it left (of `of`), or null.
+  scramble(left, of = 5) {
+    const v = left === null || left <= 0 ? null : Math.round((left / of) * 100) / 100;
+    this.set('scramble', v, (k) => {
+      this.scrambleEl.classList.toggle('hidden', k === null);
+      document.body.classList.toggle('scrambled', k !== null);
+      if (k !== null) this.scrambleBarEl.style.width = `${k * 100}%`;
     });
   }
 

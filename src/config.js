@@ -4504,7 +4504,23 @@ export const config = {
       // the cutscene's length) and the quick draw's window opens.
       standoff: { turnAt: 1.2, hopAt: 2.0, hopSeconds: 0.85, hopHeight: 1.5, out: [2.4, 2.6], aimAt: 5.3, shots: [6.2, 7.0], end: 7.6, zoom: 0.42 }, // zoom: Tom's view narrows on it while the scene holds (x his field of view), so it's seen properly from 16 m
       quickDraw: 0.55, // seconds after control comes back: one good hit drops it
-      greyHealth: 70, // after the quick draw: a service rifle round is 25 (x3 on the head)
+      greyHealth: 70, // after the quick draw: a service rifle round is 25 (x3 on the head). (Nov 16: the boss's health is boss.health)
+      // Nov 16 (Aaron: "this needs to play like a boss fight"): encounters/greyBoss.js. A bar of its own (name);
+      // an orb shield (shield points, shieldRadius m) that refills over shieldRefill s once it's gone shieldDelay
+      // s untouched; its flits (blink-dashes of `dash` m every `every` s, everyBare once the shield's down, hitBare
+      // after a hit bare, staying within `ring` m of the cover spot; `seconds` each); its pistol shots (shots);
+      // the mind scramble ray (first, then every s; charge s of rings gathering, aim locked `lock` s before it
+      // fires; cone range m and halfAngle degrees; caught at hitAt s, scrambled `seconds` s); the arcs (within
+      // range m while the shield's up, every s: damage, push m/s). cache: rounds in the wreck's cargo by the kit.
+      boss: {
+        name: 'THE GREY', caption: 'The Grey', captionSub: 'The crashed plane',
+        health: 450, shield: 250, shieldRadius: 1.15, shieldDelay: 4, shieldRefill: 2.5, shieldColor: 0x7fd8ff, afterImage: 0x9a7cff,
+        flit: { every: [1.5, 3.0], everyBare: [0.9, 1.8], hitBare: [0.25, 0.6], dash: [4, 8], ring: [4, 15], seconds: 0.16 },
+        shots: { every: [1.8, 3.0], aim: 0.5 },
+        ray: { first: 7, every: 12, charge: 1.2, lock: 0.25, range: 28, halfAngle: 20, seconds: 5, hitAt: 0.15, sweep: 0.5, travel: 0.6, rings: 7, color: 0xb070ff },
+        arc: { range: 7, every: 0.9, damage: 12, push: 6, segments: 10, jitter: 0.9, show: 0.16 },
+        cache: { items: [['sniperAmmo', 10], ['shotgunAmmo', 8], ['pistolAmmo', 12]], spread: 0.9 },
+      },
       hit: { hitRadius: 0.3, height: 1.4, headBottom: 1.06, headRadius: 0.22, headshotMultiplier: 3 }, // a little generous: it's small
       scrambleSeconds: 0.9, // its hop over the wing into cover
       scrambleHeight: 1.5,

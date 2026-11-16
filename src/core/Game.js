@@ -2075,6 +2075,7 @@ export class Game {
     this.debugMenu.update(dt);
     // Session 17 (Aaron): the radio holds while a linesAfter cutscene plays (the dogfight); the rest talk as they play.
     this.cutscenes.updateCaption?.(dt); // Nov 16: the trailer captions (debug), cutscene or not
+    this.combat.hud?.scramble?.(this.player.scrambleT ?? 0, this.player.scrambleSeconds || 5); // Nov 16: the grey's ray
     const csSpeaks = this.cutscenes.active && this.cutscenes.speaksDuring(this.cutscenes.current.data);
     if (!this.cutscenes.active || csSpeaks) this.subtitles.update(dt);
     document.body.classList.toggle('cs-quiet', this.cutscenes.active && !csSpeaks);

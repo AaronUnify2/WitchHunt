@@ -7,6 +7,7 @@
     "scrap": { "name": "scrap", "inventory": "scrap", "color": "#6e6a5c" },
     "firstAid": { "name": "first aid kit", "firstAid": true, "kit": "firstAid", "color": "#a8a294" },
     "alienShells": { "name": "alien shells", "ammo": "alienShells", "color": "#9a6cff" },
+    "sniperAmmo": { "name": "hunting rifle rounds", "ammo": "sniper", "color": "#d8c070" },
     "alienMed": { "name": "alien med kit", "firstAid": true, "kit": "alienMed", "color": "#7fd6c8" },
     "vest": { "name": "police vest", "armour": "ballistic", "amount": 40, "color": "#465a78" },
     "helmet": { "name": "army helmet", "armour": "ballistic", "amount": 20, "color": "#4c5a38" },
