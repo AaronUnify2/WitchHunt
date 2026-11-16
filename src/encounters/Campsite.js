@@ -115,6 +115,12 @@ export class Campsite {
       this.bus.on('campsite:turn', () => this.figureTurn()), // day2.screamer's emits
       this.bus.on('campsite:scream', () => this.figureScream()),
       this.bus.on('campsite:fireTurn', () => this.fireTurn()), // sweep.campsite's last shot
+      this.bus.on('campsite:mutantRise', () => this.mutantRise()), // day2.mutant's emits
+      this.bus.on('campsite:mutantTurn', () => this.mutantTurn()),
+      // Nov 16: Day 2's dawn: Wyatt hands over the tower's box of rounds (the campground's mutant is next).
+      this.bus.on('story:flag', ({ id, on }) => {
+        if (id === 'day2' && on) this.giveDawnBox();
+      }),
       // The wave's zombies, off the list as they fall (a pool slot can come back as another).
       this.bus.on('enemy:killed', ({ zombie }) => {
         const i = this.wave.indexOf(zombie);
@@ -137,6 +143,8 @@ export class Campsite {
     this.figureSent = false; // Plan #19
     this.figureTold = false;
     this.figure = null;
+    this.escort = []; // Nov 16: the dead round Day 2's mutant
+    this.dawnBoxGiven = false;
     this.searched = new Set();
     this.arrived = false;
     this.camcorderFound = false;
@@ -271,6 +279,10 @@ export class Campsite {
   updateDawnFigure(p, dt = 0) {
     const df = this.cc.dawnFigure;
     if (!df?.enabled || !this.enemies || !this.progress) return;
+    if (df.variant === 'mutant') {
+      this.updateDawnMutant(p, df);
+      return;
+    }
     const c = this.clearing;
     const d = Math.hypot(p.x - c.x, p.z - c.z);
     if (!this.figureSent) {
@@ -357,6 +369,120 @@ export class Campsite {
     if (z.alive) z.burrow?.();
     this.figure = null;
     this.dialogue?.play('day2.figure.ellen');
+  }
+
+  // ---- Day 2: the mutant at the fire (Nov 16) ----------------------------------------------------------
+
+  // Aaron (Nov 16: "Let's put one of our mutants in the campground waiting for the player on the morning of
+  // day 2 ... our third zombie mutant by the campfire surrounded by 5 zombies. Again, quick sweep cutscene,
+  // showing off the mutant variant as the focus of the scene"): in place of the Screamer (Night 2's now).
+  // Crouched over the campers' cold fire, its back (the weak spot) to the path; the dead stand round it.
+  // Within showAt the camera goes to it (day2.mutant): it unfolds, turns, and they all come. A fight.
+  updateDawnMutant(p, df) {
+    const c = this.clearing;
+    const d = Math.hypot(p.x - c.x, p.z - c.z);
+    if (!this.figureSent) {
+      if (!this.progress.has('day2') || this.progress.has('gasStationVisited') || this.clock?.phase === 'night' || d > df.spawnAt || d < c.radius) return;
+      this.figureSent = true;
+      const at = df.at ?? [0, -0.9];
+      const w = frameToWorld(this.frame, at[0], at[1]);
+      const facing = frameYaw(this.frame, 0); // into the fire, its back to the path
+      const z = this.enemies.spawnZombie(w.x, w.z, { kind: 'mutant', mode: 'held', health: df.health, facing, authored: 'campsite' });
+      if (z) {
+        z.maxHealth = z.health = df.health ?? z.health;
+        z.state = 'dormant';
+        z.timer = 0;
+        z.facing = facing;
+        z.sightScale = 0;
+        z.deaf = true;
+      }
+      this.figure = z ?? null;
+      this.figureShown = false;
+      this.escort = [];
+      const f = this.data.props.fire;
+      const fire = frameToWorld(this.frame, f.x, f.z);
+      for (const [x, zz] of df.escortSpots ?? []) {
+        const e = frameToWorld(this.frame, x, zz);
+        const zb = this.enemies.spawnZombie(e.x, e.z, { variant: 'citizen', mode: 'linger', linger: { x: e.x, z: e.z, r: 0.5 }, rise: false, facing: Math.atan2(fire.x - e.x, fire.z - e.z), authored: 'campsite' });
+        if (!zb) continue;
+        zb.sightScale = 0;
+        zb.deaf = true;
+        zb.fireAt = fire;
+        this.escort.push(zb);
+      }
+      return;
+    }
+    const z = this.figure;
+    if (!z && !this.escort.length) return;
+    // The escort, rooted round the fire facing it (or Tom, once it's turned), until they're let go.
+    if (!this.dawnAwake) {
+      for (const e of this.escort) {
+        if (!e.alive || e.mode !== 'linger') continue;
+        const look = this.mutantTurned ? this.player.position : e.fireAt;
+        e.pace = 0;
+        e.goalX = e.x + (look.x - e.x) * 4;
+        e.goalZ = e.z + (look.z - e.z) * 4;
+        e.hasGoal = true;
+      }
+    }
+    if (this.figureShown || this.cutscenes?.active) return;
+    const stirred = (z && (z.state !== 'dormant' || z.health < z.maxHealth)) || this.escort.some((e) => e.alive && (e.health < e.maxHealth || e.mode === 'chase'));
+    if (d < (df.showAt ?? 30) || stirred) this.showDawnMutant(stirred);
+  }
+
+  showDawnMutant(stirred) {
+    const z = this.figure;
+    this.figureShown = true;
+    if (this.player?.riding) this.player.riding.speed = 0; // the quad stops for it
+    const go = () => this.letDawnGo();
+    if (!z || stirred) return go();
+    const anchors = { campMutant: { x: z.x, z: z.z, yaw: frameAnchor(this.frame).yaw + Math.PI } };
+    if (!this.cutscenes?.play('day2.mutant', { anchors, onDone: go })) go();
+  }
+
+  // The cutscene's emits: it unfolds from its crouch; it turns round on him.
+  mutantRise() {
+    const z = this.figure;
+    if (z?.alive && z.state === 'dormant') {
+      z.wake(this.cfg.mutant.look.wakeSeconds * 0.75);
+      this.combat?.sfx?.play('mutantGroan', z);
+    }
+  }
+
+  mutantTurn() {
+    this.mutantTurned = true;
+    const z = this.figure;
+    if (z?.alive) z.facing = frameYaw(this.frame, 180);
+  }
+
+  // As the cutscene ends (or it's stirred early): they all come.
+  letDawnGo() {
+    this.dawnAwake = true;
+    this.mutantTurned = true;
+    const p = this.player.position;
+    const z = this.figure;
+    if (z?.alive) {
+      if (z.state === 'dormant') z.wake(1.2);
+      z.sightScale = 1;
+      z.deaf = false;
+      this.enemies.brain.chase(z, p.x, p.z, 30);
+    }
+    for (const e of this.escort) {
+      if (!e.alive) continue;
+      e.sightScale = 1;
+      e.deaf = false;
+      this.enemies.brain.chase(e, p.x, p.z, 30);
+    }
+    this.figure = null;
+    this.escort = [];
+  }
+
+  // Wyatt's box (Nov 16): Day 2's fight is rifle and shovel only, against a mutant with twice the health.
+  giveDawnBox() {
+    const box = this.cc.dawnBox;
+    if (!box || this.dawnBoxGiven) return;
+    this.dawnBoxGiven = true;
+    if (this.combat.takePickup?.('rifleAmmo', box.rounds)) this.combat.hud?.pickup?.(`Wyatt's box of rifle rounds (+${box.rounds})`);
   }
 
   updateInteraction(dt, input) {
@@ -677,6 +803,7 @@ export class Campsite {
       cleared: this.waveCleared,
       battery: this.batteryTaken,
       figure: this.figureSent, // Plan #19
+      dawnBox: this.dawnBoxGiven, // Nov 16
       fire: this.fireCleared || this.arrived, // Nov 16: the dead at the fire (not saved: a save after arriving comes back with them down)
     };
   }
@@ -695,6 +822,7 @@ export class Campsite {
     this.batteryTaken = Boolean(d.battery);
     this.figureSent = Boolean(d.figure);
     this.fireSent = this.fireCleared = Boolean(d.fire ?? this.arrived);
+    this.dawnBoxGiven = Boolean(d.dawnBox ?? this.figureSent);
     this.queue = [];
     this.wave = [];
     this.props.setSmoke(!this.arrived);

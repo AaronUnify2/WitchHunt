@@ -318,7 +318,7 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     const said = [];
     const flags = new Set(['day2']);
     Object.assign(c, {
-      cc: config.campsite, data: campsiteData,
+      cc: { ...config.campsite, dawnFigure: config.campsite.screamerFigure }, data: campsiteData, // (Nov 16: the mutant has its place; the Screamer's beat is kept, off)
       frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
       clearing: { x: 0, z: 0, radius: 20 },
       enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 1, maxHealth: 1, burrow() { this.gone = true; } }) },
@@ -336,13 +336,42 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     expect(spawned[0].variant).toBe('screamer');
     const figure = c.figure;
     c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
-    expect(spawned).toHaveLength(1 + config.campsite.dawnFigure.rise);
+    expect(spawned).toHaveLength(1 + config.campsite.screamerFigure.rise);
     expect(spawned.slice(1).every((o) => o.rise && o.mode === 'chase')).toBe(true);
     expect(figure.gone).toBe(true);
     expect(c.figure).toBe(null);
     expect(said).toEqual(['day2.figure.ellen']);
     c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
-    expect(spawned).toHaveLength(1 + config.campsite.dawnFigure.rise); // once
+    expect(spawned).toHaveLength(1 + config.campsite.screamerFigure.rise); // once
+  });
+
+  // Nov 16 (Aaron): a mutant at the fire on Day 2, five of the dead round it; a sweep to show it off, then a fight.
+  it('is a mutant now, crouched at the fire with five of the dead round it, and they all come', () => {
+    const c = Object.create(Campsite.prototype);
+    const spawned = [];
+    const chased = [];
+    const flags = new Set(['day2']);
+    Object.assign(c, {
+      cc: config.campsite, cfg: config, data: campsiteData,
+      frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
+      clearing: { x: 0, z: 0, radius: 20 },
+      enemies: {
+        spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 100, maxHealth: 100, state: 'walk', wake() { this.state = 'wake'; } }),
+        brain: { chase: (z) => chased.push(z) },
+      },
+      progress: { has: (f) => flags.has(f) },
+      clock: { phase: 'day' }, dialogue: { play() {} }, figureSent: false, figure: null, escort: [],
+      player: { position: { x: 0, z: -25 } },
+    });
+    c.updateDawnFigure({ x: 0, z: -40 });
+    expect(spawned[0].kind).toBe('mutant');
+    expect(c.figure.state).toBe('dormant');
+    expect(c.figure.maxHealth).toBe(config.campsite.dawnFigure.health);
+    expect(spawned.slice(1)).toHaveLength(5);
+    c.updateDawnFigure({ x: 0, z: -25 }); // near: (no cutscene here) straight to its end
+    expect(chased).toHaveLength(6);
+    expect(c.figure).toBe(null);
+    expect(cutscenes.cutscenes.find((x) => x.id === 'day2.mutant').tracks.some((t) => t.do === 'caption')).toBe(true);
   });
 
   it('has a cutscene to show it off, whose scream is the encounter\'s', () => {
