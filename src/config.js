@@ -3067,7 +3067,12 @@ export const config = {
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
-    mutant: { health: 480, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60); Nov 16: doubled (240 before)
+    mutant: { health: 480, lookHeight: 0.4, memory: 30, riseSeconds: 1.0 },
+    // Nov 16 (Aaron): gas.mutant: it knocks Tom back down the aisle (jab: `back` metres west, to no less than minX,
+    // on the aisle's line z), charges, and throws him out of the front door onto the forecourt (thrown: to x, z
+    // in the station's frame, in seconds, lifting him hop metres), then follows out of the door (follow). The two
+    // blows' damage lands as it ends, never taking him under leaveAtLeast.
+    mutantScript: { jab: { back: 2.4, minX: 1.1, z: -7.4, seconds: 0.35, damage: 8 }, charge: { seconds: 0.5 }, thrown: { x: 1.8, z: 1.6, seconds: 0.75, hop: 0.7, damage: 14 }, follow: { x: 1.6, z: -2.4, seconds: 1.0 }, leaveAtLeast: 30 }, // Aaron: 180 was too easy (+60); Nov 16: doubled (240 before)
     mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
     witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)

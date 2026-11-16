@@ -104,6 +104,13 @@ export class GasStation {
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('enemy:killed', ({ zombie }) => this.onKilled(zombie)),
       this.bus.on('gasStation:wake', () => this.wakeMutant()),
+      // Nov 16: gas.mutant's beats (it stands, knocks Tom back, charges, throws him out of the door).
+      this.bus.on('gasStation:rise', () => this.scriptRise()),
+      this.bus.on('gasStation:jabUp', () => this.scriptJabUp()),
+      this.bus.on('gasStation:jab', () => this.scriptJab()),
+      this.bus.on('gasStation:charge', () => this.scriptCharge()),
+      this.bus.on('gasStation:throw', () => this.scriptThrow()),
+      this.bus.on('gasStation:follow', () => this.scriptFollow()),
       // Plan #13: the mutant's openings, named the first time they'd help (as the beetle's face is).
       this.bus.on('enemy:hit', ({ zombie, part, killed }) => this.mutantHit(zombie, part, killed)),
       this.bus.on('quad:mounted', () => (this.quadTold = true)),
@@ -300,9 +307,9 @@ export class GasStation {
 
   // ---- where Tom is ----------------------------------------------------------------------------------
 
-  // Tom's position in the frame: { x, z }.
-  local() {
-    const p = this.player.position;
+  // Tom's position in the frame: { x, z } (or anything's with an x and a z: Nov 16).
+  local(of = null) {
+    const p = of ?? this.player.position;
     const f = this.frame;
     const dx = p.x - f.x;
     const dz = p.z - f.z;
@@ -325,6 +332,7 @@ export class GasStation {
       return;
     }
     this.updatePumps(dt);
+    this.updateScript(dt);
     this.updateBroadcast(dt);
     const l = this.local();
     this.updatePack(l);
@@ -511,8 +519,152 @@ export class GasStation {
     const near = this.inside(l) && l.z > this.data.building.partitionZ && Math.hypot(l.x - m.x, l.z - m.z) < w.near;
     if (!(inAisle || near) || this.cutscenes?.active) return;
     const anchor = { x: z.x, z: z.z, yaw: 0, dy: this.gc.mutant.lookHeight };
-    // Plan #8: skipped before its wake event, it wakes anyway (it used to stay asleep and the reveal played again).
-    if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor }, onDone: () => this.wakeMutant() })) this.wakeMutant();
+    // Nov 16 (Aaron: "I want the gas station mutant to stand, hit Tom back a few steps, then charge forward and
+    // use a backhanded swipe to push Tom out of the front door into the fuel pump area outside. This positions
+    // Tom best to have the Witch watching cutscene trigger on the Mutant's defeat"): the camera on it (a live
+    // target: it moves), its beats are the emits (scriptRise...). Skipped, it all lands where it would have:
+    // Tom out on the forecourt, it at the door (Plan #8: it never stays asleep).
+    this.cutscenes?.liveTargets?.set('gasMutant', () => {
+      const m = this.mutant;
+      return m ? { x: m.x, y: m.y + (m.air ?? 0) + 1.9, z: m.z } : { x: z.x, y: z.y + 1.9, z: z.z };
+    });
+    this.scriptFrom = this.local();
+    if (!this.cutscenes?.play('gas.mutant', { anchors: { mutant: anchor }, onDone: () => this.scriptDone() })) this.scriptDone();
+  }
+
+  // ---- gas.mutant's beats (Nov 16) ------------------------------------------------------------------
+
+  // A point in the station's frame, in the world.
+  at(x, zz) {
+    return frameToWorld(this.frame, x, zz);
+  }
+
+  // The mutant gliding from where it is to (x, z) in the frame over seconds (its walk turning over if walk).
+  slide(x, zz, seconds, walk = false) {
+    const z = this.mutant;
+    if (!z) return;
+    const to = this.at(x, zz);
+    this.script = { fromX: z.x, fromZ: z.z, toX: to.x, toZ: to.z, t: 0, seconds, walk };
+  }
+
+  updateScript(dt) {
+    const s = this.script;
+    const z = this.mutant;
+    if (!s || !z?.alive) return;
+    s.t = Math.min(s.seconds, s.t + dt);
+    const k = s.t / s.seconds;
+    const e = k * k * (3 - 2 * k);
+    const nx = s.fromX + (s.toX - s.fromX) * e;
+    const nz = s.fromZ + (s.toZ - s.fromZ) * e;
+    if (s.walk) z.walked += Math.hypot(nx - z.x, nz - z.z);
+    z.x = nx;
+    z.z = nz;
+    const p = this.player.position;
+    if (Math.hypot(s.toX - s.fromX, s.toZ - s.fromZ) > 0.3) z.facing = Math.atan2(s.toX - s.fromX, s.toZ - s.fromZ);
+    else z.facing = Math.atan2(p.x - z.x, p.z - z.z);
+    if (s.t >= s.seconds) this.script = null;
+  }
+
+  // A beat of its moves, as a puppet (mutantMoves: scripted).
+  pose(kind, phase, windup = 0.3) {
+    const z = this.mutant;
+    if (!z?.alive) return;
+    z.state = 'move';
+    z.move = { kind, phase, t: 0, windup, scripted: true };
+    z.struck = phase !== 'windup';
+  }
+
+  scriptRise() {
+    const z = this.mutant;
+    if (!z || this.mutantState !== 'dormant') return;
+    z.wake(this.gc.mutant.riseSeconds ?? 1.0);
+    this.combat?.sfx?.play('mutantGroan', z);
+    this.mutantState = 'scripted';
+    this.bus.emit('gasStation:mutant');
+  }
+
+  scriptJabUp() {
+    const z = this.mutant;
+    if (!z?.alive || this.mutantState !== 'scripted') return;
+    // A step in on him, the club coming up.
+    const p = this.local();
+    const m = this.local(z);
+    const d = Math.hypot(p.x - m.x, p.z - m.z) || 1;
+    const stop = Math.max(0, d - 1.8);
+    this.slide(m.x + ((p.x - m.x) / d) * stop, m.z + ((p.z - m.z) / d) * stop, 0.28);
+    this.pose('slam', 'windup', 0.3);
+  }
+
+  scriptJab() {
+    if (this.mutantState !== 'scripted') return;
+    this.pose('slam', 'strike');
+    this.combat?.sfx?.play('swipe', this.mutant);
+    // Knocked back down the aisle toward the front (a few steps).
+    const sc = this.gc.mutantScript;
+    const p = this.local();
+    this.jabTo = { x: Math.max(sc.jab.minX, p.x - sc.jab.back), z: sc.jab.z };
+    const w = this.at(this.jabTo.x, this.jabTo.z);
+    this.player.glideTo(w.x, w.z, sc.jab.seconds, 0.25);
+    this.scriptHurt = (this.scriptHurt ?? 0) + sc.jab.damage;
+  }
+
+  scriptCharge() {
+    if (this.mutantState !== 'scripted') return;
+    const j = this.jabTo ?? this.local();
+    this.slide(j.x + 1.5, j.z, this.gc.mutantScript.charge.seconds);
+    this.pose('backhand', 'windup', this.gc.mutantScript.charge.seconds);
+    this.combat?.sfx?.play('charge', this.mutant);
+  }
+
+  scriptThrow() {
+    if (this.mutantState !== 'scripted') return;
+    this.pose('backhand', 'strike');
+    this.combat?.sfx?.play('swipe', this.mutant);
+    const sc = this.gc.mutantScript.thrown;
+    const w = this.at(sc.x, sc.z);
+    this.player.glideTo(w.x, w.z, sc.seconds, sc.hop);
+    this.scriptHurt = (this.scriptHurt ?? 0) + sc.damage;
+  }
+
+  scriptFollow() {
+    const z = this.mutant;
+    if (!z?.alive || this.mutantState !== 'scripted') return;
+    // Out through the door after him.
+    z.state = 'walk';
+    z.move = null;
+    const d = this.gc.mutantScript.follow;
+    this.slide(d.x, d.z, d.seconds, true);
+  }
+
+  // The cutscene's over (or skipped): Tom on the forecourt, it at the door, and the fight's on.
+  scriptDone() {
+    const z = this.mutant;
+    if (this.mutantState === 'dormant') this.scriptRise();
+    this.script = null;
+    const sc = this.gc.mutantScript;
+    const p = this.player;
+    const out = this.at(sc.thrown.x, sc.thrown.z);
+    if (this.inside(this.local()) || p.glide) {
+      p.glide = null;
+      const door = this.at(sc.follow.x, sc.follow.z);
+      p.teleport(out.x, out.z, Math.atan2(-(door.x - out.x), -(door.z - out.z)));
+    }
+    if (z?.alive) {
+      const l = this.local(z);
+      if (this.inside(l) && l.z < sc.follow.z - 0.5) {
+        const door = this.at(sc.follow.x, sc.follow.z);
+        z.x = door.x;
+        z.z = door.z;
+      }
+      if (z.state === 'move' || z.state === 'dormant' || z.state === 'wake') z.state = 'walk';
+      z.move = null;
+    }
+    // What the two blows cost him (after: nothing lands while a cutscene plays), never the last of him.
+    const hurt = this.scriptHurt ?? sc.jab.damage + sc.thrown.damage;
+    this.scriptHurt = 0;
+    const left = this.combat?.health?.value ?? 100;
+    if (this.combat?.hurtPlayer) this.combat.hurtPlayer(Math.max(0, Math.min(hurt, left - sc.leaveAtLeast)), 2);
+    if (this.mutantState === 'scripted') this.mutantState = 'awake';
   }
 
   wakeMutant() {
