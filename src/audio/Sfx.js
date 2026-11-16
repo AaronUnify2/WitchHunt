@@ -458,6 +458,18 @@ const RECIPES = {
       setTimeout(() => s.ready && s.tone(o, { seconds: 0.14, freq: 70, endFreq: 38, gain: 0.7 }), i * 170);
     }
   },
+  // Nov 16: the mutant's leap landing, or its slam into the ground: a deep thump and a crack of earth.
+  mutantSlam(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1.1);
+    s.tone(o, { seconds: 0.5, freq: 55, endFreq: 28, gain: 1.1 });
+    s.noiseBurst(o, { seconds: 0.35, type: 'lowpass', freq: 900, endFreq: 120, gain: 0.9, attack: 0.004 });
+    s.noiseBurst(o, { seconds: 0.06, type: 'highpass', freq: 2400, gain: 0.35 });
+  },
+  // Nov 16: its spin, a heavy whirl of air.
+  mutantWhirl(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    for (let i = 0; i < 4; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.3, type: 'bandpass', freq: 300, endFreq: 900, q: 1.1, gain: 0.55, attack: 0.08 }), i * 300);
+  },
   mutantGroan(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.7);
     const base = 45 + Math.random() * 15;

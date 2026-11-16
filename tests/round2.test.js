@@ -202,7 +202,7 @@ describe('step 3: the Screamer', () => {
   it('is far tougher than anything else that walks, and pays when it falls', () => {
     const hp = config.zombies.health * config.zombies.variants.screamer.health;
     expect(hp).toBeGreaterThan(700);
-    expect(hp).toBeGreaterThan(config.mutant.health * 2);
+    expect(hp).toBeGreaterThan(config.mutant.health); // Nov 16: the mutant's health doubled (600); the Screamer's still the tougher
     expect(lootTableFor({ variant: 'screamer' }, lootData.tables).length).toBeGreaterThan(0);
   });
 

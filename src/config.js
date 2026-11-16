@@ -1860,7 +1860,7 @@ export const config = {
   // the real model is the art pass). Level 3+, rolled per single spawn.
   mutant: {
     poolSize: 4, // at most this many at once (also its render pool)
-    health: 300, // about 5x a citizen, before the level's multiplier
+    health: 600, // Nov 16 (Aaron: "double the health of mutants"; it was 300): about 10x a citizen, before the level's multiplier
     radius: 0.6,
     hitRadius: 0.55,
     height: 2.5,
@@ -1870,9 +1870,9 @@ export const config = {
     speedMax: 0.48,
     attackReach: 1.9,
     attackWindup: 0.4, // Aaron (Nov 14): "say it takes him 2 seconds to bring his fist down, make it 0.4" (it was 0.9)
-    attackRecover: 1.3,
+    attackRecover: 0.8, // Nov 16 (Aaron: it attacks more often): 1.3 before
     attackDamage: 30,
-    turnRate: 3,
+    turnRate: 4.5, // Nov 16 (more aggressive targeting): 3 before
     staggerScale: 0.25, // shrugs off most of a hit's stun
     knockbackScale: 0.2,
     // Aaron (M4 test): vary its pace. When it becomes aware of you it charges
@@ -1882,8 +1882,36 @@ export const config = {
       stepLength: 1.3, // metres per sprinting step
       firstSteps: 3,
       steps: 2,
-      interval: 3, // seconds between bursts while it chases you
+      interval: 2, // seconds between bursts while it chases you (Nov 16: 3 before)
       lean: 0.3, // radians: head down while charging
+    },
+    // Nov 16 (Aaron: "give the mutant a more varied attack pool ... attacks more often and will chain attacks
+    // ... an increased leap distance ... the player should not be able to easily sidestep ... if you stand
+    // still for a few seconds, you'll likely suffer a penalty"): its moves (ai/mutantMoves.js). Within
+    // closeReach it picks a close blow by weight; at leap range it may leap (chance every `think` seconds),
+    // and always does if Tom's barely moved (under stillSpeed m/s) for stillSeconds. It aims where he'll be
+    // (his velocity x lead), turning at turnRate until lockBefore seconds before the blow. After a blow, a
+    // `chain` chance of another after chainGap, up to chainMax in a row. damage: at level 1 (it scales as the
+    // swipe's does); push: m/s Tom's thrown at (Player.push); hop: m/s up; lunge: m/s it steps in through a
+    // close blow's wind-up when he's out of its reach.
+    moves: {
+      baseDamage: 30,
+      closeReach: 2.7,
+      lead: 0.75,
+      lockBefore: 0.12,
+      turnRate: 7,
+      chain: 0.45,
+      chainMax: 3,
+      chainGap: 0.22,
+      recover: 0.8,
+      think: 0.6,
+      stillSeconds: 2,
+      stillSpeed: 0.8,
+      slam: { weight: 4, windup: 0.5, lunge: 4.5, reach: 2.7, arc: 70, damage: 28, push: 4, hop: 2, shake: 2.4, follow: 0.18, recover: 0.8, shock: { radius: 2.2, damage: 12, push: 4 } },
+      backhand: { weight: 3.5, windup: 0.45, lunge: 5, reach: 2.6, arc: 150, damage: 18, push: 10, hop: 3.2, shake: 2.2, follow: 0.2, recover: 0.7 },
+      spin: { weight: 3, windup: 0.6, seconds: 1.3, turns: 2, travel: 4.5, reach: 2.5, hits: 2, damage: 14, push: 6, hop: 2, shake: 2, dizzy: 1.3, recover: 0.5 },
+      stuckSeconds: 0.8, // walking at him and getting no closer (in the way of something) this long: it leaps
+      leap: { min: 4.5, max: 14, short: 1.6, chance: 0.35, cooldown: 3.5, windup: 0.55, airSeconds: 0.7, height: 2.6, radius: 3.2, damage: 26, push: 8, hop: 4, shake: 3, recover: 1.0 },
     },
     // Aaron (M4 test, "a bit of a bullet sponge"): health stays, but aim pays.
     headshotMultiplier: 4, // its own (other zombies use weapons.headshotMultiplier)
@@ -2393,6 +2421,7 @@ export const config = {
       blast: { radius: 8, damage: 200, playerDamage: 90, edge: 0.25, knockback: 3, shake: 1.2, alert: 140 },
       vehicleDamage: 260, // to other cars at the blast's centre (falling off like the blast)
       chainFuse: [0.4, 1.2], // seconds before a car a blast pushed past `health` goes up
+      mutantFuse: 0.25, // Nov 16: seconds before a car a mutant's blow, charge or landing hit goes up (Vehicles.onMutantImpact)
       wreckBurnSeconds: 30, // the wreck burns on this long
       burnt: 0x1a1714, // the burnt-out paint
       fx: { pool: 160, flame: 0xff7a24, smoke: 0x24211e, flamesPerSecond: 26, smokePerSecond: 9 },
@@ -3038,7 +3067,7 @@ export const config = {
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's
     // multiplier). lookHeight: where the camera looks on it, crouched.
-    mutant: { health: 240, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60)
+    mutant: { health: 480, lookHeight: 0.4, memory: 30 }, // Aaron: 180 was too easy (+60); Nov 16: doubled (240 before)
     mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
     witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
@@ -3055,6 +3084,7 @@ export const config = {
       health: 90,
       fuse: 1.1,
       chainFuse: 0.45, // the other island, caught in the blast
+      mutantFuse: 0.35, // Nov 16: a mutant's blow into it (GasStation.pumpStruck)
       hitRadius: 1.4, // metres from a pump unit's centre (frame) that a shot counts on
       blast: { radius: 8, damage: 320, playerDamage: 60, edge: 0.25, knockback: 3.5, shake: 1.5, alert: 140 },
     },
@@ -5775,7 +5805,7 @@ export const config = {
     // (prepLate: the same, if it's night already); handSeconds: the hold on the platform.
     holdMax: 240, askAfter: 40, prepMax: 150, prepLate: 10, handSeconds: 1.0, reserveRounds: 20, holdBeforeDawn: 25, cantFall: true,
     horde: { first: 6, count: 10, out: 42, secondAfter: 22, second: 6 },
-    mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 240, escort: 4 },
+    mutants: { whenLeft: 3, after: 75, sides: [78, -62], gap: 22, out: 40, health: 480, escort: 4 }, // Nov 16: health doubled (240 before)
     screamer: { after: 80, side: 6, out: 44 },
     nearHome: 95, endLeft: 2, timeout: 480, afterDelay: 4, talkMin: 6,
   },

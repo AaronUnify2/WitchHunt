@@ -109,6 +109,7 @@ export class GasStation {
       this.bus.on('quad:mounted', () => (this.quadTold = true)),
       // Session 18 (Aaron): the pumps go up when they're shot (or caught in a blast).
       this.bus.on('weapon:impact', (at) => this.pumpShot(at)),
+      this.bus.on('mutant:impact', (at) => this.pumpStruck(at)), // Nov 16: the mutant into a pump
       this.bus.on('explosion', (e) => this.pumpBlast(e)),
       // Session 15b (Aaron): the shovel picked up on the way out to the shelter: it's a weapon too.
       this.bus.on('station:shovel', () => {
@@ -361,6 +362,15 @@ export class GasStation {
       if (!this.pumpUnits(i).some((u) => Math.hypot(u.x - x, u.z - z) < pc.hitRadius)) return;
       pump.hurt += damage;
       if (pump.hurt >= pc.health) this.lightPump(i, pc.fuse);
+    });
+  }
+
+  // Nov 16 (Aaron: the mutant hitting the fuel sets it off): a mutant's blow, charge or landing at a pump.
+  pumpStruck({ x, z, r = 1 } = {}) {
+    if (!this.frame || !this.pumps) return;
+    this.pumps.forEach((pump, i) => {
+      if (pump.blown || pump.fuse >= 0) return;
+      if (this.pumpUnits(i).some((u) => Math.hypot(u.x - x, u.z - z) < r + 0.7)) this.lightPump(i, this.gc.pumps.mutantFuse ?? 0.35);
     });
   }
 

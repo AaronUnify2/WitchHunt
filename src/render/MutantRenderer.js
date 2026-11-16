@@ -119,7 +119,7 @@ export class MutantRenderer {
       one.material.color.copy(this.base).lerp(this.flashColour, f);
       // Rising, burrowing and corpses sink by up to the body's height (lying down, less).
       const depth = dead ? c.look.lyingDepth : z.height;
-      one.mesh.position.set(z.x, z.y - z.sink * depth, z.z);
+      one.mesh.position.set(z.x, z.y - z.sink * depth + (z.air ?? 0), z.z);
       one.mesh.rotation.set(0, z.facing, 0);
       one.mesh.visible = true;
     }
@@ -181,6 +181,9 @@ export class MutantRenderer {
         set('hipL', 0.15 * up);
         break;
       }
+      case 'move':
+        this.poseMove(z, p, set, add, t);
+        break;
       case 'stagger':
         this.poseIdle(t, set);
         set('chest', -0.4);
@@ -224,6 +227,131 @@ export class MutantRenderer {
       }
       default:
         this.poseIdle(t, set);
+        break;
+    }
+  }
+
+  // Nov 16: its moves (ai/mutantMoves.js): z.move { kind, phase, t, windup }.
+  poseMove(z, p, set, add, t) {
+    const mv = z.move;
+    this.poseIdle(t, set);
+    if (!mv) return;
+    const m = this.cfg.moves;
+    const spec = m?.[mv.kind] ?? {};
+    const wind = mv.phase === 'windup' ? ease(Math.min(1, mv.t / mv.windup)) : 1;
+    const struck = mv.phase !== 'windup';
+    const after = mv.phase === 'strike' ? Math.min(1, mv.t / (this.cfg.look.slamSeconds * 1.5)) : struck ? 1 : 0;
+    const settle = mv.phase === 'recover' ? Math.min(1, mv.t / (spec.recover ?? m?.recover ?? 0.8)) : mv.phase === 'chain' ? 0.3 : 0;
+    const k = (v) => v * (1 - settle);
+    switch (mv.kind) {
+      case 'slam': {
+        // As the old swipe: the club overhead, then down into the ground in front, the body following.
+        const up = struck ? 1 - after : wind;
+        const down = struck ? after : 0;
+        set('shoulderR', k(-2.8 * up + 2.4 * down), 0, k(-0.25 * up));
+        set('elbowR', k(-0.6 * up + 0.3 * down));
+        set('chest', k(-0.35 * up + 0.85 * down));
+        set('spine', k(-0.2 * up + 0.45 * down));
+        set('head', k(-0.25 * up + 0.4 * down));
+        set('shoulderL', k(-0.7 * up), 0, k(0.6 * up));
+        set('hipR', k(-0.4 * up - 0.5 * down));
+        set('kneeR', k(0.3 * up + 0.6 * down));
+        set('hipL', k(0.2 * up + 0.3 * down));
+        p[ROOT_Y] = k(-0.25 * down);
+        break;
+      }
+      case 'backhand': {
+        // The club drawn across its body to the left, then flung out wide to the right.
+        const draw = struck ? 1 - after : wind;
+        const fling = struck ? after : 0;
+        set('chest', k(0.15 * draw), k(0.9 * draw - 1.1 * fling), 0);
+        set('spine', 0, k(0.35 * draw - 0.5 * fling), 0);
+        set('shoulderR', k(-1.4 * draw - 1.3 * fling), k(0.9 * draw - 0.4 * fling), k(0.9 * draw - 1.4 * fling));
+        set('elbowR', k(-1.2 * draw - 0.1 * fling));
+        set('shoulderL', k(-0.5 * fling), 0, k(0.8 * fling));
+        set('head', 0, k(0.5 * draw - 0.6 * fling), 0);
+        set('hipL', k(-0.3 * draw));
+        set('kneeL', k(0.35 * draw));
+        p[ROOT_Y] = k(-0.12 * draw);
+        break;
+      }
+      case 'spin': {
+        // Wound up (twisted, low), then arms flung out wide as it spins; dizzy, swaying, arms hanging.
+        if (mv.phase === 'windup') {
+          set('chest', 0.3 * wind, 1.0 * wind, 0);
+          set('spine', 0.2 * wind, 0.6 * wind, 0);
+          set('shoulderR', -0.6 * wind, 0, 0.8 * wind);
+          set('shoulderL', -0.4 * wind, 0, -0.6 * wind);
+          set('hipL', -0.5 * wind);
+          set('hipR', -0.5 * wind);
+          set('kneeL', 0.7 * wind);
+          set('kneeR', 0.7 * wind);
+          p[ROOT_Y] = -0.25 * wind;
+        } else if (mv.phase === 'spin') {
+          set('shoulderR', -0.3, 0, -1.5);
+          set('elbowR', -0.1);
+          set('shoulderL', -0.2, 0, 1.4);
+          set('chest', -0.15, -0.3, 0);
+          set('head', 0.2, 0, 0.3);
+          const s = mv.t * 18;
+          set('hipL', -0.4 * Math.sin(s));
+          set('hipR', 0.4 * Math.sin(s));
+          p[ROOT_Y] = -0.08;
+        } else {
+          const sway = Math.sin(t * 5);
+          set('chest', 0.25, 0.2 * sway, 0.25 * sway);
+          set('spine', 0.15, 0, 0.15 * sway);
+          set('head', 0.5, 0.4 * Math.sin(t * 3.3), 0.4 * sway);
+          set('shoulderR', 0.2, 0, -0.2);
+          set('shoulderL', 0.3, 0, 0.2);
+          set('kneeL', 0.25);
+          set('kneeR', 0.15);
+          p[ROOT_Y] = -0.08;
+        }
+        break;
+      }
+      case 'leap': {
+        if (mv.phase === 'windup') {
+          // Down low, the club cocked back, coiled.
+          set('hips', 0.6 * wind);
+          set('hipL', -1.5 * wind);
+          set('hipR', -1.4 * wind);
+          set('kneeL', 1.9 * wind);
+          set('kneeR', 1.8 * wind);
+          set('ankleL', -0.4 * wind);
+          set('ankleR', -0.4 * wind);
+          set('chest', 0.3 * wind);
+          set('shoulderR', 0.9 * wind, 0, -0.3 * wind);
+          set('shoulderL', 0.7 * wind, 0, 0.4 * wind);
+          set('head', -0.5 * wind);
+          p[ROOT_Y] = -0.5 * wind;
+        } else if (mv.phase === 'air') {
+          // Tucked, the club raised over its head to bring it down as it lands.
+          set('hipL', -1.2);
+          set('hipR', -0.9);
+          set('kneeL', 1.4);
+          set('kneeR', 1.1);
+          set('chest', -0.2);
+          set('shoulderR', -2.9, 0, -0.2);
+          set('elbowR', -0.4);
+          set('shoulderL', -1.6, 0, 0.6);
+          set('head', -0.3);
+        } else {
+          // Landed: crouched over the club, driven into the ground.
+          set('hipL', k(-1.3));
+          set('hipR', k(-1.1));
+          set('kneeL', k(1.6));
+          set('kneeR', k(1.4));
+          set('chest', k(0.8));
+          set('spine', k(0.4));
+          set('shoulderR', k(-0.4), 0, k(-0.1));
+          set('shoulderL', k(-0.2), 0, k(0.7));
+          set('head', k(0.3));
+          p[ROOT_Y] = k(-0.45);
+        }
+        break;
+      }
+      default:
         break;
     }
   }

@@ -15,6 +15,8 @@
 // 'dying', 'corpse', 'burrow'. Facing is an angle on the ground plane:
 // direction (sin a, cos a).
 
+import { initMoves, maybeStartMove, updateMove } from './mutantMoves.js';
+
 // Sprite frame columns in the zombie atlas (see render/zombieSprite.js).
 export const ZOMBIE_FRAMES = {
   walk: [0, 1, 2, 3],
@@ -27,7 +29,7 @@ export const ZOMBIE_FRAMES = {
 };
 
 // Session 15b: dormant (the gas station's authored mutant, crouched and still) and wake (unfolding).
-const ALIVE = new Set(['rise', 'walk', 'attack', 'stagger', 'dormant', 'wake']);
+const ALIVE = new Set(['rise', 'walk', 'attack', 'stagger', 'dormant', 'wake', 'move']); // Nov 16: 'move', a mutant's attack (ai/mutantMoves.js)
 
 // Session 13: each zombie spawned gets a fresh look seed, which picks its
 // clothes, hair and build (render/zombieLook.js). Cosmetic: a plain
@@ -78,6 +80,7 @@ export class Zombie {
     this.weakSpot = s.weakSpot ?? null; // { back, height, radius, multiplier }: the mutant's
     this.charge = s.charge ?? null; // the mutant's bursts of sprinting steps while chasing
     this.knockbackScale = s.knockbackScale ?? 1;
+    this.moves = s.moves ?? null; // Nov 16: the mutant's slam, backhand, spin and leap (ai/mutantMoves.js)
     this.glareCircle.r = this.hitRadius;
     this.glareCircle.vr = this.hitRadius;
   }
@@ -113,6 +116,8 @@ export class Zombie {
     this.chargeStarted = false; // set on the frame a burst starts (EnemyManager reports it)
     this.clearVia();
     this.attackBarrier = null; // the defence it's clawing (M5), or null for the player
+    this.screamT = 0;
+    initMoves(this);
   }
 
   // M5: no station route this frame.
@@ -205,6 +210,9 @@ export class Zombie {
         if (this.timer >= this.attackWindup + this.attackRecover) this.state = 'walk';
         break;
       }
+      case 'move':
+        updateMove(this, this.moves, player, dt, onStrike);
+        break;
       case 'stagger':
         this.timer -= dt;
         if (this.timer <= 0) this.state = 'walk';
@@ -236,6 +244,8 @@ export class Zombie {
     const dz = player.z - this.z;
     const dist = Math.hypot(dx, dz);
     this.turnToward(dx, dz, dt);
+    // Nov 16: a mutant picks its attacks (from further off than its old swipe: ai/mutantMoves.js).
+    if (this.moves && !this.via && maybeStartMove(this, this.moves, player, dt)) return;
     if (dist <= this.attackReach) {
       this.state = 'attack';
       this.timer = 0;
@@ -246,7 +256,11 @@ export class Zombie {
     const speed = this.charging ? this.charge.speed * this.moveScale : this.speed * this.pace * this.moveScale;
     const step = Math.min(speed * dt, dist - this.attackReach * 0.9);
     this.stepForward(step);
-    if (this.charging) this.chargeLeft = Math.max(0, this.chargeLeft - Math.max(0, step));
+    if (this.charging) {
+      this.chargeLeft = Math.max(0, this.chargeLeft - Math.max(0, step));
+      // Nov 16: a mutant charging into a car or a pump sets it off.
+      if (this.moves) this.impact = { x: this.x + Math.sin(this.facing) * this.radius, z: this.z + Math.cos(this.facing) * this.radius, r: this.radius + 0.5 };
+    }
   }
 
   // M5: along the station route; at a defence in the way, start clawing it.
@@ -343,7 +357,15 @@ export class Zombie {
       this.state = 'dying';
       this.timer = 0;
       this.sink = 0;
+      this.move = null;
+      this.air = 0;
       return true;
+    }
+    // Nov 16: in the middle of one of its moves a mutant shrugs a hit off (unless it's dizzy from its spin).
+    if (this.state === 'move' && this.move?.phase !== 'dizzy') return false;
+    if (this.state === 'move') {
+      this.move = null;
+      this.air = 0;
     }
     // A hit interrupts a swipe that hasn't landed, and stuns for a moment
     // (not while it's still climbing out of the ground).
@@ -389,6 +411,7 @@ export class Zombie {
         if (this.screamT > 0) return f.attackWindup; // Round 2: the Screamer, screaming (ai/Screamers.js)
         return f.walk[Math.floor(this.walked * this.cfg.walkFrameRate * f.walk.length) % f.walk.length];
       case 'attack':
+      case 'move':
         return this.struck ? f.attackStrike : f.attackWindup;
       case 'stagger':
         return f.stagger;

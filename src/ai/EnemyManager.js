@@ -85,9 +85,10 @@ export class EnemyManager {
     this.routes = new PathRoutes(map);
     this.marches = new MarchRoutes(map, Math.max(0, map.clearings.findIndex((c) => c.kind === 'home')));
     this.brain = new ZombieBrain(this.detCfg, this.cfg.wander, this.routes, this.ground, this.rng.fork('brain'), this.marches);
-    this.onStrike = (zombie, barrier) => {
+    this.onStrike = (zombie, barrier, hit = null) => {
       if (barrier) this.bus.emit('enemy:strikeDefence', { zombie, barrier, damage: zombie.attackDamage * this.stats.defenceDamage });
-      else this.bus.emit('enemy:strike', { zombie, damage: zombie.attackDamage * this.stats.damage });
+      // Nov 16: a mutant's move says its own damage and how it throws Tom (hit: { damage, push, hop, shake, kind }).
+      else this.bus.emit('enemy:strike', { zombie, damage: (hit?.damage ?? zombie.attackDamage) * this.stats.damage, hit });
     };
   }
 
@@ -440,6 +441,20 @@ export class EnemyManager {
     if (z.chargeStarted) {
       z.chargeStarted = false;
       this.bus.emit('enemy:charge', { zombie: z });
+    }
+    // Nov 16: a mutant's blow (or charge, or landing) near something that could go up: Vehicles and the
+    // gas station's pumps listen. And its leap or slam shaking the ground.
+    if (z.impact) {
+      this.bus.emit('mutant:impact', { zombie: z, x: z.impact.x, z: z.impact.z, r: z.impact.r });
+      z.impact = null;
+    }
+    if (z.moveStarted) {
+      this.bus.emit('mutant:move', { zombie: z, kind: z.moveStarted });
+      z.moveStarted = null;
+    }
+    if (z.landed) {
+      z.landed = false;
+      this.bus.emit('mutant:landed', { zombie: z, kind: z.move?.kind ?? z.lastMove });
     }
     if (z.alive && z.space) this.spaces?.get(z.space)?.confine?.(z, z.y, z.radius);
     else if (z.alive && collide) {

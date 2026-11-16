@@ -90,6 +90,7 @@ export class Vehicles {
       this.bus.on('player:respawned', () => this.reset()),
       this.bus.on('weapon:impact', (at) => this.onImpact(at)),
       this.bus.on('explosion', (e) => this.onExplosion(e)),
+      this.bus.on('mutant:impact', (e) => this.onMutantImpact(e)), // Nov 16
     ];
   }
 
@@ -344,6 +345,24 @@ export class Vehicles {
     v.hurt = Math.min(d.health, v.hurt + amount);
     if (was < d.health * d.fireAt && v.hurt >= d.health * d.fireAt) this.bus.emit('vehicle:burning', { vehicle: v });
     if (v.hurt >= d.health) this.explode(v);
+  }
+
+  // Nov 16 (Aaron: "if the mutant hits a car ... it will explode"): a mutant's blow, charge or landing
+  // within r of a car's body: it goes up a beat later (vehicles.damage.mutantFuse).
+  onMutantImpact({ x, z, r }) {
+    const fuse = this.vc.damage.mutantFuse ?? 0.25;
+    for (const v of this.list) {
+      if (v.wrecked || v.fuse >= 0) continue;
+      const [length, width] = v.def.size;
+      const dx = x - v.x;
+      const dz = z - v.z;
+      const along = dx * Math.sin(v.yaw) + dz * Math.cos(v.yaw);
+      const across = dx * Math.cos(v.yaw) - dz * Math.sin(v.yaw);
+      if (Math.abs(along) > length / 2 + r || Math.abs(across) > width / 2 + r) continue;
+      v.hurt = this.vc.damage.health;
+      v.fuse = fuse;
+      this.bus.emit('vehicle:mutantHit', { vehicle: v });
+    }
   }
 
   // A blast nearby (a charge, another car): cars in it take damage. One

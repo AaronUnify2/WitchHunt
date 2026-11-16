@@ -106,7 +106,17 @@ export class Combat {
     const { bus } = this;
     const muzzle = new THREE.Vector3();
     this.unsubscribers = [
-      bus.on('enemy:strike', ({ zombie, damage }) => this.onStrike(zombie, damage)),
+      bus.on('enemy:strike', ({ zombie, damage, hit }) => this.onStrike(zombie, damage, hit)),
+      // Nov 16: the mutant's moves: a roar before it leaps, the air as it spins, the ground jumping as it lands.
+      bus.on('mutant:move', ({ zombie, kind }) => {
+        if (kind === 'leap') this.sfx.play('mutantGroan', zombie);
+        else if (kind === 'spin') this.sfx.play('mutantWhirl', zombie);
+      }),
+      bus.on('mutant:landed', ({ zombie }) => {
+        this.sfx.play('mutantSlam', zombie);
+        const d = Math.hypot(zombie.x - this.player.position.x, zombie.z - this.player.position.z);
+        if (d < 22) this.player.shake(2.2 * (1 - d / 22));
+      }),
       bus.on('enemy:hit', ({ x, y, z, part, killed }) => {
         const critical = part === 'head' || part === 'weak';
         // Session 17: a helmet rings (no blood off it).
@@ -163,14 +173,16 @@ export class Combat {
     this.weapons.holdFire();
   }
 
-  onStrike(zombie, damage) {
+  onStrike(zombie, damage, hit = null) {
     if (this.shielded) return; // Session 21 (Aaron): nothing lands on Tom while a cutscene plays
     this.sfx.play('swipe', zombie);
     // Up the lookout tower, out of reach (M5). Session 30: not in an interior it's in with him (the mine).
     if (this.player.platform && !(zombie.space && zombie.space === this.player.space)) return;
     const scale = this.player.riding?.strikeScale?.() ?? 1; // the experimental ute: the cab's door, the tray's height
     if (scale <= 0) return;
-    this.hurtPlayer(damage * scale, zombie.kind === 'mutant' ? 2 : 1);
+    this.hurtPlayer(damage * scale, hit?.shake ?? (zombie.kind === 'mutant' ? 2 : 1));
+    // Nov 16: a mutant's backhand, spin or leap throws him (Player.push).
+    if (hit?.push && this.alive) this.player.push(hit.push.x, hit.push.z, hit.hop ?? 0);
   }
 
   // Damage the player (armour first). shake: x the usual hurt shake.
@@ -357,6 +369,8 @@ export class Combat {
     s.sprinting = p.sprinting;
     s.speed = p.speed;
     s.undergrowth = p.undergrowth;
+    s.vx = (p.velocity?.x ?? 0) + (p.shoveV?.x ?? 0); // Nov 16: where he's going (the mutant aims ahead of him)
+    s.vz = (p.velocity?.z ?? 0) + (p.shoveV?.z ?? 0);
     s.unseen = Boolean(this.unseen || this.inside); // Session 19: an "unseen" cutscene playing; Session 21: or Tom's inside an interior
     s.space = this.inside ?? null; // Session 21: the interior he's in (EnemyManager: everything outside it goes abstract)
     return s;
