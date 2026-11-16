@@ -97,6 +97,8 @@ export class Objectives {
       // Round 2: the rifle comes down from the tower with him.
       if (st.rifleOnTower) return step('towerRifle', "Take the rifle from the tower's platform. You'll want it out there.", L.tower.ladder);
       if (!has('campsiteVisited')) return step('campsite', 'Check on the campers at the campground, west of home.', clearing('campsite'));
+      // Nov 16: the dead round the fire first (the same step as the horde: Ellen's board says the same).
+      if (cs.fireFight) return step('wave', 'Fight off the dead at the campground.');
       if (watching('camcorder')) return step('camcorder', "Watch the campers' camcorder (D-pad down).");
       // Plan #7: the fight first, while it's on (the shotgun taken before the camcorder).
       if (cs.waveStarted && !cs.waveCleared) return step('wave', 'Fight off the dead at the campground.');

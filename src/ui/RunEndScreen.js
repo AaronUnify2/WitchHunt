@@ -46,7 +46,9 @@ export class RunEndScreen {
 
   // kind: 'victory' | 'defeat'. title, reason: the summary's heading.
   // stats: runStats. nights: nights survived.
-  show(kind, title, reason, stats, nights) {
+  // retry (Nov 16): { label } to offer trying again from a retry point (Day 1's campground), or null.
+  show(kind, title, reason, stats, nights, retry = null) {
+    this.retry = retry;
     this.kind = kind;
     this.title = title;
     this.reason = reason;
@@ -70,6 +72,7 @@ export class RunEndScreen {
     this.el.className = `run-end ${this.kind}`;
     this.titleEl.textContent = this.title;
     this.reasonEl.textContent = this.reason ?? '';
+    this.el.querySelector('.run-end-prompt').textContent = this.retry ? `A / Enter: try again from ${this.retry.label}` : 'A / Enter: start a new run';
     this.tableEl.innerHTML = summaryRows(this.stats, this.nights)
       .map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`)
       .join('');
@@ -80,7 +83,7 @@ export class RunEndScreen {
   update(dt, input) {
     if (!this.summaryShown) return;
     this.summaryTime += dt;
-    if (this.summaryTime > this.cfg.summaryInputDelay && input.wasPressed('menuConfirm')) this.bus.emit('run:newRequested');
+    if (this.summaryTime > this.cfg.summaryInputDelay && input.wasPressed('menuConfirm')) this.bus.emit(this.retry ? 'run:retryRequested' : 'run:newRequested');
   }
 
   dispose() {

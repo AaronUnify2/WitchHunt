@@ -43,7 +43,7 @@ export class MetaStore {
     return Boolean(this.get('introSeen'));
   }
 
-  // The choice to carry across the reload ('new' | 'skip'), or null.
+  // The choice to carry across the reload ('new' | 'skip' | 'retry': Nov 16, Day 1's retry from the campground), or null.
   setPendingChoice(choice) {
     try {
       if (choice) this.session.setItem(this.cfg.pendingKey, choice);
@@ -58,7 +58,7 @@ export class MetaStore {
     try {
       const choice = this.session?.getItem(this.cfg.pendingKey) ?? null;
       this.session?.removeItem(this.cfg.pendingKey);
-      return choice === 'new' || choice === 'skip' ? choice : null;
+      return choice === 'new' || choice === 'skip' || choice === 'retry' ? choice : null;
     } catch {
       return null;
     }

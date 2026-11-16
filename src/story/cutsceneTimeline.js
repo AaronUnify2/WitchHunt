@@ -93,7 +93,7 @@ export function cutsceneLength(cs) {
 }
 
 const STYLES = ['cctv', 'firstPerson', 'sweep', 'black'];
-const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode']; // Session 17: the last four, things in the sky
+const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode', 'caption']; // Session 17: fly, beam, trail and explode, things in the sky; Nov 16: caption (the trailer's)
 
 // Checks the cutscenes file: unique ids, known styles, looks and events,
 // lines that exist, actors that exist. Returns a list of problems.

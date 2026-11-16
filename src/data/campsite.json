@@ -43,6 +43,10 @@
         {
           "item": "scrap",
           "amount": 4
+        },
+        {
+          "item": "rifleAmmo",
+          "amount": 4
         }
       ],
       "loot": [
@@ -69,6 +73,10 @@
         {
           "item": "firstAid",
           "amount": 1
+        },
+        {
+          "item": "rifleAmmo",
+          "amount": 4
         }
       ],
       "loot": [
@@ -95,7 +103,7 @@
       "gives": [
         {
           "item": "rifleAmmo",
-          "amount": 4
+          "amount": 6
         }
       ],
       "loot": [
@@ -117,7 +125,7 @@
       "gives": [
         {
           "item": "rifleAmmo",
-          "amount": 10
+          "amount": 12
         },
         {
           "item": "scrap",
@@ -140,6 +148,10 @@
         {
           "item": "scrap",
           "amount": 6
+        },
+        {
+          "item": "rifleAmmo",
+          "amount": 4
         }
       ],
       "loot": [
@@ -322,25 +334,76 @@
     "rise": 0.9
   },
   "wave": {
-    "count": 7,
-    "spread": 6,
-    "arcs": [
-      [
-        60,
-        130
-      ],
-      [
-        -130,
-        -60
+    "_note": "Nov 16 (Aaron: the horde from the trees behind the car): 'groups' come out of the treeline in turn. The first, with 'lead' (one a few metres into the trees, right where the cutscene's first shot looks), as the horde cutscene (campsite.horde) starts; the second 'after' seconds into it. Angles in the campsite frame (0 ahead, 90 right): the car is at about -147, by the path in from home, so they come between Tom and home.",
+    "lead": {
+      "angle": -150,
+      "out": 1.5,
+      "speedRange": [
+        0.24,
+        0.27
       ]
-    ],
-    "beyondEdge": [
-      4,
-      9
+    },
+    "groups": [
+      {
+        "count": 8,
+        "after": 0,
+        "spread": 1.8,
+        "arcs": [
+          [
+            -172,
+            -128
+          ]
+        ],
+        "beyondEdge": [
+          3,
+          7
+        ]
+      },
+      {
+        "count": 6,
+        "after": 16,
+        "spread": 5,
+        "arcs": [
+          [
+            -150,
+            -105
+          ],
+          [
+            150,
+            192
+          ]
+        ],
+        "beyondEdge": [
+          4,
+          9
+        ]
+      }
     ],
     "speedRange": [
       0.38,
       0.48
+    ]
+  },
+  "fireGroup": {
+    "_note": "Nov 16 (Aaron: 'when the player arrives, 4 zombies are in the campground, standing near the campfire'): placed as Tom comes within spawnAt metres of the clearing's centre on Day 1, standing round the fire facing it (frame spots); they turn to him at the end of the arrival sweep (campsite:fireTurn) and come for him as it ends. Shot from up the path, they come at once.",
+    "spawnAt": 60,
+    "spots": [
+      [
+        -1.75,
+        0.95
+      ],
+      [
+        1.8,
+        0.85
+      ],
+      [
+        -1.35,
+        2.75
+      ],
+      [
+        1.45,
+        2.8
+      ]
     ]
   }
 }

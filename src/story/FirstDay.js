@@ -234,7 +234,10 @@ export class FirstDay {
   update(dt, playing) {
     const day1 = this.clock.day === 1 && this.clock.phase === 'day';
     // Day 1 can't be failed (config.firstDay.healthFloor: a share of full health).
-    this.combat.setHealthFloor('day1', day1 && this.fc.cantFail ? this.fc.healthFloor : 0); // Session 20: the general switch
+    // Nov 16 (Aaron: "There is zero chance of dying in the initial campground scene"): from the campground's
+    // arrival until its horde is down Tom can die (Game's retry point puts him back on the path in).
+    const campFight = this.fc.campsiteCanKill && this.campsite.arrived && !this.campsite.waveCleared;
+    this.combat.setHealthFloor('day1', day1 && this.fc.cantFail && !campFight ? this.fc.healthFloor : 0); // Session 20: the general switch
     // Session 15b (Aaron): the gate's locked on Day 1 until Tom's been up the tower.
     this.station.gateLocked = this.gateLocked();
     // Session 15b (Aaron): the rifle on the tower is Night 1's beat (Ellen sends Tom up for it).

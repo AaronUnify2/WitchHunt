@@ -1,9 +1,12 @@
 // The abandoned campsite (M9.2; DESIGN.md "Abandoned campsite", agreed with
 // Aaron in Session 15): the first stop of every run. Arrive calm, search,
 // get hit with a turn, get rewarded, go home changed.
-//  1. Arrival: walking into the clearing plays an establishing sweep and
-//     Wyatt's line 5 (check the car and the tents). Sets campsiteVisited;
-//     the smoke over the trees is gone.
+//  1. Arrival: four of the dead stand round the campers' fire (Nov 16,
+//     Aaron). Walking into the clearing plays the establishing sweep, which
+//     ends on them turning round; they come for Tom as it ends. With them
+//     down, Wyatt's line 5 (check their shelters). Sets campsiteVisited;
+//     the smoke over the trees is gone. (Day 1's retry point is taken just
+//     before: onCheckpoint.)
 //  2. The search: hold-X search points (data/campsite.json): the cooler
 //     by the entrance, the tents, a backpack. Each teaches a pickup.
 //  3. The camcorder (in the cooler, near the entrance): Ellen's line 6,
@@ -111,10 +114,13 @@ export class Campsite {
       this.bus.on('player:hurt', () => this.hold.interrupt()),
       this.bus.on('campsite:turn', () => this.figureTurn()), // day2.screamer's emits
       this.bus.on('campsite:scream', () => this.figureScream()),
+      this.bus.on('campsite:fireTurn', () => this.fireTurn()), // sweep.campsite's last shot
       // The wave's zombies, off the list as they fall (a pool slot can come back as another).
       this.bus.on('enemy:killed', ({ zombie }) => {
         const i = this.wave.indexOf(zombie);
         if (i >= 0) this.wave.splice(i, 1);
+        const j = this.fire.indexOf(zombie);
+        if (j >= 0) this.fire.splice(j, 1);
       }),
       this.bus.on('vehicle:battery', ({ vehicle }) => {
         if (vehicle === this.car && !this.batteryTaken) {
@@ -140,6 +146,11 @@ export class Campsite {
     this.batteryTaken = false;
     this.wave = []; // the wave's zombies
     this.queue = []; // { at (seconds), x, z } still to burst out
+    this.fire = []; // Nov 16: the dead standing round the fire as Tom arrives
+    this.fireSent = false;
+    this.fireAwake = false;
+    this.fireCleared = false;
+    this.fireFacing = 0;
     this.waveTime = 0;
     this.pendingClip = -1; // (unused since Session 16: the clip waits for D-pad down)
     this.tapeWatched = false; // Session 16: the camcorder's clip has been started
@@ -212,6 +223,7 @@ export class Campsite {
     const p = this.player.position;
     const c = this.clearing;
     const inside = Math.hypot(p.x - c.x, p.z - c.z) <= c.radius - this.cc.arriveInset;
+    this.updateFire(p, dt);
     if (inside && !this.arrived) this.arrive();
     if (this.pendingClip >= 0) {
       this.pendingClip -= dt;
@@ -220,7 +232,9 @@ export class Campsite {
     // Round 2: the wave, a moment after the tape (or after it's put away unwatched).
     if (this.waveIn >= 0 && !this.waveStarted && !this.cutscenes?.active) {
       this.waveIn -= dt;
-      if (this.waveIn < 0) this.startWave();
+      // Nov 16: the tape kept, not watched: they come as he makes to leave, if not before.
+      const leaving = this.tapeKept && Math.hypot(p.x - c.x, p.z - c.z) > c.radius - (this.cc.leaveInset ?? 2.5);
+      if (this.waveIn < 0 || leaving) this.startWave();
     }
     this.updateWave(dt);
     this.updateEmergencyRounds();
@@ -375,13 +389,100 @@ export class Campsite {
   // ---- the beats ----------------------------------------------------------------------------------
 
   arrive() {
+    // Nov 16 (Aaron: Tom can die here now): Day 1's retry point, before anything's changed.
+    if (this.clock?.day === 1 && !this.progress.has('campsiteVisited')) this.onCheckpoint?.(this.retrySpot());
     this.arrived = true;
     this.props.setSmoke(false);
     this.progress.setFlag('campsiteVisited');
     this.bus.emit('campsite:arrived');
     // The establishing sweep (with Wyatt's line 5), unless something's already playing.
-    if (!this.cutscenes.active) this.cutscenes.play('sweep.campsite', { anchors: { campsite: this.frameAnchor() } });
-    else this.dialogue.play('day1.05');
+    // Nov 16: it ends on the dead at the fire turning round; they come for him as it ends (skipped too).
+    const go = () => this.wakeFire();
+    if (this.cutscenes.active || !this.cutscenes.play('sweep.campsite', { anchors: { campsite: this.frameAnchor() }, onDone: go })) go();
+  }
+
+  // Where a retry from the campground puts Tom: on the path in from home, a few strides out, facing in.
+  retrySpot() {
+    const f = this.frame;
+    const e = f.entrance;
+    return { x: e.x - f.fx * 7, z: e.z - f.fz * 7, yaw: Math.atan2(-f.fx, -f.fz) };
+  }
+
+  // ---- the dead at the fire (Nov 16) ----------------------------------------------------------------
+
+  updateFire(p, dt) {
+    const fg = this.data.fireGroup;
+    if (!fg || !this.enemies) return;
+    const c = this.clearing;
+    if (!this.fireSent) {
+      if (this.arrived || this.progress?.has('campsiteVisited') || this.clock?.day !== 1) return;
+      if (Math.hypot(p.x - c.x, p.z - c.z) > fg.spawnAt) return;
+      this.fireSent = true;
+      const f = this.data.props.fire;
+      const fire = frameToWorld(this.frame, f.x, f.z);
+      this.fireAt = fire;
+      for (const [x, z] of fg.spots) {
+        const w = frameToWorld(this.frame, x, z);
+        const facing = Math.atan2(fire.x - w.x, fire.z - w.z);
+        const zb = this.enemies.spawnZombie(w.x, w.z, { variant: 'citizen', mode: 'linger', linger: { x: w.x, z: w.z, r: 0.5 }, rise: false, facing, authored: 'campsite' });
+        if (!zb) continue;
+        zb.sightScale = 0; // round the fire, heads down, until the sweep's done (or a shot)
+        zb.deaf = true;
+        this.fire.push(zb);
+      }
+      return;
+    }
+    if (this.fireCleared) return;
+    if (!this.fireAwake) {
+      // Shot from up the path (or walked into before the sweep): they all come.
+      if (this.fire.some((z) => z.alive && (z.health < z.maxHealth || z.mode === 'chase'))) {
+        this.wakeFire();
+        return;
+      }
+      for (const z of this.fire) {
+        if (!z.alive || z.mode !== 'linger') continue;
+        // Rooted, turned the way the beat wants (to the fire, then to Tom).
+        const look = this.fireTurned ? this.player.position : this.fireAt;
+        z.pace = 0;
+        z.goalX = z.x + (look.x - z.x) * 4;
+        z.goalZ = z.z + (look.z - z.z) * 4;
+        z.hasGoal = true;
+      }
+    }
+    if (this.fire.every((z) => !z.alive)) this.fireDown();
+  }
+
+  // The sweep's last shot: their heads come up off the fire, toward him.
+  fireTurn() {
+    this.fireTurned = true;
+  }
+
+  wakeFire() {
+    if (this.fireAwake || !this.fireSent) return;
+    this.fireAwake = true;
+    this.fireTurned = true;
+    const p = this.player.position;
+    for (const z of this.fire) {
+      if (!z.alive) continue;
+      z.sightScale = 1;
+      z.deaf = false;
+      this.enemies.brain.chase(z, p.x, p.z, 30);
+    }
+    if (!this.fire.some((z) => z.alive)) this.fireDown();
+  }
+
+  // All four down: Wyatt, check their shelters (his line 5, off the sweep since Nov 16).
+  fireDown() {
+    if (this.fireCleared) return;
+    this.fireCleared = true;
+    this.fire = [];
+    this.dialogue?.play('day1.05');
+    this.bus.emit('campsite:fireCleared');
+  }
+
+  // Is the fight round the fire on (for the objective)?
+  get fireFight() {
+    return this.fireSent && !this.fireCleared && this.arrived;
   }
 
   // The campsite frame as a cutscene anchor (yaw: facing in from the path).
@@ -433,6 +534,7 @@ export class Campsite {
 
   offerTape() {
     if (this.tapeWatched) return;
+    this.tapeKept = true;
     // Kept for later: they come anyway, a little after (the cars wait on the tape or the wave).
     if (!this.waveStarted && !(this.waveIn >= 0)) this.waveIn = this.cc.waveAfterKeep;
     if (!this.watch?.offer({ id: 'camcorder', pad: 'D-pad down: play the camcorder', key: 'V: play the camcorder', play: () => this.playClip() })) {
@@ -456,6 +558,7 @@ export class Campsite {
       // come out of the trees as the tape ends.
       onDone: () => {
         this.dialogue.play('day1.07');
+        this.tapeKept = false;
         this.waveIn = this.cc.waveAfterTape;
       },
     });
@@ -473,21 +576,43 @@ export class Campsite {
 
   // ---- the wave -----------------------------------------------------------------------------------
 
+  // Nov 16 (Aaron: "focus is put on the camper's car with the collect the battery to supercharge the fence
+  // dialogue, however this time we spawn a horde of zombies in the trees behind the car and let them emerge
+  // from the edge of the forest"): the horde, in groups out of the treeline behind the car (between Tom and
+  // home), the first as its cutscene (campsite.horde) starts. Ellen asks for the battery in it.
   startWave() {
     if (this.waveStarted) return;
     this.waveStarted = true;
-    this.dialogue.play('day1.08');
     const w = this.data.wave;
     const r = this.waveRng;
     this.queue = [];
-    for (let i = 0; i < w.count; i++) {
-      const arc = w.arcs[i % w.arcs.length];
-      const at = frameEdge(this.frame, r.range(arc[0], arc[1]), r.range(w.beyondEdge[0], w.beyondEdge[1]));
-      this.queue.push({ at: (w.spread * i) / Math.max(1, w.count - 1), x: at.x, z: at.z });
+    if (w.lead) {
+      const at = frameEdge(this.frame, w.lead.angle, w.lead.out);
+      this.queue.push({ at: 0, x: at.x, z: at.z, lead: true });
     }
+    let count = this.queue.length;
+    for (const g of w.groups ?? [{ count: w.count, after: 0, spread: w.spread, arcs: w.arcs, beyondEdge: w.beyondEdge }]) {
+      for (let i = 0; i < g.count; i++) {
+        const arc = g.arcs[i % g.arcs.length];
+        const at = frameEdge(this.frame, r.range(arc[0], arc[1]), r.range(g.beyondEdge[0], g.beyondEdge[1]));
+        this.queue.push({ at: g.after + (g.spread * i) / Math.max(1, g.count - 1), x: at.x, z: at.z });
+      }
+      count += g.count;
+    }
+    this.queue.sort((a, b) => a.at - b.at);
     this.waveTime = 0;
     this.wave = [];
-    this.bus.emit('campsite:wave', { count: w.count });
+    this.bus.emit('campsite:wave', { count });
+    const done = () => {
+      // Off the cutscene: all of them on him (the cutscene's start made the far ones forget).
+      const p = this.player.position;
+      for (const z of this.wave) if (z.alive) this.enemies.brain.chase(z, p.x, p.z, 30);
+      if (!this.dialogue?.heard?.has?.('day1.10')) this.dialogue?.play('day1.10');
+    };
+    if (this.cutscenes?.active || !this.cutscenes?.play('campsite.horde', { anchors: { campsite: this.frameAnchor() }, onDone: done })) {
+      this.dialogue.play('day1.08');
+      done();
+    }
   }
 
   updateWave(dt) {
@@ -497,9 +622,10 @@ export class Campsite {
     const p = this.player.position;
     while (this.queue.length && this.queue[0].at <= this.waveTime) {
       const q = this.queue.shift();
-      const z = this.enemies.spawnZombie(q.x, q.z, { variant: 'citizen', mode: 'chase', rise: false, speedRange: w.speedRange, facing: Math.atan2(p.x - q.x, p.z - q.z) });
+      const z = this.enemies.spawnZombie(q.x, q.z, { variant: 'citizen', mode: 'chase', rise: false, speedRange: (q.lead && w.lead.speedRange) || w.speedRange, facing: Math.atan2(p.x - q.x, p.z - q.z), authored: 'campsite' });
       if (z) {
         this.wave.push(z);
+        this.enemies.brain.chase(z, p.x, p.z, 30);
         this.enemies.alert(z.x, z.z, 1);
       }
     }
@@ -510,9 +636,8 @@ export class Campsite {
     this.waveCleared = true;
     this.wave = [];
     this.bus.emit('campsite:cleared');
-    // Aaron (Nov 14): just the objective. (Wyatt's 'they just kept coming' and Ellen's preamble are cut: by the
-    // time the battery was asked for, Tom could be out of the campground.)
-    this.dialogue.play('day1.10');
+    // Nov 16: Ellen asked for the battery as they came (the horde's cutscene); nothing more's said.
+    if (!this.dialogue?.heard?.has?.('day1.10')) this.dialogue.play('day1.10');
   }
 
   // ---- skip intro and saving ------------------------------------------------------------------
@@ -528,6 +653,8 @@ export class Campsite {
     this.waveStarted = true;
     this.waveCleared = true;
     this.batteryTaken = true;
+    this.fireSent = true;
+    this.fireCleared = true;
     this.props.setSmoke(false);
     const v = this.car;
     if (v) {
@@ -550,6 +677,7 @@ export class Campsite {
       cleared: this.waveCleared,
       battery: this.batteryTaken,
       figure: this.figureSent, // Plan #19
+      fire: this.fireCleared || this.arrived, // Nov 16: the dead at the fire (not saved: a save after arriving comes back with them down)
     };
   }
 
@@ -566,6 +694,7 @@ export class Campsite {
     this.waveCleared = Boolean(d.cleared) || this.waveStarted;
     this.batteryTaken = Boolean(d.battery);
     this.figureSent = Boolean(d.figure);
+    this.fireSent = this.fireCleared = Boolean(d.fire ?? this.arrived);
     this.queue = [];
     this.wave = [];
     this.props.setSmoke(!this.arrived);
@@ -581,7 +710,7 @@ export class Campsite {
       this.player.teleport(e.x - f.fx * 6, e.z - f.fz * 6, Math.atan2(-f.fx, -f.fz));
       this.notify('At the path into the campsite');
     });
-    day1.addItem('Campsite: start the shotgun wave now', () => {
+    day1.addItem('Campsite: start the horde now (its cutscene)', () => {
       if (this.waveStarted && !this.waveCleared) return this.notify('The wave is already on');
       this.waveStarted = false;
       this.waveCleared = false;

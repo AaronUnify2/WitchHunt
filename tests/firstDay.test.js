@@ -114,15 +114,24 @@ describe('the campsite layout', () => {
     expect(car.alarm).toBe(false);
   });
 
-  it('sends the wave from the flanks, past the edge', () => {
+  // Nov 16 (Aaron): the horde out of the trees behind the car (by the path in from home), in two groups.
+  it('sends the horde out of the treeline behind the car, in groups', () => {
     const wv = campsite.wave;
-    expect(wv.count).toBeGreaterThanOrEqual(6);
-    expect(wv.count).toBeLessThanOrEqual(8);
-    for (const [a, b] of wv.arcs) {
-      expect(Math.abs(a)).toBeGreaterThan(30); // not from the path in
-      expect(Math.abs(b)).toBeGreaterThan(30);
-    }
-    expect(wv.beyondEdge[0]).toBeGreaterThan(0);
+    const total = wv.groups.reduce((n, g) => n + g.count, 0) + (wv.lead ? 1 : 0);
+    expect(total).toBeGreaterThanOrEqual(12);
+    expect(total).toBeLessThanOrEqual(18);
+    const carAngle = (Math.atan2(campsite.car.x, campsite.car.z) * 180) / Math.PI;
+    const [a, b] = wv.groups[0].arcs[0];
+    expect(carAngle).toBeGreaterThan(Math.min(a, b));
+    expect(carAngle).toBeLessThan(Math.max(a, b)); // the first group: behind the car
+    for (const g of wv.groups) expect(g.beyondEdge[0]).toBeGreaterThan(0); // out of the trees, not out of the ground
+    expect(wv.groups[1].after).toBeGreaterThan(8); // a breath to reload between them
+  });
+
+  it('has four of the dead at the fire and enough rounds for the lot', () => {
+    expect(campsite.fireGroup.spots).toHaveLength(4);
+    const sure = campsite.searches.flatMap((s) => s.gives ?? []).filter((g) => g.item === 'rifleAmmo').reduce((n, g) => n + g.amount, 0);
+    expect(sure).toBeGreaterThanOrEqual(30); // with the rifle's 15 and the rolls: about two rounds a zombie and more
   });
 });
 

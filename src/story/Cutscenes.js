@@ -81,6 +81,14 @@ export class Cutscenes {
       <p class="cs-skip">A / Enter: skip</p>
     `;
     root.appendChild(this.el);
+    // Nov 16 (Aaron: "it may be appropriate to caption certain things, like the enemy's name or clearing
+    // name ... only to assist me with screen recording"): the trailer captions, shown only while the debug
+    // menu's "Trailer captions" is on (off by default: players never see them).
+    this.captionEl = document.createElement('div');
+    this.captionEl.className = 'trailer-caption hidden';
+    this.captionEl.innerHTML = '<div class="tc-title"></div><div class="tc-sub"></div>';
+    root.appendChild(this.captionEl);
+    this.captionLeft = 0;
     const q = (s) => this.el.querySelector(s);
     this.fadeEl = q('.cs-fade');
     this.osdEl = q('.cs-osd');
@@ -90,6 +98,25 @@ export class Cutscenes {
     this.osdMark = q('.cs-osd-mark');
     this.osdExtra = q('.cs-osd-extra');
     this.skipEl = q('.cs-skip');
+  }
+
+  // A trailer caption (title, an optional line under it) for seconds. Does nothing unless they're on.
+  caption(title, sub = '', seconds = 2.6) {
+    if (!Cutscenes.trailerCaptions || !this.captionEl) return false;
+    this.captionEl.querySelector('.tc-title').textContent = title;
+    this.captionEl.querySelector('.tc-sub').textContent = sub ?? '';
+    this.captionEl.className = 'trailer-caption';
+    void this.captionEl.offsetWidth; // restart its fade-in
+    this.captionEl.className = 'trailer-caption shown';
+    this.captionLeft = seconds;
+    return true;
+  }
+
+  // Each frame, cutscene or not (Game): the caption's time runs out.
+  updateCaption(dt) {
+    if (this.captionLeft <= 0) return;
+    this.captionLeft -= dt;
+    if (this.captionLeft <= 0) this.captionEl.className = 'trailer-caption';
   }
 
   // ---- state other systems read -------------------------------------------------------------------
@@ -404,6 +431,9 @@ export class Cutscenes {
         // "linesAfter" (the dogfight: too crowded): its lines, the family's reaction, wait until it's over.
         if (this.speaksDuring(cur.data)) this.dialogue.play(e.line, cur.opts.vars ?? {}, e.radio ?? null);
         else cur.after.push([e.line, cur.opts.vars ?? {}, e.radio ?? null]);
+        break;
+      case 'caption':
+        this.caption(e.text, e.sub ?? '', e.seconds ?? 2.6);
         break;
       case 'text':
         this.subtitles.show({ speaker: e.speaker ?? 'radio', text: e.text, radio: Boolean(e.radio) });
@@ -765,6 +795,12 @@ export class Cutscenes {
 
   addDebugItems(menu) {
     const cat = menu.category(DEBUG.cutscenes);
+    cat.addItem('Trailer captions: on / off (for recording; off for players)', () => {
+      Cutscenes.trailerCaptions = !Cutscenes.trailerCaptions;
+      this.caption('TRAILER CAPTIONS ON', 'they show on the moments picked for the trailer', 2);
+      if (!Cutscenes.trailerCaptions) this.captionEl.className = 'trailer-caption hidden';
+      return Cutscenes.trailerCaptions ? 'Trailer captions on' : 'Trailer captions off';
+    });
     for (const cs of this.list) cat.addItem(`Play: ${cs.name}${cs.placeholder ? ' (placeholder)' : ''}`, () => this.play(cs.id, { anchors: this.debugAnchors(cs) }));
   }
 
@@ -784,8 +820,12 @@ export class Cutscenes {
     this.stop(true);
     this.zombieSprites.dispose();
     this.el.remove();
+    this.captionEl?.remove();
   }
 }
+
+// Nov 16: the trailer captions (debug menu, Cutscenes > Trailer captions). Off for players.
+Cutscenes.trailerCaptions = false;
 
 // A zombie's look seed from its actor id (the same look every time it plays).
 function seedOf(id) {

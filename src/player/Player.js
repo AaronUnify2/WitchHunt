@@ -70,6 +70,7 @@ export class Player {
     this.jetpack = false; // Session 16: the debug jetpack (hold jump in the air)
     this.jetFuel = 0;
     this.rooted = false; // M7: caught in the witch's snare: no moving or jumping (looking and shooting still work)
+    this.clearShoves();
     this.riding?.eject?.(); // Session 15b: off the quad bike
     this.riding = null; // Session 15b: the quad bike while Tom's on it (it moves him: world/Quad.js)
     this.recoilPitch = 0; // camera kick on top of the aim pitch, settles back
@@ -97,7 +98,56 @@ export class Player {
     if (this.camera) this.applyCamera();
   }
 
+  // Nov 16 (Aaron: the mutant's backhand, the screamer's wind, the grey's
+  // arcs): a shove. (vx, vz) in m/s is added on top of walking and fades
+  // out at config player.shove.decay per second; walls still stop it. hop
+  // (m/s up) lifts him off his feet for a moment.
+  push(vx, vz, hop = 0) {
+    if (this.riding || (this.platform && !this.platform.room)) return; // never off the tower, never off the quad
+    const max = this.cfg.shove?.max ?? 14;
+    this.shoveV.x += vx;
+    this.shoveV.z += vz;
+    const len = Math.hypot(this.shoveV.x, this.shoveV.z);
+    if (len > max) {
+      this.shoveV.x *= max / len;
+      this.shoveV.z *= max / len;
+    }
+    if (hop > 0 && this.onGround) {
+      this.verticalSpeed = hop;
+      this.onGround = false;
+    }
+  }
+
+  // A scripted carry (a cutscene throwing Tom): from where he is to (x, z)
+  // over seconds, eased, lifting him by hop metres at the middle. No
+  // collision: the path is chosen clear.
+  glideTo(x, z, seconds, hop = 0) {
+    this.glide = { x0: this.position.x, z0: this.position.z, x1: x, z1: z, t: 0, seconds: Math.max(0.05, seconds), hop };
+    this.shoveV.x = 0;
+    this.shoveV.z = 0;
+  }
+
+  // Nov 16 (Aaron: the grey's mind scramble ray): for seconds, the move
+  // and look are both turned around (W is back, A is right, the mouse and
+  // the sticks inverted). On foot only.
+  scramble(seconds) {
+    this.scrambleT = Math.max(this.scrambleT, seconds);
+    this.scrambleSeconds = Math.max(this.scrambleT, this.scrambleSeconds || 0);
+  }
+
+  get scrambled() {
+    return this.scrambleT > 0;
+  }
+
+  clearShoves() {
+    this.shoveV = { x: 0, z: 0 };
+    this.glide = null;
+    this.scrambleT = 0;
+    this.scrambleSeconds = 0;
+  }
+
   update(dt, input) {
+    if (this.scrambleT > 0) this.scrambleT = Math.max(0, this.scrambleT - dt);
     if (this.riding) {
       // Session 15b: on the quad bike it does the moving; he looks about.
       this.updateLook(input);
@@ -111,7 +161,8 @@ export class Player {
     this.updateLook(input);
     this.updateFeedback(dt);
     this.updateStance(input);
-    this.updateMovement(dt, input);
+    if (this.glide) this.updateGlide(dt);
+    else this.updateMovement(dt, input);
     this.updateVertical(dt, input);
     this.updateEyeHeight(dt);
     this.updateHeadBob(dt);
@@ -122,7 +173,8 @@ export class Player {
 
   updateLook(input) {
     const look = input.getLook();
-    const scale = (input.activeDevice === 'gamepad' ? this.lookScale : 1) * this.scopeLookScale; // the mouse is never assisted
+    let scale = (input.activeDevice === 'gamepad' ? this.lookScale : 1) * this.scopeLookScale; // the mouse is never assisted
+    if (this.scrambleT > 0 && !this.riding) scale = -scale; // the grey's ray: mouse and stick inverted, both ways
     const limit = this.cfg.pitchLimit * DEG_TO_RAD;
     this.yaw -= look.x * scale;
     this.pitch = THREE.MathUtils.clamp(this.pitch + look.y * scale, -limit, limit);
@@ -164,9 +216,27 @@ export class Player {
     }
   }
 
+  updateGlide(dt) {
+    const g = this.glide;
+    g.t = Math.min(g.seconds, g.t + dt);
+    const k = g.t / g.seconds;
+    const e = 1 - (1 - k) * (1 - k); // fast off the hit, slowing into the landing
+    const p = this.position;
+    p.x = g.x0 + (g.x1 - g.x0) * e;
+    p.z = g.z0 + (g.z1 - g.z0) * e;
+    this.velocity.x = 0;
+    this.velocity.z = 0;
+    const floor = this.ground.heightAt(p.x, p.z);
+    p.y = floor + Math.sin(Math.PI * k) * g.hop;
+    this.onGround = true;
+    this.verticalSpeed = 0;
+    if (g.t >= g.seconds) this.glide = null;
+  }
+
   updateMovement(dt, input) {
     const c = this.cfg;
-    const move = input.getMove();
+    const raw = input.getMove();
+    const move = this.scrambleT > 0 ? { x: -raw.x, y: -raw.y } : raw; // the grey's ray: W is back, A is right
     const amount = Math.hypot(move.x, move.y);
     const moving = amount >= c.sprintMinMove;
     if (!moving || this.stamina.empty) this.sprintLatched = false;
@@ -197,6 +267,16 @@ export class Player {
     const p = this.position;
     p.x += this.velocity.x * dt;
     p.z += this.velocity.z * dt;
+    const sv = this.shoveV;
+    if (sv.x || sv.z) {
+      // A shove: on top of the walk, fading out (walls stop it below).
+      p.x += sv.x * dt;
+      p.z += sv.z * dt;
+      const fade = Math.exp(-(c.shove?.decay ?? 5) * dt);
+      sv.x *= fade;
+      sv.z *= fade;
+      if (Math.hypot(sv.x, sv.z) < 0.05) sv.x = sv.z = 0;
+    }
     const pl = this.platform;
     if (pl?.room) {
       // Session 16: down in a room (the storm shelter): its walls keep you in, round its furniture.

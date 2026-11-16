@@ -1040,6 +1040,7 @@ export const config = {
     // Session 16 (Aaron, a try-out from the debug menu): a jetpack. Hold A
     // (jump) in the air to climb; `seconds` of fuel, refilled on landing.
     jetpack: { seconds: 10, thrust: 22, maxRise: 8 },
+    shove: { decay: 5, max: 14 }, // Nov 16: Player.push (the mutant's backhand, the screamer's wind, the grey's arcs): m/s fade per second, the most at once
     pitchLimit: 85, // degrees up/down
     startYaw: 180, // degrees; 180 faces south (the map's start is home, on the northern cliff)
     // Off the pathways the undergrowth slows you (Aaron, M3: a real hassle
@@ -2969,6 +2970,7 @@ export const config = {
     // Day 1 can't be failed: Tom's health stops at this share of full.
     cantFail: true,
     healthFloor: 0.2,
+    campsiteCanKill: true, // Nov 16 (Aaron): except at the campground, from arriving to the horde's end (a retry from the path in)
     // Day 1's clock stops at this hour until a battery is in the fence box
     // and the torn fence is patched, so dusk never comes before the
     // tutorial's done.
@@ -4065,7 +4067,7 @@ export const config = {
     arriveInset: 0, // metres inside the edge that count as arriving (the sweep plays). Session 15b (Aaron): at the edge (was 4 m in)
     interactRange: 1.9, // metres to a search point
     clipDelay: 2.6, // seconds from Ellen's "play it" to the camcorder's clip
-    waveAfterTape: 1.2, waveAfterKeep: 7, emergencyRounds: 8, // Round 2: the wave comes this long after the tape ends (or after it's put away unwatched); rounds left by the fire if Tom runs dry with no shovel
+    waveAfterTape: 1.2, waveAfterKeep: 20, leaveInset: 2.5, emergencyRounds: 8, // Round 2: the wave comes this long after the tape ends (or after it's put away unwatched); rounds left by the fire if Tom runs dry with no shovel Nov 16: kept unwatched, the horde comes after waveAfterKeep, or as soon as he makes for the edge (leaveInset metres in from it)
     // Plan #19, then Aaron (Nov 14: "one of the new types of zombies standing at the campground at the campfire and
     // ... another little cutscene just to show it off"): Day 2's ride out: a Screamer at the campers' cold fire (placed
     // once Tom's within spawnAt metres of the clearing's centre, outside it). Within showAt its cutscene

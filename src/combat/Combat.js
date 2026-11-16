@@ -231,6 +231,7 @@ export class Combat {
   die() {
     this.alive = false;
     this.player.moveMultiplier = 1;
+    this.player.clearShoves?.();
     this.player.fovMultiplier = 1;
     this.sfx.play('death');
     this.bus.emit('player:died');
@@ -241,6 +242,7 @@ export class Combat {
     if (!this.alive) return;
     this.alive = false;
     this.player.moveMultiplier = 1;
+    this.player.clearShoves?.();
     this.player.fovMultiplier = 1;
     this.sfx.play('overrun');
     this.bus.emit('player:overrun', { reason });
@@ -251,6 +253,7 @@ export class Combat {
     if (!this.alive) return;
     this.alive = false;
     this.player.moveMultiplier = 1;
+    this.player.clearShoves?.();
     this.player.fovMultiplier = 1;
   }
 

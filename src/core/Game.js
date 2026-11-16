@@ -552,6 +552,7 @@ export class Game {
       progress: this.progress,
       clock: this.clock, // Plan #19
       notify: (text) => this.toast.show(text),
+      onCheckpoint: (spot) => this.checkpoint('campsite', spot), // Nov 16: Day 1's retry point
     });
     this.combat.promptSources.push(this.campsite.hud);
     // Session 15b (M9.3 pass 1): the gas station's set.
@@ -1049,7 +1050,7 @@ export class Game {
   // reload a new map needed.
   showMenu() {
     this.cutscenes.play('menu.feed', { skippable: false });
-    if (this.pendingChoice && !this.pendingSave) {
+    if ((this.pendingChoice && !this.pendingSave) || (this.pendingChoice === 'retry' && this.pendingSave)) {
       this.startScreen.show('begin');
       return;
     }
@@ -1527,8 +1528,24 @@ export class Game {
         if (this.state === 'running' && this.clock.day > 1 && this.station.state.charge <= 0 && !this.dialogue.heard?.has('nights.boxFlat')) this.dialogue.play('nights.boxFlat');
       }),
       bus.on('player:died', () => {
+        // Nov 16 (Aaron: Tom can die at the campground on Day 1): the save made as he came to it stays,
+        // and the run-end screen offers to try again from there. Anywhere else: permadeath, as ever.
+        if (this.retryPoint && !this.demo.active) {
+          this.endRun('defeat', 'YOU DIED', this.deathReason(), this.retryPoint);
+          return;
+        }
         this.saves.clear();
         this.endRun('defeat', 'YOU DIED', this.deathReason());
+      }),
+      bus.on('run:retryRequested', () => {
+        this.meta.setPendingChoice('retry');
+        reloadWithSeed(this.seed);
+      }),
+      // Past the campground's horde: an ordinary save there (nothing's lost), and no more retry.
+      bus.on('campsite:cleared', () => {
+        if (this.retryPoint?.id !== 'campsite') return;
+        this.retryPoint = null;
+        if (this.combat.alive) this.autosave();
       }),
       bus.on('station:overrun', () => this.saves.clear()),
       // Session 9 (Aaron, #130): destroying the hut is a true point of no
@@ -1585,11 +1602,27 @@ export class Game {
   }
 
   // M7 step 6: the run's over. kind: 'victory' | 'defeat'.
-  endRun(kind, title, reason) {
+  endRun(kind, title, reason, retry = null) {
     if (this.demo.active) return this.demo.onDied(); // Session 22: back on your feet in the yard
     if (this.runEnd.isOpen) return;
     this.subtitles.clear();
-    this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived);
+    this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived, retry);
+  }
+
+  // Nov 16: a retry point (Day 1's campground): the run saved as it is, with Tom at spot, and dying before
+  // it's passed offers to try again from it (the save stays; see 'player:died').
+  checkpoint(id, spot) {
+    if (this.demo.active || this.pastNoReturn) return false;
+    this.progress.settle?.();
+    const data = this.collectSaveOutside();
+    if (spot) {
+      data.player.x = spot.x;
+      data.player.z = spot.z;
+      data.player.yaw = spot.yaw ?? data.player.yaw;
+    }
+    if (!this.saves.save(data)) return false;
+    this.retryPoint = { id, label: id === 'campsite' ? 'the campground' : id };
+    return true;
   }
 
   deathReason() {
@@ -1614,6 +1647,14 @@ export class Game {
         return;
       }
       this.start(choice);
+      return;
+    }
+    if (choice === 'begin' && this.pendingChoice === 'retry' && this.pendingSave) {
+      // Nov 16: back to Day 1's retry point (the save made as Tom came to the campground).
+      this.applySave(this.pendingSave);
+      this.pendingSave = null;
+      this.pendingChoice = null;
+      this.start('continue');
       return;
     }
     if (choice === 'begin') {
@@ -2033,6 +2074,7 @@ export class Game {
     this.runEnd.update(dt, this.input);
     this.debugMenu.update(dt);
     // Session 17 (Aaron): the radio holds while a linesAfter cutscene plays (the dogfight); the rest talk as they play.
+    this.cutscenes.updateCaption?.(dt); // Nov 16: the trailer captions (debug), cutscene or not
     const csSpeaks = this.cutscenes.active && this.cutscenes.speaksDuring(this.cutscenes.current.data);
     if (!this.cutscenes.active || csSpeaks) this.subtitles.update(dt);
     document.body.classList.toggle('cs-quiet', this.cutscenes.active && !csSpeaks);
