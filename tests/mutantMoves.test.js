@@ -134,9 +134,21 @@ describe('the mutant (Nov 16)', () => {
     const zb = mutant(0, 0, 0);
     zb.thinkT = 99;
     const player = { x: 0, z: 10, vx: 3, vz: 0 };
+    const mm = { ...m, stuckSeconds: 99 }; // (it isn't walking here: not 'blocked' either)
     let started = false;
-    for (let t = 0; t < 4 && !started; t += 1 / 60) started = maybeStartMove(zb, m, player, 1 / 60);
+    for (let t = 0; t < 4 && !started; t += 1 / 60) started = maybeStartMove(zb, mm, player, 1 / 60);
     expect(started).toBe(false);
+  });
+
+  it('leaps over whatever has it stuck short of him', () => {
+    const zb = mutant(0, 0, 0);
+    zb.thinkT = 99;
+    const player = { x: 0, z: 4, vx: 0, vz: 0 }; // inside its leap's least, past its blows' reach
+    zb.stillT = -99;
+    let started = false;
+    for (let t = 0; t < 1.2 && !started; t += 1 / 60) started = maybeStartMove(zb, { ...m, stillSeconds: 99 }, player, 1 / 60);
+    expect(started).toBe(true);
+    expect(zb.move.kind).toBe('leap');
   });
 
   it('a blow marks where it landed (for the cars and pumps)', () => {
