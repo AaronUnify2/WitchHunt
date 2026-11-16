@@ -1051,7 +1051,7 @@ export class Game {
   // reload a new map needed.
   showMenu() {
     this.cutscenes.play('menu.feed', { skippable: false });
-    if ((this.pendingChoice && !this.pendingSave) || (this.pendingChoice === 'retry' && this.pendingSave)) {
+    if ((this.pendingChoice && !this.pendingSave) || (this.pendingChoice === 'retry' && this.pendingSave) || this.pendingChoice?.startsWith('jump:')) {
       this.startScreen.show('begin');
       return;
     }
@@ -1205,19 +1205,20 @@ export class Game {
     const cfg = this.cfg;
     // Aaron (after Session 26): begin playing from the outpost cleared (debug/storyStart.js).
     const start = menu.category(DEBUG.start);
-    const jump = (explored) => () => {
-      startFromOutpostCleared(this, { explored });
+    // Nov 17 (Aaron: after jumping about, the grey was dead at the plane and the quad wouldn't come): a story
+    // point only sets flags on top of the run there is, so one used after a later one kept the later one's
+    // state (the grey down, the quad gone missing). Every jump now reloads the same map and starts fresh from it
+    // (the pending choice 'jump:<point>' carries it across; jumpTo applies it).
+    const go = (id) => () => {
       this.debugMenu.close();
+      this.meta.setPendingChoice(`jump:${id}`);
+      reloadWithSeed(this.seed);
     };
-    start.addItem('Outpost cleared: the compound still to explore', jump(false));
-    start.addItem('Outpost cleared and explored: the checkpoint next', jump(true));
+    start.addItem('Outpost cleared: the compound still to explore', go('outpost'));
+    start.addItem('Outpost cleared and explored: the checkpoint next', go('outpostExplored'));
     // Session 33: later points (the plane, Junie), each on top of the outpost explored.
-    const later = (point) => () => {
-      startFromLater(this, point);
-      this.debugMenu.close();
-    };
     // Aaron, Nov 12: "a continue story option for each main story encounter".
-    for (const s of STORY_POINTS) start.addItem(`Continue story: ${s.label}`, later(s.id));
+    for (const s of STORY_POINTS) start.addItem(`Continue story: ${s.label}`, go(s.id));
     const time = menu.category(DEBUG.time);
     time.addItem(() => `Skip to next phase (now ${this.clock.phase})`, () => this.clock.skipPhase());
     time.addItem('Skip to night', () => this.skipToPhase('night'));
@@ -1610,6 +1611,13 @@ export class Game {
     this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived, retry);
   }
 
+  // Nov 17: a debug story start (on a fresh run: see the debug menu's start items).
+  jumpTo(point) {
+    if (point === 'outpost') startFromOutpostCleared(this, { explored: false });
+    else if (point === 'outpostExplored') startFromOutpostCleared(this, { explored: true });
+    else if (STORY_POINTS.some((s) => s.id === point)) startFromLater(this, point);
+  }
+
   // Nov 16: a retry point (Day 1's campground): the run saved as it is, with Tom at spot, and dying before
   // it's passed offers to try again from it (the save stays; see 'player:died').
   checkpoint(id, spot) {
@@ -1648,6 +1656,15 @@ export class Game {
         return;
       }
       this.start(choice);
+      return;
+    }
+    if (choice === 'begin' && this.pendingChoice?.startsWith('jump:')) {
+      // Nov 17: a debug story start, on a fresh run of this map (a saved run is left as it is).
+      const point = this.pendingChoice.slice(5);
+      this.pendingChoice = null;
+      this.pendingSave = null;
+      this.start('skip');
+      this.jumpTo(point);
       return;
     }
     if (choice === 'begin' && this.pendingChoice === 'retry' && this.pendingSave) {

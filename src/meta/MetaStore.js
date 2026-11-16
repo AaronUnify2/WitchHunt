@@ -58,7 +58,7 @@ export class MetaStore {
     try {
       const choice = this.session?.getItem(this.cfg.pendingKey) ?? null;
       this.session?.removeItem(this.cfg.pendingKey);
-      return choice === 'new' || choice === 'skip' || choice === 'retry' ? choice : null;
+      return choice === 'new' || choice === 'skip' || choice === 'retry' || /^jump:[A-Za-z0-9]+$/.test(choice ?? '') ? choice : null; // Nov 17: 'jump:<point>', a debug story start on a fresh run
     } catch {
       return null;
     }

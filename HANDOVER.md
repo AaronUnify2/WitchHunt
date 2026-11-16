@@ -9,6 +9,7 @@ The plan Aaron approved is docs/FIRST_THIRD_PLAN_3.md; what to try is PLAYTEST r
 - **Retry points** (`Game.checkpoint`, `retryPoint`): only Day 1's campground uses one. A death with one offers "try again" (pending choice `'retry'` across the reload).
 - **The Screamer's strike** has two atlas columns (`ZOMBIE_FRAMES.strikeRear`, `strikeLunge`; count 13); `z.stretch` scales a sprite's height.
 - **The grey** (`encounters/greyBoss.js`) runs from the quick draw; `Hud.boss(fraction, { name, shield })`, `Hud.scramble(left, of)`.
+- **Debug story starts reload now** (Nov 17): every "Continue story" / "Outpost cleared" item reloads the same map and starts fresh from its point (`Game.jumpTo`, pending choice `jump:<point>`, then "tap to begin"). Before, a point only added flags to the run there was: used after a later one, the grey stayed dead at the plane and the quad stayed missing.
 - Headless checks: a small harness took screenshots of each scene (not committed); `tools/playbot.cjs 1234 step:plane` still runs clean.
 
 ## Newest: the dialogue cut (Nov 14)
