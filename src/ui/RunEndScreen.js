@@ -9,6 +9,10 @@
 // Then the run summary. A / Enter skips the cutscene; on the summary it
 // starts a new run ('run:newRequested'; Game deletes the save and loads a
 // fresh map). The summary's final look is Session 28's.
+//
+// Nov 17: kind 'partOne', the End of Part One card (while only Part One is
+// released: config.release). No cutscene and no stats: the title, a line,
+// and A / Enter back to the main menu (a new run's reload, the save gone).
 
 import { summaryRows } from '../core/runStats.js';
 
@@ -44,10 +48,12 @@ export class RunEndScreen {
     return this.kind !== null;
   }
 
-  // kind: 'victory' | 'defeat'. title, reason: the summary's heading.
+  // kind: 'victory' | 'defeat' | 'partOne'. title, reason: the summary's heading.
   // stats: runStats. nights: nights survived.
   // retry (Nov 16): { label } to offer trying again from a retry point (Day 1's campground), or null.
-  show(kind, title, reason, stats, nights, retry = null) {
+  // prompt: the line under it (instead of the default).
+  show(kind, title, reason, stats, nights, retry = null, prompt = null) {
+    this.prompt = prompt;
     this.retry = retry;
     this.kind = kind;
     this.title = title;
@@ -56,7 +62,7 @@ export class RunEndScreen {
     this.nights = nights;
     this.summaryShown = false;
     this.summaryTime = 0;
-    if (!this.playCutscene(`ending.${kind}`, { onDone: () => this.showSummary() })) this.showSummary();
+    if (kind === 'partOne' || !this.playCutscene(`ending.${kind}`, { onDone: () => this.showSummary() })) this.showSummary();
   }
 
   hide() {
@@ -72,8 +78,9 @@ export class RunEndScreen {
     this.el.className = `run-end ${this.kind}`;
     this.titleEl.textContent = this.title;
     this.reasonEl.textContent = this.reason ?? '';
-    this.el.querySelector('.run-end-prompt').textContent = this.retry ? `A / Enter: try again from ${this.retry.label}` : 'A / Enter: start a new run';
-    this.tableEl.innerHTML = summaryRows(this.stats, this.nights)
+    this.el.querySelector('.run-end-prompt').textContent = this.prompt ?? (this.retry ? `A / Enter: try again from ${this.retry.label}` : 'A / Enter: start a new run');
+    this.tableEl.classList.toggle('hidden', this.kind === 'partOne');
+    this.tableEl.innerHTML = this.kind === 'partOne' ? '' : summaryRows(this.stats, this.nights)
       .map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`)
       .join('');
   }

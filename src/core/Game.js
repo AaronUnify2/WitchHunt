@@ -1059,6 +1059,7 @@ export class Game {
     this.startScreen.showMenu({
       save: this.pendingSave ? saveLabel(this.pendingSave, this.cfg.clock) : '',
       skipIntro: this.meta.introSeen,
+      partTwo: (this.cfg.release?.part ?? 1) >= 2,
     });
   }
 
@@ -1558,6 +1559,8 @@ export class Game {
       }),
       bus.on('player:overrun', ({ reason }) => this.endRun('defeat', 'THE STATION FELL', reason)),
       bus.on('player:respawned', () => this.runEnd.hide()), // debug "try again"
+      // Nov 17: the Mothman's knockdown, while only Part One is out (CrashedPlane.blackout).
+      bus.on('release:partOneEnded', () => this.endPartOne()),
       // M7: killing the witch wins the run. She bursts apart, the dead
       // collapse where they stand, and after a moment the ending plays.
       bus.on('witch:killed', () => {
@@ -1611,6 +1614,36 @@ export class Game {
     this.runEnd.show(kind, title, reason, this.stats, this.nightsSurvived, retry);
   }
 
+  // Nov 17 (Aaron): the end of Part One (only it is released: config.release). The card over black; the save
+  // goes and nothing saves again (a Continue would put him back before the Mothman); A / Enter is a new run's
+  // reload, which lands on the main menu. The floor keeps him alive behind the card.
+  endPartOne() {
+    if (this.runEnd.isOpen) return;
+    this.saves.clear();
+    this.pastNoReturn = true;
+    this.combat.setHealthFloor('partOne', this.cfg.crashedPlane.encounter.floor);
+    this.subtitles.clear();
+    const e = this.cfg.release.partOneEnd;
+    this.runEnd.show('partOne', e.title, e.line, this.stats, this.nightsSurvived, null, e.prompt);
+  }
+
+  // Nov 17: the main menu's Part Two: a fresh run, put where Part Two begins (waking at the wreck at dawn after
+  // the Mothman; the family's account and the clip follow), through the debug story start without its toasts.
+  startPartTwo() {
+    this.start('skip');
+    startFromLater(this, 'planeDone', { quiet: true });
+    // The set-up hands him everything the first third did ("Picked up: ...", the grey's drops' card): none of
+    // it's news. The cards are put away as Back would (in turn: each can queue the next), and just the wake shows.
+    const card = this.card;
+    for (let i = 0; i < 20 && (card.isOpen || card.queue.length); i++) {
+      if (card.isOpen) card.choose('keep');
+      else card.showNow(card.queue.shift());
+    }
+    this.paper.isOpen && this.paper.close();
+    this.toast.clear();
+    this.toast.show("Part Two. Dawn at the crashed plane. Your radio's quiet");
+  }
+
   // Nov 17: a debug story start (on a fresh run: see the debug menu's start items).
   jumpTo(point) {
     if (point === 'outpost') startFromOutpostCleared(this, { explored: false });
@@ -1649,13 +1682,19 @@ export class Game {
       this.startDemo();
       return;
     }
-    if (choice === 'new' || choice === 'skip') {
+    if (choice === 'new' || choice === 'skip' || choice === 'partTwo') {
       if (this.pendingSave) {
         this.meta.setPendingChoice(choice);
         this.newRun();
         return;
       }
-      this.start(choice);
+      if (choice === 'partTwo') this.startPartTwo();
+      else this.start(choice);
+      return;
+    }
+    if (choice === 'begin' && this.pendingChoice === 'partTwo') {
+      this.pendingChoice = null;
+      this.startPartTwo();
       return;
     }
     if (choice === 'begin' && this.pendingChoice?.startsWith('jump:')) {

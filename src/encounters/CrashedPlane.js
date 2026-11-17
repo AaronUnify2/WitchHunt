@@ -25,6 +25,9 @@
 //     radio and the night passes all the same (plane.radioSmashed): Junie is
 //     taken in both endings (encounters/JunieTaken.js).
 //     Either way mothmanMet is set: flares join the drop tables.
+//     Nov 17: while only Part One is released (config.release.part 1), the
+//     blackout is the end of the game: 'release:partOneEnded', and Game
+//     shows the End of Part One card instead of the wake.
 //
 // Saved through story flags (data/progress.json): planeStandoff, planeGreyDown,
 // planeLooted, planeLogRead, planeCellTaken, planeCellFitted, mothmanMet,
@@ -32,7 +35,7 @@
 // Mothman's) starts again when Tom comes back. Off in Demo mode.
 //
 // Events: 'plane:standoff', 'plane:greyDown' { quick }, 'plane:flare',
-// 'plane:mothmanGone' { drivenOff }, 'plane:done'.
+// 'plane:mothmanGone' { drivenOff }, 'plane:done', 'release:partOneEnded'.
 
 import { GreyBoss } from './greyBoss.js';
 import * as THREE from 'three';
@@ -82,6 +85,11 @@ export function dropAt(t, d) {
 export function hop(a, b, t, height) {
   const k = Math.max(0, Math.min(1, t));
   return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k, lift: Math.sin(k * Math.PI) * height };
+}
+
+// Nov 17: does the knockdown end the game here (only Part One released: config.release)?
+export function partOneEndsHere(release) {
+  return release?.part === 1;
 }
 
 const FLAGS = ['planeSeen', 'planeStandoff', 'planeGreyDown', 'planeLooted', 'planeLogRead', 'planeCellTaken', 'planeCellFitted', 'mothmanMet', 'planeDone'];
@@ -734,7 +742,8 @@ export class CrashedPlane {
     // Its frame's ahead (+z) is the way Tom faces; the eyes hang over him there.
     this.cutscenes?.namedAnchors?.set('downed', () => ({ x: p.x, z: p.z, yaw: yaw + Math.PI }));
     this.cutscenes?.namedAnchors?.set('downedEyes', () => ({ x: p.x - Math.sin(yaw) * 1.2, z: p.z - Math.cos(yaw) * 1.2, yaw: 0, dy: 1.9 }));
-    const wake = () => this.wake();
+    // Nov 17: while only Part One is out, this is the end of it (Game shows the card); he doesn't wake here.
+    const wake = () => (partOneEndsHere(this.cfg.release) ? this.bus.emit('release:partOneEnded') : this.wake());
     if (!this.cutscenes?.play('plane.blackout', { onDone: wake })) wake();
   }
 

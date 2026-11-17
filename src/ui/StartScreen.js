@@ -14,7 +14,11 @@
 // Session 22 (Aaron): Demo, always offered: the station on its own, to try
 // the game on this device (demo/DemoMode.js).
 //
-// onActivate(choice): 'continue' | 'new' | 'skip' | 'demo' | 'resume' | 'begin'.
+// Nov 17 (Aaron): Part Two, always listed: start at the wreck at dawn after
+// the crashed plane (a checkpoint of sorts; nothing else carries over).
+// Greyed out as 'coming later' until Part Two is released (config.release).
+//
+// onActivate(choice): 'continue' | 'new' | 'skip' | 'partTwo' | 'demo' | 'resume' | 'begin'.
 
 const TEXT = {
   resume: 'Tap to resume',
@@ -107,8 +111,8 @@ export class StartScreen {
     this.onActivate(choice);
   }
 
-  // The menu. opts: { save (the saved run's label, or ''), skipIntro (offer it) }.
-  showMenu({ save = '', skipIntro = false } = {}) {
+  // The menu. opts: { save (the saved run's label, or ''), skipIntro (offer it), partTwo (it's released) }.
+  showMenu({ save = '', skipIntro = false, partTwo = false } = {}) {
     this.mode = 'menu';
     this.promptEl.textContent = '';
     this.promptEl.classList.add('hidden');
@@ -116,6 +120,7 @@ export class StartScreen {
     if (save) this.items.push({ choice: 'continue', label: `Continue`, note: save });
     this.items.push({ choice: 'new', label: 'New Run' });
     if (skipIntro) this.items.push({ choice: 'skip', label: 'Skip intro', note: 'start at dawn after night 1' });
+    this.items.push({ choice: partTwo ? 'partTwo' : null, label: 'Part Two', note: partTwo ? 'start at dawn after the crashed plane' : TEXT.later });
     this.items.push({ choice: 'demo', label: 'Demo', note: 'will it run on this device? try it here' });
     this.items.push({ choice: null, label: 'Modifiers', note: TEXT.later });
     this.items.push({ choice: null, label: 'Settings', note: TEXT.later });

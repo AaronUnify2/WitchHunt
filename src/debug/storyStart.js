@@ -65,7 +65,7 @@ export function openingStates(cfg, { explored = false, waves = 1, crates = 0 } =
 }
 
 // The whole jump, on the live game.
-export function startFromOutpostCleared(game, { explored = false } = {}) {
+export function startFromOutpostCleared(game, { explored = false, quiet = false } = {}) {
   const g = game;
   const cfg = g.cfg;
   // Whatever's showing goes.
@@ -132,7 +132,7 @@ export function startFromOutpostCleared(game, { explored = false } = {}) {
   g.subtitles.clear();
   g.dialogue.pending.length = 0;
   g.dialogue.later.length = 0;
-  g.toast.show(explored ? 'Debug: the outpost cleared and explored. The checkpoint is open' : 'Debug: the outpost cleared. The compound is still to explore');
+  if (!quiet) g.toast.show(explored ? 'Debug: the outpost cleared and explored. The checkpoint is open' : 'Debug: the outpost cleared. The compound is still to explore');
 }
 
 // ---- Session 33: later start points (HANDOVER: "the plane done", "Junie home") ---------------------------
@@ -214,9 +214,10 @@ const AFTER_SHIP = new Set(['armory', 'ute', 'sheriffHome']);
 //  - planeDone: waking at the wreck at dawn after the Mothman (the family's account and the clip follow).
 //  - junieFound: at the foot of the stairs with Junie, the quad beside them, the walk home ahead.
 //  - junieHome: just inside the gate, Junie home (Ellen asks for the power cell in a moment).
-export function startFromLater(game, point) {
+// quiet (Nov 17): no debug toast. The main menu's Part Two is 'planeDone', quietly (Game.startPartTwo).
+export function startFromLater(game, point, { quiet = false } = {}) {
   const g = game;
-  startFromOutpostCleared(g, { explored: true });
+  startFromOutpostCleared(g, { explored: true, quiet });
   const flags = laterFlags(point);
   // The grey's drops, as the search gives them (before the flags say it's been searched).
   if (flags.includes('planeLooted') && !g.progress.has('planeLooted')) {
@@ -338,5 +339,5 @@ export function startFromLater(game, point) {
   g.dialogue.pending.length = 0;
   g.dialogue.later.length = 0;
   g.mapUi.fog.reveal(g.player.position.x, g.player.position.z, 60);
-  g.toast.show(`Debug: ${STORY_POINTS.find((s) => s.id === point)?.label ?? point}`);
+  if (!quiet) g.toast.show(`Debug: ${STORY_POINTS.find((s) => s.id === point)?.label ?? point}`);
 }

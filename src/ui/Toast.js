@@ -46,6 +46,13 @@ export class Toast {
     if (next) this.show(next.text, next.seconds);
   }
 
+  // Nov 17: nothing showing and nothing waiting (the menu's Part Two: its set-up's pickups aren't news).
+  clear() {
+    this.remaining = 0;
+    this.queue = [];
+    this.el.classList.add('hidden');
+  }
+
   dispose() {
     this.el.remove();
   }

@@ -5905,6 +5905,16 @@ export const config = {
     pendingKey: 'witchHunt.pendingStart',
   },
 
+  // Nov 17 (Aaron): the game is released a third at a time. part: how much is out. While it's 1, the
+  // Mothman's knockdown at the crashed plane is the end (encounters/CrashedPlane.js blackout): the
+  // title card below, the save cleared, back to the main menu; and the menu's Part Two is greyed out.
+  // At 2 the knockdown carries on into Part Two as it always has, and Part Two on the menu starts there
+  // (waking at the wreck at dawn: debug/storyStart.js startFromLater 'planeDone'), a checkpoint of sorts.
+  release: {
+    part: 1,
+    partOneEnd: { title: 'END OF PART ONE', line: 'Witch Hunt continues in Part Two, coming later.', prompt: 'A / Enter: back to the main menu' },
+  },
+
   // Session 22 (Aaron): Demo mode, from the main menu: "if it runs in demo
   // mode, it'll run on your device". The ranger station on its own: no
   // story, no witch, no saving (the real save is never touched). Menu / Esc
