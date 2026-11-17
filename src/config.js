@@ -4533,6 +4533,16 @@ export const config = {
       // haloScale times wider (haloOpacity). It leaves the grey's hand (hand metres up), arcs `out` metres toward
       // Tom (hop metres high) in fallSeconds, rests restY above the ground, and flashes every glintEvery seconds.
       // wisp: the thin cone of light standing up off it once it's landed (wispHeight metres tall, wispWidth x size wide at its foot).
+      // Nov 17 (Aaron: the plane's first alien cutscenes were too dark; "a dull glowing watch ... gives our alien
+      // power shard ... a reason to appear"): on the grey's left forearm (render/AlienRenderer.js), the drop's colour.
+      // It lights the grey soft and close (light: candela, metres, decay); it dims as it dies (dark by deathFade s
+      // in) and the shard falls from it. at: elbow to wrist. Sizes in metres at 1.7 m (scaled to the grey).
+      watch: {
+        color: 0x4fd6b0, at: 0.86, bandRadius: 0.026, bandWidth: 0.024, bandColor: 0x2a2c30, faceSize: [0.03, 0.026], faceDepth: 0.01,
+        faceDim: 0.6, faceDark: 0.08, haloRadius: 0.07, haloOpacity: 0.14, throb: 0.12, throbRate: 0.35, deathFade: 0.9,
+        bodyTint: 0.05, // its skin's teal cast from the watch (emissive, x the colour)
+        light: { intensity: 2.6, distance: 4, decay: 2, lift: 0.3, forward: 0.25 }, // lift, forward: metres at 1.7 m, off the watch
+      },
       drop: { color: 0x4fd6b0, size: 0.1, haloScale: 5, haloOpacity: 0.11, out: 0.85, hand: 0.8, hop: 0.45, restY: 0.13, fallSeconds: 0.7, glintEvery: 2.2, wispHeight: 2.2, wispWidth: 1.6, wispOpacity: 0.2 },
       floor: 0.1, // the Mothman's fight: Tom can't drop below 10% health; reaching it, he blacks out
       // Session 32 (Aaron): he can't be driven off here (Flyer `unbeatable`): the fight always ends at the floor

@@ -102,7 +102,7 @@ export class CrashedPlane {
     this.hold = new HoldAction(this.cfg.station.hold.releaseDrain);
     this.hold.init();
     this.renderer = new AlienRenderer(this.cfg.aliens.grey);
-    this.renderer.init(this.scene, 1);
+    this.renderer.init(this.scene, 1, { watch: this.ec.watch }); // Nov 17: its watch (the power cell's in it)
     this.grey = { active: false, x: 0, y: 0, z: 0, facing: 0, state: 'examine', timer: 0, walked: 0, flash: 0, stage: 0 };
     const h = this.ec.hit;
     this.target = {
@@ -156,6 +156,8 @@ export class CrashedPlane {
     this.scene.add(this.drop);
     this.dropT = 99;
     this.dropSpot = { x: 0, y: 0, z: 0 };
+    this.dropFrom = new THREE.Vector3(); // Nov 17: the watch, as it went down (where the cell falls from)
+    this.dropFromSet = false;
   }
 
   // Where it rests: `out` metres in front of the body's feet (the way it was facing: at Tom, when it fell).
@@ -182,9 +184,14 @@ export class CrashedPlane {
     const a = dropAt(this.dropT, d);
     const rest = this.dropRest();
     const g = this.grey;
-    this.dropSpot.x = g.x + (rest.x - g.x) * a.k;
-    this.dropSpot.z = g.z + (rest.z - g.z) * a.k;
-    this.dropSpot.y = rest.y + d.restY + a.lift;
+    // From its watch (Nov 17), or from its hand's height over it (no watch: a load, the viewer).
+    const fromW = this.dropFromSet && this.dropT < d.fallSeconds + 0.1;
+    const fx = fromW ? this.dropFrom.x : g.x;
+    const fz = fromW ? this.dropFrom.z : g.z;
+    this.dropSpot.x = fx + (rest.x - fx) * a.k;
+    this.dropSpot.z = fz + (rest.z - fz) * a.k;
+    const lift = fromW ? (1 - a.k) * (this.dropFrom.y - rest.y - d.restY) + (a.lift - (1 - a.k) * d.hand) : a.lift;
+    this.dropSpot.y = rest.y + d.restY + lift;
     this.drop.position.set(this.dropSpot.x, this.dropSpot.y, this.dropSpot.z);
     this.dropCore.rotation.y += dt * 1.3;
     this.dropCore.rotation.z = a.landed ? 0.5 : this.dropT * 9; // tumbling as it falls; lying tilted after
@@ -296,7 +303,11 @@ export class CrashedPlane {
     g.flash = Math.max(0, g.flash - dt);
     g.timer += dt;
     const shown = near < this.ec.drawDistance;
+    // Nov 17: its watch dims as it dies (dark on the body); the power cell falls out of it.
+    const dead = g.state === 'dying' || g.state === 'corpse';
+    g.watchGlow = dead ? Math.max(0, 1 - (g.state === 'corpse' ? 99 : g.timer) / (this.ec.watch?.deathFade ?? 1)) : 1;
     this.renderer.update(shown && g.active ? [g] : [], dt);
+    if (this.dropT === 0 && this.renderer.watchPosition?.(this.dropFrom)) this.dropFromSet = true;
     this.updateDrop(dt, shown);
     const t = this.target;
     t.x = g.x;
@@ -612,6 +623,7 @@ export class CrashedPlane {
     g.state = 'dying';
     g.timer = 0;
     this.dropT = 0;
+    this.dropFromSet = false;
     this.target.targetable = false;
     this.state = 'down';
     this.timer = 0;

@@ -12,6 +12,11 @@
 //  - aim, fire: the shotgun up (fire: the kick, each timer from the shot);
 //  - flinch: rocks back; dying: its knees go, it falls back; corpse.
 // Through the heat scope it reads faint and cold (config: thermalGlow).
+//
+// Nov 17 (Aaron: the crashed plane's cutscenes were too dark): opts.watch fits a dull glowing watch on its
+// left forearm (the crashed plane's grey only: its power cell is what drops when it dies) that casts a soft
+// light round it. Each alien's watchGlow (0..1, default 1) dims it; 0 is dark. The light is always in the scene
+// (dark when off), so it never changes the scene's light count: no shader recompiles mid-fight.
 
 import * as THREE from 'three';
 import { buildFigure, buildBones } from './figureKit.js';
@@ -28,7 +33,9 @@ export class AlienRenderer {
     this.cfg = cfg;
   }
 
-  init(scene, poolSize = this.cfg.poolSize) {
+  // opts: { watch } (config.crashedPlane.encounter.watch).
+  init(scene, poolSize = this.cfg.poolSize, opts = {}) {
+    this.watchCfg = opts.watch ?? null;
     // One body per kit stage, built when first needed; all share the skeleton.
     this.bodies = new Map();
     const { geometry, joints } = this.bodyOf(0);
@@ -37,6 +44,7 @@ export class AlienRenderer {
     this.time = 0;
     this.base = new THREE.Color().setScalar(this.cfg.albedo);
     this.flashColour = new THREE.Color(...this.cfg.hitFlash);
+    if (this.watchCfg) this.buildWatchParts();
     this.pool = Array.from({ length: poolSize }, () => this.makeOne(scene));
     this.meshes = this.pool.map((o) => o.mesh);
     this.tmp = new Float32Array(POSE_SIZE);
@@ -60,7 +68,84 @@ export class AlienRenderer {
     mesh.frustumCulled = false; // posed every frame; a handful at most
     mesh.visible = false;
     scene.add(mesh);
-    return { mesh, material, list, root };
+    const one = { mesh, material, list, root };
+    if (this.watchCfg) this.fitWatch(one, scene);
+    return one;
+  }
+
+  // ---- the watch (Nov 17) -----------------------------------------------------------------------------
+
+  // Shared by every body: a band round the forearm, a face on its outside (+x: the left arm's), a faint halo.
+  buildWatchParts() {
+    const w = this.watchCfg;
+    const k = this.cfg.height / 1.7; // the figure kit builds at 1.7 m
+    this.watchK = k;
+    this.watchGeo = {
+      band: new THREE.CylinderGeometry(w.bandRadius * k, w.bandRadius * k, w.bandWidth * k, 12),
+      face: new THREE.BoxGeometry(w.faceDepth * k, w.faceSize[1] * k, w.faceSize[0] * k),
+      halo: new THREE.SphereGeometry(w.haloRadius * k, 10, 6),
+    };
+    this.watchColor = new THREE.Color(w.color);
+  }
+
+  // On the left forearm (the elbowL bone), `at` of the way from elbow to wrist; its light lives in the scene.
+  fitWatch(one, scene) {
+    const w = this.watchCfg;
+    const k = this.watchK;
+    const el = this.joints.elbowL.p;
+    const wr = this.joints.wristL.p;
+    const g = new THREE.Group();
+    g.name = 'alienWatch';
+    g.position.set((wr.x - el.x) * w.at, (wr.y - el.y) * w.at, (wr.z - el.z) * w.at);
+    g.rotation.z = Math.atan2(wr.x - el.x, -(wr.y - el.y)); // along the forearm
+    const bandMat = new THREE.MeshLambertMaterial({ color: w.bandColor });
+    const faceMat = new THREE.MeshBasicMaterial({ color: this.watchColor.clone() });
+    const haloMat = new THREE.MeshBasicMaterial({ color: w.color, transparent: true, opacity: w.haloOpacity, blending: THREE.AdditiveBlending, depthWrite: false });
+    const band = new THREE.Mesh(this.watchGeo.band, bandMat);
+    const face = new THREE.Mesh(this.watchGeo.face, faceMat);
+    face.position.x = (w.bandRadius + w.faceDepth * 0.5) * k;
+    const halo = new THREE.Mesh(this.watchGeo.halo, haloMat);
+    halo.position.copy(face.position);
+    g.add(band, face, halo);
+    one.list.find((b) => b.name === 'elbowL').add(g);
+    const light = new THREE.PointLight(w.color, 0, w.light.distance, w.light.decay);
+    light.castShadow = false;
+    light.name = 'alienWatchLight';
+    scene.add(light);
+    Object.assign(one, { watch: g, watchFace: face, watchHalo: halo, watchLight: light, watchMats: [bandMat, faceMat, haloMat] });
+  }
+
+  // Where the first alien's watch face is in the world (into out): false if there's no watch or it isn't drawn.
+  watchPosition(out) {
+    const one = this.pool?.[0];
+    if (!one?.watchFace || !one.mesh.visible) return false;
+    one.watchFace.getWorldPosition(out);
+    return true;
+  }
+
+  // Glow 0..1: the face from dark to its dull colour, the halo and the light with it (a slow throb).
+  updateWatch(one, a) {
+    if (!one.watchLight) return;
+    const w = this.watchCfg;
+    const on = a ? Math.max(0, Math.min(1, a.watchGlow ?? 1)) : 0;
+    const throb = 1 - w.throb + w.throb * Math.sin(this.time * w.throbRate * Math.PI * 2);
+    const glow = on * throb;
+    one.watchFace.material.color.copy(this.watchColor).multiplyScalar(w.faceDim * (w.faceDark + (1 - w.faceDark) * glow));
+    one.watchHalo.material.opacity = w.haloOpacity * glow;
+    one.watchHalo.visible = glow > 0.01;
+    one.watchLight.intensity = w.light.intensity * glow;
+    // Its skin catches the watch's light a little (a faint teal cast, so the body reads at the standoff's range).
+    one.watchTint = glow * (w.bodyTint ?? 0);
+    if (!this.thermalOn) one.material.emissive.copy(this.watchColor).multiplyScalar(one.watchTint);
+    if (!a) return;
+    // Its light sits just off the watch, a little ahead of the grey and up: on its hand, its face and chest, and
+    // what it's working on, more than on the wreck behind it.
+    one.mesh.updateMatrixWorld(true);
+    one.watchFace.getWorldPosition(one.watchLight.position);
+    const fwd = (w.light.forward ?? 0) * this.watchK;
+    one.watchLight.position.x += Math.sin(a.facing) * fwd;
+    one.watchLight.position.z += Math.cos(a.facing) * fwd;
+    one.watchLight.position.y += w.light.lift * this.watchK;
   }
 
   update(aliens, dt = 0) {
@@ -85,8 +170,12 @@ export class AlienRenderer {
       const f = a.flash > 0 ? Math.min(1, a.flash / this.cfg.hitFlashSeconds) : 0;
       one.material.color.copy(this.base).lerp(this.flashColour, f);
       one.mesh.visible = true;
+      this.updateWatch(one, a);
     }
-    for (let i = n; i < this.pool.length; i++) this.pool[i].mesh.visible = false;
+    for (let i = n; i < this.pool.length; i++) {
+      this.pool[i].mesh.visible = false;
+      this.updateWatch(this.pool[i], null);
+    }
   }
 
   // ---- poses (radians; + x swings a hanging limb back, a torso forward) -------------------
@@ -235,7 +324,12 @@ export class AlienRenderer {
 
   // Through the heat scope: faint and cold (t: config.viewModel.thermal).
   setThermal(on, t) {
-    for (const o of this.pool) o.material.emissive.setScalar(on ? t.glow * this.cfg.thermalGlow : 0);
+    this.thermalOn = on;
+    for (const o of this.pool) {
+      if (on) o.material.emissive.setScalar(t.glow * this.cfg.thermalGlow);
+      else if (this.watchColor) o.material.emissive.copy(this.watchColor).multiplyScalar(o.watchTint ?? 0);
+      else o.material.emissive.setScalar(0);
+    }
   }
 
   dispose() {
@@ -243,7 +337,10 @@ export class AlienRenderer {
       o.mesh.removeFromParent();
       o.mesh.skeleton.dispose();
       o.material.dispose();
+      o.watchLight?.removeFromParent();
+      o.watchMats?.forEach((m) => m.dispose());
     }
+    if (this.watchGeo) Object.values(this.watchGeo).forEach((g) => g.dispose());
     for (const b of this.bodies.values()) b.geometry.dispose();
   }
 }
