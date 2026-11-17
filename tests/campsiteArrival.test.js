@@ -55,3 +55,14 @@ describe('the campground arrival sweep', () => {
     });
   }
 });
+
+describe('the arrival check on a campground already done (Nov 17)', () => {
+  // Skip intro, a debug story start and a loaded save mark the dead at the fire as sent and cleared, with none
+  // placed: the check read fireAt.x of nothing every frame and the frame loop stopped drawing.
+  it("doesn't throw, and says no, when none were ever placed", () => {
+    const s = Object.create(Campsite.prototype);
+    Object.assign(s, { fireSent: true, fireCleared: true, fireAwake: false, fireAt: undefined });
+    expect(() => s.nearFire({ x: 0, z: 0 })).not.toThrow();
+    expect(s.nearFire({ x: 0, z: 0 })).toBe(false);
+  });
+});

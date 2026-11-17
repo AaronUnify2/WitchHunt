@@ -232,8 +232,7 @@ export class Campsite {
     this.updateFire(p, dt);
     // Nov 16: with the dead at the fire waiting, the sweep plays as Tom comes within their reach (plus a margin),
     // before any of them could notice him, not at the clearing's edge.
-    const nearFire = this.fireSent && !this.fireAwake && Math.hypot(p.x - this.fireAt.x, p.z - this.fireAt.z) <= this.fireArriveDistance();
-    if ((inside || nearFire) && !this.arrived) this.arrive();
+    if (!this.arrived && (inside || this.nearFire(p))) this.arrive();
     if (this.pendingClip >= 0) {
       this.pendingClip -= dt;
       if (this.pendingClip < 0) this.playClip();
@@ -568,6 +567,14 @@ export class Campsite {
       }
     }
     if (this.fire.every((z) => !z.alive)) this.fireDown();
+  }
+
+  // Is Tom within the sweep's distance of the dead waiting round the fire? Only while they're there, placed and
+  // not yet up: a Skip intro, a story start or a load marks them sent with none placed (no fireAt). Nov 17: that
+  // read fireAt.x of nothing every frame, and the throw stopped the frame loop before it drew.
+  nearFire(p) {
+    if (!this.fireSent || this.fireAwake || this.fireCleared || !this.fireAt) return false;
+    return Math.hypot(p.x - this.fireAt.x, p.z - this.fireAt.z) <= this.fireArriveDistance();
   }
 
   // The campfire, in the world.
