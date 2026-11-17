@@ -4514,7 +4514,7 @@ export const config = {
       // range m while the shield's up, every s: damage, push m/s). cache: rounds in the wreck's cargo by the kit.
       boss: {
         name: 'THE GREY', caption: 'The Grey', captionSub: 'The crashed plane',
-        health: 450, shield: 125, shieldRadius: 1.15, shieldDelay: 4, shieldRefill: 2.5, shieldColor: 0x7fd8ff, afterImage: 0x9a7cff,
+        health: 450, shield: 100, shieldRadius: 1.15, shieldDelay: 4, shieldRefill: 2.5, shieldColor: 0x7fd8ff, afterImage: 0x9a7cff,
         flit: { every: [1.5, 3.0], everyBare: [0.9, 1.8], hitBare: [0.25, 0.6], dash: [4, 8], ring: [4, 15], seconds: 0.16 },
         shots: { every: [1.8, 3.0], aim: 0.5 },
         ray: { first: 7, every: 12, charge: 1.2, lock: 0.25, range: 28, halfAngle: 20, seconds: 5, hitAt: 0.15, sweep: 0.5, travel: 0.6, rings: 7, color: 0xb070ff },
