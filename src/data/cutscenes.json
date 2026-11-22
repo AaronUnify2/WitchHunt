@@ -201,7 +201,12 @@
         {
           "at": 1.9,
           "do": "sfx",
-          "sfx": "portalSurge"
+          "sfx": "portalSurge",
+          "offset": 3.12,
+          "fadeIn": 0.08,
+          "until": 6,
+          "fade": 0.2,
+          "_note": "Nov 22 (Aaron: the surge's sixth second is the sound to finish on): the hit 6.52 s into the file lands at 5.3 s, on the fade to black; silent by the end (6 s)"
         },
         {
           "at": 2.0,
@@ -228,7 +233,9 @@
         {
           "at": 2.2,
           "do": "sfx",
-          "sfx": "titleShriek"
+          "sfx": "titleShriek",
+          "until": 6,
+          "fade": 0.6
         },
         {
           "at": 2.3,
@@ -300,6 +307,12 @@
           "do": "glitch",
           "amount": 1,
           "seconds": 1.0
+        },
+        {
+          "at": 5.4,
+          "do": "sfx",
+          "stop": "portalHum",
+          "seconds": 0.6
         },
         {
           "at": 5.4,

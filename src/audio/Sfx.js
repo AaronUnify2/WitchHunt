@@ -83,12 +83,30 @@ export class Sfx {
     return b && !(b instanceof Promise) ? b : null;
   }
 
-  playSample(buffer, pos, gain = 1) {
-    const src = this.ctx.createBufferSource();
+  // timing (Nov 2026, a cutscene's sounds, timed to its picture): { offset (seconds into the
+  // file to start from), fadeIn, stopAfter (silent this many seconds from now), fade (the fade to it) }.
+  // A timed sound plays at its own speed (no random pitch, which would shift its moments).
+  playSample(buffer, pos, gain = 1, timing = null) {
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource();
     src.buffer = buffer;
-    src.playbackRate.value = 0.96 + Math.random() * 0.08; // cosmetic: a little variety
-    src.connect(this.out(pos?.x, pos?.z, gain, pos?.range));
-    src.start();
+    if (!timing) src.playbackRate.value = 0.96 + Math.random() * 0.08; // cosmetic: a little variety
+    const env = ctx.createGain();
+    src.connect(env).connect(this.out(pos?.x, pos?.z, gain, pos?.range));
+    const t = ctx.currentTime;
+    const fadeIn = timing?.fadeIn ?? 0;
+    if (fadeIn > 0) {
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(1, t + fadeIn);
+    }
+    src.start(t, Math.min(timing?.offset ?? 0, Math.max(0, buffer.duration - 0.05)));
+    if (timing?.stopAfter != null) {
+      const end = t + Math.max(0.01, timing.stopAfter);
+      const fade = Math.min(timing.fade ?? 0.3, end - t - fadeIn);
+      env.gain.setValueAtTime(1, end - Math.max(0.005, fade));
+      env.gain.linearRampToValueAtTime(0, end);
+      src.stop(end + 0.02);
+    }
   }
 
   // A controller press doesn't let a page start audio; the next tap or key does.
@@ -213,13 +231,13 @@ export class Sfx {
   }
 
   // name: one of the recipes below (or a file of that name). pos: { x, z } for a positional sound.
-  // opts.bus: a bus from bus() to play it through (a cutscene's).
+  // opts.bus: a bus from bus() to play it through (a cutscene's). opts.timing: see playSample (files only).
   play(name, pos, opts = {}) {
     if (!this.ready) return;
     this.outTo = opts.bus?.node ?? null;
     try {
       const sample = this.sampleFor(name);
-      if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1);
+      if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1, opts.timing ?? null);
       const recipe = RECIPES[name];
       if (recipe) recipe(this, pos, opts.bus);
     } finally {

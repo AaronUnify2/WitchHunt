@@ -177,7 +177,7 @@ export class Cutscenes {
       after: [], // Session 17: its lines, for when it's over
       clockWasPaused: this.clock.paused,
       bus: this.sfx?.bus?.() ?? null, // Nov 2026: its sounds (faded out if it's skipped)
-      loops: [], // its held sounds (stopped when it ends)
+      loops: new Map(), // its held sounds by name (stopped when it ends)
     };
     this.current = cur;
     this.clock.setPaused(true);
@@ -212,8 +212,10 @@ export class Cutscenes {
     }
     cur.fx?.dispose();
     // Nov 2026: its held sounds stop; skipped, everything it started goes quiet (else one-shots ring on).
-    for (const held of cur.loops) held.stop(0.4);
-    if (skipped) cur.bus?.fade(0.25);
+    for (const held of cur.loops.values()) held.stop(skipped ? 0.25 : 0.05);
+    // Skipped: a quick fade. Run to its end: its sounds were timed to be done by now (Aaron: nothing
+    // of the cold open's carries on past it); anything left is cut short.
+    cur.bus?.fade(skipped ? 0.25 : 0.05);
     // A skipped cutscene's own lines go with it (as before Session 17).
     if (skipped && this.speaksDuring(cur.data)) this.subtitles.clear();
     // Session 17: a linesAfter one's lines now (a skipped one's too: they're the family's reaction).
@@ -507,11 +509,20 @@ export class Cutscenes {
       default:
         break;
     }
-    // Nov 2026: its sounds go through its own bus (a skip silences them); loop: held until it ends.
-    if (e.sfx && e.loop) {
+    // Nov 2026: its sounds go through its own bus (a skip silences them); loop: held until it ends
+    // (or a stop event: { do: 'sfx', stop: name, seconds }). Timed to the picture (files): offset
+    // (seconds into the file), fadeIn, until (the cutscene's time it's silent by) and fade.
+    if (e.stop) {
+      cur.loops.get(e.stop)?.stop(e.seconds ?? 0.3);
+      cur.loops.delete(e.stop);
+    } else if (e.sfx && e.loop) {
       const held = this.sfx?.loop?.(e.sfx, cur.bus);
-      if (held) cur.loops.push(held);
-    } else if (e.sfx) this.sfx?.play(e.sfx, undefined, { bus: cur.bus });
+      if (held) cur.loops.set(e.sfx, held);
+    } else if (e.sfx) {
+      const timed = e.offset !== undefined || e.until !== undefined || e.fadeIn !== undefined;
+      const timing = timed ? { offset: e.offset ?? 0, fadeIn: e.fadeIn ?? 0, stopAfter: e.until !== undefined ? e.until - e.at : null, fade: e.fade } : null;
+      this.sfx?.play(e.sfx, undefined, { bus: cur.bus, timing });
+    }
   }
 
   // Session 19 (style pass 2): the sweeps' grade eases in over the first
