@@ -1704,10 +1704,9 @@ export class Game {
       }, 250);
       return;
     }
-    // Nov 2026 (Aaron): the title music fades out as soon as a choice is picked;
-    // New Run gets a shriek, far off and echoing.
+    // Nov 2026 (Aaron): the title music fades out as soon as a choice is picked.
+    // (New Run's shriek is in the cold open now, over the portal: data/cutscenes.json.)
     if (choice !== 'resume') this.music.stop();
-    if (choice === 'new') this.combat.sfx.play('titleShriek');
     if (choice === 'demo') {
       this.startDemo();
       return;
@@ -1715,9 +1714,7 @@ export class Game {
     if (choice === 'new' || choice === 'skip' || choice === 'partTwo') {
       if (this.pendingSave) {
         this.meta.setPendingChoice(choice);
-        // The shriek (New Run) plays out before the reload a new map needs.
-        if (choice === 'new' && this.combat.sfx.ready) setTimeout(() => this.newRun(), this.cfg.music.shriekHold * 1000);
-        else this.newRun();
+        this.newRun();
         return;
       }
       if (choice === 'partTwo') this.startPartTwo();

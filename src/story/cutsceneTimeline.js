@@ -93,7 +93,7 @@ export function cutsceneLength(cs) {
 }
 
 const STYLES = ['cctv', 'firstPerson', 'sweep', 'black'];
-const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode', 'caption']; // Session 17: fly, beam, trail and explode, things in the sky; Nov 16: caption (the trailer's)
+const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode', 'caption', 'portal']; // Nov 2026: portal (the cold open's); Session 17: fly, beam, trail and explode, things in the sky; Nov 16: caption (the trailer's)
 
 // Checks the cutscenes file: unique ids, known styles, looks and events,
 // lines that exist, actors that exist. Returns a list of problems.
@@ -113,7 +113,7 @@ export function validateCutscenes(list, { looks, lineIds }) {
     for (const e of cs.tracks ?? []) {
       if (!EVENTS.includes(e.do)) problems.push(`${id}: unknown event ${e.do}`);
       if (e.do === 'line' && !lineIds.has(e.line)) problems.push(`${id}: no dialogue line ${e.line}`);
-      if (['move', 'pose', 'show', 'hide', 'flare', 'fly', 'trail'].includes(e.do) && !actors.has(e.actor)) problems.push(`${id}: no actor ${e.actor}`);
+      if (['move', 'pose', 'show', 'hide', 'flare', 'fly', 'trail', 'portal'].includes(e.do) && !actors.has(e.actor)) problems.push(`${id}: no actor ${e.actor}`);
       if (e.do === 'beam' && !(actors.has(e.from) && actors.has(e.to))) problems.push(`${id}: a beam between actors it hasn't got`);
     }
     for (let i = 1; i < (cs.camera ?? []).length; i++) if (cs.camera[i].at < cs.camera[i - 1].at) problems.push(`${id}: camera keys out of order`);

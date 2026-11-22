@@ -139,8 +139,9 @@ export class Sfx {
     const ctx = this.ctx;
     const g = ctx.createGain();
     g.gain.value = gain;
+    const dest = this.outTo ?? this.master; // Nov 2026: a cutscene's own bus, while it plays one
     if (x === undefined) {
-      g.connect(this.master);
+      g.connect(dest);
       return g;
     }
     const dx = x - this.listener.x;
@@ -153,7 +154,7 @@ export class Sfx {
     // Listener's right = (cos yaw, -sin yaw) on the ground plane.
     const right = dist > 0.01 ? (dx * Math.cos(this.listener.yaw) - dz * Math.sin(this.listener.yaw)) / dist : 0;
     pan.pan.value = right * 0.8;
-    g.connect(pan).connect(this.master);
+    g.connect(pan).connect(dest);
     return g;
   }
 
@@ -211,13 +212,69 @@ export class Sfx {
     osc.stop(t + seconds + 0.02);
   }
 
-  // name: one of the recipes below. pos: { x, z } for a positional sound.
-  play(name, pos) {
+  // name: one of the recipes below (or a file of that name). pos: { x, z } for a positional sound.
+  // opts.bus: a bus from bus() to play it through (a cutscene's).
+  play(name, pos, opts = {}) {
     if (!this.ready) return;
+    this.outTo = opts.bus?.node ?? null;
+    try {
+      const sample = this.sampleFor(name);
+      if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1);
+      const recipe = RECIPES[name];
+      if (recipe) recipe(this, pos, opts.bus);
+    } finally {
+      this.outTo = null;
+    }
+  }
+
+  // Nov 2026: a bus (a cutscene's): everything played through it can be faded out together.
+  bus() {
+    if (!this.ready) return null;
+    const node = this.ctx.createGain();
+    node.connect(this.master);
+    return {
+      node,
+      fade: (seconds) => {
+        const t = this.ctx.currentTime;
+        node.gain.cancelScheduledValues(t);
+        node.gain.setValueAtTime(node.gain.value, t);
+        node.gain.linearRampToValueAtTime(0, t + seconds);
+        setTimeout(() => node.disconnect(), (seconds + 0.1) * 1000);
+      },
+    };
+  }
+
+  // Nov 2026: a held sound, looping until stopped: its file looped, or a held recipe. { stop(seconds) } or null.
+  loop(name, bus = null) {
+    if (!this.ready) return null;
+    const dest = bus?.node ?? this.master;
+    const env = this.ctx.createGain();
+    env.connect(dest);
+    let stopNodes;
     const sample = this.sampleFor(name);
-    if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1);
-    const recipe = RECIPES[name];
-    if (recipe) recipe(this, pos);
+    if (sample) {
+      const src = this.ctx.createBufferSource();
+      src.buffer = sample;
+      src.loop = true;
+      src.connect(env);
+      src.start();
+      stopNodes = (t) => src.stop(t);
+    } else if (HELD[name]) {
+      stopNodes = HELD[name](this, env);
+    } else {
+      env.disconnect();
+      return null;
+    }
+    return {
+      stop: (seconds = 0.3) => {
+        const t = this.ctx.currentTime;
+        env.gain.cancelScheduledValues(t);
+        env.gain.setValueAtTime(env.gain.value, t);
+        env.gain.linearRampToValueAtTime(0, t + seconds);
+        stopNodes(t + seconds + 0.05);
+        setTimeout(() => env.disconnect(), (seconds + 0.2) * 1000);
+      },
+    };
   }
 
   // Session 15b: the quad bike's engine, a held note. on: running or not;
@@ -320,7 +377,66 @@ const ENGINE_VOICES = {
 // A file's level, where it needs one (1 otherwise).
 const SAMPLE_GAIN = {};
 
+// Nov 2026: held sounds (Sfx.loop) when there's no file: (s, dest) -> stop(atTime).
+const HELD = {
+  // The portal idling: a low, beating drone, a wobbling filter, a crackle of noise. Placeholder for sfx/portalHum.mp3.
+  portalHum(s, dest) {
+    const ctx = s.ctx;
+    const t = ctx.currentTime;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 380;
+    filter.Q.value = 6;
+    const lfo = ctx.createOscillator();
+    const depth = ctx.createGain();
+    lfo.frequency.value = 3.2;
+    depth.gain.value = 220;
+    lfo.connect(depth).connect(filter.frequency);
+    const level = ctx.createGain();
+    level.gain.setValueAtTime(0.0001, t);
+    level.gain.exponentialRampToValueAtTime(0.32, t + 1.2);
+    const oscs = [55, 55.8, 110.6].map((f, i) => {
+      const o = ctx.createOscillator();
+      o.type = i === 2 ? 'square' : 'sawtooth';
+      o.frequency.setValueAtTime(f, t);
+      o.frequency.exponentialRampToValueAtTime(f * 1.6, t + 5); // it climbs as it builds
+      o.connect(filter);
+      o.start(t);
+      return o;
+    });
+    filter.connect(level).connect(dest);
+    const crackle = ctx.createBufferSource();
+    crackle.buffer = s.noise;
+    crackle.loop = true;
+    const band = ctx.createBiquadFilter();
+    band.type = 'bandpass';
+    band.frequency.value = 3200;
+    band.Q.value = 1.5;
+    const cg = ctx.createGain();
+    cg.gain.value = 0.05;
+    crackle.connect(band).connect(cg).connect(dest);
+    crackle.start(t);
+    lfo.start(t);
+    return (at) => {
+      for (const o of oscs) o.stop(at);
+      lfo.stop(at);
+      crackle.stop(at);
+    };
+  },
+};
+
 const RECIPES = {
+  // Nov 2026 (Aaron): the portal tearing open: a rising roar of noise, a falling sub boom, crackles.
+  // Placeholder for sfx/portalSurge.mp3.
+  portalSurge(s) {
+    const o = s.out(undefined, undefined, 1);
+    s.noiseBurst(o, { seconds: 1.6, type: 'bandpass', freq: 220, endFreq: 5200, q: 1.2, gain: 0.5, attack: 0.5 });
+    s.tone(o, { seconds: 1.8, wave: 'sine', freq: 95, endFreq: 28, gain: 0.6, attack: 0.02 });
+    s.tone(o, { seconds: 1.2, wave: 'sawtooth', freq: 70, endFreq: 420, gain: 0.12, attack: 0.3, vibrato: 30 });
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.08, type: 'highpass', freq: 3000, gain: 0.35 }), 300 + i * 160 + Math.random() * 90); // cosmetic
+    }
+  },
   // Nov 2026 (Aaron): New Run picked: a shriek far off in the woods, echoing.
   // The placeholder for sfx/titleShriek.mp3: the witch's shriek, quieter, three times fading.
   titleShriek(s) {

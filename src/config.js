@@ -189,6 +189,8 @@ export const config = {
       trailcam: { tint: 0x7cff8c, saturation: 0, contrast: 1.25, gain: 3.4, noise: 0.16, scanlines: 0.12, lines: 200, bend: 0.06, vignette: 0.6, tear: 0.0, dropout: 0.0, chroma: 0.6, mask: 0, soft: 0.3, blow: 1.1, blowAt: 0.55 },
       camcorder: { tint: 0xfff0dc, saturation: 0.8, contrast: 1.08, gain: 1.5, noise: 0.07, scanlines: 0.08, lines: 288, bend: 0.03, vignette: 0.4, tear: 0.02, dropout: 0.0, chroma: 2.2, mask: 0, soft: 0.2, focusHunt: 0.75, blow: 0.8, blowAt: 0.6, wobble: 0.0035 },
       military: { tint: 0xd4dcc4, saturation: 0.35, contrast: 1.2, gain: 1.8, noise: 0.2, scanlines: 0.22, lines: 200, bend: 0.1, vignette: 0.6, tear: 0.25, dropout: 0.6, chroma: 1.8, mask: 0, soft: 0.25 },
+      // Nov 2026 (Aaron: Roswell blue overrun by the witches' green): the cold open's camera, colour enough for both.
+      groundZero: { tint: 0xd4e2ff, saturation: 0.85, contrast: 1.15, gain: 1.6, noise: 0.08, scanlines: 0.12, lines: 360, bend: 0.05, vignette: 0.5, tear: 0.03, dropout: 0.0, chroma: 1.0, mask: 0, blow: 0.6, blowAt: 0.8 },
       government: { tint: 0xb8d0ff, saturation: 0.3, contrast: 1.1, gain: 1.7, noise: 0.06, scanlines: 0.1, lines: 360, bend: 0.04, vignette: 0.45, tear: 0.0, dropout: 0.0, chroma: 0.4, mask: 0 },
       scope: { tint: 0xffffff, saturation: 0.9, contrast: 1.05, gain: 1.3, noise: 0.03, scanlines: 0, lines: 240, bend: 0, vignette: 0.2, tear: 0, dropout: 0, chroma: 0.6, mask: 1, sway: 1, milDots: 1, edgeDark: 0.55 },
     },
@@ -2897,7 +2899,6 @@ export const config = {
     fadeOut: 0.8, // seconds: Aaron, the title music fades out as soon as a choice is picked
     loopCrossfade: 4, // seconds a track's end overlaps its start when it loops
     title: 'title', // the main menu's track (music/title.mp3)
-    shriekHold: 2.5, // seconds New Run's shriek (sfx/titleShriek.mp3) plays before a reload to a new map
   },
 
   // Flashlight: the game's one shadow-casting light

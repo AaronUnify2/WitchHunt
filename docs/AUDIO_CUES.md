@@ -13,6 +13,22 @@ under a second. **New Run** also plays a shriek far off in the woods.
 
 Until they're uploaded: the menu is silent and New Run plays a placeholder shriek.
 
+**Done:** both uploaded. The shriek now plays inside the cold open (below), not on the tap.
+
+## Test 1b: the cold open's portal (built, waiting on the files)
+
+6 seconds of government CCTV: the portal's Roswell blue overrun by the witches' green,
+then a whiteout and the feed dies. Timeline: **0 s** the hum starts (blue, steady) ·
+**1 s** green creeps in · **1.9 s** the surge · **2.2 s** the shriek · **2.3-4 s** fully
+green, the agents thrown back · **4.2 s** whiteout · **4.7 s** static · **5.4 s** black.
+
+| File | Folder | Suno tool | Prompt |
+|---|---|---|---|
+| `portalHum.mp3` LOOP, 6-10 s | `public/audio/sfx` | **Sounds**, loop | Unstable interdimensional portal humming, deep throbbing electrical drone, warbling sci-fi energy field with crackling static and a low pulsing wobble, ominous, no music, seamless loop |
+| `portalSurge.mp3` 3-5 s | `public/audio/sfx` | **Sounds**, one-shot | Interdimensional portal violently tearing open, a rising roaring whoosh of energy into a deep bass boom, electric arcs crackling and snapping, otherworldly distorted howl, chaotic, no music |
+
+Until they're uploaded, synthesised stand-ins play in their place.
+
 ---
 
 ## Test 2: the gas station

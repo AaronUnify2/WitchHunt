@@ -65,9 +65,9 @@
     {
       "id": "opening.coldOpen",
       "name": "Opening: the cold open at Ground Zero (government CCTV)",
-      "placeholder": true,
+      "_note": "Nov 22, 2026 (Aaron): 6 s. The government's portal, its Roswell blue overrun by the witches' green: unexplained, just interdimensional energy (render/portalFx.js). The hum under it all; the surge as the green takes it; the shriek (New Run's, moved here so it always lands on the surge); the agents thrown back; a whiteout and the feed dies.",
       "style": "cctv",
-      "look": "government",
+      "look": "groundZero",
       "fps": 12,
       "hour": 2.1,
       "osd": {
@@ -87,37 +87,39 @@
           ],
           "look": [
             0,
-            4,
+            4.2,
             6
           ]
         },
         {
-          "at": 9,
+          "at": 6,
           "anchor": "clearing:groundZero",
           "pos": [
-            -8.5,
-            6.4,
-            -7
+            -8.2,
+            6,
+            -6.8
           ],
           "look": [
             0,
-            4.2,
+            4.6,
             6
           ]
         }
       ],
       "actors": [
         {
-          "id": "ring",
-          "kind": "ring",
+          "id": "portal",
+          "kind": "portal",
           "anchor": "clearing:groundZero",
           "pos": [
             0,
             0,
             7
           ],
-          "size": 5,
-          "color": 10475775
+          "size": 4.2,
+          "green": 0,
+          "power": 0.35,
+          "spin": 0.5
         },
         {
           "id": "mib1",
@@ -156,61 +158,157 @@
       ],
       "tracks": [
         {
-          "at": 1.5,
+          "at": 0,
+          "do": "sfx",
+          "sfx": "portalHum",
+          "loop": true
+        },
+        {
+          "at": 0.1,
+          "do": "portal",
+          "actor": "portal",
+          "power": 0.7,
+          "spin": 0.8,
+          "seconds": 1.0
+        },
+        {
+          "at": 0.3,
           "do": "move",
           "actor": "mib3",
           "to": [
             0.8,
             0,
-            3
+            3.2
           ],
-          "seconds": 3
-        },
-        {
-          "at": 3.2,
-          "do": "flare",
-          "actor": "ring",
-          "amount": 0.15,
-          "seconds": 1
-        },
-        {
-          "at": 5.4,
-          "do": "flare",
-          "actor": "ring",
-          "amount": 0.6,
           "seconds": 1.6
         },
         {
-          "at": 5.6,
-          "do": "glitch",
-          "amount": 0.5,
-          "seconds": 0.5
+          "at": 0.9,
+          "do": "portal",
+          "actor": "portal",
+          "green": 0.3,
+          "power": 0.85,
+          "spin": 1.2,
+          "seconds": 1.0
         },
         {
-          "at": 6.4,
+          "at": 1.2,
+          "do": "glitch",
+          "amount": 0.2,
+          "seconds": 0.15,
+          "sound": false
+        },
+        {
+          "at": 1.9,
+          "do": "sfx",
+          "sfx": "portalSurge"
+        },
+        {
+          "at": 2.0,
+          "do": "portal",
+          "actor": "portal",
+          "green": 0.8,
+          "power": 1.15,
+          "spin": 2.4,
+          "seconds": 0.7
+        },
+        {
+          "at": 2.0,
+          "do": "shake",
+          "amount": 0.7,
+          "seconds": 1.2
+        },
+        {
+          "at": 2.0,
+          "do": "flare",
+          "actor": "portal",
+          "amount": 0.08,
+          "seconds": 0.6
+        },
+        {
+          "at": 2.2,
+          "do": "sfx",
+          "sfx": "titleShriek"
+        },
+        {
+          "at": 2.3,
           "do": "move",
           "actor": "mib1",
           "to": [
-            -6,
+            -6.5,
             0,
-            -2
+            -1.5
           ],
+          "seconds": 0.9
+        },
+        {
+          "at": 2.3,
+          "do": "move",
+          "actor": "mib2",
+          "to": [
+            5.5,
+            0,
+            -1
+          ],
+          "seconds": 0.9
+        },
+        {
+          "at": 2.4,
+          "do": "glitch",
+          "amount": 0.45,
+          "seconds": 0.3,
+          "sound": false
+        },
+        {
+          "at": 2.6,
+          "do": "pose",
+          "actor": "mib3",
+          "pose": "down"
+        },
+        {
+          "at": 2.9,
+          "do": "portal",
+          "actor": "portal",
+          "green": 1,
+          "power": 1.3,
+          "spin": 3.4,
+          "seconds": 1.2
+        },
+        {
+          "at": 3.6,
+          "do": "shake",
+          "amount": 1.3,
           "seconds": 1.4
         },
         {
-          "at": 7.0,
-          "do": "glitch",
-          "amount": 1,
-          "seconds": 2.5
+          "at": 4.2,
+          "do": "portal",
+          "actor": "portal",
+          "power": 2.2,
+          "seconds": 0.6
         },
         {
-          "at": 7.6,
+          "at": 4.2,
+          "do": "flare",
+          "actor": "portal",
+          "amount": 0.25,
+          "seconds": 0.6,
+          "hold": true
+        },
+        {
+          "at": 4.7,
+          "do": "glitch",
+          "amount": 1,
+          "seconds": 1.0
+        },
+        {
+          "at": 5.4,
           "do": "fade",
           "to": 1,
-          "seconds": 0.2
+          "seconds": 0.25
         }
       ],
-      "duration": 9
+      "duration": 6
     },
     {
       "id": "opening.wake",

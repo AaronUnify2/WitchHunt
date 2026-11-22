@@ -32,6 +32,7 @@ import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { buildSkyActor, flightAt, SkyFx } from './cutsceneFlight.js';
+import { buildPortal } from '../render/portalFx.js';
 
 export class Cutscenes {
   constructor(cfg, bus, data = cutsceneData) {
@@ -175,6 +176,8 @@ export class Cutscenes {
       lookAt: null,
       after: [], // Session 17: its lines, for when it's over
       clockWasPaused: this.clock.paused,
+      bus: this.sfx?.bus?.() ?? null, // Nov 2026: its sounds (faded out if it's skipped)
+      loops: [], // its held sounds (stopped when it ends)
     };
     this.current = cur;
     this.clock.setPaused(true);
@@ -208,6 +211,9 @@ export class Cutscenes {
       a.dispose();
     }
     cur.fx?.dispose();
+    // Nov 2026: its held sounds stop; skipped, everything it started goes quiet (else one-shots ring on).
+    for (const held of cur.loops) held.stop(0.4);
+    if (skipped) cur.bus?.fade(0.25);
     // A skipped cutscene's own lines go with it (as before Session 17).
     if (skipped && this.speaksDuring(cur.data)) this.subtitles.clear();
     // Session 17: a linesAfter one's lines now (a skipped one's too: they're the family's reaction).
@@ -454,7 +460,11 @@ export class Cutscenes {
         break;
       case 'glitch':
         this.postFX.glitch(e.amount ?? 1, e.seconds ?? 0.4);
-        if (e.sound !== false) this.sfx?.play('radioStatic');
+        if (e.sound !== false) this.sfx?.play('radioStatic', undefined, { bus: cur.bus });
+        break;
+      case 'portal':
+        // Nov 2026: a portal's green, power and spin, eased to over seconds.
+        actor?.portal?.to(e);
         break;
       case 'fade':
         cur.fadeTarget = e.to ?? 1;
@@ -497,7 +507,11 @@ export class Cutscenes {
       default:
         break;
     }
-    if (e.sfx) this.sfx?.play(e.sfx);
+    // Nov 2026: its sounds go through its own bus (a skip silences them); loop: held until it ends.
+    if (e.sfx && e.loop) {
+      const held = this.sfx?.loop?.(e.sfx, cur.bus);
+      if (held) cur.loops.push(held);
+    } else if (e.sfx) this.sfx?.play(e.sfx, undefined, { bus: cur.bus });
   }
 
   // Session 19 (style pass 2): the sweeps' grade eases in over the first
@@ -623,6 +637,7 @@ export class Cutscenes {
       poseAmount: 0,
       move: null,
       flare: null,
+      portal: mesh.userData.portal ?? null, // Nov 2026: a portal's state ('portal' events)
       walk: 0,
       // The camera's light on it: lit materials glow k of their own colour,
       // plus a little grey, so a dark figure still shows as a silhouette.
@@ -739,6 +754,7 @@ export class Cutscenes {
     this.zombieList.length = 0;
     for (const a of this.current.actors.values()) {
       const m = a.mesh;
+      if (a.portal) a.portal.update(dt);
       if (a.fly) {
         // Session 17: flying (no ground under it), facing the way it's going.
         a.fly.t += dt;
@@ -863,6 +879,13 @@ export function buildActor(spec, cc) {
         }
       }
       if (f.eyes) for (const s of [-1, 1]) g.add(box(0.05, 0.03, 0.02, s * w * 0.1, h * 0.9, -w * 0.25, f.eyes, true));
+      break;
+    }
+    case 'portal': {
+      // Nov 2026 (Aaron): the cold open's portal, its blue overrun by green (render/portalFx.js).
+      const p = buildPortal(spec);
+      g.add(p);
+      g.userData.portal = p.userData.portal;
       break;
     }
     case 'ring': {
