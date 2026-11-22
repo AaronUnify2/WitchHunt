@@ -8,7 +8,7 @@
 
 import { staticCallPlan } from './staticCall.js';
 import audioFileList from 'virtual:audio-files';
-import { groupFiles, audibleBounds } from './audioFiles.js';
+import { groupFiles, audibleBounds, splitBySilence, slicesToTakes } from './audioFiles.js';
 
 const NOISE_SECONDS = 1;
 
@@ -27,8 +27,10 @@ export class Sfx {
   }
 
   // A file in public/audio, fetched and decoded once. trim: cut Suno's silence off either end.
+  // A set (name_set.mp3) comes back as its takes, an array of buffers.
   loadFile(path, { trim = false } = {}) {
-    const key = trim ? `${path}#trim` : path;
+    const set = this.files?.sets?.has(path);
+    const key = set ? `${path}#set` : trim ? `${path}#trim` : path;
     const have = this.buffers.get(key);
     if (have) return Promise.resolve(have);
     const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
@@ -36,7 +38,7 @@ export class Sfx {
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`))))
       .then((data) => this.decoder().decodeAudioData(data))
       .then((buffer) => {
-        const out = trim ? this.trimmed(buffer) : buffer;
+        const out = set ? this.takesOf(path, buffer) : trim ? this.trimmed(buffer) : buffer;
         this.buffers.set(key, out);
         return out;
       })
@@ -58,6 +60,20 @@ export class Sfx {
     return this.offline;
   }
 
+  // A set's takes: at config.sfx.slices[path]'s timestamps, else wherever it falls quiet.
+  takesOf(path, buffer) {
+    const channels = [];
+    for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
+    const given = this.cfg.slices?.[path];
+    const takes = given ? slicesToTakes(given, buffer.sampleRate, buffer.length) : splitBySilence(channels, buffer.sampleRate, this.cfg.split);
+    const out = takes.map(({ start, end }) => {
+      const b = new AudioBuffer({ numberOfChannels: channels.length, length: end - start, sampleRate: buffer.sampleRate });
+      for (let c = 0; c < channels.length; c++) b.copyToChannel(channels[c].subarray(start, end), c);
+      return b;
+    });
+    return out.length ? out : [buffer];
+  }
+
   trimmed(buffer) {
     const channels = [];
     for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
@@ -68,9 +84,13 @@ export class Sfx {
     return out;
   }
 
-  // Every sound effect file, loaded as soon as the context exists (they're short).
+  // Every sound effect file, loaded as soon as the context exists (they're short). Loops
+  // (config.sfx.loops) whole, untrimmed, so they still join up.
   preloadSfx() {
-    for (const paths of Object.values(this.files.sfx)) for (const p of paths) this.loadFile(p, { trim: true });
+    for (const [name, paths] of Object.entries(this.files.sfx)) {
+      const raw = this.cfg.loops?.includes(name);
+      for (const p of paths) this.loadFile(p, { trim: !raw });
+    }
   }
 
   // A sound's file, if it has one that's loaded (a random take): or null (play the recipe).
@@ -79,8 +99,10 @@ export class Sfx {
     const paths = this.files.sfx[name];
     if (!paths) return null;
     const path = paths[Math.floor(Math.random() * paths.length)]; // cosmetic: not gameplay
-    const b = this.buffers.get(`${path}#trim`);
-    return b && !(b instanceof Promise) ? b : null;
+    const raw = this.cfg.loops?.includes(name);
+    const b = this.buffers.get(this.files.sets?.has(path) ? `${path}#set` : raw ? path : `${path}#trim`);
+    if (!b || b instanceof Promise) return null;
+    return Array.isArray(b) ? b[Math.floor(Math.random() * b.length)] : b; // cosmetic: a set's takes
   }
 
   // timing (Nov 2026, a cutscene's sounds, timed to its picture): { offset (seconds into the
@@ -238,7 +260,7 @@ export class Sfx {
     try {
       const sample = this.sampleFor(name);
       if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1, opts.timing ?? null);
-      const recipe = RECIPES[name];
+      const recipe = RECIPES[name] ?? RECIPES[STAND_IN[name]];
       if (recipe) recipe(this, pos, opts.bus);
     } finally {
       this.outTo = null;
@@ -262,8 +284,16 @@ export class Sfx {
     };
   }
 
-  // Nov 2026: a held sound, looping until stopped: its file looped, or a held recipe. { stop(seconds) } or null.
-  loop(name, bus = null) {
+  // Nov 2026: a file at a place, at a level (the ambience's calls). No file: nothing.
+  playAt(name, pos, gain = 1) {
+    if (!this.ready) return;
+    const sample = this.sampleFor(name);
+    if (sample) this.playSample(sample, pos, gain * (SAMPLE_GAIN[name] ?? 1));
+  }
+
+  // Nov 2026: a held sound, looping until stopped: its file looped, or a held recipe (not with
+  // onlyFile). { stop(seconds), level(to, seconds) } or null.
+  loop(name, bus = null, { onlyFile = false } = {}) {
     if (!this.ready) return null;
     const dest = bus?.node ?? this.master;
     const env = this.ctx.createGain();
@@ -277,13 +307,19 @@ export class Sfx {
       src.connect(env);
       src.start();
       stopNodes = (t) => src.stop(t);
-    } else if (HELD[name]) {
+    } else if (HELD[name] && !onlyFile) {
       stopNodes = HELD[name](this, env);
     } else {
       env.disconnect();
       return null;
     }
     return {
+      level: (to, seconds = 0) => {
+        const t = this.ctx.currentTime;
+        env.gain.cancelScheduledValues(t);
+        if (seconds <= 0) env.gain.setValueAtTime(to, t);
+        else env.gain.setTargetAtTime(to, t, seconds / 3);
+      },
       stop: (seconds = 0.3) => {
         const t = this.ctx.currentTime;
         env.gain.cancelScheduledValues(t);
@@ -394,6 +430,9 @@ const ENGINE_VOICES = {
 
 // A file's level, where it needs one (1 otherwise).
 const SAMPLE_GAIN = {};
+
+// Nov 2026: new sounds with no recipe of their own: an older one stands in until the file's there.
+const STAND_IN = { mutantRoar: 'mutantGroan', bodyThud: 'maulThud' };
 
 // Nov 2026: held sounds (Sfx.loop) when there's no file: (s, dest) -> stop(atTime).
 const HELD = {

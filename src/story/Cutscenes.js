@@ -213,9 +213,10 @@ export class Cutscenes {
     cur.fx?.dispose();
     // Nov 2026: its held sounds stop; skipped, everything it started goes quiet (else one-shots ring on).
     for (const held of cur.loops.values()) held.stop(skipped ? 0.25 : 0.05);
-    // Skipped: a quick fade. Run to its end: its sounds were timed to be done by now (Aaron: nothing
-    // of the cold open's carries on past it); anything left is cut short.
-    cur.bus?.fade(skipped ? 0.25 : 0.05);
+    // Skipped: a quick fade. Run to its end, one marked soundsEnd (the cold open: Aaron, nothing of
+    // its carries on past it) cuts anything left; others' one-shots ring on (a sting's tail).
+    if (skipped) cur.bus?.fade(0.25);
+    else if (cur.data.soundsEnd) cur.bus?.fade(0.05);
     // A skipped cutscene's own lines go with it (as before Session 17).
     if (skipped && this.speaksDuring(cur.data)) this.subtitles.clear();
     // Session 17: a linesAfter one's lines now (a skipped one's too: they're the family's reaction).
@@ -463,6 +464,10 @@ export class Cutscenes {
       case 'glitch':
         this.postFX.glitch(e.amount ?? 1, e.seconds ?? 0.4);
         if (e.sound !== false) this.sfx?.play('radioStatic', undefined, { bus: cur.bus });
+        break;
+      case 'music':
+        // Nov 2026: a sting (music/<sting>.mp3) over it, through its bus.
+        if (e.sting) this.music?.sting(e.sting, cur.bus);
         break;
       case 'portal':
         // Nov 2026: a portal's green, power and spin, eased to over seconds.

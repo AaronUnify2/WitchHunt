@@ -122,6 +122,7 @@ import { startFromOutpostCleared, startFromLater, STORY_POINTS } from '../debug/
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import { Music } from '../audio/Music.js';
+import { Ambience, ambienceState } from '../audio/Ambience.js';
 import {
   SAVE_VERSION,
   validSave,
@@ -174,6 +175,8 @@ export class Game {
     this.initWorld(root);
     this.music = new Music(cfg.music, this.combat.sfx); // Nov 2026: the title music (the first Suno test)
     this.music.preload(cfg.music.title); // decoded while the game loads, so it starts on the first press
+    for (const sting of ['stingMutant', 'stingWitch']) this.music.preload(sting);
+    this.ambience = new Ambience(cfg.ambience, this.combat.sfx, this.music); // Nov 2026: the world's background sound
     this.initUi(root);
     // Session 21 (M10.2): interiors (the storm shelter's room first): loaded on the way in, the world simulating on outside.
     this.interiorHud = new InteriorHud(cfg.clock);
@@ -480,6 +483,7 @@ export class Game {
       teleport: (x, z, yaw) => this.player.teleport(x, z, yaw),
     });
     this.cutscenes = new Cutscenes(this.cfg, this.bus);
+    this.cutscenes.music = this.music; // Nov 2026: a cutscene's stings
     this.cutscenes.init({
       root,
       scene: this.scene,
@@ -2184,6 +2188,17 @@ export class Game {
     // Session 26: the Caller, never over a cutscene, a paper, a card or a menu.
     const worldUp = this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.weaponCross.isOpen && !this.noReturn.isOpen;
     if (!this.demo.active) this.caller.update(worldUp ? dt : 0, worldUp && this.combat.alive);
+    // Nov 2026: the background sound (beds by day and night, the shop's, calls, gusts, the night music).
+    const gs = this.gasStation;
+    this.ambience.update(dt, ambienceState({
+      running: this.state === 'running',
+      clock: this.clock,
+      inShop: gs?.frame ? gs.inside() : false,
+      muffled: this.combat.sfx.muffled,
+      cutscene: this.cutscenes.current,
+      quietStyles: this.cfg.ambience.quietStyles,
+      listener: this.combat.sfx.listener,
+    }));
     this.overlay.update(dt);
   }
 

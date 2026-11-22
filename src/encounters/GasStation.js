@@ -578,7 +578,7 @@ export class GasStation {
     const z = this.mutant;
     if (!z || this.mutantState !== 'dormant') return;
     z.wake(this.gc.mutant.riseSeconds ?? 1.0);
-    this.combat?.sfx?.play('mutantGroan', z);
+    this.combat?.sfx?.play('mutantRoar', z); // Nov 2026: its unfolding roar (the sting's in the cutscene)
     this.mutantState = 'scripted';
     this.bus.emit('gasStation:mutant');
   }
@@ -599,6 +599,7 @@ export class GasStation {
     if (this.mutantState !== 'scripted') return;
     this.pose('slam', 'strike');
     this.combat?.sfx?.play('swipe', this.mutant);
+    this.combat?.sfx?.play('hurt'); // Nov 2026: Tom takes it
     // Knocked back down the aisle toward the front (a few steps).
     const sc = this.gc.mutantScript;
     const p = this.local();
@@ -613,7 +614,7 @@ export class GasStation {
     const j = this.jabTo ?? this.local();
     this.slide(j.x + 1.5, j.z, this.gc.mutantScript.charge.seconds);
     this.pose('backhand', 'windup', this.gc.mutantScript.charge.seconds);
-    this.combat?.sfx?.play('charge', this.mutant);
+    this.combat?.sfx?.play('mutantGroan', this.mutant); // Nov 2026: its own voice, not a zombie's lunge
   }
 
   scriptThrow() {

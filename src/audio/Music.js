@@ -29,11 +29,22 @@ export class Music {
     if (this.cfg.enabled && this.has(name)) this.sfx.loadFile(this.sfx.files.music[name][0], { trim: true });
   }
 
-  // Start a track (from silence, fading in over cfg.fadeIn). Already playing: nothing.
+  // A track's own settings (config.music.tracks), over the defaults.
+  trackCfg(name) {
+    const t = this.cfg.tracks?.[name] ?? {};
+    return { volume: t.volume ?? this.cfg.volume, fadeIn: t.fadeIn ?? this.cfg.fadeIn, fadeOut: t.fadeOut ?? this.cfg.fadeOut };
+  }
+
+  // The track playing or about to (or null).
+  get playing() {
+    return this.current?.name ?? this.wanted ?? null;
+  }
+
+  // Start a track (from silence, fading in). Already playing: nothing.
   play(name) {
     if (!this.cfg.enabled || !this.has(name)) return;
     if (this.current?.name === name || this.wanted === name) return;
-    this.stop(this.cfg.fadeOut);
+    this.stop(this.current ? this.trackCfg(this.current.name).fadeOut : this.cfg.fadeOut);
     this.wanted = name;
     this.tryStart();
   }
@@ -57,7 +68,8 @@ export class Music {
     const ctx = this.ctx;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(this.cfg.volume, ctx.currentTime + this.cfg.fadeIn);
+    const tc = this.trackCfg(name);
+    gain.gain.exponentialRampToValueAtTime(tc.volume, ctx.currentTime + tc.fadeIn);
     gain.connect(ctx.destination);
     const track = { name, gain, buffer, sources: [], timer: null };
     this.current = track;
@@ -85,6 +97,20 @@ export class Music {
     track.timer = setTimeout(() => {
       if (this.current === track) this.pass(track, next, true);
     }, lead);
+  }
+
+  // Nov 2026: a sting (music/<name>.mp3), once, over whatever's playing. bus: a cutscene's.
+  async sting(name, bus = null) {
+    if (!this.cfg.enabled || !this.has(name) || !this.sfx.ready) return;
+    const buffer = await this.sfx.loadFile(this.sfx.files.music[name][0], { trim: true });
+    if (!buffer || !this.sfx.ready) return;
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const g = ctx.createGain();
+    g.gain.value = this.cfg.stingVolume ?? this.cfg.volume;
+    src.connect(g).connect(bus?.node ?? ctx.destination);
+    src.start();
   }
 
   // Fade out whatever's playing (seconds; 0: cut).

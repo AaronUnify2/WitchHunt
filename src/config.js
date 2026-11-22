@@ -2889,6 +2889,27 @@ export const config = {
     enabled: true,
     volume: 0.6,
     hearingDistance: 35, // metres; positional sounds fade to nothing here
+    // Nov 2026: files that loop (played whole, not trimmed, so they join up).
+    loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside'],
+    // Nov 2026: a set (name_set.mp3, several takes in one download) is cut where it goes quiet...
+    split: { gapSeconds: 0.3, floorDb: -36, minSeconds: 0.15, padSeconds: 0.04 },
+    // ...or at timestamps: { 'sfx/groan_set.mp3': [[0.2, 1.9], [3.0, 4.4]] } (seconds).
+    slices: {},
+  },
+
+  // Nov 2026 (the Suno test): the world's background sound (audio/Ambience.js). Beds loop
+  // under everything (day, night, inside the gas station's shop); calls play now and then
+  // from a random direction; gusts likewise. Quiet in the CCTV-style cutscenes (Aaron).
+  ambience: {
+    enabled: true,
+    beds: { day: 'ambDay', night: 'ambNight', shop: 'ambShopInside' },
+    bedVolume: 0.45,
+    fadeSeconds: 2.5, // a bed's crossfade (day to night, in and out of the shop)
+    muffledBed: 0.35, // the outside beds' level heard from inside an interior
+    calls: { day: 'dayCall', night: 'nightCall', every: [20, 60], distance: [25, 60], volume: [0.35, 0.7] },
+    gusts: { name: 'windGust', every: [35, 90], volume: [0.3, 0.55] },
+    quietStyles: ['cctv', 'black'], // cutscenes that are footage from elsewhere
+    nightMusic: { track: 'night', from: 0.6 }, // music/night.mp3 once it's this dark, outdoors
   },
 
   // Nov 2026 (the first Suno test): music, files in public/audio/music (audio/Music.js).
@@ -2899,6 +2920,8 @@ export const config = {
     fadeOut: 0.8, // seconds: Aaron, the title music fades out as soon as a choice is picked
     loopCrossfade: 4, // seconds a track's end overlaps its start when it loops
     title: 'title', // the main menu's track (music/title.mp3)
+    tracks: { night: { volume: 0.32, fadeIn: 6, fadeOut: 5 } }, // Nov 2026: a track's own level and fades
+    stingVolume: 0.7,
   },
 
   // Flashlight: the game's one shadow-casting light

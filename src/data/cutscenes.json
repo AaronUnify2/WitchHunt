@@ -65,6 +65,7 @@
     {
       "id": "opening.coldOpen",
       "name": "Opening: the cold open at Ground Zero (government CCTV)",
+      "soundsEnd": true,
       "_note": "Nov 22, 2026 (Aaron): 6 s. The government's portal, its Roswell blue overrun by the witches' green: unexplained, just interdimensional energy (render/portalFx.js). The hum under it all; the surge as the green takes it; the shriek (New Run's, moved here so it always lands on the surge); the agents thrown back; a whiteout and the feed dies.",
       "style": "cctv",
       "look": "groundZero",
@@ -605,7 +606,7 @@
       ],
       "duration": 1.8
     },
-    {"id": "gas.mutant", "name": "The gas station: the first mutant wakes (first person)", "style": "firstPerson", "world": "run", "_note": "Session 15b (M9.3): a few steps into the dark shop, the camera turns to the hunched thing at the back of the centre aisle (anchor mutant, from GasStation): it unfolds to its full height (the emit wakes it; the world runs on, so it does), the camera hitches, and it's on its feet. Then Tom has his controls back. Nov 16 (Aaron: 'I want the gas station mutant to stand, hit Tom back a few steps, then charge forward and use a backhanded swipe to push Tom out of the front door into the fuel pump area outside'): the view holds on it as a live target (gasMutant: it moves). It stands (gasStation:rise), steps in with a jab that knocks Tom back down the aisle (jabUp, jab), charges (charge) and backhands him out through the front door onto the forecourt (throw: Player.glideTo), and comes out of the door after him (follow). Then the fight's among the pumps and the cars, and the witch can be watching when it's down.", "tracks": [{"at": 0, "do": "lookAt", "target": "gasMutant", "rate": 2.4, "pitch": -0.12}, {"at": 0.9, "do": "emit", "event": "gasStation:rise"}, {"at": 1.0, "do": "shake", "amount": 0.6, "seconds": 0.3}, {"at": 1.0, "do": "lookAt", "target": "gasMutant", "rate": 2.2, "pitch": 0.22}, {"at": 2.0, "do": "emit", "event": "gasStation:jabUp"}, {"at": 2.3, "do": "emit", "event": "gasStation:jab"}, {"at": 2.3, "do": "shake", "amount": 1.1, "seconds": 0.35}, {"at": 2.3, "do": "lookAt", "target": "gasMutant", "rate": 5, "pitch": 0.18}, {"at": 2.75, "do": "emit", "event": "gasStation:charge"}, {"at": 3.25, "do": "emit", "event": "gasStation:throw"}, {"at": 3.25, "do": "shake", "amount": 1.6, "seconds": 0.55}, {"at": 4.0, "do": "shake", "amount": 0.9, "seconds": 0.3}, {"at": 4.05, "do": "emit", "event": "gasStation:follow"}, {"at": 4.05, "do": "lookAt", "target": "gasMutant", "rate": 3, "pitch": 0.12}], "duration": 5.2, "jolt": true},
+    {"id": "gas.mutant", "name": "The gas station: the first mutant wakes (first person)", "style": "firstPerson", "world": "run", "_note": "Session 15b (M9.3): a few steps into the dark shop, the camera turns to the hunched thing at the back of the centre aisle (anchor mutant, from GasStation): it unfolds to its full height (the emit wakes it; the world runs on, so it does), the camera hitches, and it's on its feet. Then Tom has his controls back. Nov 16 (Aaron: 'I want the gas station mutant to stand, hit Tom back a few steps, then charge forward and use a backhanded swipe to push Tom out of the front door into the fuel pump area outside'): the view holds on it as a live target (gasMutant: it moves). It stands (gasStation:rise), steps in with a jab that knocks Tom back down the aisle (jabUp, jab), charges (charge) and backhands him out through the front door onto the forecourt (throw: Player.glideTo), and comes out of the door after him (follow). Then the fight's among the pumps and the cars, and the witch can be watching when it's down.", "tracks": [{"at": 0, "do": "lookAt", "target": "gasMutant", "rate": 2.4, "pitch": -0.12}, {"at": 0.9, "do": "emit", "event": "gasStation:rise"}, {"at": 0.9, "do": "music", "sting": "stingMutant"}, {"at": 1.0, "do": "shake", "amount": 0.6, "seconds": 0.3}, {"at": 1.0, "do": "lookAt", "target": "gasMutant", "rate": 2.2, "pitch": 0.22}, {"at": 2.0, "do": "emit", "event": "gasStation:jabUp"}, {"at": 2.3, "do": "emit", "event": "gasStation:jab"}, {"at": 2.3, "do": "shake", "amount": 1.1, "seconds": 0.35}, {"at": 2.3, "do": "lookAt", "target": "gasMutant", "rate": 5, "pitch": 0.18}, {"at": 2.75, "do": "emit", "event": "gasStation:charge"}, {"at": 3.25, "do": "emit", "event": "gasStation:throw"}, {"at": 3.25, "do": "shake", "amount": 1.6, "seconds": 0.55}, {"at": 4.0, "do": "shake", "amount": 0.9, "seconds": 0.3}, {"at": 4.0, "do": "sfx", "sfx": "bodyThud"}, {"at": 4.05, "do": "emit", "event": "gasStation:follow"}, {"at": 4.05, "do": "lookAt", "target": "gasMutant", "rate": 3, "pitch": 0.12}], "duration": 5.2, "jolt": true},
     {
       "id": "gas.witch",
       "name": "The gas station: the witch at the treeline (first person)",
@@ -636,6 +637,11 @@
           "at": 0.3,
           "do": "sfx",
           "sfx": "witchSong"
+        },
+        {
+          "at": 0.3,
+          "do": "music",
+          "sting": "stingWitch"
         },
         {
           "at": 2.3,
