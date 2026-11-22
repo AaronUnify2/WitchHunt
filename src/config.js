@@ -2917,6 +2917,7 @@ export const config = {
     bedVolume: 0.45,
     fadeSeconds: 2.5, // a bed's crossfade (day to night, in and out of the shop)
     muffledBed: 0.35, // the outside beds' level heard from inside an interior
+    cabinMuffled: 0.4, // Aaron: inside the station's cabin, outdoors comes through the walls (0.4 x muffledBed: about 14%); no calls or gusts
     calls: { day: 'dayCall', night: 'nightCall', every: [20, 60], distance: [25, 60], volume: [0.35, 0.7] },
     gusts: { name: 'windGust', every: [35, 90], volume: [0.3, 0.55] },
     quietStyles: ['cctv', 'black'], // cutscenes that are footage from elsewhere

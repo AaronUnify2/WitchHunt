@@ -2203,11 +2203,14 @@ export class Game {
     if (!this.demo.active) this.caller.update(worldUp ? dt : 0, worldUp && this.combat.alive);
     // Nov 2026: the background sound (beds by day and night, the shop's, calls, gusts, the night music).
     const gs = this.gasStation;
+    const pp = this.player.position;
+    // Aaron: inside the station's cabin (either room) the outdoors is only heard through the walls.
+    const inCabin = this.station?.layout ? zoneOf(this.station.layout, pp.x, pp.z) >= 2 : false;
     this.ambience.update(dt, ambienceState({
       running: this.state === 'running',
       clock: this.clock,
       inShop: gs?.frame ? gs.inside() : false,
-      muffled: this.combat.sfx.muffled,
+      muffled: Math.min(this.combat.sfx.muffled ?? 1, inCabin ? this.cfg.ambience.cabinMuffled : 1),
       cutscene: this.cutscenes.current,
       quietStyles: this.cfg.ambience.quietStyles,
       listener: this.combat.sfx.listener,
