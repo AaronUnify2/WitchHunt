@@ -33,6 +33,12 @@ Until they're uploaded, synthesised stand-ins play in their place.
 
 ## Test 2: atmosphere, then enemies (18 downloads, 6 spare for retakes)
 
+**Where we are (Nov 22):** made from the first version of this list, under its names,
+which all work as they are: `ambDay`, `ambNight`, `ambShopInside`, `dayCall_1`, `dayCall_2`,
+`nightCall_1`-`3`, `windGust_1`, `windGust_2`, `stingMutant`, `stingWitch`, the groans and
+`charge`. The first groan file has two groans in it, so it goes up as `groan_set.mp3`.
+**Still to make:** rows 12-18 below (multi-take sets) and the night music (row 9).
+
 Guns stay as they are for now. Atmosphere first, then enemies, in the order to make
 them: if the Suno limit runs out partway, the most useful are done. **Built and waiting
 on the files:** each one plays as soon as it's uploaded.
