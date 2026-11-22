@@ -8,7 +8,7 @@
 
 import { staticCallPlan } from './staticCall.js';
 import audioFileList from 'virtual:audio-files';
-import { groupFiles, audibleBounds, splitBySilence, slicesToTakes } from './audioFiles.js';
+import { groupFiles, audibleBounds, splitBySilence, slicesToTakes, steadyBounds, bakeLoop } from './audioFiles.js';
 
 const NOISE_SECONDS = 1;
 
@@ -28,9 +28,10 @@ export class Sfx {
 
   // A file in public/audio, fetched and decoded once. trim: cut Suno's silence off either end.
   // A set (name_set.mp3) comes back as its takes, an array of buffers.
-  loadFile(path, { trim = false } = {}) {
+  // loop: made seamless (its fades cut off, its end blended into its start: loopBuffer).
+  loadFile(path, { trim = false, loop = null } = {}) {
     const set = this.files?.sets?.has(path);
-    const key = set ? `${path}#set` : trim ? `${path}#trim` : path;
+    const key = set ? `${path}#set` : loop ? `${path}#loop` : trim ? `${path}#trim` : path;
     const have = this.buffers.get(key);
     if (have) return Promise.resolve(have);
     const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
@@ -38,7 +39,7 @@ export class Sfx {
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`))))
       .then((data) => this.decoder().decodeAudioData(data))
       .then((buffer) => {
-        const out = set ? this.takesOf(path, buffer) : trim ? this.trimmed(buffer) : buffer;
+        const out = set ? this.takesOf(path, buffer) : loop ? this.loopBuffer(buffer, loop) : trim ? this.trimmed(buffer) : buffer;
         this.buffers.set(key, out);
         return out;
       })
@@ -74,6 +75,27 @@ export class Sfx {
     return out.length ? out : [buffer];
   }
 
+  // A seamless loop: the steady part (Suno fades its loops in and out), its end blended into
+  // its start over loop.fade seconds.
+  loopBuffer(buffer, { fade = 1.5, steady = true } = {}) {
+    const channels = [];
+    for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
+    const { start, end } = steady ? steadyBounds(channels, buffer.sampleRate) : { start: 0, end: buffer.length };
+    const baked = channels.map((d) => bakeLoop(d.subarray(start, end), fade * buffer.sampleRate));
+    const out = new AudioBuffer({ numberOfChannels: baked.length, length: baked[0].length, sampleRate: buffer.sampleRate });
+    baked.forEach((d, c) => out.copyToChannel(d, c));
+    return out;
+  }
+
+  // How a loop's made seamless (config.sfx.loops: a name, or { name, fade }).
+  loopSpec(name) {
+    for (const l of this.cfg.loops ?? []) {
+      if (l === name) return { fade: this.cfg.loopFade ?? 1.5 };
+      if (l?.name === name) return { fade: l.fade ?? this.cfg.loopFade ?? 1.5, steady: l.steady ?? true };
+    }
+    return null;
+  }
+
   trimmed(buffer) {
     const channels = [];
     for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
@@ -88,8 +110,8 @@ export class Sfx {
   // (config.sfx.loops) whole, untrimmed, so they still join up.
   preloadSfx() {
     for (const [name, paths] of Object.entries(this.files.sfx)) {
-      const raw = this.cfg.loops?.includes(name);
-      for (const p of paths) this.loadFile(p, { trim: !raw });
+      const loop = this.loopSpec(name);
+      for (const p of paths) this.loadFile(p, loop ? { loop } : { trim: true });
     }
   }
 
@@ -99,8 +121,7 @@ export class Sfx {
     const paths = this.files.sfx[name];
     if (!paths) return null;
     const path = paths[Math.floor(Math.random() * paths.length)]; // cosmetic: not gameplay
-    const raw = this.cfg.loops?.includes(name);
-    const b = this.buffers.get(this.files.sets?.has(path) ? `${path}#set` : raw ? path : `${path}#trim`);
+    const b = this.buffers.get(this.files.sets?.has(path) ? `${path}#set` : this.loopSpec(name) ? `${path}#loop` : `${path}#trim`);
     if (!b || b instanceof Promise) return null;
     return Array.isArray(b) ? b[Math.floor(Math.random() * b.length)] : b; // cosmetic: a set's takes
   }
@@ -258,7 +279,8 @@ export class Sfx {
     if (!this.ready) return;
     this.outTo = opts.bus?.node ?? null;
     try {
-      const sample = this.sampleFor(name);
+      // No file of its own: a stand-in's file (mutantRoar: the mutant's growls), else a recipe.
+      const sample = this.sampleFor(name) ?? (STAND_IN[name] ? this.sampleFor(STAND_IN[name]) : null);
       if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1, opts.timing ?? null);
       const recipe = RECIPES[name] ?? RECIPES[STAND_IN[name]];
       if (recipe) recipe(this, pos, opts.bus);
@@ -340,7 +362,14 @@ export class Sfx {
     if (!this.ready) return;
     if (this.engineMuted) on = false; // Session 17 (Aaron): cut while a cutscene plays
     const ctx = this.ctx;
-    if (on && this[channel] && this[channel].voice !== voice) this.engine(false, 0, 0, voice, 0, channel);
+    // Nov 2026: a voice with recordings (ENGINE_FILES: an idle loop and a high-revs loop) plays them.
+    const F = ENGINE_FILES[voice];
+    const useFiles = Boolean(F && this.sampleFor(F.idle) && this.sampleFor(F.rev));
+    if (on && this[channel] && (this[channel].voice !== voice || Boolean(this[channel].files) !== useFiles)) this.engine(false, 0, 0, voice, 0, channel);
+    if (on && useFiles) {
+      this.fileEngine(speed, throttle, voice, F, channel);
+      return;
+    }
     if (!on) {
       if (this[channel]) {
         const { oscs, gain } = this[channel];
@@ -398,6 +427,38 @@ export class Sfx {
     n.gain.gain.setTargetAtTime((V.level + throttle * 0.05 + speed * 0.04 + boost * 0.06) * 0.8, t, 0.1); // Session 16 (Aaron): 20% quieter
   }
 
+  // Nov 2026: an engine from two recorded loops, both always running: idle and high revs,
+  // crossfaded by how hard it's going (equal power) and both pitched up with it.
+  fileEngine(speed, throttle, voice, F, channel) {
+    const ctx = this.ctx;
+    if (!this[channel]) {
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      gain.connect(this.master);
+      const make = (name) => {
+        const src = ctx.createBufferSource();
+        src.buffer = this.sampleFor(name);
+        src.loop = true;
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        src.connect(g).connect(gain);
+        src.start(ctx.currentTime, Math.random() * src.buffer.duration); // cosmetic: not gameplay
+        return { src, g };
+      };
+      const idle = make(F.idle);
+      const rev = make(F.rev);
+      this[channel] = { voice, files: true, idle, rev, gain, oscs: [idle.src, rev.src] };
+    }
+    const n = this[channel];
+    const t = ctx.currentTime;
+    const rpm = Math.min(1, speed * F.speedRpm + throttle * F.throttleRpm);
+    n.idle.g.gain.setTargetAtTime(Math.cos((rpm * Math.PI) / 2) * F.idleLevel, t, 0.12);
+    n.rev.g.gain.setTargetAtTime(Math.sin((rpm * Math.PI) / 2) * F.revLevel, t, 0.12);
+    n.idle.src.playbackRate.setTargetAtTime(F.idlePitch[0] + rpm * (F.idlePitch[1] - F.idlePitch[0]), t, 0.15);
+    n.rev.src.playbackRate.setTargetAtTime(F.revPitch[0] + rpm * (F.revPitch[1] - F.revPitch[0]), t, 0.15);
+    n.gain.gain.setTargetAtTime(F.level * (1 + throttle * F.gas), t, 0.1);
+  }
+
   // Session 28: the chainsaw's engine, a held note of its own (so a vehicle's engine and the saw
   // never fight over one voice). rev 0..1: idling to flat out; load 0..1: bogged down in a cut.
   saw(on, rev = 0, load = 0) {
@@ -430,6 +491,12 @@ const ENGINE_VOICES = {
 
 // A file's level, where it needs one (1 otherwise).
 const SAMPLE_GAIN = {};
+
+// Nov 2026: engines with recordings (sfx/quadIdle, sfx/quadRev: loops). rpm (0..1) = speed * speedRpm
+// + throttle * throttleRpm: it crossfades idle to revs and pitches each across its range.
+const ENGINE_FILES = {
+  quad: { idle: 'quadIdle', rev: 'quadRev', speedRpm: 0.85, throttleRpm: 0.3, idleLevel: 1, revLevel: 0.85, idlePitch: [1, 1.5], revPitch: [0.75, 1.15], level: 0.55, gas: 0.25 },
+};
 
 // Nov 2026: new sounds with no recipe of their own: an older one stands in until the file's there.
 const STAND_IN = { mutantRoar: 'mutantGroan', bodyThud: 'maulThud' };

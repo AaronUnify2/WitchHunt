@@ -68,7 +68,7 @@ export class Ambience {
     if (!this.sfx.files.sfx[name] || !listener) return;
     const a = Math.random() * Math.PI * 2; // cosmetic: not gameplay
     const d = this.pick(c.distance ?? [20, 40]);
-    const range = d * 1.6; // the fade with distance stays gentle: it's meant to be heard
+    const range = d * 3; // the fade with distance stays gentle (about half): it's meant to be heard
     const pos = { x: listener.x + Math.cos(a) * d, z: listener.z + Math.sin(a) * d, range };
     this.sfx.playAt?.(name, pos, this.pick(c.volume));
   }

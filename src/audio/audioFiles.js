@@ -131,3 +131,39 @@ export function nightness(phase, progress) {
   if (phase === 'dawn') return 1 - Math.min(1, Math.max(0, progress));
   return 0;
 }
+
+// Nov 2026: the steady part of a loop Suno faded in and out: [start, end) in samples, from
+// where it first reaches `ratio` of its typical (median) level to where it last does.
+export function steadyBounds(channels, sampleRate, { ratio = 0.5, windowSeconds = 0.05 } = {}) {
+  const length = channels[0]?.length ?? 0;
+  const win = Math.max(1, Math.round(windowSeconds * sampleRate));
+  const lv = [];
+  for (let i = 0; i < length; i += win) {
+    let sum = 0;
+    let n = 0;
+    for (const d of channels) for (let j = i; j < Math.min(length, i + win); j++) { sum += d[j] * d[j]; n++; }
+    lv.push(Math.sqrt(sum / Math.max(1, n)));
+  }
+  if (!lv.length) return { start: 0, end: length };
+  const median = [...lv].sort((a, b) => a - b)[Math.floor(lv.length / 2)];
+  const first = lv.findIndex((v) => v >= median * ratio);
+  let last = lv.length - 1;
+  while (last > 0 && lv[last] < median * ratio) last--;
+  if (first < 0 || last <= first) return { start: 0, end: length };
+  return { start: first * win, end: Math.min(length, (last + 1) * win) };
+}
+
+// Nov 2026: a seamless loop from a clip: its end blended into its start over `fade` samples
+// (equal power), so it can be looped natively (and pitched freely: an engine's). Returns the
+// loop's samples for one channel: length - fade of them.
+export function bakeLoop(data, fade) {
+  const n = data.length;
+  const f = Math.max(0, Math.min(Math.floor(fade), Math.floor(n / 3)));
+  const out = new Float32Array(n - f);
+  for (let i = 0; i < n - f; i++) out[i] = data[i];
+  for (let i = 0; i < f; i++) {
+    const k = i / f;
+    out[i] = data[i] * Math.sin((k * Math.PI) / 2) + data[n - f + i] * Math.cos((k * Math.PI) / 2);
+  }
+  return out;
+}

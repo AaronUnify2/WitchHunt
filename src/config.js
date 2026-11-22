@@ -2890,11 +2890,22 @@ export const config = {
     volume: 0.6,
     hearingDistance: 35, // metres; positional sounds fade to nothing here
     // Nov 2026: files that loop (played whole, not trimmed, so they join up).
-    loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside'],
+    // Each made seamless: Suno's fade in and out cut off, its end blended into its start over loopFade
+    // seconds (an engine's short loops over less).
+    loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside', { name: 'quadIdle', fade: 0.08, steady: false }, { name: 'quadRev', fade: 0.06, steady: false }],
+    loopFade: 1.5,
     // Nov 2026: a set (name_set.mp3, several takes in one download) is cut where it goes quiet...
     split: { gapSeconds: 0.3, floorDb: -36, minSeconds: 0.15, padSeconds: 0.04 },
     // ...or at timestamps: { 'sfx/groan_set.mp3': [[0.2, 1.9], [3.0, 4.4]] } (seconds).
-    slices: {},
+    // Nov 22: cut by hand where Suno ran the takes together (read off each file's loudness).
+    slices: {
+      'sfx/bodyThud_set.mp3': [[0, 2.5], [2.55, 5.2], [6.0, 8.7], [8.75, 9.8]],
+      'sfx/kill_set.mp3': [[0, 1.75], [1.8, 3.85], [4.7, 5.85], [5.9, 8.25], [8.3, 10.5]],
+      'sfx/mutantGroan_set.mp3': [[0.1, 2.65], [2.7, 4.1], [4.1, 5.45], [5.45, 7.4]],
+      'sfx/mutantSlam_set.mp3': [[0.25, 2.9], [2.95, 5.0], [5.1, 6.95], [10.3, 12.6]],
+      'sfx/rise_set.mp3': [[0.05, 2.9], [3.0, 7.5], [9.1, 10.9]],
+      'sfx/swipe_set.mp3': [[0, 2.85], [5.2, 6.1], [8.85, 9.7], [10.45, 10.95], [11.65, 12.45]],
+    },
   },
 
   // Nov 2026 (the Suno test): the world's background sound (audio/Ambience.js). Beds loop

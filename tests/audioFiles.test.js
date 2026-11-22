@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { soundOf, groupFiles, audibleBounds, loopPeriod, splitBySilence, slicesToTakes, nightness } from '../src/audio/audioFiles.js';
+import { soundOf, groupFiles, audibleBounds, loopPeriod, splitBySilence, slicesToTakes, nightness, steadyBounds, bakeLoop } from '../src/audio/audioFiles.js';
 import { ambienceState } from '../src/audio/Ambience.js';
 import audioFileList from 'virtual:audio-files';
 
@@ -75,5 +75,24 @@ describe('audio files (the Suno test)', () => {
     expect(ambienceState({ ...base, cutscene: { data: { style: 'cctv' } } }).quiet).toBe(true);
     expect(ambienceState({ ...base, cutscene: { data: { style: 'firstPerson' } } }).quiet).toBe(false);
     expect(ambienceState({ ...base, cutscene: null }).night).toBe(1);
+  });
+
+  it('finds the steady part of a loop Suno faded in and out', () => {
+    const d = new Float32Array(10000);
+    for (let i = 0; i < 10000; i++) d[i] = Math.sin(i) * Math.min(1, i / 2000, (10000 - i) / 1000);
+    const { start, end } = steadyBounds([d], 1000, { ratio: 0.5, windowSeconds: 0.1 });
+    expect(start).toBeGreaterThanOrEqual(900);
+    expect(start).toBeLessThanOrEqual(1100);
+    expect(end).toBeGreaterThanOrEqual(9400);
+    expect(end).toBeLessThanOrEqual(9600);
+  });
+
+  it('bakes a seamless loop: its end flows into its start', () => {
+    const d = Float32Array.from({ length: 1000 }, (_, i) => i / 1000); // a ramp: a jump at the join if looped raw
+    const out = bakeLoop(d, 100);
+    expect(out.length).toBe(900);
+    expect(Math.abs(out[0] - d[900])).toBeLessThan(0.01); // the join: the last sample (899) runs on into 900's
+    expect(out[899]).toBeCloseTo(d[899]);
+    expect(out[150]).toBeCloseTo(d[150]);
   });
 });

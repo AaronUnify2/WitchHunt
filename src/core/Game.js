@@ -1217,6 +1217,19 @@ export class Game {
   addDebugMenuItems() {
     const menu = this.debugMenu;
     const cfg = this.cfg;
+    // Nov 2026 (the Suno test): flip between the real files and the old synthesised sounds, to compare.
+    const audio = menu.category(DEBUG.audio);
+    audio.addItem('Sound files: on / off (off: the old synthesised sounds)', () => {
+      const s = this.combat.sfx;
+      s.useFiles = !s.useFiles;
+      s.engine(false); // the quad's engine picks its new voice next frame
+      if (!s.useFiles) this.ambience.stopAll();
+      return s.useFiles ? 'Sound files on' : 'Old sounds (files off)';
+    });
+    audio.addItem('Ambience: play a call now', () => {
+      this.ambience.callIn = 0;
+      return 'A call, next frame (outdoors)';
+    });
     // Aaron (after Session 26): begin playing from the outpost cleared (debug/storyStart.js).
     const start = menu.category(DEBUG.start);
     // Nov 17 (Aaron: after jumping about, the grey was dead at the plane and the quad wouldn't come): a story

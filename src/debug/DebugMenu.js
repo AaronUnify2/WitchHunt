@@ -33,6 +33,7 @@ export const DEBUG = {
   day1: 'Dialogue: Day 1 lines',
   run: 'Run & save',
   display: 'Display & performance',
+  audio: 'Audio', // Nov 2026: the Suno files against the old synthesised sounds
 };
 
 // Session 25: the Enemies category's tabs, in order.
