@@ -1,6 +1,6 @@
 # Audio cue sheet
 
-## Test 1: the title screen (built, waiting on the files)
+## Test 1: the title screen (done)
 
 The game opens on "Tap to start"; that tap starts the title music, which loops
 (its end crossfades into its start) until a choice is picked, then fades out in
@@ -15,7 +15,7 @@ Until they're uploaded: the menu is silent and New Run plays a placeholder shrie
 
 **Done:** both uploaded. The shriek now plays inside the cold open (below), not on the tap.
 
-## Test 1b: the cold open's portal (built, waiting on the files)
+## Test 1b: the cold open's portal (done)
 
 6 seconds of government CCTV: the portal's Roswell blue overrun by the witches' green,
 then a whiteout and the feed dies. Timeline: **0 s** the hum starts (blue, steady) ·
@@ -31,108 +31,60 @@ Until they're uploaded, synthesised stand-ins play in their place.
 
 ---
 
-## Test 2: the gas station
+## Test 2: atmosphere, then enemies (24 downloads)
 
+Guns stay as they are for now. The first 12 are atmosphere, the last 12 enemies,
+in the order to make them: if the Suno limit runs out partway, the most useful are done.
 
-A trial of real (Suno) audio in one scene: the roadside gas station. Everything
-not on this list keeps its synthesised placeholder, and a debug switch flips
-between old and new so they can be compared on the spot.
+**How the atmosphere works:** a steady bed loops under everything (day, night, or
+inside the shop), and separate one-off calls (crows, owls, things far off in the dark)
+play at random every so often, from random directions. So the loops are textures
+with nothing distinctive in them (a 10 s loop with a crow in it would caw every 10 s),
+and the character comes from the calls, which never repeat in the same pattern.
 
-## How to upload
+**Upload:** rename to the exact name, MP3, into `public/audio/sfx` (stings into
+`public/audio/music`). Takes are numbered: `nightCall_1.mp3`, `nightCall_2.mp3`...
+Don't worry about length, silence at the ends or loudness: I trim and level them.
 
-1. Make the sound in Suno and download it as **MP3** (WAV is fine too).
-2. **Rename it to the exact file name below** (the name is what ties it to the game).
-3. On GitHub, open the folder (`public/audio/sfx`, `public/audio/music` or
-   `public/audio/voice`), tap **Add file → Upload files**, drop them in, commit to `main`.
+### Atmosphere (12)
 
-Batches are fine. Anything missing just plays the old sound.
+| # | File | Suno | Where | Prompt |
+|---|---|---|---|---|
+| 1 | `ambDay.mp3` | Sounds, **loop** | Outdoors by day, everywhere | Quiet empty forest by day, soft steady wind through pine needles, faint rustling leaves, distant rushing breeze, calm but lonely, no birds, no animals, no music, seamless loop |
+| 2 | `ambNight.mp3` | Sounds, **loop** | Outdoors at night, everywhere | Dark forest at night, dense steady crickets and insects, low cold wind, faint creaking trees, eerie stillness, no music, seamless loop |
+| 3 | `ambShopInside.mp3` | Sounds, **loop** | Inside the gas station's shop | Inside a dark abandoned convenience store, low hum of a dying refrigerator, faint fluorescent buzz, building creaks, muffled wind outside, tense and still, no music, seamless loop |
+| 4 | `dayCall_1.mp3` | Sounds, one-shot | Now and then by day | A few distant crow caws echoing across an empty forest, no music |
+| 5 | `dayCall_2.mp3` | Sounds, one-shot | Now and then by day | A dry branch snapping somewhere in the woods followed by leaves rustling, distant, no music |
+| 6 | `nightCall_1.mp3` | Sounds, one-shot | Now and then at night | A lone owl hooting far away in a dark forest, echoing, no music |
+| 7 | `nightCall_2.mp3` | Sounds, one-shot | Now and then at night | A distant animal screaming in the night forest, unsettling, fox-like but wrong, echoing, no music |
+| 8 | `nightCall_3.mp3` | Sounds, one-shot | Now and then at night | Something far off in the woods letting out a long low inhuman howl, echoing across the valley, no music |
+| 9 | `windGust_1.mp3` | Sounds, one-shot | Gusts now and then; the witch leaving | A sudden strong gust of wind rushing through forest trees, branches swaying and creaking, then dying away, no music |
+| 10 | `windGust_2.mp3` | Sounds, one-shot | (a second take) | A cold howling wind gust sweeping across an open clearing, rising and fading, no music |
+| 11 | `stingMutant.mp3` | Song, **instrumental** (music folder) | The mutant unfolds in the shop | Horror jump-scare sting, sudden dissonant orchestral stab with screeching strings, then a low pounding drum and fading drone |
+| 12 | `stingWitch.mp3` | Song, **instrumental** (music folder) | The witch watching from across the road | Eerie Appalachian folk horror, a single detuned fiddle and a whispering wordless female hum over a low drone, slow and haunting, fades into wind |
 
-**Variations:** where it says "x3", make three takes and name them `groan_1.mp3`,
-`groan_2.mp3`, `groan_3.mp3`. The game picks one at random so it doesn't repeat.
+### Enemies (12)
 
-**Don't worry about:** exact length, silence at the ends, loudness, stereo/mono.
-I trim, level and convert everything once it's in.
-
-## Suno tool and settings
-
-- **Sound effects** (`sfx` folder): Suno **Sounds**, **one-shot** mode, unless marked LOOP.
-- **Loops** (`sfx` folder): Suno **Sounds**, **loop** mode.
-- **Stings** (`music` folder): a normal Suno song, **instrumental**, then trim. Or Sounds if it does better.
-- **Voice** (`voice` folder): Suno **Speech**, **background music off**. Record it clean:
-  the game adds the radio crackle itself, so it matches the rest of the radio.
-
-The prompts below are starting points: tweak freely, and keep whichever take you like.
-Add "no music" to an effect's prompt if Suno slips a melody in.
-
----
-
-## 1. Background loops (`public/audio/sfx`)
-
-| File | Where it plays | Prompt |
-|---|---|---|
-| `ambDayRoadside.mp3` LOOP, ~60 s | Outdoors around the gas station by day | Quiet rural roadside at early morning, light wind through pine trees, distant crows, a faint electrical buzz from a broken sign, an eerie emptiness, no traffic, no people, no music, seamless loop |
-| `ambShopInside.mp3` LOOP, ~45 s | Inside the dark shop | Inside an abandoned roadside convenience store, low hum of a dead refrigerator, faint dripping, building creaks, muffled wind outside, tense and still, no music, seamless loop |
-
-## 2. Fighting (`public/audio/sfx`)
-
-These are heard all over the game, so this test upgrades them everywhere.
-
-| File | When | Prompt |
-|---|---|---|
-| `rifle.mp3` | Rifle shot | Single bolt-action hunting rifle gunshot outdoors, sharp crack with a rolling echo across a forest valley |
-| `shotgun.mp3` | Shotgun shot | Single 12-gauge pump shotgun blast outdoors, heavy boom, short echo off trees |
-| `pump.mp3` | Shotgun racked after each shot | Pump-action shotgun being racked, metallic shuck-shuck, close up, dry, no echo |
-| `pistol.mp3` | Pistol shot | Single 9mm handgun shot outdoors, snappy crack, light echo |
-| `reload.mp3` | Reload starts | Rifle magazine release and rounds being thumbed in, close up, metallic clicks |
-| `loaded.mp3` | Reload finished | Rifle bolt slammed shut, single crisp metallic clack |
-| `empty.mp3` | Trigger on an empty gun | Dry fire, single small metallic click of an empty gun |
-| `swing.mp3` | Shovel swing | Fast whoosh of a heavy shovel swung through the air |
-| `shovelHit.mp3` | Shovel lands | Heavy steel shovel striking a body, dull meaty thud with a metal ring |
-| `flesh_1/2/3.mp3` x3 | Bullet hits a zombie | Bullet impact into rotten flesh, wet short thud, gory, close |
-| `headshot.mp3` | Headshot | Bullet hitting a skull, sharp crunch and wet splatter, gruesome |
-| `kill.mp3` | A zombie drops | A body collapsing onto gravel, heavy limp thump, short |
-| `impact_1/2.mp3` x2 | Bullet hits the ground or a wall | Bullet ricochet impact into dirt and gravel, short puff and ping |
-| `hurt_1/2.mp3` x2 | Tom takes a hit | Middle-aged man grunting in pain from a sudden blow, short, breathy, no words |
-| `groan_1/2/3/4.mp3` x4 | Zombies nearby | Single rotting zombie groan, low wet gurgling moan, hungry, short, no words |
-| `charge.mp3` | A zombie lunges at Tom | Zombie shrieking as it lunges, raspy furious scream, short |
-| `swipe.mp3` | A zombie or the mutant swings at Tom | Fast clawed swipe through the air with a raspy grunt |
-
-## 3. The gas station's own sounds (`public/audio/sfx`)
-
-| File | When | Prompt |
-|---|---|---|
-| `mutantGroan_1/2.mp3` x2 | The mutant in the aisle | Huge mutated creature groaning, deep guttural growl with bones cracking, unsettling, short |
-| `door.mp3` | The shop's back door | Old metal back door of a store creaking open on rusty hinges then thudding |
-| `battery.mp3` | A battery wired into the scanner | Car battery terminals clamped on, metal clunk followed by an electric spark and hum |
-| `radioStatic.mp3` | Earl's scanner coming on | Old police radio scanner switching on, click then crackling static hiss and squelch, short |
-| `gasHiss.mp3` | A shot pump starts leaking | Pressurised fuel spraying from a ruptured gas pump, high hissing jet, building tension |
-| `explosion.mp3` | A gas pump blows | Gas station pump exploding, massive fiery boom, metal debris raining down, long roaring tail |
-| `denied.mp3` | Something locked (the gun safe) | Locked steel gun safe handle rattled, heavy clunk, won't open |
-| `pickup.mp3` | Finding something in a search | Picking up small items from a shelf, cardboard box and a rattle of a few bullets, quick |
-| `paper.mp3` | Reading Earl's note | Folded paper note being unfolded, crisp rustle, close |
-
-## 4. Stings (`public/audio/music`)
-
-| File | When | Prompt |
-|---|---|---|
-| `stingMutant.mp3` ~6-8 s | The torch finds the mutant and it unfolds | Horror movie jump-scare sting, sudden dissonant orchestral stab with screeching strings, then a low pounding drum and fading drone, instrumental |
-| `stingWitch.mp3` ~12-15 s | The witch watching from across the road, then running | Eerie Appalachian folk horror, a single detuned fiddle and a whispering wordless female hum over a low drone, slow and haunting, fades into wind, instrumental |
-
-## 5. Voice: Earl's scanner (`public/audio/voice`)
-
-The military broadcast on Earl's scanner. Use the same voice settings for all
-three so it sounds like one man. The "..." means it cuts in and out mid-sentence.
-
-**Voice description for Suno Speech:** American male military radio operator,
-40s, flat, clipped and tired, reading orders fast, slightly urgent but controlled.
-
-| File | Line |
-|---|---|
-| `gas.scanner.1.mp3` | ...all civilians inside the quarantine line remain indoors. Do not approach the checkpoint... |
-| `gas.scanner.1b.mp3` | ...Checkpoint Two, respond. Contacts on the east wire. They're not stopping. Fall back to the... |
-| `gas.scanner.1c.mp3` | ...transfer convoy overdue. Do not open the containers. Hold for the specialist team... |
+| # | File | Suno | When | Prompt |
+|---|---|---|---|---|
+| 13 | `groan_1.mp3` | Sounds, one-shot | Zombies nearby | Single rotting zombie groan, low wet gurgling moan, hungry, short, no words, no music |
+| 14 | `groan_2.mp3` | Sounds, one-shot | (a second take) | Zombie rasping breath turning into a guttural moan, decayed throat, short, no words, no music |
+| 15 | `groan_3.mp3` | Sounds, one-shot | (a third take) | Undead corpse letting out a choked hungry growl, wet and rattling, short, no words, no music |
+| 16 | `charge.mp3` | Sounds, one-shot | A zombie lunges | Zombie shrieking as it lunges to attack, raspy furious scream, short, no music |
+| 17 | `swipe.mp3` | Sounds, one-shot | A zombie (or the mutant) swings | Fast clawed swipe through the air with a raspy grunt, short, no music |
+| 18 | `rise.mp3` | Sounds, one-shot | The dead clawing out of the ground | Corpse clawing its way up out of the dirt, earth cracking and crumbling, a choked gasp, no music |
+| 19 | `kill.mp3` | Sounds, one-shot | A zombie drops | A dead body collapsing limply onto the ground, heavy thump with a last rattling breath, short, no music |
+| 20 | `mutantRoar.mp3` | Sounds, one-shot | The mutant unfolding (the cutscene), and its charge | Huge mutated creature rising to full height and roaring, bones cracking and stretching, deep guttural bellow, terrifying, no music |
+| 21 | `mutantGroan_1.mp3` | Sounds, one-shot | The mutant, fighting | Huge mutant creature growling, deep wet guttural snarl, menacing, short, no music |
+| 22 | `mutantGroan_2.mp3` | Sounds, one-shot | (a second take) | Massive deformed creature grunting and huffing as it moves, heavy breathing and a low growl, short, no music |
+| 23 | `mutantSlam.mp3` | Sounds, one-shot | The mutant landing a leap | Something huge and heavy slamming down onto the ground, deep crunching thud, debris scattering, no music |
+| 24 | `bodyThud.mp3` | Sounds, one-shot | Tom thrown out of the shop onto the forecourt | A man thrown hard onto concrete, heavy body impact with a grunt of pain, gravel scattering, no music |
 
 ---
 
-**Total:** 41 files (33 names; some have several takes). The most useful to start with:
-`ambDayRoadside`, `rifle`, `shotgun`, `groan` (x4), `stingMutant` and the scanner lines.
+## Later: guns and hits (not yet)
+
+`rifle`, `shotgun`, `pump`, `pistol`, `reload`, `loaded`, `empty`, `swing`, `shovelHit`,
+`flesh` (x3), `headshot`, `impact` (x2), `hurt` (x2); and the gas station's `door`,
+`battery`, `radioStatic`, `gasHiss`, `explosion`, `denied`, `pickup`, `paper`; and Earl's
+scanner voice (`voice/gas.scanner.1`, `1b`, `1c`). Prompts for these to follow when we get to them.
