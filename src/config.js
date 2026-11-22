@@ -2889,6 +2889,17 @@ export const config = {
     hearingDistance: 35, // metres; positional sounds fade to nothing here
   },
 
+  // Nov 2026 (the first Suno test): music, files in public/audio/music (audio/Music.js).
+  music: {
+    enabled: true,
+    volume: 0.5,
+    fadeIn: 1.5, // seconds
+    fadeOut: 0.8, // seconds: Aaron, the title music fades out as soon as a choice is picked
+    loopCrossfade: 4, // seconds a track's end overlaps its start when it loops
+    title: 'title', // the main menu's track (music/title.mp3)
+    shriekHold: 2.5, // seconds New Run's shriek (sfx/titleShriek.mp3) plays before a reload to a new map
+  },
+
   // Flashlight: the game's one shadow-casting light
   flashlight: {
     startOn: false, // Session 15b (Aaron): Tom wakes indoors by day with it off; Night 1 prompts it on

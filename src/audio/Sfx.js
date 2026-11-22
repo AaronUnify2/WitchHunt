@@ -7,6 +7,8 @@
 // from the tap that starts the game.
 
 import { staticCallPlan } from './staticCall.js';
+import audioFileList from 'virtual:audio-files';
+import { groupFiles, audibleBounds } from './audioFiles.js';
 
 const NOISE_SECONDS = 1;
 
@@ -18,6 +20,80 @@ export class Sfx {
   init() {
     this.ctx = null;
     this.listener = { x: 0, z: 0, yaw: 0 };
+    // Nov 2026: real files (Suno) in public/audio, played in place of a recipe of the same name.
+    this.files = groupFiles(audioFileList);
+    this.buffers = new Map(); // path -> AudioBuffer (or a promise of one, loading)
+    this.useFiles = true; // the debug menu flips it, to compare old and new
+  }
+
+  // A file in public/audio, fetched and decoded once. trim: cut Suno's silence off either end.
+  loadFile(path, { trim = false } = {}) {
+    const key = trim ? `${path}#trim` : path;
+    const have = this.buffers.get(key);
+    if (have) return Promise.resolve(have);
+    const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+    const loading = fetch(`${base}audio/${path}`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`))))
+      .then((data) => this.ctx.decodeAudioData(data))
+      .then((buffer) => {
+        const out = trim ? this.trimmed(buffer) : buffer;
+        this.buffers.set(key, out);
+        return out;
+      })
+      .catch((e) => {
+        console.warn('Audio file failed:', e.message);
+        this.buffers.delete(key);
+        return null;
+      });
+    this.buffers.set(key, loading);
+    return loading;
+  }
+
+  trimmed(buffer) {
+    const channels = [];
+    for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
+    const { start, end } = audibleBounds(channels, buffer.sampleRate);
+    if (start === 0 && end === buffer.length) return buffer;
+    const out = this.ctx.createBuffer(buffer.numberOfChannels, end - start, buffer.sampleRate);
+    for (let c = 0; c < channels.length; c++) out.copyToChannel(channels[c].subarray(start, end), c);
+    return out;
+  }
+
+  // Every sound effect file, loaded as soon as the context exists (they're short).
+  preloadSfx() {
+    for (const paths of Object.values(this.files.sfx)) for (const p of paths) this.loadFile(p, { trim: true });
+  }
+
+  // A sound's file, if it has one that's loaded (a random take): or null (play the recipe).
+  sampleFor(name) {
+    if (!this.useFiles) return null;
+    const paths = this.files.sfx[name];
+    if (!paths) return null;
+    const path = paths[Math.floor(Math.random() * paths.length)]; // cosmetic: not gameplay
+    const b = this.buffers.get(`${path}#trim`);
+    return b && !(b instanceof Promise) ? b : null;
+  }
+
+  playSample(buffer, pos, gain = 1) {
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = 0.96 + Math.random() * 0.08; // cosmetic: a little variety
+    src.connect(this.out(pos?.x, pos?.z, gain, pos?.range));
+    src.start();
+  }
+
+  // A controller press doesn't let a page start audio; the next tap or key does.
+  watchForGesture() {
+    if (this.watching || typeof window === 'undefined') return;
+    this.watching = true;
+    const go = () => {
+      this.watching = false;
+      window.removeEventListener('pointerdown', go, true);
+      window.removeEventListener('keydown', go, true);
+      this.unlock();
+    };
+    window.addEventListener('pointerdown', go, true);
+    window.addEventListener('keydown', go, true);
   }
 
   unlock() {
@@ -33,6 +109,7 @@ export class Sfx {
       this.noise = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
       const data = this.noise.getChannelData(0);
       for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1; // cosmetic: not gameplay
+      this.preloadSfx();
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
   }
@@ -128,6 +205,8 @@ export class Sfx {
   // name: one of the recipes below. pos: { x, z } for a positional sound.
   play(name, pos) {
     if (!this.ready) return;
+    const sample = this.sampleFor(name);
+    if (sample) return this.playSample(sample, pos, SAMPLE_GAIN[name] ?? 1);
     const recipe = RECIPES[name];
     if (recipe) recipe(this, pos);
   }
@@ -229,7 +308,22 @@ const ENGINE_VOICES = {
   alien: { waves: ['sine', 'triangle', 'sawtooth'], ratios: [1, 2.01, 4.02], base: 70, range: 120, gas: 20, boost: 140, filter: 900, open: 1600, level: 0.07, q: 4 },
 };
 
+// A file's level, where it needs one (1 otherwise).
+const SAMPLE_GAIN = {};
+
 const RECIPES = {
+  // Nov 2026 (Aaron): New Run picked: a shriek far off in the woods, echoing.
+  // The placeholder for sfx/titleShriek.mp3: the witch's shriek, quieter, three times fading.
+  titleShriek(s) {
+    [0, 0.32, 0.64].forEach((delay, i) => {
+      setTimeout(() => {
+        if (!s.ready) return;
+        const o = s.out(undefined, undefined, 0.55 * 0.45 ** i);
+        s.tone(o, { seconds: 0.9, wave: 'sawtooth', freq: 480, endFreq: 1100, gain: 0.16, attack: 0.05, vibrato: 18 });
+        s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 2200, endFreq: 3200, q: 3, gain: 0.18, attack: 0.04 });
+      }, delay * 1000);
+    });
+  },
   // Session 22 (spikes): placeholders until real recordings.
   // Junie calling "Da-ad?" down a path in the place beyond. Session 33 (Aaron): radio static in the shape of
   // the call, not notes (audio/staticCall.js). Not muffled inside (it's in there with him).

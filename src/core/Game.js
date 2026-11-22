@@ -121,6 +121,7 @@ import { RadioStatus } from '../ui/RadioStatus.js';
 import { startFromOutpostCleared, startFromLater, STORY_POINTS } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
+import { Music } from '../audio/Music.js';
 import {
   SAVE_VERSION,
   validSave,
@@ -171,6 +172,7 @@ export class Game {
     this.display.init();
 
     this.initWorld(root);
+    this.music = new Music(cfg.music, this.combat.sfx); // Nov 2026: the title music (the first Suno test)
     this.initUi(root);
     // Session 21 (M10.2): interiors (the storm shelter's room first): loaded on the way in, the world simulating on outside.
     this.interiorHud = new InteriorHud(cfg.clock);
@@ -1055,6 +1057,12 @@ export class Game {
       this.startScreen.show('begin');
       return;
     }
+    // Nov 2026 (Aaron): 'Tap to start' when the game opens: the tap lets the title music play.
+    if (!this.titleTapped && !this.combat.sfx.ready) {
+      this.startScreen.show('title');
+      return;
+    }
+    this.music.play(this.cfg.music.title);
     this.pendingChoice = null;
     this.startScreen.showMenu({
       save: this.pendingSave ? saveLabel(this.pendingSave, this.cfg.clock) : '',
@@ -1678,6 +1686,16 @@ export class Game {
   // 'begin' carries on with the choice from before the reload; 'resume'
   // is back from leaving fullscreen.
   onStartChoice(choice) {
+    if (choice === 'title') {
+      this.titleTapped = true;
+      this.combat.sfx.unlock();
+      this.showMenu();
+      return;
+    }
+    // Nov 2026 (Aaron): the title music fades out as soon as a choice is picked;
+    // New Run gets a shriek, far off and echoing.
+    if (choice !== 'resume') this.music.stop();
+    if (choice === 'new') this.combat.sfx.play('titleShriek');
     if (choice === 'demo') {
       this.startDemo();
       return;
@@ -1685,7 +1703,9 @@ export class Game {
     if (choice === 'new' || choice === 'skip' || choice === 'partTwo') {
       if (this.pendingSave) {
         this.meta.setPendingChoice(choice);
-        this.newRun();
+        // The shriek (New Run) plays out before the reload a new map needs.
+        if (choice === 'new' && this.combat.sfx.ready) setTimeout(() => this.newRun(), this.cfg.music.shriekHold * 1000);
+        else this.newRun();
         return;
       }
       if (choice === 'partTwo') this.startPartTwo();

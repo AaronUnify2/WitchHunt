@@ -1,4 +1,22 @@
-# Audio cue sheet: the gas station test
+# Audio cue sheet
+
+## Test 1: the title screen (built, waiting on the files)
+
+The game opens on "Tap to start"; that tap starts the title music, which loops
+(its end crossfades into its start) until a choice is picked, then fades out in
+under a second. **New Run** also plays a shriek far off in the woods.
+
+| File | Folder | Suno tool | Prompt |
+|---|---|---|---|
+| `title.mp3` (any length; 2-3 min is ideal) | `public/audio/music` | Normal song, **instrumental** | Spooky Appalachian folk horror, a witch's lament in the dark woods, slow detuned fiddle and fingerpicked banjo over a low droning cello, a faint wordless female hum like a distant witch singing, creaking wood and wind, sparse, haunting, creeping dread, minor key |
+| `titleShriek.mp3` (3-5 s) | `public/audio/sfx` | **Sounds**, one-shot | A single distant witch's shriek far away in a dark forest at night, inhuman and piercing, echoing off the hills and trees, long fading reverb tail, no music |
+
+Until they're uploaded: the menu is silent and New Run plays a placeholder shriek.
+
+---
+
+## Test 2: the gas station
+
 
 A trial of real (Suno) audio in one scene: the roadside gas station. Everything
 not on this list keeps its synthesised placeholder, and a debug switch flips

@@ -18,9 +18,13 @@
 // the crashed plane (a checkpoint of sorts; nothing else carries over).
 // Greyed out as 'coming later' until Part Two is released (config.release).
 //
-// onActivate(choice): 'continue' | 'new' | 'skip' | 'partTwo' | 'demo' | 'resume' | 'begin'.
+// Nov 2026 (Aaron): 'Tap to start' first, on opening the game: the tap that
+// lets the title music play (a browser won't play sound before one).
+//
+// onActivate(choice): 'continue' | 'new' | 'skip' | 'partTwo' | 'demo' | 'resume' | 'begin' | 'title'.
 
 const TEXT = {
+  title: 'Tap to start', // Nov 2026: the first screen, so the title music can play (audio needs a tap)
   resume: 'Tap to resume',
   begin: 'Tap to begin',
   noController: 'No controller yet: press any button on it to connect',
@@ -68,7 +72,7 @@ export class StartScreen {
     this.onKeyDown = (e) => {
       if (!this.visible) return;
       if (this.mode !== 'menu') {
-        if (KEYS_GO.has(e.code)) this.activate(this.mode);
+        if (KEYS_GO.has(e.code) || this.mode === 'title') this.activate(this.mode);
         return;
       }
       if (KEYS_UP.has(e.code)) this.move(-1);
@@ -136,7 +140,7 @@ export class StartScreen {
     this.visible = true;
   }
 
-  // A single prompt: 'resume' (back to fullscreen) or 'begin' (after the reload).
+  // A single prompt: 'title' (the game just opened), 'resume' (back to fullscreen) or 'begin' (after the reload).
   show(mode) {
     this.mode = mode;
     this.promptEl.textContent = TEXT[mode] ?? TEXT.begin;
