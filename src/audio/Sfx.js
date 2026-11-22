@@ -34,7 +34,7 @@ export class Sfx {
     const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
     const loading = fetch(`${base}audio/${path}`)
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`))))
-      .then((data) => this.ctx.decodeAudioData(data))
+      .then((data) => this.decoder().decodeAudioData(data))
       .then((buffer) => {
         const out = trim ? this.trimmed(buffer) : buffer;
         this.buffers.set(key, out);
@@ -49,12 +49,21 @@ export class Sfx {
     return loading;
   }
 
+  // Decoding needs a context, but not a running one: before the first tap, an offline one
+  // (so the title music is ready the moment the tap comes; its buffers play on the real one).
+  decoder() {
+    if (this.ctx) return this.ctx;
+    const Off = typeof window !== 'undefined' && (window.OfflineAudioContext || window.webkitOfflineAudioContext);
+    this.offline ??= new Off(2, 1, 44100);
+    return this.offline;
+  }
+
   trimmed(buffer) {
     const channels = [];
     for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c));
     const { start, end } = audibleBounds(channels, buffer.sampleRate);
     if (start === 0 && end === buffer.length) return buffer;
-    const out = this.ctx.createBuffer(buffer.numberOfChannels, end - start, buffer.sampleRate);
+    const out = new AudioBuffer({ numberOfChannels: buffer.numberOfChannels, length: end - start, sampleRate: buffer.sampleRate });
     for (let c = 0; c < channels.length; c++) out.copyToChannel(channels[c].subarray(start, end), c);
     return out;
   }

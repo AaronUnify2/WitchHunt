@@ -21,10 +21,14 @@
 // Nov 2026 (Aaron): 'Tap to start' first, on opening the game: the tap that
 // lets the title music play (a browser won't play sound before one).
 //
-// onActivate(choice): 'continue' | 'new' | 'skip' | 'partTwo' | 'demo' | 'resume' | 'begin' | 'title'.
+// A controller press there is 'titlePad' ('titlePadAgain' the second time), as
+// a browser may not count it as the press that lets sound play.
+//
+// onActivate(choice): 'continue' | 'new' | 'skip' | 'partTwo' | 'demo' | 'resume' | 'begin' | 'title' | 'titlePad' | 'titlePadAgain'.
 
 const TEXT = {
-  title: 'Tap to start', // Nov 2026: the first screen, so the title music can play (audio needs a tap)
+  title: 'Press Start or tap to begin', // Nov 2026: the first screen, so the title music can play (audio needs a press)
+  titleTap: 'Tap the screen to turn the sound on (or press Start again to go on without it)', // a controller press the browser didn't count
   resume: 'Tap to resume',
   begin: 'Tap to begin',
   noController: 'No controller yet: press any button on it to connect',
@@ -63,7 +67,7 @@ export class StartScreen {
     this.onPointerUp = (e) => {
       e.preventDefault();
       if (this.mode !== 'menu') {
-        this.activate(this.mode);
+        this.activate(this.mode === 'titleTap' ? 'title' : this.mode);
         return;
       }
       const button = e.target.closest('.start-choice');
@@ -72,7 +76,8 @@ export class StartScreen {
     this.onKeyDown = (e) => {
       if (!this.visible) return;
       if (this.mode !== 'menu') {
-        if (KEYS_GO.has(e.code) || this.mode === 'title') this.activate(this.mode);
+        if (this.mode === 'title' || this.mode === 'titleTap') this.activate('title');
+        else if (KEYS_GO.has(e.code)) this.activate(this.mode);
         return;
       }
       if (KEYS_UP.has(e.code)) this.move(-1);
@@ -88,6 +93,14 @@ export class StartScreen {
   // The controller: d-pad up and down, A to pick (Game calls this while it shows).
   update(input) {
     if (!this.visible || input.activeDevice !== 'gamepad') return;
+    if (this.mode === 'title' || this.mode === 'titleTap') {
+      // Nov 2026: A or Start. The browser may not let a controller press start the sound (Game checks).
+      if (input.wasPressed('menuConfirm') || input.wasPressed('pause')) {
+        input.swallowHeld?.();
+        this.activate(this.mode === 'title' ? 'titlePad' : 'titlePadAgain');
+      }
+      return;
+    }
     if (this.mode !== 'menu') {
       if (input.wasPressed('menuConfirm')) {
         input.swallowHeld?.(); // Session 15b: the press that starts the game doesn't also jump

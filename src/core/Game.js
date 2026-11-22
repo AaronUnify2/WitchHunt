@@ -173,6 +173,7 @@ export class Game {
 
     this.initWorld(root);
     this.music = new Music(cfg.music, this.combat.sfx); // Nov 2026: the title music (the first Suno test)
+    this.music.preload(cfg.music.title); // decoded while the game loads, so it starts on the first press
     this.initUi(root);
     // Session 21 (M10.2): interiors (the storm shelter's room first): loaded on the way in, the world simulating on outside.
     this.interiorHud = new InteriorHud(cfg.clock);
@@ -1686,10 +1687,21 @@ export class Game {
   // 'begin' carries on with the choice from before the reload; 'resume'
   // is back from leaving fullscreen.
   onStartChoice(choice) {
-    if (choice === 'title') {
+    if (choice === 'title' || choice === 'titlePadAgain') {
       this.titleTapped = true;
       this.combat.sfx.unlock();
       this.showMenu();
+      return;
+    }
+    if (choice === 'titlePad') {
+      // Nov 2026 (Aaron: the music must play): a controller press may not be allowed to start
+      // the sound. Started: on to the menu. Not: ask for a tap (or Start again to go on without it).
+      const sfx = this.combat.sfx;
+      sfx.unlock();
+      setTimeout(() => {
+        if (sfx.ready) this.onStartChoice('title');
+        else this.startScreen.show('titleTap');
+      }, 250);
       return;
     }
     // Nov 2026 (Aaron): the title music fades out as soon as a choice is picked;

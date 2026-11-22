@@ -24,6 +24,11 @@ export class Music {
     return !!this.sfx.files?.music?.[name];
   }
 
+  // Fetch and decode a track ahead of time (it can be done before the first tap).
+  preload(name) {
+    if (this.cfg.enabled && this.has(name)) this.sfx.loadFile(this.sfx.files.music[name][0], { trim: true });
+  }
+
   // Start a track (from silence, fading in over cfg.fadeIn). Already playing: nothing.
   play(name) {
     if (!this.cfg.enabled || !this.has(name)) return;
@@ -37,18 +42,16 @@ export class Music {
     const name = this.wanted;
     if (!name) return;
     if (!this.sfx.ready) {
-      // Wait for the context (the next tap or key unlocks it: Sfx.watchForGesture).
-      if (this.ctx && !this.waiting) {
-        this.waiting = true;
-        this.ctx.addEventListener('statechange', () => {
-          this.waiting = false;
-          this.tryStart();
-        }, { once: true });
-      }
+      // Wait for the context (the next tap or key unlocks it: Sfx.watchForGesture), checking a few times a second.
       this.sfx.watchForGesture?.();
+      clearTimeout(this.retry);
+      this.retry = setTimeout(() => this.tryStart(), 200);
       return;
     }
+    if (this.loading === name) return;
+    this.loading = name;
     const buffer = await this.sfx.loadFile(this.sfx.files.music[name][0], { trim: true });
+    this.loading = null;
     if (this.wanted !== name || !buffer) return; // stopped (or another track asked for) while it loaded
     this.wanted = null;
     const ctx = this.ctx;
@@ -87,6 +90,7 @@ export class Music {
   // Fade out whatever's playing (seconds; 0: cut).
   stop(seconds = this.cfg.fadeOut) {
     this.wanted = null;
+    clearTimeout(this.retry);
     const track = this.current;
     if (!track) return;
     this.current = null;
