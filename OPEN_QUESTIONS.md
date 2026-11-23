@@ -1,5 +1,7 @@
 # Open questions
 
+**Your play-test notes and the Suno sound (from Nov 23):** each note built as it came; my calls are from #784 below.
+
 **The first third's cutscenes and fights (Nov 16):** the plan you approved (docs/FIRST_THIRD_PLAN_3.md), all built, with your four answers (death at the campground with a retry; new sprite frames for the Screamer; no fuel bowser; captions only). My calls in building it are #772-783 below.
 
 **The dialogue cut (Nov 14):** players found the in-game talk too much. In-game lines are 60% fewer words; Ellen sends things to your map; her board says more. My calls are #766-771 below. Every line that changed: docs/DIALOGUE_CUT_NOV14.md.
@@ -23,6 +25,12 @@
 **Session 26 (Nov 11):** Junie taken, the Caller and comms in the south, the old church and the time capsule, then the stairs, the place beyond and Junie home (Session 27's batch too), all from HANDOVER's defaults while Aaron was at work. My calls are #449-475 below.
 
 **Session 25 (Nov 10-11):** Aaron's play-through notes are all built, with the giant moths and the crashed plane's beats. My calls are #412-445 below. **The notes changed earlier answers:** every gun is carried (#390 is moot), and Milo's suit is white with dots.
+
+## Your play-test notes and the Suno sound (from Nov 23)
+
+| # | Question | What it does now | Where to change it |
+| --- | --- | --- | --- |
+| 784 | **What replaces the mutant at Day 2's dawn?** (Your note: too intense; you picked the Screamer's sighting from four options.) | The Nov 14 beat as it was: the Screamer at the cold fire, back to the path; within 30 m its cutscene; it screams, three citizens claw up 3-5.5 m from it and chase, it burrows. No fight with it (Night 2's). Now with the `rise` sound on the first and third riser. The mutant's set-up (384 health, five dead round it, `day2.mutant`) is kept, off. Wyatt's dawn box (20 rounds) stays. | `config.campsite.dawnFigure` (copy `mutantFigure` into it to bring the mutant back); `Campsite.figureScream` |
 
 ## The first third's cutscenes and fights (Nov 16)
 

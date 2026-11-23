@@ -316,14 +316,16 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     const c = Object.create(Campsite.prototype);
     const spawned = [];
     const said = [];
+    const sounds = [];
     const flags = new Set(['day2']);
     Object.assign(c, {
-      cc: { ...config.campsite, dawnFigure: config.campsite.screamerFigure }, data: campsiteData, // (Nov 16: the mutant has its place; the Screamer's beat is kept, off)
+      cc: config.campsite, data: campsiteData, // (Nov 23: the Screamer's beat is Day 2's dawn again)
       frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
       clearing: { x: 0, z: 0, radius: 20 },
       enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 1, maxHealth: 1, burrow() { this.gone = true; } }) },
       progress: { has: (f) => flags.has(f) },
       clock: { phase: 'day' }, dialogue: { play: (id) => said.push(id) }, figureSent: false, figure: null,
+      combat: { sfx: { play: (n) => sounds.push(n) } },
       player: { position: { x: 0, z: -25 } },
     });
     c.updateDawnFigure({ x: 0, z: -40 });
@@ -341,18 +343,26 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     expect(figure.gone).toBe(true);
     expect(c.figure).toBe(null);
     expect(said).toEqual(['day2.figure.ellen']);
+    expect(sounds).toEqual(['screamerCall', 'rise', 'rise']); // Nov 23: its scream, the dirt breaking
     c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
     expect(spawned).toHaveLength(1 + config.campsite.screamerFigure.rise); // once
   });
 
+  // Nov 23 (Aaron, play-test: the mutant at Day 2's dawn is "too intense"): the Screamer's sighting again.
+  it('is the Screamer at Day 2\'s dawn, not the mutant', () => {
+    expect(config.campsite.dawnFigure).toEqual(config.campsite.screamerFigure);
+    expect(config.campsite.dawnFigure.variant).toBe('screamer');
+  });
+
   // Nov 16 (Aaron): a mutant at the fire on Day 2, five of the dead round it; a sweep to show it off, then a fight.
-  it('is a mutant now, crouched at the fire with five of the dead round it, and they all come', () => {
+  // Kept as config.campsite.mutantFigure (off since Nov 23).
+  it('can still be the mutant, crouched at the fire with five of the dead round it, and they all come', () => {
     const c = Object.create(Campsite.prototype);
     const spawned = [];
     const chased = [];
     const flags = new Set(['day2']);
     Object.assign(c, {
-      cc: config.campsite, cfg: config, data: campsiteData,
+      cc: { ...config.campsite, dawnFigure: config.campsite.mutantFigure }, cfg: config, data: campsiteData,
       frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
       clearing: { x: 0, z: 0, radius: 20 },
       enemies: {
@@ -366,7 +376,7 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     c.updateDawnFigure({ x: 0, z: -40 });
     expect(spawned[0].kind).toBe('mutant');
     expect(c.figure.state).toBe('dormant');
-    expect(c.figure.maxHealth).toBe(config.campsite.dawnFigure.health);
+    expect(c.figure.maxHealth).toBe(config.campsite.mutantFigure.health);
     expect(spawned.slice(1)).toHaveLength(5);
     c.updateDawnFigure({ x: 0, z: -25 }); // near: (no cutscene here) straight to its end
     expect(chased).toHaveLength(6);

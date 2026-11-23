@@ -4163,13 +4163,17 @@ export const config = {
     // (day2.screamer): it screams, `rise` of the dead come up within `ring` metres of it and come for Tom, and it
     // goes back into the ground (not a fight: it's Night 2's). screamSeconds: its pose held. at: where it stands, in the
     // campsite's frame (the open ground on the path's side of the fire's log reflector).
-    screamerFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8 }, // (Plan #19: unused since Nov 16)
+    screamerFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8 },
     // Nov 16 (Aaron: "Let's put one of our mutants in the campground waiting for the player on the morning of day 2.
     // The screamer will be used in the evening, and the mutant is in the gas station. Therefore, we will place our
-    // third zombie mutant by the campfire surrounded by 5 zombies"): the dawn figure is a mutant now, crouched at
-    // the fire (at, its back to the path), with the dead standing round it (escortSpots, in the campsite's frame).
-    // Its cutscene day2.mutant; then a fight. (variant 'screamer' brings back Plan #19's beat.)
-    dawnFigure: { enabled: true, variant: 'mutant', at: [0, -0.9], health: 384, spawnAt: 70, showAt: 30, escortSpots: [[-2.4, -0.4], [2.5, -0.2], [-1.9, 2.6], [1.9, 2.7], [0.3, 3.3]] },
+    // third zombie mutant by the campfire surrounded by 5 zombies"): a mutant crouched at the fire (at, its back to
+    // the path), with the dead standing round it (escortSpots, in the campsite's frame). Its cutscene day2.mutant;
+    // then a fight. Kept, off: set dawnFigure to it to bring it back.
+    mutantFigure: { enabled: true, variant: 'mutant', at: [0, -0.9], health: 384, spawnAt: 70, showAt: 30, escortSpots: [[-2.4, -0.4], [2.5, -0.2], [-1.9, 2.6], [1.9, 2.7], [0.3, 3.3]] },
+    // Nov 23 (Aaron, play-test: "there shouldn't be a mutant in the campground on day two morning. It's too
+    // intense"; his pick of the options): back to the Screamer's sighting (screamerFigure above): it screams, three
+    // of the dead claw up and come, and it sinks back into the ground. Night 2 is still its fight.
+    dawnFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8 },
     // Nov 16: and Wyatt's box from the tower at Day 2's dawn (the morning is rifle and shovel only).
     dawnBox: { rounds: 20 },
     look: {

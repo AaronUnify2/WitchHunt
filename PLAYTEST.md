@@ -728,12 +728,16 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Day 1, arriving at the campground:** the sweep ends on four dead round the fire turning to look at you; they come as it ends. Wyatt's "check their shelters" once they're down.
 - [ ] **After the tape:** the horde cutscene opens on one breaking out of the brush behind the car, pulls back as the rest spill out round it, and Ellen asks for the battery. They're between you and home. A second group about 16 s later. Enough rounds? (About 16 more sure ones in the search.)
 - [ ] **You can die at the campground now** (arrival to the horde's end): the death screen offers "try again from the campground", back on the path in.
-- [ ] **Day 2 morning:** the mutant crouched at the campers' fire, five dead round it. The sweep opens on its glowing back, it unfolds, turns, "MUTANT" (with captions on). Then a fight, with Wyatt's box of 20 rounds from dawn.
+- [ ] ~~**Day 2 morning:** the mutant crouched at the campers' fire, five dead round it. The sweep opens on its glowing back, it unfolds, turns, "MUTANT" (with captions on). Then a fight, with Wyatt's box of 20 rounds from dawn.~~ (Undone Nov 23: round 85.)
 - [ ] **The gas station:** down the aisle it stands, knocks you back, charges and backhands you out of the front door. You land facing the store; it ducks out after you. Kill it among the pumps: the witch should be watching.
 - [ ] **The mutant (all of them):** twice the health. Close in it slams, backhands (you're thrown aside), or spins twice (then stands dizzy: get behind it). From 4.5-14 m it leaps at you, always if you stand still 2 s. It chains blows. Lure it into a car or a pump: they go up (and hurt it).
 - [ ] **The Screamer (Night 2):** walking up on it while it screams is walking into a gale. Close in, it rears (a hiss) and strikes, neck out and jaw hanging. Shoot its head while it hangs there.
 - [ ] **The grey:** its shield blooms as you get control back (a quick-draw hit pops it). Its bar at the top. Shots wear the shield, then its health; leave it alone 4 s and the shield comes back. It blinks about. The purple rings: be out of the cone or your controls turn round for 5 s. Get within 7 m with the shield up and it arcs lightning at you. Rounds by the survival kit.
 - [ ] **Overall:** is your heart rate up? Too hard anywhere? The numbers are all in config (OPEN_QUESTIONS #772-783 say where).
+
+**Round 85: Nov 22-23's sound, and your notes as you play (from Nov 23).** New Run, headphones on.
+- [ ] **Day 2 morning: the Screamer is back at the campers' fire** (your note: the mutant there was too intense). As you come down the path it stands with its back to you, turns, screams with its arms out; three of the dead claw up out of the dirt (you should hear the earth break) and come for you; it sinks back into the ground. Ellen: "It called them up and went to ground, Tom." Wyatt's box of 20 rounds still comes at dawn. Debug menu, First day: **Day 2 morning: the thing at the campground ahead**.
+- [ ] **The gas station's mutant is the first mutant you meet again.** Does it land harder now?
 
 ## 1. The main menu
 

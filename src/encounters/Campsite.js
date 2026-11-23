@@ -121,7 +121,7 @@ export class Campsite {
       this.bus.on('campsite:fireTurn', () => this.fireTurn()), // sweep.campsite's last shot
       this.bus.on('campsite:mutantRise', () => this.mutantRise()), // day2.mutant's emits
       this.bus.on('campsite:mutantTurn', () => this.mutantTurn()),
-      // Nov 16: Day 2's dawn: Wyatt hands over the tower's box of rounds (the campground's mutant is next).
+      // Nov 16: Day 2's dawn: Wyatt hands over the tower's box of rounds (the campground's figure is next).
       this.bus.on('story:flag', ({ id, on }) => {
         if (id === 'day2' && on) this.giveDawnBox();
       }),
@@ -351,6 +351,7 @@ export class Campsite {
       const zz = z.z + Math.cos(a) * r;
       const risen = this.enemies.spawnZombie(x, zz, { variant: 'citizen', mode: 'chase', rise: true, facing: Math.atan2(p.x - x, p.z - zz), authored: 'campsite' });
       if (risen) this.enemies.alert?.(risen.x, risen.z, 1);
+      if (risen && i % 2 === 0) this.combat?.sfx?.play('rise', risen); // Nov 23: the dirt breaking (rise_set), as the other encounters' risers
     }
     this.bus?.emit('campsite:screamed', {});
   }
@@ -869,11 +870,12 @@ export class Campsite {
       this.player.teleport(s.x - f.fx * 18, s.z - f.fz * 18, s.yaw);
       this.notify('Day 1: walk in to the campground');
     });
-    day1.addItem('Nov 16 start: Day 2 morning, the mutant at the campground ahead', () => {
+    day1.addItem('Day 2 morning: the thing at the campground ahead', () => {
       this.progress.setFlag('day2');
       while (this.clock && this.clock.phase !== 'day') this.clock.skipPhase();
       this.figureSent = false;
       this.figureShown = false;
+      this.figureScreamed = false;
       this.dawnAwake = false;
       this.mutantTurned = false;
       const s = this.retrySpot();

@@ -25,7 +25,7 @@
 - **The dev server lists the audio files when it starts:** restart it after adding or moving one.
 - **Headless runs slowly:** cutscene time lags real time unless you step `game.update(1/30)` yourself; render every step if you screenshot post effects (the glitch's static decays in `render`).
 
-**Not logged yet:** none of Nov 22-23 is in PLAYTEST or OPEN_QUESTIONS (it went straight into STATUS, DESIGN and AUDIO_CUES as Aaron played). **Next numbers: PLAYTEST round 85, OPEN_QUESTIONS #784.** MORNING.md stops at Nov 16.
+**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16.
 
 **What the next session does:** ask Aaron for any notes from his play (rule 10; fix those first). Then, when his Suno credits refresh: hook up each new upload (check sets split cleanly: read the loudness, cut at `config.sfx.slices` where they don't; check loops; set levels), in the order DESIGN "Audio direction" lists under **Still to do** (the night music and the batch's gaps first, then guns and hits, then the gas station's own sounds and Earl's scanner voice). Write him new prompts for each batch as multi-take sets (`docs/AUDIO_CUES.md` shows the wording that works). Otherwise, whatever he asks for.
 
