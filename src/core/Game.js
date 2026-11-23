@@ -123,6 +123,7 @@ import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import { Music } from '../audio/Music.js';
 import { Ambience, ambienceState } from '../audio/Ambience.js';
+import { ObjectiveBanner } from '../ui/ObjectiveBanner.js';
 import {
   SAVE_VERSION,
   validSave,
@@ -1154,6 +1155,8 @@ export class Game {
     this.bus.on('map:refused', ({ text }) => this.toast.show(text)); // Session 33: no map in the place beyond or the mine
     this.toast = new Toast(cfg.ui);
     this.toast.init(root);
+    this.objectiveBanner = new ObjectiveBanner(cfg.objectiveBanner, this.bus); // Nov 2026 (Aaron)
+    this.objectiveBanner.init(root);
     // Session 15b (Aaron): control prompts in their own slot under the toast
     // (a later toast replaced them); their time doesn't run in a cutscene.
     this.hints = new Toast(cfg.ui);
@@ -2201,6 +2204,8 @@ export class Game {
     // Session 26: the Caller, never over a cutscene, a paper, a card or a menu.
     const worldUp = this.state === 'running' && !this.pauseMenu.isOpen && !this.cutscenes.active && !this.mapUi.isOpen && !this.station.ledger.isOpen && !this.debugMenu.isOpen && !this.paper.isOpen && !this.card.isOpen && !this.weaponCross.isOpen && !this.noReturn.isOpen;
     if (!this.demo.active) this.caller.update(worldUp ? dt : 0, worldUp && this.combat.alive);
+    // Nov 2026 (Aaron): a new objective pops up top left (it waits out cutscenes, papers, cards and menus).
+    this.objectiveBanner.update(dt, !worldUp || this.demo.active);
     // Nov 2026: the background sound (beds by day and night, the shop's, calls, gusts, the night music).
     const gs = this.gasStation;
     const pp = this.player.position;

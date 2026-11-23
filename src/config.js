@@ -2883,6 +2883,10 @@ export const config = {
     pickupLines: 4,
   },
 
+  // Nov 2026 (Aaron): the objective popped up top left when it changes (ui/ObjectiveBanner.js),
+  // up long enough to read (a base plus so long a word, capped), then collapsing away.
+  objectiveBanner: { label: 'NEW OBJECTIVE', read: { base: 3, perWord: 0.3, max: 9 } },
+
   // Placeholder sounds, synthesised with Web Audio. TO BE UPGRADED in the
   // audio pass (Session 20): Aaron asked for this to be noted.
   sfx: {

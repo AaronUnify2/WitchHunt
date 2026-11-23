@@ -364,7 +364,7 @@ export class Sfx {
     const ctx = this.ctx;
     // Nov 2026: a voice with recordings (ENGINE_FILES: an idle loop and a high-revs loop) plays them.
     const F = ENGINE_FILES[voice];
-    const useFiles = Boolean(F && this.sampleFor(F.idle) && this.sampleFor(F.rev));
+    const useFiles = Boolean(F && this.sampleFor(F.idle)); // the revs' loop is optional (Aaron, Nov 22: off for now)
     if (on && this[channel] && (this[channel].voice !== voice || Boolean(this[channel].files) !== useFiles)) this.engine(false, 0, 0, voice, 0, channel);
     if (on && useFiles) {
       this.fileEngine(speed, throttle, voice, F, channel);
@@ -446,16 +446,23 @@ export class Sfx {
         return { src, g };
       };
       const idle = make(F.idle);
-      const rev = make(F.rev);
-      this[channel] = { voice, files: true, idle, rev, gain, oscs: [idle.src, rev.src] };
+      const rev = this.sampleFor(F.rev) ? make(F.rev) : null;
+      this[channel] = { voice, files: true, idle, rev, gain, oscs: rev ? [idle.src, rev.src] : [idle.src] };
     }
     const n = this[channel];
     const t = ctx.currentTime;
     const rpm = Math.min(1, speed * F.speedRpm + throttle * F.throttleRpm);
-    n.idle.g.gain.setTargetAtTime(Math.cos((rpm * Math.PI) / 2) * F.idleLevel, t, 0.12);
-    n.rev.g.gain.setTargetAtTime(Math.sin((rpm * Math.PI) / 2) * F.revLevel, t, 0.12);
-    n.idle.src.playbackRate.setTargetAtTime(F.idlePitch[0] + rpm * (F.idlePitch[1] - F.idlePitch[0]), t, 0.15);
-    n.rev.src.playbackRate.setTargetAtTime(F.revPitch[0] + rpm * (F.revPitch[1] - F.revPitch[0]), t, 0.15);
+    if (n.rev) {
+      n.idle.g.gain.setTargetAtTime(Math.cos((rpm * Math.PI) / 2) * F.idleLevel, t, 0.12);
+      n.rev.g.gain.setTargetAtTime(Math.sin((rpm * Math.PI) / 2) * F.revLevel, t, 0.12);
+      n.idle.src.playbackRate.setTargetAtTime(F.idlePitch[0] + rpm * (F.idlePitch[1] - F.idlePitch[0]), t, 0.15);
+      n.rev.src.playbackRate.setTargetAtTime(F.revPitch[0] + rpm * (F.revPitch[1] - F.revPitch[0]), t, 0.15);
+    } else {
+      // The idle alone, pitched up across the whole range (and a little louder) as it goes.
+      const [lo, hi] = F.soloPitch;
+      n.idle.g.gain.setTargetAtTime(F.idleLevel * (0.85 + rpm * 0.3), t, 0.12);
+      n.idle.src.playbackRate.setTargetAtTime(lo + rpm * (hi - lo), t, 0.15);
+    }
     n.gain.gain.setTargetAtTime(F.level * (1 + throttle * F.gas), t, 0.1);
   }
 
@@ -495,7 +502,7 @@ const SAMPLE_GAIN = {};
 // Nov 2026: engines with recordings (sfx/quadIdle, sfx/quadRev: loops). rpm (0..1) = speed * speedRpm
 // + throttle * throttleRpm: it crossfades idle to revs and pitches each across its range.
 const ENGINE_FILES = {
-  quad: { idle: 'quadIdle', rev: 'quadRev', speedRpm: 0.85, throttleRpm: 0.3, idleLevel: 1, revLevel: 0.85, idlePitch: [1, 1.5], revPitch: [0.75, 1.15], level: 0.55, gas: 0.25 },
+  quad: { idle: 'quadIdle', rev: 'quadRev', speedRpm: 0.85, throttleRpm: 0.3, idleLevel: 1, revLevel: 0.85, idlePitch: [1, 1.5], revPitch: [0.75, 1.15], soloPitch: [1, 1.9], level: 0.55, gas: 0.25 }, // soloPitch: the idle alone (no revs file)
 };
 
 // Nov 2026: new sounds with no recipe of their own: an older one stands in until the file's there.
