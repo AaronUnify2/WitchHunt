@@ -97,6 +97,8 @@ Players said the in-game talk was overwhelming (the cutscenes are fine). In-game
 
 ## After the queue: Session 34's old plan (Aaron's play-test, then the story)
 
+*Superseded (kept for the record): the first third was rebuilt Nov 13-17 and the story stops at the end of Part One for now.*
+
 **Where things stand:** everything to date is on `main` (and `ccr-6a92a61d-p69ruf`). 1272 tests pass and the build is clean. **Aaron is partway through the big play-test.** Two sittings so far (the opening to the place beyond; the place beyond to Junie home): twenty notes, all built (Sessions 32 and 33). The optional places and the mine are still to play.
 
 **1. His notes first** (rule 10). Ask for the next sitting's notes if they aren't in the conversation. He narrates as he plays and changes his mind as he goes: take his last word, and ask where two notes pull apart. If he says "no need to code now", write the notes up as a work list in this file with questions, as Session 32's end did (commit 65bda76). He may also paste answers from the questions page (https://claude.ai/artifact/2DHTACWcCPjqXFAckJ5qB2, #436-645) as "#612: ..." lines: log each in OPEN_QUESTIONS. Fix the small things first. **Open from Session 33** (ask once, or take what his notes say):
@@ -125,7 +127,7 @@ Players said the in-game talk was overwhelming (the cutscenes are fine). In-game
 - Check every batch headless, look at the screenshots critically, then push it to `main`.
 - Write it up at the end: STATUS, PLAYTEST from round 76, OPEN_QUESTIONS from #691, DESIGN as built, MORNING, and this file.
 
-## Just finished: Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2
+## Before that: Session 33 (Level & Encounter Designer + AI Programmer): Aaron's play-through notes, part 2
 
 **Status:** all of it is on `main` and on `ccr-6a92a61d-p69ruf`, in three batch commits and the write-up. 1272 tests pass and the build is clean. Checked headless on seeds 1234 and 7; **none of it played on the tablet, and the new sounds not heard**. For Aaron: PLAYTEST round 75; OPEN_QUESTIONS #669-690; MORNING.md. His notes as he gave them, with his answers, are in this file's previous version (commit 5155fce). His four answers at the start: Save and quit stays at home; trim the wake-up scene; keep the standoff's zoom; keep the quick draw's half second.
 
