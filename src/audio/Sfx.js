@@ -15,6 +15,7 @@ const NOISE_SECONDS = 1;
 export class Sfx {
   constructor(sfxConfig) {
     this.cfg = sfxConfig;
+    SAMPLE_GAIN = sfxConfig.fileGain ?? {};
   }
 
   init() {
@@ -496,8 +497,8 @@ const ENGINE_VOICES = {
   alien: { waves: ['sine', 'triangle', 'sawtooth'], ratios: [1, 2.01, 4.02], base: 70, range: 120, gas: 20, boost: 140, filter: 900, open: 1600, level: 0.07, q: 4 },
 };
 
-// A file's level, where it needs one (1 otherwise).
-const SAMPLE_GAIN = {};
+// A file's level, where it needs one (1 otherwise): config.sfx.fileGain (set in the constructor).
+let SAMPLE_GAIN = {};
 
 // Nov 2026: engines with recordings (sfx/quadIdle, sfx/quadRev: loops). rpm (0..1) = speed * speedRpm
 // + throttle * throttleRpm: it crossfades idle to revs and pitches each across its range.

@@ -2898,6 +2898,8 @@ export const config = {
     // seconds (an engine's short loops over less).
     loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside', { name: 'quadIdle', fade: 0.08, steady: false }, { name: 'quadRev', fade: 0.06, steady: false }],
     loopFade: 1.5,
+    // Nov 23 (Aaron, playing: the combat sounds a little over the top): the enemies' files 40% quieter.
+    fileGain: { groan: 0.6, charge: 0.6, swipe: 0.6, rise: 0.6, kill: 0.6, mutantGroan: 0.6, mutantRoar: 0.6, mutantSlam: 0.6, bodyThud: 0.6 },
     // Nov 2026: a set (name_set.mp3, several takes in one download) is cut where it goes quiet...
     split: { gapSeconds: 0.3, floorDb: -36, minSeconds: 0.15, padSeconds: 0.04 },
     // ...or at timestamps: { 'sfx/groan_set.mp3': [[0.2, 1.9], [3.0, 4.4]] } (seconds).
@@ -2922,7 +2924,8 @@ export const config = {
     fadeSeconds: 2.5, // a bed's crossfade (day to night, in and out of the shop)
     muffledBed: 0.35, // the outside beds' level heard from inside an interior
     cabinMuffled: 0.4, // Aaron: inside the station's cabin, outdoors comes through the walls (0.4 x muffledBed: about 14%); no calls or gusts
-    calls: { day: 'dayCall', night: 'nightCall', every: [20, 60], distance: [25, 60], volume: [0.35, 0.7] },
+    // Nov 23 (Aaron, playing: the night's screams far too often): seconds between calls, by day and by night.
+    calls: { day: 'dayCall', night: 'nightCall', every: [60, 150], everyNight: [150, 360], distance: [25, 60], volume: [0.35, 0.7] },
     gusts: { name: 'windGust', every: [35, 90], volume: [0.3, 0.55] },
     quietStyles: ['cctv', 'black'], // cutscenes that are footage from elsewhere
     nightMusic: { track: 'night', from: 0.6 }, // music/night.mp3 once it's this dark, outdoors

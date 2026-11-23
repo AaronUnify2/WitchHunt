@@ -45,7 +45,7 @@ export class Ambience {
       this.callIn -= dt;
       this.gustIn -= dt;
       if (this.callIn <= 0) {
-        this.callIn = this.pick(this.cfg.calls.every);
+        this.callIn = this.pick(state.night > 0.5 ? this.cfg.calls.everyNight ?? this.cfg.calls.every : this.cfg.calls.every);
         this.call(state.night > 0.5 ? this.cfg.calls.night : this.cfg.calls.day, this.cfg.calls, state.listener);
       }
       if (this.gustIn <= 0) {
