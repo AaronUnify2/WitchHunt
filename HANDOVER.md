@@ -1,6 +1,35 @@
 # Handover
 
-## Newest: the first third's cutscenes and fights (Nov 16)
+## Newest: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
+
+**Where things stand:** everything is on `main` (and `ccr-2ecef959-uj6jg0`). **1482 tests pass** and the build is clean. Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
+
+**Read first:** DESIGN.md "Audio direction" (the section "Real audio (Suno), as built": how it works, the files in, **what's left**), then `docs/AUDIO_CUES.md` (every file name and Suno prompt). STATUS's top entries have the detail.
+
+**What's new to know:**
+- **Audio files are in the repo** (`public/audio/sfx`, `music`, `voice`; `disabled/` is ignored), uploaded by Aaron on GitHub. The build lists them (`vite.config.js`, `virtual:audio-files`); **a file named after a sound replaces that sound's recipe** in `Sfx.play`, and anything without a file keeps its synthesised placeholder. Takes `name_1`, `name_2`; sets `name_set.mp3` cut at silences or at `config.sfx.slices`; loops (`config.sfx.loops`) made seamless on load; levels in `config.sfx.fileGain`. Helpers are pure and tested in `audio/audioFiles.js`. **A new sound needs nothing but a recipe name**: the file can come later.
+- **Music** (`audio/Music.js`): looping tracks with a crossfaded join, `sting(name, bus)`, per-track levels (`config.music.tracks`).
+- **Background sound** (`audio/Ambience.js`, `config.ambience`): day/night beds, the gas station shop's bed (from the mutant's cutscene on), calls and gusts at random, indoors through the walls (the station's cabin via `zoneOf`; the shop before the mutant), quiet in CCTV/black cutscenes and at the menu; night music built, no file. Wired in `Game.update` (`ambienceState`).
+- **Cutscene sound:** each cutscene has its own bus (`Sfx.bus`; a skip fades it). `sfx` events can loop (`"loop": true`, stopped by `{ "do": "sfx", "stop": name }`) or be timed to the picture (`offset`, `fadeIn`, `until`, `fade`); a `music` event plays a sting; `"soundsEnd": true` cuts the rest at the end (the cold open only).
+- **The cold open** is a 6 s portal (`render/portalFx.js`: a `portal` actor and event; the look `groundZero`).
+- **The title screen:** the game opens on **Press Start or tap to begin** (the press that lets audio play), then the menu with `music/title.mp3`.
+- **Engines from recordings:** `ENGINE_FILES` in `Sfx.js` (the quad: idle and revs loops, crossfaded by rpm; the revs are set aside, so the idle plays alone, pitched). The ute, dozer and chainsaw are still synthesised.
+- **The objective pop-up** top left (`ui/ObjectiveBanner.js`, `config.objectiveBanner`), on `objective:changed`.
+- **Dormant enemies don't groan** (`Combat.updateGroans`).
+- **Debug menu, Audio:** sound files on / off; play an ambience call now.
+
+**Headless gotchas (new):**
+- **The first screen is Press Start now:** `game.startScreen.activate('new')` still works straight off (the playbot's way), but clicking a `.start-choice` needs a tap first (it shows the menu after the press). After the press the audio context is running in headless Chromium.
+- **`sfx.engineMuted` is on during any cutscene** (the menu's feed is one): unmute it to test an engine there.
+- **Playwright's `page.evaluate` counts as a user gesture**, so a "browser refused the sound" path can only be tested by stubbing (`sfx.unlock` then `ctx.suspend()`).
+- **The dev server lists the audio files when it starts:** restart it after adding or moving one.
+- **Headless runs slowly:** cutscene time lags real time unless you step `game.update(1/30)` yourself; render every step if you screenshot post effects (the glitch's static decays in `render`).
+
+**Not logged yet:** none of Nov 22-23 is in PLAYTEST or OPEN_QUESTIONS (it went straight into STATUS, DESIGN and AUDIO_CUES as Aaron played). **Next numbers: PLAYTEST round 85, OPEN_QUESTIONS #784.** MORNING.md stops at Nov 16.
+
+**What the next session does:** ask Aaron for any notes from his play (rule 10; fix those first). Then, when his Suno credits refresh: hook up each new upload (check sets split cleanly: read the loudness, cut at `config.sfx.slices` where they don't; check loops; set levels), in the order DESIGN "Audio direction" lists under **Still to do** (the night music and the batch's gaps first, then guns and hits, then the gas station's own sounds and Earl's scanner voice). Write him new prompts for each batch as multi-take sets (`docs/AUDIO_CUES.md` shows the wording that works). Otherwise, whatever he asks for.
+
+## Before that: the first third's cutscenes and fights (Nov 16; with Nov 17's story-start fix)
 
 The plan Aaron approved is docs/FIRST_THIRD_PLAN_3.md; what to try is PLAYTEST round 84; the calls are OPEN_QUESTIONS #772-783. What's new to know:
 - **Player.push / glideTo / scramble** (`player/Player.js`): a fading shove (walls stop it), a scripted carry for cutscenes, and reversed controls (on foot). Cleared by `clearShoves` (reset, death).
@@ -12,7 +41,7 @@ The plan Aaron approved is docs/FIRST_THIRD_PLAN_3.md; what to try is PLAYTEST r
 - **Debug story starts reload now** (Nov 17): every "Continue story" / "Outpost cleared" item reloads the same map and starts fresh from its point (`Game.jumpTo`, pending choice `jump:<point>`, then "tap to begin"). Before, a point only added flags to the run there was: used after a later one, the grey stayed dead at the plane and the quad stayed missing.
 - Headless checks: a small harness took screenshots of each scene (not committed); `tools/playbot.cjs 1234 step:plane` still runs clean.
 
-## Newest: the dialogue cut (Nov 14)
+## Before that: the dialogue cut (Nov 14)
 
 Players said the in-game talk was overwhelming (the cutscenes are fine). In-game dialogue is down 60% by words. **Keep it down:** a new line has to earn its place, and nothing nudges the player where the objective and map already do.
 - `"cut": true` on a line in `dialogue.json`: never said, never picked; if it has a `"next"`, that plays in its place (`Dialogue.uncut`, `show`; `dialoguePicker.playable`). Delete the field to bring it back.
@@ -21,11 +50,13 @@ Players said the in-game talk was overwhelming (the cutscenes are fine). In-game
 - Her board (`storyBoard.json`) runs to `sheriffHome` now. The free spots left on the cork, if a card is wanted: about (0.11, 0.11), (0.31, 0.11), (0.77, 0.11), (1.85, 0.11), (2.25, 0.11) in board metres, 0.17 x 0.13 each.
 - The list of every change: docs/DIALOGUE_CUT_NOV14.md. OPEN_QUESTIONS #766-771, PLAYTEST round 83, MORNING.
 
-## DO THIS FIRST: the build queue is DONE (items 1-7). Next: Aaron's big play-test, then a debug and design session on each encounter
+## Before that: the build queue, done Nov 12 (items 1-7), kept for the record
+
+*Superseded: the queue is done and Aaron's play-test has moved on (see the sections above). Branch names, test counts and wake-up ids below are as they were then. The wake-ups have all expired.*
 
 **Where things stand:** everything is on `main` (and `ccr-6a92a61d-p69ruf`). 1332 tests pass and the build is clean. The story plays from Day 1 to `sheriffHome` (Sheriff in his garage). All seven queue items were built in one sitting on Nov 12, each run headless from start to end, **none played by hand or on the tablet**. For Aaron: MORNING.md (a section an item), PLAYTEST rounds 76-82, OPEN_QUESTIONS #691-765.
 
-**What the next session does:** ask Aaron for his play-test notes (rule 10; fix the small things first), then take whichever encounter he wants to design and debug with him. Each item below names its encounter file, its end flag and its "Continue story" point; "Notes from the items done" says what each left as placeholder and how its parts work. The debug menu's first section lists all 22 "Continue story" points (`debug/storyStart.js` `STORY_POINTS`); they only set flags, so use each from a fresh run.
+**What the next session does:** ask Aaron for his play-test notes (rule 10; fix the small things first), then take whichever encounter he wants to design and debug with him. Each item below names its encounter file, its end flag and its "Continue story" point; "Notes from the items done" says what each left as placeholder and how its parts work. The debug menu's first section lists all 22 "Continue story" points (`debug/storyStart.js` `STORY_POINTS`). **Since Nov 17 each one reloads the map and starts fresh from its point** (`Game.jumpTo`); before that they only set flags on the run there was.
 
 **The queue as it was run** (kept for the record; the steps and the items):
 
@@ -503,13 +534,11 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 - **From the Nov 8 design** (DESIGN.md "Open questions"): the endgame's design; Milo's killdozer part; the heat-scope rifle's spot; the four named-only optional encounters.
 - **From before:** #257-281, #225-256, #213-224, #185-197, #171-184, #161-170, #155-160, #143, #136-137, #140-141.
 
-## Session kickoff prompt for the next session
+## Session kickoff prompt for the next session (updated Nov 23)
 
 ```
-You are picking up Witch Hunt after Session 29 (the moonshiners' holler: its traps, the wire cutters, the still, the auto shotgun). Read HANDOVER.md first: its top section, "DO THIS FIRST", is the plan: Aaron's big play-test notes (Milo's barn, the Junie stretch, the crashed plane, the railway cutting, the maul, dynamite, the sawmill, the chainsaw, the workbench, the holler), then the mineshaft (the last designed optional), with defaults for its open points.
-Ask Aaron for his notes first if they aren't here (rule 10) and fix those before building. Then build in batches: test each (npx vitest run, npx vite build), check it headless (look at screenshots critically and fix what reads badly), and push it to main before the next. Log your calls as numbered OPEN_QUESTIONS rows from #565.
-Aaron's direction: "minimum viable product is the enemy of fun", and "detailed work rather than finish early; fun comes first". Build each beat as the scene it should be: a real set, staged cutscenes, sound for every moment that matters, lines that carry the dread.
-Read docs/DESIGN.md (the encounter's section, "Giant moths", "Weapons"), STATUS.md (Session 29 and after) and the code HANDOVER.md points to, as each batch needs them.
-Keep Aaron's rules: config and data first, complete files, small modules, no lights added or removed while playing, dull colours (the glare rule), one draw call where you can, tests for what you build, saves through story flags.
-Finish with the write-up (STATUS, PLAYTEST rounds from 67, OPEN_QUESTIONS, DESIGN as built, MORNING, HANDOVER rewritten for the session after). If you run out of room, say at the top of HANDOVER.md exactly where you stopped.
+You are picking up Witch Hunt after the real-audio work of Nov 22-23 (Suno files for the title screen, the cold open's portal, the background sound, the enemies and the quad; the objective pop-up). Read HANDOVER.md's top section first: where things stand, what's new to know, and the headless gotchas. Then DESIGN.md "Audio direction" (as built, and Still to do) and docs/AUDIO_CUES.md (every file name and Suno prompt).
+Aaron play-tests on the tablet with headphones and sends notes as he plays: ask for any notes first (rule 10) and fix those before anything else. When his Suno credits refresh he uploads the next batch to public/audio on GitHub (main): pull, check each file (sets split cleanly, else cut at config.sfx.slices from the loudness; loops seamless; levels), hook up any new sound names, and write the next batch's prompts as multi-take sets.
+Work as before: config and data first, complete files, small modules, no lights added or removed while playing, tests for what you build (npx vitest run, npx vite build), check it headless and look at what you capture critically, push each change to main before the next (main stays green).
+Write it up as you go: STATUS (top entry), DESIGN as built, docs/AUDIO_CUES.md, PLAYTEST from round 85, OPEN_QUESTIONS from #784, and this file's top section for the session after.
 ```
