@@ -2211,11 +2211,16 @@ export class Game {
     const pp = this.player.position;
     // Aaron: inside the station's cabin (either room) the outdoors is only heard through the walls.
     const inCabin = this.station?.layout ? zoneOf(this.station.layout, pp.x, pp.z) >= 2 : false;
+    // Aaron (Nov 23): the shop's bed starts with the mutant's cutscene, not on the way in (it sounded like its
+    // music starting early). Before that the shop's near silent: the outdoors only through its walls.
+    const inShopBuilding = gs?.frame ? gs.inside() : false;
+    const shopWoken = (gs?.mutantState !== 'waiting' && gs?.mutantState !== 'dormant') || this.cutscenes.current?.id === 'gas.mutant';
+    const quietShop = inShopBuilding && !shopWoken;
     this.ambience.update(dt, ambienceState({
       running: this.state === 'running',
       clock: this.clock,
-      inShop: gs?.frame ? gs.inside() : false,
-      muffled: Math.min(this.combat.sfx.muffled ?? 1, inCabin ? this.cfg.ambience.cabinMuffled : 1),
+      inShop: inShopBuilding && shopWoken,
+      muffled: Math.min(this.combat.sfx.muffled ?? 1, inCabin || quietShop ? this.cfg.ambience.cabinMuffled : 1),
       cutscene: this.cutscenes.current,
       quietStyles: this.cfg.ambience.quietStyles,
       listener: this.combat.sfx.listener,
