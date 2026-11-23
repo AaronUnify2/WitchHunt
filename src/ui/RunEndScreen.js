@@ -50,7 +50,8 @@ export class RunEndScreen {
 
   // kind: 'victory' | 'defeat' | 'partOne'. title, reason: the summary's heading.
   // stats: runStats. nights: nights survived.
-  // retry (Nov 16): { label } to offer trying again from a retry point (Day 1's campground), or null.
+  // retry (Nov 16): { label } to offer trying again from a retry point (Day 1's campground; Nov 23, a
+  // checkpoint: core/checkpoints.js), or null. With one, B / Esc starts a new run instead.
   // prompt: the line under it (instead of the default).
   show(kind, title, reason, stats, nights, retry = null, prompt = null) {
     this.prompt = prompt;
@@ -78,7 +79,9 @@ export class RunEndScreen {
     this.el.className = `run-end ${this.kind}`;
     this.titleEl.textContent = this.title;
     this.reasonEl.textContent = this.reason ?? '';
-    this.el.querySelector('.run-end-prompt').textContent = this.prompt ?? (this.retry ? `A / Enter: try again from ${this.retry.label}` : 'A / Enter: start a new run');
+    const promptEl = this.el.querySelector('.run-end-prompt');
+    if (this.prompt || !this.retry) promptEl.textContent = this.prompt ?? 'A / Enter: start a new run';
+    else promptEl.innerHTML = `A / Enter: try again from ${escapeHtml(this.retry.label)}<br>B / Esc: start a new run`; // Nov 23: two lines
     this.tableEl.classList.toggle('hidden', this.kind === 'partOne');
     this.tableEl.innerHTML = this.kind === 'partOne' ? '' : summaryRows(this.stats, this.nights)
       .map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`)
@@ -90,7 +93,9 @@ export class RunEndScreen {
   update(dt, input) {
     if (!this.summaryShown) return;
     this.summaryTime += dt;
-    if (this.summaryTime > this.cfg.summaryInputDelay && input.wasPressed('menuConfirm')) this.bus.emit(this.retry ? 'run:retryRequested' : 'run:newRequested');
+    if (this.summaryTime <= this.cfg.summaryInputDelay) return;
+    if (input.wasPressed('menuConfirm')) this.bus.emit(this.retry ? 'run:retryRequested' : 'run:newRequested');
+    else if (this.retry && input.wasPressed('menuBack')) this.bus.emit('run:newRequested'); // Nov 23: a retry is always offered now, so B gives up
   }
 
   dispose() {

@@ -5953,6 +5953,15 @@ export const config = {
   save: {
     key: 'witchHunt.save',
     autosaveAtDawn: true,
+    // Nov 23 (Aaron, play-test: "When you die it's a bit rough going back to the beginning"; his picks: the start
+    // of the night too, unlimited, the station falling as well): checkpoints (core/checkpoints.js). Each autosave
+    // (dawn, Skip intro, past the campground) also writes the checkpoint slot, and so does every dusk (the start
+    // of the night, Night 1 included). Death, or the station falling, offers to try again from it, as often as you
+    // like (B: a new run instead). false: permadeath, as before (Day 1's campground retry stays either way).
+    checkpoints: true,
+    checkpointKey: 'witchHunt.checkpoint',
+    checkpointAtDusk: true,
+    retryMinHealth: 50, // a retry starts with at least this much health (a checkpoint made on 8 health isn't a trap)
   },
 
   // What this device remembers outside any run (M9.2; meta/MetaStore.js):

@@ -121,6 +121,7 @@ import { RadioStatus } from '../ui/RadioStatus.js';
 import { startFromOutpostCleared, startFromLater, STORY_POINTS } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
+import { checkpointLabel, checkpointFor, retrySave } from './checkpoints.js';
 import { Music } from '../audio/Music.js';
 import { Ambience, ambienceState } from '../audio/Ambience.js';
 import { ObjectiveBanner } from '../ui/ObjectiveBanner.js';
@@ -159,6 +160,7 @@ export class Game {
     this.bus.init();
     // M6: a saved run is offered if the URL asks for no other map.
     this.saves = new SaveStore(cfg.save);
+    this.checkpoints = new SaveStore({ key: cfg.save.checkpointKey }); // Nov 23: where a death tries again from (core/checkpoints.js)
     // M9.2: what this device remembers (the opening seen), and a choice
     // made on the menu before the reload a new map needs.
     this.meta = new MetaStore(cfg.meta);
@@ -1430,15 +1432,17 @@ export class Game {
     this.progress.addDebugItems(menu.category(DEBUG.progress));
     run.addItem(() => `New map (seed now ${this.seed})`, () => this.newRun());
     run.addItem('Restart this map (same seed, deletes the save)', () => {
-      this.saves.clear();
+      this.clearSaves();
       reloadWithSeed(this.seed);
     });
     // M6: the save slot.
     run.addItem('Save now (as the dawn autosave does)', () => this.toast.show(this.autosave() ? 'Game saved' : this.pastNoReturn ? 'No saving after the hut is destroyed' : 'Could not save (storage blocked?)'));
     run.addItem('Delete the save', () => {
-      this.saves.clear();
-      this.toast.show('Save deleted');
+      this.clearSaves();
+      this.toast.show('Save and checkpoint deleted');
     });
+    // Nov 23: checkpoints (core/checkpoints.js).
+    run.addItem(() => `Checkpoint: ${this.checkpointNow()?.checkpoint.label ?? 'none'} (select: make one here)`, () => this.toast.show(this.writeCheckpoint() ? `Checkpoint: ${this.checkpointNow().checkpoint.label}` : 'No checkpoint (off, past the hut, or storage blocked)'));
   }
 
   // Land a few metres from a clearing's centre, facing it.
@@ -1559,6 +1563,10 @@ export class Game {
         // Plan #11: the first dawn the fence box is flat, Wyatt says so.
         if (this.state === 'running' && this.clock.day > 1 && this.station.state.charge <= 0 && !this.dialogue.heard?.has('nights.boxFlat')) this.dialogue.play('nights.boxFlat');
       }),
+      // Nov 23 (Aaron): a checkpoint at every dusk too, so a death in the night tries again from its start.
+      bus.on('phase:dusk', () => {
+        if (this.cfg.save.checkpointAtDusk && this.state === 'running' && this.combat.alive) this.writeCheckpoint();
+      }),
       bus.on('player:died', () => {
         // Nov 16 (Aaron: Tom can die at the campground on Day 1): the save made as he came to it stays,
         // and the run-end screen offers to try again from there. Anywhere else: permadeath, as ever.
@@ -1566,8 +1574,8 @@ export class Game {
           this.endRun('defeat', 'YOU DIED', this.deathReason(), this.retryPoint);
           return;
         }
-        this.saves.clear();
-        this.endRun('defeat', 'YOU DIED', this.deathReason());
+        // Nov 23 (Aaron): otherwise, try again from the last checkpoint (a dawn or a dusk) if there is one.
+        this.endRun('defeat', 'YOU DIED', this.deathReason(), this.retryFromCheckpoint());
       }),
       bus.on('run:retryRequested', () => {
         this.meta.setPendingChoice('retry');
@@ -1577,23 +1585,24 @@ export class Game {
       bus.on('campsite:cleared', () => {
         if (this.retryPoint?.id !== 'campsite') return;
         this.retryPoint = null;
-        if (this.combat.alive) this.autosave();
+        if (this.combat.alive) this.autosave('the campground');
       }),
       bus.on('station:overrun', () => this.saves.clear()),
       // Session 9 (Aaron, #130): destroying the hut is a true point of no
       // return. The save goes, and nothing saves again this run.
       bus.on('hut:destroyed', () => {
         this.pastNoReturn = true;
-        this.saves.clear();
+        this.clearSaves();
       }),
-      bus.on('player:overrun', ({ reason }) => this.endRun('defeat', 'THE STATION FELL', reason)),
+      // Nov 23 (Aaron: the station falling offers a retry too). station:overrun has cleared the run's save already.
+      bus.on('player:overrun', ({ reason }) => this.endRun('defeat', 'THE STATION FELL', reason, this.demo.active ? null : this.retryFromCheckpoint())),
       bus.on('player:respawned', () => this.runEnd.hide()), // debug "try again"
       // Nov 17: the Mothman's knockdown, while only Part One is out (CrashedPlane.blackout).
       bus.on('release:partOneEnded', () => this.endPartOne()),
       // M7: killing the witch wins the run. She bursts apart, the dead
       // collapse where they stand, and after a moment the ending plays.
       bus.on('witch:killed', () => {
-        this.saves.clear();
+        this.clearSaves();
         this.combat.enemies.collapseAll();
         this.victoryTimer = this.cfg.ending.victoryDelay;
       }),
@@ -1648,7 +1657,7 @@ export class Game {
   // reload, which lands on the main menu. The floor keeps him alive behind the card.
   endPartOne() {
     if (this.runEnd.isOpen) return;
-    this.saves.clear();
+    this.clearSaves();
     this.pastNoReturn = true;
     this.combat.setHealthFloor('partOne', this.cfg.crashedPlane.encounter.floor);
     this.subtitles.clear();
@@ -1844,7 +1853,7 @@ export class Game {
 
   // A new run: the save goes, and the page reloads on a fresh map.
   newRun() {
-    this.saves.clear();
+    this.clearSaves();
     reloadWithSeed(Math.floor(Math.random() * this.cfg.rng.randomSeedMax));
   }
 
@@ -1899,10 +1908,45 @@ export class Game {
     return data;
   }
 
-  autosave() {
+  autosave(place = null) {
     if (this.pastNoReturn) return false;
     this.progress.settle(); // Session 23: dawn's own flags (day2, shelterCall) go into the dawn save
-    return this.saves.save(this.collectSaveOutside());
+    const ok = this.saves.save(this.collectSaveOutside());
+    if (ok) this.writeCheckpoint(place); // Nov 23: every autosave is a checkpoint too
+    return ok;
+  }
+
+  // ---- checkpoints (Nov 23, Aaron: "When you die it's a bit rough going back to the beginning") ----
+
+  // The run as it is now into the checkpoint slot (the run's own save is left alone: Save and quit keeps its
+  // place). place: what the death screen calls it, or from the clock. False if off, past the point of no
+  // return, in Demo mode or storage refused.
+  writeCheckpoint(place = null) {
+    if (!this.cfg.save.checkpoints || this.pastNoReturn || this.demo?.active) return false;
+    this.progress.settle();
+    const data = this.collectSaveOutside();
+    data.checkpoint = { label: checkpointLabel(this.clock.phase, this.clock.day, place), phase: this.clock.phase, day: this.clock.day };
+    return this.checkpoints.save(data);
+  }
+
+  // This run's checkpoint, or null.
+  checkpointNow() {
+    const cp = this.checkpoints.load();
+    return checkpointFor(cp, this.seed, validSave) ? cp : null;
+  }
+
+  // On a death: the checkpoint becomes the run's save (counting the retry, a floor under health) and the
+  // death screen's retry ({ id, label }); with none, the run's save goes (permadeath) and null.
+  retryFromCheckpoint() {
+    const cp = this.cfg.save.checkpoints ? this.checkpointNow() : null;
+    if (cp && this.saves.save(retrySave(cp, this.stats, this.cfg.save.retryMinHealth))) return { id: 'checkpoint', label: cp.checkpoint.label };
+    this.saves.clear();
+    return null;
+  }
+
+  clearSaves() {
+    this.saves.clear();
+    this.checkpoints.clear();
   }
 
   // Put a saved run back (the world is already built from its seed).
@@ -1974,7 +2018,10 @@ export class Game {
     this.sawmill.reset(); // Session 28
     this.holler.reset(); // Session 29
     this.mineshaft.reset(); // Session 30
-    this.toast.show(`Continuing: ${saveLabel(d, this.cfg.clock)}`);
+    // Nov 23: a checkpoint made at dusk: dusk's own work again (the witch sets out, the forecast), which ran
+    // as it was made and wouldn't otherwise run this night.
+    if (d.checkpoint && this.clock.phase === 'dusk') this.bus.emit('phase:dusk', { day: this.clock.day });
+    this.toast.show(d.checkpoint?.retried ? `Trying again from ${d.checkpoint.label}` : `Continuing: ${saveLabel(d, this.cfg.clock)}`);
   }
 
   // Called from the start screen's tap: a user gesture, so fullscreen
@@ -1992,6 +2039,7 @@ export class Game {
     if (!firstStart) return;
     if (this.cutscenes.current?.id === 'menu.feed') this.cutscenes.stop(false);
     this.bus.emit('game:started', { seed: this.seed });
+    if (mode !== 'continue') this.checkpoints.clear(); // Nov 23: a fresh run on this map: no old checkpoint
     this.firstDay.begin(mode ?? 'new');
     // Session 21 (Aaron): after Skip intro the quad waits just outside the station's gate, to ride to the gas station.
     if (mode === 'skip' && !this.station.layout.garage) this.parkQuadAtStation(); // Round 2: it's in the garage now

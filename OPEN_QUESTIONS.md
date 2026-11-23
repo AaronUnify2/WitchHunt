@@ -1,6 +1,6 @@
 # Open questions
 
-**Your play-test notes and the Suno sound (from Nov 23):** each note built as it came; my calls are from #784 below.
+**Your play-test notes and the Suno sound (from Nov 23):** each note built as it came (Day 2's dawn back to the Screamer; checkpoints); my calls are from #784 below.
 
 **The first third's cutscenes and fights (Nov 16):** the plan you approved (docs/FIRST_THIRD_PLAN_3.md), all built, with your four answers (death at the campground with a retry; new sprite frames for the Screamer; no fuel bowser; captions only). My calls in building it are #772-783 below.
 
@@ -30,6 +30,10 @@
 
 | # | Question | What it does now | Where to change it |
 | --- | --- | --- | --- |
+| 785 | **Checkpoints: where and when?** (Your note: dying sent you back to the beginning; your picks: the night's start too, unlimited, the station falling too.) | Written at every autosave (dawn, Skip intro, past the campground) and every dusk, wherever Tom stands then (outside any interior). No dusk-of-the-day checkpoint waits for him to be home. | `config.save.checkpointAtDusk`; `Game.writeCheckpoint` |
+| 786 | **What does a retry keep?** | The world as the checkpoint had it (Tom's kit, the station, the flags, the clock); the summary's stats as they are now (time and kills carry on), plus a retry counted ("Times you tried again" on the summary once there's one). Health at least 50. The dead about at the time aren't saved, so a retry starts quieter. | `config.save.retryMinHealth`; `core/checkpoints.js retrySave` |
+| 787 | **Giving up.** | A retry is always offered now, so the death screen adds **B / Esc: start a new run** (a fresh map, both saves gone). | `ui/RunEndScreen.js` |
+| 788 | **Where there's none.** | Past the hut (the point of no return) nothing saves, so a death there is still the end. In Demo mode, as before. Day 1's campground retry comes first until its horde is beaten. | `Game.writeCheckpoint`, `'player:died'` |
 | 784 | **What replaces the mutant at Day 2's dawn?** (Your note: too intense; you picked the Screamer's sighting from four options.) | The Nov 14 beat as it was: the Screamer at the cold fire, back to the path; within 30 m its cutscene; it screams, three citizens claw up 3-5.5 m from it and chase, it burrows. No fight with it (Night 2's). Now with the `rise` sound on the first and third riser. The mutant's set-up (384 health, five dead round it, `day2.mutant`) is kept, off. Wyatt's dawn box (20 rounds) stays. | `config.campsite.dawnFigure` (copy `mutantFigure` into it to bring the mutant back); `Campsite.figureScream` |
 
 ## The first third's cutscenes and fights (Nov 16)
