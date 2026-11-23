@@ -431,7 +431,8 @@ export class Combat {
       if (t === undefined) t = this.groanRng.range(0, z.groanIntervalMax);
       t -= dt;
       if (t <= 0) {
-        if (zombie.state !== 'rise' && Math.hypot(zombie.x - p.x, zombie.z - p.z) < hearing) {
+        // Nov 23 (Aaron): not while it's rising, nor dormant (the gas station's mutant, folded up and waiting).
+        if (zombie.state !== 'rise' && zombie.state !== 'dormant' && Math.hypot(zombie.x - p.x, zombie.z - p.z) < hearing) {
           this.sfx.play(zombie.kind === 'mutant' ? 'mutantGroan' : 'groan', zombie);
         }
         t = this.groanRng.range(z.groanIntervalMin, z.groanIntervalMax);
