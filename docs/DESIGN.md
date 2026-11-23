@@ -1,6 +1,6 @@
 # Witch Hunt — Game Dev Doc
 
-Oct 9, 2026 · @Aaron · **Brought up to date with the build on Nov 7, 2026** (after Session 19 and the experimental vehicles) · **Mid-game and end-game story folded in Nov 8, 2026** (Aaron's workshop: [Witch Hunt — Mid-game story notes](https://claude.ai/artifact/JEPw823tjQJEn6Z3Vy7pHL)) · **Optional encounters folded in Nov 8** ([Milo's barn and more](https://claude.ai/artifact/VtxTRYZ716JQcK63NEmtJq))
+Oct 9, 2026 · @Aaron · **Brought up to date with the build on Nov 7, 2026** (after Session 19 and the experimental vehicles) · **Mid-game and end-game story folded in Nov 8, 2026** (Aaron's workshop: [Witch Hunt — Mid-game story notes](https://claude.ai/artifact/JEPw823tjQJEn6Z3Vy7pHL)) · **Optional encounters folded in Nov 8** ([Milo's barn and more](https://claude.ai/artifact/VtxTRYZ716JQcK63NEmtJq)) · **Real audio (Suno), the title screen, the cold open's portal and the objective pop-up folded in Nov 23, 2026** (see **Audio direction**)
 
 ## How to use this doc
 
@@ -1914,6 +1914,8 @@ Three styles, all rendered live from the real game world from one data-driven ti
 
 - **Since M8 (Sessions 15-19):** 69 cutscenes. Cutscenes speak as they play (Aaron, Session 17 round 5), except the dogfight (`linesAfter`). Sweeps can run the world on **unseen** (`"world": "run", "unseen": true`: the dead keep moving, nothing notices Tom). A first-person reveal can **jolt** (`"jolt": true`). Actors can fly timed paths (the dogfight's plane and craft), cast tracers, rays, smoke trails and blasts; cameras can track actors; a cutscene can have its own near and far planes (the scope). Style pass 2 refined the looks: the camcorder's focus hunting, blown highlights, handheld wobble, amber date stamp (OCT.13.2003) and tape counter; the trail cams' data strip; the scope's mil-dot reticle and breathing sway; the sweeps' grade. The letterbox bars show on every non-CCTV cutscene. **Session 31:** a cutscene whose camera is inside an interior with Tom takes that interior's own light and fog (`"indoors": true`: the mine's last scene, `mine.out`); without it a cutscene's camera is lit as the world outside is.
 
+- **Since Nov 22, 2026:** a **portal** actor and event (the cold open: its green, power and spin eased over time; `render/portalFx.js`). **Sound in cutscenes:** each plays its sounds through its own bus, so **a skip fades them all out**; an `sfx` event can be **held** (`"loop": true`, stopped by `{ "do": "sfx", "stop": name }`) or **timed to the picture** (`offset` into the file, `fadeIn`, `until`: the cutscene time it's silent by, `fade`); a `music` event plays a **sting**; `"soundsEnd": true` cuts anything left at the end (the cold open), otherwise a sting's tail rings on.
+
 **Planned clips:** the Ground Zero cold open; the campers' camcorder; the Night 1 trail-cam clip of the witch planting; an establishing clip for each encounter (see the design checklist); the witch's fifth sigil going in (a warning); the dogfight and both crashes through the hunting rifle scope (military outpost; this replaces the earlier "UFO passing over the treeline" foreshadowing clip); the Mothman's torn-open container (military outpost; a hint, never named); government footage of the portal programme (unlocked by classified documents); the hut exploding (first-person); the victory montage. **Added Nov 8:** the crashed plane's standoff (into the quick draw); the signal flare and the Mothman's flyovers; Tom blacking out (red eyes over him); the station's lure flares and the Mothman zapped on the fence; the beam up to the mothership; Bigfoot cut from the cocoon and the Blessing; the escape from the Car Armory; Bigfoot answering Junie in the realm of stories.
 
 ## Opening and first run
@@ -1938,9 +1940,11 @@ The first 20 minutes teach through the radio and the world, not pop-ups. Only co
 - **Not yet:** touch controls (Aaron, Session 22: **at the very end of the project**; until then the demo, like the game, needs a controller or keyboard and mouse, and says so on a touch-only device); a share card for the verdict.
 - **Tablet (Aaron, round 34):** 150 zombies at night, 57 fps, "Runs great".
 
+**As built (Nov 22, 2026):** before the menu, **Press Start or tap to begin** (the press that lets the title music play: see **Audio direction**); the menu then plays the title song until a choice is picked.
+
 ### Opening cutscene (under a minute, skippable)
 
-1. **Cold open:** grainy government CCTV at Ground Zero. Men in Black around the portal ring; it flares; the feed glitches and dies.
+1. **Cold open:** grainy government CCTV at Ground Zero. Men in Black around the portal ring; it flares; the feed glitches and dies. **As built (Nov 22, 2026; Aaron: Roswell government blue overrun by the witches' green, unexplained, just interdimensional energy, 6 s):** a machined steel ring on a stand holding a swirling blue vortex; green creeps out from its eye in crackling tendrils (1 s), it surges (1.9 s: the swirl speeds up, arcs jump off the rim, dust is drawn in, the camera shakes, the shriek comes in), it's all green and the agents are thrown back (2.3-4 s), it whites out (4.2 s), static, black (5.4 s). `render/portalFx.js`; the camera's look `groundZero` (colour enough for both).
 2. **First person:** Tom wakes in the station in the early morning (runs start at 07:00, Day 1; M3). Ellen at the radio, emergency broadcasts crackling (lines 1–2).
 
 ### Day 1 (guided, can't fail)
@@ -2028,7 +2032,7 @@ Console style (mockup: the "Witch Hunt HUD" design canvas). Nothing in boxed pan
 - Prompts always show the controller glyph (A green, B red, X blue, Y yellow), or the key when keyboard is in use.
 - The pause screen shows the three-prize checklist, documents found and the full map.
 
-**As built (a placeholder until Session 49):** bottom left, health (10 segments), three armour bars, the HIDDEN eye; bottom right, the weapon's name, ammo, the reload bar, kits, scrap, batteries, flares and charges in text; centre, the crosshair, the hit marker and interaction prompts with a hold bar (the button named in text); the round minimap top right with the objective star; the station-under-attack banner and the witch's boss bar when they apply; a pickup feed; **three message slots** (toasts, control hints under them, and the red alert slot: ESCAPE THE WITCH); subtitles at the bottom centre; the dusk forecast panel. **Not built:** the clock and zombie-level pips, the pixel font, glyphs, the D-pad legend, the pause screen. **While riding an experimental vehicle** its own HUD takes over (the ute's gear plate or the gun's heat ring, the alien quad's neon reticle, cells and boost, the dozer's blade, trail and winch), and the crosshair and gun panel hide.
+**As built (a placeholder until Session 49):** bottom left, health (10 segments), three armour bars, the HIDDEN eye; bottom right, the weapon's name, ammo, the reload bar, kits, scrap, batteries, flares and charges in text; centre, the crosshair, the hit marker and interaction prompts with a hold bar (the button named in text); the round minimap top right with the objective star; the station-under-attack banner and the witch's boss bar when they apply; a pickup feed; **three message slots** (toasts, control hints under them, and the red alert slot: ESCAPE THE WITCH); subtitles at the bottom centre; the dusk forecast panel. **Nov 23, 2026 (Aaron):** **a new objective pops up top left** (`ui/ObjectiveBanner.js`, `config.objectiveBanner`): NEW OBJECTIVE and the text (the map's NEXT line), sliding in, up as long as it takes to read (3-9 s), then collapsing away; it waits out cutscenes, papers, cards and menus, and a newer one replaces it. **Not built:** the clock and zombie-level pips, the pixel font, glyphs, the D-pad legend, the pause screen. **While riding an experimental vehicle** its own HUD takes over (the ute's gear plate or the gun's heat ring, the alien quad's neon reticle, cells and boost, the dozer's blade, trail and winch), and the crosshair and gun panel hide.
 
 ## Art style and rendering
 
@@ -2107,7 +2111,49 @@ Mostly synthesised with the Web Audio API (oscillators, filtered noise, a few sh
 
 - **Stingers:** the witch's whispers and singing nearby, a low tone when a sigil is planted, Mothman wingbeats, the Caller's slightly wrong radio, turret fire, the bonnet and battery pull, digging.
 - **Music:** adaptive layers that rise with danger and fall back to ambience.
-- **As built:** every sound is a placeholder synthesised on the fly (`audio/Sfx.js`): guns, hits, the dead, the witch, the station, cars, alarms, the radio crackle and dialogue blips, explosions, engines with their own voices (Earl's quad, the ute's diesel, the alien drive, the dozer). No ambience, music or samples yet: the audio pass (Session 50).
+- **As built until Nov 22:** every sound a placeholder synthesised on the fly (`audio/Sfx.js`): guns, hits, the dead, the witch, the station, cars, alarms, the radio crackle and dialogue blips, explosions, engines with their own voices (Earl's quad, the ute's diesel, the alien drive, the dozer). No ambience, music or samples.
+
+### Real audio (Suno), as built (Nov 22-23, 2026)
+
+*Aaron, Nov 22: songs, sound effects and (later, maybe) dialogue made in Suno on his paid plan (commercial rights), brought in **one scene at a time** and judged on the tablet with headphones. The working list, with every file name and Suno prompt, is `docs/AUDIO_CUES.md`.*
+
+**How it works**
+
+- **Files live in the repo:** `public/audio/sfx`, `public/audio/music`, `public/audio/voice`, uploaded on GitHub (Add file, Upload files, commit to `main`; the site rebuilds itself). `public/audio/disabled/` holds files kept but not played.
+- **The file name is the link.** At build time the game lists what's there (`vite.config.js`, the `virtual:audio-files` module), so it only asks for files that exist. A file named after a sound plays **in place of** that sound's synthesised recipe (`Sfx.play`); **anything without a file keeps its placeholder**, so files can arrive in any order and nothing breaks.
+- **Takes:** `groan_1.mp3`, `groan_2.mp3`... are takes of one sound, picked at random. **Sets** (to stretch Suno's download limit): `<name>_set.mp3` holds several takes in one file, cut apart where it goes quiet (`splitBySilence`) or at hand-picked timestamps (`config.sfx.slices`: six of the first batch needed this, read off each file's loudness).
+- **Clean-up on load:** Suno's silence is trimmed off one-shots. **Loops** (`config.sfx.loops`) have Suno's fade-in and fade-out cut off and their end blended into their start, so they run without a dip or a click.
+- **Levels:** `config.sfx.fileGain` per sound (the enemies' files are at 60%: Aaron, Nov 23, "a little over the top"). Music has its own level and fades (`config.music`, per track in `tracks`).
+- **Debug menu, Audio:** *Sound files on / off* flips between the files and the old placeholders on the spot, to compare; *Play an ambience call now*.
+
+**The title screen.** The game opens on **Press Start or tap to begin** (a browser won't play sound before a press); that press starts the title song (`music/title.mp3`, a spooky Appalachian witch's lament), which loops (its end crossfaded into its start) until a choice is picked, then fades out in 0.8 s. A controller press the browser won't count as that press asks for a tap (Start again goes on silently). The track is decoded while the game loads, so it starts at once.
+
+**The cold open's portal** (see **Opening cutscene** and **Cutscenes**): 6 s; the hum under it all (`portalHum`), the surge (`portalSurge`, started 3.12 s into its file so its big hit lands on the fade to black), the far-off shriek (`titleShriek`) on top; everything faded out by the end (Aaron: nothing carries on past it).
+
+**Background sound** (`audio/Ambience.js`, `config.ambience`):
+
+- **Beds** loop under everything: `ambDay` and `ambNight`, crossfaded through dusk and dawn; `ambShopInside` inside the gas station's shop, **from the mutant's cutscene on** (Aaron: on the way in it sounded like the mutant's music starting early; before it the shop is near silent).
+- **Calls**, one-off sounds from a random direction some way off (crows, a branch, an owl, a howl: `dayCall`, `nightCall`): every 1-2.5 min by day, **2.5-6 min by night** (Aaron, Nov 23: far too often at 20-60 s). **Gusts** (`windGust`) every 35-90 s. The beds are plain textures so a 10-15 s loop doesn't give itself away; the character is in the calls, which never repeat in a pattern.
+- **Indoors:** inside the station's cabin (either room) and the shop before the mutant, the outdoors comes **only through the walls** (about 14%), with no calls or gusts; an interior (the storm shelter, the mine) muffles it likewise.
+- **Quiet** in the CCTV-style and black cutscenes (footage from elsewhere: Aaron) and at the menu; first-person ones keep it.
+- **Night music** (`music/night.mp3`, outdoors once it's 60% dark, long fades): built, **no file yet**.
+
+**Enemies:** groans, the lunge, swipes, rising from the ground, bodies dropping, the mutant's growls, roar and slam, Tom thrown onto the forecourt (`bodyThud`). **Dormant enemies don't groan** (the gas station's and the campsite's waiting mutants; Aaron: heard thrashing in the shop from outside).
+
+**The gas station's mutant cutscene** (5.2 s): the shop's bed comes in; `stingMutant` and `mutantRoar` as it unfolds (0.9 s); a swipe and Tom's grunt on the jab (2.3 s); its growl as it charges (2.75 s; it had the zombies' lunge); a swipe on the backhand (3.25 s); `bodyThud` on the forecourt (4.0 s). **The witch at the treeline:** `stingWitch` as she appears.
+
+**Engines:** the quad runs on recorded loops when they're there (`ENGINE_FILES`): idle and high revs both playing, crossfaded by rpm and pitched with it. **The revs recording is set aside for now** (Aaron, Nov 23; in `audio/disabled/`): the idle alone, pitched 1x to 1.9x. The ute, the dozer, the chainsaw and the alien drive are still synthesised.
+
+**Files in (Nov 23):** music `title`, `stingMutant`, `stingWitch`; sfx `titleShriek`, `portalHum`, `portalSurge`, `ambDay`, `ambNight`, `ambShopInside`, `dayCall_1-2`, `nightCall_1`, `nightCall_3`, `windGust_1-2`, `groan_set`, `groan_3`, `charge_set`, `swipe_set`, `rise_set`, `kill_set`, `mutantGroan_set`, `mutantSlam_set`, `bodyThud_set`, `quadIdle` (and `quadRev`, set aside).
+
+**Still to do** (when Suno's credits refresh; prompts in `docs/AUDIO_CUES.md`):
+
+- **Missing from the first batch:** the night music (`night`), a second night call (`nightCall_2`), the mutant's own roar (`mutantRoar`: it borrows the growls for now), a better quad revs loop (steady, no revving inside the loop).
+- **Guns and hits:** rifle, shotgun and pump, pistol, reloads, the empty click, the shovel's swing and hit, flesh hits, the headshot, bullet impacts, Tom's grunts.
+- **The gas station's own sounds:** the back door, the battery, the scanner's static, the gas hiss, the explosion, the locked safe, searching, Earl's note; and **Earl's scanner as voice** (three lines, Suno Speech, the radio crackle added in the game) as the first dialogue test.
+- **Other engines** (the ute, the dozer, the chainsaw) the quad's way, two loops each; the quad's start-up.
+- **Then scene by scene:** the witch (her song, shriek, hexes), the station (the fence, the turret, the alarm), the radio, the other encounters and their cutscenes; more music (danger rising and falling back, the final battle).
+- **Judged on the tablet:** levels against each other; whether any cut take has a stray bit of the next; the calls' spacing; the engine's pitch at full speed.
 
 ## Performance and simulation LOD
 
