@@ -3123,6 +3123,7 @@ export const config = {
     // the clearing's centre, `gap` metres out from its station-side flank, lingering there (`linger`),
     // facing the station, its eyes dulled like the pack's (`sight`) so it waits by the car till Tom's close.
     policeZombie: { within: 90, gap: 1.1, linger: 1.2, sight: 0.25 },
+    keepOutMargin: 0.6, // Nov 24 (Aaron: none of the dead inside the shop): metres past its walls kept out (GasStation.inShop)
     pack: { count: 5, centreZ: 3.5, lingerRadius: 8, sight: 0.25, callAt: 22 }, // Plan #12: sight: their eyes while unaware (x the usual); callAt: Wyatt's 'they haven't seen you' within this of them. DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's

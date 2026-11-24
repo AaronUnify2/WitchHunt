@@ -87,6 +87,11 @@ export class GasStation {
     this.frame = GasStation.frame(ctx.world.map);
     if (!this.frame) return;
     this.enemies = ctx.combat?.enemies;
+    // Nov 24 (Aaron: "make sure that all the zombies spawn in the car park or by the gas pumps ... I don't want any to
+    // spawn inside, because it increases the chance that you accidentally trigger the mutant"): the shop is kept
+    // out: nothing's placed in it, and nothing lingering strolls in (chasing Tom in is still allowed).
+    this.dropKeepOut?.();
+    if (this.frame && this.enemies?.addKeepOut) this.dropKeepOut = this.enemies.addKeepOut((x, z) => this.inShop(x, z));
     this.floorY = this.levelFloor();
     this.props = new GasStationProps(this.gc.look, this.data, this.cfg.props?.weather);
     this.props.init(scene, this.frame, this.ground, this.floorY);
@@ -850,6 +855,14 @@ export class GasStation {
       onDone: done,
     });
     if (!played) done();
+  }
+
+  // Nov 24: inside the shop's walls (and keepOutMargin past them), world coordinates.
+  inShop(x, z) {
+    const l = this.local({ x, z });
+    const b = this.data.building;
+    const m = this.gc.keepOutMargin ?? 0;
+    return l.x > b.x0 - m && l.x < b.x1 + m && l.z > b.z0 - m && l.z < b.z1 + m;
   }
 
   // Nov 24 (Aaron: "We need to ensure that the witch is visible"): her spot across the road, the first in

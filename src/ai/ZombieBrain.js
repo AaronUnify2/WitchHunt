@@ -252,10 +252,16 @@ export class ZombieBrain {
   // M6: hang about a clearing, strolling from spot to spot inside it.
   stepLinger(z) {
     if (z.hasGoal && Math.hypot(z.goalX - z.x, z.goalZ - z.z) > this.wander.waypointReach) return;
-    const a = this.rng.range(0, Math.PI * 2);
-    const r = Math.sqrt(this.rng.next()) * z.lingerRadius;
-    z.goalX = z.lingerX + Math.sin(a) * r;
-    z.goalZ = z.lingerZ + Math.cos(a) * r;
+    // Nov 24: re-rolled if it falls in a kept-out interior (the gas station's shop; EnemyManager.keepOuts).
+    for (let i = 0; i < 10; i++) {
+      const a = this.rng.range(0, Math.PI * 2);
+      const r = Math.sqrt(this.rng.next()) * z.lingerRadius;
+      z.goalX = z.lingerX + Math.sin(a) * r;
+      z.goalZ = z.lingerZ + Math.cos(a) * r;
+      if (!this.keepOut?.(z.goalX, z.goalZ)) break;
+      z.goalX = z.lingerX; // none found: stay at the centre
+      z.goalZ = z.lingerZ;
+    }
     z.hasGoal = true;
   }
 }

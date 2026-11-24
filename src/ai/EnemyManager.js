@@ -85,6 +85,10 @@ export class EnemyManager {
     this.routes = new PathRoutes(map);
     this.marches = new MarchRoutes(map, Math.max(0, map.clearings.findIndex((c) => c.kind === 'home')));
     this.brain = new ZombieBrain(this.detCfg, this.cfg.wander, this.routes, this.ground, this.rng.fork('brain'), this.marches);
+    // Nov 24 (Aaron: no zombies spawning inside the gas station's shop): places the dead aren't put or sent to
+    // stroll (an encounter's interior). Each a test (x, z) => true inside. Chasing Tom in is still allowed.
+    this.keepOuts = [];
+    this.brain.keepOut = (x, z) => this.inKeepOut(x, z);
     this.onStrike = (zombie, barrier, hit = null) => {
       if (barrier) this.bus.emit('enemy:strikeDefence', { zombie, barrier, damage: zombie.attackDamage * this.stats.defenceDamage });
       // Nov 16: a mutant's move says its own damage and how it throws Tom (hit: { damage, push, hop, shake, kind }).
@@ -205,9 +209,26 @@ export class EnemyManager {
 
   // A point at a random angle, `min`-`max` metres from (cx, cz).
   ringPoint(cx, cz, min, max) {
-    const a = this.rng.range(0, Math.PI * 2);
-    const d = this.rng.range(min, max);
-    return { x: cx + Math.sin(a) * d, z: cz + Math.cos(a) * d };
+    let p = null;
+    for (let i = 0; i < 12; i++) {
+      const a = this.rng.range(0, Math.PI * 2);
+      const d = this.rng.range(min, max);
+      p = { x: cx + Math.sin(a) * d, z: cz + Math.cos(a) * d };
+      if (!this.inKeepOut(p.x, p.z)) return p; // Nov 24: not inside a kept-out interior
+    }
+    return p;
+  }
+
+  // Nov 24: keep-out areas (see the constructor). add returns a function that removes it.
+  addKeepOut(test) {
+    this.keepOuts.push(test);
+    return () => {
+      this.keepOuts = this.keepOuts.filter((t) => t !== test);
+    };
+  }
+
+  inKeepOut(x, z) {
+    return this.keepOuts.some((t) => t(x, z));
   }
 
   // Spawn what planSpawn() rolled (a single, a mutant or a horde) round
