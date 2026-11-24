@@ -12,6 +12,7 @@ import { FamilyRenderer } from '../render/FamilyRenderer.js';
 import { weatherFor } from '../render/propKit.js';
 import { Hanged } from '../ai/Hanged.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { clearingFrame, frameAnchor } from '../world/clearingFrame.js';
 import * as THREE from 'three';
 
 const LOOKS = ['hangedA', 'hangedB', 'hangedC'];
@@ -22,9 +23,10 @@ export class FamilyPlot {
     this.pc = cfg.familyPlot;
     this.bus = bus;
     this.dead = new Set();
+    this.swept = false;
   }
 
-  // ctx: { world, player, combat, colliders, rng, demo, notify, drawDistance }.
+  // ctx: { world, player, combat, colliders, rng, cutscenes, demo, notify, drawDistance }.
   init(scene, ctx) {
     Object.assign(this, ctx);
     this.scene = scene;
@@ -33,6 +35,8 @@ export class FamilyPlot {
     if (!this.plot) return;
     const p = this.plot;
     this.y = this.ground.heightAt(p.x, p.z);
+    // Its frame for the sweep: walking in from the farm, x right, z ahead (the tree at its centre).
+    this.frame = clearingFrame(ctx.world.map, 'familyCemetery', 'pruittFarm');
     this.model = buildFamilyCemetery(this.pc, { weather: scene ? weatherFor(this.cfg.props.weather, this.pc.look.weather) : null });
     this.model.group.position.set(p.x, this.y, p.z);
     if (scene) scene.add(this.model.group);
@@ -81,6 +85,7 @@ export class FamilyPlot {
     }
     this.hangThem();
     this.bus?.on?.('hanged:killed', ({ body }) => this.dead.add(body.i));
+    this.bus?.on?.('plot:twitch', () => this.hanged.twitch(0)); // sweep.plot's last shot
     this.ready = true;
   }
 
@@ -95,6 +100,11 @@ export class FamilyPlot {
     const near = d < (this.drawDistance?.() ?? 400) + this.plot.radius;
     if (this.model) this.model.group.visible = near;
     for (const h of this.hanged.list) if (h.body && h.state !== 'lurk') h.body.mesh.visible = near;
+    // Nov 24 (Aaron: sweep the ground, the sigil, the moths and the Hanged): once, as he first comes near.
+    if (playing && !this.swept && d < this.pc.sweepAt && this.hanged.list.some((h) => h.state === 'hang') && this.frame && this.cutscenes && !this.cutscenes.active) {
+      this.swept = true;
+      this.cutscenes.play('sweep.plot', { anchors: { familyPlot: frameAnchor(this.frame) } });
+    }
     if (playing && d < 90) this.hanged.update(dt);
     this.placeRopes(near);
   }
@@ -120,17 +130,19 @@ export class FamilyPlot {
   }
 
   saveState() {
-    return { dead: [...this.dead] };
+    return { dead: [...this.dead], swept: this.swept };
   }
 
   loadState(d) {
     this.dead = new Set(d?.dead ?? []);
+    this.swept = Boolean(d?.swept);
     if (this.ready) this.hangThem();
   }
 
   // A new run: all three back on their ropes.
   reset() {
     this.dead.clear();
+    this.swept = false;
     if (this.ready) this.hangThem();
   }
 

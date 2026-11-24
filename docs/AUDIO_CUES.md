@@ -125,6 +125,17 @@ In order of use (if the credits run out partway, the top ones matter most):
 | 9 | `tapeChew.mp3` | Sounds, one-shot (2-3 s) | The tape dying at the end | A VHS tape being chewed up by a camcorder, the sound warping and slowing down, mechanical grinding, distorted audio dropping out into harsh static, no music |
 | 10 | `tomBreath_set.mp3` | Sounds, one-shot | Tom over the dead mutant at the gas station (before the witch) | Sound effects sample pack: two separate one-shot sounds of an exhausted man catching his breath after a fight, each isolated and followed by two full seconds of silence. Take 1: one long shaky breath out, close. Take 2: a heavy exhale and a low tired grunt. Quiet, intimate, no music |
 
+**The Pruitts' family plot: the Hanged** (Nov 24 night; placeholders now):
+
+| # | File | Suno | Where | Prompt |
+|---|---|---|---|---|
+| 10a | `ropeCreak_set.mp3` | Sounds, one-shot | A body turning on its rope; one waking | Sound effects sample pack: three separate one-shot sounds of a thick old rope creaking under a heavy hanging weight from a tree branch, each isolated and followed by two full seconds of silence. Take 1: a slow strained creak. Take 2: a sharp creak as the weight jerks. Take 3: a long groaning creak of wood and rope. Night, quiet, no music |
+| 10b | `ropeSnap_set.mp3` | Sounds, one-shot | The rope going as one drops | Sound effects sample pack: two separate one-shot sounds of a thick rope snapping under strain, each isolated and followed by two full seconds of silence. Take 1: a sharp crack of fibres tearing. Take 2: a whip-like snap and fraying. No music |
+| 10c | `hangedSnarl_set.mp3` | Sounds, one-shot | The Hanged landing and clawing | Sound effects sample pack: three separate one-shot sounds of a hanged corpse come back to life, each isolated and followed by two full seconds of silence. Take 1: a strangled rasping snarl through a crushed throat. Take 2: a wet choking hiss rising to a shriek. Take 3: a guttural gurgling growl. Horror, no music |
+| 10d | `branchThrash_set.mp3` | Sounds, one-shot | One leaping back up into the dead oak, or dropping out of it | Sound effects sample pack: two separate one-shot sounds of something heavy crashing through the dry dead branches of a big tree, each isolated and followed by two full seconds of silence. Take 1: branches thrashing and snapping as it climbs fast. Take 2: twigs cracking and a rush as it drops. No music |
+
+(`bodyThud` from test 2's list covers them landing.)
+
 **Still missing from test 2** (one download each, so they come after the tape's):
 
 | # | File | Suno | Where | Prompt |

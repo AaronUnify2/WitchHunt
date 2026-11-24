@@ -347,6 +347,18 @@ export class Game {
     this.dynamite.init(this.scene, { combat: this.combat, player: this.player, explosives: this.explosives, ground: this.world.ground, colliders: this.colliders, notify: (text) => this.toast?.show(text) });
     this.combat.promptSources.unshift(this.dynamite.hud); // the fuse first: nothing else matters while it's lit
     this.bus.on('player:respawned', () => this.dynamite.reset());
+    // Nov 24 (the Pruitt yard's and plot's sweeps): 'sweep:torch' turns Tom's torch on, held from the cutscene's
+    // camera, for the close shots of things a dusk sweep leaves black (the scarecrow); put back as it was after.
+    this.bus.on('sweep:torch', () => {
+      if (!this.cutscenes.active || this.sweepTorch) return;
+      this.sweepTorch = { was: this.flashlight.on };
+      if (!this.flashlight.on) this.flashlight.setOn(true);
+    });
+    this.bus.on('cutscene:ended', () => {
+      if (!this.sweepTorch) return;
+      if (!this.sweepTorch.was) this.flashlight.setOn(false);
+      this.sweepTorch = null;
+    });
     // Session 28: the chainsaw (combat/Chainsaw.js): hold RT; loud, slow, hot, and it dulls.
     this.chainsaw = new Chainsaw(this.cfg, this.bus);
     this.chainsaw.init({ combat: this.combat, player: this.player, enemies: this.combat.enemies, fx: this.combat.fx, notify: (text) => this.toast?.show(text) });
@@ -763,7 +775,7 @@ export class Game {
     this.farm.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, moths: this.moths, flyer: this.flyer, flashlight: this.flashlight, lore: this.lore, paper: this.paper, card: this.card, gates: this.gates, director: this.director, vehicles: this.vehicles, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.combat.promptSources.push(this.farm.hud);
     this.familyPlot = new FamilyPlot(this.cfg, this.bus); // Nov 24 (Aaron): the headstones, the dead oak, the Hanged
-    this.familyPlot.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, rng: this.rng.fork('familyPlot'), demo: this.demo, notify, drawDistance: () => this.drawDistance });
+    this.familyPlot.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, rng: this.rng.fork('familyPlot'), cutscenes: this.cutscenes, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.vehicles.busy?.push(this.farm.hud);
     // Round 2, step 5: the family at their stations (Ellen's string board, Junie at the monitors).
     this.stations = new FamilyStations(this.cfg, this.bus);
@@ -2187,7 +2199,9 @@ export class Game {
     // campsite's sweep). After the step, so one starting this frame hides it too.
     this.combat.viewModel.root.visible = !cs.active && !viewer.active && !this.player.riding;
     this.combat.viewModel.digging = Boolean(this.director.digging?.active || this.shelter.digging || this.church?.digging); // Session 15b: the dig's animation (Session 16: the shelter's hatch too)
-    if (playing) {
+    if (this.sweepTorch && cs.active && cs.ownCamera) {
+      this.flashlight.update(dt, this.lockedInput, cs.camera, []); // Nov 24: a sweep's torch, from its camera
+    } else if (playing) {
       this.flashlight.platform = this.player.platform;
       const glare = this.combat.glareExtras(this.player.position);
       if (this.stairs.glareCircle) glare.push(this.stairs.glareCircle); // Session 33: Junie close in the beam dims it, as the dead do

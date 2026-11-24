@@ -125,6 +125,15 @@ export class Hanged {
     this.bus?.emit('hanged:woke', {});
   }
 
+  // Its head jerks up as if it's seen you, and drops again (sweep.plot); it doesn't come down.
+  twitch(i, seconds = 0.45) {
+    const h = this.list.find((x) => x.i === i);
+    if (!h || h.state !== 'hang') return;
+    h.twitchT = seconds;
+    h.body?.pose('wake', 25);
+    this.sfx?.('ropeCreak', h);
+  }
+
   // A shot through its rope while it hangs: it falls before it wakes, hard.
   cutRope(h) {
     if (h.state !== 'hang' || !h.alive) return false;
@@ -192,6 +201,10 @@ export class Hanged {
       h.t += dt;
       switch (h.state) {
         case 'hang':
+          if (h.twitchT > 0) {
+            h.twitchT -= dt;
+            if (h.twitchT <= 0) h.body?.pose('hang', 4);
+          }
           h.sway += dt * c.sway.rate;
           h.facing += Math.sin(h.sway) * c.sway.amount * dt * 4;
           if (h.wakeIn >= 0) {

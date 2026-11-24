@@ -186,6 +186,8 @@ export class PruittFarm {
       this.bus.on('moths:killed', () => this.mothsOut && this.killed++),
       this.bus.on('farm:mantle', () => this.mantle()),
       this.bus.on('fade:mid', () => this.onFadeMid()),
+      this.bus.on('farm:scarecrowLooks', () => this.scarecrowLooks()), // Nov 24: sweep.farm's last shot
+      this.bus.on('plot:moths', () => this.plotMothsNow()), // Nov 24: sweep.plot, on the sigil
     ];
     this.reset();
   }
@@ -284,12 +286,37 @@ export class PruittFarm {
     s.neck.rotation.y = scarecrowTurn(Math.atan2(p.x - at.x, p.z - at.z), _e.y, ht.maxYaw);
   }
 
+  // Nov 24 (sweep.farm's last shot): its head turns to look straight at the camera, the once it moves watched.
+  scarecrowLooks() {
+    const s = this.scarecrow;
+    const cam = this.player?.camera;
+    if (!s || !cam) return;
+    const at = s.neck.getWorldPosition(_v);
+    s.group.getWorldQuaternion(_q);
+    _e.setFromQuaternion(_q, 'YXZ');
+    this.scarecrowLook = { from: s.neck.rotation.y, to: scarecrowTurn(Math.atan2(cam.position.x - at.x, cam.position.z - at.z), _e.y, this.fc.scarecrow.headTurn.maxYaw), t: 0 };
+  }
+
+  // Nov 24 (sweep.plot): the plot's moths now, as the sweep comes down on the sigil (as updatePlot would).
+  plotMothsNow() {
+    if (!this.has('farmVisited') || this.has('plotMoths') || this.clock?.phase === 'day' || !this.plotSigil()) return;
+    this.set('plotMoths');
+    if (this.moths && !this.moths.habitat) this.moths.send(this.fc.plot.moths);
+  }
+
   update(dt, input, playing, canInteract) {
     if (!this.ready || this.demo?.active) return;
     if (this.model) {
       const p = this.player.position;
       this.model.group.visible = Math.hypot(p.x - this.frame.x, p.z - this.frame.z) < (this.drawDistance?.() ?? 400) + this.fc.radius;
-      if (this.model.group.visible) this.turnScarecrow();
+      if (this.scarecrowLook) {
+        // The look into the lens (sweep.farm): over a quarter second.
+        const l = this.scarecrowLook;
+        l.t += dt;
+        const k = Math.min(1, l.t / 0.25);
+        this.scarecrow.neck.rotation.y = l.from + (l.to - l.from) * k * k * (3 - 2 * k);
+        if (k >= 1 && !this.cutscenes?.active) this.scarecrowLook = null;
+      } else if (this.model.group.visible) this.turnScarecrow();
       // Nov 24: the journal and the gun shown only while they're there to take (a flag set elsewhere hides them too).
       this.model.parts.journal.visible = !this.has('marcyJournal');
       this.model.parts.shotgun.visible = !this.has('farmShotgun');

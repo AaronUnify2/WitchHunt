@@ -5919,6 +5919,7 @@ export const config = {
   // novel to fight. Maybe even ... 3 at once"; his picks: they drop, and go back up into the tree when badly hurt;
   // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
   familyPlot: {
+    sweepAt: 30, // Nov 24: its sweep (sweep.plot) plays once as Tom first comes this near the tree
     // The dead oak at the plot's centre; its three limbs (yaw degrees, reach, height at the rope); ropes to the necks.
     oak: { trunk: [0.72, 0.42], height: 4.2, limbs: [{ yaw: 20, reach: 3.6, y: 4.7 }, { yaw: 150, reach: 3.3, y: 4.4 }, { yaw: 255, reach: 3.8, y: 4.9 }] },
     // The headstones: [x, z, yaw degrees, kind] round the tree (the clearing's own frame, unturned); the sigil goes
