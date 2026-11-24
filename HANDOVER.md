@@ -19,7 +19,7 @@
 - **Checkpoints (Nov 23 evening):** permadeath is gone (`config.save.checkpoints`). `core/checkpoints.js` and `Game.writeCheckpoint` / `retryFromCheckpoint` / `clearSaves`: a second slot written at every autosave and every dusk; death or the station falling copies it into the run's save and offers the retry (B: a new run). Clear saves with `clearSaves()` (both slots), not `saves.clear()`, except where only the run's save should go (`station:overrun`). A checkpoint save carries `checkpoint: { label, phase, day, retried }`; a dusk one re-emits `phase:dusk` in `applySave`.
 - **Day 2's dawn is the Screamer's sighting again** (`config.campsite.dawnFigure`; the mutant's set-up kept as `mutantFigure`).
 - **Debug menu, Audio:** sound files on / off; play an ambience call now.
-- **The mutant's impacts have a `kind` (Nov 24):** `mutant:impact` carries `slam`, `backhand`, `spin`, `leap` or `charge`; the pumps listen only to `config.gasStation.pumps.mutantSetsOff` (charge, leap). Vehicles still take any.
+- **The mutant's impacts have a `kind` (Nov 24):** `mutant:impact` carries `slam`, `backhand`, `spin`, `leap` or `charge`; the pumps listen only to `config.gasStation.pumps.mutantSetsOff` (the leap alone: Aaron spared them the charge too). Vehicles still take any.
 
 **Headless gotchas (new):**
 - **The first screen is Press Start now:** `game.startScreen.activate('new')` still works straight off (the playbot's way), but clicking a `.start-choice` needs a tap first (it shows the menu after the press). After the press the audio context is running in headless Chromium.

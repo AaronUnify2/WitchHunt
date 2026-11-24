@@ -373,8 +373,8 @@ export class GasStation {
     });
   }
 
-  // Nov 16 (Aaron: the mutant hitting the fuel sets it off): a mutant's charge or landing at a pump.
-  // Nov 24 (Aaron): not its punches (config pumps.mutantSetsOff lists the kinds that still do).
+  // Nov 16 (Aaron: the mutant hitting the fuel sets it off): a mutant's landing at a pump.
+  // Nov 24 (Aaron): not its punches or its charge (config pumps.mutantSetsOff lists the kinds that still do).
   pumpStruck({ x, z, r = 1, kind } = {}) {
     if (!this.frame || !this.pumps) return;
     const setsOff = this.gc.pumps.mutantSetsOff;

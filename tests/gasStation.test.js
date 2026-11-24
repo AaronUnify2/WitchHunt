@@ -155,11 +155,11 @@ describe("the pumps and the mutant's blows (Nov 24)", () => {
     return { st, lit, at: frameToWorld(frame, 0.95, 0) };
   }
 
-  it('only its charge and its landing set a pump off', () => {
-    expect(config.gasStation.pumps.mutantSetsOff).toEqual(['charge', 'leap']);
+  it('only its leap landing sets a pump off', () => {
+    expect(config.gasStation.pumps.mutantSetsOff).toEqual(['leap']);
   });
 
-  for (const kind of ['slam', 'backhand', 'spin']) {
+  for (const kind of ['slam', 'backhand', 'spin', 'charge']) {
     it(`a ${kind} into a pump leaves it be`, () => {
       const { st, lit, at } = station();
       GasStation.prototype.pumpStruck.call(st, { x: at.x, z: at.z, r: 1, kind });
@@ -167,7 +167,7 @@ describe("the pumps and the mutant's blows (Nov 24)", () => {
     });
   }
 
-  for (const kind of ['charge', 'leap']) {
+  for (const kind of ['leap']) {
     it(`a ${kind} into a pump still lights it`, () => {
       const { st, lit, at } = station();
       GasStation.prototype.pumpStruck.call(st, { x: at.x, z: at.z, r: 1, kind });
