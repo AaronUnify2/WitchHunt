@@ -39,6 +39,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { bigfootStatueGeometry, bigfootStatueMaterial } from './bigfootStatue.js';
 import { frameToWorld } from '../world/clearingFrame.js';
 import { makeCanvas, toTexture } from './proceduralTextures.js';
 import { bakeParts, noise3, weatherFor } from './propKit.js';
@@ -674,17 +675,21 @@ export class GasStationProps {
     }
   }
 
+  // Nov 24 (Aaron): Bigfoot's own figure, carved in wood (render/bigfootStatue.js), on a log-round plinth.
   statue(st, k, fy) {
-    const at = [st.x, st.z, fy];
-    const yaw = st.yaw;
-    this.box(0.8, 0.15, 0.8, ...at, k.wood, yaw);
-    this.box(0.26, 0.85, 0.3, ...at, k.carving, yaw, { ox: -0.15, oy: 0.15 }); // legs
-    this.box(0.26, 0.85, 0.3, ...at, k.carving, yaw, { ox: 0.15, oy: 0.15 });
-    this.box(0.7, 0.85, 0.42, ...at, k.carving, yaw, { oy: 0.95 }); // body
-    this.box(0.18, 0.95, 0.2, ...at, k.carving, yaw, { ox: -0.45, oy: 0.95, rotZ: 0 }); // arms, long
-    this.box(0.18, 0.95, 0.2, ...at, k.carving, yaw, { ox: 0.45, oy: 0.95 });
-    this.box(0.36, 0.34, 0.34, ...at, k.carving, yaw, { oy: 1.8, oz: 0.04 }); // head, a little forward
-    this.box(0.3, 0.08, 0.05, ...at, k.carvingDark, yaw, { oy: 1.95, oz: 0.22 }); // brow
+    const look = this.cfg.statue;
+    const plinth = look?.plinth ?? 0.15;
+    this.box(0.95, plinth, 0.95, st.x, st.z, fy, k.wood, st.yaw);
+    if (!look) return;
+    const mesh = new THREE.Mesh(this.hold(bigfootStatueGeometry(look)), this.hold(bigfootStatueMaterial(look)));
+    const w = frameToWorld(this.frame, st.x, st.z);
+    mesh.position.set(w.x, fy + plinth, w.z);
+    mesh.rotation.y = this.rotY(st.yaw);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.name = 'bigfootStatue';
+    this.statueMesh = mesh;
+    this.group.add(mesh);
   }
 
   // ---- the office -------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 ## Newest: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
 
-**Where things stand:** everything is on `main`. **1514 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
+**Where things stand:** everything is on `main`. **1517 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
 
 **Read first:** DESIGN.md "Audio direction" (the section "Real audio (Suno), as built": how it works, the files in, **what's left**), then `docs/AUDIO_CUES.md` (every file name and Suno prompt). STATUS's top entries have the detail.
 

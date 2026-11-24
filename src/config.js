@@ -3163,6 +3163,10 @@ export const config = {
     },
 
     look: {
+      // Nov 24 (Aaron: the shop's Bigfoot to match the new Bigfoot model): Earl's chainsaw-carved statue by
+      // the door, Bigfoot's own figure in wood (render/bigfootStatue.js): height (the real one's 2.6 m; it
+      // stands on a 0.15 m plinth under a 3.4 m ceiling), width (his build), albedo, the woods.
+      statue: { height: 2.35, width: 1.12, albedo: 0.4, plinth: 0.15, colours: { carving: 0x5a4028, deep: 0x40291a, sanded: 0x6a4c30, burnt: 0x120c08, paint: 0x5e2418 } }, // albedo: the torch is strong up close (the real one's 0.36)
       glassOpacity: 0.82, // grimed: you can barely see in (or out)
       forecourtLift: 0.04, // metres above the ground
       island: { length: 3.8, depth: 1.1 }, // a pump island's kerb
