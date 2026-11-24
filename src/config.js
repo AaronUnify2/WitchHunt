@@ -3144,6 +3144,9 @@ export const config = {
       fuse: 1.1,
       chainFuse: 0.45, // the other island, caught in the blast
       mutantFuse: 0.35, // Nov 16: a mutant's blow into it (GasStation.pumpStruck)
+      // Nov 24 (Aaron): its punches (slam, backhand, spin) no longer set a pump off: it threw Tom out
+      // of the shop and blew the forecourt up swinging at him. Only these of its impacts still do.
+      mutantSetsOff: ['charge', 'leap'],
       hitRadius: 1.4, // metres from a pump unit's centre (frame) that a shot counts on
       blast: { radius: 8, damage: 320, playerDamage: 60, edge: 0.25, knockback: 3.5, shake: 1.5, alert: 140 },
     },

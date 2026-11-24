@@ -373,9 +373,12 @@ export class GasStation {
     });
   }
 
-  // Nov 16 (Aaron: the mutant hitting the fuel sets it off): a mutant's blow, charge or landing at a pump.
-  pumpStruck({ x, z, r = 1 } = {}) {
+  // Nov 16 (Aaron: the mutant hitting the fuel sets it off): a mutant's charge or landing at a pump.
+  // Nov 24 (Aaron): not its punches (config pumps.mutantSetsOff lists the kinds that still do).
+  pumpStruck({ x, z, r = 1, kind } = {}) {
     if (!this.frame || !this.pumps) return;
+    const setsOff = this.gc.pumps.mutantSetsOff;
+    if (setsOff && !setsOff.includes(kind)) return;
     this.pumps.forEach((pump, i) => {
       if (pump.blown || pump.fuse >= 0) return;
       if (this.pumpUnits(i).some((u) => Math.hypot(u.x - x, u.z - z) < r + 0.7)) this.lightPump(i, this.gc.pumps.mutantFuse ?? 0.35);

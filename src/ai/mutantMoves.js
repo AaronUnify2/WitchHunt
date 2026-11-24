@@ -14,7 +14,7 @@
 //
 // z.move: { kind, phase ('windup' | 'strike' | 'spin' | 'air' | 'recover' | 'dizzy'), t (in the phase),
 // windup (s), ... }. On the frame a blow lands near something that could go up (a car, a pump), z.impact is
-// set to { x, z, r }; EnemyManager reports it ('mutant:impact').
+// set to { x, z, r, kind } (kind: the move, or 'charge'); EnemyManager reports it ('mutant:impact').
 
 export const CLOSE_MOVES = ['slam', 'backhand', 'spin'];
 
@@ -175,7 +175,7 @@ export function updateMove(z, m, player, dt, onStrike) {
       z.x += mv.dirX * step;
       z.z += mv.dirZ * step;
       z.walked += step;
-      z.impact = { x: z.x, z: z.z, r: spec.reach };
+      z.impact = { x: z.x, z: z.z, r: spec.reach, kind: 'spin' };
       mv.hitTimer -= dt;
       if (mv.hits < spec.hits && mv.hitTimer <= 0 && inArc(z, player.x, player.z, spec.reach, 360)) {
         mv.hits++;
@@ -193,7 +193,7 @@ export function updateMove(z, m, player, dt, onStrike) {
       if (k >= 1) {
         z.air = 0;
         z.struck = true;
-        z.impact = { x: z.x, z: z.z, r: spec.radius * 0.8 };
+        z.impact = { x: z.x, z: z.z, r: spec.radius * 0.8, kind: 'leap' };
         z.landed = true; // EnemyManager: the ground shakes
         if (inArc(z, player.x, player.z, spec.radius, 360)) onStrike?.(z, null, blow(z, m, spec, player, 'away'));
         afterBlow(z, m, mv, spec, player);
@@ -255,7 +255,7 @@ function begin(z, m, mv, spec, player, onStrike) {
   z.struck = true;
   const reachX = z.x + Math.sin(z.facing) * spec.reach * 0.7;
   const reachZ = z.z + Math.cos(z.facing) * spec.reach * 0.7;
-  z.impact = { x: reachX, z: reachZ, r: spec.reach * 0.55 };
+  z.impact = { x: reachX, z: reachZ, r: spec.reach * 0.55, kind: mv.kind }; // 'slam' or 'backhand'
   const hit = inArc(z, player.x, player.z, spec.reach, spec.arc);
   if (hit) onStrike?.(z, null, blow(z, m, spec, player, mv.kind === 'backhand' ? 'aside' : 'away'));
   else if (spec.shock && Math.hypot(player.x - reachX, player.z - reachZ) <= spec.shock.radius) {

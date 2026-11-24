@@ -138,3 +138,40 @@ describe('the gas station beats (Session 15b pass 2)', () => {
     }
   });
 });
+
+// Nov 24 (Aaron): the mutant threw Tom out onto the forecourt and blew it up punching at him by the pumps.
+describe("the pumps and the mutant's blows (Nov 24)", () => {
+  function station() {
+    const frame = { x: 0, z: 0, rx: 1, rz: 0, fx: 0, fz: 1, yaw: 0 };
+    const lit = [];
+    const st = {
+      frame,
+      data: { pumps: [{ x: 0, z: 0 }] },
+      gc: config.gasStation,
+      pumps: [{ hurt: 0, fuse: -1, blown: false }],
+      pumpUnits: GasStation.prototype.pumpUnits,
+      lightPump: (i, fuse) => lit.push({ i, fuse }),
+    };
+    return { st, lit, at: frameToWorld(frame, 0.95, 0) };
+  }
+
+  it('only its charge and its landing set a pump off', () => {
+    expect(config.gasStation.pumps.mutantSetsOff).toEqual(['charge', 'leap']);
+  });
+
+  for (const kind of ['slam', 'backhand', 'spin']) {
+    it(`a ${kind} into a pump leaves it be`, () => {
+      const { st, lit, at } = station();
+      GasStation.prototype.pumpStruck.call(st, { x: at.x, z: at.z, r: 1, kind });
+      expect(lit).toEqual([]);
+    });
+  }
+
+  for (const kind of ['charge', 'leap']) {
+    it(`a ${kind} into a pump still lights it`, () => {
+      const { st, lit, at } = station();
+      GasStation.prototype.pumpStruck.call(st, { x: at.x, z: at.z, r: 1, kind });
+      expect(lit).toEqual([{ i: 0, fuse: config.gasStation.pumps.mutantFuse }]);
+    });
+  }
+});

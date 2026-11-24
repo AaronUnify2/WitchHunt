@@ -445,7 +445,7 @@ export class EnemyManager {
     // Nov 16: a mutant's blow (or charge, or landing) near something that could go up: Vehicles and the
     // gas station's pumps listen. And its leap or slam shaking the ground.
     if (z.impact) {
-      this.bus.emit('mutant:impact', { zombie: z, x: z.impact.x, z: z.impact.z, r: z.impact.r });
+      this.bus.emit('mutant:impact', { zombie: z, x: z.impact.x, z: z.impact.z, r: z.impact.r, kind: z.impact.kind });
       z.impact = null;
     }
     if (z.moveStarted) {

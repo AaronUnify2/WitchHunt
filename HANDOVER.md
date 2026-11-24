@@ -2,7 +2,7 @@
 
 ## Newest: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
 
-**Where things stand:** everything is on `main`. **1491 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints; PLAYTEST round 85, OPEN_QUESTIONS #784-788.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
+**Where things stand:** everything is on `main`. **1498 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
 
 **Read first:** DESIGN.md "Audio direction" (the section "Real audio (Suno), as built": how it works, the files in, **what's left**), then `docs/AUDIO_CUES.md` (every file name and Suno prompt). STATUS's top entries have the detail.
 
@@ -19,6 +19,7 @@
 - **Checkpoints (Nov 23 evening):** permadeath is gone (`config.save.checkpoints`). `core/checkpoints.js` and `Game.writeCheckpoint` / `retryFromCheckpoint` / `clearSaves`: a second slot written at every autosave and every dusk; death or the station falling copies it into the run's save and offers the retry (B: a new run). Clear saves with `clearSaves()` (both slots), not `saves.clear()`, except where only the run's save should go (`station:overrun`). A checkpoint save carries `checkpoint: { label, phase, day, retried }`; a dusk one re-emits `phase:dusk` in `applySave`.
 - **Day 2's dawn is the Screamer's sighting again** (`config.campsite.dawnFigure`; the mutant's set-up kept as `mutantFigure`).
 - **Debug menu, Audio:** sound files on / off; play an ambience call now.
+- **The mutant's impacts have a `kind` (Nov 24):** `mutant:impact` carries `slam`, `backhand`, `spin`, `leap` or `charge`; the pumps listen only to `config.gasStation.pumps.mutantSetsOff` (charge, leap). Vehicles still take any.
 
 **Headless gotchas (new):**
 - **The first screen is Press Start now:** `game.startScreen.activate('new')` still works straight off (the playbot's way), but clicking a `.start-choice` needs a tap first (it shows the menu after the press). After the press the audio context is running in headless Chromium.
@@ -26,9 +27,10 @@
 - **Playwright's `page.evaluate` counts as a user gesture**, so a "browser refused the sound" path can only be tested by stubbing (`sfx.unlock` then `ctx.suspend()`).
 - **The dev server lists the audio files when it starts:** restart it after adding or moving one.
 - **A retry reloads the page** (`run:retryRequested`): wait for the navigation, then `game.onStartChoice('begin')` (the "tap to begin").
+- **To get the gas station's mutant going headless:** after `activate('new')`, teleport Tom to frame (3.3, -7.4) (in the centre aisle, inside `wake.aisle` of it); (1.9, -6.6) is short of the wake line. Step `game.update` yourself: the cutscene's world runs, so the throw happens in those steps.
 - **Headless runs slowly:** cutscene time lags real time unless you step `game.update(1/30)` yourself; render every step if you screenshot post effects (the glitch's static decays in `render`).
 
-**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16.
+**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16. Next numbers: OPEN_QUESTIONS #790.
 
 **What the next session does:** ask Aaron for any notes from his play (rule 10; fix those first). Then, when his Suno credits refresh: hook up each new upload (check sets split cleanly: read the loudness, cut at `config.sfx.slices` where they don't; check loops; set levels), in the order DESIGN "Audio direction" lists under **Still to do** (the night music and the batch's gaps first, then guns and hits, then the gas station's own sounds and Earl's scanner voice). Write him new prompts for each batch as multi-take sets (`docs/AUDIO_CUES.md` shows the wording that works). Otherwise, whatever he asks for.
 

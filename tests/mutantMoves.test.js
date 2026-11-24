@@ -162,5 +162,22 @@ describe('the mutant (Nov 16)', () => {
     }
     expect(impact).toBeTruthy();
     expect(impact.z).toBeGreaterThan(0.5); // in front of it
+    expect(impact.kind).toBe('slam'); // Nov 24: the pumps tell a punch from a charge
+  });
+
+  it('names each impact by its move (Nov 24: punches no longer set the pumps off)', () => {
+    const kinds = new Set();
+    for (const kind of ['backhand', 'spin', 'leap']) {
+      const zb = mutant(0, 0, 0);
+      const player = { x: 0, z: kind === 'leap' ? 9 : 2 };
+      startMove(zb, m, kind, player);
+      for (let t = 0; t < 3; t += 1 / 60) {
+        zb.update(1 / 60, player, () => {});
+        if (zb.impact) kinds.add(zb.impact.kind);
+        zb.impact = null;
+      }
+    }
+    expect([...kinds]).toEqual(expect.arrayContaining(['backhand', 'leap', 'spin'])); // (it may chain a slam on)
+    expect([...kinds].every((k) => ['slam', 'backhand', 'spin', 'leap'].includes(k))).toBe(true);
   });
 });

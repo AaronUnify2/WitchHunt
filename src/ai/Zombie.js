@@ -261,7 +261,7 @@ export class Zombie {
     if (this.charging) {
       this.chargeLeft = Math.max(0, this.chargeLeft - Math.max(0, step));
       // Nov 16: a mutant charging into a car or a pump sets it off.
-      if (this.moves) this.impact = { x: this.x + Math.sin(this.facing) * this.radius, z: this.z + Math.cos(this.facing) * this.radius, r: this.radius + 0.5 };
+      if (this.moves) this.impact = { x: this.x + Math.sin(this.facing) * this.radius, z: this.z + Math.cos(this.facing) * this.radius, r: this.radius + 0.5, kind: 'charge' };
     }
   }
 
