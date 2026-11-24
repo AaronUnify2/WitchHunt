@@ -368,6 +368,7 @@ export class Cutscenes {
     const c = cameraAt(cur.data.camera, cur.t, { fov: this.cc.fov, shake: 0 });
     if (!c) return;
     const pos = this.at(c.anchor, c.pos);
+    if (c.ground) pos.y = this.world.ground.heightAt(pos.x, pos.z) + c.pos[1];
     let look = this.at(c.anchor, c.look);
     // Session 17: a key can follow actors (the dogfight): the look eases onto them.
     if (c.track) {
@@ -501,7 +502,7 @@ export class Cutscenes {
         break;
       case 'smear':
         if (actor) {
-          actor.smearFx ??= new Smear(this.scene, actor.mesh, this.cc.smear);
+          actor.smearFx ??= new Smear(this.scene, actor.mesh, { ...this.cc.smear, ...(e.color !== undefined ? { color: e.color } : {}), ...(e.opacity !== undefined ? { opacity: e.opacity } : {}) });
           actor.smearFx.on = e.on !== false;
         }
         break;
@@ -741,7 +742,7 @@ export class Cutscenes {
   // Group the timeline places), animate(dt, actor), light(k), dispose() }.
   makeModel(spec) {
     const look = spec.look;
-    if (look === 'witch') return this.witchModel();
+    if (look === 'witch') return this.witchModel(spec);
     if (look === 'zombie') return this.zombieModel(spec);
     if (this.peopleCfg.people[look]) return this.personModel(look);
     return null;
@@ -749,10 +750,13 @@ export class Cutscenes {
 
   // The witch: gliding (her rags streaming as she moves), or planting
   // (kneel: her contortion and its rings). Unlit: a silhouette whatever the light.
-  witchModel() {
+  witchModel(spec = {}) {
     const mesh = new THREE.Group();
     const r = new WitchRenderer(this.cfg.witch.look, this.rng.fork('witch').fork('witch-look')); // as the game's
     r.init(mesh);
+    // Nov 24: tone lifts her black a little toward grey (the camcorder's tape: a black figure on a black night
+    // isn't seen at all); her eyes still glow.
+    if (spec.tone) r.material.color.lerp(new THREE.Color(this.cc.witchToneColor ?? 0x8a8a80), spec.tone);
     const w = { x: 0, y: 0, z: 0, facing: 0, state: 'roaming', tier: 'near', moved: 0, action: null, actionProgress: 0, struck: false, flinch: 0, wc: this.cfg.witch, deathTimer: 0, spot: null, plantProgress: 0, riseProgress: 1 };
     let planting = 0;
     return {
@@ -1006,7 +1010,7 @@ export function buildActor(spec, cc) {
     }
     case 'disc': {
       const r = spec.size ?? 1;
-      const mesh = new THREE.Mesh(new THREE.CircleGeometry(r, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: spec.color ?? 0xb4ff8c, fog: false, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const mesh = new THREE.Mesh(new THREE.CircleGeometry(r, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: spec.color ?? 0xb4ff8c, fog: false, transparent: true, opacity: spec.opacity ?? 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); // Nov 24: opacity (the firelight's pool)
       mesh.position.y = 0.04;
       g.add(mesh);
       break;

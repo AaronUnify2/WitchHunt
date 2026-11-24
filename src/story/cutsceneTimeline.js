@@ -76,6 +76,7 @@ export function cameraAt(keys, t, defaults = { fov: 60, shake: 0 }) {
     fov: lerp(a.fov ?? defaults.fov, b.fov ?? a.fov ?? defaults.fov, k),
     shake: lerp(a.shake ?? defaults.shake, b.shake ?? a.shake ?? defaults.shake, k),
     roll: lerp(a.roll ?? 0, b.roll ?? a.roll ?? 0, k), // Nov 24: degrees about the view (a camera lying on its side)
+    ground: Boolean(a.ground), // Nov 24: pos's height is above the ground under it, not the anchor's (a camera dropped in the grass)
   };
 }
 

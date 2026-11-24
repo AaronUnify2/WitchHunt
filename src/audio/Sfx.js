@@ -12,6 +12,12 @@ import { groupFiles, audibleBounds, splitBySilence, slicesToTakes, steadyBounds,
 
 const NOISE_SECONDS = 1;
 
+// Nov 24: whether a sound has a placeholder (a recipe, a held loop or a stand-in), for tests: a cutscene's sounds
+// all play something before their files arrive.
+export function hasPlaceholder(name) {
+  return Boolean(RECIPES[name] || HELD[name] || STAND_IN[name]);
+}
+
 export class Sfx {
   constructor(sfxConfig) {
     this.cfg = sfxConfig;

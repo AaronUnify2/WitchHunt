@@ -4308,6 +4308,7 @@ export const config = {
     witchSwipe: { up: 0.16, down: 0.14 },
     witchSummonSeconds: 1.2,
     smear: { count: 7, every: 0.025, life: 0.3, opacity: 0.6, minSpeed: 6, color: 0x050605 },
+    witchToneColor: 0x8a8a80, // a witch actor's `tone` lifts her black toward this
     // Box stand-ins: a figure with no real model yet (Session 13: only the
     // camper) is drawn as one of these. Metres, colours.
     figures: {
