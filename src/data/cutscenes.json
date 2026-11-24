@@ -780,7 +780,8 @@
             -11,
             0,
             9
-          ]
+          ],
+          "tone": 0.3
         },
         {
           "id": "sigil",
@@ -802,7 +803,66 @@
           "line": "day1.17"
         },
         {
-          "at": 0.5,
+          "do": "smear",
+          "actor": "her",
+          "color": 12124096,
+          "opacity": 0.42,
+          "at": 0.6
+        },
+        {
+          "at": 0.8,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            -6.2,
+            0,
+            8.7
+          ],
+          "seconds": 0.2
+        },
+        {
+          "at": 0.8,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 1.7,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            -3.4,
+            0,
+            8.3
+          ],
+          "seconds": 0.15
+        },
+        {
+          "at": 1.7,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 2.3,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 3.3,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            -1,
+            0,
+            7.2
+          ]
+        },
+        {
+          "at": 3.5,
           "do": "move",
           "actor": "her",
           "to": [
@@ -810,7 +870,12 @@
             0,
             8
           ],
-          "seconds": 4
+          "seconds": 0.14
+        },
+        {
+          "at": 3.5,
+          "do": "sfx",
+          "sfx": "witchDash"
         },
         {
           "at": 4.6,
@@ -847,20 +912,62 @@
           "do": "move",
           "actor": "her",
           "to": [
-            11,
+            3,
             0,
-            11
+            9
           ],
-          "seconds": 4
+          "seconds": 0.15
+        },
+        {
+          "at": 9.6,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 10.2,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 10.9,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            7,
+            0,
+            10.5
+          ],
+          "seconds": 0.18
+        },
+        {
+          "at": 10.9,
+          "do": "sfx",
+          "sfx": "witchDash"
         },
         {
           "at": 11.5,
           "do": "line",
           "line": "day1.19"
+        },
+        {
+          "at": 11.5,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            13,
+            0,
+            12
+          ],
+          "seconds": 0.2
         }
       ],
       "duration": 14,
-      "_note": "M9.2: played by FirstDay on Night 1 as the witch plants at the storm shelter (camera six). Lines 17-19 are in it; line 20 follows it. Still a placeholder shot (the style pass: Session 19)."
+      "_note": "M9.2: played by FirstDay on Night 1 as the witch plants at the storm shelter (camera six). Lines 17-19 are in it; line 20 follows it. Still a placeholder shot (the style pass: Session 19). Nov 24 (Aaron: the witch flits here as on the campers' camcorder): in and out in bursts with afterimages (smear), still between; she stops and looks at the camera on the way in and on the way out."
     },
     {
       "id": "clip.pruittTape",
@@ -875,7 +982,7 @@
         "time": "clock",
         "rec": true
       },
-      "_note": "Session 16 (M9.3; DESIGN 'Storm shelter', 'The trail-cam tapes'): Earl's tape, handed in at the comms room (StormShelter plays it as the tapes are handed in; then it's on the monitors). Camera four at the shelter clearing's edge (anchor stormShelter: walking in from home, x right, z ahead), Night 1. The witch is already there, low over the ground beside the hatch (the first sigil going in). Earl and his two kids hurry in from the trees and pull up short. A still beat. She turns, far too fast; they scatter out of frame, the kids one way into the trees and Earl the other, and she goes after him. The kill is never shown. The clearing empties; the last seconds are the hatch alone and the sigil's faint glow. The family watch it in the comms room: Wyatt first, Ellen explains, Junie catches the kids running off (Aaron: maybe they got away), Wyatt ties the glow to the sigil Tom dug up.",
+      "_note": "Session 16 (M9.3; DESIGN 'Storm shelter', 'The trail-cam tapes'): Earl's tape, handed in at the comms room (StormShelter plays it as the tapes are handed in; then it's on the monitors). Camera four at the shelter clearing's edge (anchor stormShelter: walking in from home, x right, z ahead), Night 1. The witch is already there, low over the ground beside the hatch (the first sigil going in). Earl and his two kids hurry in from the trees and pull up short. A still beat. She turns, far too fast; they scatter out of frame, the kids one way into the trees and Earl the other, and she goes after him. The kill is never shown. The clearing empties; the last seconds are the hatch alone and the sigil's faint glow. The family watch it in the comms room: Wyatt first, Ellen explains, Junie catches the kids running off (Aaron: maybe they got away), Wyatt ties the glow to the sigil Tom dug up. Nov 24: she leaves in flits (smear), a look at camera four between.",
       "camera": [
         {
           "at": 0,
@@ -904,7 +1011,8 @@
             0,
             2.6
           ],
-          "yaw": 120
+          "yaw": 120,
+          "tone": 0.3
         },
         {
           "id": "earl",
@@ -1015,6 +1123,13 @@
           "hold": true
         },
         {
+          "do": "smear",
+          "actor": "her",
+          "color": 12124096,
+          "opacity": 0.42,
+          "at": 7.3
+        },
+        {
           "at": 7.4,
           "do": "pose",
           "actor": "her",
@@ -1029,7 +1144,12 @@
             0,
             1.8
           ],
-          "seconds": 0.3
+          "seconds": 0.12
+        },
+        {
+          "at": 7.5,
+          "do": "sfx",
+          "sfx": "witchDash"
         },
         {
           "at": 7.6,
@@ -1072,7 +1192,33 @@
           "seconds": 1.2
         },
         {
-          "at": 8.2,
+          "at": 7.9,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            -7,
+            0,
+            7.5
+          ]
+        },
+        {
+          "at": 8.3,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            9.5,
+            0,
+            -3.2
+          ],
+          "seconds": 0.15
+        },
+        {
+          "at": 8.3,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 8.65,
           "do": "move",
           "actor": "her",
           "to": [
@@ -1080,7 +1226,7 @@
             0,
             -8
           ],
-          "seconds": 0.7
+          "seconds": 0.18
         },
         {
           "at": 9.0,
@@ -1161,23 +1307,115 @@
             -10,
             0,
             8
-          ]
+          ],
+          "tone": 0.3
         }
       ],
       "tracks": [
         {
-          "at": 0.6,
+          "do": "smear",
+          "actor": "her",
+          "color": 12124096,
+          "opacity": 0.42,
+          "at": 0.5
+        },
+        {
+          "at": 0.7,
           "do": "move",
+          "actor": "her",
+          "to": [
+            -5.6,
+            0,
+            8.7
+          ],
+          "seconds": 0.2
+        },
+        {
+          "at": 0.7,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 1.4,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 2.7,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            -1.2,
+            0,
+            9.4
+          ],
+          "seconds": 0.15
+        },
+        {
+          "at": 2.7,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 3.2,
+          "do": "face",
           "actor": "her",
           "to": [
             10,
             0,
             11.5
+          ]
+        },
+        {
+          "at": 4.2,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            3.6,
+            0,
+            10.2
           ],
-          "seconds": 6.5
+          "seconds": 0.15
+        },
+        {
+          "at": 4.2,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 4.6,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 5.6,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            11,
+            0,
+            11.8
+          ],
+          "seconds": 0.25
+        },
+        {
+          "at": 5.6,
+          "do": "sfx",
+          "sfx": "witchDash"
         }
       ],
-      "duration": 7.6
+      "duration": 7.6,
+      "_note": "Nov 24 (Aaron: flitting, as on the camcorder): bursts across the view with afterimages; she stops twice and looks at the camera."
     },
     {
       "id": "sweep.arrival",
@@ -1277,7 +1515,8 @@
             0,
             9
           ],
-          "yaw": 180
+          "yaw": 180,
+          "tone": 0.3
         },
         {
           "id": "sigil",
@@ -1320,9 +1559,58 @@
           "pose": "stand"
         },
         {
+          "at": 5.2,
+          "do": "face",
+          "actor": "her",
+          "to": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
           "at": 5.6,
           "do": "sfx",
           "sfx": "witchShriek"
+        },
+        {
+          "do": "smear",
+          "actor": "her",
+          "color": 12124096,
+          "opacity": 0.42,
+          "at": 5.9
+        },
+        {
+          "at": 6.1,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            0.35,
+            0,
+            4.0
+          ],
+          "seconds": 0.14
+        },
+        {
+          "at": 6.1,
+          "do": "sfx",
+          "sfx": "witchDash"
+        },
+        {
+          "at": 6.4,
+          "do": "move",
+          "actor": "her",
+          "to": [
+            0.15,
+            0,
+            1.3
+          ],
+          "seconds": 0.12
+        },
+        {
+          "at": 6.4,
+          "do": "sfx",
+          "sfx": "witchDash"
         },
         {
           "at": 6.6,
@@ -1337,7 +1625,8 @@
           "seconds": 0.2
         }
       ],
-      "duration": 8
+      "duration": 8,
+      "_note": "Nov 24: after the shriek she flits at the camera, into the lens, as the picture breaks up."
     },
     {"id": "sweep.outpostEast", "name": "Arriving at the military outpost by the tear in its fence (establishing sweep)", "style": "sweep", "_note": "Round 2 (Aaron: the cemetery side gate, 'a rip in the fence'): anchor outpost: its frame (x right (west), z toward the cordon). From over the torn fence on the east side: the soldier standing on the track inside it, then the watchtower, then along the barricade to its gap.", "camera": [{"at": 0, "anchor": "outpost", "pos": [-72, 7, -26], "look": [-36, 1.6, -11]}, {"at": 3.0, "anchor": "outpost", "pos": [-52, 8, -22], "look": [11, 5, -6]}, {"at": 6.5, "anchor": "outpost", "pos": [-30, 5, -15], "look": [0, 1.2, 5]}], "tracks": [], "duration": 7.0},
     {
