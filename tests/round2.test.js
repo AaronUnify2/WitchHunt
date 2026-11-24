@@ -755,3 +755,29 @@ describe('the Pruitt house, pared down (Nov 24)', () => {
     expect(farmData.searches.map((s) => s.id).sort()).toEqual(['pantry', 'sideboard']);
   });
 });
+
+// Nov 24 (Aaron, play-test: "I couldn't pick up the shotgun when I was in the Pruitts' house"): the farm's gun had
+// shared the campsite's old flag (shotgunFound), which the opening's skips and the story starts set: no prompt.
+describe("Earl's shotgun in the Pruitt house (Nov 24)", () => {
+  it('can be taken down even with the campsite\'s old flag set', async () => {
+    const { PruittFarm } = await import('../src/encounters/PruittFarm.js');
+    const flags = new Set(['shotgunFound', 'marcyJournal']);
+    const given = [];
+    const f = Object.create(PruittFarm.prototype);
+    Object.assign(f, {
+      fc: config.pruittFarm, data: farmData, cfg: config, bus: { emit() {} },
+      model: { parts: { shotgun: { visible: true }, journal: { visible: false } } },
+      spots: { shotgun: { x: 0, z: 0 } },
+      player: { position: { x: 0.3, z: 0 }, riding: null },
+      progress: { has: (k) => flags.has(k), setFlag: (k) => flags.add(k) },
+      combat: { giveWeapon: (w, n) => given.push([w, n]), hud: { pickup() {} }, sfx: { play() {} } },
+      dialogue: { play() {} }, notify() {}, searched: new Set(), looked: new Set(),
+    });
+    const pick = f.pick('X');
+    expect(pick?.key).toBe('shotgun');
+    pick.act();
+    expect(flags.has('farmShotgun')).toBe(true);
+    expect(given[0][0]).toBe('shotgun');
+    expect(f.pick('X')?.key).not.toBe('shotgun');
+  });
+});

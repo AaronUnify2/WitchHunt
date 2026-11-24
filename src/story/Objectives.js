@@ -195,7 +195,7 @@ export class Objectives {
       if (!has('farmVisited')) return step('farm', "Go to the Pruitts' farm, up the track east of home. See if Marcy's all right.", pf.frame);
       if (!has('farmMothsDone')) return steps('farmMoths', "The Pruitts' porch light is thick with moths. Kill them, or kill the light: Earl's generator is round the side of the house.", [pf.spot('steps'), pf.spot('generator')]);
       if (!has('mothmanGlimpsed')) return step('farmYard', "Step out into the Pruitts' yard. Something's in the dead oak.", pf.spot('yard'));
-      if (!has('marcyJournal') || !has('shotgunFound')) return steps('farmHouse', "Search the Pruitts' house.", [has('marcyJournal') ? null : pf.spot('journal'), has('shotgunFound') ? null : pf.spot('shotgun')]);
+      if (!has('marcyJournal') || !has('farmShotgun')) return steps('farmHouse', "Search the Pruitts' house.", [has('marcyJournal') ? null : pf.spot('journal'), has('farmShotgun') ? null : pf.spot('shotgun')]); // Nov 24: farmShotgun, the farm's own
       if (has('outpostCall')) {
         const buried = pf.plotSigil();
         if (buried) return step('plot', "Dig up what she buried in the Pruitts' family plot, down the track. The army's fence is just past it.", buried);

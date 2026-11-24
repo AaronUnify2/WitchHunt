@@ -64,6 +64,7 @@
     {"id": "farmMothsDone", "about": "Round 2: the moths at the Pruitts' porch light are dead or gone."},
     {"id": "mothmanGlimpsed", "about": "Round 2: the Mothman has been seen, for a moment, in the dead oak at the Pruitt farm."},
     {"id": "marcyJournal", "about": "Round 2: Marcy Pruitt's journal taken from the kitchen table."},
+    {"id": "farmShotgun", "about": "Nov 24: Earl's shotgun taken down from its pegs in the Pruitt house (its own flag: shotgunFound is the old campsite shotgun's, set by the opening's skips and story starts, which hid this one's prompt)."},
     {"id": "plotMoths", "about": "Round 2: more moths have come to the sigil's glow at the Pruitts' family plot."},
     {"id": "plotCamSeen", "about": "Plan #10: camera seven at the family plot has caught the witch for the first time (story/TrailCams.js): Ellen's call and the feed on D-pad down came once."},
     {"id": "cellAsked", "about": "Session 33: after the homecoming, Ellen has asked for the plane's alien power cell for the fence (encounters/Stairs.js updateCellAsk). The goal is the fence box (or back to the plane for it)."},

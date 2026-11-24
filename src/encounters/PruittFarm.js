@@ -15,7 +15,7 @@
 //  3. The Mothman, briefly (mothmanGlimpsed): something huge in the dead oak across the yard, watching;
 //     it throws its wings wide, screams and is gone. Those were its young.
 //  4. The house: Marcy's journal on the kitchen table (she believed him; the family loved him), Earl's
-//     shotgun on its pegs (shotgunFound: it used to be the campsite's), the pantry and the sideboard, and
+//     shotgun on its pegs (farmShotgun, Nov 24: its own flag; it used to be the campsite's), the pantry and the sideboard, and
 //     things that only say something: the children's drawings, the beds, the mailbox (Nov 24: the
 //     photographs, Earl's map and the door frame cut, Aaron: too many).
 //  5. The family plot, down the track: what the witch buried there on Night 2 is still in the ground,
@@ -23,7 +23,7 @@
 //     is the tear in the army's fence.
 //
 // The frame (PruittFarm.frame): walking in from home, x to the right, z ahead. Saved: story flags
-// (farmCall, farmVisited, farmMothsDone, mothmanGlimpsed, marcyJournal, shotgunFound, plotMoths) and
+// (farmCall, farmVisited, farmMothsDone, mothmanGlimpsed, marcyJournal, farmShotgun, plotMoths) and
 // what's been looked at and searched, the generator's state. Off in Demo mode.
 //
 // Events: 'farm:call', 'farm:arrived', 'farm:moths' { killed, fled }, 'farm:mothman', 'farm:journal', 'farm:shotgun'.
@@ -51,7 +51,7 @@ export function scarecrowTurn(want, bodyYaw, maxYaw) {
   return Math.max(-maxYaw, Math.min(maxYaw, d));
 }
 
-export const FARM_FLAGS = ['farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'plotMoths'];
+export const FARM_FLAGS = ['farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'farmShotgun', 'plotMoths'];
 const GROUP = 'porch';
 
 // ---- the pure parts (tested) ----------------------------------------------------------------
@@ -224,7 +224,7 @@ export class PruittFarm {
     if (this.oakLight) this.oakLight.intensity = 0;
     if (this.model) {
       this.model.parts.journal.visible = !this.has('marcyJournal');
-      this.model.parts.shotgun.visible = !this.has('shotgunFound');
+      this.model.parts.shotgun.visible = !this.has('farmShotgun');
     }
   }
 
@@ -290,6 +290,9 @@ export class PruittFarm {
       const p = this.player.position;
       this.model.group.visible = Math.hypot(p.x - this.frame.x, p.z - this.frame.z) < (this.drawDistance?.() ?? 400) + this.fc.radius;
       if (this.model.group.visible) this.turnScarecrow();
+      // Nov 24: the journal and the gun shown only while they're there to take (a flag set elsewhere hides them too).
+      this.model.parts.journal.visible = !this.has('marcyJournal');
+      this.model.parts.shotgun.visible = !this.has('farmShotgun');
     }
     if (!playing) {
       this.hud.prompt = '';
@@ -519,7 +522,7 @@ export class PruittFarm {
     const h = this.fc.hold;
     if (dist('generator') < r + 0.3) return { key: 'generator', prompt: `Hold ${X}: ${this.generatorOn ? "shut Earl's generator down" : 'start the generator'}`, seconds: h.generator, act: () => this.switchGenerator() };
     if (!this.has('marcyJournal') && dist('journal') < r) return { key: 'journal', prompt: `Hold ${X}: take the journal from the table`, seconds: h.take, act: () => this.takeJournal() };
-    if (!this.has('shotgunFound') && dist('shotgun') < r) return { key: 'shotgun', prompt: `Hold ${X}: take Earl's shotgun down`, seconds: h.take, act: () => this.takeShotgun() };
+    if (!this.has('farmShotgun') && dist('shotgun') < r) return { key: 'shotgun', prompt: `Hold ${X}: take Earl's shotgun down`, seconds: h.take, act: () => this.takeShotgun() };
     for (const s of this.data.searches) {
       if (this.searched.has(s.id) || dist(s.spot) >= r) continue;
       return { key: s.id, prompt: `Hold ${X}: ${s.prompt}`, busy: 'Searching…', seconds: s.seconds ?? 1.2, act: () => this.search(s) };
@@ -561,7 +564,7 @@ export class PruittFarm {
   }
 
   takeShotgun() {
-    this.set('shotgunFound');
+    this.set('farmShotgun'); // Nov 24: its own flag (shotgunFound is the campsite's, set by skips: it hid this prompt)
     if (this.model) this.model.parts.shotgun.visible = false;
     this.combat.giveWeapon('shotgun', this.fc.shotgunShells);
     // (Nov 15: no pickup line: its card says it.)
