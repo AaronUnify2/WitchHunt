@@ -322,7 +322,7 @@ describe('the figure at the campers\' fire (plan #19)', () => {
       cc: config.campsite, data: campsiteData, // (Nov 23: the Screamer's beat is Day 2's dawn again)
       frame: { x: 0, z: 0, fx: 0, fz: 1, rx: 1, rz: 0 },
       clearing: { x: 0, z: 0, radius: 20 },
-      enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 1, maxHealth: 1, burrow() { this.gone = true; } }) },
+      enemies: { spawnZombie: (x, z, o) => (spawned.push(o), { alive: true, mode: o.mode, x, z, health: 880, maxHealth: 880, burrow() { this.gone = true; } }) },
       progress: { has: (f) => flags.has(f) },
       clock: { phase: 'day' }, dialogue: { play: (id) => said.push(id) }, figureSent: false, figure: null,
       combat: { sfx: { play: (n) => sounds.push(n) } },
@@ -340,17 +340,52 @@ describe('the figure at the campers\' fire (plan #19)', () => {
     c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
     expect(spawned).toHaveLength(1 + config.campsite.screamerFigure.rise);
     expect(spawned.slice(1).every((o) => o.rise && o.mode === 'chase')).toBe(true);
+    expect(sounds).toEqual(['screamerCall', 'rise', 'rise']); // Nov 23: its scream, the dirt breaking
+    // Nov 24 (Aaron: hang around until it takes 500 damage): it stays at the fire, rooted, to be shot at.
+    const df = config.campsite.dawnFigure;
+    expect(df.leaveAfterDamage).toBe(500);
+    expect(figure.gone).toBeUndefined();
+    expect(c.figure).toBe(figure);
+    figure.mode = 'chase'; // a hit sets it chasing...
+    c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
+    expect(figure.mode).toBe('linger'); // ...it holds its ground
+    // It screams again on its timer (rescream), bringing a couple more, at most `max` times.
+    const before = spawned.length;
+    for (let t = 0; t < df.rescream.every * (df.rescream.max + 2); t += 0.5) c.updateDawnFigure({ x: 0, z: -25 }, 0.5);
+    expect(spawned.length - before).toBe(df.rescream.rise * df.rescream.max);
+    expect(figure.gone).toBeUndefined();
+    // 499 taken: still there; 500: back into the ground, and Ellen's line.
+    figure.health = figure.maxHealth - 499;
+    c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
+    expect(figure.gone).toBeUndefined();
+    figure.health = figure.maxHealth - 500;
+    c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
     expect(figure.gone).toBe(true);
     expect(c.figure).toBe(null);
     expect(said).toEqual(['day2.figure.ellen']);
-    expect(sounds).toEqual(['screamerCall', 'rise', 'rise']); // Nov 23: its scream, the dirt breaking
+    const after = spawned.length;
     c.updateDawnFigure({ x: 0, z: -25 }, 0.1);
-    expect(spawned).toHaveLength(1 + config.campsite.screamerFigure.rise); // once
+    expect(spawned).toHaveLength(after); // once
+  });
+
+  it('goes if Tom rides off and leaves it (Nov 24)', () => {
+    const c = Object.create(Campsite.prototype);
+    const said = [];
+    const z = { alive: true, mode: 'linger', x: 0, z: 0, health: 880, maxHealth: 880, burrow() { this.gone = true; } };
+    Object.assign(c, {
+      cc: config.campsite, cutscenes: null, dialogue: { play: (id) => said.push(id) },
+      figure: z, figureHanging: true, figureRoot: { x: 0, z: 0 }, figureCalls: 9, figureCallIn: 0,
+    });
+    c.updateFigureHanging(z, { x: 0, z: -50 }, 50, config.campsite.dawnFigure, 0.1);
+    expect(z.gone).toBeUndefined();
+    c.updateFigureHanging(z, { x: 0, z: -95 }, 95, config.campsite.dawnFigure, 0.1);
+    expect(z.gone).toBe(true);
+    expect(said).toEqual(['day2.figure.ellen']);
   });
 
   // Nov 23 (Aaron, play-test: the mutant at Day 2's dawn is "too intense"): the Screamer's sighting again.
   it('is the Screamer at Day 2\'s dawn, not the mutant', () => {
-    expect(config.campsite.dawnFigure).toEqual(config.campsite.screamerFigure);
+    expect(config.campsite.dawnFigure).toMatchObject(config.campsite.screamerFigure); // (Nov 24: and it stays to be shot)
     expect(config.campsite.dawnFigure.variant).toBe('screamer');
   });
 

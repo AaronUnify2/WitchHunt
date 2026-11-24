@@ -2,7 +2,7 @@
 
 ## Newest: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
 
-**Where things stand:** everything is on `main`. **1528 tests pass** and the build is clean. Aaron play-tested and sent notes all day; every one is built and pushed (PLAYTEST round 85, OPEN_QUESTIONS #789-796). **Waiting on:** his play of the new camcorder tape, and his Suno credits for **test 3** (`docs/AUDIO_CUES.md`: the tape's nine sounds, `tomBreath`, and test 2's gaps).
+**Where things stand:** everything is on `main`. **1529 tests pass** and the build is clean. (Late Nov 24: Day 2's dawn Screamer stays at the fire until it's taken 500: `config.campsite.dawnFigure`.) Aaron play-tested and sent notes all day; every one is built and pushed (PLAYTEST round 85, OPEN_QUESTIONS #789-796). **Waiting on:** his play of the new camcorder tape, and his Suno credits for **test 3** (`docs/AUDIO_CUES.md`: the tape's nine sounds, `tomBreath`, and test 2's gaps).
 
 **Done today (STATUS's top entries have the detail):**
 - **The gas station:** the mutant's punches and charge don't set the pumps off (`config.gasStation.pumps.mutantSetsOff`: the leap only; impacts carry a `kind`). A **police zombie** stands by the road's cruiser (the sheriff's pistol) to lure Tom (`config.gasStation.policeZombie`). **The mutant down:** a beat after the kill, Tom looks at the body, then an eased swivel to the witch, who stands at the first spot round the treeline in clear sight of him (`encounters/gasWitchSpot.js`), facing him through the sting; 9.6 s. **Earl's carved Bigfoot** is the real Bigfoot's figure in wood (`render/bigfootStatue.js`).
@@ -63,7 +63,7 @@
 - **To get the gas station's mutant going headless:** after `activate('new')`, teleport Tom to frame (3.3, -7.4) (in the centre aisle, inside `wake.aisle` of it); (1.9, -6.6) is short of the wake line. Step `game.update` yourself: the cutscene's world runs, so the throw happens in those steps.
 - **Headless runs slowly:** cutscene time lags real time unless you step `game.update(1/30)` yourself; render every step if you screenshot post effects (the glitch's static decays in `render`).
 
-**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16. Next numbers: OPEN_QUESTIONS #797.
+**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16. Next numbers: OPEN_QUESTIONS #798.
 
 **What the next session does:** ask Aaron for any notes from his play (rule 10; fix those first). Then, when his Suno credits refresh: hook up each new upload (check sets split cleanly: read the loudness, cut at `config.sfx.slices` where they don't; check loops; set levels), in the order DESIGN "Audio direction" lists under **Still to do** (the night music and the batch's gaps first, then guns and hits, then the gas station's own sounds and Earl's scanner voice). Write him new prompts for each batch as multi-take sets (`docs/AUDIO_CUES.md` shows the wording that works). Otherwise, whatever he asks for.
 

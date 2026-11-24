@@ -143,6 +143,7 @@ export class Campsite {
     this.figure = null;
     this.escort = []; // Nov 16: the dead round Day 2's mutant
     this.dawnBoxGiven = false;
+    this.figureHanging = false; // Nov 24
     this.searched = new Set();
     this.arrived = false;
     this.camcorderFound = false;
@@ -301,6 +302,11 @@ export class Campsite {
     if (z.screamT > 0) z.screamT -= dt; // the scream's pose (Zombie.frame)
     if (!z.alive) {
       this.figure = null;
+      this.figureHanging = false;
+      return;
+    }
+    if (this.figureHanging) {
+      this.updateFigureHanging(z, p, d, df, dt);
       return;
     }
     // Rooted to its spot, turned the way the beat wants (the brain turns it toward its goal: ZombieBrain's linger).
@@ -332,9 +338,10 @@ export class Campsite {
   }
 
   // The scream (the cutscene's emit; skipped before it, or no cutscene: as it ends).
-  figureScream() {
+  figureScream(count = null) {
     const z = this.figure;
     const df = this.cc.dawnFigure;
+    const rise = count ?? df.rise ?? 3;
     if (!z?.alive || this.figureScreamed) return;
     this.figureScreamed = true;
     const p = this.player.position;
@@ -343,9 +350,9 @@ export class Campsite {
     z.screamT = df.screamSeconds ?? 2.8;
     this.combat?.sfx?.play('screamerCall', z);
     const [r0, r1] = df.ring ?? [3, 5.5];
-    for (let i = 0; i < (df.rise ?? 3); i++) {
+    for (let i = 0; i < rise; i++) {
       // Round it, on the open side of the fire.
-      const a = this.figureFacing + (i - ((df.rise ?? 3) - 1) / 2) * 1.5;
+      const a = this.figureFacing + (i - (rise - 1) / 2) * 1.5;
       const r = r0 + ((r1 - r0) * ((i * 7) % 3)) / 2;
       const x = z.x + Math.sin(a) * r;
       const zz = z.z + Math.cos(a) * r;
@@ -356,12 +363,46 @@ export class Campsite {
     this.bus?.emit('campsite:screamed', {});
   }
 
+  // As the cutscene ends (or it's shot first): it screams, then (Nov 24, Aaron) stays at the fire to be shot at.
   figureLeaves() {
     const z = this.figure;
     if (!z) return;
     this.figureScream();
-    if (z.alive) z.burrow?.();
+    if (!z.alive) return this.figureGone();
+    const df = this.cc.dawnFigure;
+    if (!(df.leaveAfterDamage > 0)) return this.figureGone(true);
+    this.figureHanging = true;
+    this.figureRoot = { x: z.x, z: z.z };
+    this.figureCalls = 0;
+    this.figureCallIn = df.rescream?.every ?? 0;
+  }
+
+  // Nov 24: hanging around at the fire: rooted, turned to Tom, screaming again now and then; it goes once it's
+  // taken leaveAfterDamage, or he's left.
+  updateFigureHanging(z, p, d, df, dt) {
+    z.mode = 'linger'; // a hit would set it chasing: it holds its ground
+    z.linger = { x: this.figureRoot.x, z: this.figureRoot.z, r: 0.8 };
+    z.pace = 0;
+    z.goalX = z.x + (p.x - z.x) * 6;
+    z.goalZ = z.z + (p.z - z.z) * 6;
+    z.hasGoal = true;
+    if (z.maxHealth - z.health >= df.leaveAfterDamage || d > (df.leaveAt ?? Infinity)) return this.figureGone(true);
+    const rs = df.rescream;
+    if (!rs || this.figureCalls >= (rs.max ?? 0) || this.cutscenes?.active) return;
+    this.figureCallIn -= dt;
+    if (this.figureCallIn > 0) return;
+    this.figureCalls++;
+    this.figureCallIn = rs.every;
+    this.figureScreamed = false;
+    this.figureScream(rs.rise);
+  }
+
+  // It goes: back into the ground (if it's still standing), and Ellen's line.
+  figureGone(burrow = false) {
+    const z = this.figure;
+    if (burrow && z?.alive) z.burrow?.();
     this.figure = null;
+    this.figureHanging = false;
     this.dialogue?.play('day2.figure.ellen');
   }
 
@@ -876,6 +917,7 @@ export class Campsite {
       this.figureSent = false;
       this.figureShown = false;
       this.figureScreamed = false;
+      this.figureHanging = false; // Nov 24
       this.dawnAwake = false;
       this.mutantTurned = false;
       const s = this.retrySpot();

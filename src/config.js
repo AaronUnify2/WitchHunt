@@ -4191,7 +4191,12 @@ export const config = {
     // Nov 23 (Aaron, play-test: "there shouldn't be a mutant in the campground on day two morning. It's too
     // intense"; his pick of the options): back to the Screamer's sighting (screamerFigure above): it screams, three
     // of the dead claw up and come, and it sinks back into the ground. Night 2 is still its fight.
-    dawnFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8 },
+    // Nov 24 (Aaron: "Hang around until it takes ... 500 damage? Currently the player doesn't get a very good look at
+    // it before it disappears, and it's always satisfying to shoot something"): after its scream it stays at the
+    // fire, rooted, facing Tom, and burrows once it's taken leaveAfterDamage (it has about 880 on Day 2), or when
+    // he's gone past leaveAt metres from the clearing. rescream: it screams again every `every` s, bringing `rise`
+    // more of the dead, at most `max` times (rise 0: the scream alone).
+    dawnFigure: { enabled: true, variant: 'screamer', at: [0.3, -1.9], spawnAt: 70, showAt: 30, rise: 3, ring: [3, 5.5], screamSeconds: 2.8, leaveAfterDamage: 500, leaveAt: 90, rescream: { every: 10, rise: 2, max: 2 } },
     // Nov 16: and Wyatt's box from the tower at Day 2's dawn (the morning is rifle and shovel only).
     dawnBox: { rounds: 20 },
     look: {
