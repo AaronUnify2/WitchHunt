@@ -745,3 +745,13 @@ describe("Aaron's second play, Nov 14: Day 3 without the trip to the gate", () =
     expect(police.gives.door[0].weapon).toBe('pistol');
   });
 });
+
+// Nov 24 (Aaron: too many things to interact with in the Pruitts' house; cut the three least engaging).
+describe('the Pruitt house, pared down (Nov 24)', () => {
+  it('keeps the journal, the shotgun, the two searches, the drawings and the beds; not the photos, the map or the marks', () => {
+    const looks = farmData.looks.map((l) => l.id);
+    for (const gone of ['photos', 'map', 'marks']) expect(looks).not.toContain(gone);
+    for (const kept of ['fridge', 'beds', 'mailbox']) expect(looks).toContain(kept);
+    expect(farmData.searches.map((s) => s.id).sort()).toEqual(['pantry', 'sideboard']);
+  });
+});

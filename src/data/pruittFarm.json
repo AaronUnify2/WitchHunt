@@ -1,5 +1,6 @@
 {
   "_note": "The Pruitt farm (Round 2; encounters/PruittFarm.js; render/pruittFarmModel.js). Every text is a draft for Aaron. looks: things in and round the house that say something when Tom looks at them (hold X): spot (a place in the set), prompt, text; nothing is taken. searches: hold-X searches with loot (gives: guaranteed). roost: where the porch's moths hang, in the farm's frame: [x, height above the ground, z, facing in degrees].",
+  "_cutLooks": "Nov 24 (Aaron: the Pruitt house has too many things to interact with inside; cut the 3 least engaging; my pick): the photographs (the family is already met on Earl's tape), Earl's map (its I saw it too is Marcy's journal's point, told better there) and the door frame's pencil marks. Their props stay as scenery (pruittFarmModel's spots).",
   "looks": [
     {
       "id": "mailbox",
@@ -8,34 +9,16 @@
       "text": "PRUITT, in a child's paint. The flag's up. Nobody has come for the mail."
     },
     {
-      "id": "photos",
-      "spot": "photos",
-      "prompt": "look at the photographs",
-      "text": "The Pruitts, in frames off the gas station's own rack. Earl in his red cap in every one, grinning like he's won something. Marcy has her arm through his. Two children, squinting into the sun."
-    },
-    {
       "id": "fridge",
       "spot": "fridge",
       "prompt": "look at the drawings",
       "text": "Crayon drawings under magnets. A tall brown shape among the trees, waving. In a child's letters: DADDYS FRIEND."
     },
     {
-      "id": "map",
-      "spot": "map",
-      "prompt": "look at the map",
-      "text": "A county map, pinned and re-pinned. Earl's sightings in red ink, every one dated. Beside a few of them, in blue, in another hand: I saw it too."
-    },
-    {
       "id": "beds",
       "spot": "beds",
       "prompt": "look at the children's beds",
       "text": "Two small beds, made. A torch is gone from its hook by the door. The window is open, and there's a chair pulled up under it."
-    },
-    {
-      "id": "marks",
-      "spot": "marks",
-      "prompt": "look at the door frame",
-      "text": "Pencil marks up the door frame, a date beside each. The highest is from this spring."
     }
   ],
   "searches": [

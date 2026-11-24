@@ -15,9 +15,9 @@
 //  3. The Mothman, briefly (mothmanGlimpsed): something huge in the dead oak across the yard, watching;
 //     it throws its wings wide, screams and is gone. Those were its young.
 //  4. The house: Marcy's journal on the kitchen table (she believed him; the family loved him), Earl's
-//     shotgun on its pegs (shotgunFound: it used to be the campsite's), the pantry, and things that
-//     only say something: the photographs, the children's drawings, Earl's map, the beds, the door
-//     frame, the mailbox.
+//     shotgun on its pegs (shotgunFound: it used to be the campsite's), the pantry and the sideboard, and
+//     things that only say something: the children's drawings, the beds, the mailbox (Nov 24: the
+//     photographs, Earl's map and the door frame cut, Aaron: too many).
 //  5. The family plot, down the track: what the witch buried there on Night 2 is still in the ground,
 //     and more moths come to its glow as Tom reaches it. Dug up (the director's own dig), the way on
 //     is the tear in the army's fence.
