@@ -2,7 +2,7 @@
 
 ## Newest: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
 
-**Where things stand:** everything is on `main`. **1512 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
+**Where things stand:** everything is on `main`. **1514 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
 
 **Read first:** DESIGN.md "Audio direction" (the section "Real audio (Suno), as built": how it works, the files in, **what's left**), then `docs/AUDIO_CUES.md` (every file name and Suno prompt). STATUS's top entries have the detail.
 
@@ -19,6 +19,7 @@
 - **Checkpoints (Nov 23 evening):** permadeath is gone (`config.save.checkpoints`). `core/checkpoints.js` and `Game.writeCheckpoint` / `retryFromCheckpoint` / `clearSaves`: a second slot written at every autosave and every dusk; death or the station falling copies it into the run's save and offers the retry (B: a new run). Clear saves with `clearSaves()` (both slots), not `saves.clear()`, except where only the run's save should go (`station:overrun`). A checkpoint save carries `checkpoint: { label, phase, day, retried }`; a dusk one re-emits `phase:dusk` in `applySave`.
 - **Day 2's dawn is the Screamer's sighting again** (`config.campsite.dawnFigure`; the mutant's set-up kept as `mutantFigure`).
 - **Debug menu, Audio:** sound files on / off; play an ambience call now.
+- **Headless: debug items by label** need the whole name: `/put me on it/` finds *Alien quad: put me on it* first (`/Dozer: put me on it/`). Items are `{ label, onSelect }`; tabs are rows with `sub`.
 - **Cutscene `lookAt` can take `seconds` (Nov 24):** an eased turn of exactly that long, then it holds on the target (`easeTurn`, `angleBetween` in `story/Cutscenes.js`); without it the old steady `rate`.
 - **The mutant's impacts have a `kind` (Nov 24):** `mutant:impact` carries `slam`, `backhand`, `spin`, `leap` or `charge`; the pumps listen only to `config.gasStation.pumps.mutantSetsOff` (the leap alone: Aaron spared them the charge too). Vehicles still take any.
 

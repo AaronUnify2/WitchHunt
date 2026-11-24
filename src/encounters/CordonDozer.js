@@ -72,6 +72,7 @@ export class CordonDozer {
     this.bus.on('stormShelter:maps', (e) => this.takeMaps(e?.device));
     this.bus.on('paper:closed', ({ id }) => id === 'earlMaps' && this.mapsRead());
     this.bus.on('dozer:mounted', () => this.onMounted());
+    this.bus.on('dozer:debugReady', () => this.debugReady()); // Nov 24: summoned from the debug menu, ready to drive
     this.bus.on('player:respawned', () => this.reset());
     this.reset();
   }
@@ -245,6 +246,14 @@ export class CordonDozer {
     this.set('dozerBattery');
     this.sfx?.play('pickup');
     this.notify?.("The dozer's panel lights come up");
+    this.unlockIfReady();
+  }
+
+  // Nov 24 (Aaron): the debug menu's dozer comes with its keys and battery (as the story item below).
+  debugReady() {
+    this.set('dozerKey');
+    this.set('dozerBattery');
+    this.site?.setBattery(false);
     this.unlockIfReady();
   }
 

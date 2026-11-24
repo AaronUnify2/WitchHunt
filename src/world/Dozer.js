@@ -1244,6 +1244,12 @@ export class Dozer extends Quad {
 
   // ---- debug ------------------------------------------------------------------------------------------
 
+  // Debug: ready to drive (Nov 24).
+  debugReady() {
+    this.bus.emit('dozer:debugReady');
+    this.locked = false;
+  }
+
   bring() {
     if (this.riding) return;
     const p = this.player;
@@ -1288,9 +1294,15 @@ export class Dozer extends Quad {
       });
     }
     const cat = menu.category(DEBUG.experimental);
-    cat.addItem('Dozer: bring it here', () => this.bring());
-    cat.addItem('Dozer: put me on it', () => {
+    // Nov 24 (Aaron: "when I summon the bulldozer from the debug list it already has the keys etc, so I can
+    // drive right away"): summoned, it's ready: the story's keys and battery (CordonDozer listens), unlocked.
+    cat.addItem('Dozer: bring it here (keys in, battery fitted)', () => {
+      this.debugReady();
+      this.bring();
+    });
+    cat.addItem('Dozer: put me on it (keys in, battery fitted)', () => {
       if (this.player.riding && this.player.riding !== this) return;
+      this.debugReady();
       if (this.stored) this.bring();
       this.mount();
     });
