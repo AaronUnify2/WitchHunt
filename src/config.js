@@ -4302,6 +4302,12 @@ export const config = {
     zombieWalkSpeed: 1.1, // metres per second their walk cycle plays at
     zombieLampScale: 1, // the camera's lamp on a zombie sprite, x actorLight
     witchGlideSpeed: 3, // m/s her rags stream at while she moves
+    // Nov 24 (the camcorder's tape, Aaron: "The witch should be moving incredibly fast, killing the campers with
+    // swipes"): her swipe's arms-up and slash (s), her summoning's rise (s), and the afterimages behind her
+    // (story/cutsceneSmear.js): how many, how often, how long each lasts, how dark, the speed they start at.
+    witchSwipe: { up: 0.16, down: 0.14 },
+    witchSummonSeconds: 1.2,
+    smear: { count: 7, every: 0.025, life: 0.3, opacity: 0.6, minSpeed: 6, color: 0x050605 },
     // Box stand-ins: a figure with no real model yet (Session 13: only the
     // camper) is drawn as one of these. Metres, colours.
     figures: {
@@ -5746,6 +5752,29 @@ export const config = {
       head: 1.3,
       idle: 'hug',
       colours: { skin: 0xd0a88c, top: 0x6a3a4a, sleeve: 0x6a3a4a, forearm: 0x6a3a4a, trousers: 0x2a2a34, shoes: 0x6a5a5a, hair: 0x8a6034, eyes: 0x141010, brows: 0x5a3a24 },
+    },
+    // Nov 24: the campers on their camcorder's tape (clip.camcorder): three at the fire, and the one holding the
+    // camera (only his hand is seen). Four: the four dead Tom finds standing round the fire on Day 1.
+    camperDan: {
+      height: 1.8,
+      head: 1.04,
+      colours: { skin: 0xc8a084, top: 0x7a2a22, sleeve: 0x7a2a22, forearm: 0x7a2a22, trousers: 0x3a4a6a, shoes: 0x4a3a2a, hair: 0x4a3018, cap: 0x2a3a2a, eyes: 0x1a1410, brows: 0x3a2414 },
+    },
+    camperJess: {
+      height: 1.66,
+      head: 1.06,
+      colours: { skin: 0xd8b094, top: 0x3a5a7a, sleeve: 0x3a5a7a, forearm: 0x3a5a7a, trousers: 0x2a2a34, shoes: 0x7a7a72, hair: 0xa07a3a, eyes: 0x141010, brows: 0x6a4a24 },
+    },
+    camperMarcus: {
+      height: 1.84,
+      head: 1.03,
+      idle: 'pockets',
+      colours: { skin: 0x7a5038, top: 0x6a6a3a, sleeve: 0x6a6a3a, forearm: 0x6a6a3a, trousers: 0x2c3648, shoes: 0x2a2a2a, hair: 0x141010, eyes: 0x100c0a, brows: 0x141010 },
+    },
+    camperKyle: {
+      height: 1.76,
+      head: 1.04,
+      colours: { skin: 0xc8a08a, top: 0x8a6a2a, sleeve: 0x8a6a2a, forearm: 0x8a6a2a, trousers: 0x3a3a30, shoes: 0x4a3a2a, hair: 0x6a4a2a, eyes: 0x1a1410, brows: 0x4a3018 },
     },
     mib: {
       height: 1.86,

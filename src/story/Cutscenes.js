@@ -33,6 +33,7 @@ import { ZombieRenderer } from '../render/ZombieRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 import { buildSkyActor, flightAt, SkyFx } from './cutsceneFlight.js';
 import { buildPortal } from '../render/portalFx.js';
+import { Smear } from './cutsceneSmear.js';
 
 export class Cutscenes {
   constructor(cfg, bus, data = cutsceneData) {
@@ -208,6 +209,7 @@ export class Cutscenes {
     this.current = null;
     for (const a of cur.actors.values()) {
       a.mesh.removeFromParent();
+      a.smearFx?.dispose();
       a.dispose();
     }
     cur.fx?.dispose();
@@ -252,6 +254,12 @@ export class Cutscenes {
 
   advance(dt) {
     const cur = this.current;
+    // Nov 24: a held picture (a 'freeze' event): the tape's time stands still; the treatment (its glitch) runs on.
+    if (cur.freezeLeft > 0) {
+      cur.freezeLeft -= dt;
+      this.updateTreatment();
+      return;
+    }
     const from = cur.t;
     cur.t += dt;
     for (const e of eventsDue(cur.data.tracks, from, cur.t)) this.fire(e);
@@ -385,6 +393,7 @@ export class Cutscenes {
       look.z += Math.cos(t * 1.9) * 0.5 * s;
     }
     cam.lookAt(look.x, look.y, look.z);
+    if (c.roll) cam.rotateZ((c.roll * Math.PI) / 180); // Nov 24: the camcorder lying on its side
     const far = cur.data.far ?? this.drawDistance() + this.cfg.render.farMargin; // Session 17: a far shot (the dogfight) sets its own
     // Session 17: a scope shot sees past what's close (the trees round the outpost, the tower): its own near plane.
     const near = cur.data.near ?? 0.1;
@@ -462,7 +471,39 @@ export class Cutscenes {
         if (actor) actor.move = { from: { ...actor.pos }, to: this.at(e.anchor ?? actor.anchor, e.to), t: 0, seconds: e.seconds ?? 1 };
         break;
       case 'pose':
-        if (actor) actor.pose = e.pose;
+        if (actor) {
+          actor.pose = e.pose;
+          actor.poseT = 0;
+          actor.poseRate = e.rate ?? null;
+          if (e.toward || e.to) this.faceActor(actor, e);
+        }
+        break;
+      // Nov 24 (the camcorder's tape): turn to another actor or a point; a spray off a strike; the picture held
+      // (time stops, the glitch runs on over it); afterimages behind a fast actor.
+      case 'face':
+        if (actor) this.faceActor(actor, e);
+        break;
+      case 'spray': {
+        cur.fx ??= new SkyFx(this.scene);
+        const p = actor ? actor.mesh.position : this.at(e.anchor ?? 'player', e.pos ?? [0, 0, 0]);
+        const from = e.from ? cur.actors.get(e.from)?.mesh.position : null;
+        let dir = null;
+        if (from) {
+          const d = Math.hypot(p.x - from.x, p.z - from.z) || 1;
+          dir = { x: (p.x - from.x) / d, z: (p.z - from.z) / d };
+        }
+        cur.fx.spray({ x: p.x, y: p.y + (e.y ?? 1.25), z: p.z }, { dir, count: e.count, speed: e.speed, color: e.color });
+        break;
+      }
+      case 'freeze':
+        cur.freezeLeft = e.seconds ?? 0.3;
+        if (e.glitch) this.postFX.glitch(e.glitch, cur.freezeLeft + 0.1);
+        break;
+      case 'smear':
+        if (actor) {
+          actor.smearFx ??= new Smear(this.scene, actor.mesh, this.cc.smear);
+          actor.smearFx.on = e.on !== false;
+        }
         break;
       case 'show':
       case 'hide':
@@ -638,6 +679,14 @@ export class Cutscenes {
 
   // ---- actors (placeholders) ----------------------------------------------------------------------------
 
+  // Nov 24: an actor turned to face another (e.toward: its id) or a point in its anchor's frame (e.to).
+  faceActor(a, e) {
+    const at = e.toward ? this.current.actors.get(e.toward)?.mesh.position : this.at(e.anchor ?? a.anchor, e.to);
+    if (!at) return;
+    const p = a.mesh.position;
+    if (Math.hypot(at.x - p.x, at.z - p.z) > 0.01) a.mesh.rotation.y = Math.atan2(at.x - p.x, at.z - p.z);
+  }
+
   // spec: { id, kind: 'figure' | 'ring' | 'glow' | 'disc' | 'box' | 'eyes' | 'smoke',
   // look (a figure's: config.cutscenes.figures), anchor, pos, yaw (degrees,
   // from the anchor's facing), size, color, hidden }.
@@ -662,6 +711,9 @@ export class Cutscenes {
       scale: 1,
       baseScale: mesh.scale.x, // Session 17: a sky actor's size is its scale
       pose: 'stand',
+      poseT: 0, // Nov 24: seconds in the pose (the witch's swipe and summon run on it)
+      poseRate: null, // Nov 24: how fast a person goes into it (the dead rising slowly)
+      smearFx: null, // Nov 24: afterimages (cutsceneSmear.js)
       poseAmount: 0,
       move: null,
       flare: null,
@@ -707,6 +759,24 @@ export class Cutscenes {
       mesh,
       animate: (dt, a) => {
         const kneel = a.pose === 'kneel' || a.pose === 'down';
+        // Nov 24 (the camcorder's tape): her swipe (arms up, then slashed down, at the tape's speed) and her
+        // summoning (arms flung up, head back), as the game's attack poses, timed on the pose.
+        const ws = this.cc.witchSwipe ?? { up: 0.16, down: 0.14 };
+        if (a.pose === 'swipe' || a.pose === 'summon') {
+          w.state = 'attacking';
+          w.action = a.pose;
+          if (a.pose === 'swipe') {
+            w.struck = a.poseT >= ws.up;
+            w.actionProgress = w.struck ? Math.min(1, (a.poseT - ws.up) / ws.down) : Math.min(1, a.poseT / ws.up);
+          } else {
+            w.struck = false;
+            w.actionProgress = Math.min(1, a.poseT / (this.cc.witchSummonSeconds ?? 1.2));
+          }
+          w.moved = 0;
+          r.update(w, dt, null, Infinity);
+          return;
+        }
+        w.action = null;
         w.state = kneel ? 'planting' : 'roaming';
         planting = kneel ? planting + dt : 0;
         w.plantProgress = Math.min(1, planting / this.cfg.witch.plantSeconds);
@@ -769,7 +839,8 @@ export class Cutscenes {
     return {
       mesh,
       animate: (dt, a) => {
-        r.setPose(0, a.move ? 'walk' : a.pose === 'kneel' ? 'kneel' : a.pose === 'down' ? 'down' : 'stand');
+        // Nov 24: any pose the family renderer knows (log, wave, cower, dead...), at the event's rate.
+        r.setPose(0, a.move && a.pose !== 'dead' ? 'walk' : a.pose ?? 'stand', a.poseRate);
         r.update(dt, null);
       },
       // The camera's lamp on them: a grey glow (their colours are in the vertices).
@@ -810,6 +881,7 @@ export class Cutscenes {
       a.poseAmount += (want - a.poseAmount) * Math.min(1, dt * 4);
       const bob = a.move ? Math.abs(Math.sin(a.walk)) * 0.06 : 0;
       m.position.set(a.pos.x, a.pos.y + bob, a.pos.z);
+      a.poseT += dt;
       if (a.model) a.model.animate(dt, a);
       else if (a.spec.kind === 'figure') {
         const kneel = Math.min(1, a.poseAmount);
@@ -818,6 +890,7 @@ export class Cutscenes {
         m.rotation.x = -down * (Math.PI / 2) * 0.95;
       }
       if (a.flare) this.flareStep(a, dt);
+      a.smearFx?.update(dt);
     }
     this.current.fx?.update(dt, this.current.actors);
     this.zombieSprites.update(this.zombieList, this.camera.position, Infinity);

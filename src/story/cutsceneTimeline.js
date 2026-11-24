@@ -75,6 +75,7 @@ export function cameraAt(keys, t, defaults = { fov: 60, shake: 0 }) {
     trackRate: a.trackRate ?? null,
     fov: lerp(a.fov ?? defaults.fov, b.fov ?? a.fov ?? defaults.fov, k),
     shake: lerp(a.shake ?? defaults.shake, b.shake ?? a.shake ?? defaults.shake, k),
+    roll: lerp(a.roll ?? 0, b.roll ?? a.roll ?? 0, k), // Nov 24: degrees about the view (a camera lying on its side)
   };
 }
 
@@ -93,7 +94,7 @@ export function cutsceneLength(cs) {
 }
 
 const STYLES = ['cctv', 'firstPerson', 'sweep', 'black'];
-const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode', 'caption', 'portal', 'music']; // Nov 2026: portal (the cold open's); Session 17: fly, beam, trail and explode, things in the sky; Nov 16: caption (the trailer's)
+const EVENTS = ['line', 'text', 'move', 'pose', 'show', 'hide', 'flare', 'glitch', 'fade', 'emit', 'lookAt', 'shake', 'osd', 'sfx', 'fly', 'beam', 'trail', 'explode', 'caption', 'portal', 'music', 'face', 'spray', 'freeze', 'smear']; // Nov 24: face, spray, freeze, smear (the camcorder's tape); Nov 2026: portal (the cold open's); Session 17: fly, beam, trail and explode, things in the sky; Nov 16: caption (the trailer's)
 
 // Checks the cutscenes file: unique ids, known styles, looks and events,
 // lines that exist, actors that exist. Returns a list of problems.

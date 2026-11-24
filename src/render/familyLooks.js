@@ -216,6 +216,45 @@ const LOOKS = {
     b.tubes.push(['head', 0, 1.63, -0.09, 0, 1.47, -0.12, 0.024, 0.015, 'hair']); // a ponytail
     return b;
   },
+  // Nov 24: the campers on their camcorder's tape (clip.camcorder), at their fire at night. Plain, by the fire's
+  // light and the camera's lamp: Dan in a beanie and a red flannel, Jess with a ponytail in a puffer jacket,
+  // Marcus in a hood, Kyle (holding the camera) in a canvas jacket.
+  camperDan() {
+    const b = body({ sh: 1.02, hip: 1, bulk: 1.06, loose: 1.15 });
+    b.masses.push(hairCap(1.63, -0.02, [0.096, 0.094, 0.104]));
+    b.masses.push(['head', null, 0, 1.672, -0.012, 0.104, 0.062, 0.11, 'cap']); // the beanie, pulled down
+    return {
+      ...b,
+      paint(key, q, out) {
+        if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
+        const lines = (frac(q.x * 20) < 0.3 ? 1 : 0) + (frac(q.y * 20) < 0.3 ? 1 : 0);
+        out.multiplyScalar(1 - 0.25 * lines);
+      },
+    };
+  },
+  camperJess() {
+    const b = body({ sh: 0.86, hip: 1.08, waist: 0.85, female: true, bulk: 1.18, legs: 'fitted' });
+    b.masses.push(hairCap(1.632, -0.012));
+    b.tubes.push(['head', 0, 1.64, -0.09, 0, 1.46, -0.13, 0.026, 0.016, 'hair']); // a ponytail
+    return {
+      ...b,
+      // The puffer's quilting: bands round her.
+      paint(key, q, out) {
+        if ((key === 'top' || key === 'sleeve') && frac(q.y * 14) < 0.18) out.multiplyScalar(0.72);
+      },
+    };
+  },
+  camperMarcus() {
+    const b = body({ sh: 1.06, hip: 0.98, bulk: 1.08, loose: 1.2 });
+    b.masses.push(hairCap(1.632, -0.014, [0.094, 0.09, 0.1]));
+    b.masses.push(['chest', null, 0, 1.45, -0.11, 0.12, 0.075, 0.08, 'top']); // the hood down his back
+    return b;
+  },
+  camperKyle() {
+    const b = body({ sh: 1, hip: 1, bulk: 1.02 });
+    b.masses.push(hairCap(1.636, -0.01, [0.1, 0.1, 0.106]));
+    return b;
+  },
 };
 
 // The figure-kit spec for one of them. person: config.family.people[id].

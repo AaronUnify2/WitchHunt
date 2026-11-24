@@ -65,9 +65,12 @@ export class FamilyRenderer {
 
   // A pose for one of them (cutscenes, the viewer): 'stand', 'walk',
   // 'kneel' or 'down'; 'aim' (Wyatt on the tower, his rifle up).
-  setPose(i, pose) {
+  // Nov 24: rate (per second): how fast they go into it (the dead rise slowly), else config's poseRate.
+  setPose(i, pose, rate = null) {
     const p = this.people[i];
-    if (!p || p.pose === pose) return;
+    if (!p) return;
+    p.rate = rate;
+    if (p.pose === pose) return;
     p.pose = pose;
     p.poseTime = 0;
   }
@@ -82,7 +85,7 @@ export class FamilyRenderer {
       this.targetPose(p, t);
       this.lookToward(p, lookAt, dt, t);
       if (!p.cur) p.cur = Float32Array.from(t);
-      const k = Math.min(1, dt * this.cfg.poseRate);
+      const k = Math.min(1, dt * (p.rate ?? this.cfg.poseRate));
       for (let j = 0; j < t.length; j++) p.cur[j] += (t[j] - p.cur[j]) * k;
       p.list.forEach((b, j) => b.rotation.set(p.cur[j * 3], p.cur[j * 3 + 1], p.cur[j * 3 + 2]));
       const n = p.list.length * 3;
@@ -149,6 +152,62 @@ export class FamilyRenderer {
         set('neck', 0.1, 0, -0.1);
         set('kneeL', 0.1);
         set('hipL', -0.08);
+        break;
+      }
+      // Nov 24 (the camcorder's tape): the campers at their fire, and what becomes of them.
+      case 'log': {
+        // Sat on a log by the fire, leaning in, a stick held out over it (the marshmallows).
+        const sway = Math.sin(t * 0.8) * 0.03;
+        set('hipL', -1.45, 0, 0.18);
+        set('hipR', -1.45, 0, -0.18);
+        set('kneeL', 1.5);
+        set('kneeR', 1.5);
+        set('spine', 0.28 + sway);
+        set('chest', 0.1);
+        set('shoulderR', -1.1, 0.15, -0.1);
+        set('elbowR', -0.35);
+        set('shoulderL', -0.35, 0.4, 0.1);
+        set('elbowL', -1.2);
+        set('head', 0.05, sway * 3);
+        pose[n] = -0.5 * this.heightOf(p);
+        break;
+      }
+      case 'wave': {
+        // Waving at the camera: the right arm up, the hand going side to side.
+        this.poseStand(p, set, t);
+        set('shoulderR', -2.6, 0, -0.35 + Math.sin(p.poseTime * 9) * 0.25);
+        set('elbowR', -0.5);
+        set('head', -0.05, 0, 0.1);
+        break;
+      }
+      case 'cower': {
+        // Arms up over the face, turning away, knees going.
+        set('spine', 0.35);
+        set('chest', 0.2, 0.4);
+        set('shoulderR', -2.0, 0.6, -0.2);
+        set('elbowR', -2.0);
+        set('shoulderL', -2.0, -0.6, 0.2);
+        set('elbowL', -2.0);
+        set('kneeL', 0.45);
+        set('kneeR', 0.3);
+        set('hipL', -0.3);
+        set('head', 0.4, -0.5);
+        pose[n] = -0.08 * this.heightOf(p);
+        break;
+      }
+      case 'dead': {
+        // Up again and wrong: the head lolled over, arms hanging dead, a lean, and jerks every so often.
+        const jerk = Math.sin(t * 13) > 0.92 ? 0.18 : 0;
+        set('spine', 0.18 + jerk * 0.5);
+        set('chest', 0.06, 0.15);
+        set('neck', 0.35, 0, 0.45);
+        set('head', 0.2 + jerk, 0.2, 0.35);
+        set('shoulderR', 0.1 + jerk, 0, -0.02);
+        set('shoulderL', -0.05, 0, 0.12);
+        set('elbowR', -0.05);
+        set('elbowL', -0.3);
+        set('kneeL', 0.18);
+        set('hipL', -0.1);
         break;
       }
       case 'kneel':

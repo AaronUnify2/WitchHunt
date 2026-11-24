@@ -170,6 +170,8 @@ export class SkyFx {
     this.tracerGeo = new THREE.BoxGeometry(0.35, 0.35, 9);
     this.rayGeo = new THREE.CylinderGeometry(0.6, 0.6, 1, 8, 1, true).translate(0, 0.5, 0).rotateX(Math.PI / 2);
     this.blastGeo = new THREE.SphereGeometry(1, 14, 10);
+    this.drops = []; // Nov 24: the claws' sprays
+    this.dropGeo = new THREE.BoxGeometry(0.035, 0.035, 0.035);
   }
 
   // A burst of fire from one actor at another: kind 'tracer' (the plane's
@@ -196,6 +198,24 @@ export class SkyFx {
     for (let i = 0; i < 6; i++) this.puff({ x: at.x + (Math.random() - 0.5) * size * 0.5, y: at.y + (Math.random() - 0.5) * size * 0.3, z: at.z + (Math.random() - 0.5) * size * 0.5 }, 0x1e1c1a, size * 0.9, 4);
   }
 
+  // Nov 24 (the camcorder's tape): a spray off a claw strike: dark drops thrown along dir (a unit vector in
+  // the ground plane, or none: every way) and up, falling, gone in `life` seconds.
+  spray(at, { dir = null, count = 26, speed = 3.2, color = 0x3a0606, life = 0.6 } = {}) {
+    const mat = basic(color, { transparent: true, opacity: 1 });
+    (this.dropMats ??= []).push(mat);
+    for (let i = 0; i < count; i++) {
+      const m = new THREE.Mesh(this.dropGeo, mat);
+      m.position.set(at.x, at.y, at.z);
+      const a = Math.random() * Math.PI * 2;
+      const s = speed * (0.4 + Math.random() * 0.8);
+      const along = dir ? 0.7 : 0;
+      const v = new THREE.Vector3(Math.cos(a) * (1 - along) + (dir?.x ?? 0) * along, 0.4 + Math.random() * 0.9, Math.sin(a) * (1 - along) + (dir?.z ?? 0) * along).multiplyScalar(s);
+      m.scale.setScalar(0.6 + Math.random() * 1.4);
+      this.group.add(m);
+      this.drops.push({ mesh: m, v, t: 0, life: life * (0.6 + Math.random() * 0.6), mat });
+    }
+  }
+
   puff(at, color, size, life = PUFF_LIFE) {
     const mat = new THREE.SpriteMaterial({ map: puffTexture(), color, transparent: true, opacity: 0.8, depthWrite: false, fog: false });
     const s = new THREE.Sprite(mat);
@@ -215,6 +235,16 @@ export class SkyFx {
       a.trail.timer = PUFF_EVERY;
       this.puff(a.mesh.position, a.trail.color ?? 0x2a2826, a.trail.size ?? 5);
     }
+    for (const d of this.drops) {
+      d.t += dt;
+      d.v.y -= 9.8 * dt;
+      d.mesh.position.addScaledVector(d.v, dt);
+    }
+    this.drops = this.drops.filter((d) => {
+      if (d.t < d.life) return true;
+      d.mesh.removeFromParent();
+      return false;
+    });
     for (const p of this.puffs) {
       p.t += dt;
       const k = p.t / p.life;
@@ -309,6 +339,8 @@ export class SkyFx {
     this.tracerGeo.dispose();
     this.rayGeo.dispose();
     this.blastGeo.dispose();
+    this.dropGeo.dispose();
+    for (const m of this.dropMats ?? []) m.dispose();
     this.group.removeFromParent();
   }
 }

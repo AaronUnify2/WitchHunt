@@ -507,10 +507,35 @@ const ENGINE_FILES = {
 };
 
 // Nov 2026: new sounds with no recipe of their own: an older one stands in until the file's there.
-const STAND_IN = { mutantRoar: 'mutantGroan', bodyThud: 'maulThud' };
+const STAND_IN = { mutantRoar: 'mutantGroan', bodyThud: 'maulThud', witchDash: 'witchRush' }; // Nov 24: her dashes on the camcorder borrow the rush till their file
 
 // Nov 2026: held sounds (Sfx.loop) when there's no file: (s, dest) -> stop(atTime).
 const HELD = {
+  // Nov 24: the campers' fire on the camcorder: a soft roar and crackle. Placeholder for sfx/campFire.mp3.
+  campFire(s, dest) {
+    const ctx = s.ctx;
+    const t = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = s.noise;
+    src.loop = true;
+    const low = ctx.createBiquadFilter();
+    low.type = 'lowpass';
+    low.frequency.value = 520;
+    const level = ctx.createGain();
+    level.gain.value = 0.16;
+    const flick = ctx.createOscillator();
+    const depth = ctx.createGain();
+    flick.frequency.value = 7.3;
+    depth.gain.value = 0.06;
+    flick.connect(depth).connect(level.gain);
+    src.connect(low).connect(level).connect(dest);
+    src.start(t);
+    flick.start(t);
+    return (at) => {
+      src.stop(at);
+      flick.stop(at);
+    };
+  },
   // The portal idling: a low, beating drone, a wobbling filter, a crackle of noise. Placeholder for sfx/portalHum.mp3.
   portalHum(s, dest) {
     const ctx = s.ctx;
@@ -1005,6 +1030,47 @@ const RECIPES = {
     const o = s.out(pos?.x, pos?.z, 0.9, pos?.range);
     s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 380, endFreq: 2600, q: 0.9, gain: 0.42, attack: 0.12 });
     s.noiseBurst(o, { seconds: 0.55, type: 'lowpass', freq: 900, endFreq: 260, q: 0.5, gain: 0.3, attack: 0.04 });
+  },
+  // Nov 24, the camcorder's tape (placeholders till their files; docs/AUDIO_CUES.md):
+  // the campers laughing round the fire: a few bright bursts.
+  camperLaugh(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.tone(o, { seconds: 0.9, wave: 'triangle', freq: 330, endFreq: 260, gain: 0.12, vibrato: 14 });
+    s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 1400, endFreq: 1000, q: 3, gain: 0.12, attack: 0.02 });
+  },
+  // a camper screaming.
+  camperScream(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.tone(o, { seconds: 1.1, wave: 'sawtooth', freq: 820, endFreq: 560, gain: 0.14, vibrato: 22 });
+    s.noiseBurst(o, { seconds: 1.0, type: 'bandpass', freq: 2200, endFreq: 1400, q: 2, gain: 0.18, attack: 0.03 });
+  },
+  // her claws through someone: a tearing swish and a wet hit.
+  clawSlash(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 1);
+    s.noiseBurst(o, { seconds: 0.16, type: 'highpass', freq: 2000, endFreq: 5200, gain: 0.55, attack: 0.004 });
+    s.noiseBurst(o, { seconds: 0.22, type: 'lowpass', freq: 700, endFreq: 180, gain: 0.5, attack: 0.01 });
+  },
+  // the camcorder thrown: a clatter and two thumps on the ground.
+  camTumble(s) {
+    const o = s.out(undefined, undefined, 0.9);
+    s.noiseBurst(o, { seconds: 0.25, type: 'bandpass', freq: 1800, endFreq: 900, q: 1.5, gain: 0.4, attack: 0.003 });
+    s.tone(o, { seconds: 0.35, wave: 'sine', freq: 90, endFreq: 45, gain: 0.5 });
+  },
+  // someone running, breathing hard, right on the microphone.
+  runBreath(s) {
+    const o = s.out(undefined, undefined, 0.6);
+    s.noiseBurst(o, { seconds: 0.9, type: 'bandpass', freq: 900, endFreq: 600, q: 1.2, gain: 0.3, attack: 0.08 });
+  },
+  // her breath, close to the lens: a slow, wet hiss.
+  witchBreath(s) {
+    const o = s.out(undefined, undefined, 0.7);
+    s.noiseBurst(o, { seconds: 1.6, type: 'bandpass', freq: 1500, endFreq: 700, q: 2.5, gain: 0.3, attack: 0.5 });
+  },
+  // the tape chewing as the picture dies.
+  tapeChew(s) {
+    const o = s.out(undefined, undefined, 0.8);
+    s.tone(o, { seconds: 0.9, wave: 'square', freq: 220, endFreq: 40, gain: 0.12, vibrato: 40 });
+    s.noiseBurst(o, { seconds: 1.0, type: 'bandpass', freq: 2600, endFreq: 300, q: 0.8, gain: 0.3, attack: 0.01 });
   },
   // Nov 24: Tom's one long, shaky breath out over the dead mutant (gas.witch). A placeholder till its file.
   tomBreath(s) {
