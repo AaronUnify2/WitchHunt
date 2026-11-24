@@ -210,6 +210,114 @@ export class FamilyRenderer {
         set('hipL', -0.1);
         break;
       }
+      // Nov 24: the Hanged (ai/Hanged.js).
+      case 'hang': {
+        // Limp on the rope: the head over hard to one side, chin pulled up by the knot; arms dead, a little out;
+        // legs hanging together, toes down. (The body's turned on the rope by the caller.)
+        set('neck', -0.25, 0, 0.7);
+        set('head', -0.2, 0.2, 0.55);
+        set('spine', 0.05);
+        set('shoulderR', 0.05, 0, -0.12);
+        set('shoulderL', 0.05, 0, 0.14);
+        set('elbowR', -0.1);
+        set('elbowL', -0.15);
+        set('hipR', 0.05, 0, 0.02);
+        set('hipL', 0.02, 0, -0.02);
+        set('kneeR', 0.12);
+        set('kneeL', 0.08);
+        set('ankleR', 0.7);
+        set('ankleL', 0.65);
+        break;
+      }
+      case 'wake': {
+        // Its head snapping up, its arms coming up off its sides, its legs drawing up.
+        const k = Math.min(1, p.poseTime / 0.3);
+        set('neck', 0.15 * k, 0, 0.2);
+        set('head', 0.25 * k, 0, 0.15);
+        set('shoulderR', -0.9 * k, 0, -0.35);
+        set('shoulderL', -0.9 * k, 0, 0.35);
+        set('elbowR', -0.8 * k);
+        set('elbowL', -0.8 * k);
+        set('hipR', -0.5 * k);
+        set('hipL', -0.4 * k);
+        set('kneeR', 0.9 * k);
+        set('kneeL', 0.8 * k);
+        break;
+      }
+      case 'crouch': {
+        // Landed: down on its haunches, one hand to the ground, its head up.
+        set('hipR', -1.6, 0, 0.25);
+        set('hipL', -1.3, 0, -0.25);
+        set('kneeR', 2.2);
+        set('kneeL', 2.0);
+        set('ankleR', -0.5);
+        set('ankleL', -0.4);
+        set('spine', 0.8);
+        set('chest', 0.2);
+        set('neck', -0.6, 0, 0.55); // the neck broken: the head cocked over
+        set('head', -0.4, 0.2, 0.4);
+        set('shoulderR', -1.1, 0, -0.2);
+        set('elbowR', -0.3);
+        set('shoulderL', -0.5, 0.3, 0.4);
+        set('elbowL', -0.9);
+        pose[n] = -0.55 * this.heightOf(p);
+        break;
+      }
+      case 'lope': {
+        // Bent nearly double, running at you, arms reaching out ahead, too fast.
+        const c = p.poseTime * 11;
+        const sw = Math.sin(c);
+        set('spine', 0.75);
+        set('chest', 0.2);
+        set('neck', -0.65, 0, 0.55); // the neck broken: the head cocked over
+        set('head', -0.45, 0.2, 0.45);
+        set('hipR', -0.7 + sw * 0.7);
+        set('hipL', -0.7 - sw * 0.7);
+        set('kneeR', 0.9 - Math.min(0, sw) * 0.9);
+        set('kneeL', 0.9 + Math.max(0, sw) * 0.9);
+        set('shoulderR', -1.3 - sw * 0.35, 0, -0.25);
+        set('shoulderL', -1.3 + sw * 0.35, 0, 0.25);
+        set('elbowR', -0.4);
+        set('elbowL', -0.4);
+        pose[n] = -0.22 * this.heightOf(p) + Math.abs(Math.cos(c)) * 0.05;
+        break;
+      }
+      case 'claw': {
+        // Up on its toes, one arm up and back, then raked down across.
+        const k = p.poseTime;
+        const up = Math.min(1, k / 0.3);
+        const down = Math.max(0, Math.min(1, (k - 0.3) / 0.15));
+        set('spine', 0.35 + down * 0.3);
+        set('chest', 0.1, -0.4 * up + 0.8 * down);
+        set('neck', -0.4, 0, 0.55); // the neck broken: the head cocked over
+        set('head', -0.2, 0.2, 0.4);
+        set('shoulderR', -2.6 * up + 2.0 * down, 0, -0.5 + 0.4 * down);
+        set('elbowR', -0.8 * up + 0.5 * down);
+        set('shoulderL', -1.0, 0, 0.3);
+        set('elbowL', -0.6);
+        set('hipR', -0.5);
+        set('kneeR', 0.6);
+        set('hipL', 0.2);
+        pose[n] = -0.1 * this.heightOf(p);
+        break;
+      }
+      case 'climb': {
+        // Leaping back up: arms flung up over its head, reaching for the branches, legs trailing.
+        set('shoulderR', -3.0, 0, -0.2);
+        set('shoulderL', -3.0, 0, 0.2);
+        set('elbowR', -0.3);
+        set('elbowL', -0.3);
+        set('spine', -0.15);
+        set('neck', 0.4);
+        set('head', 0.3);
+        set('hipR', 0.3);
+        set('hipL', -0.2);
+        set('kneeR', 0.6);
+        set('kneeL', 0.9);
+        set('ankleR', 0.6);
+        set('ankleL', 0.6);
+        break;
+      }
       case 'kneel':
         this.poseStand(p, set, t);
         set('hipL', -1.5);

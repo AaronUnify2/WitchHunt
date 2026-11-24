@@ -734,7 +734,7 @@ export const config = {
 
   // Placeholder signposts naming what each clearing will hold
   landmarks: {
-    built: ['campsite', 'gasStation', 'stormShelter', 'pruittFarm', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo', 'carArmory'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
+    built: ['campsite', 'gasStation', 'stormShelter', 'pruittFarm', 'outpost', 'crashedPlane', 'timeCapsule', 'stairs', 'milosBarn', 'railwayCutting', 'sawmill', 'moonshinersHoller', 'mineshaft', 'cordonDozer', 'crashedUfo', 'carArmory', 'familyCemetery'], // Session 15b (and 16, 17; 24: the crashed plane; 26: the old church, the stairs): sets that are built have no placeholder signpost (it stood inside the store)
     postHeight: 2.6, // metres
     postWidth: 0.14,
     postColor: 0x3a2a1c,
@@ -5760,6 +5760,11 @@ export const config = {
       idle: 'hug',
       colours: { skin: 0xd0a88c, top: 0x6a3a4a, sleeve: 0x6a3a4a, forearm: 0x6a3a4a, trousers: 0x2a2a34, shoes: 0x6a5a5a, hair: 0x8a6034, eyes: 0x141010, brows: 0x5a3a24 },
     },
+    // Nov 24: the Hanged at the Pruitts' family plot (ai/Hanged.js): grey-green skin, rags gone the colour of the
+    // dirt, a rope noose; pale dead eyes.
+    hangedA: { height: 1.84, head: 1.02, colours: { mouth: 0x080606, skin: 0x50564a, top: 0x3a3630, sleeve: 0x3a3630, forearm: 0x50564a, trousers: 0x2a2824, shoes: 0x4e5244, hair: 0x2a2620, rope: 0x4a4230, eyes: 0x050404, brows: 0x2a2620 } },
+    hangedB: { height: 1.7, head: 1.04, colours: { mouth: 0x080606, skin: 0x565a4c, top: 0x403830, sleeve: 0x403830, forearm: 0x565a4c, trousers: 0x302c26, shoes: 0x505444, hair: 0x4a4434, rope: 0x4a4230, eyes: 0x050404, brows: 0x4a4434 } },
+    hangedC: { height: 1.9, head: 1.0, colours: { mouth: 0x080606, skin: 0x4a5044, top: 0x34322e, sleeve: 0x34322e, forearm: 0x4a5044, trousers: 0x26261f, shoes: 0x484c40, hair: 0x1e1c18, rope: 0x4a4230, eyes: 0x050404, brows: 0x1e1c18 } },
     // Nov 24: the campers on their camcorder's tape (clip.camcorder): three at the fire, and the one holding the
     // camera (only his hand is seen). Four: the four dead Tom finds standing round the fire on Day 1.
     camperDan: {
@@ -5909,6 +5914,37 @@ export const config = {
   //  of the porch; shot from beyond `scatterBeyond` most flee.
   //  glimpse: the Mothman in the oak, with Tom within `within` metres and out of the house (`max` seconds at most).
   //  plot: `moths` more to the sigil's glow at the family plot, Tom within `near` of it.
+  // Nov 24 (Aaron: "do the plot for the Pruitt family cemetery ... just a few headstones, no fences ... a big dead tree
+  // in the center of the family cemetery ... and let's use one of those hanged mutants. To give the player something
+  // novel to fight. Maybe even ... 3 at once"; his picks: they drop, and go back up into the tree when badly hurt;
+  // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
+  familyPlot: {
+    // The dead oak at the plot's centre; its three limbs (yaw degrees, reach, height at the rope); ropes to the necks.
+    oak: { trunk: [0.72, 0.42], height: 4.2, limbs: [{ yaw: 20, reach: 3.6, y: 4.7 }, { yaw: 150, reach: 3.3, y: 4.4 }, { yaw: 255, reach: 3.8, y: 4.9 }] },
+    // The headstones: [x, z, yaw degrees, kind] round the tree (the clearing's own frame, unturned); the sigil goes
+    // in at (2.5, 1.5) (NightTwo.ensurePlot), clear of them.
+    stones: [[-4.2, 3.4, 12, 'round'], [-1.6, 5.6, -8, 'round'], [4.8, 4.6, 20, 'cross'], [5.6, -2.2, 96, 'square'], [-5.4, -2.6, -70, 'round'], [0.6, -5.4, 180, 'small']],
+    hanged: {
+      count: 3, feetUp: 0.95, // their feet this far off the ground as they hang
+      wakeAt: 12, // metres from the tree that wakes them (or a shot)
+      dropEvery: 1.1, snapSeconds: 0.55, landSeconds: 0.6, // one by one: a head snaps up, the rope goes, they land in a crouch
+      health: 240, speed: 4.3, turnRate: 7, radius: 0.38, // fast, loping
+      reach: 1.35, windup: 0.32, damage: 8, recover: 1.1, // the claw (three on him at once: about 17 a second; was 42 at 14 and 0.7)
+      retreatAt: 0.5, // badly hurt (this fraction of its health left): back up into the branches, once each
+      upSeconds: 0.55, lurk: [2.6, 4.2], dropBehind: 2.6, dropHeight: 6, // ...and down again behind Tom
+      ropeFall: 0.55, // a shot rope: it falls before it wakes and takes this fraction of its health
+      sway: { amount: 0.06, rate: 0.5 },
+    },
+    look: {
+      weather: { maxLuma: 0.38, grime: 0.6 },
+      colors: {
+        bark: 0x2a2620, barkDark: 0x1a1814, barkPale: 0x302c26, knot: 0x0c0a08, rope: 0x4a4230, ropeDark: 0x2e281c,
+        stone: 0x5a5a56, stoneDark: 0x3e3e3a, moss: 0x2e3a22, lichen: 0x5a5a3e, letters: 0x1e1e1c, mound: 0x2a2218, moundGrass: 0x26301c,
+        fresh: 0x3a2a1c, flowersDead: 0x2a2010,
+      },
+    },
+  },
+
   pruittFarm: {
     radius: 24, arriveInset: 3, mothsAt: 75, interactRange: 1.5, shotgunShells: 8,
     call: { after: 8, talkMin: 3 }, // Aaron (Nov 14): seconds into the dawn after Night 2 before Ellen's call to the farm; and of her line before the day fades by

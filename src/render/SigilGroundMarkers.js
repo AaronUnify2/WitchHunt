@@ -26,6 +26,7 @@ export class SigilGroundMarkers {
     const position = new THREE.Vector3();
     for (const cl of map.clearings) {
       if (cl.kind !== 'sigilGround') continue;
+      if (cl.key === 'familyCemetery') continue; // Nov 24: dressed now (encounters/FamilyPlot.js): no stakes
       const mesh = new THREE.InstancedMesh(this.geometry, this.material, c.stakes);
       for (let i = 0; i < c.stakes; i++) {
         const a = (i / c.stakes) * Math.PI * 2 + this.rng.range(-0.2, 0.2);

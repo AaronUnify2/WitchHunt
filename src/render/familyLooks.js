@@ -91,6 +91,26 @@ function bust(p, n, bone) {
 }
 
 // Hair: a cap over the skull, set back so the face shows, and the style.
+// The Hanged (Nov 24): thin as rails, their clothes in rags hanging in strips, the noose's rope round the neck and its
+// tail down the back, long stringy hair on two of them, pale dead eyes.
+function hangedBody(v) {
+  const b = body({ sh: 0.94, hip: 0.92, bulk: 0.78, waist: 0.8, loose: 1.25, female: v === 1, hand: 'skin' });
+  b.masses.push(['neck', null, 0, 1.47, 0, 0.062, 0.022, 0.062, 'rope']); // the noose
+  b.masses.push(['head', null, 0, 1.553, 0.088, 0.03, 0.024, 0.014, 'mouth']); // the mouth, hanging open
+  b.masses.push(['head', null, -0.033, 1.606, 0.088, 0.02, 0.018, 0.012, 'eyes']); // the sockets, sunk and black
+  b.masses.push(['head', null, 0.033, 1.606, 0.088, 0.02, 0.018, 0.012, 'eyes']);
+  b.masses.push(['neck', null, 0.05, 1.49, -0.04, 0.03, 0.03, 0.03, 'rope']); // its knot
+  b.masses.push(['chest', null, 0.02, 1.25, -0.13, 0.02, 0.2, 0.02, 'rope']); // its tail down the back
+  if (v !== 2) {
+    b.masses.push(hairCap(1.632, -0.02, [0.095, 0.1, 0.104]));
+    for (let i = 0; i < 5; i++) b.masses.push(['head', null, -0.08 + i * 0.04, 1.5, -0.06 + (i % 2) * 0.02, 0.018, 0.14, 0.018, 'hair']);
+  }
+  // Rags: strips hanging off the hem and the sleeves.
+  for (let i = 0; i < 7; i++) b.masses.push(['hips', null, -0.15 + i * 0.05, 0.82 + (i % 3) * 0.02, (i % 2 ? 0.08 : -0.08), 0.02, 0.1 + (i % 3) * 0.03, 0.012, 'top']);
+  for (const s of [-1, 1]) for (let i = 0; i < 3; i++) b.masses.push(['elbow' + (s < 0 ? 'R' : 'L'), null, s * (0.24 + i * 0.012), 1.08 - i * 0.03, 0.02 * i, 0.016, 0.07, 0.01, 'top']);
+  return b;
+}
+
 function hairCap(y = 1.632, z = -0.016, r = [0.097, 0.1, 0.104]) {
   return ['head', null, 0, y, z, r[0], r[1], r[2], 'hair'];
 }
@@ -250,6 +270,10 @@ const LOOKS = {
     b.masses.push(['chest', null, 0, 1.45, -0.11, 0.12, 0.075, 0.08, 'top']); // the hood down his back
     return b;
   },
+  // Nov 24: the Hanged at the Pruitts' family plot (ai/Hanged.js): gaunt, in rags gone grey, a noose still on.
+  hangedA: () => hangedBody(0),
+  hangedB: () => hangedBody(1),
+  hangedC: () => hangedBody(2),
   camperKyle() {
     const b = body({ sh: 1, hip: 1, bulk: 1.02 });
     b.masses.push(hairCap(1.636, -0.01, [0.1, 0.1, 0.106]));

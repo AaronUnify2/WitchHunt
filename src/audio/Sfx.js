@@ -1078,6 +1078,29 @@ const RECIPES = {
     s.tone(o, { seconds: 0.9, wave: 'square', freq: 220, endFreq: 40, gain: 0.12, vibrato: 40 });
     s.noiseBurst(o, { seconds: 1.0, type: 'bandpass', freq: 2600, endFreq: 300, q: 0.8, gain: 0.3, attack: 0.01 });
   },
+  // Nov 24, the Hanged at the Pruitts' plot (placeholders till their files):
+  // a rope creaking under a weight.
+  ropeCreak(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.6);
+    s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 180, endFreq: 140, gain: 0.08, vibrato: 30 });
+    s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 900, endFreq: 600, q: 6, gain: 0.12, attack: 0.1 });
+  },
+  // a rope snapping.
+  ropeSnap(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.noiseBurst(o, { seconds: 0.09, type: 'highpass', freq: 2500, endFreq: 1200, gain: 0.6, attack: 0.002 });
+  },
+  // a strangled rasping snarl.
+  hangedSnarl(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.8);
+    s.tone(o, { seconds: 0.8, wave: 'sawtooth', freq: 110, endFreq: 80, gain: 0.16, vibrato: 18 });
+    s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 700, endFreq: 400, q: 2, gain: 0.22, attack: 0.05 });
+  },
+  // branches thrashing as one goes up into the tree, or comes down out of it.
+  branchThrash(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.9);
+    s.noiseBurst(o, { seconds: 0.6, type: 'bandpass', freq: 1800, endFreq: 700, q: 0.8, gain: 0.45, attack: 0.01 });
+  },
   // Nov 24: Tom's one long, shaky breath out over the dead mutant (gas.witch). A placeholder till its file.
   tomBreath(s) {
     const o = s.out(undefined, undefined, 0.5);

@@ -93,6 +93,7 @@ import { Moths } from '../ai/Moths.js';
 import { DeepForest } from '../ai/DeepForest.js';
 import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { PruittFarm } from '../encounters/PruittFarm.js';
+import { FamilyPlot } from '../encounters/FamilyPlot.js'; // Nov 24: the Pruitts' family plot and the Hanged
 import { FamilyStations } from '../story/FamilyStations.js';
 import { FogFunnel } from '../story/FogFunnel.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
@@ -761,6 +762,8 @@ export class Game {
     this.farm = new PruittFarm(this.cfg, this.bus);
     this.farm.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, moths: this.moths, flyer: this.flyer, flashlight: this.flashlight, lore: this.lore, paper: this.paper, card: this.card, gates: this.gates, director: this.director, vehicles: this.vehicles, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.combat.promptSources.push(this.farm.hud);
+    this.familyPlot = new FamilyPlot(this.cfg, this.bus); // Nov 24 (Aaron): the headstones, the dead oak, the Hanged
+    this.familyPlot.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, rng: this.rng.fork('familyPlot'), demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.vehicles.busy?.push(this.farm.hud);
     // Round 2, step 5: the family at their stations (Ellen's string board, Junie at the monitors).
     this.stations = new FamilyStations(this.cfg, this.bus);
@@ -1304,6 +1307,7 @@ export class Game {
     this.moths.addDebugItems(menu);
     this.plane.addDebugItems(menu);
     this.farm.addDebugItems(menu);
+    this.familyPlot.addDebugItems(menu);
     this.junieTaken.addDebugItems(menu); // Session 26
     this.caller.addDebugItems(menu);
     this.church.addDebugItems(menu);
@@ -1900,6 +1904,7 @@ export class Game {
       ute: this.ute.saveState(), // build queue item 7: where the ute stands (optional; null until it's in the world)
       megaNight: this.megaNight.saveState(), // build queue item 4: the scorched ring's place (optional)
       farm: this.farm.saveState(), // Round 2: the Pruitt farm (optional)
+      familyPlot: this.familyPlot.saveState(), // Nov 24: which of the Hanged are dead
       stations: this.stations.saveState(), // Round 2, step 5: what's been read off Ellen's board (optional)
       dozer: this.dozer.saveState(), // build queue item 1: where the dozer stands (optional; null until it's in the world)
       clearing: this.clearing.saveState(), // the experimental dozer: the trees it felled, the trails it cut (optional)
@@ -2020,6 +2025,7 @@ export class Game {
     this.sniper.reset();
     this.nightTwo.reset(); // Round 2
     this.farm.loadState(d.farm);
+    this.familyPlot.loadState(d.familyPlot);
     this.stations.loadState(d.stations);
     this.funnel.reset();
     this.mothership.reset();
@@ -2348,6 +2354,7 @@ export class Game {
     if (first && !this.demo.active) this.moths.update(dt, playing && this.combat.alive); // Session 25: the giant moths
     if (first) this.plane.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Session 25: the crashed plane
     if (first) this.farm.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Round 2: the Pruitt farm
+    if (first) this.familyPlot.update(dt, playing && this.combat.alive); // Nov 24: the Hanged
     if (first) this.stations.update(dt); // Round 2, step 5
     if (first && playing) this.funnel.update(dt); // Round 2, step 6
     if (first) this.comms.update(); // Session 26: the radio's reach
@@ -2417,6 +2424,7 @@ export class Game {
     this.moths.dispose();
     this.plane.dispose();
     this.farm.dispose();
+    this.familyPlot.dispose();
     this.stations.dispose();
     this.junieTaken.dispose();
     this.church.dispose();
