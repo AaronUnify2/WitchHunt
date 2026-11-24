@@ -165,7 +165,8 @@ export function buildPruittFarm(cfg, { weather = null, heightAt = null } = {}) {
   const slope = Math.atan2(H.ridge - W, deep / 2);
   const run = Math.hypot(deep / 2, H.ridge - W) + 0.45;
   for (const s of [-1, 1]) {
-    b.push(midX, F + (W + H.ridge) / 2 + 0.06, midZ + s * (deep / 4 + 0.12), 0, -s * slope, 0);
+    // Nov 24 (Aaron: the outside roof was upside down): each pane falls away from the ridge (+x rotation tips +z down).
+    b.push(midX, F + (W + H.ridge) / 2 + 0.06, midZ + s * (deep / 4 + 0.12), 0, s * slope, 0);
     b.box(wide + 0.7, 0.04, run, c.tin, 0, 0, 0);
     for (let x = -wide / 2 - 0.2; x <= wide / 2 + 0.2; x += 0.62) b.box(0.05, 0.03, run, b.rand() < 0.2 ? c.tinRust : c.tinDark, x, 0.03, 0);
     b.pop();
