@@ -103,6 +103,42 @@ The witch's cutscene at the gas station (9.6 s since Nov 24): Tom looks at the d
 
 ---
 
+## Test 3: the camcorder's tape, the gas station's pause, and test 2's gaps (Nov 24)
+
+**The camcorder's tape** (rebuilt Nov 24; docs/CAMCORDER_PLAN.md has it second by second): the campers at their fire,
+the witch too fast to see, the camera knocked into the grass, the dead getting up, her face in the lens. Every sound
+below already plays a synthesised stand-in, so each file just replaces it. **Upload:** the exact name, MP3, into
+`public/audio/sfx` (the night music into `public/audio/music`). Sets: `<name>_set.mp3`, cut where it goes quiet.
+
+In order of use (if the credits run out partway, the top ones matter most):
+
+| # | File | Suno | Where | Prompt |
+|---|---|---|---|---|
+| 1 | `clawSlash_set.mp3` | Sounds, one-shot | Her claws through a camper (the tape: three times) | Sound effects sample pack: three separate one-shot sounds of monstrous claws slashing through flesh and clothing, each isolated and followed by two full seconds of silence. Take 1: a fast tearing slash with a wet impact. Take 2: a vicious ripping swipe through a jacket and skin. Take 3: a sharp slicing claw strike with a meaty thud. Visceral, horror, no music |
+| 2 | `witchDash_set.mp3` | Sounds, one-shot | Her moving faster than anything should (four times) | Sound effects sample pack: three separate one-shot sounds of something inhumanly fast rushing past, each isolated and followed by two full seconds of silence. Take 1: a sharp whooshing rush of ragged cloth and air. Take 2: a violent swish like a blur tearing past the camera. Take 3: a quick gust and flapping rags snapping by. Supernatural, no music |
+| 3 | `camperScream_set.mp3` | Sounds, one-shot | The campers (twice: Marcus in the dark, Jess) | Sound effects sample pack: three separate one-shot human screams of terror heard outdoors at night, each isolated and followed by two full seconds of silence. Take 1: a young man's terrified scream from a distance in the woods. Take 2: a young woman's piercing scream that is suddenly cut short. Take 3: a young man's panicked yell breaking into a choked cry. Raw, real, no music |
+| 4 | `campFire.mp3` | Sounds, **loop** | Under the whole tape | Small crackling campfire at night in a quiet forest, soft popping wood and steady low flames, close to the microphone, calm, no voices, no music, seamless loop |
+| 5 | `camperLaugh_set.mp3` | Sounds, one-shot | The campers at the fire, before (twice) | Sound effects sample pack: three separate one-shot clips of a small group of young friends laughing around a campfire at night, each isolated and followed by two full seconds of silence. Take 1: warm relaxed laughter from three people. Take 2: a burst of laughter at a joke, someone giggling. Take 3: easy chuckles and a short whoop. Outdoors, handheld camera microphone, no words, no music |
+| 6 | `camTumble_set.mp3` | Sounds, one-shot | The camcorder flying out of his hands and landing in the grass | Sound effects sample pack: two separate one-shot sounds of a handheld video camera being knocked out of someone's hands, each isolated and followed by two full seconds of silence. Take 1: plastic clattering and tumbling, then a heavy thump onto grass and dirt. Take 2: a sharp knock, the camera spinning through the air, landing hard with a crunch of leaves. Heard from the camera's own microphone, no music |
+| 7 | `witchBreath.mp3` | Sounds, one-shot (4-6 s) | Her, right at the lens, at the end | A monstrous creature breathing very close to a camera microphone, slow wet rasping inhale, a long crackling hissing exhale, a faint inhuman whisper underneath, unbearably close, horror, no music |
+| 8 | `runBreath.mp3` | Sounds, one-shot (2-3 s) | Kyle running for his life with the camera | A young man running in panic through a forest at night, ragged terrified breathing and gasping right on the microphone, footsteps crashing through leaves and twigs, no music |
+| 9 | `tapeChew.mp3` | Sounds, one-shot (2-3 s) | The tape dying at the end | A VHS tape being chewed up by a camcorder, the sound warping and slowing down, mechanical grinding, distorted audio dropping out into harsh static, no music |
+| 10 | `tomBreath_set.mp3` | Sounds, one-shot | Tom over the dead mutant at the gas station (before the witch) | Sound effects sample pack: two separate one-shot sounds of an exhausted man catching his breath after a fight, each isolated and followed by two full seconds of silence. Take 1: one long shaky breath out, close. Take 2: a heavy exhale and a low tired grunt. Quiet, intimate, no music |
+
+**Still missing from test 2** (one download each, so they come after the tape's):
+
+| # | File | Suno | Where | Prompt |
+|---|---|---|---|---|
+| 11 | `night.mp3` | Song, **instrumental**, 2-3 min (`public/audio/music`) | Outdoors after dark, quiet under everything | Slow dark ambient horror drone, instrumental, very sparse, low sustained cello and bowed bass, distant detuned fiddle harmonics, faint wordless female hum far away, no drums, no beat, no melody, creeping dread, night in the Appalachian woods |
+| 12 | `mutantRoar_set.mp3` | Sounds, one-shot | The mutant unfolding in the gas station's shop | Sound effects sample pack: two separate one-shot roars of a huge mutated creature, each isolated and followed by two full seconds of silence. Take 1: rising to full height with bones cracking and stretching into a deep guttural bellow. Take 2: a furious wet roar that breaks into a snarl. Terrifying, no music |
+| 13 | `nightCall_2.mp3` | Sounds, one-shot | Now and then at night (the second of the night calls) | A single distant animal screaming somewhere in a dark forest at night, fox-like but wrong, echoing across a valley, long fade, no music |
+| 14 | `quadRev.mp3` | Sounds, **loop** | Earl's quad at speed (the idle file plays alone till then) | A small four-wheeler ATV engine held at steady high revs, constant pitch, no revving up or down, no gear changes, close to the engine, seamless loop, no music |
+
+**Already in from before and used on the tape:** `kill` (bodies dropping), `rise` (the dead getting up),
+`windGust`, `witchSummon` (still synthesised: a file named `witchSummon.mp3` would replace it).
+
+---
+
 ## Later: guns and hits (not yet)
 
 `rifle`, `shotgun`, `pump`, `pistol`, `reload`, `loaded`, `empty`, `swing`, `shovelHit`,

@@ -1,6 +1,37 @@
 # Handover
 
-## Newest: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
+## Newest: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
+
+**Where things stand:** everything is on `main`. **1528 tests pass** and the build is clean. Aaron play-tested and sent notes all day; every one is built and pushed (PLAYTEST round 85, OPEN_QUESTIONS #789-796). **Waiting on:** his play of the new camcorder tape, and his Suno credits for **test 3** (`docs/AUDIO_CUES.md`: the tape's nine sounds, `tomBreath`, and test 2's gaps).
+
+**Done today (STATUS's top entries have the detail):**
+- **The gas station:** the mutant's punches and charge don't set the pumps off (`config.gasStation.pumps.mutantSetsOff`: the leap only; impacts carry a `kind`). A **police zombie** stands by the road's cruiser (the sheriff's pistol) to lure Tom (`config.gasStation.policeZombie`). **The mutant down:** a beat after the kill, Tom looks at the body, then an eased swivel to the witch, who stands at the first spot round the treeline in clear sight of him (`encounters/gasWitchSpot.js`), facing him through the sting; 9.6 s. **Earl's carved Bigfoot** is the real Bigfoot's figure in wood (`render/bigfootStatue.js`).
+- **Debug:** every enemy summonable (the Hollow, the Hanged, the grey's boss fight added); the summoned dozer comes with its keys and battery.
+- **DESIGN's enemy roster** refreshed against the build.
+- **The camcorder's tape** (`clip.camcorder`, `docs/CAMCORDER_PLAN.md`): planned with Aaron (draft, critique, his four answers), then built: 23 s + a freeze. The cutscene system gained the witch's `swipe`/`summon` and `tone`, `smear`, `spray`, `freeze`, `face`, camera `roll` and `ground`, campers as figure-kit people with `log`/`wave`/`cower`/`dead` poses and a blend `rate`.
+
+**What's new to know:**
+- **Cutscene `lookAt` can take `seconds`** (an eased turn of exactly that long, then it holds); first-person only.
+- **A witch actor** can `pose` `swipe` / `summon` (timed on the pose: `config.cutscenes.witchSwipe`, `witchSummonSeconds`), take `tone` (0-1, her black toward grey) and `smear` (`{ do: 'smear', actor, color, opacity, on }`).
+- **Cutscene people** take any FamilyRenderer pose (`stand`, `walk`, `kneel`, `down`, `sit`, `aim`, `log`, `wave`, `cower`, `dead`), with `rate` on the pose event. New people need a look in `render/familyLooks.js` and colours in `config.people`.
+- **Camera keys:** `roll` (degrees), `ground: true` (height above the ground under the camera).
+- **`freeze`** stops the tape's time (its `seconds` add to the real length); **`spray`** needs an actor (or anchor/pos) and optionally `from`.
+- **The campsite's world props are in its cutscenes:** the tents, chairs, the pack (-2.8, -2.2), the reflector wall (0, 0.15), the fire (0, 1.5). Don't duplicate them as actors, and keep low cameras' lines clear of them.
+- **Placeholders:** `hasPlaceholder(name)` (exported from `audio/Sfx.js`) for tests; `STAND_IN` maps a name to another's sound.
+- **Black-on-black:** the witch model is an unlit silhouette; at night she needs something lit behind her (the firelight pool) or `tone`.
+
+**Headless gotchas (new):**
+- **The dev server stops between turns:** start it with `run_in_background` (or `setsid`) each time you need it.
+- **`page.screenshot` can time out** late in a long cutscene under swiftshader: render, then read `canvas.toDataURL()` in the same `evaluate` (`/home/claude/checks/tape_canvas.cjs` did this; the checks folder isn't in the repo).
+- **Debug items by label** need the whole name (`/Dozer: put me on it/`, not `/put me on it/`).
+- **The gas station's mutant:** teleport Tom to frame (3.3, -7.4) to wake it.
+- **The camcorder tape** plays with `game.campsite.playClip()`.
+
+**What the next session does:** ask Aaron for notes first (rule 10), above all on the tape (how much of her shows, length, the ground shot on the tablet) and the gas station's swivel. When test 3's files arrive: pull, check each (sets split cleanly, else `config.sfx.slices`; `campFire` is already in `config.sfx.loops`; levels in `config.sfx.fileGain`: the enemies' are at 60%, so start the claws and screams there and judge), then write the next batch (guns and hits, the gas station's own sounds, Earl's scanner voice). Aaron said the next opening cutscenes are next after the camcorder.
+
+**Logging:** PLAYTEST round 85 (still open), OPEN_QUESTIONS next #797.
+
+## Before that: real audio (Suno), the title screen, the cold open's portal, the objective pop-up (Nov 22-23)
 
 **Where things stand:** everything is on `main`. **1517 tests pass** and the build is clean. (Nov 23 evening: Aaron's first two notes built: Day 2's dawn and checkpoints. Nov 24: his third, the mutant's punches no longer blow the pumps. PLAYTEST round 85, OPEN_QUESTIONS #784-789.) Aaron is play-testing on the tablet with headphones and sending notes as he plays; every note so far is built and pushed. **Waiting on:** his Suno credits to refresh for the next batch of files. Before this: Nov 17, **the end of Part One** (`config.release.part` 1: the Mothman's knockdown at the crashed plane ends the game; Part Two on the menu, greyed out; STATUS "Nov 17").
 
@@ -32,7 +63,7 @@
 - **To get the gas station's mutant going headless:** after `activate('new')`, teleport Tom to frame (3.3, -7.4) (in the centre aisle, inside `wake.aisle` of it); (1.9, -6.6) is short of the wake line. Step `game.update` yourself: the cutscene's world runs, so the throw happens in those steps.
 - **Headless runs slowly:** cutscene time lags real time unless you step `game.update(1/30)` yourself; render every step if you screenshot post effects (the glitch's static decays in `render`).
 
-**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16. Next numbers: OPEN_QUESTIONS #793.
+**Logging:** Nov 22-23's audio went straight into STATUS, DESIGN and AUDIO_CUES. From the Nov 23 evening session on, notes go in **PLAYTEST round 85** and **OPEN_QUESTIONS from #784** (#784: Day 2's dawn is the Screamer's sighting again, Aaron: the mutant was too intense; `config.campsite.mutantFigure` keeps it, off). MORNING.md stops at Nov 16. Next numbers: OPEN_QUESTIONS #797.
 
 **What the next session does:** ask Aaron for any notes from his play (rule 10; fix those first). Then, when his Suno credits refresh: hook up each new upload (check sets split cleanly: read the loudness, cut at `config.sfx.slices` where they don't; check loops; set levels), in the order DESIGN "Audio direction" lists under **Still to do** (the night music and the batch's gaps first, then guns and hits, then the gas station's own sounds and Earl's scanner voice). Write him new prompts for each batch as multi-take sets (`docs/AUDIO_CUES.md` shows the wording that works). Otherwise, whatever he asks for.
 
@@ -543,11 +574,12 @@ DESIGN.md "the 1903 railway line" says the south is "more open and less structur
 - **From the Nov 8 design** (DESIGN.md "Open questions"): the endgame's design; Milo's killdozer part; the heat-scope rifle's spot; the four named-only optional encounters.
 - **From before:** #257-281, #225-256, #213-224, #185-197, #171-184, #161-170, #155-160, #143, #136-137, #140-141.
 
-## Session kickoff prompt for the next session (updated Nov 23)
+## Session kickoff prompt for the next session (updated Nov 24)
 
 ```
-You are picking up Witch Hunt after the real-audio work of Nov 22-23 (Suno files for the title screen, the cold open's portal, the background sound, the enemies and the quad; the objective pop-up). Read HANDOVER.md's top section first: where things stand, what's new to know, and the headless gotchas. Then DESIGN.md "Audio direction" (as built, and Still to do) and docs/AUDIO_CUES.md (every file name and Suno prompt).
-Aaron play-tests on the tablet with headphones and sends notes as he plays: ask for any notes first (rule 10) and fix those before anything else. When his Suno credits refresh he uploads the next batch to public/audio on GitHub (main): pull, check each file (sets split cleanly, else cut at config.sfx.slices from the loudness; loops seamless; levels), hook up any new sound names, and write the next batch's prompts as multi-take sets.
+You are picking up Witch Hunt after Nov 24: Aaron's gas station notes (the pumps, the police zombie, the pause and swivel to the witch), the carved Bigfoot, debug spawns, and the camcorder's tape rebuilt (docs/CAMCORDER_PLAN.md). Read HANDOVER.md's top section first: where things stand, what's new to know, and the headless gotchas. Then DESIGN.md "Audio direction" (as built, and Still to do) and docs/AUDIO_CUES.md (test 3 is the batch he's making).
+Aaron play-tests on the tablet with headphones and sends notes as he plays: ask for any notes first (rule 10) and fix those before anything else; the camcorder tape is the first thing to hear back on. When his Suno credits refresh he uploads the next batch to public/audio on GitHub (main): pull, check each file (sets split cleanly, else cut at config.sfx.slices from the loudness; loops seamless; levels), hook up any new sound names, and write the next batch's prompts as multi-take sets. Next after that: the next opening cutscenes.
+When a request is vague or brief, especially for code: draft a plan, critique it, revise it, then ask Aaron's clarifying questions before building.
 Work as before: config and data first, complete files, small modules, no lights added or removed while playing, tests for what you build (npx vitest run, npx vite build), check it headless and look at what you capture critically, push each change to main before the next (main stays green).
-Write it up as you go: STATUS (top entry), DESIGN as built, docs/AUDIO_CUES.md, PLAYTEST from round 85, OPEN_QUESTIONS from #784, and this file's top section for the session after.
+Write it up as you go: STATUS (top entry), DESIGN as built, docs/AUDIO_CUES.md, PLAYTEST round 85, OPEN_QUESTIONS from #797, and this file's top section for the session after.
 ```

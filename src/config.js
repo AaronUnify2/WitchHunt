@@ -2896,7 +2896,7 @@ export const config = {
     // Nov 2026: files that loop (played whole, not trimmed, so they join up).
     // Each made seamless: Suno's fade in and out cut off, its end blended into its start over loopFade
     // seconds (an engine's short loops over less).
-    loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside', { name: 'quadIdle', fade: 0.08, steady: false }, { name: 'quadRev', fade: 0.06, steady: false }],
+    loops: ['portalHum', 'ambDay', 'ambNight', 'ambShopInside', 'campFire', { name: 'quadIdle', fade: 0.08, steady: false }, { name: 'quadRev', fade: 0.06, steady: false }],
     loopFade: 1.5,
     // Nov 23 (Aaron, playing: the combat sounds a little over the top): the enemies' files 40% quieter.
     fileGain: { groan: 0.6, charge: 0.6, swipe: 0.6, rise: 0.6, kill: 0.6, mutantGroan: 0.6, mutantRoar: 0.6, mutantSlam: 0.6, bodyThud: 0.6 },
