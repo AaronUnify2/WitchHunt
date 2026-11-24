@@ -3,8 +3,8 @@
 // the sigil ground 'familyCemetery'. What's here:
 //  - the plot itself (render/familyCemeteryModel.js): six old headstones, the dead oak, three ropes;
 //  - the Hanged (ai/Hanged.js): three bodies on those ropes, who come down for Tom;
-//  - the witch's sigil, buried on Night 2 (NightTwo.ensurePlot), dug up as any (the director's), and the moths that
-//    come to its glow after dark (PruittFarm.updatePlot): both as before.
+//  - the witch's sigil, buried on Night 2 (NightTwo.ensurePlot), dug up as any (the director's). (Its moths are gone,
+//    Nov 25, Aaron: too busy with the Hanged.)
 // Saved: which of the Hanged are dead. Off in Demo mode.
 
 import { buildFamilyCemetery } from '../render/familyCemeteryModel.js';

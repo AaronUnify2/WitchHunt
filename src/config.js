@@ -5919,7 +5919,7 @@ export const config = {
   // novel to fight. Maybe even ... 3 at once"; his picks: they drop, and go back up into the tree when badly hurt;
   // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
   familyPlot: {
-    sweepAt: 30, // Nov 24: its sweep (sweep.plot) plays once as Tom first comes this near the tree
+    sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)
     // The dead oak at the plot's centre; its three limbs (yaw degrees, reach, height at the rope); ropes to the necks.
     oak: { trunk: [0.72, 0.42], height: 4.2, limbs: [{ yaw: 20, reach: 3.6, y: 4.7 }, { yaw: 150, reach: 3.3, y: 4.4 }, { yaw: 255, reach: 3.8, y: 4.9 }] },
     // The headstones: [x, z, yaw degrees, kind] round the tree (the clearing's own frame, unturned); the sigil goes
@@ -5947,12 +5947,15 @@ export const config = {
   },
 
   pruittFarm: {
+    // sweepAt (Nov 25, Aaron: the sweep began with him already there): its sweep and arrival this far from the
+    // house, ~21 m before the yard (it was at 21 m, inside it).
+    sweepAt: 45,
     radius: 24, arriveInset: 3, mothsAt: 75, interactRange: 1.5, shotgunShells: 8,
     call: { after: 8, talkMin: 3 }, // Aaron (Nov 14): seconds into the dawn after Night 2 before Ellen's call to the farm; and of her line before the day fades by
     clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
     glimpse: { within: 40, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)
-    plot: { near: 30, moths: 5 }, // Aaron (Nov 14): three fewer (it was 8, on top of the dead there)
+    plot: { near: 30, moths: 0 }, // Aaron (Nov 14): three fewer (it was 8); Nov 25: none (the Hanged are the plot's fight: "the moths make the hanged scene feel a bit busy")
     // Nov 24 (Aaron: "there's a veggie garden in the backyard. I will award you points for decorating with the creepiest
     // scarecrow possible"): render/scarecrowModel.js. at / yaw: in the farm model's own (mirrored) coordinates, at
     // the garden's far end, facing back across it to the house. Its head turns to face Tom while he isn't looking

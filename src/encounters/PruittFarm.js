@@ -299,7 +299,7 @@ export class PruittFarm {
 
   // Nov 24 (sweep.plot): the plot's moths now, as the sweep comes down on the sigil (as updatePlot would).
   plotMothsNow() {
-    if (!this.has('farmVisited') || this.has('plotMoths') || this.clock?.phase === 'day' || !this.plotSigil()) return;
+    if (!(this.fc.plot.moths > 0) || !this.has('farmVisited') || this.has('plotMoths') || this.clock?.phase === 'day' || !this.plotSigil()) return;
     this.set('plotMoths');
     if (this.moths && !this.moths.habitat) this.moths.send(this.fc.plot.moths);
   }
@@ -329,9 +329,9 @@ export class PruittFarm {
     this.updateClock(dt);
     const l = this.local();
     const d = Math.hypot(l.x, l.z);
-    if (this.has('farmCall') || d < this.fc.radius) {
+    if (this.has('farmCall') || d < Math.max(this.fc.radius, this.fc.sweepAt ?? 0)) {
       if (!this.roosted && !this.has('farmMothsDone') && d < this.fc.mothsAt) this.roost();
-      if (!this.has('farmVisited') && d < this.fc.radius - this.fc.arriveInset) this.arrive();
+      if (!this.has('farmVisited') && d < (this.fc.sweepAt ?? this.fc.radius - this.fc.arriveInset)) this.arrive(); // Nov 25: further out
     }
     this.updateMoths(l);
     this.updateGlimpse(dt, l, d);
@@ -499,8 +499,9 @@ export class PruittFarm {
   }
 
   // 5: the family plot: more of them to the sigil's glow, once.
+  // Nov 25 (Aaron): no moths at the plot any more (plot.moths 0): the Hanged are its fight.
   updatePlot() {
-    if (!this.has('farmVisited') || this.has('plotMoths')) return;
+    if (!(this.fc.plot.moths > 0) || !this.has('farmVisited') || this.has('plotMoths')) return;
     const s = this.plotSigil();
     if (!s) return;
     const p = this.player.position;

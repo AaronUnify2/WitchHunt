@@ -19,11 +19,11 @@ describe('the Pruitt sweeps (Nov 24)', () => {
     expect(cutsceneLength(c)).toBeGreaterThan(10);
   });
 
-  it('sweep.plot: the tree, the sigil (moths), then a Hanged twitching', () => {
+  it('sweep.plot: the tree, the sigil, then a Hanged twitching', () => {
     const c = by['sweep.plot'];
     expect(c).toBeDefined();
     const ev = c.tracks.filter((t) => t.do === 'emit').map((t) => t.event);
-    expect(ev).toEqual(['sweep:torch', 'plot:moths', 'plot:twitch']);
+    expect(ev).toEqual(['sweep:torch', 'plot:twitch']); // Nov 25: no moths
     // The sigil shot looks at where NightTwo buries it (the plot's frame: it's at -1.5, 2.5 there).
     expect(c.camera.some((k) => Math.hypot(k.look[0] + 1.5, k.look[2] - 2.5) < 0.2)).toBe(true);
     const problems = validateCutscenes([by['sweep.farm'], c], { looks: {}, lineIds: new Set() });
@@ -48,5 +48,11 @@ describe('the Pruitt sweeps (Nov 24)', () => {
     fp.update(0.1, true);
     expect(played).toEqual(['sweep.plot']);
     expect(fp.saveState().swept).toBe(true);
+  });
+
+  it('both start well before their places (Nov 25, Aaron: "I felt like I was already at the place")', () => {
+    expect(config.pruittFarm.sweepAt).toBeGreaterThanOrEqual(config.pruittFarm.radius + 15);
+    expect(config.familyPlot.sweepAt).toBeGreaterThanOrEqual(45);
+    expect(config.pruittFarm.plot.moths).toBe(0); // and the plot's moths are gone
   });
 });
