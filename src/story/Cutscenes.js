@@ -405,9 +405,19 @@ export class Cutscenes {
       const target = this.targetOf(l.target);
       if (target) {
         const want = Math.atan2(p.position.x - target.x, p.position.z - target.z);
-        p.yaw = turnToward(p.yaw, want, l.rate * dt);
         const pitch = l.pitch ?? Math.atan2(target.y - p.camera.position.y, Math.hypot(target.x - p.position.x, target.z - p.position.z));
-        p.pitch += (pitch - p.pitch) * Math.min(1, dt * 3);
+        if (l.seconds > 0 && l.t < l.seconds) {
+          l.t = Math.min(l.seconds, l.t + dt);
+          const k = easeTurn(l.t / l.seconds);
+          p.yaw = l.fromYaw + angleBetween(l.fromYaw, want) * k;
+          p.pitch = l.fromPitch + (pitch - l.fromPitch) * k;
+        } else if (l.seconds > 0) {
+          p.yaw = want; // arrived: it holds on the target (a moving one too)
+          p.pitch += (pitch - p.pitch) * Math.min(1, dt * 3);
+        } else {
+          p.yaw = turnToward(p.yaw, want, l.rate * dt);
+          p.pitch += (pitch - p.pitch) * Math.min(1, dt * 3);
+        }
       }
     }
     p.applyCamera?.();
@@ -481,7 +491,9 @@ export class Cutscenes {
         this.bus.emit(e.event, e.payload ?? {});
         break;
       case 'lookAt':
-        cur.lookAt = { target: e.target, rate: e.rate ?? 2, pitch: e.pitch };
+        // Nov 24: `seconds`: an eased turn that takes exactly that long (from wherever the view is), then holds on
+        // the target; without it, a steady turn at `rate` radians a second.
+        cur.lookAt = { target: e.target, rate: e.rate ?? 2, pitch: e.pitch, seconds: e.seconds ?? 0, t: 0, fromYaw: this.player?.yaw ?? 0, fromPitch: this.player?.pitch ?? 0 };
         break;
       case 'shake':
         cur.shake = e.amount ?? 1;
@@ -990,4 +1002,17 @@ function turnToward(from, to, maxStep) {
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   return from + Math.max(-maxStep, Math.min(maxStep, d));
+}
+
+// Nov 24: the eased first-person turn (lookAt `seconds`): smoothstep, and the short way round.
+export function easeTurn(k) {
+  const c = Math.max(0, Math.min(1, k));
+  return c * c * (3 - 2 * c);
+}
+
+export function angleBetween(from, to) {
+  let d = (to - from) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return d;
 }

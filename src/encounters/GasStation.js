@@ -42,6 +42,7 @@ import { HoldAction } from '../player/HoldAction.js';
 import { GasStationProps } from '../render/GasStationProps.js';
 import { Rng } from '../core/Rng.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+import { forecourtBlockers, pickWitchSpot } from './gasWitchSpot.js';
 
 export class GasStation {
   constructor(cfg, bus, data = gasData) {
@@ -763,6 +764,12 @@ export class GasStation {
 
   mutantDown() {
     if (this.mutantState === 'down') return;
+    // Nov 24 (Aaron: "when Tom kills the mutant, he should pause to look at the dead mutant, then the camera
+    // should swivel to the Witch"): where it fell; put down outside, she comes a beat after (witch.afterKill),
+    // not waiting for him to have been in the store and come back out.
+    const body = this.mutant;
+    this.bodyAt = body ? { x: body.x, z: body.z } : null;
+    if (body && !this.inside(this.local(body)) && !this.witchSeen) this.witchIn = this.gc.witch.afterKill ?? this.gc.witch.delay;
     this.mutantState = 'down';
     this.mutant = null;
     this.progress?.setFlag('gasMutantKilled');
@@ -812,11 +819,18 @@ export class GasStation {
     this.progress?.setFlag('gasWitchSeen');
     this.bus.emit('gasStation:witch');
     const w = this.data.witch;
-    const store = frameToWorld(this.frame, 0, this.data.building.z1 - 4);
+    const tom = this.player?.position ?? frameToWorld(this.frame, 0, this.data.building.z1 - 4);
     const at = (x, z) => {
       const p = frameToWorld(this.frame, x, z);
-      return { ...p, yaw: Math.atan2(store.x - p.x, store.z - p.z), dy: this.gc.witch.lookHeight }; // she faces the store
+      return { ...p, yaw: Math.atan2(tom.x - p.x, tom.z - p.z), dy: this.gc.witch.lookHeight }; // Nov 24: she faces Tom
     };
+    const spot = this.witchSpot();
+    const run = { x: spot.x + (w.runBy?.x ?? w.runTo.x - w.x), z: spot.z + (w.runBy?.z ?? w.runTo.z - w.z) };
+    // Nov 24: the view first rests on the dead mutant (lying where it fell), or, with it out of sight in the
+    // store, on the store's door he came out of; then turns to her.
+    const body = this.bodyAt && !this.inside(this.local(this.bodyAt)) ? this.bodyAt : frameToWorld(this.frame, this.data.building.door.x, this.data.building.z1);
+    const bodyY = this.bodyAt === body ? this.gc.witch.bodyLookHeight : 1.2;
+    this.cutscenes?.liveTargets?.set('gasMutantBody', () => ({ x: body.x, y: this.ground.heightAt(body.x, body.z) + bodyY, z: body.z }));
     const done = () => {
       // Plan #5: a few seconds of quiet after she runs before anyone speaks (the gate and the star move at once).
       const q = this.gc.witch.quietAfter ?? 0;
@@ -832,10 +846,20 @@ export class GasStation {
       this.checkShelterCall(q + 2 * gap);
     };
     const played = this.cutscenes?.play('gas.witch', {
-      anchors: { gasStation: frameAnchor(this.frame), herSpot: at(w.x, w.z), herRun: at(w.runTo.x, w.runTo.z) },
+      anchors: { gasStation: frameAnchor(this.frame), herSpot: at(spot.x, spot.z), herRun: at(run.x, run.z) },
       onDone: done,
     });
     if (!played) done();
+  }
+
+  // Nov 24 (Aaron: "We need to ensure that the witch is visible"): her spot across the road, the first in
+  // clear sight from where Tom stands (gasWitchSpot.js), the forecourt's cars where they are now.
+  witchSpot() {
+    const w = this.data.witch;
+    const spots = w.spots ?? [{ x: w.x, z: w.z }];
+    const r = this.frame.radius + 15;
+    const cars = (this.vehicles?.list ?? []).filter((v) => Math.hypot(v.x - this.frame.x, v.z - this.frame.z) < r).map((v) => this.local(v));
+    return pickWitchSpot(this.local(), spots, forecourtBlockers(this.data, this.gc.look, cars), this.gc.witch) ?? spots[0];
   }
 
   // ---- searches and the things to use ---------------------------------------------------------------

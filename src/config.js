@@ -3134,7 +3134,12 @@ export const config = {
     // blows' damage lands as it ends, never taking him under leaveAtLeast.
     mutantScript: { jab: { back: 2.4, minX: 1.1, z: -7.4, seconds: 0.35, damage: 8 }, charge: { seconds: 0.5 }, thrown: { x: 1.8, z: 1.6, seconds: 0.75, hop: 0.7, damage: 14 }, follow: { x: 1.6, z: -2.4, seconds: 1.0 }, leaveAtLeast: 30 }, // Aaron: 180 was too easy (+60); Nov 16: doubled (240 before)
     mutantHints: { bodyHits: 3, backRange: 8, backCone: 50 }, // Plan #13: Wyatt names the head after this many body hits; the back when Tom's this close behind it (degrees off its tail)
-    witch: { delay: 1.2, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
+    // Nov 24 (Aaron: Tom pauses on the dead mutant, then the camera swivels to the witch, who must be
+    // visible; slower, so the momentum resets and the music lands): afterKill: seconds from the kill
+    // (outside) to the cutscene; bodyLookHeight: where the view rests on the body (m off the ground);
+    // her spot (data witch.spots): one in clear sight, minDistance-maxDistance from Tom, margin round
+    // what's in the way.
+    witch: { delay: 1.2, afterKill: 1.0, bodyLookHeight: 0.35, minDistance: 10, maxDistance: 34, margin: 0.3, lookHeight: 1.5, quietAfter: 6 }, // seconds after Tom's back on the forecourt; where the camera looks on her. Plan #5: quietAfter: seconds of quiet after she runs before Ellen speaks
     scannerLines: ['gas.scanner.1', 'gas.scanner.1b', 'gas.scanner.1c', 'gas.scanner.2'], // Session 18: more of it, now it takes a battery (then Wyatt's gas.scanner.wyatt on its own)
     scannerGap: 2.5, scannerAfter: 4, scannerHear: 25, scannerReactWithin: 60, // (scannerHear: metres from the scanner the chatter carries) // Nov 15: seconds of static between the scanner's bits of chatter; before Ellen's word after them
     lineGap: 12, // Session 17 (Aaron: one idea at a time over the radio): seconds before a follow-up on another subject

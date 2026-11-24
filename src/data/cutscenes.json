@@ -607,69 +607,7 @@
       "duration": 1.8
     },
     {"id": "gas.mutant", "name": "The gas station: the first mutant wakes (first person)", "style": "firstPerson", "world": "run", "_note": "Session 15b (M9.3): a few steps into the dark shop, the camera turns to the hunched thing at the back of the centre aisle (anchor mutant, from GasStation): it unfolds to its full height (the emit wakes it; the world runs on, so it does), the camera hitches, and it's on its feet. Then Tom has his controls back. Nov 16 (Aaron: 'I want the gas station mutant to stand, hit Tom back a few steps, then charge forward and use a backhanded swipe to push Tom out of the front door into the fuel pump area outside'): the view holds on it as a live target (gasMutant: it moves). It stands (gasStation:rise), steps in with a jab that knocks Tom back down the aisle (jabUp, jab), charges (charge) and backhands him out through the front door onto the forecourt (throw: Player.glideTo), and comes out of the door after him (follow). Then the fight's among the pumps and the cars, and the witch can be watching when it's down.", "tracks": [{"at": 0, "do": "lookAt", "target": "gasMutant", "rate": 2.4, "pitch": -0.12}, {"at": 0.9, "do": "emit", "event": "gasStation:rise"}, {"at": 0.9, "do": "music", "sting": "stingMutant"}, {"at": 1.0, "do": "shake", "amount": 0.6, "seconds": 0.3}, {"at": 1.0, "do": "lookAt", "target": "gasMutant", "rate": 2.2, "pitch": 0.22}, {"at": 2.0, "do": "emit", "event": "gasStation:jabUp"}, {"at": 2.3, "do": "emit", "event": "gasStation:jab"}, {"at": 2.3, "do": "shake", "amount": 1.1, "seconds": 0.35}, {"at": 2.3, "do": "lookAt", "target": "gasMutant", "rate": 5, "pitch": 0.18}, {"at": 2.75, "do": "emit", "event": "gasStation:charge"}, {"at": 3.25, "do": "emit", "event": "gasStation:throw"}, {"at": 3.25, "do": "shake", "amount": 1.6, "seconds": 0.55}, {"at": 4.0, "do": "shake", "amount": 0.9, "seconds": 0.3}, {"at": 4.0, "do": "sfx", "sfx": "bodyThud"}, {"at": 4.05, "do": "emit", "event": "gasStation:follow"}, {"at": 4.05, "do": "lookAt", "target": "gasMutant", "rate": 3, "pitch": 0.12}], "duration": 5.2, "jolt": true},
-    {
-      "id": "gas.witch",
-      "name": "The gas station: the witch at the treeline (first person)",
-      "style": "firstPerson",
-      "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read). Session 25 (Aaron): as she goes, a rush of wind (witchRush), not the shriek.",
-      "actors": [
-        {
-          "id": "her",
-          "kind": "figure",
-          "look": "witch",
-          "anchor": "herSpot",
-          "pos": [
-            0,
-            0,
-            0
-          ],
-          "yaw": 0
-        }
-      ],
-      "tracks": [
-        {
-          "at": 0,
-          "do": "lookAt",
-          "target": "herSpot",
-          "rate": 3.2
-        },
-        {
-          "at": 0.3,
-          "do": "sfx",
-          "sfx": "witchSong"
-        },
-        {
-          "at": 0.3,
-          "do": "music",
-          "sting": "stingWitch"
-        },
-        {
-          "at": 2.3,
-          "do": "move",
-          "actor": "her",
-          "anchor": "herRun",
-          "to": [
-            0,
-            0,
-            0
-          ],
-          "seconds": 0.9
-        },
-        {
-          "at": 2.3,
-          "do": "lookAt",
-          "target": "herRun",
-          "rate": 1.6
-        },
-        {
-          "at": 2.4,
-          "do": "sfx",
-          "sfx": "witchRush"
-        }
-      ],
-      "duration": 3.25,
-      "jolt": true
-    },
+    {"id": "gas.witch", "name": "The gas station: the witch at the treeline (first person)", "style": "firstPerson", "_note": "Session 15b (M9.3): stepping back out onto the forecourt after the mutant. She stands dead still at the clearing's edge across the road (anchor herSpot), looking at the store; then turns and runs into the trees (herRun), faster than anything should. A stand-in actor (not the simulated witch): nothing to shoot. Then Ellen (and Junie, once the note's been read). Session 25 (Aaron): as she goes, a rush of wind (witchRush), not the shriek. Nov 24 (Aaron: 'when Tom kills the mutant, he should pause to look at the dead mutant, then the camera should swivel to the Witch. We need to ensure that the witch is visible and we need to slow it down, so that the momentum resets and the music has time to land'): played a beat after the kill (outside; else as he comes back out of the store). The view settles on the body (live target gasMutantBody; the store's door if it died inside) and holds there in the quiet, one long breath (tomBreath); then an eased 1.8 s swivel to her spot (the first in clear sight across the road: GasStation.witchSpot); the sting and her song as she settles into view; she stands dead still facing him for about four seconds; then she runs (witchRush). 9.6 s, was 3.25.", "actors": [{"id": "her", "kind": "figure", "look": "witch", "anchor": "herSpot", "pos": [0, 0, 0], "yaw": 0}], "tracks": [{"at": 0, "do": "lookAt", "target": "gasMutantBody", "seconds": 0.9}, {"at": 0.5, "do": "sfx", "sfx": "tomBreath"}, {"at": 2.4, "do": "lookAt", "target": "herSpot", "seconds": 1.8}, {"at": 3.6, "do": "music", "sting": "stingWitch"}, {"at": 3.6, "do": "sfx", "sfx": "witchSong"}, {"at": 7.6, "do": "move", "actor": "her", "anchor": "herRun", "to": [0, 0, 0], "seconds": 0.9}, {"at": 7.6, "do": "lookAt", "target": "herRun", "rate": 1.6}, {"at": 7.7, "do": "sfx", "sfx": "witchRush"}], "duration": 9.6, "jolt": true},
     {
       "id": "day1.tower",
       "name": "Day 1: the view from the lookout tower (first person)",

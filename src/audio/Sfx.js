@@ -1006,6 +1006,11 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.8, type: 'bandpass', freq: 380, endFreq: 2600, q: 0.9, gain: 0.42, attack: 0.12 });
     s.noiseBurst(o, { seconds: 0.55, type: 'lowpass', freq: 900, endFreq: 260, q: 0.5, gain: 0.3, attack: 0.04 });
   },
+  // Nov 24: Tom's one long, shaky breath out over the dead mutant (gas.witch). A placeholder till its file.
+  tomBreath(s) {
+    const o = s.out(undefined, undefined, 0.5);
+    s.noiseBurst(o, { seconds: 1.3, type: 'bandpass', freq: 700, endFreq: 320, q: 1.1, gain: 0.32, attack: 0.28 });
+  },
   // M7: she throws a hex: a hissing whoosh.
   witchHex(s, pos) {
     const o = s.out(pos?.x, pos?.z, 0.8);

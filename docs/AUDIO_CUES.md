@@ -99,7 +99,7 @@ night music into `public/audio/music`). Don't worry about length, silence or lou
 | 3.25 s | The backhand throws him out through the door | `swipe` |
 | 4.0 s | He hits the forecourt | `bodyThud`; the outside bed fades back in |
 
-The witch's cutscene at the gas station plays `stingWitch` as she appears (0.3 s).
+The witch's cutscene at the gas station (9.6 s since Nov 24): Tom looks at the dead mutant and breathes out (`tomBreath`, 0.5 s), the camera swivels slowly to her, `stingWitch` and her song as she settles in view (3.6 s), she holds still about 4 s, then runs (`witchRush`, 7.7 s).
 
 ---
 
