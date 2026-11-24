@@ -3117,6 +3117,12 @@ export const config = {
     sheriffCarWithin: 90, // Aaron (Nov 14): the sheriff's car (its pistol) within this of the store is the scanner's sure battery: the goal points at it
     packDistance: 35, // metres outside the edge: the forecourt pack and the mutant are put there
     interactRange: 1.6, // metres to a search point or a thing to use (inside the store only)
+    // Nov 24 (Aaron: "a police zombie standing near the [police] car... we are trying to lure the player
+    // to the police car": the road's cruiser with the sheriff's pistol in its door, about 55 m west). Put
+    // out with the forecourt pack: one police zombie by the nearest police car within `within` metres of
+    // the clearing's centre, `gap` metres out from its station-side flank, lingering there (`linger`),
+    // facing the station, its eyes dulled like the pack's (`sight`) so it waits by the car till Tom's close.
+    policeZombie: { within: 90, gap: 1.1, linger: 1.2, sight: 0.25 },
     pack: { count: 5, centreZ: 3.5, lingerRadius: 8, sight: 0.25, callAt: 22 }, // Plan #12: sight: their eyes while unaware (x the usual); callAt: Wyatt's 'they haven't seen you' within this of them. DESIGN: 4-6 citizens among the pumps and cars (scaled by zombie level like any)
     // The first mutant: its own health (DESIGN: beatable close up with the
     // shotgun and a handful of shells; mutants are 300 before the level's

@@ -449,6 +449,37 @@ export class GasStation {
       this.pack.push(...out);
     }
     this.packUnaware = this.gc.pack.sight < 1;
+    this.sendCop();
+  }
+
+  // Nov 24 (Aaron: lure Tom to the police car): a police zombie standing by the road's cruiser.
+  sendCop() {
+    const pc = this.gc.policeZombie;
+    const spot = pc && GasStation.copSpot(this.vehicles?.list ?? [], this.frame, pc, this.vehicles?.data?.types ?? null);
+    if (!spot || !this.enemies) return;
+    const z = this.enemies.spawnZombie(spot.x, spot.z, { variant: 'police', mode: 'linger', linger: { x: spot.x, z: spot.z, r: pc.linger }, rise: false, facing: spot.facing, authored: 'gasStation' });
+    if (z && pc.sight < 1) z.sightScale = pc.sight;
+    this.cop = z ?? null;
+  }
+
+  // Where it stands (pure): beside the nearest police car within pc.within of the clearing's centre, pc.gap
+  // out from whichever flank faces the station, facing the station. null if there's no such car.
+  static copSpot(vehicles, frame, pc, types) {
+    let car = null;
+    let best = pc.within;
+    for (const v of vehicles) {
+      if (v.type !== 'police') continue;
+      const d = Math.hypot(v.x - frame.x, v.z - frame.z);
+      if (d < best) [best, car] = [d, v];
+    }
+    if (!car) return null;
+    const halfWidth = (types?.police?.size?.[1] ?? 1.82) / 2;
+    const out = halfWidth + pc.gap;
+    const lx = Math.cos(car.yaw);
+    const lz = -Math.sin(car.yaw);
+    const sides = [1, -1].map((s) => ({ x: car.x + lx * out * s, z: car.z + lz * out * s }));
+    const spot = sides.sort((a, b) => Math.hypot(a.x - frame.x, a.z - frame.z) - Math.hypot(b.x - frame.x, b.z - frame.z))[0];
+    return { ...spot, facing: Math.atan2(frame.x - spot.x, frame.z - spot.z), car };
   }
 
   // Plan #12: one of them hurt or after him, or a pump lit: they all wake up to him.

@@ -175,3 +175,42 @@ describe("the pumps and the mutant's blows (Nov 24)", () => {
     });
   }
 });
+
+// Nov 24 (Aaron): a police zombie by the road's police car, to lure Tom to it (the sheriff's pistol).
+describe('the police zombie by the cruiser (Nov 24)', () => {
+  const frame = { x: 0, z: 0, rx: 1, rz: 0, fx: 0, fz: 1, yaw: 0 };
+  const pc = config.gasStation.policeZombie;
+
+  it('stands by the nearest police car in range, on the flank toward the station, facing it', () => {
+    const cars = [
+      { type: 'sedan', x: 10, z: 0, yaw: 0 },
+      { type: 'police', x: 0, z: 70, yaw: Math.PI / 2 }, // along the x axis: its flanks face north and south
+      { type: 'police', x: 0, z: 55, yaw: Math.PI / 2 },
+    ];
+    const s = GasStation.copSpot(cars, frame, pc, vehicleData.types);
+    expect(s.car).toBe(cars[2]);
+    const out = vehicleData.types.police.size[1] / 2 + pc.gap;
+    expect(s.x).toBeCloseTo(0, 5);
+    expect(s.z).toBeCloseTo(55 - out, 5); // the station side
+    expect(s.facing).toBeCloseTo(Math.atan2(0 - s.x, 0 - s.z), 5);
+  });
+
+  it('none when no police car is near', () => {
+    expect(GasStation.copSpot([{ type: 'police', x: 0, z: pc.within + 5, yaw: 0 }, { type: 'sedan', x: 3, z: 3, yaw: 0 }], frame, pc, vehicleData.types)).toBeNull();
+  });
+
+  it('is put out with the forecourt pack, as a police zombie lingering by the car', () => {
+    const spawned = [];
+    const st = {
+      gc: config.gasStation,
+      frame,
+      vehicles: { list: [{ type: 'police', x: 0, z: 55, yaw: Math.PI / 2 }], data: vehicleData },
+      enemies: { spawnZombie: (x, z, o) => (spawned.push({ x, z, o }), { sightScale: 1 }) },
+    };
+    GasStation.prototype.sendCop.call(st);
+    expect(spawned).toHaveLength(1);
+    expect(spawned[0].o).toMatchObject({ variant: 'police', mode: 'linger', rise: false, authored: 'gasStation' });
+    expect(spawned[0].o.linger.r).toBe(pc.linger);
+    expect(st.cop.sightScale).toBe(pc.sight);
+  });
+});
