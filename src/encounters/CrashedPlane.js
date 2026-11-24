@@ -778,6 +778,22 @@ export class CrashedPlane {
       const l = Math.hypot(dx, dz) || 1;
       this.player.teleport(w.x + (dx / l) * (this.ec.triggerDistance + 6), w.z + (dz / l) * (this.ec.triggerDistance + 6));
     });
+    // Nov 24 (Aaron: every enemy from the debug menu): the grey's boss fight, from the stand-off on.
+    cat.addItem("Crashed plane: the grey's boss fight now (from the stand-off)", () => {
+      if (!this.ready) return;
+      for (const f of FLAGS) this.progress?.setFlag(f, false);
+      this.flyer?.active && this.flyer.stop();
+      this.reset();
+      if (this.ec.needs) this.progress?.setFlag(this.ec.needs); // the plane down (the outpost's barricade)
+      this.progress?.setFlag('planeSeen'); // straight to the stand-off, no arrival sweep
+      const w = this.spot('work');
+      const b = this.spot('bench');
+      const dx = w.x - b.x;
+      const dz = w.z - b.z;
+      const l = Math.hypot(dx, dz) || 1;
+      const d = Math.max(4, this.ec.triggerDistance - 3);
+      this.player.teleport(w.x + (dx / l) * d, w.z + (dz / l) * d, Math.atan2(dx, dz));
+    });
     cat.addItem('Crashed plane: start it again (flags cleared)', () => {
       for (const f of FLAGS) this.progress?.setFlag(f, false);
       this.flyer?.active && this.flyer.stop();

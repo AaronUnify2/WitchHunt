@@ -1125,6 +1125,19 @@ export class Game {
       const z = E.spawnZombie(at.x, at.z, { kind: 'mutant', mode: 'chase' });
       this.toast.show(z ? `Debug: a mutant, ${Math.round(z.health)} health` : 'Debug: no room for it');
     });
+    // Nov 24 (Aaron: "make sure that I'm able to summon every enemy from the debug list"): the mega night's two
+    // stand-ins. The Hollow (a mutant's body for now) tears a fence panel down only in the mega night itself.
+    tab.addItem('Spawn a Hollow 16 m ahead (the mega night\'s; a mutant\'s body for now)', () => {
+      const at = ahead(16);
+      const p = this.player.position;
+      const z = E.spawnZombie(at.x, at.z, { kind: 'mutant', mode: 'chase', facing: Math.atan2(p.x - at.x, p.z - at.z), authored: 'hollow' });
+      this.toast.show(z ? `Debug: a Hollow, ${Math.round(z.health)} health` : 'Debug: no room for it');
+    });
+    tab.addItem('Drop a Hanged on me (the mega night\'s stand-in: it lands beside you)', () => {
+      const p = this.player.position;
+      const z = E.spawnZombie(p.x + 1.1, p.z + 0.6, { mode: 'chase', facing: 0, authored: 'hanged' });
+      this.toast.show(z ? 'Debug: something drops out of the branches onto you' : 'Debug: no room for it');
+    });
     for (const variant of Object.keys(this.cfg.zombies.variants)) {
       if (variant === 'screamer') continue;
       tab.addItem(`Spawn 3 ${variant} dead 10 m ahead`, () => {
