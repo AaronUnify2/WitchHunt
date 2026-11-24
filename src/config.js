@@ -5916,6 +5916,22 @@ export const config = {
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
     glimpse: { within: 40, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)
     plot: { near: 30, moths: 5 }, // Aaron (Nov 14): three fewer (it was 8, on top of the dead there)
+    // Nov 24 (Aaron: "there's a veggie garden in the backyard. I will award you points for decorating with the creepiest
+    // scarecrow possible"): render/scarecrowModel.js. at / yaw: in the farm model's own (mirrored) coordinates, at
+    // the garden's far end, facing back across it to the house. Its head turns to face Tom while he isn't looking
+    // (within headTurn.within metres; at most maxYaw radians off its body: further than a neck should go; outside
+    // the view by margin x the camera's half-angle). colors: its own.
+    scarecrow: {
+      at: [7.65, 16.9], yaw: Math.PI, scale: 1, albedo: 0.5,
+      headTurn: { within: 45, maxYaw: 2.5, margin: 1.15 },
+      colors: {
+        post: 0x2c2218, postScar: 0x6a604c, sigil: 0x8a8670, burlap: 0x463a26, burlapDark: 0x2a2216, stitch: 0x0a0806,
+        stain: 0x1e0806, button: 0x0a0a0c, buttonShine: 0x4a4a50, hole: 0x030202, straw: 0x56482a, strawDark: 0x3a3018,
+        rope: 0x342e20, shirt: 0x2e1a16, shirtDark: 0x1e110e, shirtLine: 0x140a08, cap: 0x3e1210, capDark: 0x260a08, grime: 0x16110a,
+        trousers: 0x262a2c, trousersDark: 0x1a1c1e, boot: 0x1e1610, twig: 0x2a241c, antler: 0x3a3226, crow: 0x0c0c10,
+        crowBeak: 0x26221e, crowEye: 0x4a4a44, string: 0x2a2a24, deadStalk: 0x16140e, deadLeaf: 0x24200e,
+      },
+    },
     hold: { take: 0.8, look: 0.45, generator: 1.2 },
     light: { color: 0xffc078, intensity: 7, distance: 11, decay: 1.2 },
     look: {

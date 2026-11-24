@@ -33,9 +33,23 @@ import farmData from '../data/pruittFarm.json';
 import { clearingFrame, frameToWorld, frameAnchor } from '../world/clearingFrame.js';
 import { toWorld } from '../world/CrashSite.js';
 import { buildPruittFarm, FARM } from '../render/pruittFarmModel.js';
+import { buildScarecrow, outOfView } from '../render/scarecrowModel.js';
 import { weatherFor } from '../render/propKit.js';
 import { HoldAction } from '../player/HoldAction.js';
 import { DEBUG } from '../debug/DebugMenu.js';
+
+const _v = new THREE.Vector3();
+const _q = new THREE.Quaternion();
+const _e = new THREE.Euler();
+
+// The scarecrow's neck: the turn from its body's yaw toward `want` (both world yaws), the short way, held to
+// within maxYaw. Pure.
+export function scarecrowTurn(want, bodyYaw, maxYaw) {
+  let d = (want - bodyYaw) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return Math.max(-maxYaw, Math.min(maxYaw, d));
+}
 
 export const FARM_FLAGS = ['farmCall', 'farmVisited', 'farmMothsDone', 'mothmanGlimpsed', 'marcyJournal', 'plotMoths'];
 const GROUP = 'porch';
@@ -115,6 +129,14 @@ export class PruittFarm {
       this.model = buildPruittFarm(this.fc, { weather: weatherFor(this.cfg.props.weather, this.fc.look.weather) });
       this.model.group.position.set(f.x, this.y, f.z);
       this.model.group.rotation.y = f.yaw;
+      // Nov 24 (Aaron: the creepiest scarecrow possible, in the kitchen garden): render/scarecrowModel.js.
+      const sc = this.fc.scarecrow;
+      if (sc) {
+        this.scarecrow = buildScarecrow(sc, { weather: weatherFor(this.cfg.props.weather, this.fc.look.weather) });
+        this.scarecrow.group.position.set(sc.at[0], 0, sc.at[1]);
+        this.scarecrow.group.rotation.y = sc.yaw ?? 0;
+        this.model.group.add(this.scarecrow.group);
+      }
       this.model.group.updateMatrixWorld(true);
       scene.add(this.model.group);
       for (const [name, s] of Object.entries(this.model.spots)) {
@@ -245,11 +267,29 @@ export class PruittFarm {
 
   // ---- each frame ------------------------------------------------------------------------------
 
+  // Nov 24: the scarecrow's head turns to Tom while he isn't looking at it (within headTurn.within), as far
+  // round as maxYaw from its body, so each time he looks back it's facing him.
+  turnScarecrow() {
+    const s = this.scarecrow;
+    const cam = this.player?.camera;
+    if (!s || !cam) return;
+    const ht = this.fc.scarecrow.headTurn;
+    const at = s.neck.getWorldPosition(_v);
+    const p = this.player.position;
+    if (Math.hypot(at.x - p.x, at.z - p.z) > ht.within) return;
+    cam.updateMatrixWorld();
+    if (!outOfView(cam, at.x, at.y + 0.25, at.z, ht.margin)) return;
+    const bodyYaw = s.group.getWorldQuaternion(_q);
+    _e.setFromQuaternion(bodyYaw, 'YXZ');
+    s.neck.rotation.y = scarecrowTurn(Math.atan2(p.x - at.x, p.z - at.z), _e.y, ht.maxYaw);
+  }
+
   update(dt, input, playing, canInteract) {
     if (!this.ready || this.demo?.active) return;
     if (this.model) {
       const p = this.player.position;
       this.model.group.visible = Math.hypot(p.x - this.frame.x, p.z - this.frame.z) < (this.drawDistance?.() ?? 400) + this.fc.radius;
+      if (this.model.group.visible) this.turnScarecrow();
     }
     if (!playing) {
       this.hud.prompt = '';
@@ -575,6 +615,8 @@ export class PruittFarm {
   dispose() {
     for (const off of this.unsubscribers ?? []) off();
     this.model?.group.removeFromParent();
+    this.scarecrow?.dispose();
+    this.scarecrow = null;
     this.model?.dispose();
     for (const l of this.lights ?? []) l.removeFromParent();
     this.oakLight?.removeFromParent();
