@@ -189,6 +189,10 @@ export class Objectives {
     const tn = g.tunnel;
     if (tn && has('night2Done') && !has('farmCall')) {
       if (has('tunnelCall') && !has('tunnelSeen')) return step('tunnel', 'Take the road north to the Laurel Gap tunnel. See if the way out is still open.', tn.barrier);
+      if (has('tunnelSeen') && !has('tunnelCleared')) {
+        if (tn.fighting) return step('tunnelFight', 'Shoot the army charges caught in the Pile. Cut its tendrils before it drags the dead back in.', tn.pile.alive ? { x: tn.pile.x, z: tn.pile.z } : tn.barrier);
+        return step('tunnelBack', 'Something came out of the rubble at the tunnel. Go back and finish it.', tn.barrier);
+      }
       if (has('tunnelSeen')) return step('tunnelHome', 'Head back home.', L.gate.mid);
     }
     // ---- the military outpost (Session 17, M9.4) ----

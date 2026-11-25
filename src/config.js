@@ -5927,7 +5927,44 @@ export const config = {
   // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
   // Nov 25 (Aaron): Day 3, the Laurel Gap tunnel on the road north (encounters/Tunnel.js). call.after: seconds into
   // the dawn after Night 2 before Ellen sends Tom there; seeAt: metres from the army's barrier that he's seen it.
-  tunnel: { call: { after: 8 }, seeAt: 30 },
+  tunnel: { call: { after: 8 }, seeAt: 30, pileOut: 9 }, // pileOut: metres south of the barrier the Pile comes up
+  // Nov 25 (Aaron): the Pile, Day 3's fight at the tunnel (ai/Pile.js; render/PileRenderer.js). A first pass, to tune
+  // in play. bodies: its size at the start (Aaron: 30); magic: its real health (charges and seams only).
+  pile: {
+    bodies: 30,
+    magic: 100,
+    radius: 2.6, minRadius: 0.9, // metres, at full size and at none
+    emergeSeconds: 3.2, // heaving up out of the rubble
+    leash: 45, // metres from where it came up it'll go
+    maxLoose: 12, // its fallen up at once; past that a body knocked off lands dead
+    lastGroup: 12, // at the end, at most this many of the bodies still in it stand up
+    // By size (bodies): `below` is where a stage starts; speed m/s; attackEvery: seconds between attacks.
+    stages: {
+      large: { speed: 1.3, attackEvery: 3.2, attacks: ['slam'] },
+      medium: { below: 20, speed: 3.2, attackEvery: 2.4, attacks: ['lash', 'fling'] },
+      small: { below: 10, speed: 6.2, attackEvery: 1.8, attacks: ['lunge', 'shriek'] },
+    },
+    attacks: {
+      firstAfter: 4,
+      contact: { reach: 0.5, damage: 14, every: 1.0 }, // rolling into him
+      slam: { range: 4, reach: 3.2, windup: 1.1, recover: 1.0, damage: 28, shake: 1.4 }, // the whole mass down on the ground
+      lash: { range: 10, windup: 0.55, recover: 0.7, damage: 16, dodge: 1.6 }, // a tendril at where he was
+      fling: { range: 18, windup: 0.6, recover: 0.8, flight: 0.9, reach: 1.6, damage: 14 }, // a body thrown at him
+      lunge: { range: 10, windup: 0.45, strike: 0.5, recover: 0.9, speed: 13, reach: 0.6, damage: 22 },
+      shriek: { range: 40, windup: 0.8, recover: 1.4, alert: 80 }, // calling the dead in
+    },
+    shots: { perBody: 90 }, // damage into the mass to knock one body off
+    // The charges: one surfaces (`first` seconds into the fight; then once it's dragged `afterReclaimed` back in, or
+    // after `every` seconds) for `window` seconds. Shot: magic off, shedShare of its bodies thrown off, a blast.
+    charge: { first: 7, every: 22, afterReclaimed: 4, window: 7, hitRadius: 0.42, magic: 20, shedShare: 0.35, blast: { radius: 4.5, damage: 120, playerDamage: 35 } },
+    seams: { seconds: 5, hitRadius: 0.35, magicPerDamage: 0.06 }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
+    dynamite: { shed: 4, magic: 6 }, // a stick (or any blast) going off against it
+    shed: { distance: [3, 8], spread: 2.2, flight: 0.8, gravity: 18 },
+    tendrils: { max: 2, range: 22, reach: 16, drag: 5, points: 4, hitRadius: 0.32 },
+    ram: { minSpeed: 5, reach: 0.8, every: 1.2, shed: 2, shedSpiked: 4, keep: 0.1, damage: 18 }, // the quad into it
+    lines: { emerge: 'pile.emerge.wyatt', charge: 'pile.charge.wyatt', tendril: 'pile.tendril.wyatt', blast: 'pile.blast.ellen', dead: 'pile.dead.ellen' },
+    look: { spin: 0.6, core: 0x5cff6a, coreLight: 0x3cff5a, coreIntensity: 2.2, coreReach: 14, tendril: 0x48e060, seam: 0x9aff80, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+  },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)
     // The dead oak at the plot's centre; its limbs (yaw degrees, reach, height at the rope); ropes to the necks.

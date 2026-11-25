@@ -95,6 +95,8 @@ import { CrashedPlane } from '../encounters/CrashedPlane.js';
 import { PruittFarm } from '../encounters/PruittFarm.js';
 import { FamilyPlot } from '../encounters/FamilyPlot.js'; // Nov 24: the Pruitts' family plot and the Hanged
 import { Tunnel } from '../encounters/Tunnel.js';
+import { Pile } from '../ai/Pile.js';
+import { PileRenderer } from '../render/PileRenderer.js';
 import { FamilyStations } from '../story/FamilyStations.js';
 import { FogFunnel } from '../story/FogFunnel.js';
 import { JunieTaken } from '../encounters/JunieTaken.js';
@@ -775,8 +777,18 @@ export class Game {
     this.farm = new PruittFarm(this.cfg, this.bus);
     this.farm.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, moths: this.moths, flyer: this.flyer, flashlight: this.flashlight, lore: this.lore, paper: this.paper, card: this.card, gates: this.gates, director: this.director, vehicles: this.vehicles, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.combat.promptSources.push(this.farm.hud);
+    // Nov 25 (Aaron): Day 3's fight at the tunnel, the Pile (ai/Pile.js; drawn by render/PileRenderer.js).
+    this.pile = new Pile(this.cfg.pile, this.bus, {
+      ground: this.world.ground,
+      player: this.player,
+      combat: this.combat,
+      explosives: this.explosives,
+      quad: this.quad,
+      dialogue: this.dialogue,
+      makeView: (pile) => new PileRenderer(pile, { scene: this.scene, zombieCfg: this.cfg.zombies, share: this.combat.zombieRenderer, ground: this.world.ground, camera: () => this.player.position }),
+    });
     this.tunnel = new Tunnel(this.cfg, this.bus); // Nov 25 (Aaron): Day 3, the caved-in tunnel on the road north
-    this.tunnel.init({ world: this.world, player: this.player, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, demo: this.demo });
+    this.tunnel.init({ world: this.world, player: this.player, progress: this.progress, dialogue: this.dialogue, subtitles: this.subtitles, cutscenes: this.cutscenes, clock: this.clock, demo: this.demo, pile: this.pile });
     this.familyPlot = new FamilyPlot(this.cfg, this.bus); // Nov 24 (Aaron): the headstones, the dead oak, the Hanged
     this.familyPlot.init(this.scene, { world: this.world, player: this.player, combat: this.combat, colliders: this.colliders, rng: this.rng.fork('familyPlot'), cutscenes: this.cutscenes, demo: this.demo, notify, drawDistance: () => this.drawDistance });
     this.vehicles.busy?.push(this.farm.hud);
@@ -1323,6 +1335,7 @@ export class Game {
     this.plane.addDebugItems(menu);
     this.farm.addDebugItems(menu);
     this.familyPlot.addDebugItems(menu);
+    this.tunnel.addDebugItems(menu); // Nov 25: the Pile
     this.junieTaken.addDebugItems(menu); // Session 26
     this.caller.addDebugItems(menu);
     this.church.addDebugItems(menu);
@@ -2373,6 +2386,7 @@ export class Game {
     if (first) this.farm.update(dt, controls, playing && this.combat.alive, !locked && !this.player.riding); // Round 2: the Pruitt farm
     if (first) this.familyPlot.update(dt, playing && this.combat.alive); // Nov 24: the Hanged
     if (first) this.tunnel.update(dt, playing && this.combat.alive); // Nov 25: Day 3's tunnel
+    if (first) this.pile.update(dt, playing && this.combat.alive); // and its Pile
     if (first) this.stations.update(dt); // Round 2, step 5
     if (first && playing) this.funnel.update(dt); // Round 2, step 6
     if (first) this.comms.update(); // Session 26: the radio's reach
@@ -2442,6 +2456,8 @@ export class Game {
     this.moths.dispose();
     this.plane.dispose();
     this.farm.dispose();
+    this.pile?.dispose();
+    this.tunnel?.dispose();
     this.familyPlot.dispose();
     this.stations.dispose();
     this.junieTaken.dispose();

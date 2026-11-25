@@ -77,6 +77,9 @@ describe('Day 3: the generator, no sleep and no fade (Nov 25)', () => {
     f.updateCall();
     expect(flags.has('farmCall')).toBe(false); // not before the tunnel
     flags.add('tunnelSeen');
+    f.updateCall();
+    expect(flags.has('farmCall')).toBe(false); // not with the Pile still up (Nov 25)
+    flags.add('tunnelCleared');
     clock.phaseElapsed = 100;
     f.updateCall();
     expect(flags.has('farmCall')).toBe(false); // not in the morning

@@ -360,7 +360,7 @@ export class PruittFarm {
   // Pruitts' generator is heard across the valley: Wyatt, then Ellen (farmCall). (The outpost isn't mentioned until
   // the Mothman's been seen: Outpost.call, on mothmanGlimpsed.)
   updateCall() {
-    if (!this.has('night2Done') || this.has('farmCall') || !this.has('tunnelSeen')) return;
+    if (!this.has('night2Done') || this.has('farmCall') || !this.has('tunnelSeen') || !this.has('tunnelCleared')) return;
     if (!lateInDay(this.clock, this.fc.clock.dayLeft)) return;
     if (this.cutscenes?.active || this.subtitles?.busy || this.dialogue?.pending?.length) return;
     this.set('farmCall');
@@ -620,12 +620,12 @@ export class PruittFarm {
     });
     // Nov 25: the tunnel seen and the day on to late afternoon: the Pruitts' generator is due.
     cat.addItem("Day 3: back from the tunnel, late afternoon (the Pruitts' generator is due)", () => {
-      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen']) this.set(f);
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen', 'tunnelCleared']) this.set(f);
       const c = this.clock;
       if (c?.phase === 'day') c.phaseElapsed = Math.max(c.phaseElapsed, c.currentPhase.seconds - this.fc.clock.dayLeft);
     });
     cat.addItem('The Pruitt farm: at the track in, at dusk (the back way known)', () => {
-      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen', 'farmCall']) this.set(f);
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen', 'tunnelCleared', 'farmCall']) this.set(f);
       const e = this.frame.entrance;
       this.player.teleport(e.x - this.frame.fx * 14, e.z - this.frame.fz * 14, Math.atan2(-this.frame.fx, -this.frame.fz));
     });

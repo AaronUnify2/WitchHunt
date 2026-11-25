@@ -8,16 +8,20 @@
 //     the tunnel's open (it's the only road out).
 //  2. The tunnel (tunnelSeen): coming within seeAt metres of the army's barrier in front of it (world/roadNorth.js):
 //     the rock's fresh, brought down on purpose; Wyatt says so, Ellen works out what it means.
-//     The monster out of the rubble is still to be designed with Aaron: 'tunnel:seen' is where its fight starts.
-//  3. The day runs on as normal (no fade). Late in the afternoon PruittFarm.updateCall hears the Pruitts'
-//     generator start up across the valley (farm.call.wyatt, then Ellen: farmCall). If Tom hasn't been to the
-//     tunnel by then, the day waits there for him (PruittFarm.updateClock).
+//  3. The Pile (ai/Pile.js; Aaron, Nov 25): the bodies of the people the army buried with the tunnel, one swirling
+//     mass held together by her magic, heaves up out of the rubble. Its end: tunnelCleared. Left mid-fight (a
+//     load, a death), it comes up again whole the next time he's there.
+//  4. The day runs on as normal (no fade). Late in the afternoon PruittFarm.updateCall hears the Pruitts'
+//     generator start up across the valley (farm.call.wyatt, then Ellen: farmCall). If the tunnel isn't done by
+//     then, the day waits there for him (PruittFarm.updateClock).
 //
-// Saved through its story flags (data/progress.json): tunnelCall, tunnelSeen. Off in Demo mode.
+// Saved through its story flags (data/progress.json): tunnelCall, tunnelSeen, tunnelCleared. Off in Demo mode.
 //
 // Events: 'tunnel:call', 'tunnel:seen'.
 
-export const TUNNEL_FLAGS = ['tunnelCall', 'tunnelSeen'];
+import { DEBUG } from '../debug/DebugMenu.js';
+
+export const TUNNEL_FLAGS = ['tunnelCall', 'tunnelSeen', 'tunnelCleared'];
 
 export class Tunnel {
   constructor(cfg, bus) {
@@ -26,14 +30,24 @@ export class Tunnel {
     this.bus = bus;
   }
 
-  // ctx: { world, player, progress, dialogue, subtitles, cutscenes, clock, demo }.
+  // ctx: { world, player, progress, dialogue, subtitles, cutscenes, clock, demo, pile (ai/Pile.js) }.
   init(ctx) {
     Object.assign(this, ctx);
+    this.unsub = [
+      this.bus?.on?.('pile:dead', () => this.set('tunnelCleared')),
+      this.bus?.on?.('player:respawned', () => this.pile?.stop?.()), // a retry: it comes up whole again
+    ].filter(Boolean);
     this.reset();
   }
 
   reset() {
     this.callT = 0;
+    this.pile?.stop?.();
+  }
+
+  // Is the fight on (for the objective)?
+  get fighting() {
+    return Boolean(this.pile?.alive);
   }
 
   has(flag) {
@@ -62,6 +76,22 @@ export class Tunnel {
       return;
     }
     if (!this.has('tunnelSeen')) this.updateSee();
+    else if (!this.has('tunnelCleared')) this.updatePile();
+  }
+
+  // The Pile: up out of the rubble in front of the barrier as he comes near (again, after a load or a death).
+  updatePile() {
+    const pile = this.pile;
+    if (!pile || pile.alive) return;
+    const b = this.barrier;
+    const p = this.player?.position;
+    if (!b || !p || Math.hypot(p.x - b.x, p.z - b.z) > this.tc.seeAt) return;
+    this.wake(b);
+  }
+
+  wake(b) {
+    // South of the barrier (the map's z runs south), facing down the road at him.
+    this.pile?.start?.(b.x, b.z + this.tc.pileOut, 0);
   }
 
   // 1: a few seconds into the dawn after Night 2, once nothing else is being said.
@@ -84,9 +114,27 @@ export class Tunnel {
     this.set('tunnelSeen');
     this.dialogue?.play('tunnel.seen.wyatt');
     this.bus.emit('tunnel:seen', { x: b.x, z: b.z });
+    this.wake(b);
+  }
+
+  dispose() {
+    for (const off of this.unsub ?? []) off?.();
+  }
+
+  // ---- debug ----------------------------------------------------------------------------------
+
+  addDebugItems(menu) {
+    const cat = menu.category(DEBUG.story);
+    // Nov 25: straight to the Pile: Day 3's flags, Tom on the road 26 m short of the barrier, facing it.
+    cat.addItem('Day 3: the Pile at the tunnel (fight it now)', () => {
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall']) this.set(f);
+      const b = this.barrier;
+      if (!b) return;
+      this.player.teleport(b.x, b.z + 26, 0);
+    });
   }
 
   debugLine() {
-    return `tunnel ${this.has('tunnelSeen') ? 'seen' : this.has('tunnelCall') ? 'called' : 'idle'}`;
+    return `tunnel ${this.has('tunnelCleared') ? 'cleared' : this.has('tunnelSeen') ? 'seen' : this.has('tunnelCall') ? 'called' : 'idle'} ${this.pile?.debugLine?.() ?? ''}`;
   }
 }
