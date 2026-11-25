@@ -365,7 +365,8 @@ export class PileRenderer {
       const rx = Math.cos(a) * coreR * 0.42;
       const ry = Math.sin(a) * coreR * 0.32;
       m.position.set(mx + Math.sin(side) * rx - Math.sin(toTom) * 0.08, my + ry, mz + Math.cos(side) * rx - Math.cos(toTom) * 0.08);
-      m.scale.set(coreR * 0.2, coreR * 0.14 * (1 + beat * 0.1), coreR * 0.2);
+      m.scale.set(coreR * 0.2, coreR * 0.14 * (1 + beat * 0.1), coreR * 0.2).multiplyScalar(Math.max(0.001, (rise - 0.4) / 0.6));
+      m.visible = rise > 0.45; // (not floating there before it's up)
       m.rotation.set(0, toTom + a, a);
     });
     this.veinUniforms.uVeinGlow.value = look.veinGlow * (0.7 + beat * 0.6 + wind * 0.8 + (reel ? 1 : 0));

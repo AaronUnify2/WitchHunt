@@ -52,7 +52,9 @@ export class RoadNorthProps {
     this.culler = new ChunkCuller(64, 8);
     this.portal();
     this.barrier();
+    this.armyPost();
     this.flush();
+    this.buildPostLights();
     this.rock(rockMaterial);
     this.mouthDark();
     this.buildBrush();
@@ -237,6 +239,231 @@ export class RoadNorthProps {
       const cx = b.x + s * (b.half - 0.8);
       for (let i = 0; i < 5; i++) this.put(new THREE.TorusGeometry(0.42, 0.025, 4, 10), k.wire, cx + (i - 2) * 0.35 * s, y(cx, b.z) + 0.42, b.z + 0.2, Math.PI / 2 + 0.2 * i, 0.15);
     }
+  }
+
+  // ---- the army's post (Nov 25, Aaron's concept art for the Pile's fight) ---------------------------------------
+
+  // Where the demolition crew waited: on the west shoulder south of the barrier, a sandbagged post, ammo crates,
+  // a dead campfire (still smouldering), a work lamp on a tripod; crates and spent brass left across the road; two
+  // street lamps along it, their light falling through the fog; and a rusting water tower back in the trees.
+  armyPost() {
+    const k = this.k;
+    const b = this.layout.barrier;
+    const y = (x, z) => this.ground.heightAt(x, z);
+    const c = {
+      crate: k.crate ?? 0x3e4228, crateDark: k.crateDark ?? 0x2a2c1a, stencil: k.stencil ?? 0x8a8a6a, brass: k.brass ?? 0x8a6a2a,
+      stone: k.fireStone ?? 0x4a4844, ash: k.ash ?? 0x2a2622, log: k.deadwood ?? 0x3a2e22, pole: k.pole ?? 0x2e3032, rust: k.rust ?? 0x5a3420,
+      rustDark: k.rustDark ?? 0x3a2418, steel: k.steel ?? 0x3e4044, paper: k.paper ?? 0x9a968a,
+    };
+    const px = b.x - 13;
+    const pz = b.z + 17;
+    this.post = { x: px, z: pz };
+    // Sandbags: an L of them, two courses high.
+    for (let course = 0; course < 2; course++) {
+      for (let i = 0; i < 9; i++) {
+        const sx = px - 3 + i * 0.75 + (course ? 0.35 : 0);
+        this.put(new THREE.SphereGeometry(0.36, 6, 4).scale(1.25, 0.5, 0.8), k.sandbag, sx, y(sx, pz - 3) + 0.16 + course * 0.32, pz - 3, this.rand() * 0.3);
+      }
+      for (let i = 0; i < 6; i++) {
+        const sz = pz - 2.4 + i * 0.75 + (course ? 0.35 : 0);
+        this.put(new THREE.SphereGeometry(0.36, 6, 4).scale(0.8, 0.5, 1.25), k.sandbag, px - 3.4, y(px - 3.4, sz) + 0.16 + course * 0.32, sz, this.rand() * 0.3);
+      }
+    }
+    // Ammo crates, stacked and loose: olive wood, dark ends, a stencil band.
+    const crate = (x, z, yaw, h = 0) => {
+      const gy = y(x, z) + h;
+      this.box(1.0, 0.42, 0.5, x, gy, z, c.crate, yaw);
+      this.box(1.04, 0.06, 0.54, x, gy + 0.42, z, c.crateDark, yaw);
+      this.box(0.06, 0.44, 0.54, x - Math.cos(yaw) * 0.5, gy, z + Math.sin(yaw) * 0.5, c.crateDark, yaw);
+      this.box(0.06, 0.44, 0.54, x + Math.cos(yaw) * 0.5, gy, z - Math.sin(yaw) * 0.5, c.crateDark, yaw);
+      this.box(0.5, 0.1, 0.01, x - Math.sin(yaw) * 0.255, gy + 0.18, z - Math.cos(yaw) * 0.255, c.stencil, yaw);
+    };
+    crate(px - 2, pz - 1.8, 0.1);
+    crate(px - 1, pz - 1.9, -0.05);
+    crate(px - 1.5, pz - 1.85, 0.2, 0.48);
+    crate(px - 2.6, pz + 0.4, 1.5);
+    crate(px + 2.5, pz + 2.2, 0.7);
+    // Crates and kit dropped across the road as they pulled out.
+    for (let i = 0; i < 7; i++) {
+      const cx = b.x + (this.rand() * 2 - 1) * 6;
+      const cz = b.z + 13 + this.rand() * 26;
+      crate(cx, cz, this.rand() * 6);
+    }
+    // Spent brass and papers on the road.
+    for (let i = 0; i < 60; i++) {
+      const bx = b.x + (this.rand() * 2 - 1) * 5.5;
+      const bz = b.z + 10 + this.rand() * 28;
+      this.put(new THREE.CylinderGeometry(0.012, 0.012, 0.06, 4).rotateZ(Math.PI / 2), c.brass, bx, y(bx, bz) + 0.015, bz, this.rand() * 6);
+    }
+    for (let i = 0; i < 10; i++) {
+      const bx = b.x + (this.rand() * 2 - 1) * 7;
+      const bz = b.z + 10 + this.rand() * 30;
+      this.box(0.22, 0.004, 0.3, bx, y(bx, bz) + 0.01, bz, c.paper, this.rand() * 6);
+    }
+    // The campfire: a ring of stones, charred logs, ash (its flame and light: buildPostLights).
+    const fx = px + 0.6;
+    const fz = pz + 0.6;
+    this.fire = { x: fx, y: y(fx, fz), z: fz };
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      this.put(new THREE.DodecahedronGeometry(0.17, 0).scale(1.2, 0.7, 1), c.stone, fx + Math.cos(a) * 0.55, this.fire.y + 0.08, fz + Math.sin(a) * 0.55, this.rand() * 6);
+    }
+    this.put(new THREE.CylinderGeometry(0.45, 0.48, 0.04, 10), c.ash, fx, this.fire.y + 0.02, fz);
+    for (let i = 0; i < 4; i++) this.put(new THREE.CylinderGeometry(0.06, 0.07, 0.75, 5).rotateZ(Math.PI / 2), c.log, fx, this.fire.y + 0.09, fz, (i / 4) * Math.PI);
+    // The work lamp on its tripod.
+    const lx = px + 2.2;
+    const lz = pz - 1.6;
+    const ly = y(lx, lz);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      this.put(new THREE.CylinderGeometry(0.02, 0.02, 1.75, 4).translate(0, 0.87, 0), c.pole, lx + Math.cos(a) * 0.32, ly, lz + Math.sin(a) * 0.32, 0, Math.sin(a) * 0.18, -Math.cos(a) * 0.18);
+    }
+    this.box(0.26, 0.2, 0.18, lx, ly + 1.68, lz, c.steel);
+    this.tripodLamp = { x: lx, y: ly + 1.78, z: lz + 0.1 };
+    // Street lamps up the west shoulder: a pole, an arm out over the road, a head.
+    this.streetLamps = [];
+    for (const dz of [26, 50]) {
+      const sx = b.x - 6.2;
+      const sz = b.z + dz;
+      const sy = y(sx, sz);
+      this.put(new THREE.CylinderGeometry(0.08, 0.11, 7.2, 6).translate(0, 3.6, 0), c.pole, sx, sy, sz);
+      this.box(1.8, 0.08, 0.08, sx + 0.9, sy + 7.05, sz, c.pole);
+      this.box(0.5, 0.14, 0.26, sx + 1.75, sy + 6.92, sz, c.steel);
+      this.streetLamps.push({ x: sx + 1.75, y: sy + 6.84, z: sz, ground: y(sx + 1.75, sz) });
+    }
+    // The water tower, back in the trees west of the road: four splayed steel legs braced in X's, a riveted tank
+    // streaked with rust, a conical roof, a ladder up one leg and a walkway round.
+    const tx = b.x - 17;
+    const tz = b.z + 5;
+    const ty = y(tx, tz);
+    const legH = 11;
+    for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      const a = Math.atan2(sx, sz);
+      this.put(new THREE.CylinderGeometry(0.12, 0.16, legH + 0.3, 6).translate(0, legH / 2, 0), c.rustDark, tx + sx * 2.3, ty, tz + sz * 2.3, 0, -sz * 0.07, sx * 0.07);
+      void a;
+    }
+    for (let lvl = 0; lvl < 3; lvl++) {
+      const h = ty + 1.5 + lvl * 3.3;
+      const r = 2.25 - lvl * 0.18;
+      for (const [x0, z0, x1, z1] of [[-1, -1, 1, -1], [1, -1, 1, 1], [1, 1, -1, 1], [-1, 1, -1, -1]]) {
+        const len = Math.hypot((x1 - x0) * r, (z1 - z0) * r);
+        const yaw = Math.atan2((x1 - x0), (z1 - z0));
+        this.put(new THREE.BoxGeometry(0.06, 0.06, len), c.rustDark, tx + ((x0 + x1) / 2) * r, h, tz + ((z0 + z1) / 2) * r, yaw);
+        this.put(new THREE.BoxGeometry(0.04, 3.4, 0.04), c.rustDark, tx + ((x0 + x1) / 2) * r, h + 1.6, tz + ((z0 + z1) / 2) * r, yaw, 0, 0.75);
+      }
+    }
+    const tankY = ty + legH;
+    this.put(new THREE.CylinderGeometry(2.9, 2.9, 3.6, 16).translate(0, 1.8, 0), c.rust, tx, tankY, tz);
+    for (let i = 0; i < 4; i++) this.put(new THREE.CylinderGeometry(2.93, 2.93, 0.08, 16), c.rustDark, tx, tankY + 0.5 + i * 0.85, tz);
+    this.put(new THREE.ConeGeometry(3.1, 1.3, 16).translate(0, 0.65, 0), c.rustDark, tx, tankY + 3.6, tz);
+    this.put(new THREE.CylinderGeometry(3.4, 3.4, 0.06, 16), c.steel, tx, tankY - 0.05, tz);
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      this.put(new THREE.BoxGeometry(0.03, 0.9, 0.03).translate(0, 0.45, 0), c.steel, tx + Math.cos(a) * 3.35, tankY, tz + Math.sin(a) * 3.35);
+    }
+    for (let i = 0; i < 2; i++) this.put(new THREE.BoxGeometry(0.03, legH, 0.03).translate(0, legH / 2, 0), c.steel, tx + 2.55 + i * 0.35, ty, tz + 2.3);
+    this.waterTower = { x: tx, z: tz };
+  }
+
+  // The post's lights: the campfire's flame and its flicker (the one real light), embers going up off it; the
+  // tripod lamp's and the street lamps' faces, and their light falling through the fog as pale cones (no lights: a
+  // tablet's GPU).
+  buildPostLights() {
+    const k = this.k;
+    if (!this.fire) return;
+    const f = this.fire;
+    const flameMat = this.hold(new THREE.MeshBasicMaterial({ color: k.flame ?? 0xff8a30, transparent: true, opacity: 0.85, depthWrite: false }));
+    this.flames = [0, 1, 2].map((i) => {
+      const m = new THREE.Mesh(this.hold(new THREE.ConeGeometry(0.16 - i * 0.03, 0.55 - i * 0.1, 6).translate(0, 0.27, 0)), flameMat);
+      m.position.set(f.x + (i - 1) * 0.12, f.y + 0.1, f.z + (i % 2) * 0.08);
+      this.group.add(m);
+      return m;
+    });
+    this.fireLight = new THREE.PointLight(k.fireLight ?? 0xff9040, 1.6, 9, 1.8);
+    this.fireLight.position.set(f.x, f.y + 0.8, f.z);
+    this.group.add(this.fireLight);
+    // Embers: a few dozen sparks going up, round and round.
+    const n = 40;
+    this.embers = { n, pos: new Float32Array(n * 3), life: new Float32Array(n), vel: new Float32Array(n * 3) };
+    const eg = this.hold(new THREE.BufferGeometry());
+    eg.setAttribute('position', new THREE.BufferAttribute(this.embers.pos, 3));
+    this.emberPoints = new THREE.Points(eg, this.hold(new THREE.PointsMaterial({ color: k.ember ?? 0xffa040, size: 0.06, transparent: true, opacity: 0.9, depthWrite: false })));
+    this.emberPoints.frustumCulled = false;
+    this.group.add(this.emberPoints);
+    for (let i = 0; i < n; i++) this.embers.life[i] = -this.rand() * 3;
+    // Lamp faces and their cones of light.
+    const lit = this.hold(new THREE.MeshBasicMaterial({ color: k.lampWarm ?? 0xfff0c8 }));
+    // Additive and outside the fog: a faint glow where the fog catches the light, not a grey cone in it.
+    // Its colour fades out down the cone (vertex colours, added: black adds nothing), so the light thins as it falls.
+    const coneMat = this.hold(new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide }));
+    const coneColour = new THREE.Color(k.lampCone ?? 0x6a5a38);
+    const fadeCone = (geo, len, along = 'y') => {
+      const p = geo.attributes.position;
+      const col = new Float32Array(p.count * 3);
+      for (let i = 0; i < p.count; i++) {
+        const d = along === 'y' ? -p.getY(i) : p.getZ(i); // 0 at the lamp, len at the far end
+        const f = Math.pow(Math.max(0, 1 - d / len), 1.6);
+        col[i * 3] = coneColour.r * f;
+        col[i * 3 + 1] = coneColour.g * f;
+        col[i * 3 + 2] = coneColour.b * f;
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      return geo;
+    };
+    const poolMat = this.hold(new THREE.MeshBasicMaterial({ color: k.lampPool ?? 0x7a6a48, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+    const face = (s, w, d) => {
+      const m = new THREE.Mesh(this.hold(new THREE.BoxGeometry(w, 0.03, d)), lit);
+      m.position.set(s.x, s.y - 0.02, s.z);
+      this.group.add(m);
+    };
+    for (const s of this.streetLamps ?? []) {
+      face(s, 0.42, 0.2);
+      const h = s.y - s.ground;
+      const cone = new THREE.Mesh(this.hold(fadeCone(new THREE.ConeGeometry(h * 0.36, h, 20, 6, true).translate(0, -h / 2, 0), h)), coneMat);
+      cone.position.set(s.x, s.y, s.z);
+      this.group.add(cone);
+      const pool = new THREE.Mesh(this.hold(new THREE.CircleGeometry(h * 0.34, 24).rotateX(-Math.PI / 2)), poolMat);
+      pool.position.set(s.x, s.ground + 0.12, s.z);
+      this.group.add(pool);
+    }
+    if (this.tripodLamp) {
+      const t = this.tripodLamp;
+      const m = new THREE.Mesh(this.hold(new THREE.BoxGeometry(0.2, 0.15, 0.02)), lit);
+      m.position.set(t.x, t.y - 0.1, t.z);
+      this.group.add(m);
+      const cone = new THREE.Mesh(this.hold(fadeCone(new THREE.ConeGeometry(1.4, 2.6, 12, 4, true).rotateX(-Math.PI / 2).translate(0, 0, 1.3), 2.6, 'z')), coneMat);
+      cone.position.set(t.x, t.y - 0.1, t.z);
+      cone.rotation.set(0.5, 0, 0);
+      this.group.add(cone);
+    }
+  }
+
+  updatePost(dt) {
+    if (!this.fireLight) return;
+    const t = this.time;
+    this.fireLight.intensity = 1.3 + Math.sin(t * 13) * 0.2 + Math.sin(t * 7.3) * 0.15 + Math.sin(t * 23) * 0.1;
+    this.flames.forEach((m, i) => m.scale.set(1, 0.8 + Math.abs(Math.sin(t * (9 + i * 3) + i)) * 0.5, 1));
+    const e = this.embers;
+    const f = this.fire;
+    for (let i = 0; i < e.n; i++) {
+      e.life[i] -= dt;
+      if (e.life[i] <= 0) {
+        if (e.life[i] < -0.5 || e.life[i] > -dt * 2) {
+          e.life[i] = 1.6 + this.rand() * 1.6;
+          e.pos[i * 3] = f.x + (this.rand() - 0.5) * 0.4;
+          e.pos[i * 3 + 1] = f.y + 0.3;
+          e.pos[i * 3 + 2] = f.z + (this.rand() - 0.5) * 0.4;
+          e.vel[i * 3] = (this.rand() - 0.5) * 0.3;
+          e.vel[i * 3 + 1] = 0.6 + this.rand() * 0.8;
+          e.vel[i * 3 + 2] = (this.rand() - 0.5) * 0.3;
+        }
+        continue;
+      }
+      e.pos[i * 3] += (e.vel[i * 3] + Math.sin(t * 2 + i) * 0.15) * dt;
+      e.pos[i * 3 + 1] += e.vel[i * 3 + 1] * dt;
+      e.pos[i * 3 + 2] += (e.vel[i * 3 + 2] + Math.cos(t * 2 + i) * 0.15) * dt;
+    }
+    this.emberPoints.geometry.attributes.position.needsUpdate = true;
   }
 
   // ---- the spur of rock and the cave ------------------------------------------------------------------
@@ -621,6 +848,7 @@ export class RoadNorthProps {
     this.updatePieces(dt);
     if (!this.group.visible || !this.lamps) return;
     this.time += dt;
+    this.updatePost(dt);
     const period = this.k.lampPeriod;
     for (const l of this.lamps) {
       const on = ((this.time / period + l.phase) % 1) < 0.35;
