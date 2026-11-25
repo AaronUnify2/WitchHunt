@@ -806,6 +806,11 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The grab** (new, medium and small sizes): a tendril rears back over it, then is thrown at you. Sidestep it, or it takes you: you can't walk and it reels you in. Shoot the tendril to break free (Wyatt: "It's got you, Dad! Shoot the tendril!"). Reeled all the way in: 30 damage and you're thrown back out. Not while you're on the quad.
 - [ ] **Its death:** the meat swells, bursts and sags away: dark blood and her green going up like a mist. No bright flash now.
 
+**Round 93: the Pile's cutscene (about 9 s).** Start from: "Day 3: the Pile at the tunnel", walk up the road.
+- [ ] A slow push up the road to the caved-in tunnel, Wyatt: fresh rock; then low on the rubble: the ground shudders, three tendrils burst up; then the heap heaves up through the rock as the view pulls back, Wyatt: the rocks are moving, a roar; then one of its eyes opens, looks at you, shuts, and the caption: The Laurel Gap Tunnel, Day 3.
+- [ ] It doesn't move or hurt you during it; the fight starts as it ends. Skip it (A / Enter): straight into the fight, the Pile whole.
+- [ ] First time only: die and come back, and it just comes up out of the ground.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
