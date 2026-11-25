@@ -4447,6 +4447,9 @@ export const config = {
     height: 1.45, // Aaron (after Session 26): about a foot shorter ("it's funnier if he's short"); 1.75 was (Session 25), 1.9 before that
     manHeight: 1.75, // the man the morning after (Aaron: he stays 1.75 m, a head taller than the clown: "it'll be funnier, trust me")
     widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
+    // Nov 25: which clown. 'story': Aaron's Milo from The Lone Clown (the white suit with dots, no nose). 'art': his Nov 25
+    // concept art (a grimy brown-and-cream striped suit, a brown ruff, a red ball nose, red-brown boots). Aaron to choose.
+    clownStyle: 'story',
     clown: { top: 1, shoe: 0.2 }, // Session 26: the baggy suit is built in (render/miloModel.js clownBody); top widens the smock; the shoes about twice as long
     eyeGlow: 1.3, // Session 26: how strongly his eyes glow in their own colour (seen in the dark; no light added)
     albedo: 0.3, // the torch is strong up close (Session 26: the baggier white suit catches more of it: 0.34 was)
@@ -4474,6 +4477,8 @@ export const config = {
         leather: 0x2e2218,
         steel: 0x5e6062,
       },
+      // Nov 25: the concept art's clown (clownStyle 'art'), over the story's colours.
+      clownArt: { shirt: 0x5c5444, trousers: 0x5c5444, stripe: 0x3e2a1e, stain: 0x2a0c0a, ruffle: 0x4a3426, ruffle2: 0x5c5444, collar: 0x4a3426, pom: 0x7a1c14, nose: 0x8a1810, shoes: 0x4a2418 },
       man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x16130f, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x3a2a1c, leather: 0x1c140e, tin: 0x5a5c5c, coffee: 0x1a120c }, // Session 26: the belt darker than the boots, so it reads against the jeans
     },
   },

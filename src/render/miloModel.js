@@ -234,6 +234,10 @@ export function miloSpec(m, look = 'clown') {
   const { masses, limbs } = built;
   const tubes = built.tubes ?? [];
   const rings = [];
+  // Nov 25 (Aaron's concept art; config.milo.clownStyle 'art'): a red ball nose (the story's Milo has none: 'story',
+  // the default, keeps him as Aaron described him from The Lone Clown).
+  const art = clown && m.clownStyle === 'art';
+  if (art) masses.push(['head', null, 0, 1.585, 0.115, 0.026, 0.024, 0.024, 'nose']);
   if (clown) {
     // His knives, a set of three: one in his right hand, two tucked into a fold of the suit at his chest.
     for (const x of [-0.11, -0.065]) {
@@ -258,13 +262,19 @@ export function miloSpec(m, look = 'clown') {
     height: clown ? m.height : (m.manHeight ?? m.height),
     width: m.widths[look],
     head: clown ? 1.12 : 1.04, // Session 26: the clown's a touch bigger, or the suit swallows it
-    colours: m.looks[look],
+    colours: art ? { ...m.looks.clown, ...(m.looks.clownArt ?? {}) } : m.looks[look],
     // Session 26: the clown's eyes give off a faint light of their own (no light is added: the
     // figure's shader shows their colour in the dark).
     glow: clown ? { eyes: m.eyeGlow ?? 1 } : undefined,
     paint(key, q, out, colours) {
       if (clown) {
         if (key === 'shirt' || key === 'trousers') {
+          if (art) {
+            // The concept art's suit: vertical stripes, brown and cream, grimy, a few dark stains.
+            if (Math.floor((Math.atan2(q.x, q.z) + Math.PI) * 9) % 2 === 0) out.copy(colours.stripe);
+            if (dotAt({ x: q.x * 0.6, y: q.y * 0.6, z: q.z * 0.6 }, 0.14, 0.04) === 1) out.copy(colours.stain);
+            return;
+          }
           // The polka dots: sparse, red and blue, on the off-white suit.
           const d = dotAt(q);
           if (d) out.copy(d === 1 ? colours.dot : colours.dot2);
