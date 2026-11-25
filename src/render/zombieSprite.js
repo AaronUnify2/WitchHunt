@@ -372,6 +372,24 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.beginPath();
       ctx.arc(b.x, b.y, 3 + Math.max(0, front) * 1.2, 0, Math.PI * 2);
       ctx.fill();
+      // Nov 25 (Aaron's concept art, 'Zombie 1'): the bandaged one: its forearms and hands wrapped in dirty strips.
+      if (kit.hair === 'bandaged') {
+        const band = t.bandage ?? 0x5a5648;
+        ctx.strokeStyle = paint.fixed(behind ? darken(band, t.tones.behind) : band);
+        ctx.beginPath();
+        ctx.moveTo(elbow.x, elbow.y);
+        ctx.quadraticCurveTo((c.x + b.x) / 2, (c.y + b.y) / 2, b.x, b.y);
+        ctx.stroke();
+        ctx.fillStyle = paint.fixed(behind ? darken(band, t.tones.behind) : band);
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 3 + Math.max(0, front) * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = paint.fixed(darken(band, 0.6));
+        for (let k = 0.15; k < 1; k += 0.22) {
+          const p = quadAt(elbow, { x: (c.x + b.x) / 2, y: (c.y + b.y) / 2 }, b, k);
+          ctx.fillRect(Math.round(p.x - 2), Math.round(p.y), 4, 1);
+        }
+      }
       // Men in Black: the suit's sleeve over it, the white cuff showing at the wrist.
       if (kit.jacket !== undefined) {
         ctx.strokeStyle = paint.fixed(behind ? darken(kit.jacket, t.tones.behind) : kit.jacket);
@@ -643,7 +661,30 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.fill();
       }
     }
-    if (scr && !fromBehind) {
+    if (kit.hair === 'bandaged') {
+      // The whole head wrapped round and round in dirty bandage, the strips' edges darker; from the front an eye slit
+      // with two red points in it, and a cloth tied over its mouth and nose.
+      const band = t.bandage ?? 0x5a5648;
+      ctx.fillStyle = paint.fixed(band);
+      ctx.beginPath();
+      ctx.ellipse(hh, hy, 7.2 - 1.5 * Math.abs(side), 8.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = paint.fixed(darken(band, 0.65));
+      for (let y = -6; y <= 6; y += 3) ctx.fillRect(Math.round(hh - 6 + Math.abs(side) * 1.5), Math.round(hy + y + (y % 2)), Math.round(12 - Math.abs(side) * 3), 1);
+      if (!fromBehind) {
+        const ex = hh + side * 3.5;
+        const spread = 3 * Math.max(0, front);
+        ctx.fillStyle = paint.fixed(0x0a0606);
+        ctx.fillRect(Math.round(ex - spread - 2), Math.round(hy - 3), Math.round(spread * 2 + 4), 3); // the slit
+        ctx.fillStyle = paint.fixed(t.bandageEyes ?? 0xb01a12);
+        ctx.fillRect(Math.round(ex - spread - 1), Math.round(hy - 2), 2, 1);
+        if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1), Math.round(hy - 2), 2, 1);
+        ctx.fillStyle = paint.fixed(t.bandageMask ?? 0x3e3c34);
+        ctx.fillRect(Math.round(ex - 5 + Math.abs(side)), Math.round(hy + 1), Math.round(10 - Math.abs(side) * 2), 6); // the cloth over its mouth
+        ctx.fillStyle = paint.fixed(darken(t.bandageMask ?? 0x3e3c34, 0.6));
+        ctx.fillRect(Math.round(ex - 1), Math.round(hy + 3), 2, 1);
+      }
+    } else if (scr && !fromBehind) {
       // Pits for eyes, a pale point deep in each; the mouth a tall black gape, two teeth at its top.
       const ex = hxs + side * 3;
       const spread = 2.6 * Math.max(0, front) * headScale;

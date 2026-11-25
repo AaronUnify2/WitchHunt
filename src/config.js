@@ -1739,10 +1739,13 @@ export const config = {
       // order (the shader picks the block). A hairstyle changes the
       // outline, so each gets its own block; colours are free.
       variantOrder: ['citizen', 'police', 'army', 'mib', 'earl', 'screamer'],
-      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'], screamer: ['long'] },
+      // Nov 25 (Aaron's concept art, 'Zombie 1'): 'bandaged': its head wrapped, a cloth over its mouth, red eyes in the
+      // slit, its forearms and hands bound (bandage, bandageMask, bandageEyes below).
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker', 'bandaged'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'], screamer: ['long'] },
       // The trucker cap (a hairstyle, Session 13): the crown and peak in
       // the hair's colour (so the caps vary), the foam front panel fixed.
       truckerFront: 0x4a4840,
+      bandage: 0x6e6a5a, bandageMask: 0x3e3c34, bandageEyes: 0xb01a12, // (the bandage a dirty pale grey: still under the glare line)
       // The palettes (Appalachia, 2003), shared unless a variant has its own.
       palettes: {
         shirt: [
