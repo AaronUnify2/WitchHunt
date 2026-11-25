@@ -227,8 +227,10 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   const headScale = 1 + strike * 0.3 * Math.max(0, front);
 
   const legs = () => {
-    ctx.fillStyle = paint.part(scr ? 'skin' : 'trousers');
-    const half = scr ? 2.2 : 4;
+    // Nov 25 (the concept art): the hooded snake-woman wears cargo trousers on slender legs (the old Screamer: bare).
+    const snake = scr && kit.hair === 'hood';
+    ctx.fillStyle = paint.part(scr && !snake ? 'skin' : 'trousers');
+    const half = snake ? 3 : scr ? 2.2 : 4;
     for (const s of [-1, 1]) {
       const swing = pose.stride * s * 9 * side;
       const lift = pose.stride * s * 4 * Math.abs(front);
@@ -320,6 +322,22 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.moveTo(elbow.x, elbow.y);
       ctx.quadraticCurveTo((c.x + b.x) / 2, (c.y + b.y) / 2, b.x, b.y);
       ctx.stroke();
+      // Nov 25 (the concept art): the snake-woman's arms scaled green from shoulder to claw, banded darker.
+      if (kit.hair === 'hood') {
+        const sc = t.scales ?? 0x3e4a36;
+        ctx.strokeStyle = paint.fixed(behind ? darken(sc, t.tones.behind) : sc);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo(c.x, c.y, b.x, b.y);
+        ctx.stroke();
+        ctx.fillStyle = paint.fixed(darken(sc, 0.6));
+        for (let k = 0.1; k < 1; k += 0.14) {
+          const p = quadAt(a, c, b, k);
+          ctx.fillRect(Math.round(p.x - 1), Math.round(p.y), 2, 1);
+        }
+        ctx.strokeStyle = paint.fixed(behind ? darken(sc, t.tones.behind) : sc);
+      }
       // The claws: three, fanned along the forearm's line.
       const dx = b.x - elbow.x;
       const dy = b.y - elbow.y;
@@ -594,6 +612,22 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
 
   const head = () => {
     const hh = scr ? hxs : hx; // Nov 16: the Screamer's head moves with its strike
+    // Nov 25 (Aaron's concept art): the Screamer a snake-woman, a cobra's hood spread behind her head (the 'hair'
+    // part, so it varies a little), its inside a darker band, flaring wider as she rears and strikes.
+    if (scr && kit.hair === 'hood') {
+      const flare = 1 + 0.25 * Math.max(rear, strike);
+      const rx = (11 - 6.5 * Math.abs(side)) * headScale * flare;
+      ctx.fillStyle = paint.part('hair');
+      ctx.beginPath();
+      ctx.ellipse(hxs - side * 2, hy + 3, rx, 11 * headScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      if (!fromBehind) {
+        ctx.fillStyle = paint.fixed(t.hoodInner ?? 0x2a2c20);
+        ctx.beginPath();
+        ctx.ellipse(hxs - side * 2, hy + 4, rx * 0.62, 8.5 * headScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
     ctx.fillStyle = paint.part('skin');
     ctx.beginPath();
     if (scr) {
@@ -623,7 +657,9 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
     // behind); balding, only round the sides and back.
     ctx.fillStyle = paint.part('hair');
     ctx.beginPath();
-    if (kit.hair === 'trucker') {
+    if (kit.hair === 'hood') {
+      // (the hood's drawn behind: no hair on her)
+    } else if (kit.hair === 'trucker') {
       // Under a trucker cap (drawn last): cropped, nothing showing but the
       // sideburns (Earl's, grey).
       if (kit.stubble !== undefined && !fromBehind) {
@@ -683,6 +719,27 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
         ctx.fillRect(Math.round(ex - 5 + Math.abs(side)), Math.round(hy + 1), Math.round(10 - Math.abs(side) * 2), 6); // the cloth over its mouth
         ctx.fillStyle = paint.fixed(darken(t.bandageMask ?? 0x3e3c34, 0.6));
         ctx.fillRect(Math.round(ex - 1), Math.round(hy + 3), 2, 1);
+      }
+    } else if (scr && kit.hair === 'hood' && !fromBehind) {
+      // The cobra's face: red eyes set wide, slit nostrils, the jaw's gape, and a forked tongue flicking out of it.
+      const ex = hxs + side * 3;
+      const spread = 2.8 * Math.max(0, front) * headScale;
+      ctx.fillStyle = paint.fixed(t.snakeEyes ?? 0xb01a12);
+      ctx.fillRect(Math.round(ex - spread - 1.5), Math.round(hy - 3), 3, 2);
+      if (spread > 0.5) ctx.fillRect(Math.round(ex + spread - 1.5), Math.round(hy - 3), 3, 2);
+      ctx.fillStyle = paint.fixed(kit.pit ?? 0x060405);
+      ctx.fillRect(Math.round(ex - 1), Math.round(hy + 1), 1, 1);
+      if (spread > 0.5) ctx.fillRect(Math.round(ex + 1), Math.round(hy + 1), 1, 1);
+      ctx.beginPath();
+      ctx.ellipse(ex, hy + (7 + 5.5 * jaw) * headScale, (2.2 - Math.abs(side) * 0.5 + jaw * 1.1) * headScale, (3 + 4 * jaw) * headScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const flick = jaw > 0.2 || Math.round(((pose.stride ?? 0) + 1) * 4) % 3 !== 0; // (most frames: flicking)
+      if (flick) {
+        ctx.fillStyle = paint.fixed(t.tongue ?? 0x8a1a22);
+        const ty = Math.round(hy + (7 + 5.5 * jaw) * headScale);
+        ctx.fillRect(Math.round(ex - 0.5 + side * 2), ty, 1, 5);
+        ctx.fillRect(Math.round(ex - 1.5 + side * 2), ty + 5, 1, 2);
+        ctx.fillRect(Math.round(ex + 0.5 + side * 2), ty + 5, 1, 2);
       }
     } else if (scr && !fromBehind) {
       // Pits for eyes, a pale point deep in each; the mouth a tall black gape, two teeth at its top.
@@ -779,7 +836,7 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
   else arms(true);
   legs();
   torso();
-  if (scr) gown();
+  if (scr && kit.hair !== 'hood') gown(); // (the snake-woman's in a fitted top and trousers: no gown)
   if (fromBehind) hangingHair();
   head();
   if (scr) longArms(false);

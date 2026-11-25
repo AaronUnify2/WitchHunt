@@ -1741,10 +1741,11 @@ export const config = {
       variantOrder: ['citizen', 'police', 'army', 'mib', 'earl', 'screamer'],
       // Nov 25 (Aaron's concept art, 'Zombie 1'): 'bandaged': its head wrapped, a cloth over its mouth, red eyes in the
       // slit, its forearms and hands bound (bandage, bandageMask, bandageEyes below).
-      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker', 'bandaged'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'], screamer: ['long'] },
+      hairStyles: { citizen: ['short', 'long', 'balding', 'ponytail', 'trucker', 'bandaged'], police: ['short'], army: ['short'], mib: ['short'], earl: ['trucker'], screamer: ['hood'] },
       // The trucker cap (a hairstyle, Session 13): the crown and peak in
       // the hair's colour (so the caps vary), the foam front panel fixed.
       truckerFront: 0x4a4840,
+      hoodInner: 0x2a2c20, scales: 0x3e4a36, snakeEyes: 0xb01a12, tongue: 0x8a1a22, // Nov 25: the Screamer's hood, eyes and tongue
       bandage: 0x6e6a5a, bandageMask: 0x3e3c34, bandageEyes: 0xb01a12, // (the bandage a dirty pale grey: still under the glare line)
       // The palettes (Appalachia, 2003), shared unless a variant has its own.
       palettes: {
@@ -1835,7 +1836,9 @@ export const config = {
         // Round 2: the Screamer: its own figure (zombieSprite.js: kit.screamer): tall and wasted (its own
         // build), bone-grey skin, white hair to its waist, the rags of a long black gown, arms to its knees
         // ending in claws, pits for eyes (pit) and a jaw that drops to its chest when it screams.
-        screamer: { screamer: true, pit: 0x060405, shirt: [0x121014, 0x18141a], trousers: [0x0e0c10], hair: [0x8a8880, 0x76746c], skin: [0x7e7a70, 0x86826f], longSleeves: 0, plaid: 0, build: { width: [0.86, 0.92], height: [1.24, 1.3] } },
+        // Nov 25 (Aaron's concept art): the snake-woman: green-grey scales (her skin, her bare forearms), a cobra's hood
+        // (the 'hood' hairstyle: hair is its colour), a dark fitted top, olive cargo trousers (was grey, black, long hair).
+        screamer: { screamer: true, pit: 0x060405, shirt: [0x1a1c1a, 0x20221e], trousers: [0x2a2c22, 0x26281e], hair: [0x3a4434, 0x34402e], skin: [0x4e5a46, 0x56604c], longSleeves: 0, plaid: 0, build: { width: [0.82, 0.88], height: [1.24, 1.3] } },
         earl: {
           shirt: [0x3e3220],
           trousers: [0x1c2638],
