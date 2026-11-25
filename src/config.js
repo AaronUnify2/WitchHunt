@@ -5971,8 +5971,12 @@ export const config = {
     fx: { blood: { r: 0.2, g: 0.02, b: 0.03 }, dust: { r: 0.42, g: 0.38, b: 0.31 }, rubble: { r: 0.22, g: 0.21, b: 0.2 }, magic: { r: 0.35, g: 1, b: 0.42 }, emergeShake: 0.9, deathShake: 1.3, deathSeconds: 0.9 },
     // Nov 25 (Aaron: "more resident evil style": flesh, her green in its veins, eyes for its weak spots, more
     // tendrils). flesh: the core's colours, dark to light; vein: the green in it; idle: tendrils always out.
+    // Nov 25 (Aaron's concept art: the mass carried on four great gnarled legs, like a spider): raise metres off the
+    // ground at full size; reach: how far out past its meat each foot plants (x radius); stride: metres a foot is
+    // left behind before it steps; stepSeconds; thick: the legs' width at the hip.
+    legs: { count: 4, raise: 1.5, reach: 1.35, stride: 2.2, stepSeconds: 0.32, stepHeight: 0.7, thick: 0.5 },
     look: { spin: 0.6, flesh: [0x1a0406, 0x34080e, 0x4a1016, 0x260a10], vein: 0x5ae860, veinGlow: 0.45, coreLight: 0x6ac860, coreIntensity: 0.7, coreReach: 8,
-      sinew: 0x240a10, sinewGlow: 0x0a240c, bone: 0xb8ac8a, eye: 0x9a8c56, iris: 0xa8e818, irisDim: 0x3a4a10, irisCore: 0xd8ff50, lobe: 0x3e0a10, pupil: 0x060404, idle: 6, eyeTease: 1.5, coreScale: 0.8, eyeShut: 0.35, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+      sinew: 0x24120e, sinewGlow: 0x061408, bone: 0xb8ac8a, eye: 0x9a8c56, iris: 0xa8e818, irisDim: 0x3a4a10, irisCore: 0xd8ff50, lobe: 0x3e0a10, pupil: 0x060404, idle: 4, eyeTease: 1.5, coreScale: 0.8, eyeShut: 0.35, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)

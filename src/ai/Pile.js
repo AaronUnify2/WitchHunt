@@ -769,6 +769,14 @@ export class Pile {
     return this.radius * (this.cfg.look.coreScale ?? 0.8);
   }
 
+  // How high its legs hold it off the ground (Nov 25, Aaron's concept art: four great legs carrying the mass), less
+  // as it shrinks, none while it's still coming up.
+  get raise() {
+    const L = this.cfg.legs;
+    if (!L) return 0;
+    return L.raise * (0.45 + 0.55 * (this.radius / this.cfg.radius)) * this.risen;
+  }
+
   // Where each eye sits on its face (Nov 25, the artist's rendition: a cluster, front and centre, toward Tom):
   // fills `out` with { x, y, z } (y above the ground there), from config.pile.seams.cluster [angle radians, height].
   eyeSpots(out = []) {
@@ -784,7 +792,7 @@ export class Pile {
       out[i] ??= { x: 0, y: 0, z: 0 };
       out[i].x = this.x + Math.sin(a) * R * k;
       out[i].z = this.z + Math.cos(a) * R * k;
-      out[i].y = g + this.radius * h;
+      out[i].y = g + this.raise + this.radius * h;
     }
     return out;
   }
@@ -798,7 +806,7 @@ export class Pile {
     const m = this.mass;
     m.x = this.x;
     m.z = this.z;
-    m.y = g;
+    m.y = g + this.raise * 0.6; // (its legs hold it up: under it, shots go between them)
     m.hitRadius = this.coreRadius;
     m.height = r * 1.9;
     m.fullHeight = m.height;
@@ -808,7 +816,7 @@ export class Pile {
       const ch = this.charge;
       ch.x = s.x;
       ch.z = s.z;
-      ch.y = g + r * 0.7;
+      ch.y = g + this.raise + r * 0.7;
       T.push(ch);
     }
     if (this.cycle === 'reel') {

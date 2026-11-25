@@ -18,7 +18,7 @@ import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 const LIMP = [ZOMBIE_FRAMES.stagger, ZOMBIE_FRAMES.dying[0], ZOMBIE_FRAMES.dying[1], ZOMBIE_FRAMES.dying[2], ZOMBIE_FRAMES.attackStrike, ZOMBIE_FRAMES.strikeLunge, ZOMBIE_FRAMES.strikeRear];
 const GOLDEN = 2.399963; // radians: spreads the bodies evenly round the mound
 const SEGMENTS = 9; // per tendril
-const MAX_TENDRILS = 16;
+const MAX_TENDRILS = 48; // (Nov 25: four legs of four strands each, and the rest)
 
 // A cheap smooth noise on the sphere (sums of sines), for the meat's lumps and its veins.
 function lump(x, y, z, s) {
@@ -265,14 +265,16 @@ export class PileRenderer {
     // its face (the eyes, toward Tom) clear.
     const N = p.bodies;
     const coreR = p.coreRadius;
-    const coreY = g - sunk + r * 0.85 + lift * 0.5;
-    const foot = Math.round(N * 0.3); // (the artist's rendition: a crowd at its foot, as if carrying it)
+    const coreY = g - sunk + r * 0.85 + lift * 0.5 + p.raise;
+    // Nov 25 (Aaron's concept art: carried up on its legs, bodies hanging from its belly): some hang underneath,
+    // swinging as it walks.
+    const foot = Math.round(N * 0.22);
     for (let i = 0; i < foot; i++) {
-      const ang = toTom + ((i + 0.5) / foot - 0.5) * Math.PI * 1.7 + Math.sin(p.t * 0.6 + i) * 0.08;
-      const ring = coreR * 0.95 + 0.25;
-      const bob = Math.abs(Math.sin(p.t * 3 + i * 1.3)) * 0.06;
-      const frame = ZOMBIE_FRAMES.walk[(i + Math.floor(p.t * 4)) % ZOMBIE_FRAMES.walk.length];
-      this.put(cx + Math.sin(ang) * ring, g - sunk * 0.6 + bob, cz + Math.cos(ang) * ring, 500 + i, frame, ang + Math.PI);
+      const ang = toTom + ((i + 0.5) / foot - 0.5) * Math.PI * 1.9 + Math.sin(p.t * 0.6 + i) * 0.1;
+      const ring = coreR * 0.55;
+      const swing = Math.sin(p.t * 2.2 + i * 1.7) * 0.15;
+      const frame = LIMP[(i * 3 + Math.floor(p.t * 0.8)) % LIMP.length];
+      this.put(cx + Math.sin(ang) * ring + swing, coreY - coreR * 0.8 - 1.45, cz + Math.cos(ang) * ring, 500 + i, frame, ang + p.t * 0.3);
     }
     for (let i = foot; i < N; i++) {
       const u = Math.pow((i - foot + 0.5) / Math.max(1, N - foot), 0.65); // more of them high up
@@ -366,7 +368,8 @@ export class PileRenderer {
       e.userData.bottom.rotation.x = Math.PI + (o - twitch) * 1.05;
     });
     // ---- the tendrils ----
-    const base = (ang, h) => ({ x: cx + Math.sin(ang) * coreR * 0.9, y: g - sunk + r * h, z: cz + Math.cos(ang) * coreR * 0.9 });
+    const base = (ang, h) => ({ x: cx + Math.sin(ang) * coreR * 0.9, y: coreY + (h - 0.85) * r, z: cz + Math.cos(ang) * coreR * 0.9 });
+    this.drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt);
     // Idle: always out, waving, rising out of it all round.
     const idle = look.idle;
     const moving = p.phase === 'fight' && !p.grab && p.cycle !== 'reel' && !a;
@@ -376,7 +379,7 @@ export class PileRenderer {
       const from = base(ang, 0.55 + (i % 3) * 0.3);
       const len = r * (0.9 + (i % 4) * 0.2) * rise;
       // Two of them planted on the road in front like legs, stepping as it hauls itself along.
-      if (i < 2 && rise > 0.5) {
+      if (i < 2 && rise > 0.5 && !p.cfg.legs) {
         const side = i === 0 ? -0.75 : 0.75;
         const step = moving ? (p.t * 1.6 + i * 0.5) % 1 : 0.5;
         const reach = r + 1.2 + step * 1.4;
@@ -424,6 +427,76 @@ export class PileRenderer {
     });
   }
 
+  // ---- the legs (Nov 25, Aaron's concept art) -----------------------------------------------------------------
+
+  // Four great legs: from its sides up and out to a high knee, then down to a clawed foot on the ground. Each foot
+  // stays planted till it's left `stride` behind, then steps (diagonal pairs in turn, never both of a pair at once).
+  // A thick strand for thigh and shin, thinner ones wound about them (gnarled), a bone claw at the foot.
+  drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt) {
+    const p = this.pile;
+    const L = p.cfg.legs;
+    if (!L || rise < 0.25) {
+      this.feet = null;
+      return;
+    }
+    const k = p.radius / p.cfg.radius; // smaller as it shrinks
+    const angles = [1.1, -1.1, 2.3, -2.3]; // front left, front right, back left, back right (off facing Tom)
+    const reach = coreR + L.reach * p.radius;
+    const rest = (i) => {
+      const a = toTom + angles[i];
+      const x = cx + Math.sin(a) * reach;
+      const z = cz + Math.cos(a) * reach;
+      return { x, z };
+    };
+    if (!this.feet || this.feetFor !== p.home) {
+      this.feetFor = p.home;
+      this.feet = angles.map((_, i) => ({ ...rest(i), from: null, t: 0 }));
+    }
+    const stride = L.stride * (0.6 + 0.4 * k);
+    for (let i = 0; i < 4; i++) {
+      const f = this.feet[i];
+      const target = rest(i);
+      if (f.from) {
+        f.t += dt / L.stepSeconds;
+        const s = Math.min(1, f.t);
+        f.x = f.from.x + (f.to.x - f.from.x) * s;
+        f.z = f.from.z + (f.to.z - f.from.z) * s;
+        f.lift = Math.sin(s * Math.PI) * L.stepHeight * (0.6 + 0.4 * k);
+        if (s >= 1) {
+          f.from = null;
+          f.lift = 0;
+        }
+      } else {
+        const partner = this.feet[3 - i];
+        const d = Math.hypot(target.x - f.x, target.z - f.z);
+        if (d > stride && !partner.from) {
+          const ux = (target.x - f.x) / d;
+          const uz = (target.z - f.z) / d;
+          f.from = { x: f.x, z: f.z };
+          f.to = { x: target.x + ux * stride * 0.35, z: target.z + uz * stride * 0.35 };
+          f.t = 0;
+        }
+      }
+      const a = toTom + angles[i];
+      const hip = { x: cx + Math.sin(a) * coreR * 0.8, y: coreY - coreR * 0.15, z: cz + Math.cos(a) * coreR * 0.8 };
+      const foot = { x: f.x, y: this.heightAt(f.x, f.z) + (f.lift ?? 0), z: f.z };
+      const out = 0.85 * p.radius; // (the art: knees bent up and out to the sides)
+      const knee = {
+        x: hip.x + (foot.x - hip.x) * 0.4 + Math.sin(a) * out,
+        y: Math.max(hip.y, foot.y) + p.radius * 0.55 * rise,
+        z: hip.z + (foot.z - hip.z) * 0.45 + Math.cos(a) * out,
+      };
+      const w = L.thick * (0.55 + 0.45 * k);
+      const ph = i * 1.9 + p.t * 0.7;
+      this.tendril(hip, knee, w, 0.15, ph, false, 0.15, 0.35); // the thigh
+      this.tendril(knee, foot, w * 0.78, -0.05, ph + 1, true, 0.12, 0.65); // the shin, a claw at the foot
+      this.tendril(hip, knee, w * 0.4, 0.55, ph + 2.2, false, 0.6, 0.5); // gnarled strands wound about them
+      this.tendril(hip, knee, w * 0.3, -0.4, ph + 4.0, false, 0.7, 0.5);
+      this.tendril(knee, foot, w * 0.34, 0.4, ph + 3.1, false, 0.6, 0.6);
+      this.tendril(knee, foot, w * 0.24, -0.35, ph + 5.3, false, 0.7, 0.7);
+    }
+  }
+
   // The meat at (x, y, z), radius s: its lumps breathing (time t); fade 0..1 shrinks the glow as it dies.
   placeCore(x, y, z, s, t, fade) {
     const pos = this.core.geometry.attributes.position;
@@ -445,7 +518,8 @@ export class PileRenderer {
 
   // A tendril from a to b: a curve that arches (arch, times its length) and writhes (phase w), thick at the root
   // (width) to a point; a bone hook at the tip if `hook`.
-  tendril(a, b, width, arch, w, hook) {
+  // wig: how much it writhes (1 = a tendril; a leg's strands barely); taper: how much thinner at the tip.
+  tendril(a, b, width, arch, w, hook, wig = 1, taper = 0.8) {
     if (this.segs.count + SEGMENTS > MAX_TENDRILS * SEGMENTS) return;
     const dx = b.x - a.x;
     const dy = b.y - a.y;
@@ -459,8 +533,8 @@ export class PileRenderer {
     for (let k = 0; k <= SEGMENTS; k++) {
       const f = k / SEGMENTS;
       const bend = Math.sin(f * Math.PI);
-      const wig = Math.sin(f * Math.PI * 2.5 + w) * len * 0.08 * bend;
-      pts[k].set(a.x + dx * f + sx * wig, a.y + dy * f + bend * arch * len * 0.25 + Math.cos(f * 6 + w) * 0.05 * len * bend, a.z + dz * f + sz * wig);
+      const wg = Math.sin(f * Math.PI * 2.5 + w) * len * 0.08 * bend * wig;
+      pts[k].set(a.x + dx * f + sx * wg, a.y + dy * f + bend * arch * len * 0.25 + Math.cos(f * 6 + w) * 0.05 * len * bend * wig, a.z + dz * f + sz * wg);
     }
     for (let k = 0; k < SEGMENTS; k++) {
       const p0 = pts[k];
@@ -469,7 +543,7 @@ export class PileRenderer {
       const l = this.v.length();
       if (l < 1e-4) continue;
       this.q.setFromUnitVectors(this.up, this.v.multiplyScalar(1 / l));
-      const thick = width * (1 - (k / SEGMENTS) * 0.8);
+      const thick = width * (1 - (k / SEGMENTS) * taper);
       this.s.set(thick, l * 1.05, thick);
       this.m4.compose(p0, this.q, this.s);
       this.segs.setMatrixAt(this.segs.count++, this.m4);
