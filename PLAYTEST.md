@@ -773,6 +773,17 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Day 3, no sleep, no fade:** the day runs on; late in the afternoon (about 70 s before dusk) Wyatt hears the Pruitts' generator across the valley and Ellen sends you to check on Marcy. If you haven't been to the tunnel, the day waits short of dusk. Debug, Story: "Day 3: back from the tunnel, late afternoon" jumps there.
 - [ ] **The spiked ram:** at the moonshiners' holler, a bear trap that's gone off (or that you've sprung) gives up its jaws (hold X). Back at the quad, hold X: bolt them on. It shows across the front rack and the ram hits twice as hard (140, and 0.8 of that on mutants); it rides the same.
 
+**Round 88: the Pile (Nov 25 prototype, numbers to tune).** Debug menu, Story: "Day 3: the Pile at the tunnel (fight it now)" puts you 26 m down the road from the barrier; walk on and it heaves up out of the rubble.
+- [ ] **It reads:** a heap of the dead swirling round a green core. Big and slow at 30 bodies, faster at 19 and under, very fast under 10.
+- [ ] **Charges:** about 7 s in, an army charge surfaces on the side facing you, blinking red. Shoot it: a blast throws about a third of it off, and the magic drops by 20. Don't stand too close (it hurts you too).
+- [ ] **Seams:** for 5 s after a blast, three green seams glow on its front. Shots to them take its magic.
+- [ ] **The fallen:** bodies knocked off land and get up as zombies (at most 12 at once). Green tendrils reach for them and drag them back in; shoot a tendril to cut it. Kill a fallen one before it's taken and it's gone for good.
+- [ ] **Gunfire into the mass** knocks a body off every 90 damage, but only charges and seams hurt the magic. Dynamite against it knocks 4 off.
+- [ ] **Attacks:** large: a ground slam (back off when it heaves); medium: a tendril lash at where you stood, and a body thrown at you; small: a lunge, and a shriek that calls the dead in.
+- [ ] **The quad:** ramming it knocks 2 off (4 with the spiked ram) but costs you 18 health and nearly all your speed.
+- [ ] **The end:** at zero magic it falls apart and up to 12 of what's left stand up. Then the day goes on to the generator call as before. Died mid-fight? It comes up whole again when you go back.
+- [ ] **Length and difficulty:** how long did it take? Too easy, too hard? Did it ever feel endless?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
