@@ -255,3 +255,55 @@ describe('the Pile, pass 2: impact', () => {
     expect(r.pile.deadT).toBeGreaterThan(0.4);
   });
 });
+
+// Nov 25 (Aaron: "lean into the tendril element"): the grab.
+describe('the Pile: the grab', () => {
+  const grabbing = () => {
+    const r = rig();
+    r.run(C.emergeSeconds + 0.1);
+    r.pile.bodies = 15; // medium: it can grab
+    r.pile.cycle = 'scramble';
+    r.pile.cycleT = 0;
+    r.player.position = { x: 0, z: 9 };
+    r.pile.attack = { kind: 'grab', state: 'windup', t: C.attacks.grab.windup, at: { x: 0, z: 9 } };
+    r.pile.update(0.01, true); // strike: the tendril's thrown
+    return r;
+  };
+
+  it('a tendril thrown at him takes him and reels him in; he can not walk', () => {
+    const { pile, player, run } = grabbing();
+    expect(pile.grab?.state).toBe('out');
+    run(0.6);
+    expect(pile.grab?.state).toBe('hold');
+    expect(player.rooted).toBe(true);
+    const z0 = player.position.z;
+    run(0.5);
+    expect(player.position.z).toBeLessThan(z0);
+  });
+
+  it('shot through, it lets him go', () => {
+    const { pile, player, run } = grabbing();
+    run(0.6);
+    const pt = pile.targets.find((t) => pile.grab.targets?.includes(t));
+    expect(pt).toBeDefined();
+    pt.takeHit(10);
+    expect(pile.grab).toBeNull();
+    expect(player.rooted).toBe(false);
+  });
+
+  it('reeled all the way in: a heavy hit, and thrown back out', () => {
+    const { pile, player, run, hurt } = grabbing();
+    run(6);
+    expect(pile.grab).toBeNull();
+    expect(player.rooted).toBe(false);
+    expect(hurt).toContain(C.attacks.grab.damage);
+  });
+
+  it('a sidestep dodges it', () => {
+    const { pile, player, run } = grabbing();
+    player.position = { x: 6, z: 2 };
+    run(1.5);
+    expect(pile.grab).toBeNull();
+    expect(player.rooted).toBeFalsy();
+  });
+});

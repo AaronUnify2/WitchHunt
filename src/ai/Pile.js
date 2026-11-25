@@ -112,6 +112,7 @@ export class Pile {
     this.charges = 0;
     this.chipped = 0;
     this.attack = null;
+    this.release();
     this.attackCool = c.attacks.firstAfter;
     this.contactCool = 0;
     this.ramCool = 0;
@@ -133,6 +134,7 @@ export class Pile {
 
   // Gone without a fight (a load, a reset): nothing left of it.
   stop() {
+    this.release();
     this.phase = 'buried';
     this.loose.length = 0;
     this.flying.length = 0;
@@ -190,6 +192,7 @@ export class Pile {
         this.updateAttack(dt);
         this.updateMove(dt);
         this.updateTendrils(dt);
+        this.updateGrab(dt);
         this.updateRam(dt);
       }
     }
@@ -262,6 +265,7 @@ export class Pile {
     const want = Math.atan2(dx, dz);
     this.facing = want;
     let speed = 0;
+    if (this.grab) return; // rooted while it reels him in
     if (this.attack?.kind === 'lunge' && this.attack.state === 'strike') speed = this.cfg.attacks.lunge.speed;
     else if (this.cycle !== 'reel' && !this.attack) speed = this.stageCfg.speed;
     if (speed <= 0) return;
@@ -331,7 +335,7 @@ export class Pile {
   // Which of its stage's attacks (null: none in range).
   pickAttack(d) {
     const c = this.cfg.attacks;
-    const kinds = this.stageCfg.attacks.filter((k) => d <= this.radius + (c[k].range ?? Infinity));
+    const kinds = this.stageCfg.attacks.filter((k) => d <= this.radius + (c[k].range ?? Infinity) && !(k === 'grab' && (this.grab || this.player.riding)));
     if (!kinds.length) return null;
     return kinds[Math.floor(this.rng() * kinds.length) % kinds.length];
   }
@@ -355,6 +359,9 @@ export class Pile {
       }
     } else if (a.kind === 'shriek') {
       this.enemies?.alert?.(this.x, this.z, c.shriek.alert);
+    } else if (a.kind === 'grab') {
+      // A tendril shot out at him: it takes him if it reaches him (Nov 25, Aaron: "lean into the tendril element").
+      this.grab = { state: 'out', head: { x: this.x, z: this.z }, t: 0, travelled: 0 };
     }
   }
 
@@ -396,6 +403,7 @@ export class Pile {
     this.explosives?.blast?.(at.x, this.ground?.heightAt?.(at.x, at.z) ?? 0, at.z, { ...this.explosives.ec, ...c.blast }, 'pile');
     this.bus?.emit('pile:blast', { x: at.x, z: at.z });
     this.setCycle('reel');
+    this.release();
     this.shed(Math.max(1, Math.round(this.bodies * c.shedShare)), at);
     this.hurtMagic(c.magic);
     if (this.alive) this.say('blast');
@@ -557,6 +565,73 @@ export class Pile {
     return false;
   }
 
+  // ---- the grab (Nov 25) ---------------------------------------------------------------------------------------
+
+  // out: the tendril flying at him; hold: wrapped round him, reeling him in (he can't walk; shoot it through to
+  // get free); reached: in against the mass, a heavy hit, and he's thrown back out. Dodged: it whips back.
+  updateGrab(dt) {
+    const g = this.grab;
+    if (!g) return;
+    const c = this.cfg.attacks.grab;
+    const p = this.player.position;
+    g.t += dt;
+    if (g.state === 'out') {
+      const dx = p.x - g.head.x;
+      const dz = p.z - g.head.z;
+      const d = Math.hypot(dx, dz) || 1;
+      const step = c.speed * dt;
+      if (d <= c.catch + step && !this.player.riding) {
+        g.state = 'hold';
+        g.t = 0;
+        this.player.rooted = true;
+        this.say('grab');
+        this.sound('ropeSnap', p.x, p.z);
+        this.player.shake?.(0.6);
+      } else {
+        // It flies on along the line it was thrown (a sidestep dodges it).
+        g.dir ??= { x: dx / d, z: dz / d };
+        g.head.x += g.dir.x * step;
+        g.head.z += g.dir.z * step;
+        g.travelled += step;
+        if (g.travelled > c.range + this.radius + 2) this.release();
+      }
+      return;
+    }
+    // Holding: he's dragged in.
+    const dx = this.x - p.x;
+    const dz = this.z - p.z;
+    const d = Math.hypot(dx, dz) || 1;
+    g.head.x = p.x;
+    g.head.z = p.z;
+    if (d <= this.radius + 0.7 || g.t >= c.holdMax) {
+      // Into it: torn at, and flung back out.
+      this.hurt(c.damage, 2);
+      p.x -= (dx / d) * c.throwBack;
+      p.z -= (dz / d) * c.throwBack;
+      this.ground?.clamp?.(p);
+      this.release();
+      return;
+    }
+    const step = c.drag * dt;
+    p.x += (dx / d) * step;
+    p.z += (dz / d) * step;
+  }
+
+  // Let go of him (shot through, a blast, its death).
+  release() {
+    if (this.grab?.state === 'hold' && this.player) this.player.rooted = false;
+    this.grab = null;
+  }
+
+  // The grab's tendril shot through.
+  cutGrab() {
+    if (!this.grab) return false;
+    this.bus?.emit('pile:cut', { grab: true });
+    this.sound('ropeSnap');
+    this.release();
+    return false;
+  }
+
   // ---- the quad ----------------------------------------------------------------------------------------------
 
   // Ridden into it fast: bodies off, and it throws the quad (and Tom) back hard.
@@ -579,6 +654,7 @@ export class Pile {
     if (!this.alive) return;
     this.phase = 'dead';
     this.attack = null;
+    this.release();
     // The bodies still in it come down and stand up: one last group.
     const n = Math.min(this.bodies, this.cfg.lastGroup);
     for (let i = 0; i < n; i++) {
@@ -597,7 +673,9 @@ export class Pile {
     this.deadT = 0;
     this.sound('cleanse');
     this.sound('mutantRoar');
-    this.puff(this.x, this.z, 60, 'magic', 9, 1.2);
+    // (Nov 25, Aaron: "dark and suggestive"): it bursts: dark blood, and her green going up like a mist.
+    this.puff(this.x, this.z, 45, 'blood', 7, 1.0);
+    this.puff(this.x, this.z, 30, 'magic', 3, 1.6);
     this.player.shake?.(this.cfg.fx.deathShake);
   }
 
@@ -644,6 +722,18 @@ export class Pile {
         T.push(s);
       });
     }
+    // The grab's tendril: points along it (a little thicker: he has to hit it to get free).
+    if (this.grab) {
+      const gt = this.grab;
+      gt.targets ??= Array.from({ length: 5 }, () => ({ alive: true, targetable: true, noAssist: true, hitRadius: this.cfg.attacks.grab.hitRadius, height: 0.6, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, takeHit: () => this.cutGrab() }));
+      gt.targets.forEach((pt, k) => {
+        const f = (k + 1) / 6;
+        pt.x = this.x + (gt.head.x - this.x) * f;
+        pt.z = this.z + (gt.head.z - this.z) * f;
+        pt.y = (this.ground?.heightAt?.(pt.x, pt.z) ?? g) + 0.4 + Math.sin(f * Math.PI) * r * 0.4;
+        T.push(pt);
+      });
+    }
     // Each tendril: a few points along it (thin, no aim assist).
     const pts = this.cfg.tendrils.points;
     for (const t of this.tendrils) {
@@ -664,6 +754,7 @@ export class Pile {
     const xs = this.combat?.weapons?.extraTargets;
     const i = xs ? xs.indexOf(this.group) : -1;
     if (i >= 0) xs.splice(i, 1);
+    this.release();
     this.view?.dispose?.();
   }
 

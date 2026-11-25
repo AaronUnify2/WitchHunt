@@ -799,6 +799,13 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The campground sweep** now pushes in over the cold fire onto the slashed shelter (where the camcorder is), and Wyatt says "Check their shelters" as it ends.
 - [ ] **Ellen's string board:** after you've seen the tunnel, a polaroid of it: SEALED. NOBODY OUT.
 
+**Round 92: the Pile, flesh and tendrils (your notes: "more resident evil", green veins, eyes, dark and suggestive, more tendrils).**
+- [ ] **The core:** no green ball. A lumpy mass of meat deep in the heap, dark red to purple, beating (a double pulse), her green glowing in its veins. Brighter as it winds up or reels.
+- [ ] **Its eyes:** after a blast, three eyes push out of the wounds where the seams were, yellow-green with slit pupils, lids parting, looking at you. They're the weak spots now (same rules: shots to them take its magic). They shut and sink as the reel ends.
+- [ ] **Tendrils everywhere:** seven sinew tendrils always out, writhing, hooked bone at the tips; two plant in the ground ahead as it hauls itself along. The ones reaching for the fallen, the lash and the fling are sinew now too.
+- [ ] **The grab** (new, medium and small sizes): a tendril rears back over it, then is thrown at you. Sidestep it, or it takes you: you can't walk and it reels you in. Shoot the tendril to break free (Wyatt: "It's got you, Dad! Shoot the tendril!"). Reeled all the way in: 30 damage and you're thrown back out. Not while you're on the quad.
+- [ ] **Its death:** the meat swells, bursts and sags away: dark blood and her green going up like a mist. No bright flash now.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
