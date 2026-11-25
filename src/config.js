@@ -1934,9 +1934,9 @@ export const config = {
     look: {
       modelHeight: 2.46, // the model as built (stretched to height)
       albedo: 0.34, // its colours x this (as config.zombies.albedoScale: the torch blows out anything light)
-      skin: 0x4a5040,
-      skinDark: 0x2e3428,
-      raw: 0x3a1612, // raw patches and tumours
+      skin: 0x646a58, // Nov 25 (Aaron's concept art): paler, grey-green (was 0x4a5040)
+      skinDark: 0x3c4234,
+      raw: 0x561a16, // raw patches and tumours (redder, wetter: the concept art)
       sac: 0x5a1410, // the weak spot's sac (it glows weakSpot.color)
       mouth: 0x140606,
       eyes: 0x9a9470,

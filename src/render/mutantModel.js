@@ -65,6 +65,8 @@ const MASSES = [
   ['chest', null, -0.22, 2.12, -0.24, 0.17, 0.15, 0.16, 'raw', 0.03, 'veins'],
   ['chest', null, 0.28, 2.06, -0.24, 0.15, 0.14, 0.14, 'skinDark', 0.03, 'veins'],
   ['chest', null, 0.1, 1.68, -0.36, 0.14, 0.12, 0.12, 'raw', 0.02, 'veins'],
+  // Nov 25 (the concept art): the wound the ribs show through, raw and wet, down the front of its chest.
+  ['chest', null, 0.1, 1.66, 0.4, 0.2, 0.25, 0.1, 'raw', 0.012, 'veins'],
   ['chest', 'neck', -0.1, 2.16, -0.06, 0.13, 0.12, 0.13, 'skinDark', 0.02, null],
   // The weak spot: a raw sac bulging from the hump, glowing hottest at its middle.
   ['chest', null, 0, 1.86, -0.53, 0.13, 0.13, 0.08, 'sac', 0.012, 'sac'],
@@ -151,6 +153,17 @@ const SPURS = [
   // One through the club's elbow, one out of the club side's forearm.
   ['elbowR', -0.92, 1.22, 0.06, -1.06, 1.34, -0.08, 0.03],
   ['elbowR', -1.02, 0.84, 0.3, -1.2, 0.86, 0.36, 0.03],
+  // Nov 25 (the concept art): more of them studding the club, and three breaking out of the top of its skull.
+  ['wristR', -0.76, 0.62, 0.22, -0.7, 0.8, 0.12, 0.035],
+  ['wristR', -0.84, 0.3, 0.2, -0.86, 0.12, 0.1, 0.034],
+  ['wristR', -1.08, 0.66, 0.2, -1.26, 0.76, 0.08, 0.036],
+  ['wristR', -0.82, 0.5, 0.52, -0.78, 0.56, 0.72, 0.032],
+  ['elbowR', -1.06, 1.1, -0.02, -1.26, 1.14, -0.12, 0.032],
+  ['elbowR', -0.88, 0.96, 0.32, -0.94, 1.02, 0.52, 0.03],
+  ['shoulderR', -0.58, 2.14, 0.12, -0.66, 2.36, 0.16, 0.036],
+  ['head', 0, 2.34, 0.18, 0.01, 2.5, 0.12, 0.024],
+  ['head', -0.07, 2.32, 0.2, -0.13, 2.45, 0.18, 0.02],
+  ['head', 0.07, 2.32, 0.2, 0.13, 2.45, 0.17, 0.02],
   // The bare right foot's claws.
   ['ankleR', -0.33, 0.04, 0.24, -0.35, 0.02, 0.36, 0.022],
   ['ankleR', -0.27, 0.04, 0.26, -0.27, 0.02, 0.39, 0.024],
@@ -164,11 +177,15 @@ const SPURS = [
 // Round 2: the wasted side's ribs, showing through split skin: bars of bone curving round its left flank
 // ([y, how far round they start and end (radians from the front, toward its left)]; they lie on the chest's
 // and the belly's masses); and its teeth: a crooked row along the long jaw ([x, height]).
+// Nov 25 (Aaron's concept art, 'Mutant 1'): the chest torn open down its front, the ribcage showing through raw
+// meat (was the wasted flank's): six of them from the breastbone round toward its left.
 const RIBS = [
-  [1.74, 0.55, 2.0],
-  [1.65, 0.6, 2.1],
-  [1.56, 0.7, 2.1],
-  [1.47, 0.8, 2.0],
+  [1.86, -0.15, 0.95],
+  [1.78, -0.2, 1.05],
+  [1.7, -0.2, 1.1],
+  [1.62, -0.15, 1.1],
+  [1.54, -0.1, 1.05],
+  [1.46, 0.0, 0.95],
 ];
 const TEETH = [
   [-0.055, 0.034],
