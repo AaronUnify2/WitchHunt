@@ -350,7 +350,10 @@ export class PileRenderer {
     const meatR = coreR * (1 + beat * 0.06 + wind * 0.08 + (reel ? 0.06 : 0));
     this.placeCore(cx, coreY, cz, meatR, p.t, 1);
     // The folds of meat round its eyes, swelling with the beat.
+    // (Pile.eyeSpots is where they sit once it's up: sink them with the rest of it while it's still coming up,
+    // so they rise on its face rather than waiting above the rubble.)
     const spots = p.eyeSpots(this.eyeAt ??= []);
+    if (sunk > 0) for (const s of spots) s.y -= sunk;
     let mx = 0;
     let my = 0;
     let mz = 0;
