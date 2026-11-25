@@ -5961,7 +5961,10 @@ export const config = {
     // after `every` seconds) for `window` seconds. Shot: magic off, shedShare of its bodies thrown off, a blast.
     charge: { beep: [0.6, 0.12], first: 7, every: 22, afterReclaimed: 4, window: 7, hitRadius: 0.42, magic: 20, shedShare: 0.35, blast: { radius: 4.5, damage: 120, playerDamage: 35 } },
     // Nov 25 (the artist's rendition): six eyes clustered on its face, [angle off facing Tom (radians), height x radius].
-    seams: { seconds: 5, hitRadius: 0.3, magicPerDamage: 0.06, count: 6, cluster: [[-0.32, 0.92], [0, 1.02], [0.3, 0.95], [-0.2, 0.68], [0.1, 0.62], [0.38, 0.72]] }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
+    // Nov 25 (Aaron's concept art, again: a big red eye in the middle, "its heart is vulnerable"): a seventh, its
+    // heart, at the centre of the ring: bigger, red, and worth heart.magicScale times as much.
+    seams: { seconds: 5, hitRadius: 0.3, magicPerDamage: 0.06, count: 7, heart: { index: 6, hitRadius: 0.42, magicScale: 2 },
+      cluster: [[-0.42, 0.98], [0, 1.14], [0.42, 0.98], [-0.42, 0.62], [0, 0.46], [0.42, 0.62], [0, 0.8]] }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
     dynamite: { shed: 4, magic: 6 }, // a stick (or any blast) going off against it
     shed: { distance: [3, 8], spread: 2.2, flight: 0.8, gravity: 18 },
     tendrils: { max: 2, range: 22, reach: 16, drag: 5, points: 4, hitRadius: 0.32 },
@@ -5976,7 +5979,7 @@ export const config = {
     // left behind before it steps; stepSeconds; thick: the legs' width at the hip.
     legs: { count: 4, raise: 1.5, reach: 1.35, stride: 2.2, stepSeconds: 0.32, stepHeight: 0.7, thick: 0.5 },
     look: { spin: 0.6, flesh: [0x1a0406, 0x34080e, 0x4a1016, 0x260a10], vein: 0x5ae860, veinGlow: 0.45, coreLight: 0x6ac860, coreIntensity: 0.7, coreReach: 8,
-      sinew: 0x24120e, sinewGlow: 0x061408, bone: 0xb8ac8a, eye: 0x9a8c56, iris: 0xa8e818, irisDim: 0x3a4a10, irisCore: 0xd8ff50, lobe: 0x3e0a10, pupil: 0x060404, idle: 4, eyeTease: 1.5, coreScale: 0.8, eyeShut: 0.35, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+      sinew: 0x24120e, sinewGlow: 0x061408, bone: 0xb8ac8a, eye: 0x9a8c56, iris: 0xa8e818, irisDim: 0x3a4a10, irisCore: 0xd8ff50, heartDim: 0x4a0a0a, heartBright: 0xff2a20, heartCore: 0xffa080, dimEyes: 18, dimEye: 0x56621a, pack: 0x46462a, lobe: 0x3e0a10, pupil: 0x060404, idle: 4, eyeTease: 1.5, coreScale: 0.8, eyeShut: 0.35, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)

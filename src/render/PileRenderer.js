@@ -130,6 +130,35 @@ export class PileRenderer {
     const ballMat = new THREE.MeshBasicMaterial({ color: look.eye });
     this.irisBright = new THREE.Color(look.iris);
     this.irisDim = new THREE.Color(look.irisDim ?? look.iris);
+    this.heartDim = new THREE.Color(look.heartDim ?? 0x4a0a0a);
+    this.heartBright = new THREE.Color(look.heartBright ?? 0xff2a20);
+    this.heartCore = new THREE.Color(look.heartCore ?? 0xffa080);
+    // Nov 25 (the concept art: dozens of eyes over its face): small ones round the cluster, dim, blinking, never the
+    // weak spots (they never glow). One instanced mesh of balls, one of slits.
+    const n = look.dimEyes ?? 0;
+    this.dimBalls = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial({ color: look.dimEye ?? 0x56621a }), Math.max(1, n));
+    this.dimSlits = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.22, 1.1).translate(0, 0, 1.01), new THREE.MeshBasicMaterial({ color: look.pupil }), Math.max(1, n));
+    for (const m of [this.dimBalls, this.dimSlits]) {
+      m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      m.frustumCulled = false;
+      m.count = 0;
+      this.group.add(m);
+    }
+    // Where they sit: [angle off facing Tom, height x radius, size], spread over its face round the cluster (golden).
+    this.dimSpots = [];
+    for (let i = 0; this.dimSpots.length < n && i < 400; i++) {
+      const da = Math.sin(i * 2.399963) * 1.25 * Math.sqrt(((i % 37) + 1) / 37);
+      const h = 0.3 + ((i * 0.618034) % 1) * 1.08;
+      if (Math.abs(da) < 0.62 && h > 0.3 && h < 1.32) continue; // (the cluster's)
+      this.dimSpots.push([da, h, 0.1 + ((i * 0.37) % 1) * 0.09]);
+    }
+    // Army packs among the bodies on top (the concept art: their kit still on them).
+    this.packs = new THREE.InstancedMesh(new THREE.BoxGeometry(0.42, 0.5, 0.26), new THREE.MeshLambertMaterial({ color: look.pack ?? 0x46462a }), 12);
+    this.packs.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.packs.frustumCulled = false;
+    this.packs.castShadow = true;
+    this.packs.count = 0;
+    this.group.add(this.packs);
     const pupilMat = new THREE.MeshBasicMaterial({ color: look.pupil });
     const lidMat = new THREE.MeshBasicMaterial({ color: look.flesh[1] });
     const iris = new THREE.CircleGeometry(0.42, 18);
@@ -185,6 +214,9 @@ export class PileRenderer {
     this.nSprites = 0;
     this.segs.count = 0;
     this.hooks.count = 0;
+    this.packs.count = 0;
+    this.dimBalls.count = 0;
+    this.dimSlits.count = 0;
     // Its death: the meat swells, bursts and sags away to nothing (dark and suggestive: Aaron).
     const dying = p.phase === 'dead' && p.deadT < p.cfg.fx.deathSeconds;
     this.group.visible = live || dying;
@@ -202,6 +234,9 @@ export class PileRenderer {
     for (let i = this.nSprites; i < this.fakes.length; i++) this.fakes[i].active = false;
     this.segs.instanceMatrix.needsUpdate = true;
     this.hooks.instanceMatrix.needsUpdate = true;
+    this.packs.instanceMatrix.needsUpdate = true;
+    this.dimBalls.instanceMatrix.needsUpdate = true;
+    this.dimSlits.instanceMatrix.needsUpdate = true;
     const cam = this.ctx.camera?.() ?? { x: p.x ?? 0, z: p.z ?? 0 };
     this.sprites.update(this.fakes, cam, Infinity);
   }
@@ -289,7 +324,17 @@ export class PileRenderer {
       const bob = Math.sin(p.t * 2.3 + i) * 0.1;
       const y = coreY + Math.sin(e) * coreR * 0.95 - 0.5 + bob;
       const frame = LIMP[(i + Math.floor(p.t * 1.5 + i * 0.37)) % LIMP.length];
-      this.put(cx + Math.sin(ang) * ring, y, cz + Math.cos(ang) * ring, i, frame, ang + Math.PI * 0.5 * dir + p.t * dir * 0.5);
+      const bx = cx + Math.sin(ang) * ring;
+      const bz = cz + Math.cos(ang) * ring;
+      this.put(bx, y, bz, i, frame, ang + Math.PI * 0.5 * dir + p.t * dir * 0.5);
+      // A pack on some of the ones up top.
+      if (e > 0.55 && i % 2 === 0 && this.packs.count < 12) {
+        this.v.set(bx - Math.sin(ang) * 0.15, y + 1.05, bz - Math.cos(ang) * 0.15);
+        this.q.setFromEuler(new THREE.Euler(0.3 * dir, ang + i, 0.2 * dir));
+        this.s.set(1, 1, 1);
+        this.m4.compose(this.v, this.q, this.s);
+        this.packs.setMatrixAt(this.packs.count++, this.m4);
+      }
     }
     // The fling: a body held up over the top on a tendril as it winds up.
     const top = { x: cx, y: g - sunk + r * 1.3 + lift, z: cz };
@@ -356,17 +401,42 @@ export class PileRenderer {
       e.visible = o > 0.02;
       if (!e.visible) return;
       const s = spots[i];
-      const size = p.cfg.seams.hitRadius * (0.95 + 0.15 * bright); // (spaced so the cluster's eyes don't overlap)
+      const heart = p.seams[i]?.heart;
+      const size = (heart ? p.cfg.seams.heart.hitRadius : p.cfg.seams.hitRadius) * (0.95 + 0.15 * bright); // (spaced so they don't overlap)
       e.position.set(s.x, s.y, s.z);
       e.scale.setScalar(size);
       e.lookAt(pp.x, (pp.y ?? g) + 1.6, pp.z);
-      e.userData.orb.color.copy(this.irisDim).lerp(this.irisBright, 0.2 + 0.8 * bright);
+      if (heart) e.userData.orb.color.copy(this.heartDim).lerp(this.heartBright, 0.25 + 0.75 * bright);
+      else e.userData.orb.color.copy(this.irisDim).lerp(this.irisBright, 0.2 + 0.8 * bright);
+      if (heart) e.userData.iris.color.copy(this.heartCore);
       e.userData.iris.visible = bright > 0.3; // its hot centre, when it's open wide
       // Lids part as it opens; a twitch every so often.
       const twitch = Math.sin(p.t * 7 + i * 2) > 0.97 ? 0.3 : 0;
       e.userData.top.rotation.x = -(o - twitch) * 1.25;
       e.userData.bottom.rotation.x = Math.PI + (o - twitch) * 1.05;
     });
+    // The small eyes, dim, each blinking now and then.
+    if (rise > 0.6) {
+      const R0 = coreR * 1.0;
+      const eye = new THREE.Vector3();
+      const look3 = new THREE.Vector3(pp.x, (pp.y ?? g) + 1.6, pp.z);
+      const mtx = new THREE.Matrix4();
+      for (let i = 0; i < this.dimSpots.length; i++) {
+        const [da, h, size] = this.dimSpots[i];
+        const a2 = toTom + da;
+        const up = Math.max(-0.95, Math.min(0.95, (h - 0.85) / 0.68));
+        const k2 = Math.cos(da * 0.6) * Math.sqrt(1 - up * up); // on its round, as the cluster's are (Pile.eyeSpots)
+        eye.set(cx + Math.sin(a2) * R0 * k2, g - sunk + p.raise + r * h, cz + Math.cos(a2) * R0 * k2);
+        const blink = Math.sin(p.t * 0.9 + i * 2.7) > 0.96 ? 0.1 : 1;
+        mtx.lookAt(eye, look3, this.up);
+        this.q.setFromRotationMatrix(mtx);
+        this.q.multiply(new THREE.Quaternion().setFromAxisAngle(this.up, Math.PI)); // (lookAt points -z at him: turn its face round)
+        this.s.set(size, size * blink, size);
+        this.m4.compose(eye, this.q, this.s);
+        this.dimBalls.setMatrixAt(this.dimBalls.count++, this.m4);
+        this.dimSlits.setMatrixAt(this.dimSlits.count++, this.m4);
+      }
+    }
     // ---- the tendrils ----
     const base = (ang, h) => ({ x: cx + Math.sin(ang) * coreR * 0.9, y: coreY + (h - 0.85) * r, z: cz + Math.cos(ang) * coreR * 0.9 });
     this.drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt);

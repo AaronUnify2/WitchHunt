@@ -62,7 +62,11 @@ export class Pile {
     };
     this.charge = { alive: true, targetable: true, hitRadius: cfg.charge.hitRadius, height: 0.7, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, takeHit: () => this.blast() };
     // Its eyes (the weak spots once a blast has torn it open): Nov 25, Aaron's artist's rendition: a cluster on its face.
-    this.seams = Array.from({ length: cfg.seams.count ?? 3 }, (_, i) => ({ i, alive: true, targetable: true, hitRadius: cfg.seams.hitRadius, height: 0.6, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, weakSpot: null, takeHit: (amount) => this.hitSeam(amount) }));
+    this.seams = Array.from({ length: cfg.seams.count ?? 3 }, (_, i) => {
+      const heart = cfg.seams.heart?.index === i;
+      const hr = heart ? cfg.seams.heart.hitRadius : cfg.seams.hitRadius;
+      return { i, heart, alive: true, targetable: true, hitRadius: hr, height: hr * 2, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, weakSpot: null, takeHit: (amount) => this.hitSeam(amount, heart) };
+    });
     this.unsub = [
       this.bus?.on?.('explosion', (e) => this.onExplosion(e)),
       // Nov 25 (Aaron: "a cutscene to show the pile emerging from the ground"): pile.emerge's beats.
@@ -460,10 +464,10 @@ export class Pile {
   }
 
   // A seam (after a blast): the magic itself.
-  hitSeam(amount) {
+  hitSeam(amount, heart = false) {
     if (this.phase !== 'fight' || this.cycle !== 'reel') return false;
     this.flash = 0.12;
-    this.hurtMagic(amount * this.cfg.seams.magicPerDamage);
+    this.hurtMagic(amount * this.cfg.seams.magicPerDamage * (heart ? this.cfg.seams.heart?.magicScale ?? 1 : 1));
     return false;
   }
 
@@ -788,7 +792,9 @@ export class Pile {
     for (let i = 0; i < this.seams.length; i++) {
       const [da, h] = cl[i % cl.length];
       const a = face + da;
-      const k = Math.cos(da * 0.6); // a little further round, a little further back
+      // On its round: further round is further back, and higher up is further in (its meat's squashed sphere).
+      const up = Math.max(-0.95, Math.min(0.95, (h - 0.85) / 0.68));
+      const k = Math.cos(da * 0.6) * Math.sqrt(1 - up * up);
       out[i] ??= { x: 0, y: 0, z: 0 };
       out[i].x = this.x + Math.sin(a) * R * k;
       out[i].z = this.z + Math.cos(a) * R * k;
@@ -826,7 +832,7 @@ export class Pile {
       this.seams.forEach((s, i) => {
         s.x = spots[i].x;
         s.z = spots[i].z;
-        s.y = spots[i].y - 0.3; // (a target's y is its foot: the eye's middle is 0.3 up)
+        s.y = spots[i].y - s.hitRadius; // (a target's y is its foot: the eye's middle is its radius up)
         T.push(s);
       });
     }

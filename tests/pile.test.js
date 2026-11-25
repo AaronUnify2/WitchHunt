@@ -365,3 +365,22 @@ describe("the Pile's cutscene", () => {
     expect(r.pile.risen).toBe(1);
   });
 });
+
+// Nov 25 (Aaron's concept art: a big red eye in the middle, "its heart is vulnerable").
+describe("the Pile's heart", () => {
+  it('is one of its eyes, bigger, and hurts its magic twice as much', () => {
+    const { pile, run } = rig();
+    run(C.emergeSeconds + C.charge.first + 0.2);
+    pile.charge.takeHit(50);
+    run(0.05);
+    const heart = pile.targets.find((t) => t.heart);
+    const eye = pile.targets.find((t) => pile.seams.includes(t) && !t.heart);
+    expect(heart.hitRadius).toBeGreaterThan(eye.hitRadius);
+    const m0 = pile.magic;
+    eye.takeHit(100);
+    const byEye = m0 - pile.magic;
+    const m1 = pile.magic;
+    heart.takeHit(100);
+    expect(m1 - pile.magic).toBeCloseTo(byEye * C.seams.heart.magicScale);
+  });
+});
