@@ -125,7 +125,7 @@ export class Tunnel {
 
   addDebugItems(menu) {
     const cat = menu.category(DEBUG.story);
-    // Nov 25: straight to the Pile: Day 3's flags, Tom on the road 26 m short of the barrier, facing it.
+    // Nov 25: straight to the Pile, on the run there is (Start from: 'Day 3: the Pile' starts a fresh one).
     cat.addItem('Day 3: the Pile at the tunnel (fight it now)', () => {
       for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall']) this.set(f);
       const b = this.barrier;

@@ -122,7 +122,7 @@ import { Beetles } from '../ai/Beetles.js';
 import { Comms } from '../story/Comms.js';
 import { Caller } from '../story/Caller.js';
 import { RadioStatus } from '../ui/RadioStatus.js';
-import { startFromOutpostCleared, startFromLater, STORY_POINTS } from '../debug/storyStart.js';
+import { startFromOutpostCleared, startFromLater, startAtPile, STORY_POINTS } from '../debug/storyStart.js';
 import { CrashSite } from '../world/CrashSite.js';
 import { SaveStore } from './SaveStore.js';
 import { checkpointLabel, checkpointFor, retrySave } from './checkpoints.js';
@@ -1289,6 +1289,7 @@ export class Game {
       this.meta.setPendingChoice(`jump:${id}`);
       reloadWithSeed(this.seed);
     };
+    start.addItem('Day 3: the Pile at the tunnel (boss fight)', go('pile')); // Nov 25 (Aaron)
     start.addItem('Outpost cleared: the compound still to explore', go('outpost'));
     start.addItem('Outpost cleared and explored: the checkpoint next', go('outpostExplored'));
     // Session 33: later points (the plane, Junie), each on top of the outpost explored.
@@ -1729,7 +1730,8 @@ export class Game {
 
   // Nov 17: a debug story start (on a fresh run: see the debug menu's start items).
   jumpTo(point) {
-    if (point === 'outpost') startFromOutpostCleared(this, { explored: false });
+    if (point === 'pile') startAtPile(this);
+    else if (point === 'outpost') startFromOutpostCleared(this, { explored: false });
     else if (point === 'outpostExplored') startFromOutpostCleared(this, { explored: true });
     else if (STORY_POINTS.some((s) => s.id === point)) startFromLater(this, point);
   }

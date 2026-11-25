@@ -64,6 +64,65 @@ export function openingStates(cfg, { explored = false, waves = 1, crates = 0 } =
   };
 }
 
+// Nov 25 (Aaron: "a debug button to start the game at the point of this boss fight"): Day 3's morning, the
+// opening played through Night 2 (the campground, the gas station, the shelter, Earl's safe, the night held), and
+// Ellen's call to the tunnel made. Tom stands on the road north 40 m short of the army's barrier, facing it, the
+// quad beside him; walking on brings the Pile up out of the rubble.
+export const PILE_FLAGS = [
+  ...OUTPOST_CLEARED_FLAGS.filter((f) => !f.startsWith('outpost')),
+  'wyattRifle', 'wyattArmed', 'night2Prep', 'night2Started', 'night2Done', 'plotCamSeen', 'tunnelCall',
+];
+
+export function startAtPile(game, { quiet = false } = {}) {
+  const g = game;
+  const cfg = g.cfg;
+  for (let i = 0; i < 20 && g.cutscenes.active; i++) g.cutscenes.stop(true);
+  g.subtitles.clear();
+  g.paper.isOpen && g.paper.close();
+  g.watch.clear();
+  if (!g.progress.has('day1Battery')) g.firstDay.skipIntro();
+  for (const f of PILE_FLAGS) g.progress.setFlag(f);
+  const sigil = g.shelter.sigil();
+  if (sigil) g.director.remove(sigil);
+  g.nightTwo?.reset();
+  g.lore?.pass?.('leverRifle'); // (Wyatt has it)
+  const st = openingStates(cfg);
+  g.gasStation.loadState(st.gasStation);
+  g.shelter.loadState(st.shelter);
+  // What he'd carry: Earl's hunting rifle from the safe, still empty (its rounds are at the outpost, later), and
+  // the service rifle with a good few rounds (Wyatt's box, and a margin for testing).
+  const w = g.combat.weapons;
+  const rifle = cfg.gasStation.safe.weapon;
+  if (!w.has(rifle)) g.combat.giveWeapon(rifle, 0);
+  w.addAmmo(w.ammoType('rifle') ?? 'rifle', 60);
+  for (const id of ['camcorder', 'earlNote', 'pruittDiary', 'pruittTapes']) {
+    g.lore.give(id);
+    g.lore.handIn(id);
+  }
+  for (const l of g.dialogue.lines) if (l.script === 'day1') g.dialogue.heard.add(l.id);
+  // The morning of day 3.
+  const c = g.clock;
+  c.day = 3;
+  c.phaseIndex = cfg.clock.phases.findIndex((p) => p.name === 'day');
+  c.phaseElapsed = c.currentPhase.seconds * 0.1;
+  g.nightWatch.forecastDue = false;
+  g.nightWatch.closeForecast?.();
+  // On the road north, facing the barrier (north is -z), the quad beside him.
+  g.tunnel?.reset();
+  const b = g.tunnel?.barrier;
+  if (b) {
+    // 10 m outside where the tunnel's seen (config.tunnel.seeAt), so the Pile's coming up is his to walk into.
+    const out = (cfg.tunnel?.seeAt ?? 30) + 10;
+    g.player.teleport(b.x, b.z + out, 0);
+    g.quad?.place?.(b.x + 3, b.z + out + 1, 0);
+    g.mapUi.fog.reveal(b.x, b.z + 20, 60);
+  }
+  g.subtitles.clear();
+  g.dialogue.pending.length = 0;
+  g.dialogue.later.length = 0;
+  if (!quiet) g.toast.show('Debug: Day 3, the Laurel Gap tunnel ahead. Walk on and the Pile comes up');
+}
+
 // The whole jump, on the live game.
 export function startFromOutpostCleared(game, { explored = false, quiet = false } = {}) {
   const g = game;

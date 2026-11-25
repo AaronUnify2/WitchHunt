@@ -307,3 +307,12 @@ describe('the Pile: the grab', () => {
     expect(player.rooted).toBeFalsy();
   });
 });
+
+// Nov 25 (Aaron: "a debug button to start the game at the point of this boss fight").
+describe('the debug start at the Pile', () => {
+  it('has the opening through Night 2 done and the tunnel call made, and nothing after', async () => {
+    const { PILE_FLAGS } = await import('../src/debug/storyStart.js');
+    for (const f of ['day1Battery', 'shelterOpened', 'rifleClaimed', 'night2Done', 'tunnelCall']) expect(PILE_FLAGS, f).toContain(f);
+    for (const f of ['tunnelSeen', 'tunnelCleared', 'farmCall', 'outpostCall', 'outpostCleared']) expect(PILE_FLAGS, f).not.toContain(f);
+  });
+});
