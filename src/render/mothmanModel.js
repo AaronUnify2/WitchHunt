@@ -177,7 +177,7 @@ export function mothmanSpec(m) {
   for (const [n, s] of SIDES) {
     masses.push(['chest', null, s * 0.27, 1.86, -0.01, 0.12, 0.11, 0.12, 'ruff']); // the shoulder
     // The eyes: big, round, set wide.
-    masses.push(['head', null, s * 0.085, 2.1, 0.215, 0.058, 0.064, 0.04, 'eyes']);
+    masses.push(['head', null, s * 0.088, 2.1, 0.215, 0.072, 0.078, 0.046, 'eyes']); // (Nov 25, the concept art: bigger)
     // The hands, long and narrow.
     masses.push([`wrist${n}`, null, s * 0.33, 0.87, 0.05, 0.04, 0.075, 0.03, 'furDark']);
     limbs.push([`shoulder${n}`, `elbow${n}`, 0.065, 0.045, 'fur', 0.12]);

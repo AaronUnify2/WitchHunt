@@ -331,8 +331,10 @@ export class MothmanRenderer {
         break;
       }
       default: {
-        // Standing: wings closed behind him like a cloak, breathing, the head turning to watch.
-        wings(0, 1.32 + breathe * 0.02, 0.8, 0.3, 1.38, 0.5);
+        // Standing: wings closed round him like a cloak, breathing, the head turning to watch. Nov 25 (Aaron's
+        // concept art): they hang down his sides to his shins, seen from the front past his arms (was closed flat
+        // behind his back).
+        wings(0, 1.02 + breathe * 0.02, 1.2, 0.25, 1.08, 1.3);
         set('spine', 0.14 + breathe * 0.012);
         set('chest', 0.06 + breathe * 0.015);
         set('neck', -0.12, look + Math.sin(t * 0.31) * 0.12);

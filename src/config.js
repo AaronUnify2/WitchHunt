@@ -4581,7 +4581,8 @@ export const config = {
       hitFlash: [1.6, 0.7, 0.5],
       thermalGlow: 0.25,
       // The Mothman's colours, a little paler (the glare rule holds).
-      colours: { fur: 0x201d1b, furDark: 0x131211, ruff: 0x2c2723, belly: 0x26211e, wing: 0x242120, dust: 0x3c362f, spot: 0x3c170f, claw: 0x0b0b0c, eyes: 0xff0a04 },
+      // Nov 25 (Aaron: "use mothman to inform the moth design too"): his mottled brown wings and orange eyes.
+      colours: { fur: 0x201d1b, furDark: 0x131211, ruff: 0x2c2723, belly: 0x26211e, wing: 0x30261b, dust: 0x52443a, spot: 0x3c170f, claw: 0x0b0b0c, eyes: 0xff5a10 },
     },
   },
 
@@ -5689,11 +5690,12 @@ export const config = {
       furDark: 0x121110,
       ruff: 0x26221f,
       belly: 0x262220,
-      wing: 0x1f1c1b,
-      dust: 0x4a443c, // the wings' pale bands and the eye-spots' rings
+      // Nov 25 (Aaron's concept art): his wings a mottled brown, his eyes a burning orange (were near black, red).
+      wing: 0x2e2419,
+      dust: 0x5a4a38, // the wings' pale bands and the eye-spots' rings
       spot: 0x4a1c12, // the eye-spots' rust
       claw: 0x0b0b0c,
-      eyes: 0xff0a04,
+      eyes: 0xff5a10,
     },
   },
 
