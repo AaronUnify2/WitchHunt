@@ -5960,7 +5960,8 @@ export const config = {
     // The charges: one surfaces (`first` seconds into the fight; then once it's dragged `afterReclaimed` back in, or
     // after `every` seconds) for `window` seconds. Shot: magic off, shedShare of its bodies thrown off, a blast.
     charge: { beep: [0.6, 0.12], first: 7, every: 22, afterReclaimed: 4, window: 7, hitRadius: 0.42, magic: 20, shedShare: 0.35, blast: { radius: 4.5, damage: 120, playerDamage: 35 } },
-    seams: { seconds: 5, hitRadius: 0.35, magicPerDamage: 0.06 }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
+    // Nov 25 (the artist's rendition): six eyes clustered on its face, [angle off facing Tom (radians), height x radius].
+    seams: { seconds: 5, hitRadius: 0.3, magicPerDamage: 0.06, count: 6, cluster: [[-0.32, 0.92], [0, 1.02], [0.3, 0.95], [-0.2, 0.68], [0.1, 0.62], [0.38, 0.72]] }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
     dynamite: { shed: 4, magic: 6 }, // a stick (or any blast) going off against it
     shed: { distance: [3, 8], spread: 2.2, flight: 0.8, gravity: 18 },
     tendrils: { max: 2, range: 22, reach: 16, drag: 5, points: 4, hitRadius: 0.32 },
@@ -5970,8 +5971,8 @@ export const config = {
     fx: { blood: { r: 0.2, g: 0.02, b: 0.03 }, dust: { r: 0.42, g: 0.38, b: 0.31 }, rubble: { r: 0.22, g: 0.21, b: 0.2 }, magic: { r: 0.35, g: 1, b: 0.42 }, emergeShake: 0.9, deathShake: 1.3, deathSeconds: 0.9 },
     // Nov 25 (Aaron: "more resident evil style": flesh, her green in its veins, eyes for its weak spots, more
     // tendrils). flesh: the core's colours, dark to light; vein: the green in it; idle: tendrils always out.
-    look: { spin: 0.6, flesh: [0x1e080c, 0x361018, 0x461a24, 0x2c1824], vein: 0x5ae860, veinGlow: 0.75, coreLight: 0x3cff5a, coreIntensity: 1.2, coreReach: 10,
-      sinew: 0x240a10, sinewGlow: 0x0a240c, bone: 0xb8ac8a, eye: 0x8a7c50, iris: 0xb4e830, pupil: 0x060404, idle: 7, eyeTease: 1.5, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+    look: { spin: 0.6, flesh: [0x1a0406, 0x34080e, 0x4a1016, 0x260a10], vein: 0x5ae860, veinGlow: 0.45, coreLight: 0x6ac860, coreIntensity: 0.7, coreReach: 8,
+      sinew: 0x240a10, sinewGlow: 0x0a240c, bone: 0xb8ac8a, eye: 0x9a8c56, iris: 0xa8e818, irisDim: 0x3a4a10, irisCore: 0xd8ff50, lobe: 0x3e0a10, pupil: 0x060404, idle: 6, eyeTease: 1.5, coreScale: 0.8, eyeShut: 0.35, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)

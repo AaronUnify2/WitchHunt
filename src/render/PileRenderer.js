@@ -49,6 +49,15 @@ export class PileRenderer {
     this.charge.add(this.chargeLamp);
     this.group.add(this.charge);
     this.buildEyes(look);
+    // Fleshy folds round its eyes (the artist's rendition: wet red lips of meat about them).
+    const lobeGeo = new THREE.SphereGeometry(1, 12, 9);
+    const lobeMat = new THREE.MeshLambertMaterial({ color: look.lobe ?? look.flesh[1], emissive: new THREE.Color(look.lobe ?? look.flesh[1]).multiplyScalar(0.15) });
+    this.lobes = Array.from({ length: 7 }, () => {
+      const m = new THREE.Mesh(lobeGeo, lobeMat);
+      m.castShadow = true;
+      this.group.add(m);
+      return m;
+    });
     this.buildTendrils(look);
     // Its tells: a ring on the ground growing out to the slam's reach; a ring where the lash will land.
     const ringMat = (hex) => new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
@@ -92,21 +101,23 @@ export class PileRenderer {
       const f = k * (flesh.length - 1);
       c.copy(flesh[Math.floor(f)]).lerp(flesh[Math.min(flesh.length - 1, Math.floor(f) + 1)], f % 1);
       c.toArray(col, i * 3);
-      const vein = Math.abs(lump(x * 1.6, y * 1.6, z * 1.6, 2.9));
-      glow[i] = Math.max(0, 1 - vein / 0.09);
+      // Thin veins (the artist's rendition: dark wet meat, the green in threads, not patches).
+      const vein = Math.abs(lump(x * 2.6, y * 2.6, z * 2.6, 2.9));
+      glow[i] = Math.max(0, 1 - vein / 0.035);
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.setAttribute('aGlow', new THREE.BufferAttribute(glow, 1));
-    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    // Wet: a little shine on the meat.
+    const mat = new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 40, specular: new THREE.Color(0x1c1414) });
     this.veinUniforms = { uVein: { value: new THREE.Color(look.vein) }, uVeinGlow: { value: look.veinGlow } };
     mat.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.veinUniforms);
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute float aGlow;\nvarying float vGlow;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = aGlow;');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', '#include <common>\nvarying float vGlow;\nuniform vec3 uVein;\nuniform float uVeinGlow;')
-        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += uVein * vGlow * uVeinGlow;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uVein * 0.4, vGlow * 0.35);');
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += uVein * vGlow * uVeinGlow;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uVein * 0.3, vGlow * 0.2);');
     };
-    mat.customProgramCacheKey = () => 'pile-flesh-veins';
+    mat.customProgramCacheKey = () => 'pile-flesh-veins-wet';
     this.core = new THREE.Mesh(geo, mat);
     this.core.castShadow = true;
     this.group.add(this.core);
@@ -117,15 +128,19 @@ export class PileRenderer {
     const ball = new THREE.SphereGeometry(1, 14, 10);
     // Unlit: the core's light right beside them washed them out to white discs.
     const ballMat = new THREE.MeshBasicMaterial({ color: look.eye });
-    const irisMat = new THREE.MeshBasicMaterial({ color: look.iris });
+    this.irisBright = new THREE.Color(look.iris);
+    this.irisDim = new THREE.Color(look.irisDim ?? look.iris);
     const pupilMat = new THREE.MeshBasicMaterial({ color: look.pupil });
     const lidMat = new THREE.MeshBasicMaterial({ color: look.flesh[1] });
-    const iris = new THREE.CircleGeometry(0.55, 18);
-    const pupil = new THREE.PlaneGeometry(0.14, 0.62);
+    const iris = new THREE.CircleGeometry(0.42, 18);
+    const pupil = new THREE.PlaneGeometry(0.16, 0.86);
     const lid = new THREE.SphereGeometry(1.08, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
-    this.eyes = [0, 1, 2].map(() => {
+    this.eyes = Array.from({ length: this.pile.cfg.seams.count ?? 3 }, () => { // (from config: the view's built before the Pile's eyes)
       const g = new THREE.Group();
-      g.add(new THREE.Mesh(ball, ballMat));
+      // The artist's rendition: the whole eye a glowing yellow-green orb, a dark slit down it.
+      const orbMat = new THREE.MeshBasicMaterial({ color: look.iris }); // its own: dim or glowing
+      g.add(new THREE.Mesh(ball, orbMat));
+      const irisMat = new THREE.MeshBasicMaterial({ color: look.irisCore ?? 0xf4ffa0 });
       const i = new THREE.Mesh(iris, irisMat);
       i.position.z = 1.01; // just in front of the ball, facing out
       const p = new THREE.Mesh(pupil, pupilMat);
@@ -134,7 +149,7 @@ export class PileRenderer {
       const bottom = new THREE.Mesh(lid, lidMat);
       bottom.rotation.x = Math.PI;
       g.add(i, p, top, bottom);
-      g.userData = { top, bottom, open: 0 };
+      g.userData = { top, bottom, open: 0, orb: orbMat, iris: irisMat };
       g.visible = false;
       this.group.add(g);
       return g;
@@ -150,7 +165,7 @@ export class PileRenderer {
     this.segs.frustumCulled = false;
     this.segs.castShadow = true;
     this.segs.count = 0;
-    const hook = new THREE.ConeGeometry(0.07, 0.34, 6).translate(0, 0.17, 0);
+    const hook = new THREE.ConeGeometry(0.06, 0.62, 6).translate(0, 0.31, 0); // a long spear of bone
     this.hooks = new THREE.InstancedMesh(hook, new THREE.MeshLambertMaterial({ color: look.bone }), MAX_TENDRILS);
     this.hooks.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.hooks.frustumCulled = false;
@@ -246,16 +261,33 @@ export class PileRenderer {
     // The mound: bodies spread over a dome, turning one way low and the other high, bobbing.
     const cx = p.x + ox;
     const cz = p.z + oz;
+    // Nov 25 (the artist's rendition): they cling over the meat, crowding its top and sides and its foot, and leave
+    // its face (the eyes, toward Tom) clear.
     const N = p.bodies;
-    for (let i = 0; i < N; i++) {
-      const u = (i + 0.5) / Math.max(1, N); // 0 at the bottom ring, 1 at the top
-      const ring = Math.sqrt(1 - u * u * 0.85) * r * 0.85;
+    const coreR = p.coreRadius;
+    const coreY = g - sunk + r * 0.85 + lift * 0.5;
+    const foot = Math.round(N * 0.3); // (the artist's rendition: a crowd at its foot, as if carrying it)
+    for (let i = 0; i < foot; i++) {
+      const ang = toTom + ((i + 0.5) / foot - 0.5) * Math.PI * 1.7 + Math.sin(p.t * 0.6 + i) * 0.08;
+      const ring = coreR * 0.95 + 0.25;
+      const bob = Math.abs(Math.sin(p.t * 3 + i * 1.3)) * 0.06;
+      const frame = ZOMBIE_FRAMES.walk[(i + Math.floor(p.t * 4)) % ZOMBIE_FRAMES.walk.length];
+      this.put(cx + Math.sin(ang) * ring, g - sunk * 0.6 + bob, cz + Math.cos(ang) * ring, 500 + i, frame, ang + Math.PI);
+    }
+    for (let i = foot; i < N; i++) {
+      const u = Math.pow((i - foot + 0.5) / Math.max(1, N - foot), 0.65); // more of them high up
+      const e = (u - 0.35) * Math.PI * 0.9; // how far up round the meat, -0.99 (its foot) .. 1.84 (over the top)
       const dir = i % 2 ? 1 : -1;
-      const ang = i * GOLDEN + p.spin * dir * (1.2 - u * 0.5);
-      const bob = Math.sin(p.t * 2.3 + i) * 0.12;
-      const y = g - sunk + u * r * 1.35 - 0.2 + bob + lift * u;
+      let ang = i * GOLDEN + p.spin * dir * (0.8 - u * 0.4);
+      if (e > -0.45 && e < 0.8) {
+        let d = Math.atan2(Math.sin(ang - toTom), Math.cos(ang - toTom));
+        if (Math.abs(d) < 0.85) ang = toTom + Math.sign(d || 1) * 0.85 + d * 0.3; // off its face
+      }
+      const ring = Math.max(0.25, Math.cos(e)) * coreR * 1.02 + 0.12;
+      const bob = Math.sin(p.t * 2.3 + i) * 0.1;
+      const y = coreY + Math.sin(e) * coreR * 0.95 - 0.5 + bob;
       const frame = LIMP[(i + Math.floor(p.t * 1.5 + i * 0.37)) % LIMP.length];
-      this.put(cx + Math.sin(ang) * ring, y, cz + Math.cos(ang) * ring, i, frame, ang + Math.PI * 0.5 * dir + p.t * dir);
+      this.put(cx + Math.sin(ang) * ring, y, cz + Math.cos(ang) * ring, i, frame, ang + Math.PI * 0.5 * dir + p.t * dir * 0.5);
     }
     // The fling: a body held up over the top on a tendril as it winds up.
     const top = { x: cx, y: g - sunk + r * 1.3 + lift, z: cz };
@@ -268,10 +300,30 @@ export class PileRenderer {
     const beatT = (p.t * (1.1 + (1 - N / p.cfg.bodies) * 0.9)) % 1;
     const beat = Math.exp(-((beatT - 0.1) ** 2) / 0.003) + 0.6 * Math.exp(-((beatT - 0.28) ** 2) / 0.003);
     const reel = p.phase === 'fight' && p.cycle === 'reel';
-    const coreR = r * 0.62 * (1 + beat * 0.07 + wind * 0.1 + (reel ? 0.08 : 0));
-    this.placeCore(cx, g - sunk + r * 0.7 + lift * 0.5, cz, coreR, p.t, 1);
+    const meatR = coreR * (1 + beat * 0.06 + wind * 0.08 + (reel ? 0.06 : 0));
+    this.placeCore(cx, coreY, cz, meatR, p.t, 1);
+    // The folds of meat round its eyes, swelling with the beat.
+    const spots = p.eyeSpots(this.eyeAt ??= []);
+    let mx = 0;
+    let my = 0;
+    let mz = 0;
+    for (const s of spots) {
+      mx += s.x / spots.length;
+      my += s.y / spots.length;
+      mz += s.z / spots.length;
+    }
+    this.lobes.forEach((m, i) => {
+      const a = (i / this.lobes.length) * Math.PI * 2;
+      const side = toTom + Math.PI / 2;
+      const rx = Math.cos(a) * coreR * 0.42;
+      const ry = Math.sin(a) * coreR * 0.32;
+      m.position.set(mx + Math.sin(side) * rx - Math.sin(toTom) * 0.08, my + ry, mz + Math.cos(side) * rx - Math.cos(toTom) * 0.08);
+      m.scale.set(coreR * 0.2, coreR * 0.14 * (1 + beat * 0.1), coreR * 0.2);
+      m.rotation.set(0, toTom + a, a);
+    });
     this.veinUniforms.uVeinGlow.value = look.veinGlow * (0.7 + beat * 0.6 + wind * 0.8 + (reel ? 1 : 0));
-    this.light.position.set(cx, g - sunk + r * 0.9, cz);
+    // Her green off its eyes, onto the ground in front of it.
+    this.light.position.set(mx + Math.sin(toTom) * 1.6, g + 0.6, mz + Math.cos(toTom) * 1.6);
     this.light.intensity = look.coreIntensity * (0.6 + beat * 0.5 + (reel ? 0.4 : 0));
     // The charge.
     const ch = p.phase === 'fight' && p.cycle === 'charge';
@@ -281,60 +333,61 @@ export class PileRenderer {
       this.charge.rotation.y = Math.atan2(p.charge.x - p.x, p.charge.z - p.z);
       this.chargeLamp.visible = Math.sin(p.cycleT * (6 + p.cycleT * 2)) > 0;
     }
-    // Its eyes, pushed out of the wounds after a blast, opening, looking at him; shut and sunk as the reel ends.
-    // Nov 25 (its cutscene): one opens for a moment at the end of pile.emerge, looks, and shuts (a teaser).
+    // Its eyes (Nov 25, the artist's rendition): a cluster on its face, always there. Half shut and dim while it's
+    // whole; after a blast, wide open, glowing, bulging: the weak spots. The cutscene's teaser opens them all at once.
     const reelLeft = reel ? p.cfg.seams.seconds - p.cycleT : 0;
-    if (p.phase === 'intro') {
-      const e = this.eyes[0];
-      const k = p.eyeTease > 0 ? p.eyeTease / look.eyeTease : 0;
-      const o = k > 0 ? Math.min(1, k / 0.25, (1 - k) / 0.2) : 0;
-      e.userData.open = o;
-      e.visible = o > 0.02;
-      if (e.visible) {
-        const er = r * 0.75;
-        e.position.set(cx + Math.sin(toTom) * er, g - sunk + r * 0.85, cz + Math.cos(toTom) * er);
-        e.scale.setScalar(p.cfg.seams.hitRadius * 1.6);
-        e.lookAt(pp.x, (pp.y ?? g) + 1.6, pp.z);
-        e.userData.top.rotation.x = -o * 1.2;
-        e.userData.bottom.rotation.x = Math.PI + o * 1.0;
-      }
-      for (let i = 1; i < this.eyes.length; i++) this.eyes[i].visible = false;
-    } else this.eyes.forEach((e, i) => {
-      const s = p.seams[i];
-      const want = reel ? Math.min(1, p.cycleT / 0.35, reelLeft / 0.4) : 0;
+    const tease = p.phase === 'intro' && p.eyeTease > 0 ? p.eyeTease / look.eyeTease : 0;
+    this.eyes.forEach((e, i) => {
+      let want = look.eyeShut * rise;
+      let bright = 0;
+      if (reel) {
+        const k = Math.min(1, p.cycleT / 0.3, reelLeft / 0.4);
+        want = look.eyeShut + (1 - look.eyeShut) * k;
+        bright = k;
+      } else if (tease > 0) {
+        const k = Math.min(1, tease / 0.2, (1 - tease) / 0.25);
+        want = look.eyeShut + (1 - look.eyeShut) * k;
+        bright = k;
+      } else if (p.phase === 'intro' && rise < 0.6) want = 0;
       e.userData.open += (want - e.userData.open) * Math.min(1, dt * 12);
-      e.visible = e.userData.open > 0.02;
-      if (!e.visible) return;
       const o = e.userData.open;
-      const size = p.cfg.seams.hitRadius * 1.25 * (0.6 + 0.4 * o); // drawn bigger than its hit circle: an eye you can see
-      e.position.set(s.x, s.y + 0.3, s.z);
+      e.visible = o > 0.02;
+      if (!e.visible) return;
+      const s = spots[i];
+      const size = p.cfg.seams.hitRadius * (0.95 + 0.15 * bright); // (spaced so the cluster's eyes don't overlap)
+      e.position.set(s.x, s.y, s.z);
       e.scale.setScalar(size);
       e.lookAt(pp.x, (pp.y ?? g) + 1.6, pp.z);
+      e.userData.orb.color.copy(this.irisDim).lerp(this.irisBright, 0.2 + 0.8 * bright);
+      e.userData.iris.visible = bright > 0.3; // its hot centre, when it's open wide
       // Lids part as it opens; a twitch every so often.
-      const twitch = Math.sin(p.t * 7 + i * 2) > 0.97 ? 0.4 : 0;
-      e.userData.top.rotation.x = -(o - twitch) * 1.2;
-      e.userData.bottom.rotation.x = Math.PI + (o - twitch) * 1.0;
+      const twitch = Math.sin(p.t * 7 + i * 2) > 0.97 ? 0.3 : 0;
+      e.userData.top.rotation.x = -(o - twitch) * 1.25;
+      e.userData.bottom.rotation.x = Math.PI + (o - twitch) * 1.05;
     });
     // ---- the tendrils ----
-    const base = (ang, h) => ({ x: cx + Math.sin(ang) * r * 0.75, y: g - sunk + r * h, z: cz + Math.cos(ang) * r * 0.75 });
+    const base = (ang, h) => ({ x: cx + Math.sin(ang) * coreR * 0.9, y: g - sunk + r * h, z: cz + Math.cos(ang) * coreR * 0.9 });
     // Idle: always out, waving, rising out of it all round.
     const idle = look.idle;
     const moving = p.phase === 'fight' && !p.grab && p.cycle !== 'reel' && !a;
     for (let i = 0; i < idle; i++) {
-      const ang = (i / idle) * Math.PI * 2 + Math.sin(p.t * 0.4 + i) * 0.4;
-      const from = base(ang, 0.5 + (i % 3) * 0.25);
-      const len = r * (0.9 + (i % 4) * 0.25) * rise;
-      // Two of them plant in the ground ahead as it hauls itself along.
-      if (moving && i < 2) {
-        const side = i === 0 ? -0.55 : 0.55;
-        const step = (p.t * 1.6 + i * 0.5) % 1;
+      // Out to its sides, clear of its face (the artist's rendition).
+      const ang = toTom + (i % 2 ? 1 : -1) * (0.95 + Math.floor(i / 2) * 0.55) + Math.sin(p.t * 0.4 + i) * 0.15;
+      const from = base(ang, 0.55 + (i % 3) * 0.3);
+      const len = r * (0.9 + (i % 4) * 0.2) * rise;
+      // Two of them planted on the road in front like legs, stepping as it hauls itself along.
+      if (i < 2 && rise > 0.5) {
+        const side = i === 0 ? -0.75 : 0.75;
+        const step = moving ? (p.t * 1.6 + i * 0.5) % 1 : 0.5;
         const reach = r + 1.2 + step * 1.4;
         const to = { x: cx + Math.sin(toTom + side) * reach, z: cz + Math.cos(toTom + side) * reach };
         this.tendril(from, { x: to.x, y: this.heightAt(to.x, to.z) + 0.05, z: to.z }, 0.11, 0.6, p.t * 2 + i, true);
         continue;
       }
-      const out = { x: from.x + Math.sin(ang) * len, y: from.y + len * (0.4 + 0.5 * Math.sin(p.t * 1.3 + i * 1.7)), z: from.z + Math.cos(ang) * len };
-      this.tendril(from, out, 0.08 + 0.02 * (i % 2), 0.9, p.t * 2.4 + i * 1.3, true);
+      // (The artist's rendition: long thin legs arching up and out, the spear tips held out level.)
+      const reachOut = len * 1.7;
+      const out = { x: from.x + Math.sin(ang) * reachOut, y: from.y + len * (0.15 + 0.3 * Math.sin(p.t * 1.1 + i * 1.7)), z: from.z + Math.cos(ang) * reachOut };
+      this.tendril(from, out, 0.065 + 0.01 * (i % 2), 1.5, p.t * 1.6 + i * 1.3, true);
     }
     // The cutscene's first beat: tendrils bursting up out of the rubble before anything else of it shows.
     if (p.phase === 'intro' && p.burst && rise < 0.7) {

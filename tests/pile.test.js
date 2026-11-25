@@ -99,7 +99,7 @@ describe('the Pile (Nov 25)', () => {
     expect(pile.cycle).toBe('reel');
     run(0.05);
     const seams = pile.targets.filter((t) => pile.seams.includes(t));
-    expect(seams).toHaveLength(3);
+    expect(seams).toHaveLength(C.seams.count);
     const before = pile.magic;
     seams[0].takeHit(100);
     expect(pile.magic).toBeCloseTo(before - 100 * C.seams.magicPerDamage);

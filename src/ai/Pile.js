@@ -61,7 +61,8 @@ export class Pile {
       takeHit: (amount, part, weapon, at, from) => this.hitMass(amount, from),
     };
     this.charge = { alive: true, targetable: true, hitRadius: cfg.charge.hitRadius, height: 0.7, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, takeHit: () => this.blast() };
-    this.seams = [0, 1, 2].map((i) => ({ i, alive: true, targetable: true, hitRadius: cfg.seams.hitRadius, height: 0.6, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, weakSpot: null, takeHit: (amount) => this.hitSeam(amount) }));
+    // Its eyes (the weak spots once a blast has torn it open): Nov 25, Aaron's artist's rendition: a cluster on its face.
+    this.seams = Array.from({ length: cfg.seams.count ?? 3 }, (_, i) => ({ i, alive: true, targetable: true, hitRadius: cfg.seams.hitRadius, height: 0.6, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, weakSpot: null, takeHit: (amount) => this.hitSeam(amount) }));
     this.unsub = [
       this.bus?.on?.('explosion', (e) => this.onExplosion(e)),
       // Nov 25 (Aaron: "a cutscene to show the pile emerging from the ground"): pile.emerge's beats.
@@ -754,11 +755,38 @@ export class Pile {
   // ---- what can be hit ---------------------------------------------------------------------------------------
 
   // The charge surfaces on the side facing Tom.
+  // The charge surfaces off to one side of its face (Nov 25: clear of the eyes), facing Tom.
   chargeSpot() {
     const p = this.player.position;
-    const a = Math.atan2(p.x - this.x, p.z - this.z) + Math.sin(this.t * 0.7) * 0.5;
-    const r = this.radius + 0.1;
+    const a = Math.atan2(p.x - this.x, p.z - this.z) + 0.95 + Math.sin(this.t * 0.7) * 0.25;
+    const r = this.coreRadius + 0.15;
     return { x: this.x + Math.sin(a) * r, z: this.z + Math.cos(a) * r, a };
+  }
+
+  // The meat at its middle (Nov 25): the hit shape is this, not the bodies' outer edge, so its face can be seen and
+  // shot; the bodies cling round it.
+  get coreRadius() {
+    return this.radius * (this.cfg.look.coreScale ?? 0.8);
+  }
+
+  // Where each eye sits on its face (Nov 25, the artist's rendition: a cluster, front and centre, toward Tom):
+  // fills `out` with { x, y, z } (y above the ground there), from config.pile.seams.cluster [angle radians, height].
+  eyeSpots(out = []) {
+    const p = this.player.position;
+    const face = Math.atan2(p.x - this.x, p.z - this.z);
+    const R = this.coreRadius + 0.04;
+    const g = this.ground?.heightAt?.(this.x, this.z) ?? 0;
+    const cl = this.cfg.seams.cluster;
+    for (let i = 0; i < this.seams.length; i++) {
+      const [da, h] = cl[i % cl.length];
+      const a = face + da;
+      const k = Math.cos(da * 0.6); // a little further round, a little further back
+      out[i] ??= { x: 0, y: 0, z: 0 };
+      out[i].x = this.x + Math.sin(a) * R * k;
+      out[i].z = this.z + Math.cos(a) * R * k;
+      out[i].y = g + this.radius * h;
+    }
+    return out;
   }
 
   rebuildTargets() {
@@ -771,7 +799,7 @@ export class Pile {
     m.x = this.x;
     m.z = this.z;
     m.y = g;
-    m.hitRadius = r;
+    m.hitRadius = this.coreRadius;
     m.height = r * 1.9;
     m.fullHeight = m.height;
     T.push(m);
@@ -786,11 +814,11 @@ export class Pile {
     if (this.cycle === 'reel') {
       const p = this.player.position;
       const face = Math.atan2(p.x - this.x, p.z - this.z);
+      const spots = this.eyeSpots(this.eyeAt ??= []);
       this.seams.forEach((s, i) => {
-        const a = face + (i - 1) * 0.6;
-        s.x = this.x + Math.sin(a) * (r + 0.05);
-        s.z = this.z + Math.cos(a) * (r + 0.05);
-        s.y = g + r * (0.5 + 0.35 * (i % 2));
+        s.x = spots[i].x;
+        s.z = spots[i].z;
+        s.y = spots[i].y - 0.3; // (a target's y is its foot: the eye's middle is 0.3 up)
         T.push(s);
       });
     }

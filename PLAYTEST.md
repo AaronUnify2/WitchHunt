@@ -811,6 +811,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] It doesn't move or hurt you during it; the fight starts as it ends. Skip it (A / Enter): straight into the fight, the Pile whole.
 - [ ] First time only: die and come back, and it just comes up out of the ground.
 
+**Round 94: the Pile, after your artist's rendition.**
+- [ ] **Its face:** six eyes clustered front and centre in folds of dark wet meat, glowing yellow-green with black slits. Half shut and dim while it's whole; after a blast they open wide and glow: that's when they can be hit (six of them now, a little smaller each). Its green spills onto the road in front.
+- [ ] **The bodies** cling over its top and sides and crowd its foot as if carrying it, leaving its face clear.
+- [ ] **Tendrils:** six long thin legs arching out to its sides with long bone spear tips; two planted on the road in front.
+- [ ] **The charge** now surfaces off to one side of its face, clear of the eyes.
+- [ ] **Hitting it:** the mass you can shoot is its meat now, not its outer edge, so shots past the bodies at its sides may miss. Does it still feel fair?
+- [ ] The cutscene's eye teaser opens all six at once.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
