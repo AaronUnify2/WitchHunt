@@ -5925,6 +5925,9 @@ export const config = {
   // in the center of the family cemetery ... and let's use one of those hanged mutants. To give the player something
   // novel to fight. Maybe even ... 3 at once"; his picks: they drop, and go back up into the tree when badly hurt;
   // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
+  // Nov 25 (Aaron): Day 3, the Laurel Gap tunnel on the road north (encounters/Tunnel.js). call.after: seconds into
+  // the dawn after Night 2 before Ellen sends Tom there; seeAt: metres from the army's barrier that he's seen it.
+  tunnel: { call: { after: 8 }, seeAt: 30 },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)
     // The dead oak at the plot's centre; its limbs (yaw degrees, reach, height at the rope); ropes to the necks.
@@ -5959,7 +5962,8 @@ export const config = {
     // house, ~21 m before the yard (it was at 21 m, inside it).
     sweepAt: 45,
     radius: 24, arriveInset: 3, mothsAt: 75, interactRange: 1.5, shotgunShells: 8,
-    call: { after: 8, talkMin: 3 }, // Aaron (Nov 14): seconds into the dawn after Night 2 before Ellen's call to the farm; and of her line before the day fades by
+    // Nov 25 (Aaron: Tom wouldn't sleep; the day goes to the tunnel): no fade now. The generator's heard `dayLeft`
+    // seconds before dusk, once the tunnel's been seen (the day waits there for him if it hasn't).
     clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
     glimpse: { within: 40, after: 0.5, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)

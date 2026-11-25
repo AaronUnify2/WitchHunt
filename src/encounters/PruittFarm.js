@@ -95,6 +95,15 @@ export function porchMoths({ light, torch, near, shot, far }) {
 
 // Where the day's clock should stand once the family have talked at the gate (pure): `dayLeft` seconds
 // short of dusk, never earlier than it is now.
+// Nov 25: is it late in the day (dayLeft seconds or less before dusk), or past it?
+export function lateInDay(clock, dayLeft) {
+  if (!clock) return true;
+  if (clock.phase === 'dawn') return false;
+  if (clock.phase !== 'day') return true;
+  return clock.phaseElapsed >= clock.currentPhase.seconds - dayLeft;
+}
+
+// (Round 2 to Nov 25: the fade that skipped Day 3 to late afternoon.)
 export function afternoonAt(elapsed, daySeconds, dayLeft) {
   return Math.max(elapsed, daySeconds - dayLeft);
 }
@@ -185,7 +194,6 @@ export class PruittFarm {
       this.bus.on('moths:roostHit', ({ group }) => group === GROUP && (this.shot = true)),
       this.bus.on('moths:killed', () => this.mothsOut && this.killed++),
       this.bus.on('farm:mantle', () => this.mantle()),
-      this.bus.on('fade:mid', () => this.onFadeMid()),
       this.bus.on('farm:scarecrowLooks', () => this.scarecrowLooks()), // Nov 24: sweep.farm's last shot
       this.bus.on('plot:moths', () => this.plotMothsNow()), // Nov 24: sweep.plot, on the sigil
     ];
@@ -209,7 +217,6 @@ export class PruittFarm {
   }
 
   reset() {
-    this.gate = null; // the call's beat: { t, fading, faded }
     this.callT = 0;
     this.heldDay = 0;
     this.roosted = false;
@@ -346,47 +353,25 @@ export class PruittFarm {
   }
 
   // 1: the call. Aaron (Nov 14: the trip to the chained main gate was "quite a boring little story beat...
-  // After [the night] they say go to the Pruitt farmhouse to see if Marcy is okay"): a few seconds into the dawn
-  // after Night 2, Ellen sends him to bed and then to the farm; the picture fades and the day goes by, so
-  // he's on the track as the light's going. (The outpost isn't mentioned until the Mothman's been seen:
-  // Outpost.call, on mothmanGlimpsed.)
-  updateCall(dt) {
-    if (!this.has('night2Done') || this.has('farmCall')) return;
-    if (!this.gate) {
-      this.callT = (this.callT ?? 0) + dt;
-      if (this.callT < this.fc.call.after || this.cutscenes?.active || this.subtitles?.busy || this.dialogue?.pending?.length) return;
-      this.gate = { t: 0, faded: false };
-      this.dialogue?.play('farm.call.ellen');
-      this.bus.emit('farm:call');
-      return;
-    }
-    this.gate.t += dt;
-    if (this.gate.t < this.fc.call.talkMin || this.subtitles?.busy || this.dialogue?.pending?.length || this.cutscenes?.active) return;
-    if (this.gate.fading) return;
-    // He sleeps; the day goes.
-    this.gate.fading = true;
-    const done = () => this.gateDone();
-    const light = this.clock.phase === 'day' || this.clock.phase === 'dawn';
-    if (!light || !this.cutscenes?.play('fade.afternoon', { onDone: done })) done();
-  }
-
-  onFadeMid() {
-    if (!this.gate?.fading || this.gate.faded) return;
-    this.gate.faded = true;
-    const c = this.clock;
-    if (c.phase === 'dawn') c.skipPhase?.();
-    if (c.phase === 'day') c.phaseElapsed = afternoonAt(c.phaseElapsed, c.currentPhase.seconds, this.fc.clock.dayLeft);
-  }
-
-  gateDone() {
-    if (this.has('farmCall')) return;
-    this.onFadeMid();
+  // After [the night] they say go to the Pruitt farmhouse to see if Marcy is okay"). Nov 25 (Aaron: "The Tom I know
+  // would go straight there without sleeping"; "At dusk, back at the compound, Tom hears the Pruitt farmhouse
+  // generator running and goes to check on Marcy"): no sleep and no fade. Day 3 goes to the tunnel
+  // (encounters/Tunnel.js); once it's been seen, late in the afternoon (clock.dayLeft seconds before dusk), the
+  // Pruitts' generator is heard across the valley: Wyatt, then Ellen (farmCall). (The outpost isn't mentioned until
+  // the Mothman's been seen: Outpost.call, on mothmanGlimpsed.)
+  updateCall() {
+    if (!this.has('night2Done') || this.has('farmCall') || !this.has('tunnelSeen')) return;
+    if (!lateInDay(this.clock, this.fc.clock.dayLeft)) return;
+    if (this.cutscenes?.active || this.subtitles?.busy || this.dialogue?.pending?.length) return;
     this.set('farmCall');
+    this.dialogue?.play('farm.call.wyatt');
+    this.bus.emit('farm:call');
   }
 
-  // The day waits short of dusk for him to reach the farm (a while).
+  // The day waits short of dusk: on Day 3 for Tom to have been to the tunnel and heard the generator, then for him
+  // to reach the farm (a while: holdMax seconds at most, all told).
   updateClock(dt) {
-    if (!this.has('farmCall') || this.has('farmVisited')) return;
+    if (!this.has('night2Done') || this.has('farmVisited')) return;
     const c = this.clock;
     const k = this.fc.clock;
     if (c.phase !== 'day' || this.heldDay >= k.holdMax) return;
@@ -629,13 +614,18 @@ export class PruittFarm {
 
   addDebugItems(menu) {
     const cat = menu.category(DEBUG.story);
-    cat.addItem("The Pruitt farm: the dawn after Night 2 (Ellen's call to the farm is due)", () => {
+    cat.addItem("Day 3: the dawn after Night 2 (Ellen's call to the tunnel is due)", () => {
       for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done']) this.set(f);
       this.callT = 0;
-      this.gate = null;
+    });
+    // Nov 25: the tunnel seen and the day on to late afternoon: the Pruitts' generator is due.
+    cat.addItem("Day 3: back from the tunnel, late afternoon (the Pruitts' generator is due)", () => {
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen']) this.set(f);
+      const c = this.clock;
+      if (c?.phase === 'day') c.phaseElapsed = Math.max(c.phaseElapsed, c.currentPhase.seconds - this.fc.clock.dayLeft);
     });
     cat.addItem('The Pruitt farm: at the track in, at dusk (the back way known)', () => {
-      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'farmCall']) this.set(f);
+      for (const f of ['shelterCall', 'earlCombination', 'rifleClaimed', 'wyattRifle', 'wyattArmed', 'night2Done', 'tunnelCall', 'tunnelSeen', 'farmCall']) this.set(f);
       const e = this.frame.entrance;
       this.player.teleport(e.x - this.frame.fx * 14, e.z - this.frame.fz * 14, Math.atan2(-this.frame.fx, -this.frame.fz));
     });

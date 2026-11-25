@@ -185,6 +185,12 @@ export class Objectives {
       if (n2.state === 'prep') return step('night2Prep', "Take Earl's lever-action up the lookout tower to Wyatt. Night falls when you do.", L.tower.ladder);
       return step('night2Home', "It's getting dark. Take Earl's lever-action home to Wyatt before night.", L.gate.mid);
     }
+    // ---- Day 3: the tunnel (Nov 25, Aaron) ----
+    const tn = g.tunnel;
+    if (tn && has('night2Done') && !has('farmCall')) {
+      if (has('tunnelCall') && !has('tunnelSeen')) return step('tunnel', 'Take the road north to the Laurel Gap tunnel. See if the way out is still open.', tn.barrier);
+      if (has('tunnelSeen')) return step('tunnelHome', 'Head back home.', L.gate.mid);
+    }
     // ---- the military outpost (Session 17, M9.4) ----
     const op = g.outpost;
     // Round 2 (Aaron): the main gate's shut; the way in is by the Pruitts' farm and the tear in the fence.

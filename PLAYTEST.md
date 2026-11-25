@@ -760,6 +760,19 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 **Round 86: your Nov 25 play-through notes.** Debug menu to the Pruitt farm at dusk, or play through.
 - [ ] **The Mothman waits for the last moth to land** (your note: it came before the final moth had fallen). Kill the porch moths: the glimpse in the oak now holds off 0.5 s after the last one is down (`pruittFarm.glimpse.after`). Long enough?
 
+**Round 87: the story changes (Nov 25 plan; Claude wrote the lines, all drafts).** New Run, and play into Day 3.
+- [ ] **A quiet campground:** nobody at the fire on Day 1. The sweep plays, then Wyatt's "Check their shelters". Is the empty fire too empty at the end of the sweep?
+- [ ] **The horde comes after the tape:** watch the camcorder; after Ellen's two lines (no animal, the battery) the horde comes out of the trees behind the car. If you keep the tape and play it away from the campground, no horde.
+- [ ] **The tape's new ending:** after her summon, a glitch, and the three campers are Hanged; Kyle is up right in front of the lens. She walks off into the trees and all four shamble after her (heads cocked); then she flits back and lifts the camera. Does the swap read? Is the shamble too slow or fast?
+- [ ] **Four Hanged at the family plot** on four limbs of the oak. Their claw is a little weaker (6, was 8) so four hit about as hard as three did. Fair?
+- [ ] **Earl's note:** "I've gone up to get the shelter ready for all of us. When you're back with the truck, bring the kids and come straight there."
+- [ ] **Earl's tape:** Earl alone, no kids; he runs away from the farm's side. Junie: "He ran the wrong way. Away from the farm. He was leading her off, away from his kids." Junie in the shelter: "Did Earl get it ready? Is anybody down there?"
+- [ ] **The rifle card** at the safe now says it hits hard and reloads slow, and how RB / D-pad down (wheel / G on keyboard) switch guns.
+- [ ] **Wyatt at the outpost** when you take the rounds: "Those fit Earl's rifle, Dad! Swap to it. You'll want that scope."
+- [ ] **Day 3, the tunnel:** a few seconds into the dawn after Night 2, Ellen sends you up the road north to the Laurel Gap tunnel. Within 30 m of the army's barrier, Wyatt and Ellen work out it was brought down on purpose and the outpost's been overrun. **No monster fight yet** (to design together).
+- [ ] **Day 3, no sleep, no fade:** the day runs on; late in the afternoon (about 70 s before dusk) Wyatt hears the Pruitts' generator across the valley and Ellen sends you to check on Marcy. If you haven't been to the tunnel, the day waits short of dusk. Debug, Story: "Day 3: back from the tunnel, late afternoon" jumps there.
+- [ ] **The spiked ram:** at the moonshiners' holler, a bear trap that's gone off (or that you've sprung) gives up its jaws (hold X). Back at the quad, hold X: bolt them on. It shows across the front rack and the ram hits twice as hard (140, and 0.8 of that on mutants); it rides the same.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
