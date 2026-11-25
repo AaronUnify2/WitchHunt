@@ -428,6 +428,15 @@ function drawFigure(ctx, t, kit, angle, pose, w, h, paint) {
       ctx.fillStyle = paint.fixed(kit.belt);
       ctx.fillRect(cx - torsoHalf * 0.78, hipY + 1, torsoHalf * 1.56, 3);
     }
+    // Nov 25 (Aaron's concept art): the deputy's gold star on his left breast, over the pocket.
+    if (kit.badge !== undefined && !fromBehind && side < 0.6) {
+      const bx = Math.round(cx + lean * 0.75 + torsoHalf * 0.45 * Math.max(Math.abs(front), 0.3) + side * 3);
+      const by = Math.round(top + 6);
+      ctx.fillStyle = paint.fixed(kit.badge);
+      ctx.fillRect(bx - 1, by - 2, 2, 5);
+      ctx.fillRect(bx - 2, by - 1, 4, 3);
+      ctx.fillRect(bx - 3, by, 6, 1);
+    }
     if (kit.jacket !== undefined) suit(top, lean);
     // Army: webbing, two straps down from the shoulders to a belt.
     if (kit.webbing !== undefined) {

@@ -1795,7 +1795,9 @@ export const config = {
       // (a police vest and cap, an army helmet), in fixed colours.
       looks: {
         citizen: { longSleeves: 0.5, plaid: 0.3 },
-        police: { shirt: [0x161c2c, 0x1a2234], trousers: [0x12141c], longSleeves: 0.4, plaid: 0, vest: 0x2a3038, hat: 'cap', hatColor: 0x0e1018 },
+        // Nov 25 (Aaron's concept art, zombies 2 and 3): a sheriff's deputy: a khaki-grey uniform shirt with its two
+        // pockets and a gold star, a dark belt, navy or olive trousers; no vest or cap now (was navy, a vest, a cap).
+        police: { shirt: [0x4c4a3a, 0x545240], trousers: [0x161a26, 0x262c1e], longSleeves: 1, plaid: 0, pockets: true, belt: 0x161210, badge: 0xa88a2a },
         // Session 13: camouflage, webbing, and a bare-headed block for when its helmet's gone.
         army: { shirt: [0x34402a, 0x3a4430], trousers: [0x2e3824, 0x343c28], longSleeves: 1, plaid: 0, camo: 1, webbing: 0x22241a, bare: true, hat: 'helmet', hatColor: 0x2a3222 },
         // Session 28: a dead logger (the sawmill's crew): the citizens' shapes (short hair, balding or a
