@@ -2168,16 +2168,19 @@ export const config = {
       height: 2.3, // metres
       shadow: 0x030304, // her whole body, unlit
       bone: 0x443e30, // Round 2: what's bone and twig on her (the charms at her waist, the spines down her back): unlit too, just off her black
-      eyes: 0xd6ff6a, // unlit and bright, so the bloom picks them out
+      eyes: 0xff3424, // unlit and bright, so the bloom picks them out (Nov 25, Aaron's concept art: red; was green)
       thinness: 0.72, // width and depth scale of her body (Aaron: thinner)
+      // Nov 25 (Aaron's concept art: dead branches and roots, red eyes, no hood): no hood, a great crown of branches,
+      // long twig fingers, thorny twigs off her forearms (her cloak's strips longer and more of them: rags below).
+      tree: { hood: false, crownSticks: 13, crownLength: [0.6, 1.05], fingers: 1.5, armTwigs: 5 },
       // Session 13: her rags (render/WitchRenderer.js). Metres and seconds.
       rags: {
-        cloakStrips: 11, // the hem's strips (with as many notches between)
-        cloakTear: 0.38, // the longest a strip hangs below the hem
+        cloakStrips: 17, // the hem's strips (with as many notches between) (Nov 25: 17, was 11: trailing roots)
+        cloakTear: 0.8, // the longest a strip hangs below the hem (Nov 25: 0.8, was 0.38)
         cloakNotch: 0.22, // the deepest a notch is cut up into the cloak
         sleeveHang: 0.2, // how far the wide sleeves hang past her wrists
         hairStrands: 8,
-        claw: 0.06, // her claws' length
+        claw: 0.11, // her claws' length (Nov 25: 0.11, was 0.06)
         sway: 0.05, // the rags' flutter as she floats
         trail: 0.35, // how far they stream behind her at full speed
         rate: 2.2, // flutter speed

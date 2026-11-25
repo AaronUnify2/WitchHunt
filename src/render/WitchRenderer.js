@@ -320,7 +320,16 @@ export class WitchRenderer {
     const jaw = new THREE.BoxGeometry(0.09, 0.1, 0.12);
     jaw.translate(0, 0.0, 0.11);
     body.push(jaw);
-    // The hood: its rim torn, its point long and drooping back.
+    // Nov 25 (Aaron's concept art: a thing of dead branches and roots, no hood): a gnarled knot of a skull instead
+    // (the old hood behind look.tree.hood).
+    const tree = this.cfg.tree ?? {};
+    if (tree.hood === false) {
+      for (const [x, y, z, s] of [[0, 0.3, 0.02, 0.1], [-0.06, 0.22, -0.04, 0.07], [0.06, 0.24, -0.03, 0.075], [0, 0.18, -0.08, 0.08]]) {
+        const knot = new THREE.DodecahedronGeometry(s, 0);
+        knot.translate(x, y, z);
+        body.push(knot);
+      }
+    }
     const hood = new THREE.ConeGeometry(0.17, 0.52, 10, 2, true).toNonIndexed();
     const hp = hood.attributes.position;
     for (let i = 0; i < hp.count; i++) {
@@ -329,7 +338,8 @@ export class WitchRenderer {
     }
     hood.rotateX(-0.45);
     hood.translate(0, 0.27, 0.02);
-    body.push(hood);
+    if (tree.hood !== false) body.push(hood);
+    else hood.dispose();
     // Hair: thin strands from under the hood, round the face to the chest.
     for (let i = 0; i < c.hairStrands; i++) {
       const side = i % 2 === 0 ? -1 : 1;
@@ -345,12 +355,14 @@ export class WitchRenderer {
     // The crown: sticks splayed up and out like antlers (kept full width:
     // the silhouette's best feature), each bending as it grows, with twigs.
     const crown = [];
-    const sticks = 7;
+    // Nov 25 (the concept art): a great spreading crown of branches (look.tree: more of them, longer).
+    const sticks = tree.crownSticks ?? 7;
+    const [lo, hi] = tree.crownLength ?? [0.38, 0.62];
     for (let i = 0; i < sticks; i++) {
       const t = i / (sticks - 1) - 0.5; // -0.5..0.5, left to right
-      const len = rng.range(0.38, 0.62) * (1 - Math.abs(t) * 0.5);
+      const len = rng.range(lo, hi) * (1 - Math.abs(t) * 0.5);
       const splay = -t * 2.2 + rng.range(-0.15, 0.15);
-      gnarledStick(crown, rng, { x: t * 0.12, y: 0.27, z: 0.06 }, splay, rng.range(-0.3, 0.1), len, 0.026, Math.abs(t) > 0.1 ? 2 : 1);
+      gnarledStick(crown, rng, { x: t * 0.12, y: 0.27, z: 0.06 - (i % 2) * 0.06 }, splay, rng.range(-0.4, 0.15), len, 0.026, Math.abs(t) > 0.1 ? 3 : 2);
     }
     for (const g of crown) rigid(g);
     // Round 2: small bones on threads from the crown, turning in the air.
@@ -419,8 +431,9 @@ export class WitchRenderer {
       const thumb = i === 4;
       const spread = thumb ? 0.6 : (i - 1.5) * 0.13;
       const base = { x: thumb ? 0.03 : (i - 1.5) * 0.016, y: thumb ? -0.03 : -0.085, z: 0.005 };
-      const l1 = thumb ? 0.09 : rng.range(0.12, 0.15);
-      const l2 = thumb ? 0.07 : rng.range(0.11, 0.14);
+      const fk = this.cfg.tree?.fingers ?? 1; // Nov 25: long twig fingers
+      const l1 = (thumb ? 0.09 : rng.range(0.12, 0.15)) * fk;
+      const l2 = (thumb ? 0.07 : rng.range(0.11, 0.14)) * fk;
       const curl = thumb ? 0.3 : rng.range(0.15, 0.3);
       const seg = (len, w, x, y, z, bendX) => {
         const g = new THREE.BoxGeometry(w, len, w);
@@ -437,7 +450,13 @@ export class WitchRenderer {
       const k2 = seg(l2, 0.011, k1.x, k1.y, k1.z, curl * 2.2);
       seg(c.claw, 0.006, k2.x, k2.y, k2.z, curl * 3.2);
     }
-    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm, bell], thin), hand: this.merge(parts, thin) };
+    // Nov 25 (the concept art): thorny twigs off her forearms.
+    const twigs = [];
+    for (let i = 0; i < (this.cfg.tree?.armTwigs ?? 0); i++) {
+      const side = i % 2 ? 1 : -1;
+      gnarledStick(twigs, rng, { x: side * 0.03, y: -FOREARM * rng.range(0.2, 0.85), z: rng.range(-0.02, 0.03) }, side * rng.range(1.2, 2.2), rng.range(-0.6, 0.3), rng.range(0.12, 0.24), 0.012, 1);
+    }
+    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm, bell, ...twigs], thin), hand: this.merge(parts, thin) };
   }
 
   // ---- posing --------------------------------------------------------------------
