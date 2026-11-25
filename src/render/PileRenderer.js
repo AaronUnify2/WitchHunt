@@ -350,10 +350,12 @@ export class PileRenderer {
     const meatR = coreR * (1 + beat * 0.06 + wind * 0.08 + (reel ? 0.06 : 0));
     this.placeCore(cx, coreY, cz, meatR, p.t, 1);
     // The folds of meat round its eyes, swelling with the beat.
-    // (Pile.eyeSpots is where they sit once it's up: sink them with the rest of it while it's still coming up,
-    // so they rise on its face rather than waiting above the rubble.)
+    // (Pile.eyeSpots is where they sit once it's up and still: sink them with the rest of it while it's still coming
+    // up, and carry them with its meat as it heaves up for a slam or draws back for a lunge, so they stay on its face.
+    // Its eyes are only hit while it reels, when it isn't attacking, so the shots still line up.)
     const spots = p.eyeSpots(this.eyeAt ??= []);
-    if (sunk > 0) for (const s of spots) s.y -= sunk;
+    const eyeDy = lift * 0.5 - sunk;
+    if (eyeDy || ox || oz) for (const s of spots) { s.x += ox; s.y += eyeDy; s.z += oz; }
     let mx = 0;
     let my = 0;
     let mz = 0;
@@ -430,7 +432,7 @@ export class PileRenderer {
         const a2 = toTom + da;
         const up = Math.max(-0.95, Math.min(0.95, (h - 0.85) / 0.68));
         const k2 = Math.cos(da * 0.6) * Math.sqrt(1 - up * up); // on its round, as the cluster's are (Pile.eyeSpots)
-        eye.set(cx + Math.sin(a2) * R0 * k2, g - sunk + p.raise + r * h, cz + Math.cos(a2) * R0 * k2);
+        eye.set(cx + Math.sin(a2) * R0 * k2, g - sunk + lift * 0.5 + p.raise + r * h, cz + Math.cos(a2) * R0 * k2);
         const blink = Math.sin(p.t * 0.9 + i * 2.7) > 0.96 ? 0.1 : 1;
         mtx.lookAt(eye, look3, this.up);
         this.q.setFromRotationMatrix(mtx);
