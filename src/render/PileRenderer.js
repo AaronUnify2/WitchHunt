@@ -88,7 +88,24 @@ export class PileRenderer {
       f.lookSeed = 1000 + i * 7;
       f.variant = i % 4 === 0 ? 'army' : 'citizen';
     };
-    this.group.visible = live;
+    // Pass 2: its death, the core swelling and going out in a flash.
+    const dying = p.phase === 'dead' && p.deadT < p.cfg.fx.deathSeconds;
+    this.group.visible = live || dying;
+    if (dying) {
+      const k = p.deadT / p.cfg.fx.deathSeconds;
+      const g = this.heightAt(p.x, p.z);
+      const r = p.deathRadius ?? 1.5;
+      this.core.position.set(p.x, g + r * 0.8, p.z);
+      this.core.scale.setScalar(r * (0.6 + 1.6 * Math.sin(Math.min(1, k * 1.4) * Math.PI * 0.5)) * (1 - k * k));
+      this.core.material.opacity = 0.8 * (1 - k);
+      this.light.position.copy(this.core.position);
+      this.light.intensity = p.cfg.look.coreIntensity * 4 * (1 - k);
+      for (const m of [this.charge, this.slamRing, this.lashRing, ...this.seams]) m.visible = false;
+      for (const t of this.tendrils) {
+        t.visible = false;
+        t.userData.tip.visible = false;
+      }
+    }
     if (live) {
       const r = p.radius;
       const g = this.heightAt(p.x, p.z);

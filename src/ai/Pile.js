@@ -121,8 +121,14 @@ export class Pile {
     this.loose.length = 0;
     this.flying.length = 0;
     this.tendrils.length = 0;
+    this.dustT = 0;
+    this.deadT = 0;
     this.bus?.emit('pile:emerge', { x, z });
     this.say('emerge');
+    // Pass 2: the ground heaves.
+    this.sound('mutantRoar');
+    this.sound('breach');
+    this.player.shake?.(this.cfg.fx.emergeShake);
   }
 
   // Gone without a fight (a load, a reset): nothing left of it.
@@ -133,6 +139,18 @@ export class Pile {
     this.tendrils.length = 0;
     this.targets.length = 0;
     this.view?.update?.(0);
+  }
+
+  // Nov 25, pass 2: particles (combat/CombatFx: dust, rubble, its green), a sound, a shake.
+  puff(x, z, count, color, speed, up = 0) {
+    const fx = this.combat?.fx;
+    if (!fx?.emit) return;
+    const y = (this.ground?.heightAt?.(x, z) ?? 0) + up;
+    fx.emit(x, y, z, count, this.cfg.fx[color], speed);
+  }
+
+  sound(name, x = this.x, z = this.z) {
+    this.combat?.sfx?.play?.(name, { x, z });
   }
 
   say(key) {
@@ -149,7 +167,20 @@ export class Pile {
     this.t += dt;
     this.flash = Math.max(0, this.flash - dt);
     this.spin += dt * this.cfg.look.spin * (1 + (1 - this.bodies / this.cfg.bodies) * 1.5);
+    if (this.phase === 'dead') this.deadT += dt;
     if (this.alive && playing) {
+      // Pass 2: rubble and dust thrown up round it as it comes up.
+      if (this.phase === 'emerge') {
+        this.dustT -= dt;
+        if (this.dustT <= 0) {
+          this.dustT = 0.18;
+          const a = this.rng() * Math.PI * 2;
+          const d = this.radius * (0.6 + this.rng() * 0.8);
+          this.puff(this.x + Math.sin(a) * d, this.z + Math.cos(a) * d, 16, 'dust', 6, 0.2);
+          this.puff(this.x + Math.sin(a + 2) * d, this.z + Math.cos(a + 2) * d, 8, 'rubble', 8, 0.2);
+          this.player.shake?.(this.cfg.fx.emergeShake * 0.35);
+        }
+      }
       if (this.phase === 'emerge' && this.t >= this.cfg.emergeSeconds) {
         this.phase = 'fight';
         this.bus?.emit('pile:fight', {});
@@ -399,6 +430,9 @@ export class Pile {
       this.throwBody(this.x + Math.sin(a) * dist, this.z + Math.cos(a) * dist, c.flight, false);
     }
     this.bus?.emit('pile:shed', { n });
+    // Pass 2: they scream as they go, and its green bleeds out where they tore off.
+    this.sound(n >= 3 ? 'camperScream' : 'groan');
+    this.puff(this.x, this.z, Math.min(30, 6 + n * 3), 'magic', 5, this.radius);
     if (this.bodies <= 0 && this.alive) this.die();
   }
 
@@ -429,6 +463,8 @@ export class Pile {
   // A body down: it gets up as one of the dead, unless there are already maxLoose of them up (it lands dead).
   land(f) {
     const p = this.player.position;
+    this.sound('bodyThud', f.tx, f.tz);
+    this.puff(f.tx, f.tz, 8, 'dust', 3, 0.05);
     if (f.atTom && Math.hypot(p.x - f.tx, p.z - f.tz) <= this.cfg.attacks.fling.reach) this.hurt(this.cfg.attacks.fling.damage, 1.2);
     if (this.looseAlive >= this.cfg.maxLoose) return;
     const z = this.enemies?.spawnZombie?.(f.tx, f.tz, { variant: f.seed < 0.25 ? 'army' : 'citizen', rise: true, authored: 'pile' });
@@ -556,6 +592,13 @@ export class Pile {
     this.tendrils.length = 0;
     this.bus?.emit('pile:dead', { x: this.x, z: this.z });
     this.say('dead');
+    // Pass 2: the magic goes out of it all at once: a burst of green, a shake.
+    this.deathRadius = this.cfg.minRadius + (this.cfg.radius - this.cfg.minRadius) * 0.5;
+    this.deadT = 0;
+    this.sound('cleanse');
+    this.sound('mutantRoar');
+    this.puff(this.x, this.z, 60, 'magic', 9, 1.2);
+    this.player.shake?.(this.cfg.fx.deathShake);
   }
 
   // ---- what can be hit ---------------------------------------------------------------------------------------

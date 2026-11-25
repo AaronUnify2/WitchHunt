@@ -130,7 +130,8 @@ describe('the Pile (Nov 25)', () => {
     const { pile, run, spawned } = rig();
     run(C.emergeSeconds + 0.1);
     pile.mass.takeHit(C.shots.perBody, 'body', {}, {}, { x: 0, z: 30 });
-    run(1.2);
+    run(C.shed.flight + 0.06); // just landed: killed before a tendril can reach it
+    expect(spawned).toHaveLength(1);
     spawned[0].state = 'dead';
     run(5);
     expect(pile.bodies).toBe(29);
@@ -223,5 +224,34 @@ describe('the Pile, pass 1: reading the fight', () => {
     expect(shown).toEqual([0.5]);
     h.boss(null, { owner: 'pile' });
     expect(shown).toEqual([0.5, null]);
+  });
+});
+
+// Nov 25, pass 2 (impact): dust and rubble as it comes up, screams as bodies fly, a burst of green when it dies.
+describe('the Pile, pass 2: impact', () => {
+  it('throws up dust, screams as it sheds, and goes out in a burst of green', () => {
+    const r = rig();
+    const puffs = [];
+    const sounds = [];
+    const shakes = [];
+    r.pile.combat.fx = { emit: (x, y, z, n, c) => puffs.push(c) };
+    r.pile.combat.sfx = { play: (n) => sounds.push(n) };
+    r.player.shake = (a) => shakes.push(a);
+    r.pile.start(0, 0, 0);
+    expect(shakes[0]).toBe(C.fx.emergeShake);
+    r.run(1);
+    expect(puffs).toContain(C.fx.dust);
+    expect(puffs).toContain(C.fx.rubble);
+    r.run(C.emergeSeconds);
+    r.pile.shed(5, { x: 0, z: 30 });
+    expect(sounds).toContain('camperScream');
+    expect(puffs).toContain(C.fx.magic);
+    r.run(1);
+    expect(sounds).toContain('bodyThud');
+    r.pile.hurtMagic(C.magic);
+    expect(sounds).toContain('cleanse');
+    expect(shakes).toContain(C.fx.deathShake);
+    r.run(0.5);
+    expect(r.pile.deadT).toBeGreaterThan(0.4);
   });
 });

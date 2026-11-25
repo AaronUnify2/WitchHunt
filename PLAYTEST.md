@@ -790,6 +790,11 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Tells:** a yellow-green ring spreads out on the ground before the slam (get outside it); a ring marks where the lash will land, and a tendril coils up off its top; it draws back low before a lunge; a body is held up over it before it's thrown.
 - [ ] **Tendrils** are thicker and brighter, with a glowing bulb at the tip. Easier to see and shoot?
 
+**Round 90: the Pile, pass 2 (impact).**
+- [ ] **Coming up:** the ground shakes, dust and rubble burst up round it, and it roars.
+- [ ] **Shedding:** screams as bodies fly off, a spray of its green where they tore away, a thud and dust as each lands.
+- [ ] **Its death:** its core swells and goes out in a flash of green, the screen shakes, the last bodies drop.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

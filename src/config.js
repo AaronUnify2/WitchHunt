@@ -5963,6 +5963,8 @@ export const config = {
     tendrils: { max: 2, range: 22, reach: 16, drag: 5, points: 4, hitRadius: 0.32 },
     ram: { minSpeed: 5, reach: 0.8, every: 1.2, shed: 2, shedSpiked: 4, keep: 0.1, damage: 18 }, // the quad into it
     lines: { emerge: 'pile.emerge.wyatt', charge: 'pile.charge.wyatt', missed: 'pile.missed.wyatt', tendril: 'pile.tendril.wyatt', blast: 'pile.blast.ellen', dead: 'pile.dead.ellen' },
+    // Pass 2: the particles' colours ({ r, g, b }, 0..1), and the shakes.
+    fx: { dust: { r: 0.42, g: 0.38, b: 0.31 }, rubble: { r: 0.22, g: 0.21, b: 0.2 }, magic: { r: 0.35, g: 1, b: 0.42 }, emergeShake: 0.9, deathShake: 1.3, deathSeconds: 0.9 },
     look: { spin: 0.6, core: 0x5cff6a, coreLight: 0x3cff5a, coreIntensity: 2.2, coreReach: 14, tendril: 0x5cff74, seam: 0xc8ffb0, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
