@@ -2,12 +2,10 @@
 // shelter clearing east of home is Earl and Marcy's farmhouse now, and Day 3's road into the army's
 // outpost runs through it.
 //
-//  1. The shut gate (after Ellen's call at Dawn 3). Tom takes the road past the gas station to the
-//     military checkpoint's main gate: chained from the inside, nobody answers. The family remember a
-//     back way: the Pruitts' bottom field backs onto the army's fence (farmCall: the farm's pipe gate
-//     and the tear in the fence open). A nudge to search the sheriff's car if its pistol's still in it.
-//     The clock goes on to late afternoon while they talk (a fade), then holds short of dusk until Tom
-//     reaches the farm, so dusk falls there, with the moths, and night on the way to the outpost.
+//  1. The call (farmCall). Nov 25 (Aaron): no shut gate, no sleep and no fade. Day 3 goes to the caved-in
+//     tunnel and the Pile (encounters/Tunnel.js); once that's done, late in the afternoon, the Pruitts'
+//     generator is heard across the valley and Ellen sends Tom to check on Marcy. The clock holds short of
+//     dusk until he reaches the farm, so dusk falls there, with the moths, and night on the way to the outpost.
 //  2. The farm (farmVisited): the porch light is on, off Earl's generator, and giant moths are thick on
 //     the wall round it. Walk up and they come for him; shoot one from far off and most scatter and a
 //     few come; or go round the side and shut the generator down: with no light they leave (unless

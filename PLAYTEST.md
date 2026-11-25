@@ -795,6 +795,10 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Shedding:** screams as bodies fly off, a spray of its green where they tore away, a thud and dust as each lands.
 - [ ] **Its death:** its core swells and goes out in a flash of green, the screen shakes, the last bodies drop.
 
+**Round 91: tidying (pass 3).**
+- [ ] **The campground sweep** now pushes in over the cold fire onto the slashed shelter (where the camcorder is), and Wyatt says "Check their shelters" as it ends.
+- [ ] **Ellen's string board:** after you've seen the tunnel, a polaroid of it: SEALED. NOBODY OUT.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

@@ -17,7 +17,7 @@
 //     The clock holds short of dawn until it's over.
 //  4. After: the camera at the Pruitts' family plot (held back while the fight was on) has caught
 //     the witch burying another; the family's talk; the night fades to dawn (night2Done). At that
-//     dawn Ellen sends Tom to the military checkpoint (Outpost.call: it used to come at the safe).
+//     dawn Ellen sends Tom up the road north to the Laurel Gap tunnel (encounters/Tunnel.js; Nov 25).
 //
 // Saved through story flags (night2Prep, night2Started, night2Done). A night under way when the run
 // is saved starts again from its first act. Off in Demo mode.
