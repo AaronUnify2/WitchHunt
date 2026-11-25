@@ -74,6 +74,9 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
   const masses = [
     // The body: one thin, smooth form (the trunk below carries it; these
     // only shape it: hips, a narrow ribcage, small shoulders).
+    // Nov 25 (the concept art): knobbly knees and elbows on its thin limbs.
+    ['kneeR', null, -0.08, 0.48, 0.035, 0.034, 0.036, 0.032, 'skin'],
+    ['kneeL', null, 0.08, 0.48, 0.035, 0.034, 0.036, 0.032, 'skin'],
     ['hips', null, 0, 0.9, 0, 0.088, 0.07, 0.064, 'skin'],
     ['chest', 'spine', 0, 1.21, 0.004, 0.092, 0.11, 0.066, 'skin'],
     // Small shoulders, bridged to the neck by a collarbone's slope (Aaron:
@@ -211,6 +214,12 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
       if (key === 'vest' && q.z > 0.03 && Math.abs(q.x) < 0.02 + Math.max(0, q.y - 1.08) * 0.36) out.copy(c.skin).multiplyScalar(0.85); // the lapels open to a V, hanging just apart below
       if (key !== 'skin') return;
       if (q.z < -0.02) out.lerp(c.back, Math.min(1, (-0.02 - q.z) * 8));
+      // Nov 25 (Aaron's concept art): its ribcage showing through the skin of its narrow chest, and the hollow under it.
+      if (q.z > 0.03 && q.y > 1.11 && q.y < 1.3 && Math.abs(q.x) < 0.085) {
+        const rib = Math.abs(q.x) > 0.012 && ((q.y - 1.11) * 34 + Math.abs(q.x) * 6) % 1 < 0.32;
+        if (rib) out.multiplyScalar(0.78);
+      }
+      if (q.z > 0.02 && q.y > 0.98 && q.y < 1.08 && Math.abs(q.x) < 0.05) out.multiplyScalar(0.88);
       const m = Math.sin(q.x * 61 + q.y * 37) * Math.sin(q.y * 53 - q.z * 41);
       out.multiplyScalar(0.93 + 0.07 * m);
     },

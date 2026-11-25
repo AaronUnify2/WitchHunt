@@ -4390,10 +4390,10 @@ export const config = {
       hitFlash: [1.8, 0.7, 1.6], // its colour while flashing (a purplish tinge: not blood red)
       thermalGlow: 0.25, // x the heat scope's glow: faint and cold, not from here (proposed)
       colours: {
-        skin: 0x8a9496,
-        back: 0x5a6468,
-        eyes: 0x050608,
-        shine: 0xd8e0e0,
+        skin: 0x968f84, // Nov 25 (Aaron's concept art): a warmer pale grey-beige (was a cold blue-grey 0x8a9496)
+        back: 0x625c54,
+        eyes: 0x05070c,
+        shine: 0x9ab8d8, // the wet glint on its eyes, with a blue sheen (the concept art)
         slit: 0x2a3032,
         gunMetal: 0x2a2c30,
         gunWood: 0x4a3020,
