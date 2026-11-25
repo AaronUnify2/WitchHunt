@@ -1,19 +1,19 @@
 // The abandoned campsite (M9.2; DESIGN.md "Abandoned campsite", agreed with
 // Aaron in Session 15): the first stop of every run. Arrive calm, search,
 // get hit with a turn, get rewarded, go home changed.
-//  1. Arrival: four of the dead stand round the campers' fire (Nov 16,
-//     Aaron). Walking into the clearing plays the establishing sweep, which
-//     ends on them turning round; they come for Tom as it ends. With them
-//     down, Wyatt's line 5 (check their shelters). Sets campsiteVisited;
+//  1. Arrival: Nov 25 (Aaron): quiet. Nobody at the fire now (fireGroup.off; Nov 16 had four of the dead round
+//     it, who came for Tom as the sweep ended). Walking into the clearing plays the establishing sweep, then
+//     Wyatt's line 5 (check their shelters). Sets campsiteVisited;
 //     the smoke over the trees is gone. (Day 1's retry point is taken just
 //     before: onCheckpoint.)
 //  2. The search: hold-X search points (data/campsite.json): the cooler
 //     by the entrance, the tents, a backpack. Each teaches a pickup.
-//  3. The camcorder (in the cooler, near the entrance): Ellen's line 6,
+//  3. The camcorder (in the slashed tent, tent3): Ellen's line 6,
 //     then the clip (clip.camcorder; Session 16: it waits for D-pad down), then her line 7 and,
-//     straight after it, line 10 (bring me their car's battery). Nov 16: nothing else comes off the tape.
-//  3b. The battery: pulling the campers' car's battery on Day 1 (the cars are locked till the tape's
-//     played) brings the horde out of the trees (campsite.horde). Leave without it and they never come.
+//     straight after it, line 10 (bring me their car's battery). Nov 25 (Aaron): then, once they've
+//     finished, the horde comes out of the trees behind the car (campsite.horde; wave.startsOn 'tape').
+//  3b. The battery: the campers' car's (the cars are locked till the tape's played), for the fence.
+//     (Nov 16 to 25 it was what brought the horde.)
 //  4. The shotgun (in the torn tent, deep in the camp): the instant it's
 //     taken the wave bursts from the treeline (line 8): 7 level-1 citizens
 //     from both flanks, a few seconds apart, coming straight for Tom.
@@ -149,6 +149,7 @@ export class Campsite {
     this.camcorderFound = false;
     this.shotgunFound = false;
     this.waveStarted = false;
+    this.tapeWaveDue = false; // Nov 25: the horde's waiting on the tape's lines
     this.waveCleared = false;
     this.batteryTaken = false;
     this.wave = []; // the wave's zombies
@@ -234,6 +235,7 @@ export class Campsite {
     // Nov 16: with the dead at the fire waiting, the sweep plays as Tom comes within their reach (plus a margin),
     // before any of them could notice him, not at the clearing's edge.
     if (!this.arrived && (inside || this.nearFire(p))) this.arrive();
+    this.updateTapeWave();
     if (this.pendingClip >= 0) {
       this.pendingClip -= dt;
       if (this.pendingClip < 0) this.playClip();
@@ -558,7 +560,8 @@ export class Campsite {
     this.bus.emit('campsite:arrived');
     // The establishing sweep (with Wyatt's line 5), unless something's already playing.
     // Nov 16: it ends on the dead at the fire turning round; they come for him as it ends (skipped too).
-    const go = () => this.wakeFire();
+    // Nov 25 (Aaron): with nobody at the fire (fireGroup.off), Wyatt's line 5 as the sweep ends instead.
+    const go = this.data.fireGroup?.off ? () => this.dialogue?.play('day1.05') : () => this.wakeFire();
     if (this.cutscenes.active || !this.cutscenes.play('sweep.campsite', { anchors: { campsite: this.frameAnchor() }, onDone: go })) go();
   }
 
@@ -573,7 +576,7 @@ export class Campsite {
 
   updateFire(p, dt) {
     const fg = this.data.fireGroup;
-    if (!fg || !this.enemies) return;
+    if (!fg || fg.off || !this.enemies) return; // Nov 25 (Aaron): off: a quiet campground till the tape
     if (!this.fireSent) {
       if (this.arrived || this.progress?.has('campsiteVisited') || this.clock?.day !== 1) return;
       const fire = this.fireSpot();
@@ -747,8 +750,30 @@ export class Campsite {
       anchors: { campsite: this.frameAnchor() },
       // Nov 16 (Aaron): the tape and its dialogue play out on their own: line 7, then line 10 (its "next": the
       // battery). The dead come when the battery's pulled, not off the tape.
-      onDone: () => this.dialogue.play('day1.07'),
+      // Nov 25 (Aaron: "the campsite is quiet until the player watches the found footage, and that's when zombies
+      // come"): wave.startsOn 'tape': the horde once those lines are said (updateTapeWave).
+      onDone: () => {
+        this.dialogue.play('day1.07');
+        if (this.data.wave?.startsOn === 'tape' && this.arrived && this.clock?.day === 1 && !this.waveStarted) this.tapeWaveDue = true;
+      },
     });
+  }
+
+  // Nov 25: the horde off the tape, once the family's done talking (wave.tapeQuiet seconds of quiet) and nothing's playing.
+  updateTapeWave() {
+    if (!this.tapeWaveDue || this.waveStarted) return;
+    if (this.cutscenes?.active) return;
+    // Played from further off (kept, then D-pad down on the way home): they come out of the campground's trees, so
+    // only while he's still at it.
+    const p = this.player?.position;
+    const c = this.clearing;
+    if (p && c && Math.hypot(p.x - c.x, p.z - c.z) > c.radius + (this.data.wave.tapeReach ?? 40)) {
+      this.tapeWaveDue = false;
+      return;
+    }
+    if ((this.dialogue?.quietFor ?? 99) < (this.data.wave.tapeQuiet ?? 1)) return;
+    this.tapeWaveDue = false;
+    this.startWave();
   }
 
   // A battery pulled from a car: the campers' (once). Nov 16 (Aaron: the horde cut off the tape's dialogue): on
@@ -757,7 +782,7 @@ export class Campsite {
     if (vehicle !== this.car || this.batteryTaken) return;
     this.batteryTaken = true;
     this.bus.emit('campsite:battery');
-    if (this.arrived && this.clock?.day === 1) this.startWave();
+    if (this.data.wave?.startsOn !== 'tape' && this.arrived && this.clock?.day === 1) this.startWave();
   }
 
   findShotgun(rounds) {

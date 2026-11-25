@@ -22,9 +22,9 @@ function rig() {
 }
 
 describe('the Hanged (Nov 24)', () => {
-  it('three hang from the dead oak, feet off the ground, bodies and ropes both targets', () => {
+  it('four hang from the dead oak (Nov 25: the four campers; was three), feet off the ground, bodies and ropes both targets', () => {
     const { H, combat } = rig();
-    expect(H.list).toHaveLength(3);
+    expect(H.list).toHaveLength(4);
     for (const h of H.list) {
       expect(h.state).toBe('hang');
       expect(h.y).toBeCloseTo(cfg.feetUp);
@@ -83,13 +83,13 @@ describe('the Hanged (Nov 24)', () => {
     expect(h.rope.targetable).toBe(false);
   });
 
-  it('all three dead: allDead, and the save knows which', () => {
+  it('all four dead: allDead, and the save knows which', () => {
     const { H, events } = rig();
     for (const h of H.list) h.takeHit(9999, 'head');
     expect(events).toContain('hanged:allDead');
-    expect(H.deadIndices().sort()).toEqual([0, 1, 2]);
+    expect(H.deadIndices().sort()).toEqual([0, 1, 2, 3]);
     H.hang(H.list.map((h) => h.knot), { x: 0, z: 0 }, ['hangedA'], [0, 2]);
-    expect(H.list.map((h) => h.i)).toEqual([1]);
+    expect(H.list.map((h) => h.i)).toEqual([1, 3]);
   });
 
   it('turns the short way', () => {

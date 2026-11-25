@@ -5764,6 +5764,7 @@ export const config = {
     // dirt, a rope noose; pale dead eyes.
     hangedA: { height: 1.84, head: 1.02, colours: { mouth: 0x080606, skin: 0x50564a, top: 0x3a3630, sleeve: 0x3a3630, forearm: 0x50564a, trousers: 0x2a2824, shoes: 0x4e5244, hair: 0x2a2620, rope: 0x4a4230, eyes: 0x050404, brows: 0x2a2620 } },
     hangedB: { height: 1.7, head: 1.04, colours: { mouth: 0x080606, skin: 0x565a4c, top: 0x403830, sleeve: 0x403830, forearm: 0x565a4c, trousers: 0x302c26, shoes: 0x505444, hair: 0x4a4434, rope: 0x4a4230, eyes: 0x050404, brows: 0x4a4434 } },
+    hangedD: { height: 1.78, head: 1.03, colours: { mouth: 0x080606, skin: 0x525848, top: 0x2e3230, sleeve: 0x2e3230, forearm: 0x525848, trousers: 0x2c2a24, shoes: 0x4a4e42, hair: 0x3a3226, rope: 0x4a4230, eyes: 0x050404, brows: 0x3a3226 } }, // Nov 25: the fourth (Kyle, who held the camera)
     hangedC: { height: 1.9, head: 1.0, colours: { mouth: 0x080606, skin: 0x4a5044, top: 0x34322e, sleeve: 0x34322e, forearm: 0x4a5044, trousers: 0x26261f, shoes: 0x484c40, hair: 0x1e1c18, rope: 0x4a4230, eyes: 0x050404, brows: 0x1e1c18 } },
     // Nov 24: the campers on their camcorder's tape (clip.camcorder): three at the fire, and the one holding the
     // camera (only his hand is seen). Four: the four dead Tom finds standing round the fire on Day 1.
@@ -5921,17 +5922,18 @@ export const config = {
   // 3D bodies; the plot's moths kept). encounters/FamilyPlot.js, render/familyCemeteryModel.js, ai/Hanged.js.
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)
-    // The dead oak at the plot's centre; its three limbs (yaw degrees, reach, height at the rope); ropes to the necks.
-    oak: { trunk: [0.72, 0.42], height: 4.2, limbs: [{ yaw: 20, reach: 3.6, y: 4.7 }, { yaw: 150, reach: 3.3, y: 4.4 }, { yaw: 255, reach: 3.8, y: 4.9 }] },
+    // The dead oak at the plot's centre; its limbs (yaw degrees, reach, height at the rope); ropes to the necks.
+    // Nov 25 (Aaron: "make sure there are exactly four hanged at the Pruitt cemetery": the four campers): a fourth limb.
+    oak: { trunk: [0.72, 0.42], height: 4.2, limbs: [{ yaw: 20, reach: 3.6, y: 4.7 }, { yaw: 100, reach: 3.4, y: 4.6 }, { yaw: 150, reach: 3.3, y: 4.4 }, { yaw: 255, reach: 3.8, y: 4.9 }] },
     // The headstones: [x, z, yaw degrees, kind] round the tree (the clearing's own frame, unturned); the sigil goes
     // in at (2.5, 1.5) (NightTwo.ensurePlot), clear of them.
     stones: [[-4.2, 3.4, 12, 'round'], [-1.6, 5.6, -8, 'round'], [4.8, 4.6, 20, 'cross'], [5.6, -2.2, 96, 'square'], [-5.4, -2.6, -70, 'round'], [0.6, -5.4, 180, 'small']],
     hanged: {
-      count: 3, feetUp: 0.95, // their feet this far off the ground as they hang
+      count: 4, feetUp: 0.95, // Nov 25: four, the campers off the camcorder's tape (was 3) // their feet this far off the ground as they hang
       wakeAt: 12, // metres from the tree that wakes them (or a shot)
       dropEvery: 1.1, snapSeconds: 0.55, landSeconds: 0.6, // one by one: a head snaps up, the rope goes, they land in a crouch
       health: 240, speed: 4.3, turnRate: 7, radius: 0.38, // fast, loping
-      reach: 1.35, windup: 0.32, damage: 8, recover: 1.1, // the claw (three on him at once: about 17 a second; was 42 at 14 and 0.7)
+      reach: 1.35, windup: 0.32, damage: 6, recover: 1.1, // the claw (Nov 25: 6, was 8 with three: four on him at once hit about as hard as three did; was 42 at 14 and 0.7)
       retreatAt: 0.5, // badly hurt (this fraction of its health left): back up into the branches, once each
       upSeconds: 0.55, lurk: [2.6, 4.2], dropBehind: 2.6, dropHeight: 6, // ...and down again behind Tom
       ropeFall: 0.55, // a shot rope: it falls before it wakes and takes this fraction of its health

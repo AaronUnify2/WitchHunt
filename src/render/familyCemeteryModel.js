@@ -76,7 +76,7 @@ function oak(b, k, o) {
     const a = (i / 6) * Math.PI * 2 + r() * 0.4;
     branch(b, k.bark, Math.sin(a) * rb * 0.6, 0.35, Math.cos(a) * rb * 0.6, a, -0.45 - r() * 0.2, 1.4 + r() * 0.8, 0.28, 0.06);
   }
-  // A broken stub at the top, and the three great limbs out over the graves; the ropes near their ends.
+  // A broken stub at the top, and the great limbs (four since Nov 25) out over the graves; the ropes near their ends.
   branch(b, k.bark, at.x, at.y - 0.1, at.z, 0.6, 1.3, 1.1, rt, 0.12);
   const ropes = [];
   for (const L of o.limbs) {

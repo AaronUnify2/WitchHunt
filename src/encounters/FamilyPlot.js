@@ -15,7 +15,7 @@ import { DEBUG } from '../debug/DebugMenu.js';
 import { clearingFrame, frameAnchor } from '../world/clearingFrame.js';
 import * as THREE from 'three';
 
-const LOOKS = ['hangedA', 'hangedB', 'hangedC'];
+const LOOKS = ['hangedA', 'hangedB', 'hangedC', 'hangedD']; // Nov 25: the four campers (Dan, Jess, Marcus, Kyle)
 
 export class FamilyPlot {
   constructor(cfg, bus) {

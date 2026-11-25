@@ -35,6 +35,9 @@ import { buildSkyActor, flightAt, SkyFx } from './cutsceneFlight.js';
 import { buildPortal } from '../render/portalFx.js';
 import { Smear } from './cutsceneSmear.js';
 
+// Nov 25: poses that walk in their own way, so a moving actor isn't switched to the plain walk.
+const OWN_GAIT = new Set(['dead', 'shamble', 'lope']);
+
 export class Cutscenes {
   constructor(cfg, bus, data = cutsceneData) {
     this.cfg = cfg;
@@ -844,7 +847,8 @@ export class Cutscenes {
       mesh,
       animate: (dt, a) => {
         // Nov 24: any pose the family renderer knows (log, wave, cower, dead...), at the event's rate.
-        r.setPose(0, a.move && a.pose !== 'dead' ? 'walk' : a.pose ?? 'stand', a.poseRate);
+        // Nov 25: a pose with its own gait (the risen dead, the Hanged's shamble and lope) keeps it while moving.
+        r.setPose(0, a.move && !OWN_GAIT.has(a.pose) ? 'walk' : a.pose ?? 'stand', a.poseRate);
         r.update(dt, null);
       },
       // The camera's lamp on them: a grey glow (their colours are in the vertices).

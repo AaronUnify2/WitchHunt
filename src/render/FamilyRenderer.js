@@ -282,6 +282,27 @@ export class FamilyRenderer {
         pose[n] = -0.22 * this.heightOf(p) + Math.abs(Math.cos(c)) * 0.05;
         break;
       }
+      case 'shamble': {
+        // Nov 25 (Aaron: the campers on the tape "shuffle off after her", cocked heads): upright, the neck broken
+        // and the head over on the shoulder, arms dead, a slow dragging walk, one foot scuffing behind the other.
+        const c = p.poseTime * 4.2;
+        const sw = Math.sin(c);
+        set('spine', 0.16);
+        set('chest', 0.05, 0.12);
+        set('neck', -0.3, 0, 0.75);
+        set('head', -0.15, 0.2, 0.55);
+        set('hipR', -0.35 + sw * 0.35);
+        set('hipL', -0.15 - sw * 0.2); // the dragged leg: less swing
+        set('kneeR', 0.3 - Math.min(0, sw) * 0.4);
+        set('kneeL', 0.2);
+        set('ankleL', 0.45);
+        set('shoulderR', 0.1 + sw * 0.08, 0, -0.08);
+        set('shoulderL', 0.05 - sw * 0.08, 0, 0.14);
+        set('elbowR', -0.1);
+        set('elbowL', -0.2);
+        pose[n] = -0.03 * this.heightOf(p) + Math.abs(Math.cos(c)) * 0.02;
+        break;
+      }
       case 'claw': {
         // Up on its toes, one arm up and back, then raked down across.
         const k = p.poseTime;

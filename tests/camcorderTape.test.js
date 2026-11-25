@@ -52,15 +52,24 @@ describe('the camcorder tape (Nov 24)', () => {
     for (const id of campers) expect(first((e) => e.do === 'pose' && e.actor === id && e.pose === 'dead'), id).toBeGreaterThan(summon);
   });
 
-  it("the risen dead are left standing on the fire group's spots (where Tom finds them on Day 1)", () => {
-    const spots = campsite.fireGroup.spots;
-    for (const id of campers) {
-      const a = tape.actors.find((x) => x.id === id);
-      const lastMove = ev((e) => e.do === 'move' && e.actor === id).pop();
-      const p = lastMove ? [lastMove.to[0], lastMove.to[2]] : [a.pos[0], a.pos[2]];
-      const near = Math.min(...spots.map(([x, z]) => Math.hypot(x - p[0], z - p[1])));
-      expect(near, id).toBeLessThan(0.2);
+  // Nov 25 (Aaron: "the silhouettes of the campers then turn into the 3D model of the hanged zombie (cocked heads and
+  // so on) and shuffle off after her"; the link to the family plot is that model and the number of them).
+  it('the risen campers become four Hanged, Kyle too, and shamble off after her', () => {
+    const hanged = tape.actors.filter((a) => /^hanged/.test(a.look ?? ''));
+    expect(hanged).toHaveLength(4);
+    expect(new Set(hanged.map((a) => a.look)).size).toBe(4);
+    for (const a of hanged) expect(config.people[a.look], a.look).toBeDefined();
+    const swap = first((e) => e.do === 'show' && e.actor === hanged[0].id);
+    for (const id of campers) expect(first((e) => e.do === 'hide' && e.actor === id && e.at >= swap - 0.01), id).toBeDefined();
+    for (const a of hanged) {
+      expect(first((e) => e.do === 'pose' && e.actor === a.id && e.pose === 'shamble'), a.id).toBeGreaterThan(swap);
+      expect(first((e) => e.do === 'move' && e.actor === a.id), a.id).toBeGreaterThan(swap);
     }
+    expect(first((e) => e.do === 'move' && e.actor === 'her' && e.at > swap)).toBeLessThan(first((e) => e.do === 'pose' && e.pose === 'shamble'));
+  });
+
+  it('the family plot has as many Hanged as the tape (Nov 25)', () => {
+    expect(config.familyPlot.hanged.count).toBe(tape.actors.filter((a) => /^hanged/.test(a.look ?? '')).length);
   });
 
   it('the camera is knocked down, lies tilted on its side, then she lifts it to her face; the tape dies', () => {

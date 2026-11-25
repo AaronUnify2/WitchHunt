@@ -274,6 +274,7 @@ const LOOKS = {
   hangedA: () => hangedBody(0),
   hangedB: () => hangedBody(1),
   hangedC: () => hangedBody(2),
+  hangedD: () => hangedBody(3), // Nov 25 (Aaron): four, one for each camper (Kyle's)
   camperKyle() {
     const b = body({ sh: 1, hip: 1, bulk: 1.02 });
     b.masses.push(hairCap(1.636, -0.01, [0.1, 0.1, 0.106]));
