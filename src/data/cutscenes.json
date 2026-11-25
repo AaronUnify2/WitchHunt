@@ -983,7 +983,7 @@
         "time": "clock",
         "rec": true
       },
-      "_note": "Session 16 (M9.3; DESIGN 'Storm shelter', 'The trail-cam tapes'): Earl's tape, handed in at the comms room (StormShelter plays it as the tapes are handed in; then it's on the monitors). Camera four at the shelter clearing's edge (anchor stormShelter: walking in from home, x right, z ahead), Night 1. The witch is already there, low over the ground beside the hatch (the first sigil going in). Earl and his two kids hurry in from the trees and pull up short. A still beat. She turns, far too fast; they scatter out of frame, the kids one way into the trees and Earl the other, and she goes after him. The kill is never shown. The clearing empties; the last seconds are the hatch alone and the sigil's faint glow. The family watch it in the comms room: Wyatt first, Ellen explains, Junie catches the kids running off (Aaron: maybe they got away), Wyatt ties the glow to the sigil Tom dug up. Nov 24: she leaves in flits (smear), a look at camera four between.",
+      "_note": "Session 16 (M9.3; DESIGN 'Storm shelter', 'The trail-cam tapes'): Earl's tape, handed in at the comms room (StormShelter plays it as the tapes are handed in; then it's on the monitors). Camera four at the shelter clearing's edge (anchor stormShelter: walking in from home, x right, z ahead), Night 1. The witch is already there, low over the ground beside the hatch (the first sigil going in). Earl walks in from the trees alone, back to finish the shelter, and pulls up short. A still beat. She turns, far too fast; Earl runs, away from the farm's side, and she goes after him. The kill is never shown. The clearing empties; the last seconds are the hatch alone and the sigil's faint glow. The family watch it in the comms room: Wyatt first, Ellen explains, Junie sees he ran away from the farm, leading her off (Nov 25, Aaron: the kids were never with Earl, they stayed with Marcy), Wyatt ties the glow to the sigil Tom dug up. Nov 24: she leaves in flits (smear), a look at camera four between.",
       "camera": [
         {
           "at": 0,
@@ -1028,30 +1028,6 @@
           "yaw": -110
         },
         {
-          "id": "boy",
-          "kind": "figure",
-          "look": "pruittBoy",
-          "anchor": "stormShelter",
-          "pos": [
-            14,
-            0,
-            -3.6
-          ],
-          "yaw": -110
-        },
-        {
-          "id": "girl",
-          "kind": "figure",
-          "look": "pruittGirl",
-          "anchor": "stormShelter",
-          "pos": [
-            13.6,
-            0,
-            -2.6
-          ],
-          "yaw": -110
-        },
-        {
           "id": "sigil",
           "kind": "disc",
           "anchor": "stormShelter",
@@ -1079,28 +1055,6 @@
             5.2,
             0,
             -0.6
-          ],
-          "seconds": 3.6
-        },
-        {
-          "at": 1.7,
-          "do": "move",
-          "actor": "boy",
-          "to": [
-            6.0,
-            0,
-            0.4
-          ],
-          "seconds": 3.6
-        },
-        {
-          "at": 1.8,
-          "do": "move",
-          "actor": "girl",
-          "to": [
-            5.8,
-            0,
-            1.2
           ],
           "seconds": 3.6
         },
@@ -1160,28 +1114,6 @@
           "sound": false
         },
         {
-          "at": 7.8,
-          "do": "move",
-          "actor": "boy",
-          "to": [
-            13,
-            0,
-            7
-          ],
-          "seconds": 1.3
-        },
-        {
-          "at": 7.8,
-          "do": "move",
-          "actor": "girl",
-          "to": [
-            12,
-            0,
-            8.5
-          ],
-          "seconds": 1.5
-        },
-        {
           "at": 7.9,
           "do": "move",
           "actor": "earl",
@@ -1238,16 +1170,6 @@
           "at": 9.2,
           "do": "hide",
           "actor": "earl"
-        },
-        {
-          "at": 9.4,
-          "do": "hide",
-          "actor": "boy"
-        },
-        {
-          "at": 9.6,
-          "do": "hide",
-          "actor": "girl"
         },
         {
           "at": 10.4,

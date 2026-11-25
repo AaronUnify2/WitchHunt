@@ -12,7 +12,7 @@ describe('papers in close-up', () => {
     expect(note.pages.length).toBe(1);
     const strip = dialogueData.lines.find((l) => l.id === 'gas.note').text;
     const plain = (t) => t.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
-    for (const bit of ["I've taken the kids to the shelter", 'military checkpoint', "Combination's on my keys"]) {
+    for (const bit of ["get the shelter ready for all of us", 'military checkpoint', "Combination's on my keys"]) {
       expect(plain(note.pages[0].text)).toContain(bit);
       expect(strip).toContain(bit);
     }

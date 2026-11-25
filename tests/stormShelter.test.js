@@ -95,8 +95,9 @@ describe('the storm shelter', () => {
   it('says the sigils raise the dead once it is dug up, and nothing says the children died (Aaron)', () => {
     const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
     expect(by['shelter.dug.ellen']).toMatch(/raising the dead/);
-    // Nov 14 (less talk): Ellen's "maybe they got away" down in the shelter is cut; Junie says it on Earl's tape.
-    expect(by['tape.junie']).toMatch(/got away/);
+    // Nov 14 (less talk): Ellen's "maybe they got away" down in the shelter is cut. Nov 25 (Aaron): the kids were
+    // never with Earl; on his tape Junie sees him lead the witch away from the farm.
+    expect(by['tape.junie']).toMatch(/away from the farm/i);
     const all = dialogueData.lines.filter((l) => l.id.startsWith('shelter.')).map((l) => l.text).join(' ');
     expect(all).not.toMatch(/kids? (are|is) dead|children died|bodies/i);
   });
@@ -109,11 +110,31 @@ describe("the storm shelter's dialogue (Nov 15)", () => {
     const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l]));
     expect(by['shelter.below.junie'].cut).toBeUndefined();
     expect(by['shelter.below.ellen'].cut).toBe(true);
-    expect(by['tape.junie'].text).toMatch(/got away/);
+    expect(by['tape.junie'].text).toMatch(/leading her off/);
     expect(by['home.stop.call'].text).toMatch(/fence/);
     expect(by['home.stop.call.dusk'].text).toMatch(/fence/);
     expect(by['shelter.earl.seen'].fresh).toBe(6);
     const src = readSrc(new URL('../src/encounters/StormShelter.js', import.meta.url), 'utf8');
     expect(src).toContain("heard.has('shelter.earl.seen')");
+  });
+});
+
+// Nov 25 (Aaron, play-through): "Earl's kids should not have been with him when he went to the shelter, instead they
+// should have been with Marcy"; "Change the shelter scene so it's only Earl there, as a zombie. No kids."
+describe('Earl alone at the shelter (Nov 25)', () => {
+  it("has no children on Earl's tape, and his note says he went ahead to get the shelter ready", async () => {
+    const cut = (await import('../src/data/cutscenes.json')).default;
+    const list = Array.isArray(cut.cutscenes) ? cut.cutscenes : Object.values(cut.cutscenes ?? cut);
+    const tape = list.find((c) => c.id === 'clip.pruittTape');
+    expect(tape.actors.map((a) => a.id)).not.toContain('boy');
+    expect(tape.actors.some((a) => /pruitt(Boy|Girl)/.test(a.look ?? ''))).toBe(false);
+    expect(tape.tracks.some((t) => t.actor === 'boy' || t.actor === 'girl')).toBe(false);
+    const papers = (await import('../src/data/papers.json')).default;
+    const note = papers.papers.find((p) => p.id === 'earlNote').pages[0].text;
+    expect(note).not.toMatch(/taken the kids/);
+    expect(note).toMatch(/shelter ready/);
+    const by = Object.fromEntries(dialogueData.lines.map((l) => [l.id, l.text]));
+    expect(by['tape.wyatt']).not.toMatch(/kids/);
+    expect(by['shelter.below.junie']).not.toMatch(/kids/);
   });
 });

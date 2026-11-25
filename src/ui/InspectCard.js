@@ -95,7 +95,6 @@ export class InspectCard {
     this.itemEl.style.setProperty('--item-color', c.color ?? '#555');
     this.itemEl.style.setProperty('--item-label', c.label ?? '#ddd');
     this.nameEl.textContent = c.title ?? item.name; // (Nov 15: a card can say it differently)
-    this.lineEl.textContent = handlers.line ?? c.line ?? ''; // (Nov 15: a caller can word it for what was found)
     this.render();
     this.el.classList.remove('hidden');
     if (typeof document !== 'undefined' && document.pointerLockElement) document.exitPointerLock?.();
@@ -114,6 +113,9 @@ export class InspectCard {
 
   render() {
     const pad = this.device !== 'keyboardMouse';
+    // (Nov 15: a caller can word it for what was found.) Nov 25: a card can name the controls: linePad / lineKeys.
+    const c = this.item?.card ?? {};
+    if (this.lineEl) this.lineEl.textContent = this.handlers?.line ?? (pad ? c.linePad : c.lineKeys) ?? c.line ?? '';
     this.actionsEl.replaceChildren(
       ...cardActions(this.handlers, pad).map((a) => {
         const b = document.createElement('button');

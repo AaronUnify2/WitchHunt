@@ -228,8 +228,8 @@ export class Weapons {
 
   updateSwitching(input, dt) {
     this.switchTimer = Math.max(0, this.switchTimer - dt);
-    // Session 25 (Aaron): every gun's carried; the weapon cross picks one. RB flips
-    // between the last two used, LB to the shovel and back; the wheel still cycles.
+    // Session 25 (Aaron): every gun's carried. RB / LB (and the wheel) rotate through the kinds
+    // (config.weapons.rotation), each bringing out the one last held; the weapon cross picks which.
     if (input.wasPressed('weaponNext') || input.wasPressed('weaponCycle')) this.rotate(1);
     if (input.wasPressed('weaponPrev')) this.rotate(-1);
     SLOT_ACTIONS.forEach((action, i) => {
