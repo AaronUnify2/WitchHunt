@@ -4218,7 +4218,9 @@ export const config = {
         ash: 0x1c1b1a,
         char: 0x151210,
         frame: 0x3a3c3e,
-        cloth: 0x24303c,
+        cloth: 0x3a3a32, // Nov 25 (the concept art): worn grey canvas (was blue)
+        bucket: 0x4a4c4a,
+        coal: 0xff6a20,
         pack: 0x4a3a28,
         packFlap: 0x3a2c1e,
         cooler: 0x6a3428,

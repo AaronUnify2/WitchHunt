@@ -12,7 +12,7 @@
       "x": 3.12,
       "z": 3.3,
       "yaw": 60,
-      "color": 4864552
+      "color": 5262896
     },
     {
       "id": "tent2",
@@ -20,7 +20,7 @@
       "x": -3.12,
       "z": 3.3,
       "yaw": -60,
-      "color": 3817512
+      "color": 4079146
     },
     {
       "id": "tent3",
@@ -28,7 +28,7 @@
       "x": 0.0,
       "z": 5.1,
       "yaw": 0,
-      "color": 3424330,
+      "color": 4866600,
       "slashed": true
     }
   ],
@@ -266,6 +266,11 @@
           "z": -2.6
         }
       },
+      "bucket": {"x": -3.3, "z": 2.7},
+      "rounds": {"x": -1.7, "z": 0.7, "yaw": 15},
+      "seatLogs": [{"x": -5.6, "z": 2.6, "yaw": 25, "len": 2.6}, {"x": -6.3, "z": 4.3, "yaw": -12, "len": 2.1}],
+      "coals": true,
+      "_nov25": "Nov 25 (Aaron's concept art of the campground): olive and khaki tarps, a stack of log rounds by the reflector, seat logs on the ground, a bucket, the fire still smouldering (coals), the chairs worn grey canvas.",
       "sleepingBag": {
         "x": 0.9,
         "z": 3.9,

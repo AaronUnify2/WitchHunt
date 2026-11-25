@@ -479,6 +479,7 @@ export class CampsiteProps {
 
   // The rest of the camp (data: props.dressing).
   dressing(dr, c) {
+    this.dressingNov25(dr, c);
     if (dr.woodpile) {
       const at = this.place(dr.woodpile.x, dr.woodpile.z, dr.woodpile.yaw);
       const rows = [4, 3, 2];
@@ -566,6 +567,44 @@ export class CampsiteProps {
   }
 
   // A stick figure hung from a branch high over the far edge, turning a little.
+  // Nov 25 (Aaron's concept art of the campground): a stack of log rounds by the fire, seat logs lying on the ground,
+  // a galvanised bucket, and the fire's coals still glowing (an unlit mesh, its own: it glows in the dark).
+  dressingNov25(dr, c) {
+    if (dr.rounds) {
+      const at = this.place(dr.rounds.x, dr.rounds.z, dr.rounds.yaw);
+      // Rounds piled ends-out, a pyramid three high.
+      [4, 3, 2].forEach((n, r) => {
+        for (let i = 0; i < n; i++) {
+          const x = (i - (n - 1) / 2) * 0.34;
+          this.logAt(0.16 + this.range(-0.02, 0.02), 0.42, x, 0.16 + r * 0.29, 0, c.wood, at, { turn: 0, ends: c.woodEnd });
+        }
+      });
+    }
+    for (const L of dr.seatLogs ?? []) {
+      const at = this.place(L.x, L.z, L.yaw);
+      this.logAt(0.17, L.len, 0, 0.15, 0, c.bark, at, { turn: Math.PI / 2, ends: c.cut });
+    }
+    if (dr.bucket) {
+      const at = this.place(dr.bucket.x, dr.bucket.z);
+      this.add(new THREE.CylinderGeometry(0.17, 0.13, 0.32, 10).translate(0, 0.16, 0), c.bucket ?? 0x4a4c4a, at);
+      this.barAt([-0.16, 0.32, 0], [0, 0.42, 0], 0.006, c.grate, at);
+      this.barAt([0, 0.42, 0], [0.16, 0.32, 0], 0.006, c.grate, at);
+    }
+    if (dr.coals) {
+      const f = this.data.props.fire;
+      const at = this.place(f.x, f.z);
+      const coal = new THREE.MeshBasicMaterial({ color: c.coal ?? 0xff6a20 });
+      this.hold(coal);
+      for (let i = 0; i < 14; i++) {
+        const a = this.rand() * Math.PI * 2;
+        const r = this.rand() * f.radius * 0.55;
+        const m = new THREE.Mesh(this.hold(new THREE.DodecahedronGeometry(0.035 + this.rand() * 0.035, 0)), coal);
+        m.position.set(at.x + Math.sin(a) * r, at.y + 0.06, at.z + Math.cos(a) * r);
+        this.group.add(m);
+      }
+    }
+  }
+
   stickFigure(s, c) {
     const w = frameEdge(this.frame, s.angle, s.out);
     const at = { x: w.x, z: w.z, y: this.ground.heightAt(w.x, w.z), yaw: frameYaw(this.frame, s.angle + 180) };
