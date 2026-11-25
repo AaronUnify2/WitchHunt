@@ -5956,14 +5956,14 @@ export const config = {
     shots: { perBody: 90 }, // damage into the mass to knock one body off
     // The charges: one surfaces (`first` seconds into the fight; then once it's dragged `afterReclaimed` back in, or
     // after `every` seconds) for `window` seconds. Shot: magic off, shedShare of its bodies thrown off, a blast.
-    charge: { first: 7, every: 22, afterReclaimed: 4, window: 7, hitRadius: 0.42, magic: 20, shedShare: 0.35, blast: { radius: 4.5, damage: 120, playerDamage: 35 } },
+    charge: { beep: [0.6, 0.12], first: 7, every: 22, afterReclaimed: 4, window: 7, hitRadius: 0.42, magic: 20, shedShare: 0.35, blast: { radius: 4.5, damage: 120, playerDamage: 35 } },
     seams: { seconds: 5, hitRadius: 0.35, magicPerDamage: 0.06 }, // after a blast: the glowing seams (about 10 magic for a full window of rifle fire)
     dynamite: { shed: 4, magic: 6 }, // a stick (or any blast) going off against it
     shed: { distance: [3, 8], spread: 2.2, flight: 0.8, gravity: 18 },
     tendrils: { max: 2, range: 22, reach: 16, drag: 5, points: 4, hitRadius: 0.32 },
     ram: { minSpeed: 5, reach: 0.8, every: 1.2, shed: 2, shedSpiked: 4, keep: 0.1, damage: 18 }, // the quad into it
-    lines: { emerge: 'pile.emerge.wyatt', charge: 'pile.charge.wyatt', tendril: 'pile.tendril.wyatt', blast: 'pile.blast.ellen', dead: 'pile.dead.ellen' },
-    look: { spin: 0.6, core: 0x5cff6a, coreLight: 0x3cff5a, coreIntensity: 2.2, coreReach: 14, tendril: 0x48e060, seam: 0x9aff80, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+    lines: { emerge: 'pile.emerge.wyatt', charge: 'pile.charge.wyatt', missed: 'pile.missed.wyatt', tendril: 'pile.tendril.wyatt', blast: 'pile.blast.ellen', dead: 'pile.dead.ellen' },
+    look: { spin: 0.6, core: 0x5cff6a, coreLight: 0x3cff5a, coreIntensity: 2.2, coreReach: 14, tendril: 0x5cff74, seam: 0xc8ffb0, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)

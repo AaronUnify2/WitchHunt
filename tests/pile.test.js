@@ -172,3 +172,56 @@ describe('the Pile (Nov 25)', () => {
     for (const id of Object.values(C.lines)) expect(ids.has(id), id).toBe(true);
   });
 });
+
+// Nov 25, pass 1 (readability): its bar, the charge's beeping, the nudge when the first charge is missed.
+describe('the Pile, pass 1: reading the fight', () => {
+  const withHud = () => {
+    const r = rig();
+    const bars = [];
+    const sounds = [];
+    const said = [];
+    r.pile.combat.hud = { boss: (f, o) => bars.push([f, o?.name ?? null, o?.owner]) };
+    r.pile.combat.sfx = { play: (n) => sounds.push(n) };
+    r.pile.dialogue = { play: (id) => said.push(id) };
+    return { ...r, bars, sounds, said };
+  };
+
+  it('shows its magic and body count on the boss bar, and takes it down when it dies', () => {
+    const { pile, run, bars } = withHud();
+    run(C.emergeSeconds + 0.1);
+    const last = bars[bars.length - 1];
+    expect(last[0]).toBe(1);
+    expect(last[1]).toMatch(/THE PILE/);
+    expect(last[1]).toMatch(/30/);
+    expect(last[2]).toBe('pile');
+    pile.hurtMagic(C.magic);
+    run(0.1);
+    expect(bars[bars.length - 1][0]).toBeNull();
+  });
+
+  it('beeps faster as the charge window runs out, and Wyatt nudges if the first is missed', () => {
+    const { pile, run, sounds, said } = withHud();
+    run(C.emergeSeconds + C.charge.first + 0.1);
+    expect(pile.cycle).toBe('charge');
+    const early = sounds.filter((s) => s === 'helmetPing').length;
+    run(C.charge.window / 2);
+    const mid = sounds.filter((s) => s === 'helmetPing').length - early;
+    run(C.charge.window / 2);
+    const late = sounds.filter((s) => s === 'helmetPing').length - early - mid;
+    expect(late).toBeGreaterThan(mid);
+    expect(pile.cycle).toBe('scramble');
+    expect(said).toContain(C.lines.missed);
+  });
+
+  it("the witch's null doesn't hide the Pile's bar", async () => {
+    const { Hud } = await import('../src/ui/Hud.js');
+    const h = Object.create(Hud.prototype);
+    const shown = [];
+    h.set = (k, v, fn) => k === 'boss' && shown.push(v);
+    h.boss(0.5, { owner: 'pile' });
+    h.boss(null); // the witch, every frame
+    expect(shown).toEqual([0.5]);
+    h.boss(null, { owner: 'pile' });
+    expect(shown).toEqual([0.5, null]);
+  });
+});

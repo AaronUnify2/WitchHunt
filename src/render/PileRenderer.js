@@ -42,15 +42,27 @@ export class PileRenderer {
       this.group.add(m);
       return m;
     });
-    // The tendrils (and the lash): stretched green cylinders.
-    const tGeo = new THREE.CylinderGeometry(0.07, 0.11, 1, 6).translate(0, 0.5, 0);
+    // The tendrils (and the lash, and the lash's coil): stretched green cylinders, a glowing bulb at each tip.
+    // Nov 25 (pass 1): thicker and brighter, to be seen and shot at range in daylight.
+    const tGeo = new THREE.CylinderGeometry(0.12, 0.2, 1, 7).translate(0, 0.5, 0);
     const tMat = new THREE.MeshBasicMaterial({ color: look.tendril });
-    this.tendrils = Array.from({ length: pile.cfg.tendrils.max + 1 }, () => {
+    const tipGeo = new THREE.SphereGeometry(0.26, 10, 8);
+    const tipMat = new THREE.MeshBasicMaterial({ color: look.seam });
+    this.tendrils = Array.from({ length: pile.cfg.tendrils.max + 2 }, () => {
       const m = new THREE.Mesh(tGeo, tMat);
       m.visible = false;
-      this.group.add(m);
+      const tip = new THREE.Mesh(tipGeo, tipMat);
+      tip.visible = false;
+      m.userData.tip = tip;
+      this.group.add(m, tip);
       return m;
     });
+    // Its tells (pass 1): a ring on the ground growing out to the slam's reach; a ring where the lash will land.
+    const ringMat = (hex) => new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+    this.slamRing = new THREE.Mesh(new THREE.RingGeometry(0.92, 1, 40).rotateX(-Math.PI / 2), ringMat(look.warn));
+    this.lashRing = new THREE.Mesh(new THREE.RingGeometry(0.75, 1, 28).rotateX(-Math.PI / 2), ringMat(look.warn));
+    this.slamRing.visible = this.lashRing.visible = false;
+    this.group.add(this.slamRing, this.lashRing);
     this.v = new THREE.Vector3();
     this.up = new THREE.Vector3(0, 1, 0);
   }
@@ -83,21 +95,53 @@ export class PileRenderer {
       // Coming up out of the ground.
       const rise = p.phase === 'emerge' ? Math.min(1, p.t / p.cfg.emergeSeconds) : 1;
       const sunk = (1 - rise) * r * 2.2;
+      // Its tells (pass 1). The attack winding up, 0..1.
+      const a = p.attack;
+      const wind = a && a.state === 'windup' ? Math.min(1, a.t / p.cfg.attacks[a.kind].windup) : 0;
+      const pp = p.player.position;
+      const toTom = Math.atan2(pp.x - p.x, pp.z - p.z);
+      // The lunge: it draws back away from him, low; the slam: it heaves up.
+      let ox = 0;
+      let oz = 0;
+      let lift = 0;
+      if (a?.kind === 'lunge' && a.state === 'windup') {
+        ox = -Math.sin(toTom) * wind * 0.9;
+        oz = -Math.cos(toTom) * wind * 0.9;
+        lift = -wind * 0.35;
+      } else if (a?.kind === 'slam' && a.state === 'windup') lift = wind * wind * r * 0.45;
+      const slam = a?.kind === 'slam' && a.state === 'windup';
+      this.slamRing.visible = slam;
+      if (slam) {
+        const reach = (r + p.cfg.attacks.slam.reach) * (0.25 + 0.75 * wind);
+        this.slamRing.position.set(p.x, g + 0.22, p.z); // (over the road's surface)
+        this.slamRing.scale.setScalar(reach);
+        this.slamRing.material.opacity = 0.25 + 0.4 * wind + Math.sin(p.t * 20) * 0.1;
+      }
+      const lashing = a?.kind === 'lash' && a.state === 'windup';
+      this.lashRing.visible = lashing;
+      if (lashing) {
+        const d = p.cfg.attacks.lash.dodge;
+        this.lashRing.position.set(a.at.x, this.heightAt(a.at.x, a.at.z) + 0.22, a.at.z);
+        this.lashRing.scale.setScalar(d * (1.4 - 0.4 * wind));
+        this.lashRing.material.opacity = 0.3 + 0.4 * wind;
+      }
       // The mound: bodies spread over a dome, turning one way low and the other high, bobbing.
       const N = p.bodies;
       for (let i = 0; i < N; i++) {
         const u = (i + 0.5) / Math.max(1, N); // 0 at the bottom ring, 1 at the top
         const ring = Math.sqrt(1 - u * u * 0.85) * r * 0.85;
         const dir = i % 2 ? 1 : -1;
-        const a = i * GOLDEN + p.spin * dir * (1.2 - u * 0.5);
+        const ang = i * GOLDEN + p.spin * dir * (1.2 - u * 0.5);
         const bob = Math.sin(p.t * 2.3 + i) * 0.12;
-        const y = g - sunk + u * r * 1.35 - 0.2 + bob;
+        const y = g - sunk + u * r * 1.35 - 0.2 + bob + lift * u;
         const frame = LIMP[(i + Math.floor(p.t * 1.5 + i * 0.37)) % LIMP.length];
-        put(p.x + Math.sin(a) * ring, y, p.z + Math.cos(a) * ring, i, frame, a + Math.PI * 0.5 * dir + p.t * dir);
+        put(p.x + ox + Math.sin(ang) * ring, y, p.z + oz + Math.cos(ang) * ring, i, frame, ang + Math.PI * 0.5 * dir + p.t * dir);
       }
-      this.core.position.set(p.x, g - sunk + r * 0.8, p.z);
+      // The fling: a body held up over the top as it winds up.
+      if (a?.kind === 'fling' && a.state === 'windup') put(p.x, g + r * 1.5 + wind * 0.8, p.z, 400, ZOMBIE_FRAMES.dying[0], p.t * 6);
+      this.core.position.set(p.x + ox, g - sunk + r * 0.8 + lift * 0.5, p.z + oz);
       this.core.scale.setScalar(r * 0.55 * (1 + Math.sin(p.t * 5) * 0.06));
-      this.core.material.opacity = 0.35 + (p.cycle === 'reel' ? 0.35 : 0) + Math.sin(p.t * 3) * 0.08;
+      this.core.material.opacity = 0.35 + (p.cycle === 'reel' ? 0.35 : 0) + Math.sin(p.t * 3) * 0.08 + wind * 0.25;
       this.light.position.copy(this.core.position);
       this.light.intensity = p.cfg.look.coreIntensity * (p.cycle === 'reel' ? 1.8 : 1);
       // The charge.
@@ -121,12 +165,20 @@ export class PileRenderer {
       let k = 0;
       const base = { x: p.x, y: g + r * 0.6, z: p.z };
       for (const t of p.tendrils) this.stretch(this.tendrils[k++], base, { x: t.head.x, y: this.heightAt(t.head.x, t.head.z) + 0.6, z: t.head.z });
+      if (lashing) {
+        // The lash coiling up off its top before it strikes.
+        const top = { x: p.x, y: g + r * 1.4, z: p.z };
+        this.stretch(this.tendrils[k++], base, { x: top.x + Math.sin(p.t * 9) * 0.8, y: top.y + 1.2 + wind, z: top.z + Math.cos(p.t * 9) * 0.8 });
+      }
       if (p.lash) {
         p.lash.t += dt;
         if (p.lash.t < 0.35) this.stretch(this.tendrils[k++], base, { x: p.lash.to.x, y: this.heightAt(p.lash.to.x, p.lash.to.z) + 1.0, z: p.lash.to.z });
         else p.lash = null;
       }
-      for (; k < this.tendrils.length; k++) this.tendrils[k].visible = false;
+      for (; k < this.tendrils.length; k++) {
+        this.tendrils[k].visible = false;
+        this.tendrils[k].userData.tip.visible = false;
+      }
       // Bodies on the end of a tendril.
       p.tendrils.forEach((t, i) => {
         if (t.body) put(t.body.x, this.heightAt(t.body.x, t.body.z) + 0.15, t.body.z, 200 + i, ZOMBIE_FRAMES.dying[1], p.t * 3);
@@ -146,12 +198,19 @@ export class PileRenderer {
     const len = this.v.length();
     if (len < 0.01) {
       m.visible = false;
+      if (m.userData.tip) m.userData.tip.visible = false;
       return;
     }
     m.visible = true;
     m.position.set(a.x, a.y, a.z);
     m.scale.set(1, len, 1);
     m.quaternion.setFromUnitVectors(this.up, this.v.normalize());
+    const tip = m.userData.tip;
+    if (tip) {
+      tip.visible = true;
+      tip.position.set(b.x, b.y, b.z);
+      tip.scale.setScalar(1 + Math.sin(this.pile.t * 12) * 0.15);
+    }
   }
 
   dispose() {

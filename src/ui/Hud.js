@@ -157,7 +157,13 @@ export class Hud {
   // M7: the witch's health bar, top centre, while you're fighting her.
   // fraction: 0..1, or null to hide it.
   // Nov 16 (the grey's fight): opts { name, shield (0..1: a blue bar over the health, Halo-style) }.
+  // Nov 25 (the Pile): opts.owner (default 'witch'): one fight's null doesn't hide another's bar.
   boss(fraction, opts = null) {
+    const owner = opts?.owner ?? 'witch';
+    if (fraction === null) {
+      if (this.bossOwner && this.bossOwner !== owner) return;
+      this.bossOwner = null;
+    } else this.bossOwner = owner;
     const f = fraction === null ? null : Math.round(fraction * 200) / 200;
     this.set('boss', f, (v) => {
       this.bossEl.classList.toggle('hidden', v === null);

@@ -165,7 +165,21 @@ export class Pile {
     this.updateFlying(dt);
     this.loose = this.loose.filter((z) => z.active && z.pileOwner === this);
     this.rebuildTargets();
+    this.updateBar();
     this.view?.update?.(dt);
+  }
+
+  // Nov 25 (Aaron: "use a bar like the witches and alien"): its magic, top centre, and how many bodies are in it.
+  updateBar() {
+    const hud = this.combat?.hud;
+    if (!hud?.boss) return;
+    if (this.alive) {
+      hud.boss(this.magic / this.cfg.magic, { name: `THE PILE  ·  ${this.bodies}`, owner: 'pile' });
+      this.barShown = true;
+    } else if (this.barShown) {
+      hud.boss(null, { owner: 'pile' });
+      this.barShown = false;
+    }
   }
 
   // The charge cycle.
@@ -177,12 +191,24 @@ export class Pile {
       return;
     }
     if (this.cycle === 'charge') {
-      if (this.cycleT >= c.charge.window) this.setCycle('scramble'); // it sinks back in: round again
+      // Its beeping, faster as the window runs out.
+      this.beepT = (this.beepT ?? 0) - dt;
+      if (this.beepT <= 0) {
+        const k = Math.min(1, this.cycleT / c.charge.window);
+        this.beepT = c.charge.beep[0] + (c.charge.beep[1] - c.charge.beep[0]) * k;
+        const at = this.chargeSpot();
+        this.combat?.sfx?.play?.('helmetPing', { x: at.x, z: at.z });
+      }
+      if (this.cycleT >= c.charge.window) {
+        this.setCycle('scramble'); // it sinks back in: round again
+        if (this.charges === 0) this.say('missed');
+      }
       return;
     }
     // Scrambling: a charge comes up once it's dragged enough back in, or after a while.
     const due = this.reclaimedSince >= c.charge.afterReclaimed || this.cycleT >= c.charge.every || (this.charges === 0 && this.cycleT >= c.charge.first);
     if (due && !this.attack) {
+      this.beepT = 0;
       this.setCycle('charge');
       this.bus?.emit('pile:charge', {});
       this.say('charge');

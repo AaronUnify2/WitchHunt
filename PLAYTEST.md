@@ -784,6 +784,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The end:** at zero magic it falls apart and up to 12 of what's left stand up. Then the day goes on to the generator call as before. Died mid-fight? It comes up whole again when you go back.
 - [ ] **Length and difficulty:** how long did it take? Too easy, too hard? Did it ever feel endless?
 
+**Round 89: the Pile, pass 1 (reading the fight).**
+- [ ] **Its bar:** THE PILE and how many bodies are in it, over its magic, top centre (like the witch's). Gone when it dies.
+- [ ] **The charge beeps** faster as its window runs out. Let the first one sink back in: Wyatt tells you to shoot it next time.
+- [ ] **Tells:** a yellow-green ring spreads out on the ground before the slam (get outside it); a ring marks where the lash will land, and a tendril coils up off its top; it draws back low before a lunge; a body is held up over it before it's thrown.
+- [ ] **Tendrils** are thicker and brighter, with a glowing bulb at the tip. Easier to see and shoot?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
