@@ -1756,8 +1756,8 @@ export const config = {
           0x46443c, // off-white tee (kept dark: the torch blows it out)
           0x141416, // black tee
           0x161c2c, // navy
-          0x173232, // teal
-          0x5a2a0c, // blaze orange (hunting)
+          0x363a24, // olive field jacket (Nov 25, Aaron's concept art of the crowd: muted; was teal)
+          0x4a4232, // tan work shirt (was blaze orange)
         ],
         trousers: [
           0x1c2638, // jeans
@@ -1794,7 +1794,7 @@ export const config = {
       // share with long sleeves, the share in plaid flannel; and its kit
       // (a police vest and cap, an army helmet), in fixed colours.
       looks: {
-        citizen: { longSleeves: 0.5, plaid: 0.3 },
+        citizen: { longSleeves: 0.55, plaid: 0.4 }, // Nov 25 (the crowd concept art): a little more flannel, more long sleeves
         // Nov 25 (Aaron's concept art, zombies 2 and 3): a sheriff's deputy: a khaki-grey uniform shirt with its two
         // pockets and a gold star, a dark belt, navy or olive trousers; no vest or cap now (was navy, a vest, a cap).
         police: { shirt: [0x4c4a3a, 0x545240], trousers: [0x161a26, 0x262c1e], longSleeves: 1, plaid: 0, pockets: true, belt: 0x161210, badge: 0xa88a2a },
