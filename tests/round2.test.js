@@ -781,3 +781,31 @@ describe("Earl's shotgun in the Pruitt house (Nov 24)", () => {
     expect(f.pick('X')?.key).not.toBe('shotgun');
   });
 });
+
+// Nov 25 (Aaron, play-through: "the mothman in the tree at the farmhouse needs to trigger slightly later. Often this
+// reveal happens before the final moth has fell to the ground. A 0.5 second delay would fix it").
+describe('The Mothman in the oak waits for the last moth to land (Nov 25)', () => {
+  it('holds the glimpse for glimpse.after seconds after the porch moths are done', async () => {
+    const { PruittFarm } = await import('../src/encounters/PruittFarm.js');
+    expect(config.pruittFarm.glimpse.after).toBe(0.5);
+    const flags = new Set(['farmVisited']);
+    const played = [];
+    const f = Object.create(PruittFarm.prototype);
+    Object.assign(f, {
+      fc: config.pruittFarm, bus: { emit() {} },
+      spots: { oakTop: { x: 0, y: 8, z: 0 } },
+      player: { position: { x: 0, z: 0 } },
+      progress: { has: (k) => flags.has(k), setFlag: (k) => flags.add(k) },
+      flyer: { perch() {} },
+      cutscenes: { active: false, play: (id) => (played.push(id), true) },
+      subtitles: { busy: false }, glimpse: null, sinceMoths: null, killed: 0,
+    });
+    f.mothsDone();
+    const l = { x: 2.5, z: -3.5 }; // the front yard: a clear view of the oak
+    f.updateGlimpse(0.3, l, 10);
+    expect(played).toEqual([]);
+    f.updateGlimpse(0.3, l, 10); // 0.6 s now
+    f.updateGlimpse(0.016, l, 10);
+    expect(played).toEqual(['farm.mothman']);
+  });
+});

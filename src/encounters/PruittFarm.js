@@ -220,6 +220,7 @@ export class PruittFarm {
     this.looked = new Set();
     this.searched = new Set();
     this.glimpse = null;
+    this.sinceMoths = null; // seconds since the last of the porch's moths went (null: not this visit)
     this.plotSaid = false;
     this.device = 'gamepad';
     this.applyGenerator();
@@ -452,6 +453,7 @@ export class PruittFarm {
     if (this.has('farmMothsDone')) return;
     this.mothsOut = false;
     this.set('farmMothsDone');
+    this.sinceMoths = 0;
     this.bus.emit('farm:moths', { killed: this.killed, fled: Math.max(0, (this.roostCount ?? 0) - this.killed) });
   }
 
@@ -468,7 +470,13 @@ export class PruittFarm {
       if (this.glimpse.t > g.max) this.glimpseDone();
       return;
     }
-    if (!this.has('farmMothsDone') || this.has('mothmanGlimpsed') || this.cutscenes?.active || this.subtitles?.busy) return;
+    if (!this.has('farmMothsDone') || this.has('mothmanGlimpsed')) return;
+    // Aaron (Nov 25 play-through): it came before the last moth had hit the ground: wait glimpse.after seconds.
+    if (this.sinceMoths != null && this.sinceMoths < (this.fc.glimpse.after ?? 0)) {
+      this.sinceMoths += dt;
+      return;
+    }
+    if (this.cutscenes?.active || this.subtitles?.busy) return;
     if (d > this.fc.glimpse.within || !oakInSight(l) || !this.flyer?.perch) {
       if (!this.flyer?.perch && !this.inHouse(l) && d <= this.fc.glimpse.within) this.glimpseDone();
       return;

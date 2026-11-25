@@ -757,6 +757,9 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **A police zombie by the police car** on the road west of the gas station (your ask: lure you to it; the sheriff's pistol is in its door). It stands by the cruiser facing the station when you arrive and is slow to notice you. Does it catch your eye from the forecourt?
 - [ ] **Checkpoints** (your note: dying sent you back to the beginning). Die anywhere from Day 2 on: the death screen says **A: try again from the start of Day N** (or **the start of Night N** if night had begun), **B: start a new run**. A puts you back where you stood when that dawn or dusk came, with at least half health. The witch sets out again on a night retry. Try the station falling too, and a death in Night 1 (back to its dusk; the waves come again). Is "the start of the night" the right place, or would you rather the dusk checkpoint wait until you're home?
 
+**Round 86: your Nov 25 play-through notes.** Debug menu to the Pruitt farm at dusk, or play through.
+- [ ] **The Mothman waits for the last moth to land** (your note: it came before the final moth had fallen). Kill the porch moths: the glimpse in the oak now holds off 0.5 s after the last one is down (`pruittFarm.glimpse.after`). Long enough?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

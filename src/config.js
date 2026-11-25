@@ -5912,7 +5912,8 @@ export const config = {
   //  short until Tom reaches the farm (`holdMax` seconds held at most).
   //  moths: `count` on the porch wall, placed with Tom within `mothsAt`; they come for him within `wakeAt`
   //  of the porch; shot from beyond `scatterBeyond` most flee.
-  //  glimpse: the Mothman in the oak, with Tom within `within` metres and out of the house (`max` seconds at most).
+  //  glimpse: the Mothman in the oak, with Tom within `within` metres and out of the house (`max` seconds at most),
+  //   `after` seconds at least after the last porch moth is down (Aaron, Nov 25: it came before the last one had fallen).
   //  plot: `moths` more to the sigil's glow at the family plot, Tom within `near` of it.
   // Nov 24 (Aaron: "do the plot for the Pruitt family cemetery ... just a few headstones, no fences ... a big dead tree
   // in the center of the family cemetery ... and let's use one of those hanged mutants. To give the player something
@@ -5954,7 +5955,7 @@ export const config = {
     call: { after: 8, talkMin: 3 }, // Aaron (Nov 14): seconds into the dawn after Night 2 before Ellen's call to the farm; and of her line before the day fades by
     clock: { dayLeft: 70, holdBeforeDusk: 14, holdMax: 300 },
     moths: { count: 14, wakeAt: 8, scatterBeyond: 17 },
-    glimpse: { within: 40, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)
+    glimpse: { within: 40, after: 0.5, max: 8, light: 14, lightIn: 0.7, lightColor: 0x9db4e0, lightReach: 22 }, // light: the cold light that comes up on him for it (Aaron, Nov 14: hard to see in the dark)
     plot: { near: 30, moths: 0 }, // Aaron (Nov 14): three fewer (it was 8); Nov 25: none (the Hanged are the plot's fight: "the moths make the hanged scene feel a bit busy")
     // Nov 24 (Aaron: "there's a veggie garden in the backyard. I will award you points for decorating with the creepiest
     // scarecrow possible"): render/scarecrowModel.js. at / yaw: in the farm model's own (mirrored) coordinates, at
