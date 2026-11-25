@@ -47,6 +47,12 @@ function joints() {
 export const BEETLE_JOINTS = joints();
 export const LEG_NAMES = SIDES.flatMap(([n, s]) => LEGS.map((_, i) => ({ hip: `hip${n}${i}`, knee: `knee${n}${i}`, side: s, pair: i })));
 
+// A knee joint's rest position (for the red joint knobs).
+function kneeAt(n, i) {
+  const j = BEETLE_JOINTS.find(([name]) => name === `knee${n}${i}`);
+  return [j[2], j[3], j[4]];
+}
+
 // The figure-kit spec. beetle: config.beetles.giant.
 export function beetleSpec(beetle) {
   const masses = [
@@ -58,24 +64,30 @@ export function beetleSpec(beetle) {
     // The wing cases: two domed halves meeting down its back (they open to threaten).
     ['elytraR', null, -0.1, 0.5, -0.2, 0.17, 0.14, 0.45, 'shell'],
     ['elytraL', null, 0.1, 0.5, -0.2, 0.17, 0.14, 0.45, 'shell'],
-    // The weak spot: a soft membrane between the mandibles.
-    ['head', null, 0, 0.33, 0.57, 0.06, 0.05, 0.03, 'spot'],
-    // Eyes: a cluster of red glints each side.
-    ['head', null, -0.095, 0.42, 0.52, 0.02, 0.02, 0.02, 'eyes'],
-    ['head', null, -0.08, 0.44, 0.55, 0.014, 0.014, 0.014, 'eyes'],
-    ['head', null, 0.095, 0.42, 0.52, 0.02, 0.02, 0.02, 'eyes'],
-    ['head', null, 0.08, 0.44, 0.55, 0.014, 0.014, 0.014, 'eyes'],
+    // The weak spot: a soft membrane between the mandibles. Nov 25 (Aaron's concept art): bigger, a glowing orange-red
+    // bulb of it, ridged like a fan.
+    ['head', null, 0, 0.33, 0.58, 0.085, 0.075, 0.045, 'spot'],
+    // Eyes: big dark compound eyes either side of the head (the concept art), a red glint in each.
+    ['head', null, -0.11, 0.42, 0.5, 0.045, 0.045, 0.04, 'shellDark'],
+    ['head', null, 0.11, 0.42, 0.5, 0.045, 0.045, 0.04, 'shellDark'],
+    ['head', null, -0.12, 0.43, 0.53, 0.016, 0.016, 0.016, 'eyes'],
+    ['head', null, 0.12, 0.43, 0.53, 0.016, 0.016, 0.016, 'eyes'],
+    // Its joints dark red (the concept art), at the knees.
+    ...SIDES.flatMap(([n]) => LEGS.map((_, i) => [`knee${n}${i}`, null, ...kneeAt(n, i), 0.045, 0.045, 0.045, 'joint'])),
   ];
   const tubes = [
-    // The horn, big and curving up and forward (a rhinoceros beetle's).
-    ['head', 0, 0.42, 0.5, 0, 0.56, 0.62, 0.05, 0.035, 'shell'],
-    ['head', 0, 0.56, 0.62, 0, 0.7, 0.68, 0.035, 0.018, 'shell'],
-    ['head', 0, 0.7, 0.68, 0, 0.78, 0.66, 0.018, 0.003, 'shell'],
-    // The mandibles, hooked in toward each other.
-    ['mandR', -0.07, 0.33, 0.6, -0.05, 0.32, 0.7, 0.026, 0.016, 'shellDark'],
-    ['mandR', -0.05, 0.32, 0.7, -0.01, 0.31, 0.76, 0.016, 0.004, 'shellDark'],
-    ['mandL', 0.07, 0.33, 0.6, 0.05, 0.32, 0.7, 0.026, 0.016, 'shellDark'],
-    ['mandL', 0.05, 0.32, 0.7, 0.01, 0.31, 0.76, 0.016, 0.004, 'shellDark'],
+    // Nov 25 (Aaron's concept art): no horn now (it was a rhinoceros beetle's); great curved mandibles, a stag
+    // beetle's: out from the jaw, sweeping wide, then hooking in, a row of teeth along the inside of each.
+    ...[-1, 1].flatMap((s) => {
+      const b = s < 0 ? 'mandR' : 'mandL';
+      const p = [[0.07, 0.33, 0.58], [0.19, 0.335, 0.7], [0.21, 0.33, 0.84], [0.12, 0.32, 0.95], [0.04, 0.31, 0.98]];
+      const r = [0.042, 0.036, 0.03, 0.02, 0.006];
+      const out = [];
+      for (let k = 0; k < p.length - 1; k++) out.push([b, s * p[k][0], p[k][1], p[k][2], s * p[k + 1][0], p[k + 1][1], p[k + 1][2], r[k], r[k + 1], 'shellDark']);
+      // The teeth, pointing in.
+      for (const [x, z] of [[0.17, 0.74], [0.19, 0.82], [0.15, 0.89]]) out.push([b, s * x, 0.33, z, s * (x - 0.05), 0.33, z + 0.01, 0.012, 0.002, 'shellDark']);
+      return out;
+    }),
   ];
   const limbs = [];
   for (const [n] of SIDES) {

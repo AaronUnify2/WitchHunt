@@ -5705,8 +5705,8 @@ export const config = {
     giant: {
       poolSize: 8, // most drawn at once
       albedo: 0.55,
-      specular: 0x6a7a70, // the shell's glint under the torch (green-tinged)
-      shininess: 48,
+      specular: 0x2c2e32, // the shell's glint under the torch (Nov 25: a cooler, smaller glint: the thin legs glared white)
+      shininess: 40,
       spotGlow: 0.9, // the weak spot's glow, in its own colour (it can be found in the dark)
       eyeGlow: 1,
       spotPulse: 0.8, // throbs, per second
@@ -5719,7 +5719,7 @@ export const config = {
       hitFlashSeconds: 0.15,
       hitFlash: [1.8, 1.6, 0.8], // its colour while flashing
       thermalGlow: 0.35, // x the heat scope's glow: dim (from the other side)
-      colours: { shell: 0x24382c, shellDark: 0x18221c, belly: 0x2e2618, spot: 0xc8c070, eyes: 0xc01810 }, // black-green
+      colours: { shell: 0x1c1e22, shellDark: 0x121316, belly: 0x2a1c16, spot: 0xff5a28, eyes: 0xc01810, joint: 0x4a1a12 }, // Nov 25 (Aaron's concept art): glossy black, the spot a glowing orange-red, the joints dark red (was black-green)
     },
     // Session 17 (M9.4; ai/Beetles.js): their AI, first met crated at the
     // outpost. The shell takes `armour` of a hit (DESIGN: body shots do
