@@ -54,6 +54,7 @@ export class Quad {
     this.wheelSnare = null; // the witch's snare round the front wheel, or null
     this.mash = 0; // 0..1 toward freeing it
     this.buildMesh();
+    this.buildRam();
     this.buildHeadlamp();
     this.home = this.parkedSpot();
     this.reset();
@@ -369,6 +370,7 @@ export class Quad {
   update(dt, input, playing, canInteract, daylight = 1) {
     this.daylight = daylight;
     this.device = input.activeDevice;
+    if (this.ramMesh) this.ramMesh.visible = this.spiked; // (a load, a debug flag)
     if (this.gone) {
       this.hud.prompt = '';
       this.hud.progress = 0;
@@ -391,6 +393,8 @@ export class Quad {
       const p = this.player.position;
       const d = Math.hypot(p.x - this.x, p.z - this.z);
       if (this.wheelSnare) freeing = d < this.qc.snare.range;
+      // Nov 25: the bear trap's jaws, to bolt on first (once).
+      else if (d < this.qc.mountRange && this.progress?.has?.('ramPart') && !this.spiked) offer = { key: 'quad-ram', prompt: `Hold ${X}: bolt the trap's jaws on the front`, seconds: this.qc.ramFitSeconds ?? 3, act: () => this.fitRam() };
       else if (d < this.qc.mountRange) offer = { key: 'quad-on', prompt: `Hold ${X}: ride the quad bike`, seconds: this.qc.mountSeconds, act: () => this.mount() };
     }
     // The wheel's snare: tap X by it to tear it off; the effort drains if he stops.
@@ -647,9 +651,85 @@ export class Quad {
     this.combat.sfx?.engine?.(true, Math.min(1, Math.abs(this.speed) / q.maxSpeed), Math.abs(throttle));
   }
 
+  // Nov 25 (Aaron): the spiked ram, once the trap's jaws are bolted on (story flag quadRam).
+  get spiked() {
+    return Boolean(this.progress?.has?.('quadRam'));
+  }
+
+  // The ram's numbers: the plain ram's, or with the jaws on, the spiked ones over them.
+  get ramStats() {
+    const r = this.qc.ram;
+    return this.spiked && r.spiked ? { ...r, ...r.spiked } : r;
+  }
+
+  // The jaws across the front rack: a steel bar on two struts off the frame, the trap's two half-rings of filed teeth
+  // pointing ahead, and three lengths of sharpened rebar through the middle. Hidden till fitted.
+  buildRam() {
+    const k = this.qc.look;
+    const geos = [];
+    const put = (g, hex) => {
+      g = g.index ? g.toNonIndexed() : g;
+      g.deleteAttribute('uv');
+      const c = new THREE.Color(hex);
+      const n = g.attributes.position.count;
+      const col = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      geos.push(g);
+    };
+    const steel = k.ramSteel ?? k.metal;
+    const rust = k.ramRust ?? k.pipe;
+    const bar = (a, b, r, hex) => {
+      const d = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      const g = new THREE.CylinderGeometry(r, r, d.length(), 6);
+      g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()));
+      g.translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+      put(g, hex);
+    };
+    bar([-0.42, 0.44, -1.16], [0.42, 0.44, -1.16], 0.03, steel); // the crossbar
+    for (const sx of [-1, 1]) bar([sx * 0.2, 0.34, -0.8], [sx * 0.26, 0.44, -1.16], 0.024, steel); // its struts
+    for (const sx of [-1, 1]) {
+      // A jaw: a half-ring standing up across the front, its teeth out along it, pointing ahead.
+      const cx = sx * 0.2;
+      const ring = new THREE.TorusGeometry(0.17, 0.016, 5, 12, Math.PI);
+      ring.translate(cx, 0.44, -1.19);
+      put(ring, rust);
+      for (let i = 0; i <= 6; i++) {
+        const a = (i / 6) * Math.PI;
+        const tooth = new THREE.ConeGeometry(0.018, 0.09, 4);
+        tooth.rotateX(-Math.PI / 2); // pointing -z, ahead
+        tooth.translate(cx + Math.cos(a) * 0.17, 0.44 + Math.sin(a) * 0.17, -1.24);
+        put(tooth, steel);
+      }
+    }
+    for (const x of [-0.08, 0, 0.08]) {
+      const spike = new THREE.ConeGeometry(0.016, 0.34, 5);
+      spike.rotateX(-Math.PI / 2);
+      spike.translate(x, 0.44 + (x === 0 ? 0.06 : 0), -1.34);
+      put(spike, rust);
+    }
+    const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshLambertMaterial({ vertexColors: true }));
+    geos.forEach((g) => g.dispose());
+    m.name = 'quadRam';
+    m.castShadow = true;
+    m.visible = false;
+    this.ramMesh = m;
+    this.mesh.add(m);
+  }
+
+  // Bolting the jaws on (held X by the quad, with them).
+  fitRam() {
+    if (this.spiked) return;
+    this.progress?.setFlag('quadRam');
+    if (this.ramMesh) this.ramMesh.visible = true;
+    this.combat.sfx?.play('loaded');
+    this.notify?.('The jaws are bolted across the front of the quad. Run them down.');
+    this.bus?.emit?.('quad:ram');
+  }
+
   // Into the dead at speed: they go down hurt, and it loses some speed.
   ram(dt, player) {
-    const q = this.qc;
+    const q = { ...this.qc, ram: this.ramStats };
     if (Math.abs(this.speed) < q.ram.minSpeed) return;
     const ax = -Math.sin(this.heading) * Math.sign(this.speed);
     const az = -Math.cos(this.heading) * Math.sign(this.speed);

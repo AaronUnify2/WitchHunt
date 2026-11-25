@@ -231,3 +231,37 @@ describe('the wire cutters', () => {
     expect(shown.cutters).toBe(false);
   });
 });
+
+// Nov 25 (Aaron: "a homemade spiked ram on the front of the quad", "Tom can find it and fit it himself, maybe it's a
+// part of one of the traps"): a sprung bear trap's jaws, bolted on at the quad.
+import { Quad } from '../src/world/Quad.js';
+describe("the quad's spiked ram (Nov 25)", () => {
+  it("a sprung bear trap gives up its jaws, once", () => {
+    const flags = new Set();
+    const site = { ready: true, place: { x: 0, z: 0, radius: 30, yaw: 0 }, spots: { sign: { x: 50, z: 50 } }, traps: [{ id: 'bear1', kind: 'bear', x: 5, z: 5, i: 0, sprung: true }], show() {}, setTrap() {}, setGauge() {}, at: (x, z) => ({ x, z }) };
+    const notes = [];
+    const h = new Holler(config, { on() {}, emit() {} });
+    h.init({ site, player: { position: { x: 5, z: 5.5 } }, combat: { sfx: null, alive: true }, enemies: { living: [] }, progress: { has: (f) => flags.has(f), setFlag: (f, on = true) => (on ? flags.add(f) : flags.delete(f)) }, notify: (t) => notes.push(t) });
+    const best = h.pick('X');
+    expect(best.key).toBe('jaws');
+    best.act();
+    expect(flags.has('ramPart')).toBe(true);
+    expect(notes[0]).toMatch(/jaws/);
+    expect(h.pick('X')?.key).not.toBe('jaws');
+  });
+
+  it('bolted on at the quad, it hits harder and handles the same', () => {
+    const flags = new Set(['ramPart']);
+    const q = Object.create(Quad.prototype);
+    Object.assign(q, { qc: config.quad, progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) }, combat: { sfx: null }, notify() {} });
+    const plain = q.ramStats;
+    expect(q.spiked).toBe(false);
+    q.fitRam();
+    expect(flags.has('quadRam')).toBe(true);
+    const spiked = q.ramStats;
+    expect(spiked.damage).toBeGreaterThan(plain.damage);
+    expect(spiked.mutantScale).toBeGreaterThan(plain.mutantScale);
+    expect(spiked.keep).toBe(plain.keep); // no change to how it rides
+    expect(spiked.minSpeed).toBe(plain.minSpeed);
+  });
+});

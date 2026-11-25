@@ -600,7 +600,7 @@ export class Game {
     // Session 15b (M9.3 pass 3): Earl's quad bike, behind the gas station.
     this.quad = new Quad(this.cfg, this.bus);
     // Round 2 (Aaron): Tom's own quad, in the station's garage from the start (bay 0).
-    this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, homeSpot: this.station.layout.garage?.bays[0] ?? null, notify: (text) => this.toast.show(text) });
+    this.quad.init({ scene: this.scene, ground: this.world.ground, colliders: this.colliders, player: this.player, combat: this.combat, frame: this.gasStation.frame, homeSpot: this.station.layout.garage?.bays[0] ?? null, progress: this.progress, notify: (text) => this.toast.show(text) });
     this.combat.hud.hold = () => this.messagesHeld(); // Nov 15: pickup lines wait under a card, a paper or a cutscene
     this.combat.promptSources.push(this.quad.hud);
     // Nov 15 (Aaron: he kept forgetting the shovel): it rides on the quad's rear rack, and getting on the quad

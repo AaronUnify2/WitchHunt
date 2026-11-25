@@ -49,6 +49,11 @@
    }
   }
  },
+ "jaws": {
+  "prompt": "take the trap's jaws",
+  "busy": "Working the jaws off the chain…",
+  "text": "A bear trap's jaws, a foot and a half across, teeth filed to points. Too heavy to carry far. They'd bolt across the front of the quad."
+ },
  "cutters": {
   "prompt": "take the wire cutters",
   "busy": "…",

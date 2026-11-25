@@ -3611,7 +3611,12 @@ export const config = {
     wheel: { radius: 0.32, width: 0.26 },
     // Into the dead at speed (scaled by speed: full at maxSpeed). A citizen
     // has 60 health at level 1: a full-speed hit drops one.
-    ram: { minSpeed: 4, reach: 0.9, damage: 70, mutantScale: 0.4, stagger: 0.8, knockback: 4, keep: 0.75, mutantKeep: 0.15, shake: 0.5 },
+    ram: { minSpeed: 4, reach: 0.9, damage: 70, mutantScale: 0.4, stagger: 0.8, knockback: 4, keep: 0.75, mutantKeep: 0.15, shake: 0.5,
+      // Nov 25 (Aaron: "a homemade spiked ram on the front of the quad", for fighting only: permanent, no fuel, no
+      // noise, the quad handles the same): a bear trap's jaws off the moonshiners' holler, bolted across the front rack
+      // (story flag quadRam). These replace the plain ram's numbers; the rest (speed lost on a hit) stay.
+      spiked: { damage: 140, mutantScale: 0.8, reach: 1.05 } },
+    ramFitSeconds: 3, // hold X by the quad with the jaws (ramPart) to bolt them on
     // The engine carries: every `every` seconds, the dead within idle..full metres (with speed) come.
     noise: { every: 1.5, idle: 25, full: 60 },
     witchSpeedScale: 1.6, // Aaron: the witch is faster while Tom's on it
@@ -3632,7 +3637,7 @@ export const config = {
     // Round 2 (the polish pass): more of it to colour: the plastics' darker panels, the engine, the pipe, the
     // shocks' springs, the district's stripe, the gauge's face, the tail lamp (and its glow), the plate, and
     // what's strapped on (rope, a jerry can, a tool box, a bedroll). Dark, as everything the torch meets.
-    look: { tyre: 0x101010, hub: 0x2a2a28, frame: 0x1a1a1a, body: 0x2a3018, bodyDark: 0x1c2112, seat: 0x161412, rack: 0x141414, metal: 0x26272a, grip: 0x0c0c0c, lamp: 0x3a3a30, engine: 0x2e2e2c, pipe: 0x3a2e24, spring: 0x4a3a12, stripe: 0x5a4a14, gauge: 0x3c3a2c, tail: 0x4a100c, tailGlow: 0x7a0c08, plate: 0x46463c, rope: 0x4a3c24, can: 0x4a1410, box: 0x2a2014, roll: 0x2c3438 },
+    look: { ramSteel: 0x4a4640, ramRust: 0x5a3420, tyre: 0x101010, hub: 0x2a2a28, frame: 0x1a1a1a, body: 0x2a3018, bodyDark: 0x1c2112, seat: 0x161412, rack: 0x141414, metal: 0x26272a, grip: 0x0c0c0c, lamp: 0x3a3a30, engine: 0x2e2e2c, pipe: 0x3a2e24, spring: 0x4a3a12, stripe: 0x5a4a14, gauge: 0x3c3a2c, tail: 0x4a100c, tailGlow: 0x7a0c08, plate: 0x46463c, rope: 0x4a3c24, can: 0x4a1410, box: 0x2a2014, roll: 0x2c3438 },
   },
 
   // ---- Experimental vehicles (debug menu only: "Experimental vehicles") ----
@@ -5116,7 +5121,7 @@ export const config = {
     },
     encounter: {
       interactRange: 1.7,
-      holds: { search: 1.0, cutters: 0.8, map: 0.8, board: 0.6, valve: 1.3, cabinet: 1.4, ammo: 1.0, coil: 2.6 }, // seconds held (X)
+      holds: { search: 1.0, cutters: 0.8, map: 0.8, board: 0.6, valve: 1.3, cabinet: 1.4, ammo: 1.0, coil: 2.6, jaws: 1.6 }, // seconds held (X); jaws: Nov 25, a bear trap's, for the quad
       sweepDistance: 7, // metres from the mouth's arrival spot: the arrival sweep (once)
       spawnDistance: 70, // metres from the holler's middle: the family's at the still by now (until they're down)
       wakeDistance: 13, // metres from the still: the family comes for Tom (or the cans, or a shot)

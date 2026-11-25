@@ -40,7 +40,7 @@ import { DEBUG } from '../debug/DebugMenu.js';
 import { HollerTraps, trapFlag } from '../combat/hollerTraps.js';
 import data from '../data/holler.json';
 
-export const FLAGS = ['hollerVisited', 'hollerAgent', 'hollerLookout', 'wireCuttersTaken', 'trapMapFound', 'hollerJars', 'hollerMash', 'hollerBoard', 'autoShotgunTaken', 'hollerAmmo', 'hollerFamilyUp', 'hollerFamilyDown', 'hollerStillShut', 'hollerStillBlown', 'copperCoilTaken'];
+export const FLAGS = ['hollerVisited', 'hollerAgent', 'hollerLookout', 'wireCuttersTaken', 'trapMapFound', 'hollerJars', 'hollerMash', 'hollerBoard', 'autoShotgunTaken', 'hollerAmmo', 'hollerFamilyUp', 'hollerFamilyDown', 'hollerStillShut', 'hollerStillBlown', 'copperCoilTaken', 'ramPart'];
 
 // ---- the pure parts (tested) ----------------------------------------------------------------
 
@@ -379,6 +379,13 @@ export class Holler {
       if (s.flag && this.has(s.flag)) continue;
       add(this.spot(s.spot), r + 0.3, opt(s.id, s, H[s.hold] ?? H.search, () => this.search(s)));
     }
+    // Nov 25 (Aaron: the quad's spiked ram, "a part of one of the traps"): a bear trap that's gone off, or been sprung
+    // with a stick, gives up its jaws (once).
+    if (!this.has('ramPart')) {
+      for (const t of this.traps.list) {
+        if (t.kind === 'bear' && t.state !== 'armed') add(t, r + 0.3, opt('jaws', data.jaws, H.jaws, () => this.takeJaws()));
+      }
+    }
     if (!this.has('wireCuttersTaken')) add(this.spot('cutters'), r + 0.2, opt('cutters', data.cutters, H.cutters, () => this.takeCutters()));
     if (!this.has('trapMapFound')) add(this.spot('trapMap'), r + 0.2, opt('trapMap', data.map, H.map, () => this.takeMap()));
     add(this.spot('note'), r + 0.3, opt('board', data.board, H.board, () => this.readBoard()));
@@ -405,6 +412,13 @@ export class Holler {
   }
 
   // ---- what each does ------------------------------------------------------------------------
+
+  // Nov 25: a bear trap's jaws, for the quad's front (Quad: fitted there).
+  takeJaws() {
+    this.set('ramPart');
+    this.sfx?.play('pickup');
+    this.notify?.(data.jaws.text);
+  }
 
   search(s) {
     this.set(s.flag);
