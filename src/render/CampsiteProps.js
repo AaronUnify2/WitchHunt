@@ -593,7 +593,7 @@ export class CampsiteProps {
     if (dr.coals) {
       const f = this.data.props.fire;
       const at = this.place(f.x, f.z);
-      const coal = new THREE.MeshBasicMaterial({ color: c.coal ?? 0xff6a20 });
+      const coal = new THREE.MeshBasicMaterial({ color: this.cfg.coal ?? 0xff6a20 }); // (cfg: config.campsite.look)
       this.hold(coal);
       for (let i = 0; i < 14; i++) {
         const a = this.rand() * Math.PI * 2;

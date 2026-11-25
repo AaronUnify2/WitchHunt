@@ -4209,6 +4209,7 @@ export const config = {
       tent: { halfWidth: 1.05, height: 1.3, length: 2.3 },
       dome: { radius: 1.25, height: 1.15 },
       leanto: { width: 2.6, height: 1.45, depth: 2.0 }, // Session 25: the survival camp's tarp lean-tos
+      coal: 0xff6a20, // Nov 25: the fire's coals, glowing (unlit, not a prop colour: the glare rule's for the baked props)
       trunkRadius: 0.32,
       // Dull and dark: pale props glare under the torch (Aaron).
       colors: {
@@ -4220,7 +4221,6 @@ export const config = {
         frame: 0x3a3c3e,
         cloth: 0x3a3a32, // Nov 25 (the concept art): worn grey canvas (was blue)
         bucket: 0x4a4c4a,
-        coal: 0xff6a20,
         pack: 0x4a3a28,
         packFlap: 0x3a2c1e,
         cooler: 0x6a3428,
