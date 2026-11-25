@@ -135,7 +135,18 @@ export class StationRenderer {
     const yaw0 = 0;
     // Floor slab (with a skirt down into the ground) and a porch step.
     parts.push(this.box(c.halfW * 2 + 0.3, 1.2, c.halfD * 2 + 0.3, c.x, fy - 1.2, c.z, k.floor));
-    parts.push(this.box(2.2, 0.25, 1.1, c.x, fy - 0.25, c.z + c.halfD + 0.55, k.woodDark));
+    // Nov 25 (Aaron's concept art of the ranger station): a porch deck before the door, two steps down off it, a rail
+    // either side on its posts (was a single step); and the front wall's plank siding, its boards' edges.
+    const dz = c.z + c.halfD;
+    parts.push(this.box(3.4, 0.14, 1.5, c.x, fy - 0.14, dz + 0.75, k.woodDark));
+    parts.push(this.box(2.0, 0.2, 0.45, c.x, fy - 0.36, dz + 1.72, k.woodDark));
+    parts.push(this.box(2.0, 0.2, 0.45, c.x, fy - 0.56, dz + 2.12, k.woodDark));
+    for (const sx of [-1, 1]) {
+      for (const pz of [0.1, 1.45]) parts.push(this.box(0.1, 1.0, 0.1, c.x + sx * 1.6, fy - 0.14, dz + pz, k.woodDark));
+      parts.push(this.box(0.08, 0.08, 1.45, c.x + sx * 1.6, fy + 0.86, dz + 0.78, k.trim));
+      parts.push(this.box(0.06, 0.06, 1.45, c.x + sx * 1.6, fy + 0.45, dz + 0.78, k.trim));
+    }
+    for (let y = 0.28; y < H - 0.1; y += 0.28) parts.push(this.box(c.halfW * 2 - 0.3, 0.025, 0.02, c.x, fy + y, dz + 0.12, k.woodDark));
     // Walls: each wall piece as a plank box, a little thicker than its collider.
     for (const w of c.walls) parts.push(this.wallBox(w, fy, H, k.wood));
     // Gable roof: two sloping slabs from the long walls up to the ridge (east-west).
@@ -717,11 +728,22 @@ export class StationRenderer {
     const parts = [];
     // Windows: either side of the front door, and in the east and west walls.
     for (const sx of [-1, 1]) parts.push(this.box(1.1, 0.8, 0.24, c.x + sx * 3.2, fy + 1.3, c.z + c.halfD, k.windowGlow));
+    // Nov 25 (the concept art): the lamp over the front door, its bulb.
+    parts.push(this.box(0.22, 0.14, 0.2, c.x, fy + c.wallHeight - 0.32, c.z + c.halfD + 0.32, k.windowGlow));
     for (const sx of [-1, 1]) parts.push(this.box(0.24, 0.8, 1.1, c.x + sx * c.halfW, fy + 1.3, c.z + c.halfD - 2.2, k.windowGlow));
     // The interior's bulbs, the lantern, the radio's meter.
     parts.push(...this.interior.glow);
     this.glowMaterial = this.keep(new THREE.MeshBasicMaterial({ vertexColors: true }));
     this.glow = this.merged(parts, this.glowMaterial, false);
+    // The door lamp's light on the porch and the ground before it (one small light, no shadows), and its bracket.
+    const lampY = fy + c.wallHeight - 0.32;
+    this.doorLight = new THREE.PointLight(k.doorLamp ?? 0xffc880, k.doorLampIntensity ?? 2.2, 9, 1.8);
+    this.doorLight.position.set(c.x, lampY - 0.1, c.z + c.halfD + 0.7);
+    this.group.add(this.doorLight);
+    const bracket = this.keep(new THREE.MeshLambertMaterial({ color: k.woodDark }));
+    const arm = new THREE.Mesh(this.keep(new THREE.BoxGeometry(0.05, 0.05, 0.36)), bracket);
+    arm.position.set(c.x, lampY + 0.1, c.z + c.halfD + 0.18);
+    this.group.add(arm);
     // The woodstove's fire, through its door: flickers (update()).
     this.fireMaterial = this.keep(new THREE.MeshBasicMaterial({ vertexColors: true }));
     this.merged(this.interior.fire, this.fireMaterial, false);
