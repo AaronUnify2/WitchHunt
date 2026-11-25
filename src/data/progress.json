@@ -165,6 +165,7 @@
     {"id": "hollerStillBlown", "about": "The moonshiners' holler: the still blew (the gauge went over): the copper worm went with it."},
     {"id": "tunnelCall", "about": "Day 3 (Nov 25, Aaron): Ellen has sent Tom up the road north to see if the Laurel Gap tunnel is open (encounters/Tunnel.js)."},
     {"id": "tunnelSeen", "about": "Day 3: Tom has seen the tunnel, caved in by the army: the outpost's been overrun and every road out is sealed."},
+    {"id": "pileSeen", "about": "Day 3: the Pile's cutscene (pile.emerge) has played; a retry brings it up without it (Nov 25)."},
     {"id": "tunnelCleared", "about": "Day 3: the Pile at the tunnel is dead (ai/Pile.js; Nov 25, Aaron): the Pruitts' generator can be heard late in the day."},
     {"id": "ramPart", "about": "The moonshiners' holler: a sprung bear trap's jaws taken (Nov 25, Aaron: Tom fits the quad's spiked ram himself, out of one of the traps)."},
     {"id": "quadRam", "about": "The jaws bolted across the quad's front rack: its ram hits far harder (config.quad.ram.spiked; Nov 25, Aaron)."},

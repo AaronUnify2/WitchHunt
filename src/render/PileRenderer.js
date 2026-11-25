@@ -11,6 +11,7 @@
 //  - The army charge on its surface, blinking; the tells' rings on the ground.
 
 import * as THREE from 'three';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ZombieRenderer } from './ZombieRenderer.js';
 import { ZOMBIE_FRAMES } from '../ai/Zombie.js';
 
@@ -68,7 +69,12 @@ export class PileRenderer {
   // The meat: an icosphere pushed into lumps, coloured dark red to purple, with a glow attribute along its veins
   // (where a second noise crosses zero) that the shader adds as her green.
   buildCore(look) {
-    const geo = new THREE.IcosahedronGeometry(1, 4);
+    // Welded (indexed), so its normals are shared and the meat shades smooth, not in flat facets.
+    const raw = new THREE.IcosahedronGeometry(1, 4);
+    raw.deleteAttribute('normal');
+    raw.deleteAttribute('uv');
+    const geo = mergeVertices(raw);
+    raw.dispose();
     const pos = geo.attributes.position;
     const n = pos.count;
     this.coreBase = new Float32Array(pos.array);
@@ -160,7 +166,7 @@ export class PileRenderer {
 
   update(dt) {
     const p = this.pile;
-    const live = p.phase === 'emerge' || p.phase === 'fight';
+    const live = p.phase === 'intro' || p.phase === 'emerge' || p.phase === 'fight';
     this.nSprites = 0;
     this.segs.count = 0;
     this.hooks.count = 0;
@@ -205,7 +211,7 @@ export class PileRenderer {
     const r = p.radius;
     const g = this.heightAt(p.x, p.z);
     // Coming up out of the ground.
-    const rise = p.phase === 'emerge' ? Math.min(1, p.t / p.cfg.emergeSeconds) : 1;
+    const rise = p.risen;
     const sunk = (1 - rise) * r * 2.2;
     // Its tells. The attack winding up, 0..1.
     const a = p.attack;
@@ -276,8 +282,24 @@ export class PileRenderer {
       this.chargeLamp.visible = Math.sin(p.cycleT * (6 + p.cycleT * 2)) > 0;
     }
     // Its eyes, pushed out of the wounds after a blast, opening, looking at him; shut and sunk as the reel ends.
+    // Nov 25 (its cutscene): one opens for a moment at the end of pile.emerge, looks, and shuts (a teaser).
     const reelLeft = reel ? p.cfg.seams.seconds - p.cycleT : 0;
-    this.eyes.forEach((e, i) => {
+    if (p.phase === 'intro') {
+      const e = this.eyes[0];
+      const k = p.eyeTease > 0 ? p.eyeTease / look.eyeTease : 0;
+      const o = k > 0 ? Math.min(1, k / 0.25, (1 - k) / 0.2) : 0;
+      e.userData.open = o;
+      e.visible = o > 0.02;
+      if (e.visible) {
+        const er = r * 0.75;
+        e.position.set(cx + Math.sin(toTom) * er, g - sunk + r * 0.85, cz + Math.cos(toTom) * er);
+        e.scale.setScalar(p.cfg.seams.hitRadius * 1.6);
+        e.lookAt(pp.x, (pp.y ?? g) + 1.6, pp.z);
+        e.userData.top.rotation.x = -o * 1.2;
+        e.userData.bottom.rotation.x = Math.PI + o * 1.0;
+      }
+      for (let i = 1; i < this.eyes.length; i++) this.eyes[i].visible = false;
+    } else this.eyes.forEach((e, i) => {
       const s = p.seams[i];
       const want = reel ? Math.min(1, p.cycleT / 0.35, reelLeft / 0.4) : 0;
       e.userData.open += (want - e.userData.open) * Math.min(1, dt * 12);
@@ -313,6 +335,16 @@ export class PileRenderer {
       }
       const out = { x: from.x + Math.sin(ang) * len, y: from.y + len * (0.4 + 0.5 * Math.sin(p.t * 1.3 + i * 1.7)), z: from.z + Math.cos(ang) * len };
       this.tendril(from, out, 0.08 + 0.02 * (i % 2), 0.9, p.t * 2.4 + i * 1.3, true);
+    }
+    // The cutscene's first beat: tendrils bursting up out of the rubble before anything else of it shows.
+    if (p.phase === 'intro' && p.burst && rise < 0.7) {
+      const grow = Math.min(1, p.burstT / 0.5);
+      for (let i = 0; i < 3; i++) {
+        const ang = toTom + (i - 1) * 0.9;
+        const from = { x: p.x + Math.sin(ang) * 0.4, y: g - 0.3, z: p.z + Math.cos(ang) * 0.4 };
+        const h = (1.6 + i * 0.5) * grow;
+        this.tendril(from, { x: from.x + Math.sin(ang) * 0.8 * grow, y: g + h, z: from.z + Math.cos(ang) * 0.8 * grow }, 0.14, 0.4, p.t * 4 + i, true);
+      }
     }
     // Working: reaching for and dragging the fallen.
     for (const t of p.tendrils) {

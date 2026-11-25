@@ -316,3 +316,52 @@ describe('the debug start at the Pile', () => {
     for (const f of ['tunnelSeen', 'tunnelCleared', 'farmCall', 'outpostCall', 'outpostCleared']) expect(PILE_FLAGS, f).not.toContain(f);
   });
 });
+
+// Nov 25 (Aaron: "a cutscene to show the pile emerging from the ground"; the eye teaser; the caption).
+describe("the Pile's cutscene", () => {
+  const list = (d) => (Array.isArray(d) ? d : d.cutscenes);
+  it('plays the first time Tom sees the tunnel; the Pile waits under the rubble and fights when it ends', async () => {
+    const cut = list((await import('../src/data/cutscenes.json')).default).find((c) => c.id === 'pile.emerge');
+    expect(cut.duration).toBeGreaterThan(8);
+    expect(cut.duration).toBeLessThan(11);
+    const events = cut.tracks.filter((t) => t.do === 'emit').map((t) => t.event);
+    expect(events).toEqual(['pile:burst', 'pile:heave', 'pile:eye']);
+    expect(cut.tracks.find((t) => t.do === 'caption')).toMatchObject({ text: 'The Laurel Gap Tunnel', sub: 'Day 3' });
+
+    const r = rig();
+    const flags = new Set(['night2Done', 'tunnelCall']);
+    let played = null;
+    const t = new Tunnel(config, r.bus);
+    t.init({
+      world: { map: { roadNorth: { barrier: { x: 0, z: -9 } } } },
+      player: { position: { x: 0, z: 10 } },
+      progress: { has: (f) => flags.has(f), setFlag: (f) => flags.add(f) },
+      dialogue: { play() {} },
+      cutscenes: { active: false, play: (id, o) => ((played = { id, o }), true) },
+      pile: r.pile,
+    });
+    r.pile.stop();
+    t.update(0.1, true);
+    expect(played.id).toBe('pile.emerge');
+    expect(flags.has('pileSeen')).toBe(true);
+    expect(r.pile.phase).toBe('intro');
+    expect(r.pile.risen).toBe(0);
+    r.run(1);
+    expect(r.pile.targets).toHaveLength(0); // nothing to shoot, nothing hits him
+    r.bus.emit('pile:burst');
+    r.bus.emit('pile:heave');
+    r.run(C.emergeSeconds + 0.2);
+    expect(r.pile.risen).toBe(1);
+    expect(r.pile.phase).toBe('intro'); // still waiting on the cutscene
+    played.o.onDone(false);
+    expect(r.pile.phase).toBe('fight');
+  });
+
+  it('skipped straight away, it comes up whole and fights', () => {
+    const r = rig();
+    r.pile.start(0, 0, 0, { intro: true });
+    r.pile.beginFight();
+    expect(r.pile.phase).toBe('fight');
+    expect(r.pile.risen).toBe(1);
+  });
+});

@@ -5971,7 +5971,7 @@ export const config = {
     // Nov 25 (Aaron: "more resident evil style": flesh, her green in its veins, eyes for its weak spots, more
     // tendrils). flesh: the core's colours, dark to light; vein: the green in it; idle: tendrils always out.
     look: { spin: 0.6, flesh: [0x1e080c, 0x361018, 0x461a24, 0x2c1824], vein: 0x5ae860, veinGlow: 0.75, coreLight: 0x3cff5a, coreIntensity: 1.2, coreReach: 10,
-      sinew: 0x240a10, sinewGlow: 0x0a240c, bone: 0xb8ac8a, eye: 0x8a7c50, iris: 0xb4e830, pupil: 0x060404, idle: 7, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
+      sinew: 0x240a10, sinewGlow: 0x0a240c, bone: 0xb8ac8a, eye: 0x8a7c50, iris: 0xb4e830, pupil: 0x060404, idle: 7, eyeTease: 1.5, warn: 0xd8ff60, charge: 0x3e4a2a, chargeLight: 0xff3020 },
   },
   familyPlot: {
     sweepAt: 50, // its sweep (sweep.plot) plays once as Tom first comes this near the tree (Nov 25, Aaron: further out; was 30, 12 m inside its edge)

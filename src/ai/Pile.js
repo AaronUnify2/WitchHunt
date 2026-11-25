@@ -62,7 +62,13 @@ export class Pile {
     };
     this.charge = { alive: true, targetable: true, hitRadius: cfg.charge.hitRadius, height: 0.7, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, takeHit: () => this.blast() };
     this.seams = [0, 1, 2].map((i) => ({ i, alive: true, targetable: true, hitRadius: cfg.seams.hitRadius, height: 0.6, headBottom: 99, headRadius: 0, facing: 0, x: 0, y: 0, z: 0, weakSpot: null, takeHit: (amount) => this.hitSeam(amount) }));
-    this.unsub = [this.bus?.on?.('explosion', (e) => this.onExplosion(e))].filter(Boolean);
+    this.unsub = [
+      this.bus?.on?.('explosion', (e) => this.onExplosion(e)),
+      // Nov 25 (Aaron: "a cutscene to show the pile emerging from the ground"): pile.emerge's beats.
+      this.bus?.on?.('pile:burst', () => this.introBurst()),
+      this.bus?.on?.('pile:heave', () => this.introHeave()),
+      this.bus?.on?.('pile:eye', () => this.phase === 'intro' && (this.eyeTease = 0.001)),
+    ].filter(Boolean);
   }
 
   // ---- the pure parts --------------------------------------------------------------------------------------
@@ -86,7 +92,7 @@ export class Pile {
   }
 
   get alive() {
-    return this.phase === 'emerge' || this.phase === 'fight';
+    return this.phase === 'intro' || this.phase === 'emerge' || this.phase === 'fight';
   }
 
   get looseAlive() {
@@ -95,8 +101,9 @@ export class Pile {
 
   // ---- starting ---------------------------------------------------------------------------------------------
 
-  // Up out of the rubble at (x, z), facing `facing`.
-  start(x, z, facing = 0) {
+  // Up out of the rubble at (x, z), facing `facing`. intro (Nov 25): its cutscene drives it (pile.emerge): it waits
+  // under the rubble ('intro') for the tendrils to burst out and the heave, and fights when beginFight() says.
+  start(x, z, facing = 0, { intro = false } = {}) {
     const c = this.cfg;
     this.x = x;
     this.z = z;
@@ -124,12 +131,59 @@ export class Pile {
     this.tendrils.length = 0;
     this.dustT = 0;
     this.deadT = 0;
+    this.riseT = -1;
+    this.burst = false;
+    this.burstT = 0;
+    this.eyeTease = 0;
+    if (intro) {
+      this.phase = 'intro'; // (its cutscene says the lines and makes the noise)
+      return;
+    }
     this.bus?.emit('pile:emerge', { x, z });
     this.say('emerge');
     // Pass 2: the ground heaves.
     this.sound('mutantRoar');
     this.sound('breach');
     this.player.shake?.(this.cfg.fx.emergeShake);
+  }
+
+  // ---- the cutscene (pile.emerge) ----------------------------------------------------------------------------
+
+  // Tendrils burst up out of the rubble.
+  introBurst() {
+    if (this.phase !== 'intro' || this.burst) return;
+    this.burst = true;
+    this.burstT = 0;
+    this.sound('breach');
+    this.puff(this.x, this.z, 24, 'rubble', 7, 0.2);
+    this.puff(this.x, this.z, 20, 'dust', 5, 0.2);
+  }
+
+  // The heap heaves up through the rock.
+  introHeave() {
+    if (this.phase !== 'intro' || this.riseT >= 0) return;
+    this.riseT = 0;
+    this.sound('mutantRoar');
+    this.player.shake?.(this.cfg.fx.emergeShake);
+  }
+
+  // The cutscene's over (or skipped): up, whole, and fighting.
+  beginFight() {
+    if (this.phase !== 'intro') return;
+    this.phase = 'fight';
+    this.t = this.cfg.emergeSeconds;
+    this.riseT = this.cfg.emergeSeconds;
+    this.eyeTease = 0;
+    this.cycleT = 0;
+    this.attackCool = this.cfg.attacks.firstAfter;
+    this.bus?.emit('pile:fight', {});
+  }
+
+  // How far up out of the ground it is, 0..1 (the view's).
+  get risen() {
+    if (this.phase === 'intro') return this.riseT < 0 ? 0 : Math.min(1, this.riseT / this.cfg.emergeSeconds);
+    if (this.phase === 'emerge') return Math.min(1, this.t / this.cfg.emergeSeconds);
+    return 1;
   }
 
   // Gone without a fight (a load, a reset): nothing left of it.
@@ -170,6 +224,24 @@ export class Pile {
     this.flash = Math.max(0, this.flash - dt);
     this.spin += dt * this.cfg.look.spin * (1 + (1 - this.bodies / this.cfg.bodies) * 1.5);
     if (this.phase === 'dead') this.deadT += dt;
+    if (this.phase === 'intro') {
+      if (this.burst) this.burstT += dt;
+      if (this.riseT >= 0) {
+        this.riseT += dt;
+        this.dustT -= dt;
+        if (this.dustT <= 0 && this.riseT < this.cfg.emergeSeconds) {
+          this.dustT = 0.18;
+          const a = this.rng() * Math.PI * 2;
+          const d = this.radius * (0.6 + this.rng() * 0.8);
+          this.puff(this.x + Math.sin(a) * d, this.z + Math.cos(a) * d, 16, 'dust', 6, 0.2);
+          this.puff(this.x + Math.sin(a + 2) * d, this.z + Math.cos(a + 2) * d, 8, 'rubble', 8, 0.2);
+        }
+      }
+      if (this.eyeTease > 0) {
+        this.eyeTease += dt;
+        if (this.eyeTease > this.cfg.look.eyeTease) this.eyeTease = 0;
+      }
+    }
     if (this.alive && playing) {
       // Pass 2: rubble and dust thrown up round it as it comes up.
       if (this.phase === 'emerge') {
@@ -207,7 +279,7 @@ export class Pile {
   updateBar() {
     const hud = this.combat?.hud;
     if (!hud?.boss) return;
-    if (this.alive) {
+    if (this.alive && this.phase !== 'intro') {
       hud.boss(this.magic / this.cfg.magic, { name: `THE PILE  ·  ${this.bodies}`, owner: 'pile' });
       this.barShown = true;
     } else if (this.barShown) {

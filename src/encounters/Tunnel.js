@@ -21,7 +21,7 @@
 
 import { DEBUG } from '../debug/DebugMenu.js';
 
-export const TUNNEL_FLAGS = ['tunnelCall', 'tunnelSeen', 'tunnelCleared'];
+export const TUNNEL_FLAGS = ['tunnelCall', 'tunnelSeen', 'pileSeen', 'tunnelCleared'];
 
 export class Tunnel {
   constructor(cfg, bus) {
@@ -90,8 +90,9 @@ export class Tunnel {
   }
 
   wake(b) {
-    // South of the barrier (the map's z runs south), facing down the road at him.
-    this.pile?.start?.(b.x, b.z + this.tc.pileOut, 0);
+    // South of the barrier, facing down the road at him (after its cutscene's been seen: a retry, a load).
+    const at = this.pileSpot(b);
+    this.pile?.start?.(at.x, at.z, 0);
   }
 
   // 1: a few seconds into the dawn after Night 2, once nothing else is being said.
@@ -112,9 +113,24 @@ export class Tunnel {
     if (!b || !p) return;
     if (Math.hypot(p.x - b.x, p.z - b.z) > this.tc.seeAt) return;
     this.set('tunnelSeen');
-    this.dialogue?.play('tunnel.seen.wyatt');
     this.bus.emit('tunnel:seen', { x: b.x, z: b.z });
+    // Nov 25 (Aaron): the first time, its cutscene (pile.emerge): the tunnel, the tendrils, the heave, an eye.
+    const at = this.pileSpot(b);
+    if (this.pile && !this.has('pileSeen') && this.cutscenes && !this.cutscenes.active) {
+      this.pile.start(at.x, at.z, 0, { intro: true });
+      if (this.cutscenes.play?.('pile.emerge', { anchors: { pile: { x: at.x, z: at.z, yaw: 0 } }, onDone: () => this.pile.beginFight() })) {
+        this.set('pileSeen');
+        return;
+      }
+      this.pile.stop();
+    }
+    this.dialogue?.play('tunnel.seen.wyatt');
     this.wake(b);
+  }
+
+  // Where it comes up: south of the barrier (the map's z runs south), on the road.
+  pileSpot(b) {
+    return { x: b.x, z: b.z + this.tc.pileOut };
   }
 
   dispose() {
