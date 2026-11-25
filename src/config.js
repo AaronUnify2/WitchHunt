@@ -4350,21 +4350,22 @@ export const config = {
         height: 1.68,
         head: 1.08, // a touch big (stylised)
         idle: 'folded',
-        colours: { skin: 0xc89a7c, top: 0x5a6238, sleeve: 0x5a6238, forearm: 0x5a6238, zip: 0x2a2e1a, under: 0x7a7a76, trousers: 0x262c3a, shoes: 0x4a3422, hair: 0x5a2a18, tie: 0x2a2424, eyes: 0x1a1410, brows: 0x3a1c10, frames: 0x2a2a2a },
+        // Nov 25 (Aaron's concept art): the olive coat, a navy skirt, bare legs (trousers: her skin below the skirt), boots.
+        colours: { skin: 0xc89a7c, top: 0x4e5c30, sleeve: 0x4e5c30, forearm: 0x4e5c30, zip: 0x24281a, under: 0x7a7a76, skirt: 0x283252, trousers: 0xb8907a, shoes: 0x2c2420, hair: 0x5a2a18, tie: 0x3a2018, eyes: 0x1a1410, brows: 0x3a1c10, frames: 0x2a2a2a },
       },
       wyatt: {
         height: 1.62,
         width: 0.94, // lanky
         head: 1.08,
-        idle: 'pockets',
-        colours: { skin: 0xc8a084, top: 0x7a1e1a, sleeve: 0x7a1e1a, forearm: 0x7a1e1a, tee: 0x1c1c20, print: 0x8a8a7a, trousers: 0x34405a, shoes: 0x5e5e5a, hair: 0x3e2818, eyes: 0x1a1410, brows: 0x2a1a10 },
+        idle: 'sides', // Nov 25 (Aaron's concept art): arms at his sides (was hands in pockets)
+        colours: { skin: 0xc8a084, top: 0x861c1a, sleeve: 0x861c1a, forearm: 0x861c1a, tee: 0x1c1c20, print: 0x8a8a7a, trousers: 0x34405a, shoes: 0x3a3634, hair: 0x3a2416, eyes: 0x1a1410, brows: 0x2a1a10 },
       },
       junie: {
         height: 1.25,
         width: 0.95,
         head: 1.32, // a child's head, big for her height
         idle: 'hug',
-        colours: { skin: 0xd0a88c, top: 0x5e4a72, sleeve: 0x5e4a72, forearm: 0x5e4a72, trousers: 0x2a2a34, shoes: 0x7a5a6a, hair: 0x7a5434, tie: 0xa04a5a, rabbit: 0x9a9080, eyes: 0x141010, brows: 0x5a3a24 },
+        colours: { skin: 0xd0a88c, top: 0x56406e, sleeve: 0x56406e, forearm: 0x56406e, trousers: 0x2a2a2e, shoes: 0x3a3230, hair: 0x4a3020, tie: 0x3a2a24, rabbit: 0x9a9080, eyes: 0x141010, brows: 0x5a3a24 },
       },
     },
   },

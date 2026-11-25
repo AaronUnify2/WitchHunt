@@ -117,33 +117,34 @@ function hairCap(y = 1.632, z = -0.016, r = [0.097, 0.1, 0.104]) {
 
 const LOOKS = {
   ellen(p) {
-    const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22 });
+    const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22, legs: 'fitted' }); // (fitted: under a skirt)
     // Session 18 (Aaron: skin-tight): the fleece's stand-up collar round her neck, and its hem hanging
     // loose over the jeans, wider than her hips.
-    b.masses.push(['neck', 'chest', 0, 1.468, 0, 0.064, 0.034, 0.062, 'top'], ['hips', null, 0, 1.0, 0.004, 0.185, 0.055, 0.135, 'top']);
-    b.masses.push(hairCap(), ['head', null, 0, 1.57, -0.112, 0.034, 0.07, 0.034, 'hair'], ['head', null, 0, 1.605, -0.1, 0.022, 0.02, 0.022, 'tie']);
-    // Thin wire glasses: two rims and a bridge.
-    b.rings.push(['head', -0.034, 1.608, 0.104, 0.021, 0.0032, 'frames'], ['head', 0.034, 1.608, 0.104, 0.021, 0.0032, 'frames']);
-    b.tubes.push(['head', -0.013, 1.61, 0.106, 0.013, 1.61, 0.106, 0.003, 0.003, 'frames']);
+    // Nov 25 (Aaron's concept art): a long olive work coat buttoned to mid-thigh over a navy skirt to the knee, ankle
+    // boots, her hair up in a bun; no glasses. The coat's turned-down collar; its skirts hang wider than her hips, to
+    // mid-thigh; the skirt below them to the knee.
+    b.masses.push(['neck', 'chest', 0, 1.46, -0.005, 0.075, 0.03, 0.07, 'top']);
+    // (Flared tubes, not balls: the coat's skirts from the waist to mid-thigh, the skirt under them to the knee.)
+    b.tubes.push(['hips', 0, 0.99, 0.004, 0, 0.5, 0.004, 0.16, 0.2, 'skirt', 0.8]);
+    b.tubes.push(['hips', 0, 1.02, 0.004, 0, 0.72, 0.006, 0.19, 0.225, 'top', 0.82]);
+    b.masses.push(hairCap(), ['head', null, 0, 1.61, -0.1, 0.046, 0.042, 0.04, 'hair'], ['head', null, 0, 1.6, -0.075, 0.03, 0.012, 0.02, 'tie']);
     return {
       ...b,
-      // The fleece: zipped up the front, the grey top showing at the collar.
+      // The coat: buttoned down the front, its pockets' flaps; the grey top showing at the collar.
       paint(key, q, out, c) {
         if (key !== 'top') return;
-        if (q.z > 0.05 && Math.abs(q.x) < 0.006) out.copy(c.zip);
-        else if (q.y > 1.43 && q.z > 0.04 && Math.abs(q.x) < 0.04) out.copy(c.under);
+        if (q.z > 0.05 && Math.abs(q.x) < 0.012 && frac(q.y * 9) < 0.18) out.copy(c.zip);
+        else if (q.y > 1.43 && q.z > 0.04 && Math.abs(q.x) < 0.035) out.copy(c.under);
+        else if (q.z > 0.06 && q.y > 0.86 && q.y < 0.9 && Math.abs(q.x) > 0.05 && Math.abs(q.x) < 0.14) out.multiplyScalar(0.7);
       },
     };
   },
   wyatt() {
     const b = body({ sh: 0.98, hip: 0.95, bulk: 0.92, loose: 1.25 });
-    // Session 18 (Aaron: skin-tight): the open flannel hangs off him: its two front panels standing off
-    // the T-shirt down to below the belt, the hem loose round the back, the collar's points.
-    for (const s of [-1, 1]) {
-      b.masses.push(['chest', null, s * 0.088, 1.17, 0.085, 0.06, 0.2, 0.03, 'top', [0, 0, s * 0.06]]);
-      b.masses.push(['chest', null, s * 0.055, 1.455, 0.06, 0.035, 0.022, 0.02, 'top', [0.5, 0, s * 0.5]]);
-    }
-    b.masses.push(['hips', null, 0, 1.0, -0.025, 0.17, 0.06, 0.115, 'top']);
+    // Nov 25 (Aaron's concept art): a red knit crew-neck jumper (was an open flannel over a T-shirt), its ribbed hem
+    // loose over his jeans.
+    b.masses.push(['neck', 'chest', 0, 1.462, 0, 0.066, 0.02, 0.064, 'top']);
+    b.masses.push(['hips', null, 0, 1.0, -0.01, 0.168, 0.05, 0.118, 'top']);
     b.masses.push(hairCap(1.638, -0.008, [0.099, 0.098, 0.108]));
     // Messy tufts.
     for (const [x, y, z, r] of [
@@ -157,15 +158,12 @@ const LOOKS = {
       b.masses.push(['head', null, x, y, z, r, r * 0.8, r, 'hair']);
     return {
       ...b,
-      // The flannel's plaid; open down the front over the band T-shirt (a pale print on its chest).
-      paint(key, q, out, c) {
+      // The knit: fine vertical ribs, a deeper rib at the hem, the cuffs and the neck.
+      paint(key, q, out) {
         if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
-        if (key === 'top' && q.z > 0.035 && Math.abs(q.x) < 0.06) {
-          out.copy(Math.abs(q.x) < 0.022 && q.y > 1.27 && q.y < 1.32 && q.z > 0.09 ? c.print : c.tee);
-          return;
-        }
-        const lines = (frac(q.x * 22) < 0.28 ? 1 : 0) + (frac(q.y * 22) < 0.28 ? 1 : 0) + (frac(q.z * 22) < 0.28 ? 0.5 : 0);
-        out.multiplyScalar(1 - 0.22 * Math.min(2, lines));
+        const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
+        const band = (key === 'top' && (q.y < 1.03 || q.y > 1.44)) || (key === 'forearm' && q.y < 0.86) ? 0.85 : 1;
+        out.multiplyScalar(rib * band);
       },
     };
   },
@@ -188,15 +186,14 @@ const LOOKS = {
     };
   },
   junie() {
-    // The hoodie: big on her, the sleeves over her hands, the hood down her back.
-    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.15, hand: 'sleeve', legs: 'fitted' });
-    b.masses.push(['chest', null, 0, 1.44, -0.105, 0.11, 0.07, 0.075, 'top']);
+    // Nov 25 (Aaron's concept art): a purple knit jumper, a little big on her (was a hoodie), dark leggings, her
+    // hair tied back messily with strands loose round her face.
+    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.1, hand: 'skin', legs: 'fitted' });
+    b.masses.push(['neck', 'chest', 0, 1.458, 0, 0.064, 0.02, 0.062, 'top']);
     b.masses.push(hairCap(1.63, -0.012));
-    // Two braids down her back, tied.
-    for (const s of [-1, 1]) {
-      b.tubes.push(['head', s * 0.07, 1.57, -0.05, s * 0.085, 1.39, -0.06, 0.021, 0.016, 'hair']);
-      b.masses.push(['head', null, s * 0.085, 1.385, -0.06, 0.018, 0.014, 0.018, 'tie']);
-    }
+    b.masses.push(['head', null, 0, 1.6, -0.1, 0.042, 0.038, 0.036, 'hair'], ['head', null, 0, 1.6, -0.075, 0.026, 0.01, 0.018, 'tie']);
+    for (const [x, y, z, r] of [[-0.085, 1.56, 0.04, 0.014], [0.088, 1.57, 0.03, 0.013], [-0.06, 1.66, 0.075, 0.016], [0.04, 1.675, 0.08, 0.015], [0.09, 1.62, -0.03, 0.017]])
+      b.masses.push(['head', null, x, y, z, r, r * 1.8, r, 'hair']);
     // Her stuffed rabbit, held to her chest.
     b.masses.push(
       ['chest', null, 0, 1.22, 0.175, 0.05, 0.065, 0.042, 'rabbit'],
@@ -208,9 +205,12 @@ const LOOKS = {
     );
     return {
       ...b,
-      // The hoodie's front pocket.
+      // The knit: fine ribs, the bands at its hem and cuffs.
       paint(key, q, out) {
-        if (key === 'top' && q.z > 0.06 && q.y > 1.0 && q.y < 1.12 && Math.abs(q.x) < 0.09) out.multiplyScalar(0.82);
+        if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
+        const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
+        const band = (key === 'top' && (q.y < 1.03 || q.y > 1.44)) || (key === 'forearm' && q.y < 0.86) ? 0.85 : 1;
+        out.multiplyScalar(rib * band);
       },
     };
   },
