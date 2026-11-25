@@ -1,5 +1,22 @@
 # For Aaron
 
+## Overnight, Nov 25: your concept art
+
+Every image you sent is saved in `docs/concept-art/`; the before and after screenshots sit beside them (`before-*.png`, `after-*.png`). Each piece was pushed to main as it was done, the tests and the build passing each time. Where the art and the gameplay disagreed, gameplay won and it says so below.
+
+### Done
+1. **The Pile on four legs** (`pile-legs.jpg` → `after-pile-legs.png`): raised off the road on four great jointed legs, gnarled with wound sinews, clawed feet that stay planted and step in diagonal pairs as it walks; bodies hang from its belly. Shots under it go between its legs.
+2. **Its eyes and heart** (`pile-legs.jpg`, `pile-army-post.jpg` → `after-pile-heart.png`): a big red heart eye in the middle of the ring, a seventh weak spot worth double magic (your "its heart is vulnerable"); 18 small dim eyes over its face that blink (never weak spots, never glow, so nobody shoots them for nothing); army packs among the bodies on top.
+3. **The tunnel road** (`pile-army-post.jpg` → `after-tunnel-road.png`, `after-tunnel-night.png`): the army's sandbagged post on the west shoulder (crates, a smouldering campfire with embers and the only real light, a work lamp on a tripod), crates and spent brass dropped across the road, two street lamps whose light thins through the fog, a rusting water tower in the trees.
+4. **The campground** (`campground.jpg` → `before-campground.png`, `after-campground.png`): olive and khaki tarps, worn grey canvas chairs, a pile of log rounds, two seat logs, a bucket, coals still glowing in the fire. (It already had the tripod, the clothesline, the woodpile and the table.)
+
+### Not matched, and why
+- The art's realistic 3D people and lighting: the game draws people as flat sprites with its own light, so these match the shapes, layout and colours.
+- The second Pile image's objective text ("Destroy the core...") isn't used: the fight's rules are still the charges, then the eyes and heart.
+
+### Still to do (in the order I'm working)
+The family (Ellen, Wyatt, Junie), the Witch, the mutant, the Mothman and the moths, the beetle, the grey, Milo, the zombies (bandaged, police, the crowd's clothes), the Screamer, the ranger station.
+
 ## The first third's cutscenes and fights (Nov 16, the plan you approved)
 
 All built and pushed (branch `ccr-65ee77ef-39vmuk`), each checked headless with screenshots; a bot run New Game to the plane is clean. Try it from the debug menu: First day, the three "Nov 16 start" items; and Cutscenes, "Trailer captions" before you record.
