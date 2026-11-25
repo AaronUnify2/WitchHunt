@@ -2,20 +2,34 @@
 
 ## Overnight, Nov 25: your concept art
 
-Every image you sent is saved in `docs/concept-art/`; the before and after screenshots sit beside them (`before-*.png`, `after-*.png`). Each piece was pushed to main as it was done, the tests and the build passing each time. Where the art and the gameplay disagreed, gameplay won and it says so below.
+All 19 images are built and pushed to main, one commit each, every one with the full tests (1,592) and the build passing first. Your images are in `docs/concept-art/`, with my before and after screenshots beside them (`before-*.png`, `after-*.png`). Where the art and the gameplay or your earlier decisions disagreed, I kept the gameplay or your decision and say so below. Play-test checklist: `PLAYTEST.md`, round 95.
 
-### Done
-1. **The Pile on four legs** (`pile-legs.jpg` → `after-pile-legs.png`): raised off the road on four great jointed legs, gnarled with wound sinews, clawed feet that stay planted and step in diagonal pairs as it walks; bodies hang from its belly. Shots under it go between its legs.
-2. **Its eyes and heart** (`pile-legs.jpg`, `pile-army-post.jpg` → `after-pile-heart.png`): a big red heart eye in the middle of the ring, a seventh weak spot worth double magic (your "its heart is vulnerable"); 18 small dim eyes over its face that blink (never weak spots, never glow, so nobody shoots them for nothing); army packs among the bodies on top.
-3. **The tunnel road** (`pile-army-post.jpg` → `after-tunnel-road.png`, `after-tunnel-night.png`): the army's sandbagged post on the west shoulder (crates, a smouldering campfire with embers and the only real light, a work lamp on a tripod), crates and spent brass dropped across the road, two street lamps whose light thins through the fog, a rusting water tower in the trees.
-4. **The campground** (`campground.jpg` → `before-campground.png`, `after-campground.png`): olive and khaki tarps, worn grey canvas chairs, a pile of log rounds, two seat logs, a bucket, coals still glowing in the fire. (It already had the tripod, the clothesline, the woodpile and the table.)
+| Your image | What changed | Look at |
+| --- | --- | --- |
+| `pile-legs.jpg`, `pile-army-post.jpg` | **The Pile** on four great gnarled legs, raised off the road, stepping in diagonal pairs; bodies hanging from its belly; a **red heart eye** in the middle of its ring (a 7th weak spot, worth double magic); 18 small dim eyes over its face (never weak spots, never glow); army packs among the bodies on top | `after-pile-legs.png`, `after-pile-heart.png` |
+| `pile-army-post.jpg` | **The tunnel road**: the army's sandbagged post (crates, a smouldering campfire with embers, a tripod work lamp), crates and brass across the road, two street lamps whose light thins through the fog, a rusting water tower | `after-tunnel-road.png`, `after-tunnel-night.png` |
+| `campground.jpg` | **The campground**: olive and khaki tarps, grey canvas chairs, a pile of log rounds, seat logs, a bucket, coals glowing in the fire | `before-`/`after-campground.png` |
+| `ellen.jpg`, `wyatt.jpg`, `junie.jpg` | **The family**: Ellen in a long olive coat over a navy skirt, hair up, no glasses; Wyatt in a red knit jumper, arms at his sides; Junie in a purple knit jumper, hair tied back (she keeps her rabbit: the story uses it) | `after-ellen/wyatt/junie.png` |
+| `witch.jpg` | **The Witch**: no hood, a great crown of branches, red eyes, long twig fingers, thorny twigs on her arms, her rags trailing like roots (still unlit black: a silhouette) | `before-`/`after-witch.png` |
+| `mutant-1.jpg`, `mutant.jpg` | **The mutant**: paler grey-green skin, its chest torn open on its ribs, more bone spikes on the club and three out of its skull | `before-`/`after-mutant.png` |
+| `mothman.jpg` | **The Mothman**: his wings hanging round him like a cloak (mottled brown), bigger burning orange eyes; **the giant moths** to match | `before-`/`after-mothman.png`, `after-moth.png` |
+| `beetle.jpg` | **The beetle**: glossy black, no horn, great curved toothed mandibles round a glowing orange-red weak spot, big dark compound eyes, dark red joints, no glare off its legs | `before-`/`after-beetle.png` |
+| `grey-alien.jpg`, `grey-alien-2.jpg` | **The grey**: warmer beige-grey skin, a ribcage showing, knobbly knees, a blue sheen on its eyes | `before-`/`after-grey.png` |
+| `zombie-2-police.jpg`, `zombie-3-police.jpg` | **The police zombie**: a sheriff's deputy, khaki-grey shirt with pockets and a gold star, a belt, navy or olive trousers (no vest or cap) | `before-`/`after-police.png` |
+| `zombies-crowd.jpg` | **The crowd**: a muted wardrobe (an olive field jacket and a tan work shirt in place of the teal and blaze orange), more flannel. Its suited zombie is the existing Men in Black variant | `after-crowd.png` |
+| `zombie-1.jpg` | **A bandaged zombie**: a new citizen style, head wrapped with a red-eyed slit and a cloth over the mouth, forearms and hands bound (one in six citizens) | `after-zombie-1-sprites.png` |
+| `screamer.jpg` | **The Screamer**: a snake-woman, a cobra's hood that flares as she rears and strikes, red eyes, a forked tongue, scaled green arms, a dark top and olive cargo trousers | `after-screamer.png` |
+| `ranger-station.jpg` | **Home**: a porch deck with steps and rails, plank siding, a lamp over the door lighting the porch (the cliff behind stays, as you said) | `before-`/`after-ranger-station.png` |
+| `milo.jpg` | **Milo: your call.** The art goes against what you asked for before (the story's white suit with polka dots, no red nose, a normal smile). So the art's clown (brown-and-cream stripes, a brown ruff, a red ball nose, red-brown boots) is a second style: set `milo.clownStyle` to `'art'` in `src/config.js` to try it. The story's Milo stays the default. The stripes come out broad: the suit's vertex colours are too coarse for fine ones | `after-milo-art-style.png` |
 
 ### Not matched, and why
-- The art's realistic 3D people and lighting: the game draws people as flat sprites with its own light, so these match the shapes, layout and colours.
-- The second Pile image's objective text ("Destroy the core...") isn't used: the fight's rules are still the charges, then the eyes and heart.
+- The realistic 3D people and lighting in the art: the game draws zombies as flat sprites and people with its own simple figures and light, so I matched the shapes, layout and colours.
+- The second Pile image's objective ("Destroy the core..."): the fight's rules stay as they are (charges, then the eyes and heart).
+- Barbed wire on the fence top (the ranger station image): not added.
+- The Witch has no face in the art's sense: she stays an unlit silhouette, as you asked for before, with the branches and red eyes.
 
-### Still to do (in the order I'm working)
-The family (Ellen, Wyatt, Junie), the Witch, the mutant, the Mothman and the moths, the beetle, the grey, Milo, the zombies (bandaged, police, the crowd's clothes), the Screamer, the ranger station.
+### One slip
+The campground went to main with one failing check (a colour too bright under the torch rule). I fixed it within a few minutes, and from then on nothing was committed without the full tests and the build passing first.
 
 ## The first third's cutscenes and fights (Nov 16, the plan you approved)
 

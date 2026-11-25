@@ -819,6 +819,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Hitting it:** the mass you can shoot is its meat now, not its outer edge, so shots past the bodies at its sides may miss. Does it still feel fair?
 - [ ] The cutscene's eye teaser opens all six at once.
 
+**Round 95: your concept art, overnight Nov 25 (MORNING.md has the list).**
+- [ ] **The Pile** (Start from: "Day 3: the Pile at the tunnel"): on four legs, stepping as it comes; the red heart in its ring of eyes after a blast (worth double); its many small eyes; the packs on top. Does walking under it feel right? Shots go between its legs.
+- [ ] **The tunnel road:** the army post, the campfire's embers, the street lamps by day and by night, the water tower.
+- [ ] **The campground** on Day 1; **home's** porch and door lamp at dusk.
+- [ ] **The family**, **the Witch**, **the mutant**, **the Mothman and moths**, **the beetle**, **the grey**: in the model viewer (debug menu) and in play.
+- [ ] **Zombies:** the deputy with his star, the muted crowd, the bandaged ones (one citizen in six), the snake-woman Screamer.
+- [ ] **Milo:** try `milo.clownStyle: 'art'` in config if you want the art's clown; say which you prefer.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
