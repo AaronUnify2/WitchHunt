@@ -840,6 +840,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Kept** (your picks): the dead third arm, the tumour on its skull, the work boot, the belt and the shirt's rags (the strip now runs from the club shoulder to the other hip, under the wound). The back (the hump, the glowing sac, the spine's spurs) is unchanged.
 - [ ] **In a fight:** the slam, the charge, its death and the gas station's crouch: does it hold together? Can you still hit the sac and the head?
 
+**Round 98: Ellen after your concept art (Nov 26).** Debug menu, Models, View: The family (Y: Ellen; Light: Day), then at home.
+- [ ] **Her face:** her own now (the others keep the simple one): almond eyes under heavy lids, straight stern brows, a nose with a bridge, a set mouth, a firmer chin, a narrower face. Her head at natural size (the others' are a touch big).
+- [ ] **Her hair:** dark brown, a middle part, smooth back over her ears to a low bun, a loose strand by her face.
+- [ ] **The coat:** a deeper forest green, a pointed collar, five buttons, patch pockets, to the lower thigh, open below the last button; **the skirt** a navy A-line to just below the knee; calves; low boots.
+- [ ] **Her arms folded** as in the picture: the forearms flat across her chest, one over the other, a hand resting on her arm (it was an X).
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

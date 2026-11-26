@@ -65,3 +65,25 @@ describe('the campers', () => {
     }
   });
 });
+
+// Nov 26 (Aaron's concept art, close up): Ellen's own face, on her alone.
+describe("Ellen's face and coat (Nov 26)", () => {
+  const ellen = familySpec('ellen', config.family.people.ellen);
+  const wyatt = familySpec('wyatt', config.family.people.wyatt);
+  it('has her own features (lips, eye whites, lids), and the shared face is unchanged on the others', () => {
+    for (const key of ['lips', 'white', 'lid']) {
+      expect(ellen.masses.some((m) => m[8] === key), key).toBe(true);
+      expect(wyatt.masses.some((m) => m[8] === key), key).toBe(false);
+      expect(config.family.people.ellen.colours[key], key).toBeTruthy();
+    }
+    expect(ellen.head).toBe(1); // natural, as in the art
+  });
+  it('wears the coat to the lower thigh over a skirt to below the knee, with buttons', () => {
+    const coat = ellen.tubes.find((t) => t[9] === 'top' && t[0] === 'hips');
+    const skirt = ellen.tubes.find((t) => t[9] === 'skirt');
+    expect(Math.min(coat[2], coat[5])).toBeLessThan(0.65);
+    expect(Math.min(skirt[2], skirt[5])).toBeLessThan(Math.min(coat[2], coat[5]));
+    expect(Math.min(skirt[2], skirt[5])).toBeLessThan(0.45);
+    expect(ellen.masses.filter((m) => m[8] === 'button').length).toBe(5);
+  });
+});

@@ -115,27 +115,109 @@ function hairCap(y = 1.632, z = -0.016, r = [0.097, 0.1, 0.104]) {
   return ['head', null, 0, y, z, r[0], r[1], r[2], 'hair'];
 }
 
+// Ellen's face (Nov 26, Aaron's concept art): her own, not the shared one's dots and ball nose. The head is
+// the shared shape (centre 0, 1.59, 0.012; radii 0.086, 0.118, 0.1); everything sits on its surface.
+const HEAD = { y: 1.59, z: 0.012, rx: 0.081, ry: 0.118, rz: 0.1 }; // (hers a little narrower than the shared head)
+function onHead(x, y, lift = 0) {
+  const k = 1 - (x / HEAD.rx) ** 2 - ((y - HEAD.y) / HEAD.ry) ** 2;
+  return HEAD.z + HEAD.rz * Math.sqrt(Math.max(0, k)) + lift;
+}
+function ELLEN_FACE() {
+  const m = [];
+  // (Small pieces: the kit's coarse spheres.)
+  const f = (bone, x, y, z, rx, ry, rz, key, turn = null) => m.push([bone, null, x, y, z, rx, ry, rz, key, turn, true]);
+  // A firmer chin.
+  f('head', 0, 1.49, onHead(0, 1.49, -0.018), 0.028, 0.02, 0.022, 'skin');
+  // The nose: a bridge down from the brow, its tip and wings.
+  f('head', 0, 1.603, onHead(0, 1.603, -0.002), 0.008, 0.024, 0.01, 'skin');
+  f('head', 0, 1.581, onHead(0, 1.581, 0.007), 0.0095, 0.0095, 0.0095, 'skin');
+  for (const s of [-1, 1]) f('head', s * 0.0105, 1.577, onHead(s * 0.0105, 1.577, 0.001), 0.0072, 0.006, 0.0065, 'skin');
+  for (const s of [-1, 1]) {
+    const x = s * 0.032;
+    // Almond eyes: the white, the dark iris, a heavy upper lid's line; set a little into the face.
+    f('head', x, 1.607, onHead(x, 1.607, -0.0045), 0.0145, 0.0068, 0.005, 'white', [0, s * 0.3, 0]);
+    f('head', x, 1.6068, onHead(x, 1.6068, -0.0032), 0.0064, 0.0064, 0.004, 'eyes');
+    f('head', x, 1.6122, onHead(x, 1.6122, -0.0018), 0.0155, 0.0024, 0.005, 'lid', [0, s * 0.3, s * -0.05]);
+    // Straight brows, lower toward the middle: stern.
+    f('head', s * 0.034, 1.629, onHead(s * 0.034, 1.629, -0.001), 0.019, 0.0034, 0.006, 'brows', [0, s * 0.3, s * 0.12]);
+  }
+  // The mouth: set, a little down at the corners; a fuller lower lip.
+  f('head', 0, 1.5535, onHead(0, 1.5535, -0.0025), 0.017, 0.0028, 0.004, 'lips');
+  f('head', 0, 1.5468, onHead(0, 1.5468, -0.0025), 0.015, 0.0042, 0.0045, 'lips');
+  f('head', 0, 1.5502, onHead(0, 1.5502, -0.0012), 0.0175, 0.001, 0.004, 'lid');
+  for (const s of [-1, 1]) f('head', s * 0.0185, 1.5485, onHead(s * 0.0185, 1.5485, -0.0016), 0.0035, 0.0011, 0.004, 'lid');
+  return m;
+}
+// Shading painted on her face: the sockets darker round the eyes, a little colour in the cheeks.
+function faceShade(q, out, c) {
+  for (const s of [-1, 1]) {
+    const d = Math.hypot((q.x - s * 0.032) / 0.026, (q.y - 1.607) / 0.018);
+    if (d < 1) out.multiplyScalar(0.82 + 0.18 * d);
+    const ch = Math.hypot((q.x - s * 0.05) / 0.03, (q.y - 1.565) / 0.025);
+    if (ch < 1) out.lerp(c.lips, 0.06 * (1 - ch));
+  }
+}
+// The coat's front (her chest and waist, under the coat's ease) at a height: where its buttons sit.
+function coatFront(y) {
+  return y > 1.2 ? 0.118 + 0.035 * Math.max(0, 1 - Math.abs(y - 1.28) / 0.1) : 0.112;
+}
+
 const LOOKS = {
   ellen(p) {
     const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22, legs: 'fitted' }); // (fitted: under a skirt)
-    // Session 18 (Aaron: skin-tight): the fleece's stand-up collar round her neck, and its hem hanging
-    // loose over the jeans, wider than her hips.
-    // Nov 25 (Aaron's concept art): a long olive work coat buttoned to mid-thigh over a navy skirt to the knee, ankle
-    // boots, her hair up in a bun; no glasses. The coat's turned-down collar; its skirts hang wider than her hips, to
-    // mid-thigh; the skirt below them to the knee.
-    b.masses.push(['neck', 'chest', 0, 1.46, -0.005, 0.075, 0.03, 0.07, 'top']);
-    // (Flared tubes, not balls: the coat's skirts from the waist to mid-thigh, the skirt under them to the knee.)
-    b.tubes.push(['hips', 0, 0.99, 0.004, 0, 0.5, 0.004, 0.16, 0.2, 'skirt', 0.8]);
-    b.tubes.push(['hips', 0, 1.02, 0.004, 0, 0.72, 0.006, 0.19, 0.225, 'top', 0.82]);
-    b.masses.push(hairCap(), ['head', null, 0, 1.61, -0.1, 0.046, 0.042, 0.04, 'hair'], ['head', null, 0, 1.6, -0.075, 0.03, 0.012, 0.02, 'tie']);
+    // Nov 25 (Aaron's concept art): a long olive work coat over a navy skirt, ankle boots, her hair up; no glasses.
+    // Nov 26 (the art again, close up): rebuilt to it. Her own face (the shared one's dots and ball nose are
+    // replaced: ELLEN_FACE); her hair swept back over her ears from a middle part into a low bun; the coat a
+    // deeper forest green, buttoned, with a pointed collar and patch pockets, to the lower thigh; the skirt an
+    // A-line to just below the knee; calves; low boots.
+    b.masses = b.masses.filter((m) => !(m[0] === 'head' && m[8] !== 'skin') && !(m[0] === 'head' && m[5] < 0.05)); // the shared face's features
+    b.masses.push(...ELLEN_FACE());
+    for (const m of b.masses) if (m[1] === 'shoulderR' || m[1] === 'shoulderL') Object.assign(m, { 3: m[3] - 0.012, 6: m[6] * 0.8 }); // softer shoulders (they puffed)
+    for (const m of b.masses) if (m[0] === 'head' && m[5] > 0.08) Object.assign(m, { 5: HEAD.rx }); // her face a little narrower
+    b.limbs = b.limbs.map((l) => (l[0].startsWith('shoulder') ? [l[0], l[1], l[2] * 0.88, l[3] * 0.94, ...l.slice(4)] : l)); // the sleeves' tops slimmer
+    // The coat's collar: a band round her neck and its two points turned down on her chest.
+    b.masses.push(['neck', 'chest', 0, 1.458, -0.005, 0.07, 0.028, 0.066, 'top']);
+    for (const s of [-1, 1]) b.masses.push(['chest', null, s * 0.042, 1.418, 0.088, 0.038, 0.026, 0.005, 'top', [0.3, 0, s * 0.55]]);
+    // Five buttons down its front.
+    for (const y of [1.36, 1.25, 1.14, 1.03, 0.92]) b.masses.push([y > 1.1 ? 'chest' : 'spine', null, 0.012, y, coatFront(y), 0.009, 0.009, 0.005, 'button']);
+    // (Flared tubes: the coat's skirts from the waist to the lower thigh, the skirt under them to below the knee.)
+    b.tubes.push(['hips', 0, 0.97, 0.004, 0, 0.41, 0.006, 0.15, 0.2, 'skirt', 0.8, 0, [20, 6]]);
+    b.tubes.push(['hips', 0, 1.02, 0.004, 0, 0.6, 0.008, 0.19, 0.218, 'top', 0.8, 0, [28, 8]]);
+    // Calves (the shared fitted leg is a plain taper), and low boots, their shafts round the ankle.
+    b.limbs = b.limbs.map((l) => (l[0].startsWith('knee') ? [l[0], l[1], 0.05, 0.033, 'trousers', 0.32] : l));
+    for (const s of [-1, 1]) b.masses.push([s < 0 ? 'ankleR' : 'ankleL', null, s * 0.1, 0.1, -0.012, 0.04, 0.05, 0.043, 'shoes']);
+    // Her hair: over the crown from a middle part, swept back over her ears, gathered low at the back in a bun.
+    b.masses.push(hairCap(1.644, -0.02, [0.094, 0.096, 0.102]));
+    for (const s of [-1, 1]) {
+      b.masses.push(['head', null, s * 0.052, 1.646, 0.05, 0.04, 0.022, 0.03, 'hair', [0.35, 0, s * 0.6]]); // swept from the parting down to the temple, smooth
+      b.masses.push(['head', null, s * 0.077, 1.6, -0.025, 0.022, 0.05, 0.068, 'hair', [0.2, 0, -s * 0.12]]); // smooth over the ear, back to the bun
+    }
+    b.masses.push(['head', null, 0, 1.575, -0.098, 0.044, 0.04, 0.036, 'hair'], ['head', null, 0, 1.578, -0.07, 0.03, 0.012, 0.02, 'tie']);
+    b.tubes.push(['head', -0.07, 1.655, 0.065, -0.082, 1.585, 0.06, 0.006, 0.003, 'hair']); // a strand loose by her face
     return {
       ...b,
-      // The coat: buttoned down the front, its pockets' flaps; the grey top showing at the collar.
       paint(key, q, out, c) {
+        if (key === 'hair') {
+          // Combed back: fine dark lines running front to back, and the parting down the middle.
+          if (Math.sin(q.x * 420 + q.y * 30) > 0.6) out.multiplyScalar(0.82);
+          if (q.y > 1.66 && q.z > -0.02 && Math.abs(q.x) < 0.005) out.multiplyScalar(0.6);
+          return;
+        }
+        if (key === 'skin') {
+          if (q.y > 1.5 && q.z > 0.05) faceShade(q, out, c);
+          return;
+        }
         if (key !== 'top') return;
-        if (q.z > 0.05 && Math.abs(q.x) < 0.012 && frac(q.y * 9) < 0.18) out.copy(c.zip);
-        else if (q.y > 1.43 && q.z > 0.04 && Math.abs(q.x) < 0.035) out.copy(c.under);
-        else if (q.z > 0.06 && q.y > 0.86 && q.y < 0.9 && Math.abs(q.x) > 0.05 && Math.abs(q.x) < 0.14) out.multiplyScalar(0.7);
+        // The coat's front edge, a dark seam; open below the last button on the skirt.
+        if (q.z > 0.05 && Math.abs(q.x - 0.004) < 0.004 && q.y < 1.43) out.multiplyScalar(0.62);
+        if (q.z > 0.05 && q.y < 0.86 && Math.abs(q.x) < (0.86 - q.y) * 0.16) out.copy(c.skirt);
+        // Patch pockets low on its skirts: their edges and flaps, a shade darker.
+        const px = Math.abs(q.x);
+        if (q.z > 0.05 && px > 0.055 && px < 0.15 && q.y > 0.68 && q.y < 0.82) {
+          if (q.y > 0.79 || px < 0.062 || px > 0.143 || q.y < 0.687) out.multiplyScalar(0.72);
+        }
+        // The grey top showing at her neck.
+        if (q.y > 1.44 && q.z > 0.04 && Math.abs(q.x) < 0.03) out.copy(c.under);
       },
     };
   },

@@ -4361,10 +4361,11 @@ export const config = {
     people: {
       ellen: {
         height: 1.68,
-        head: 1.08, // a touch big (stylised)
+        head: 1.0, // Nov 26 (Aaron): natural, as in his concept art (the others' are a touch big, stylised)
         idle: 'folded',
         // Nov 25 (Aaron's concept art): the olive coat, a navy skirt, bare legs (trousers: her skin below the skirt), boots.
-        colours: { skin: 0xc89a7c, top: 0x4e5c30, sleeve: 0x4e5c30, forearm: 0x4e5c30, zip: 0x24281a, under: 0x7a7a76, skirt: 0x283252, trousers: 0xb8907a, shoes: 0x2c2420, hair: 0x5a2a18, tie: 0x3a2018, eyes: 0x1a1410, brows: 0x3a1c10, frames: 0x2a2a2a },
+        // Nov 26 (the art close up): the coat a deeper forest green; her face's own colours (white, lid, lips); hair browner.
+        colours: { skin: 0xc89a7c, top: 0x30482a, sleeve: 0x30482a, forearm: 0x30482a, zip: 0x24281a, under: 0x7a7a76, skirt: 0x22304e, trousers: 0xb8907a, shoes: 0x2a1e16, hair: 0x46261a, tie: 0x2e1a12, eyes: 0x241a14, brows: 0x2e1a10, frames: 0x2a2a2a, white: 0x9c948a, lid: 0x3a2218, lips: 0x9a5c50, button: 0x1e2a18 },
       },
       wyatt: {
         height: 1.62,

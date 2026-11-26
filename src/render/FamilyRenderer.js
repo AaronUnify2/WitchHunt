@@ -382,11 +382,14 @@ export class FamilyRenderer {
     set('spine', 0.01 * breath, 0, -shift * 0.02);
     set('chest', 0.015 * breath);
     switch (p.idle) {
-      case 'folded': // arms folded across her chest
-        set('shoulderR', -0.45, 1.0, 0.2);
-        set('elbowR', -1.85);
-        set('shoulderL', -0.4, -1.0, -0.2);
+      case 'folded': // arms folded across her chest (Nov 26, Aaron's concept art: the forearms flat across it, one over
+        // the other, the hands tucked away)
+        set('shoulderR', -0.5, 1.35, 0.14);
+        set('elbowR', -1.8);
+        set('wristR', 0.3, 0, 1.1); // tucked under her other arm
+        set('shoulderL', -0.62, -1.3, -0.14);
         set('elbowL', -1.7);
+        set('wristL', 0.2, 0, -0.5); // on her other arm
         break;
       case 'pockets': // hands in his jeans pockets
         set('shoulderR', 0.18, 0, -0.14);
