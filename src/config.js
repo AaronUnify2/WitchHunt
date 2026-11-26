@@ -4372,7 +4372,7 @@ export const config = {
         width: 0.94, // lanky
         head: 1.08,
         idle: 'sides', // Nov 25 (Aaron's concept art): arms at his sides (was hands in pockets)
-        colours: { skin: 0xc8a084, top: 0x861c1a, sleeve: 0x861c1a, forearm: 0x861c1a, tee: 0x1c1c20, print: 0x8a8a7a, trousers: 0x34405a, shoes: 0x3a3634, hair: 0x3a2416, eyes: 0x1a1410, brows: 0x2a1a10 },
+        colours: { skin: 0xc8a084, top: 0x7e1c1e, sleeve: 0x7e1c1e, forearm: 0x7e1c1e, tee: 0x1c1c20, print: 0x8a8a7a, trousers: 0x3e5072, fade: 0x5e7294, shoes: 0x2e241c, hair: 0x2c1c12, eyes: 0x241a14, brows: 0x221610, white: 0x9c948a, lid: 0x3a2418, lips: 0x9a6456 }, // Nov 26 (the art close up): his face's own colours; jeans a faded mid-blue; hair darker
       },
       junie: {
         height: 1.25,

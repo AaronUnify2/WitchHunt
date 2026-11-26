@@ -846,6 +846,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The coat:** a deeper forest green, a pointed collar, five buttons, patch pockets, to the lower thigh, open below the last button; **the skirt** a navy A-line to just below the knee; calves; low boots.
 - [ ] **Her arms folded** as in the picture: the forearms flat across her chest, one over the other, a hand resting on her arm (it was an X).
 
+**Round 99: Wyatt after your concept art (Nov 26).** Debug menu, Models, View: The family (Y: Wyatt; Light: Day), then at home and in the tower.
+- [ ] **His face:** his own now (Junie keeps the simple one): open eyes with lids, straight brows under the fringe, a long nose, lips a little parted, a chin; his ears show.
+- [ ] **His hair:** a dark mop, a full ragged fringe to his brows, full on the crown.
+- [ ] **The jumper** a regular fit (no puffed shoulders or big chest), ribbed at the neck, hem and cuffs; **the jeans** slim at the hip, straight-legged, a faded mid-blue (lighter down the thighs and knees), a fly and pocket seams; **hands** with fingers.
+- [ ] **With his rifle in the tower:** do the new hands and slimmer shoulders still hold it right?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

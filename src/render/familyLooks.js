@@ -162,6 +162,67 @@ function coatFront(y) {
   return y > 1.2 ? 0.118 + 0.035 * Math.max(0, 1 - Math.abs(y - 1.28) / 0.1) : 0.112;
 }
 
+// Wyatt's face (Nov 26, Aaron's concept art): a teenage boy's, on the shared head (his ears kept): straight
+// brows under the fringe, eyes with whites and lids, a long nose with a bridge, lips a little parted, a chin
+// and a squarer jaw (mostly sunk into the head: only a hint shows).
+const SHARED_HEAD = { y: 1.59, z: 0.012, rx: 0.086, ry: 0.118, rz: 0.1 };
+function onShared(x, y, lift = 0) {
+  const h = SHARED_HEAD;
+  return h.z + h.rz * Math.sqrt(Math.max(0, 1 - (x / h.rx) ** 2 - ((y - h.y) / h.ry) ** 2)) + lift;
+}
+function tubeOnHead(tubes, x0, y0, x1, y1, r0, r1, key) {
+  tubes.push(['head', x0, y0, onShared(x0, y0, 0.006), x1, y1, onShared(x1, y1, 0.004), r0, r1, key]);
+}
+function WYATT_FACE() {
+  const m = [];
+  const f = (x, y, lift, rx, ry, rz, key, turn = null) => m.push(['head', null, x, y, onShared(x, y, lift), rx, ry, rz, key, turn, true]);
+  f(0, 1.488, -0.017, 0.031, 0.02, 0.022, 'skin'); // the chin
+  f(0, 1.6, -0.002, 0.0085, 0.026, 0.011, 'skin'); // the nose's bridge
+  f(0, 1.576, 0.008, 0.0105, 0.0105, 0.0105, 'skin'); // its tip
+  for (const s of [-1, 1]) f(s * 0.0115, 1.573, 0.001, 0.0075, 0.0065, 0.0068, 'skin');
+  for (const s of [-1, 1]) {
+    const x = s * 0.033;
+    f(x, 1.607, -0.0045, 0.015, 0.0086, 0.005, 'white', [0, s * 0.3, 0]);
+    f(x, 1.6068, -0.0032, 0.0074, 0.0074, 0.004, 'eyes');
+    f(x, 1.6142, -0.0018, 0.0152, 0.0017, 0.005, 'lid', [0, s * 0.3, 0]);
+    f(s * 0.035, 1.628, -0.001, 0.02, 0.0042, 0.006, 'brows', [0, s * 0.3, s * 0.04]);
+  }
+  // Lips, a little parted.
+  f(0, 1.5545, -0.0025, 0.017, 0.003, 0.004, 'lips');
+  f(0, 1.5455, -0.0025, 0.0158, 0.0045, 0.0045, 'lips');
+  f(0, 1.5498, -0.002, 0.0145, 0.0017, 0.004, 'lid');
+  return m;
+}
+// The eye sockets a shade darker.
+function socketShade(q, out) {
+  for (const s of [-1, 1]) {
+    const d = Math.hypot((q.x - s * 0.033) / 0.026, (q.y - 1.607) / 0.018);
+    if (d < 1) out.multiplyScalar(0.84 + 0.16 * d);
+  }
+}
+// Hands with fingers (the shared ones are paddles), hanging at the sides: a palm turned in to the thigh, four
+// fingers, a thumb in front.
+function hands() {
+  const m = [];
+  for (const s of [-1, 1]) {
+    const bone = s < 0 ? 'wristR' : 'wristL';
+    m.push([bone, null, s * 0.236, 0.84, 0.02, 0.013, 0.036, 0.029, 'skin']);
+    m.push([bone, null, s * 0.236, 0.868, 0.02, 0.016, 0.016, 0.022, 'skin', null, true]); // the wrist
+  }
+  return m;
+}
+function fingerTubes(tubes) {
+  for (const s of [-1, 1]) {
+    const bone = s < 0 ? 'wristR' : 'wristL';
+    for (let i = 0; i < 4; i++) {
+      const z = -0.002 + i * 0.0135;
+      const len = i === 1 || i === 2 ? 0.056 : 0.048;
+      tubes.push([bone, s * 0.237, 0.812, z, s * 0.233, 0.812 - len, z + 0.009, 0.0086, 0.0062, 'skin']);
+    }
+    tubes.push([bone, s * 0.232, 0.84, 0.045, s * 0.226, 0.8, 0.055, 0.0085, 0.006, 'skin']); // the thumb
+  }
+}
+
 const LOOKS = {
   ellen(p) {
     const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22, legs: 'fitted' }); // (fitted: under a skirt)
@@ -222,30 +283,61 @@ const LOOKS = {
     };
   },
   wyatt() {
-    const b = body({ sh: 0.98, hip: 0.95, bulk: 0.92, loose: 1.25 });
+    const b = body({ sh: 0.96, hip: 0.9, bulk: 0.88, loose: 1.18 });
     // Nov 25 (Aaron's concept art): a red knit crew-neck jumper (was an open flannel over a T-shirt), its ribbed hem
     // loose over his jeans.
-    b.masses.push(['neck', 'chest', 0, 1.462, 0, 0.066, 0.02, 0.064, 'top']);
-    b.masses.push(['hips', null, 0, 1.0, -0.01, 0.168, 0.05, 0.118, 'top']);
-    b.masses.push(hairCap(1.638, -0.008, [0.099, 0.098, 0.108]));
-    // Messy tufts.
-    for (const [x, y, z, r] of [
-      [-0.05, 1.7, 0.05, 0.022],
-      [0.03, 1.71, 0.03, 0.024],
-      [0.07, 1.68, 0.06, 0.02],
-      [-0.07, 1.67, -0.02, 0.022],
-      [0.01, 1.7, -0.06, 0.023],
-      [0.0, 1.675, 0.09, 0.02],
-    ])
-      b.masses.push(['head', null, x, y, z, r, r * 0.8, r, 'hair']);
+    // Nov 26 (the art again, close up): rebuilt to it. His own face (WYATT_FACE: the shared one's dots and ball
+    // nose replaced; his ears kept); a dark mop of hair with a full fringe to his brows, over the tops of his ears;
+    // the jumper a regular fit (natural shoulders, a ribbed crew neck, hem and cuffs); slim-hipped, straight-leg
+    // jeans, faded on the thighs and knees, a fly and pocket seams; hands with fingers.
+    b.masses = b.masses.filter((m) => !(m[0] === 'head' && m[8] !== 'skin') && !(m[0] === 'head' && m[5] < 0.05 && Math.abs(m[2]) < 0.05)); // the shared face's nose, eyes, brows (not the ears)
+    b.masses = b.masses.filter((m) => !((m[0] === 'wristR' || m[0] === 'wristL') && m[8] === 'skin')); // the shared paddle hands
+    b.masses.push(...WYATT_FACE(), ...hands());
+    fingerTubes(b.tubes);
+    for (const m of b.masses) if (m[1] === 'shoulderR' || m[1] === 'shoulderL') Object.assign(m, { 3: m[3] - 0.016, 5: m[5] * 0.78, 6: m[6] * 0.7, 7: m[7] * 0.78 }); // natural shoulders (they puffed)
+    for (const m of b.masses) if (m[0] === 'hips' && m[8] === 'trousers') Object.assign(m, { 5: 0.142, 7: 0.1 }); // slim hips (inside the jumper's front and back)
+    // Straight-leg jeans, slim, not wide at the hip.
+    b.limbs = b.limbs.map((l) => (l[0] === 'hipR' || l[0] === 'hipL' ? [l[0], l[1], 0.086, 0.068, 'trousers', 0.03] : l[0] === 'kneeR' || l[0] === 'kneeL' ? [l[0], l[1], 0.066, 0.062, 'trousers', 0] : l));
+    // A boy's chest, not a man's: the trunk's swell into the shoulders gentler; the sleeves' heads smaller, so they
+    // don't puff above the shoulder.
+    b.limbs = b.limbs.map((l) => (l[0] === 'spine' && l[1] === 'neck' ? [...l.slice(0, 5), 0.18, l[6]] : l[0] === 'shoulderR' || l[0] === 'shoulderL' ? [...l.slice(0, 7), 0.7] : l));
+    b.masses.push(['neck', 'chest', 0, 1.462, 0, 0.064, 0.02, 0.062, 'top']); // the crew neck
+    b.masses.push(['hips', null, 0, 1.0, -0.01, 0.158, 0.045, 0.112, 'top']); // the ribbed hem
+    // His hair: a mop, a full fringe over his forehead to his brows, over the tops of his ears, fuller on the crown.
+    b.masses.push(hairCap(1.632, -0.016, [0.099, 0.104, 0.108]));
+    b.masses.push(['head', null, 0, 1.662, 0.072, 0.086, 0.034, 0.046, 'hair', [-0.35, 0, 0]]); // the fringe
+    b.masses.push(['head', null, 0, 1.684, -0.01, 0.092, 0.055, 0.1, 'hair']); // the crown, full and rounded
+    // The fringe's ragged edge: locks hanging down over his forehead.
+    for (const x of [-0.066, -0.044, -0.022, 0, 0.022, 0.044, 0.066]) {
+      const len = 0.036 + (Math.abs(x * 1000) % 7) * 0.002;
+      tubeOnHead(b.tubes, x, 1.668, x * 1.08 + 0.006, 1.668 - len, 0.011, 0.004, 'hair'); // a little swept to one side
+    }
     return {
       ...b,
-      // The knit: fine vertical ribs, a deeper rib at the hem, the cuffs and the neck.
-      paint(key, q, out) {
+      paint(key, q, out, c) {
+        if (key === 'hair') {
+          if (Math.sin(q.x * 380 + q.z * 40) > 0.6) out.multiplyScalar(0.8); // strands
+          return;
+        }
+        if (key === 'skin') {
+          if (q.y > 1.5 && q.z > 0.05) socketShade(q, out);
+          return;
+        }
+        if (key === 'trousers') {
+          // Faded denim: lighter down the front of the thighs and the knees; the fly; the front pockets' seams.
+          if (q.z > 0.02) {
+            const fade = Math.max(band(q.y, 0.72, 0.16), band(q.y, 0.5, 0.06) * 0.8) * Math.min(1, (q.z - 0.02) / 0.05);
+            out.lerp(c.fade, fade * 0.6);
+          }
+          if (q.z > 0.06 && q.y > 0.84 && q.y < 0.98 && Math.abs(q.x) < 0.004) out.multiplyScalar(0.65);
+          if (q.z > 0.04 && q.y > 0.88 && q.y < 0.99 && Math.abs(Math.abs(q.x) - 0.06 - (0.99 - q.y) * 0.5) < 0.004) out.multiplyScalar(0.7);
+          return;
+        }
         if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
+        // The knit: fine vertical ribs, a deeper rib at the hem, the cuffs and the neck.
         const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
-        const band = (key === 'top' && (q.y < 1.03 || q.y > 1.44)) || (key === 'forearm' && q.y < 0.86) ? 0.85 : 1;
-        out.multiplyScalar(rib * band);
+        const bandK = (key === 'top' && (q.y < 1.04 || q.y > 1.445)) || (key === 'forearm' && q.y < 0.9) ? 0.82 : 1;
+        out.multiplyScalar(rib * bandK);
       },
     };
   },

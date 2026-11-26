@@ -69,11 +69,11 @@ describe('the campers', () => {
 // Nov 26 (Aaron's concept art, close up): Ellen's own face, on her alone.
 describe("Ellen's face and coat (Nov 26)", () => {
   const ellen = familySpec('ellen', config.family.people.ellen);
-  const wyatt = familySpec('wyatt', config.family.people.wyatt);
+  const junie = familySpec('junie', config.family.people.junie);
   it('has her own features (lips, eye whites, lids), and the shared face is unchanged on the others', () => {
     for (const key of ['lips', 'white', 'lid']) {
       expect(ellen.masses.some((m) => m[8] === key), key).toBe(true);
-      expect(wyatt.masses.some((m) => m[8] === key), key).toBe(false);
+      expect(junie.masses.some((m) => m[8] === key), key).toBe(false); // (Wyatt has his own since Nov 26 too)
       expect(config.family.people.ellen.colours[key], key).toBeTruthy();
     }
     expect(ellen.head).toBe(1); // natural, as in the art
@@ -85,5 +85,27 @@ describe("Ellen's face and coat (Nov 26)", () => {
     expect(Math.min(skirt[2], skirt[5])).toBeLessThan(Math.min(coat[2], coat[5]));
     expect(Math.min(skirt[2], skirt[5])).toBeLessThan(0.45);
     expect(ellen.masses.filter((m) => m[8] === 'button').length).toBe(5);
+  });
+});
+
+// Nov 26 (Aaron's concept art, close up): Wyatt's own face, hair, hands and jeans.
+describe("Wyatt's face, hair and jeans (Nov 26)", () => {
+  const wyatt = familySpec('wyatt', config.family.people.wyatt);
+  const junie = familySpec('junie', config.family.people.junie);
+  it('has his own features and fingers; Junie keeps the shared face', () => {
+    for (const key of ['lips', 'white', 'lid']) {
+      expect(wyatt.masses.some((m) => m[8] === key), key).toBe(true);
+      expect(junie.masses.some((m) => m[8] === key), key).toBe(false);
+    }
+    expect(wyatt.tubes.filter((t) => t[0] === 'wristR' && t[9] === 'skin').length).toBe(5); // four fingers and a thumb
+    expect(wyatt.masses.some((m) => m[0] === 'head' && Math.abs(m[2]) > 0.08 && m[8] === 'skin')).toBe(true); // his ears kept
+  });
+  it('wears his jumper over the trunk (the trunk is not jeans) and straight-leg jeans', () => {
+    const trunk = wyatt.limbs.find((l) => l[0] === 'hips' && l[1] === 'spine');
+    expect(trunk[4]).toBe('top');
+    const thigh = wyatt.limbs.find((l) => l[0] === 'hipR');
+    const shin = wyatt.limbs.find((l) => l[0] === 'kneeR');
+    expect(thigh[2]).toBeLessThan(0.09);
+    expect(Math.abs(shin[2] - shin[3])).toBeLessThan(0.01); // straight
   });
 });
