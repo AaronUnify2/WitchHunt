@@ -281,6 +281,13 @@ export class PileRenderer {
     } else if (a?.kind === 'slam' && a.state === 'windup') lift = wind * wind * r * 0.45;
     // Nov 26: the leap: it crouches low on its legs, quivering, before it springs.
     else if (a?.kind === 'leap' && a.state === 'windup') lift = -wind * (p.raise * 1.3 + 0.4) + Math.sin(p.t * 40) * 0.04 * wind;
+    // Nov 26: reeling after a blast: slumped and twitching, jerking as it darts (an injured spider).
+    if (p.phase === 'fight' && p.cycle === 'reel') {
+      const dart = p.skit?.dart;
+      lift += -0.35 + (dart ? Math.abs(Math.sin(p.t * 30)) * 0.3 : Math.sin(p.t * 47) * Math.sin(p.t * 13) * 0.08);
+      ox += Math.sin(p.t * 53) * 0.05;
+      oz += Math.cos(p.t * 41) * 0.05;
+    }
     // Its surges: a hard scuttling bob.
     if (p.surge > 0) lift += Math.abs(Math.sin(p.t * 16)) * 0.25 - 0.15;
     // Up in its leap.
@@ -559,7 +566,9 @@ export class PileRenderer {
       this.feet = angles.map((_, i) => ({ ...rest(i), from: null, t: 0 }));
     }
     const stride = L.stride * (0.6 + 0.4 * k);
-    const stepSeconds = L.stepSeconds / (p.surge > 0 ? 1.9 : 1); // (scuttling: quicker steps)
+    const reeling = p.phase === 'fight' && p.cycle === 'reel';
+    const strideNow = reeling ? stride * 0.35 : stride; // (skittering: its feet scrabble at every little jerk)
+    const stepSeconds = L.stepSeconds / (p.surge > 0 ? 1.9 : reeling ? 2.6 : 1); // (scuttling, or skittering: quicker steps)
     for (let i = 0; i < 4; i++) {
       const f = this.feet[i];
       const target = rest(i);
@@ -582,11 +591,11 @@ export class PileRenderer {
       } else {
         const partner = this.feet[3 - i];
         const d = Math.hypot(target.x - f.x, target.z - f.z);
-        if (d > stride && !partner.from) {
-          const ux = (target.x - f.x) / d;
-          const uz = (target.z - f.z) / d;
+        if ((d > strideNow || (reeling && Math.sin(p.t * 9 + i * 2.3) > 0.97)) && !partner.from) {
+          const ux = (target.x - f.x) / (d || 1);
+          const uz = (target.z - f.z) / (d || 1);
           f.from = { x: f.x, z: f.z };
-          f.to = { x: target.x + ux * stride * 0.35, z: target.z + uz * stride * 0.35 };
+          f.to = { x: target.x + ux * strideNow * 0.35, z: target.z + uz * strideNow * 0.35 };
           f.t = 0;
         }
       }

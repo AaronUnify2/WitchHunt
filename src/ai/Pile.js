@@ -346,6 +346,10 @@ export class Pile {
   setCycle(cycle) {
     this.cycle = cycle;
     this.cycleT = 0;
+    if (cycle === 'reel') {
+      this.reelAt = { x: this.x, z: this.z };
+      this.skit = { t: 0, dart: false, dir: 0 };
+    }
     if (cycle === 'scramble') this.reclaimedSince = 0;
   }
 
@@ -360,6 +364,10 @@ export class Pile {
     this.facing = want;
     let speed = 0;
     if (this.grab) return; // rooted while it reels him in
+    if (this.cycle === 'reel') {
+      this.updateSkitter(dt, want);
+      return;
+    }
     if (this.attack?.kind === 'lunge' && this.attack.state === 'strike') speed = this.cfg.attacks.lunge.speed;
     else if (this.cycle !== 'reel' && !this.attack) {
       speed = this.stageCfg.speed;
@@ -550,6 +558,41 @@ export class Pile {
     this.snap = { t: 0, to: { x: p.x, z: p.z }, side: this.rng() < 0.5 ? -1 : 1 };
     this.sound('ropeSnap', p.x, p.z);
     this.hurt(S.damage, 0.6);
+  }
+
+  // Nov 26 (Aaron: "skittery, like an injured spider on the explosion"): reeling, it jerks about in short darts,
+  // mostly sideways to him (sometimes back), resting between, kept near where the blast caught it.
+  updateSkitter(dt, toTom) {
+    const S = this.cfg.skitter;
+    const k = this.skit ??= { t: 0, dart: false, dir: 0 };
+    if (!S) return;
+    k.t -= dt;
+    if (k.t <= 0) {
+      k.dart = !k.dart;
+      const span = k.dart ? S.dart : S.rest;
+      k.t = span[0] + this.rng() * (span[1] - span[0]);
+      if (k.dart) {
+        const side = this.rng() < 0.5 ? -1 : 1;
+        k.dir = this.rng() < 0.25 ? toTom + Math.PI + (this.rng() - 0.5) * 0.8 : toTom + side * (Math.PI / 2 + (this.rng() - 0.5) * 0.9);
+        // Too far from where it was hit: back toward it.
+        const at = this.reelAt ?? { x: this.x, z: this.z };
+        if (Math.hypot(this.x - at.x, this.z - at.z) > S.range * 0.6) k.dir = Math.atan2(at.x - this.x, at.z - this.z) + (this.rng() - 0.5) * 0.8;
+        this.sound('bodyThud');
+      }
+    }
+    if (!k.dart) return;
+    let nx = this.x + Math.sin(k.dir) * S.speed * dt;
+    let nz = this.z + Math.cos(k.dir) * S.speed * dt;
+    const at = this.reelAt ?? { x: this.x, z: this.z };
+    const d = Math.hypot(nx - at.x, nz - at.z);
+    if (d > S.range) {
+      nx = at.x + ((nx - at.x) / d) * S.range;
+      nz = at.z + ((nz - at.z) / d) * S.range;
+    }
+    const pos = { x: nx, z: nz };
+    this.ground?.clamp?.(pos);
+    this.x = pos.x;
+    this.z = pos.z;
   }
 
   // How high off the ground it is in its leap (metres; 0 on its feet).

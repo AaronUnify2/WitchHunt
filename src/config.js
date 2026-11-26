@@ -5976,14 +5976,19 @@ export const config = {
     surge: { every: [2.5, 4.5], seconds: 1.1, speed: 7, scale: 1.3, minGap: 3 },
     // Nov 26 (Aaron: "get those tendrils lashing aggressively"): its idle tendrils snap at him when he's within
     // `reach` metres of its edge, every `every` seconds, for `damage`; and they thrash `thrash` times as fast.
-    snap: { reach: 3.5, every: 1.1, damage: 6, thrash: 2.2 },
+    snap: { reach: 2.5, every: 1.1, damage: 4, thrash: 2.2 }, // (Nov 26, Aaron: too much: was 3.5 m, 6)
+    // Nov 26 (Aaron: "move skittery, like an injured spider on the explosion"): while it reels after a blast, darts
+    // of `dart` [min, max] seconds at `speed` m/s, mostly sideways to him, with rests of `rest` [min, max] between,
+    // never more than `range` metres from where it was blasted.
+    skitter: { dart: [0.1, 0.22], rest: [0.12, 0.4], speed: 6.5, range: 3.5 },
     attacks: {
       firstAfter: 4,
       contact: { reach: 0.5, damage: 14, every: 1.0 }, // rolling into him
       slam: { range: 4, reach: 3.2, windup: 1.1, recover: 1.0, damage: 28, shake: 1.4 }, // the whole mass down on the ground
       // a tendril at where he was; Nov 26: in flurries of up to `flurry`, `gap` seconds apart, every other one aimed
       // `lead` seconds ahead of where he's going.
-      lash: { range: 14, windup: 0.4, recover: 0.45, damage: 16, dodge: 1.6, flurry: 3, gap: 0.3, lead: 0.45 },
+      // Nov 26 (Aaron: "I can't beat the pile now. The tendrils have too much range"): 14 m, 16 damage, flurries of 3, cut.
+      lash: { range: 9, windup: 0.4, recover: 0.45, damage: 11, dodge: 1.6, flurry: 2, gap: 0.3, lead: 0.45 },
       // Nov 26 (Aaron: "jump high into the air and slam down on the ground"): it crouches (windup), springs `height`
       // metres up and comes down `strike` seconds later where he stood as it left; a ring marks the spot. Under it
       // (within reach of its edge): damage; within knock: thrown `distance` metres off it over `seconds` (his picks:
@@ -5995,7 +6000,7 @@ export const config = {
       shriek: { range: 40, windup: 0.8, recover: 1.4, alert: 80 }, // calling the dead in
       // Nov 25 (Aaron: "lean into the tendril element"): a tendril thrown at him; caught, he's reeled in (drag m/s)
       // till he shoots it through, or he's in against it (or holdMax seconds): damage, and thrown throwBack metres.
-      grab: { range: 14, windup: 0.7, recover: 1.0, speed: 20, catch: 0.9, drag: 2.6, holdMax: 6, damage: 30, throwBack: 4, hitRadius: 0.4 },
+      grab: { range: 10, windup: 0.7, recover: 1.0, speed: 20, catch: 0.9, drag: 2.6, holdMax: 6, damage: 22, throwBack: 4, hitRadius: 0.4 }, // (Nov 26: was 14 m, 30)
     },
     shots: { perBody: 90 }, // damage into the mass to knock one body off
     // The charges: one surfaces (`first` seconds into the fight; then once it's dragged `afterReclaimed` back in, or

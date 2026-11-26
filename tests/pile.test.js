@@ -474,3 +474,36 @@ describe('the Pile, more aggressive (Nov 26)', () => {
     expect(hurt).toContain(C.snap.damage);
   });
 });
+
+// Nov 26 (Aaron: "I can't beat the pile now. The tendrils have too much range"; "move skittery, like an injured
+// spider on the explosion").
+describe('the Pile, tuned down and skittering (Nov 26)', () => {
+  it('its tendrils reach less far and hurt less', () => {
+    expect(C.attacks.lash.range).toBeLessThanOrEqual(9);
+    expect(C.attacks.lash.damage).toBeLessThanOrEqual(11);
+    expect(C.attacks.grab.range).toBeLessThanOrEqual(10);
+    expect(C.snap.reach).toBeLessThanOrEqual(2.5);
+  });
+
+  it('blasted, it skitters about in jerks near where it was hit, its eyes going with it', () => {
+    const { pile, run } = rig();
+    run(C.emergeSeconds + C.charge.first + 0.2);
+    pile.charge.takeHit(50);
+    expect(pile.cycle).toBe('reel');
+    const at = { x: pile.x, z: pile.z };
+    const seen = [];
+    for (let i = 0; i < 60; i++) {
+      run(0.05);
+      seen.push({ x: pile.x, z: pile.z });
+      expect(Math.hypot(pile.x - at.x, pile.z - at.z)).toBeLessThanOrEqual(C.skitter.range + 1e-6);
+    }
+    const moved = seen.some((p) => Math.hypot(p.x - at.x, p.z - at.z) > 0.5);
+    expect(moved).toBe(true);
+    // Still now and then (the rests between darts).
+    let still = 0;
+    for (let i = 1; i < seen.length; i++) if (Math.hypot(seen[i].x - seen[i - 1].x, seen[i].z - seen[i - 1].z) < 1e-6) still++;
+    expect(still).toBeGreaterThan(5);
+    const eye = pile.targets.find((t) => pile.seams.includes(t));
+    expect(Math.hypot(eye.x - pile.x, eye.z - pile.z)).toBeLessThan(pile.radius + 0.5);
+  });
+});
