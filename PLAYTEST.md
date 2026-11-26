@@ -857,6 +857,11 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Her hair:** dark, loosely tied back, a messy fringe and strands loose by her face.
 - [ ] **Her rabbit** (you kept it): held out against her chest now, one arm under it, a hand on its back, its head and ears above her arms (before, it hid behind her hands). **Hands** with fingers; the jumper muted and grubby with ribbed bands; slim charcoal trousers; grey sneakers.
 
+**Round 101: woollen jumpers (Nov 26, your ask: baggier, cold, woollen).** Debug menu, Models, View: The family (Y: Wyatt, Junie, All three).
+- [ ] **Wyatt's and Junie's jumpers:** roomier, hanging loose past the waist to a thick ribbed hem over the hips; wider sleeves bloused into thick ribbed cuffs; a thick ribbed collar; dropped shoulders; a chunky rib knit with flecks. Baggy enough? Too much on Junie?
+- [ ] **Roomier trousers** for both (Junie's were leggings-tight).
+- [ ] **Wyatt with his rifle in the tower** and **Junie hugging her rabbit**: do the bigger sleeves clip?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

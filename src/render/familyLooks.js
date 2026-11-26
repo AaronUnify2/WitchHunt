@@ -249,6 +249,67 @@ function smudge(q) {
   return v * 0.5 + 0.5;
 }
 
+// Woollen jumpers (Nov 26, Aaron: "a bit more baggy ... the climate cold and the sweaters woollen"): Wyatt's and
+// Junie's. Roomier through the body, which hangs loose past the waist to a thick ribbed hem over the hips;
+// sleeves wider, bloused into thick ribbed cuffs; a thick ribbed collar. The knit is a chunky rib painted in
+// vertex colours, each part built with a column of vertices for every rib's ridge and every groove (KNIT).
+const KNIT = { trunk: 24, sleeve: 10 }; // ribs round the trunk and round a sleeve
+const TRUNK_FLAT = 0.73;
+// body: hem: { y (the hem's height), r (its half-width at the bottom), top (the body's half-width at the waist) }.
+function woolJumper(b, { hemY, hemR, waistR, neckY = 1.462, cuffR = 0.05 }) {
+  const trunk = [KNIT.trunk * 2, 10];
+  const sleeve = [KNIT.sleeve * 2, 8];
+  b.limbs = b.limbs.map((l) => {
+    // The trunk a barrel from the chest down (so the chest's own shape sits inside it, no bust or pecs).
+    // (Its top broad, so the shoulder line runs out to the sleeves instead of their heads standing up from it.)
+    if (l[4] === 'top') return [l[0], l[1], l[2], l[0] === 'spine' ? l[3] * 1.4 : l[3], 'top', l[0] === 'spine' ? 0.22 : (l[5] ?? 0), l[6] ?? 1, l[7] ?? 0, trunk];
+    // Dropped shoulders: the sleeve's head no wider than before, the room in it below.
+    if (l[4] === 'sleeve') return [l[0], l[1], l[2], l[3] * 1.18, 'sleeve', 0.16, 1, 0.6, sleeve];
+    if (l[4] === 'forearm') return [l[0], l[1], l[2] * 1.16, cuffR * 0.94, 'forearm', 0.22, 1, 1.01, sleeve];
+    return l;
+  });
+  for (const m of b.masses) {
+    if (m[0] === 'chest' && m[1] === 'spine' && m[8] === 'top') Object.assign(m, { 5: m[5] * 0.94, 7: m[7] * 0.85, 9: m[9] ?? null, 10: false, 11: [KNIT.trunk * 2, 12] });
+    if (m[1] === 'shoulderR' || m[1] === 'shoulderL') Object.assign(m, { 3: m[3] - 0.012, 5: m[5] * 0.85, 6: m[6] * 0.8, 7: m[7] * 0.85 }); // dropped, soft shoulders
+  }
+  // The body hanging loose past the waist, over the hips; its thick ribbed hem.
+  // (It starts inside the trunk, narrower than it, and grows out of it: no ledge at the waist.)
+  b.tubes.push(['hips', 0, 1.2, 0.004, 0, hemY, 0.004, waistR * 0.84, hemR, 'top', TRUNK_FLAT, 0, [KNIT.trunk * 2, 6]]);
+  b.masses.push(['hips', null, 0, hemY + 0.012, 0.004, hemR + 0.006, 0.03, (hemR + 0.006) * TRUNK_FLAT, 'top', null, false, [KNIT.trunk * 2, 6]]);
+  // The thick ribbed collar.
+  b.masses.push(['neck', 'chest', 0, neckY, 0, 0.072, 0.026, 0.07, 'top', null, false, [KNIT.trunk * 2, 6]]);
+  // Thick ribbed cuffs.
+  for (const s of [-1, 1]) {
+    const n = s < 0 ? 'R' : 'L';
+    b.tubes.push([`elbow${n}`, s * 0.2292, 0.928, 0.0177, s * 0.2302, 0.874, 0.0197, cuffR, cuffR * 0.97, 'forearm', 1, 0, [KNIT.sleeve * 2, 2]]);
+  }
+}
+// Where a sleeve's axis runs at height y (the rest pose, the kit's skeleton): its x (unsigned) and z.
+function sleeveAxis(y) {
+  if (y >= 1.14) return { x: 0.19 + (0.03 * (1.42 - y)) / 0.28, z: 0 };
+  const t = Math.min(1, (1.14 - y) / 0.26);
+  return { x: 0.22 + 0.01 * t, z: 0.02 * t };
+}
+// The knit's paint: chunky ribs (a ridge at every other column of vertices), deeper at the collar, hem and cuffs,
+// a woolly fleck. Returns true if it painted (a jumper's key).
+function woolKnit(key, q, out, hemY) {
+  let a;
+  let n;
+  if (key === 'top') {
+    a = Math.atan2(q.x, q.z / TRUNK_FLAT);
+    n = KNIT.trunk;
+  } else if (key === 'sleeve' || key === 'forearm') {
+    const ax = sleeveAxis(q.y);
+    a = Math.atan2(Math.abs(q.x) - ax.x, q.z - ax.z);
+    n = KNIT.sleeve;
+  } else return false;
+  const ridge = 0.5 + 0.5 * Math.cos(a * n);
+  const band = (key === 'top' && (q.y < hemY + 0.045 || q.y > 1.44)) || (key === 'forearm' && q.y < 0.93);
+  out.multiplyScalar(band ? 0.66 + 0.3 * ridge : 0.78 + 0.22 * ridge);
+  out.multiplyScalar(0.95 + 0.05 * Math.sin(q.x * 410 + q.y * 290 + q.z * 350)); // flecks of the wool
+  return true;
+}
+
 const LOOKS = {
   ellen(p) {
     const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22, legs: 'fitted' }); // (fitted: under a skirt)
@@ -309,7 +370,7 @@ const LOOKS = {
     };
   },
   wyatt() {
-    const b = body({ sh: 0.96, hip: 0.9, bulk: 0.88, loose: 1.18 });
+    const b = body({ sh: 0.96, hip: 0.9, bulk: 0.88, loose: 1.36 }); // Nov 26 (Aaron): baggy, woollen (1.18 was)
     // Nov 25 (Aaron's concept art): a red knit crew-neck jumper (was an open flannel over a T-shirt), its ribbed hem
     // loose over his jeans.
     // Nov 26 (the art again, close up): rebuilt to it. His own face (WYATT_FACE: the shared one's dots and ball
@@ -321,14 +382,13 @@ const LOOKS = {
     b.masses.push(...WYATT_FACE(), ...hands());
     fingerTubes(b.tubes);
     for (const m of b.masses) if (m[1] === 'shoulderR' || m[1] === 'shoulderL') Object.assign(m, { 3: m[3] - 0.016, 5: m[5] * 0.78, 6: m[6] * 0.7, 7: m[7] * 0.78 }); // natural shoulders (they puffed)
-    for (const m of b.masses) if (m[0] === 'hips' && m[8] === 'trousers') Object.assign(m, { 5: 0.142, 7: 0.1 }); // slim hips (inside the jumper's front and back)
-    // Straight-leg jeans, slim, not wide at the hip.
-    b.limbs = b.limbs.map((l) => (l[0] === 'hipR' || l[0] === 'hipL' ? [l[0], l[1], 0.086, 0.068, 'trousers', 0.03] : l[0] === 'kneeR' || l[0] === 'kneeL' ? [l[0], l[1], 0.066, 0.062, 'trousers', 0] : l));
+    for (const m of b.masses) if (m[0] === 'hips' && m[8] === 'trousers') Object.assign(m, { 5: 0.152, 7: 0.104 }); // the jeans' seat (inside the jumper)
+    // Straight-leg jeans with room in them (Nov 26, Aaron: roomier), not wide at the hip.
+    b.limbs = b.limbs.map((l) => (l[0] === 'hipR' || l[0] === 'hipL' ? [l[0], l[1], 0.098, 0.08, 'trousers', 0.03] : l[0] === 'kneeR' || l[0] === 'kneeL' ? [l[0], l[1], 0.078, 0.074, 'trousers', 0] : l));
     // A boy's chest, not a man's: the trunk's swell into the shoulders gentler; the sleeves' heads smaller, so they
     // don't puff above the shoulder.
     b.limbs = b.limbs.map((l) => (l[0] === 'spine' && l[1] === 'neck' ? [...l.slice(0, 5), 0.18, l[6]] : l[0] === 'shoulderR' || l[0] === 'shoulderL' ? [...l.slice(0, 7), 0.7] : l));
-    b.masses.push(['neck', 'chest', 0, 1.462, 0, 0.064, 0.02, 0.062, 'top']); // the crew neck
-    b.masses.push(['hips', null, 0, 1.0, -0.01, 0.158, 0.045, 0.112, 'top']); // the ribbed hem
+    woolJumper(b, { hemY: 0.93, hemR: 0.176, waistR: 0.166 }); // Nov 26: baggy and woollen, the hem over his hips
     // His hair: a mop, a full fringe over his forehead to his brows, over the tops of his ears, fuller on the crown.
     b.masses.push(hairCap(1.632, -0.016, [0.099, 0.104, 0.108]));
     b.masses.push(['head', null, 0, 1.662, 0.072, 0.086, 0.034, 0.046, 'hair', [-0.35, 0, 0]]); // the fringe
@@ -359,11 +419,7 @@ const LOOKS = {
           if (q.z > 0.04 && q.y > 0.88 && q.y < 0.99 && Math.abs(Math.abs(q.x) - 0.06 - (0.99 - q.y) * 0.5) < 0.004) out.multiplyScalar(0.7);
           return;
         }
-        if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
-        // The knit: fine vertical ribs, a deeper rib at the hem, the cuffs and the neck.
-        const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
-        const bandK = (key === 'top' && (q.y < 1.04 || q.y > 1.445)) || (key === 'forearm' && q.y < 0.9) ? 0.82 : 1;
-        out.multiplyScalar(rib * bandK);
+        woolKnit(key, q, out, 0.93); // the chunky rib
       },
     };
   },
@@ -392,13 +448,14 @@ const LOOKS = {
     // worried brows, a small nose, a small pouting mouth, dirt on her cheeks; her ears kept); her hair loosely tied
     // back, a messy fringe and strands loose round her face; hands with fingers; the jumper muted and grubby with
     // its ribbed bands; slim charcoal trousers; grey sneakers. She keeps her rabbit (Aaron), held out where it shows.
-    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.06, hand: 'skin', legs: 'fitted' });
+    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.06, hand: 'skin', legs: 'fitted', loose: 1.3 }); // Nov 26 (Aaron): baggy, woollen
+    // Roomier trousers (Nov 26, Aaron; were leggings-fitted).
+    b.limbs = b.limbs.map((l) => (l[0] === 'hipR' || l[0] === 'hipL' ? [l[0], l[1], 0.094, 0.074, 'trousers', 0.04] : l[0] === 'kneeR' || l[0] === 'kneeL' ? [l[0], l[1], 0.072, 0.066, 'trousers', 0] : l));
     b.masses = b.masses.filter((m) => !(m[0] === 'head' && m[8] !== 'skin') && !(m[0] === 'head' && m[5] < 0.05 && Math.abs(m[2]) < 0.05)); // the shared face's nose, eyes, brows (not the ears)
     b.masses = b.masses.filter((m) => !((m[0] === 'wristR' || m[0] === 'wristL') && m[8] === 'skin')); // the shared paddle hands
     b.masses.push(...JUNIE_FACE(), ...hands());
     fingerTubes(b.tubes);
-    b.masses.push(['neck', 'chest', 0, 1.458, 0, 0.064, 0.02, 0.062, 'top']); // the crew neck
-    b.masses.push(['hips', null, 0, 1.0, -0.008, 0.162, 0.045, 0.118, 'top']); // the ribbed hem
+    woolJumper(b, { hemY: 0.9, hemR: 0.186, waistR: 0.172, neckY: 1.458 }); // Nov 26: baggy and woollen, a little big on her
     for (const s of [-1, 1]) b.masses.push([s < 0 ? 'ankleR' : 'ankleL', null, s * 0.1, 0.02, 0.06, 0.062, 0.02, 0.13, 'sole']); // the sneakers' soles
     // Her hair: loosely tied back in a low knot, a messy fringe swept across her forehead, strands loose round her face.
     b.masses.push(hairCap(1.633, -0.018, [0.097, 0.1, 0.106]));
@@ -437,11 +494,7 @@ const LOOKS = {
           }
           return;
         }
-        if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
-        // The knit: fine ribs, the bands at its neck, hem and cuffs; grubby; a little mark on her chest.
-        const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
-        const band = (key === 'top' && (q.y < 1.04 || q.y > 1.445)) || (key === 'forearm' && q.y < 0.9) ? 0.82 : 1;
-        out.multiplyScalar(rib * band);
+        if (!woolKnit(key, q, out, 0.9)) return; // the chunky rib; grubby; a little mark on her chest
         if (smudge(q) > 0.66) out.multiplyScalar(0.85);
         if (key === 'top' && q.z > 0.08 && Math.hypot(q.x - 0.06, q.y - 1.385) < 0.01) out.multiplyScalar(0.6);
       },

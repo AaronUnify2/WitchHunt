@@ -101,9 +101,24 @@ describe("Wyatt's face, hair and jeans (Nov 26)", () => {
     expect(trunk[4]).toBe('top');
     const thigh = wyatt.limbs.find((l) => l[0] === 'hipR');
     const shin = wyatt.limbs.find((l) => l[0] === 'kneeR');
-    expect(thigh[2]).toBeLessThan(0.09);
+    expect(thigh[2]).toBeGreaterThan(0.09); // roomy (Nov 26: baggier, Aaron)...
+    expect(thigh[2]).toBeLessThan(0.11); // ...not wide
     expect(Math.abs(shin[2] - shin[3])).toBeLessThan(0.01); // straight
   });
+});
+
+// Nov 26 (Aaron: "a bit more baggy ... cold, the sweaters woollen"): Wyatt's and Junie's jumpers.
+describe('the woollen jumpers (Nov 26)', () => {
+  for (const id of ['wyatt', 'junie']) {
+    const spec = familySpec(id, config.family.people[id]);
+    it(`${id}'s hangs loose over the hips, with ribs fine enough to show and thick cuffs`, () => {
+      const hang = spec.tubes.find((t) => t[0] === 'hips' && t[9] === 'top');
+      expect(Math.min(hang[2], hang[5])).toBeLessThan(0.95); // past the waist, over the hips
+      expect(hang[8]).toBeGreaterThan(hang[7]); // flaring out to the hem
+      for (const l of spec.limbs.filter((x) => x[4] === 'top' || x[4] === 'sleeve' || x[4] === 'forearm')) expect(l[8]?.[0] % 2, l[0]).toBe(0); // a ridge and a groove per rib
+      expect(spec.tubes.filter((t) => t[9] === 'forearm').length).toBe(2); // the cuffs
+    });
+  }
 });
 
 // Nov 26 (Aaron's concept art, close up): Junie's own face, hair and hands; she keeps her rabbit (Aaron).
