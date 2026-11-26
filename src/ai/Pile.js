@@ -140,6 +140,16 @@ export class Pile {
     this.burst = false;
     this.burstT = 0;
     this.eyeTease = 0;
+    // Nov 26 (Aaron: more aggressive): its surges, the leap's cooldown, the tendrils snapping, Tom thrown back, and
+    // how fast he's going (for leading the lash).
+    this.surge = 0;
+    this.surgeCool = this.cfg.surge?.every?.[0] ?? 0;
+    this.leapCool = 0;
+    this.snapCool = 0;
+    this.snap = null;
+    this.shove = null;
+    this.tomVel = { x: 0, z: 0 };
+    this.lastTom = null;
     if (intro) {
       this.phase = 'intro'; // (its cutscene says the lines and makes the noise)
       return;
@@ -194,6 +204,9 @@ export class Pile {
   // Gone without a fight (a load, a reset): nothing left of it.
   stop() {
     this.release();
+    this.attack = null;
+    this.shove = null;
+    this.snap = null;
     this.phase = 'buried';
     this.loose.length = 0;
     this.flying.length = 0;
@@ -265,9 +278,13 @@ export class Pile {
         this.bus?.emit('pile:fight', {});
       }
       if (this.phase === 'fight') {
+        this.trackTom(dt);
         this.updateCycle(dt);
         this.updateAttack(dt);
+        this.updateSurge(dt);
         this.updateMove(dt);
+        this.updateSnap(dt);
+        this.updateShove(dt);
         this.updateTendrils(dt);
         this.updateGrab(dt);
         this.updateRam(dt);
@@ -344,7 +361,10 @@ export class Pile {
     let speed = 0;
     if (this.grab) return; // rooted while it reels him in
     if (this.attack?.kind === 'lunge' && this.attack.state === 'strike') speed = this.cfg.attacks.lunge.speed;
-    else if (this.cycle !== 'reel' && !this.attack) speed = this.stageCfg.speed;
+    else if (this.cycle !== 'reel' && !this.attack) {
+      speed = this.stageCfg.speed;
+      if (this.surge > 0) speed = Math.max(this.cfg.surge.speed, speed * this.cfg.surge.scale);
+    }
     if (speed <= 0) return;
     const stopAt = this.radius + 0.6;
     const step = Math.min(speed * dt, Math.max(0, d - stopAt));
@@ -370,7 +390,7 @@ export class Pile {
     const d = Math.hypot(p.x - this.x, p.z - this.z);
     this.contactCool = Math.max(0, this.contactCool - dt);
     // Rolling into him (any stage): its touch.
-    if (d <= this.radius + c.contact.reach && this.contactCool <= 0 && this.cycle !== 'reel') {
+    if (d <= this.radius + c.contact.reach && this.contactCool <= 0 && this.cycle !== 'reel' && this.air <= 0.5) {
       this.contactCool = c.contact.every;
       this.hurt(c.contact.damage, 1);
     }
@@ -384,6 +404,8 @@ export class Pile {
       const kind = this.pickAttack(d);
       if (!kind) return;
       this.attack = { kind, state: 'windup', t: 0, at: { x: p.x, z: p.z } };
+      if (kind === 'lash') this.attack.left = 1 + Math.floor(this.rng() * (c.lash.flurry ?? 1)) % (c.lash.flurry ?? 1);
+      if (kind === 'leap') this.sound('mutantRoar');
       this.bus?.emit('pile:attack', { kind });
       if (kind === 'shriek') this.combat?.sfx?.play?.('screamer', { x: this.x, z: this.z });
       return;
@@ -391,13 +413,28 @@ export class Pile {
     const a = this.attack;
     const k = c[a.kind];
     a.t += dt;
+    // The leap: it watches him as it crouches (it comes down where he stood as it left), and flies while it strikes.
+    if (a.kind === 'leap' && a.state === 'windup') {
+      a.at.x = p.x;
+      a.at.z = p.z;
+    }
+    if (a.kind === 'leap' && a.state === 'strike') this.flyLeap(a);
     if (a.state === 'windup' && a.t >= k.windup) {
       a.state = 'strike';
       a.t = 0;
       this.strike(a, d);
+      // A flurry: the next lash coils up straight after (a shorter windup), aimed afresh.
+      if (a.kind === 'lash' && --a.left > 0) {
+        a.state = 'windup';
+        a.t = Math.max(0, k.windup - (k.gap ?? k.windup));
+        a.n = (a.n ?? 0) + 1;
+        const lead = a.n % 2 ? (k.lead ?? 0) : 0;
+        a.at = { x: p.x + this.tomVel.x * lead, z: p.z + this.tomVel.z * lead };
+      }
     } else if (a.state === 'strike' && a.t >= (k.strike ?? 0)) {
       a.state = 'recover';
       a.t = 0;
+      if (a.kind === 'leap') this.landLeap(a);
     } else if (a.state === 'recover' && a.t >= k.recover) {
       this.attack = null;
       this.attackCool = this.stageCfg.attackEvery;
@@ -412,8 +449,10 @@ export class Pile {
   // Which of its stage's attacks (null: none in range).
   pickAttack(d) {
     const c = this.cfg.attacks;
-    const kinds = this.stageCfg.attacks.filter((k) => d <= this.radius + (c[k].range ?? Infinity) && !(k === 'grab' && (this.grab || this.player.riding)));
+    const kinds = this.stageCfg.attacks.filter((k) => d <= this.radius + (c[k].range ?? Infinity) && d >= this.radius + (c[k].minRange ?? 0) && !(k === 'grab' && (this.grab || this.player.riding)) && !(k === 'leap' && this.leapCool > 0));
     if (!kinds.length) return null;
+    // Nov 26: when he's keeping well off, it leaps at him.
+    if (kinds.includes('leap') && d >= this.radius + c.leap.prefer) return 'leap';
     return kinds[Math.floor(this.rng() * kinds.length) % kinds.length];
   }
 
@@ -424,9 +463,29 @@ export class Pile {
       this.player.shake?.(c.slam.shake);
       if (d <= this.radius + c.slam.reach) this.hurt(c.slam.damage, 2);
       this.combat?.sfx?.play?.('fenceHit', { x: this.x, z: this.z });
+    } else if (a.kind === 'leap') {
+      // Up: from here to where he stood as it left (no further than its leash).
+      const h = this.home;
+      let tx = a.at.x;
+      let tz = a.at.z;
+      const hd = Math.hypot(tx - h.x, tz - h.z);
+      if (hd > this.cfg.leash) {
+        tx = h.x + ((tx - h.x) / hd) * this.cfg.leash;
+        tz = h.z + ((tz - h.z) / hd) * this.cfg.leash;
+      }
+      a.from = { x: this.x, z: this.z };
+      a.to = { x: tx, z: tz };
+      a.at = a.to;
+      a.h = 0;
+      this.sound('breach');
+      this.puff(this.x, this.z, 22, 'dust', 6, 0.2);
+      this.puff(this.x, this.z, 12, 'rubble', 7, 0.2);
+      this.player.shake?.(0.5);
+      this.bus?.emit('pile:leap', { x: tx, z: tz });
     } else if (a.kind === 'lash') {
       // A tendril whips out at him: a hit if he's still where it struck.
       this.lash = { t: 0, to: { x: a.at.x, z: a.at.z } };
+      this.sound('ropeSnap', a.at.x, a.at.z);
       if (Math.hypot(p.x - a.at.x, p.z - a.at.z) <= c.lash.dodge) this.hurt(c.lash.damage, 1);
     } else if (a.kind === 'fling') {
       // A body off itself, thrown at him: it lands where he was, and gets up.
@@ -440,6 +499,115 @@ export class Pile {
       // A tendril shot out at him: it takes him if it reaches him (Nov 25, Aaron: "lean into the tendril element").
       this.grab = { state: 'out', head: { x: this.x, z: this.z }, t: 0, travelled: 0 };
     }
+  }
+
+  // ---- Nov 26 (Aaron: "a little bit more aggressive") ---------------------------------------------------------
+
+  // How fast Tom's going (smoothed), for leading the lash.
+  trackTom(dt) {
+    const p = this.player.position;
+    if (this.lastTom && dt > 0) {
+      const k = Math.min(1, dt * 6);
+      this.tomVel.x += ((p.x - this.lastTom.x) / dt - this.tomVel.x) * k;
+      this.tomVel.z += ((p.z - this.lastTom.z) / dt - this.tomVel.z) * k;
+    }
+    this.lastTom = { x: p.x, z: p.z };
+    this.leapCool = Math.max(0, this.leapCool - dt);
+  }
+
+  // Its surges: a scuttle at him every few seconds, faster than he walks (not mid-attack, reeling or holding him).
+  updateSurge(dt) {
+    const S = this.cfg.surge;
+    if (!S) return;
+    const busy = this.attack || this.cycle === 'reel' || this.grab;
+    if (this.surge > 0) {
+      this.surge = busy ? 0 : Math.max(0, this.surge - dt);
+      return;
+    }
+    this.surgeCool -= dt;
+    if (this.surgeCool > 0 || busy) return;
+    const p = this.player.position;
+    if (Math.hypot(p.x - this.x, p.z - this.z) < this.radius + S.minGap) return;
+    this.surge = S.seconds;
+    this.surgeCool = S.every[0] + this.rng() * (S.every[1] - S.every[0]);
+    this.sound('mutantGroan');
+    this.bus?.emit('pile:surge', {});
+  }
+
+  // Its idle tendrils snapping at him when he's in close (not while it's attacking, reeling or holding him).
+  updateSnap(dt) {
+    const S = this.cfg.snap;
+    if (this.snap) {
+      this.snap.t += dt;
+      if (this.snap.t > 0.25) this.snap = null;
+    }
+    if (!S) return;
+    this.snapCool = Math.max(0, this.snapCool - dt);
+    if (this.snapCool > 0 || this.attack || this.cycle === 'reel' || this.grab) return;
+    const p = this.player.position;
+    if (Math.hypot(p.x - this.x, p.z - this.z) > this.radius + S.reach) return;
+    this.snapCool = S.every;
+    this.snap = { t: 0, to: { x: p.x, z: p.z }, side: this.rng() < 0.5 ? -1 : 1 };
+    this.sound('ropeSnap', p.x, p.z);
+    this.hurt(S.damage, 0.6);
+  }
+
+  // How high off the ground it is in its leap (metres; 0 on its feet).
+  get air() {
+    const a = this.attack;
+    return a?.kind === 'leap' && a.state === 'strike' ? a.h ?? 0 : 0;
+  }
+
+  // In the air: along from where it left to where it'll come down, up and over.
+  flyLeap(a) {
+    const k = this.cfg.attacks.leap;
+    const s = Math.min(1, a.t / k.strike);
+    this.x = a.from.x + (a.to.x - a.from.x) * s;
+    this.z = a.from.z + (a.to.z - a.from.z) * s;
+    a.h = 4 * k.height * s * (1 - s);
+  }
+
+  // Down: the ground shakes, under it he's hurt, near it he's thrown off it, and bodies are shaken loose.
+  landLeap(a) {
+    const k = this.cfg.attacks.leap;
+    this.x = a.to.x;
+    this.z = a.to.z;
+    a.h = 0;
+    this.leapCool = k.cool;
+    const p = this.player.position;
+    const dx = p.x - this.x;
+    const dz = p.z - this.z;
+    const d = Math.hypot(dx, dz);
+    this.player.shake?.(k.shake);
+    this.sound('breach');
+    this.sound('fenceHit');
+    for (let i = 0; i < 6; i++) {
+      const ang = (i / 6) * Math.PI * 2;
+      const r = this.radius * 1.1;
+      this.puff(this.x + Math.sin(ang) * r, this.z + Math.cos(ang) * r, 14, 'dust', 7, 0.2);
+      this.puff(this.x + Math.sin(ang) * r, this.z + Math.cos(ang) * r, 8, 'rubble', 9, 0.2);
+    }
+    if (d <= this.radius + k.reach) this.hurt(k.damage, 2.2);
+    if (d <= this.radius + k.knock && !this.player.riding) {
+      const ux = d > 0.01 ? dx / d : Math.sin(this.facing);
+      const uz = d > 0.01 ? dz / d : Math.cos(this.facing);
+      this.shove = { vx: (ux * k.distance) / k.seconds, vz: (uz * k.distance) / k.seconds, t: k.seconds };
+    }
+    this.bus?.emit('pile:landed', { x: this.x, z: this.z });
+    if (k.shed && this.bodies > k.shed + 1) this.shed(k.shed);
+  }
+
+  // Tom thrown back off it (the leap's landing), over a moment rather than all at once.
+  updateShove(dt) {
+    const s = this.shove;
+    if (!s) return;
+    const step = Math.min(dt, s.t);
+    const p = this.player.position;
+    p.x += s.vx * step;
+    p.z += s.vz * step;
+    this.ground?.clamp?.(p);
+    s.t -= step;
+    if (s.t <= 0) this.shove = null;
   }
 
   hurt(damage, shake) {
@@ -731,6 +899,9 @@ export class Pile {
     if (!this.alive) return;
     this.phase = 'dead';
     this.attack = null;
+    this.shove = null;
+    this.snap = null;
+    this.surge = 0;
     this.release();
     // The bodies still in it come down and stand up: one last group.
     const n = Math.min(this.bodies, this.cfg.lastGroup);
@@ -798,7 +969,7 @@ export class Pile {
       out[i] ??= { x: 0, y: 0, z: 0 };
       out[i].x = this.x + Math.sin(a) * R * k;
       out[i].z = this.z + Math.cos(a) * R * k;
-      out[i].y = g + this.raise + this.radius * h;
+      out[i].y = g + this.air + this.raise + this.radius * h;
     }
     return out;
   }
@@ -812,7 +983,7 @@ export class Pile {
     const m = this.mass;
     m.x = this.x;
     m.z = this.z;
-    m.y = g + this.raise * 0.6; // (its legs hold it up: under it, shots go between them)
+    m.y = g + this.air + this.raise * 0.6; // (its legs hold it up: under it, shots go between them)
     m.hitRadius = this.coreRadius;
     m.height = r * 1.9;
     m.fullHeight = m.height;
@@ -822,7 +993,7 @@ export class Pile {
       const ch = this.charge;
       ch.x = s.x;
       ch.z = s.z;
-      ch.y = g + this.raise + r * 0.7;
+      ch.y = g + this.air + this.raise + r * 0.7;
       T.push(ch);
     }
     if (this.cycle === 'reel') {

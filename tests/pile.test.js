@@ -384,3 +384,93 @@ describe("the Pile's heart", () => {
     expect(m1 - pile.magic).toBeCloseTo(byEye * C.seams.heart.magicScale);
   });
 });
+
+// Nov 26 (Aaron: "it moves a little too slow ... super easy to just shoot it and walk backwards"; more aggressive,
+// tendrils lashing, and a leap high into the air and down on the ground: medium and small only).
+describe('the Pile, more aggressive (Nov 26)', () => {
+  const fighting = (bodies = 30) => {
+    const r = rig();
+    r.run(C.emergeSeconds + 0.05);
+    r.pile.bodies = bodies;
+    return r;
+  };
+
+  it('surges at him faster than he can walk backwards', () => {
+    const { pile, player, run, events } = fighting();
+    pile.attackCool = 99; // (no attacks: just the chase)
+    pile.surgeCool = 0;
+    player.position = { x: 0, z: 30 };
+    const z0 = pile.z;
+    run(0.05);
+    expect(events).toContain('pile:surge');
+    run(C.surge.seconds - 0.1);
+    const speed = (pile.z - z0) / C.surge.seconds;
+    expect(speed).toBeGreaterThan(config.player.walkSpeed);
+  });
+
+  it('lashes in every stage, in flurries, each one a hit if he stays put', () => {
+    for (const st of ['large', 'medium', 'small']) expect(C.stages[st].attacks).toContain('lash');
+    const { pile, player, run, hurt } = fighting();
+    pile.surgeCool = 99;
+    pile.attackCool = 99;
+    player.position = { x: 0, z: 9 };
+    run(2); // (he's stood still: nothing to lead)
+    pile.attack = { kind: 'lash', state: 'windup', t: 0, at: { x: 0, z: 9 }, left: 3 };
+    run(C.attacks.lash.windup + 2 * C.attacks.lash.gap + 0.3);
+    expect(hurt.filter((d) => d === C.attacks.lash.damage).length).toBe(3);
+  });
+
+  it('leaps only once it is smaller, and when he keeps off it is what it does', () => {
+    expect(C.stages.large.attacks).not.toContain('leap');
+    const big = fighting(30);
+    expect(big.pile.pickAttack(big.pile.radius + 15)).not.toBe('leap');
+    const mid = fighting(15);
+    expect(mid.pile.pickAttack(mid.pile.radius + C.attacks.leap.prefer + 1)).toBe('leap');
+    expect(mid.pile.pickAttack(mid.pile.radius + 2)).not.toBe('leap'); // too close: something else
+    mid.pile.leapCool = 1;
+    expect(mid.pile.pickAttack(mid.pile.radius + C.attacks.leap.prefer + 1)).not.toBe('leap'); // not straight again
+  });
+
+  it('springs high, comes down where he stood, hurts him, throws him back and shakes bodies loose', () => {
+    const { pile, player, run, hurt, events, spawned } = fighting(15);
+    pile.surgeCool = 99;
+    player.position = { x: 0, z: 16 };
+    pile.attack = { kind: 'leap', state: 'windup', t: 0, at: { x: 0, z: 16 } };
+    const L = C.attacks.leap;
+    run(L.windup + L.strike * 0.5);
+    expect(events).toContain('pile:leap');
+    expect(pile.air).toBeGreaterThan(L.height * 0.8);
+    expect(pile.air).toBeLessThanOrEqual(L.height);
+    run(L.strike * 0.5 + 0.05);
+    expect(events).toContain('pile:landed');
+    expect(pile.air).toBe(0);
+    expect(Math.hypot(pile.x, pile.z - 16)).toBeLessThan(0.5);
+    expect(hurt).toContain(L.damage);
+    expect(pile.bodies).toBe(15 - L.shed);
+    run(L.seconds + 0.05);
+    expect(Math.hypot(player.position.x - pile.x, player.position.z - pile.z)).toBeGreaterThan(L.distance * 0.9);
+    run(1.5);
+    expect(spawned.length).toBeGreaterThanOrEqual(L.shed);
+  });
+
+  it('sidestepped as it comes down: no hit', () => {
+    const { pile, player, run, hurt } = fighting(15);
+    pile.surgeCool = 99;
+    player.position = { x: 0, z: 16 };
+    pile.attack = { kind: 'leap', state: 'windup', t: 0, at: { x: 0, z: 16 } };
+    const L = C.attacks.leap;
+    run(L.windup + 0.05);
+    player.position = { x: 12, z: 16 };
+    run(L.strike);
+    expect(hurt).not.toContain(L.damage);
+  });
+
+  it('its idle tendrils snap at him when he is in close', () => {
+    const { pile, player, run, hurt } = fighting();
+    pile.attackCool = 99;
+    pile.surgeCool = 99;
+    player.position = { x: 0, z: pile.radius + C.snap.reach - 0.5 };
+    run(0.1);
+    expect(hurt).toContain(C.snap.damage);
+  });
+});

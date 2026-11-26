@@ -63,8 +63,10 @@ export class PileRenderer {
     const ringMat = (hex) => new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
     this.slamRing = new THREE.Mesh(new THREE.RingGeometry(0.92, 1, 40).rotateX(-Math.PI / 2), ringMat(look.warn));
     this.lashRing = new THREE.Mesh(new THREE.RingGeometry(0.75, 1, 28).rotateX(-Math.PI / 2), ringMat(look.warn));
-    this.slamRing.visible = this.lashRing.visible = false;
-    this.group.add(this.slamRing, this.lashRing);
+    // Nov 26: where its leap will come down (red: get out from under it).
+    this.leapRing = new THREE.Mesh(new THREE.RingGeometry(0.88, 1, 40).rotateX(-Math.PI / 2), ringMat(look.chargeLight ?? 0xff3020));
+    this.slamRing.visible = this.lashRing.visible = this.leapRing.visible = false;
+    this.group.add(this.slamRing, this.lashRing, this.leapRing);
     this.m4 = new THREE.Matrix4();
     this.q = new THREE.Quaternion();
     this.v = new THREE.Vector3();
@@ -226,7 +228,7 @@ export class PileRenderer {
       const r = p.deathRadius ?? 1.5;
       this.placeCore(p.x, g + r * 0.6 * (1 - k), p.z, r * 0.6 * (1 + 0.5 * Math.sin(Math.min(1, k * 2) * Math.PI)) * (1 - k * 0.9), p.t, 1 - k);
       this.light.intensity = p.cfg.look.coreIntensity * 2 * (1 - k);
-      for (const m of [this.charge, this.slamRing, this.lashRing, ...this.eyes]) m.visible = false;
+      for (const m of [this.charge, this.slamRing, this.lashRing, this.leapRing, ...this.eyes]) m.visible = false;
     }
     if (live) this.drawLive(dt);
     // Bodies in the air (also after it's dead: the last group coming down).
@@ -277,6 +279,22 @@ export class PileRenderer {
       oz = -Math.cos(toTom) * wind * 0.9;
       lift = -wind * 0.35;
     } else if (a?.kind === 'slam' && a.state === 'windup') lift = wind * wind * r * 0.45;
+    // Nov 26: the leap: it crouches low on its legs, quivering, before it springs.
+    else if (a?.kind === 'leap' && a.state === 'windup') lift = -wind * (p.raise * 1.3 + 0.4) + Math.sin(p.t * 40) * 0.04 * wind;
+    // Its surges: a hard scuttling bob.
+    if (p.surge > 0) lift += Math.abs(Math.sin(p.t * 16)) * 0.25 - 0.15;
+    // Up in its leap.
+    const air = p.air;
+    const leaping = a?.kind === 'leap';
+    this.leapRing.visible = leaping && p.phase === 'fight';
+    if (this.leapRing.visible) {
+      const L = p.cfg.attacks.leap;
+      const s = a.state === 'strike' ? Math.min(1, a.t / L.strike) : a.state === 'windup' ? 0 : 1;
+      const at = a.state === 'windup' ? a.at : a.to ?? a.at;
+      this.leapRing.position.set(at.x, this.heightAt(at.x, at.z) + 0.22, at.z);
+      this.leapRing.scale.setScalar((r + L.reach) * (a.state === 'windup' ? 1.6 - 0.6 * wind : 1.6 - 0.6 * s));
+      this.leapRing.material.opacity = a.state === 'recover' ? Math.max(0, 0.6 - a.t * 2) : 0.25 + 0.5 * (a.state === 'strike' ? s : wind * 0.5) + Math.sin(p.t * 22) * 0.1;
+    }
     const slam = a?.kind === 'slam' && a.state === 'windup';
     this.slamRing.visible = slam;
     if (slam) {
@@ -300,7 +318,7 @@ export class PileRenderer {
     // its face (the eyes, toward Tom) clear.
     const N = p.bodies;
     const coreR = p.coreRadius;
-    const coreY = g - sunk + r * 0.85 + lift * 0.5 + p.raise;
+    const coreY = g - sunk + r * 0.85 + lift * 0.5 + p.raise + air;
     // Nov 25 (Aaron's concept art: carried up on its legs, bodies hanging from its belly): some hang underneath,
     // swinging as it walks.
     const foot = Math.round(N * 0.22);
@@ -337,7 +355,7 @@ export class PileRenderer {
       }
     }
     // The fling: a body held up over the top on a tendril as it winds up.
-    const top = { x: cx, y: g - sunk + r * 1.3 + lift, z: cz };
+    const top = { x: cx, y: g - sunk + r * 1.3 + lift + air, z: cz };
     if (a?.kind === 'fling' && a.state === 'windup') {
       const held = { x: cx, y: top.y + 0.8 + wind * 0.8, z: cz };
       this.put(held.x, held.y - 0.9, held.z, 400, ZOMBIE_FRAMES.dying[0], p.t * 6);
@@ -432,7 +450,7 @@ export class PileRenderer {
         const a2 = toTom + da;
         const up = Math.max(-0.95, Math.min(0.95, (h - 0.85) / 0.68));
         const k2 = Math.cos(da * 0.6) * Math.sqrt(1 - up * up); // on its round, as the cluster's are (Pile.eyeSpots)
-        eye.set(cx + Math.sin(a2) * R0 * k2, g - sunk + lift * 0.5 + p.raise + r * h, cz + Math.cos(a2) * R0 * k2);
+        eye.set(cx + Math.sin(a2) * R0 * k2, g - sunk + lift * 0.5 + air + p.raise + r * h, cz + Math.cos(a2) * R0 * k2);
         const blink = Math.sin(p.t * 0.9 + i * 2.7) > 0.96 ? 0.1 : 1;
         mtx.lookAt(eye, look3, this.up);
         this.q.setFromRotationMatrix(mtx);
@@ -445,13 +463,18 @@ export class PileRenderer {
     }
     // ---- the tendrils ----
     const base = (ang, h) => ({ x: cx + Math.sin(ang) * coreR * 0.9, y: coreY + (h - 0.85) * r, z: cz + Math.cos(ang) * coreR * 0.9 });
-    this.drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt);
+    this.drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt, air);
     // Idle: always out, waving, rising out of it all round.
     const idle = look.idle;
     const moving = p.phase === 'fight' && !p.grab && p.cycle !== 'reel' && !a;
+    // Nov 26 (Aaron: "get those tendrils lashing aggressively"): in the fight they thrash, harder with him close.
+    const dTom = Math.hypot(pp.x - p.x, pp.z - p.z) - r;
+    const near = p.phase === 'fight' ? Math.max(0, Math.min(1, 1 - (dTom - 2) / 8)) : 0;
+    const thr = p.phase === 'fight' ? (p.cfg.snap?.thrash ?? 1) * (1 + near * 0.5) : 1;
+    const tt = p.t * thr;
     for (let i = 0; i < idle; i++) {
       // Out to its sides, clear of its face (the artist's rendition).
-      const ang = toTom + (i % 2 ? 1 : -1) * (0.95 + Math.floor(i / 2) * 0.55) + Math.sin(p.t * 0.4 + i) * 0.15;
+      const ang = toTom + (i % 2 ? 1 : -1) * (0.95 + Math.floor(i / 2) * 0.55 - near * 0.35) + Math.sin(tt * 0.4 + i) * (0.15 + near * 0.25);
       const from = base(ang, 0.55 + (i % 3) * 0.3);
       const len = r * (0.9 + (i % 4) * 0.2) * rise;
       // Two of them planted on the road in front like legs, stepping as it hauls itself along.
@@ -465,8 +488,8 @@ export class PileRenderer {
       }
       // (The artist's rendition: long thin legs arching up and out, the spear tips held out level.)
       const reachOut = len * 1.7;
-      const out = { x: from.x + Math.sin(ang) * reachOut, y: from.y + len * (0.15 + 0.3 * Math.sin(p.t * 1.1 + i * 1.7)), z: from.z + Math.cos(ang) * reachOut };
-      this.tendril(from, out, 0.065 + 0.01 * (i % 2), 1.5, p.t * 1.6 + i * 1.3, true);
+      const out = { x: from.x + Math.sin(ang) * reachOut, y: from.y + len * (0.15 + (0.3 + near * 0.3) * Math.sin(tt * 1.1 + i * 1.7)), z: from.z + Math.cos(ang) * reachOut };
+      this.tendril(from, out, 0.065 + 0.01 * (i % 2), 1.5 - near * 0.6, tt * 1.6 + i * 1.3, true);
     }
     // The cutscene's first beat: tendrils bursting up out of the rubble before anything else of it shows.
     if (p.phase === 'intro' && p.burst && rise < 0.7) {
@@ -490,6 +513,13 @@ export class PileRenderer {
       if (p.lash.t < 0.35) this.tendril(top, { x: p.lash.to.x, y: this.heightAt(p.lash.to.x, p.lash.to.z) + 1.0, z: p.lash.to.z }, 0.15, 0.3, p.t * 4, true);
       else p.lash = null;
     }
+    // Nov 26: an idle tendril snapping out at him, in close.
+    if (p.snap) {
+      const k = Math.min(1, p.snap.t / 0.08) * (p.snap.t < 0.15 ? 1 : Math.max(0, 1 - (p.snap.t - 0.15) / 0.1));
+      const from = base(toTom + p.snap.side * 0.9, 0.9);
+      const to = { x: from.x + (p.snap.to.x - from.x) * k, y: from.y + (this.heightAt(p.snap.to.x, p.snap.to.z) + 1.1 - from.y) * k, z: from.z + (p.snap.to.z - from.z) * k };
+      this.tendril(from, to, 0.09, 0.4, p.t * 12, true);
+    }
     // The grab: rearing back before it's thrown; then out, or wrapped round him and reeling him in.
     if (a?.kind === 'grab' && a.state === 'windup') this.tendril(top, { x: top.x - Math.sin(toTom) * 1.2, y: top.y + 1.2 + wind * 0.6, z: top.z - Math.cos(toTom) * 1.2 }, 0.17, 0.8, p.t * 8, true);
     if (p.grab) {
@@ -508,7 +538,7 @@ export class PileRenderer {
   // Four great legs: from its sides up and out to a high knee, then down to a clawed foot on the ground. Each foot
   // stays planted till it's left `stride` behind, then steps (diagonal pairs in turn, never both of a pair at once).
   // A thick strand for thigh and shin, thinner ones wound about them (gnarled), a bone claw at the foot.
-  drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt) {
+  drawLegs(cx, cz, g, coreY, coreR, toTom, rise, dt, air = 0) {
     const p = this.pile;
     const L = p.cfg.legs;
     if (!L || rise < 0.25) {
@@ -529,11 +559,18 @@ export class PileRenderer {
       this.feet = angles.map((_, i) => ({ ...rest(i), from: null, t: 0 }));
     }
     const stride = L.stride * (0.6 + 0.4 * k);
+    const stepSeconds = L.stepSeconds / (p.surge > 0 ? 1.9 : 1); // (scuttling: quicker steps)
     for (let i = 0; i < 4; i++) {
       const f = this.feet[i];
       const target = rest(i);
-      if (f.from) {
-        f.t += dt / L.stepSeconds;
+      if (air > 0.05) {
+        // Nov 26: up in its leap: its feet drawn in under it, hanging; they come down where they're over.
+        f.x = cx + (target.x - cx) * 0.7;
+        f.z = cz + (target.z - cz) * 0.7;
+        f.from = null;
+        f.lift = Math.max(0, air - p.raise * 0.4);
+      } else if (f.from) {
+        f.t += dt / stepSeconds;
         const s = Math.min(1, f.t);
         f.x = f.from.x + (f.to.x - f.from.x) * s;
         f.z = f.from.z + (f.to.z - f.from.z) * s;

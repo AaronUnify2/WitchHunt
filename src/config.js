@@ -5961,15 +5961,32 @@ export const config = {
     lastGroup: 12, // at the end, at most this many of the bodies still in it stand up
     // By size (bodies): `below` is where a stage starts; speed m/s; attackEvery: seconds between attacks.
     stages: {
-      large: { speed: 1.3, attackEvery: 3.2, attacks: ['slam'] },
-      medium: { below: 20, speed: 3.2, attackEvery: 2.4, attacks: ['lash', 'fling', 'grab'] },
-      small: { below: 10, speed: 6.2, attackEvery: 1.8, attacks: ['lunge', 'shriek', 'grab'] },
+      // Nov 26 (Aaron: "it moves a little too slow ... super easy to just shoot it and walk backwards"): faster, the
+      // lash in every stage, and the leap (medium and small: his pick) to close on him when he keeps his distance.
+      large: { speed: 2.6, attackEvery: 2.2, attacks: ['slam', 'lash'] },
+      medium: { below: 20, speed: 3.8, attackEvery: 1.8, attacks: ['lash', 'fling', 'grab', 'leap'] },
+      small: { below: 10, speed: 6.4, attackEvery: 1.4, attacks: ['lunge', 'shriek', 'grab', 'lash', 'leap'] },
     },
+    // Nov 26 (Aaron's pick: "close gaps in bursts"): every `every` [min, max] seconds, a scuttle at him on its legs for
+    // `seconds` at `speed` m/s (Tom walks 4.5, sprints 7.2), or its stage's speed x `scale` if that's faster; not
+    // when it's already within `minGap` metres of its edge.
+    surge: { every: [2.5, 4.5], seconds: 1.1, speed: 7, scale: 1.3, minGap: 3 },
+    // Nov 26 (Aaron: "get those tendrils lashing aggressively"): its idle tendrils snap at him when he's within
+    // `reach` metres of its edge, every `every` seconds, for `damage`; and they thrash `thrash` times as fast.
+    snap: { reach: 3.5, every: 1.1, damage: 6, thrash: 2.2 },
     attacks: {
       firstAfter: 4,
       contact: { reach: 0.5, damage: 14, every: 1.0 }, // rolling into him
       slam: { range: 4, reach: 3.2, windup: 1.1, recover: 1.0, damage: 28, shake: 1.4 }, // the whole mass down on the ground
-      lash: { range: 10, windup: 0.55, recover: 0.7, damage: 16, dodge: 1.6 }, // a tendril at where he was
+      // a tendril at where he was; Nov 26: in flurries of up to `flurry`, `gap` seconds apart, every other one aimed
+      // `lead` seconds ahead of where he's going.
+      lash: { range: 14, windup: 0.4, recover: 0.45, damage: 16, dodge: 1.6, flurry: 3, gap: 0.3, lead: 0.45 },
+      // Nov 26 (Aaron: "jump high into the air and slam down on the ground"): it crouches (windup), springs `height`
+      // metres up and comes down `strike` seconds later where he stood as it left; a ring marks the spot. Under it
+      // (within reach of its edge): damage; within knock: thrown `distance` metres off it over `seconds` (his picks:
+      // knocked back, bodies shaken loose: `shed`). Only past minRange; after it, not again for `cool` seconds;
+      // past `prefer` metres it's what it does.
+      leap: { minRange: 6, range: 26, prefer: 11, windup: 0.75, strike: 1.15, height: 7, recover: 1.0, reach: 1.8, damage: 30, knock: 4.5, distance: 4.5, seconds: 0.3, shed: 2, shake: 1.8, cool: 5 },
       fling: { range: 18, windup: 0.6, recover: 0.8, flight: 0.9, reach: 1.6, damage: 14 }, // a body thrown at him
       lunge: { range: 10, windup: 0.45, strike: 0.5, recover: 0.9, speed: 13, reach: 0.6, damage: 22 },
       shriek: { range: 40, windup: 0.8, recover: 1.4, alert: 80 }, // calling the dead in
