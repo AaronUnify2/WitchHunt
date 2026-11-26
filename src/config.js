@@ -4820,7 +4820,7 @@ export const config = {
   mothership: {
     beamRange: 2.2, // metres from the beam's middle on the ground: "step into the light"
     interactRange: 1.6,
-    light: { ambientDay: 2.9, ambientNight: 2.9, ambientColor: 0x9690dc, fogColor: 0x0a0818, fogNear: 22, fogFar: 100 },
+    light: { ambientDay: 2.7, ambientNight: 2.7, ambientColor: 0x90a8b6, fogColor: 0x070d10, fogNear: 22, fogFar: 100 }, // Nov 26: steel-teal, after the new core-hall picture (was violet)
     // Nov 26 (Aaron: "make this whole dungeon a gravity limited tower climb"; world/mothershipTower.js): low gravity
     // aboard. A jump goes about 3.2 m up and hangs about 2.5 s (on the ground: 0.8 m, 0.7 s). In the air he
     // steers only a little (airAccel) and never faster sideways than airSpeed, so a sprint-jump can't skip the climb.
@@ -4829,8 +4829,9 @@ export const config = {
     // zone id -> { gravity, jumpSpeed } over physics.
     gravityZones: {},
     look: {
-      glow: { cyan: 0x3ee8f0, cyanDim: 0x1a7a90, purple: 0x9a5af0, violet: 0x5a3aa8, red: 0xff3a4a, redDim: 0x5a1a28, core: 0xc8fff4, reactor: 0x46f0e0, net: 0x2ad8e8, earth: 0x2a5a8a, earthLand: 0x24402a, atmosphere: 0x6ab8ff, holo: 0x58e8ff, quadNeon: 0x48ff9a },
-      colors: { deck: 0x3a3f5a, deckDark: 0x262a40, hull: 0x343a5e, hullPale: 0x4a5080, hullDark: 0x1e2136, panel: 0x423a70, pipe: 0x464e74, rail: 0x6a7296, glassRim: 0x566a8c, console: 0x2e3350, consoleTop: 0x46506e, sofa: 0x3a3650, sofaPale: 0x5a5878, bench: 0x3a3842, wood: 0x4a3828, crate: 0x3a3448, lift: 0x3a3c44, liftDark: 0x22242a, shelf: 0x2a2630, toy: 0x8a6a40, toyRed: 0x8a2a24, toyBlue: 0x2a4a8a, star: 0xb8a060, tyre: 0x141414, stair: 0x363a54 },
+      glow: { cyan: 0x3ee8f0, cyanDim: 0x1a7a90, purple: 0x9a5af0, violet: 0x5a3aa8, red: 0xff3a4a, redDim: 0x5a1a28, core: 0xc8fff4, reactor: 0x46f0e0, plasma: 0x22c8f0, net: 0x2ad8e8, earth: 0x2a5a8a, earthLand: 0x24402a, atmosphere: 0x6ab8ff, holo: 0x58e8ff, quadNeon: 0x48ff9a },
+      // Nov 26 (the new core-hall picture): dark steel and teal under the neon (was a saturated navy and violet).
+      colors: { deck: 0x4c5860, deckDark: 0x242c32, hull: 0x2e383f, hullPale: 0x48555d, hullDark: 0x171d22, panel: 0x343f47, pipe: 0x404b53, rail: 0x66757e, glassRim: 0x50616a, console: 0x283036, consoleTop: 0x404c54, sofa: 0x30343c, sofaPale: 0x4c525c, bench: 0x32363c, wood: 0x4a3828, crate: 0x353d44, lift: 0x40464c, liftDark: 0x22282c, shelf: 0x2c2e32, toy: 0x8a6a40, toyRed: 0x8a2a24, toyBlue: 0x2a4a8a, star: 0xb8a060, tyre: 0x141414, stair: 0x36414a },
     },
     // The greys aboard (posts: world/mothershipTower.js). Busy greys (workers at consoles, loungers on the sofas)
     // notice Tom within `notice[role].range` (crouched: `crouched`) inside their view (cone: radians either side of

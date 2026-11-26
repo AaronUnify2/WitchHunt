@@ -124,9 +124,22 @@ export function buildShipTower() {
   add({ kind: 'cyl', x: 0, z: 0, r: R + WALL, y0: -1.5, y1: 0, style: 'floor' });
   add({ kind: 'cyl', x: 0, z: 0, r: R + WALL, y0: ROOF, y1: ROOF + 1, style: 'roof' });
   add({ kind: 'cyl', x: 0, z: 0, r: COLUMN, y0: 0, y1: ROOF, style: 'column', see: false });
+  // Nov 26 (the new core-hall picture): the reactor's heavy frame, solid: eight pipes hugging the glass the whole
+  // height (none where the core's socket and the bridges face, at +x and -x), a machinery base round its foot
+  // (open where the stair starts), low pipes out across the floor.
+  for (let k = 0; k < 8; k++) {
+    const a = (k + 0.5) * (TAU / 8);
+    const c = polar(COLUMN + 0.12, a);
+    add({ kind: 'cyl', x: c.x, z: c.z, r: 0.2, y0: 0, y1: ROOF, style: 'reactorPipe', see: false });
+  }
+  for (const [a0, a1] of arcsMinus([[0.42 * Math.PI, 1.02 * Math.PI]])) add({ kind: 'ring', x: 0, z: 0, r0: COLUMN, r1: COLUMN + 1.35, a0, a1, y0: 0, y1: 1.1, style: 'reactorBase' });
+  for (const a of [0.2 * Math.PI, 1.15 * Math.PI, 1.42 * Math.PI, 1.7 * Math.PI, 1.95 * Math.PI]) {
+    const f = frame(a);
+    add(f.box(-0.18, 0.18, COLUMN + 1.3, COLUMN + 3.6, 0, 0.3, { style: 'floorPipe' }));
+  }
 
   // ---- the stairs: a spiral against the glass. Deck 0 to 1 whole; 1 to 2 broken (two flights gone: jump it) ----
-  const STAIR = { r0: COLUMN + 0.05, r1: 5.95, n: 8 };
+  const STAIR = { r0: COLUMN + 0.42, r1: 5.95, n: 8 }; // (clear of the reactor's pipes)
   const stairs = [];
   const helix = (aStart, span, yA, yB, skip = [], id) => {
     const dy = (yB - yA) / STAIR.n;
@@ -142,6 +155,8 @@ export function buildShipTower() {
   };
   helix(Math.PI / 2, Math.PI, 0, 9, [], 's1');
   helix((3 * Math.PI) / 2, Math.PI, 9, 18, [3, 4], 's2');
+  // A pipe on the reactor broken open, sparking (the new core-hall picture), on the side Tom sees from the pad.
+  details.push({ kind: 'pipeSparks', ...polar(COLUMN + 0.34, 0.625 * Math.PI), y: 5.2, a: 0.625 * Math.PI });
   // The broken flights' torn ends spark (the second pass).
   for (const [k, y] of [[3, 9 + 3 * 1.125], [5, 9 + 5 * 1.125]]) {
     const ang = (3 * Math.PI) / 2 + (k * Math.PI) / STAIR.n;
@@ -386,9 +401,12 @@ export function buildShipTower() {
       const a = (k + 0.5) * (TAU / 16);
       if (openings.some((o) => Math.abs(norm(a - o.a + Math.PI) - Math.PI) < o.half + 0.12 && y + 2.6 >= o.y0 && y + 2.6 <= o.y1 + 1)) continue;
       const p = polar(R - 0.08, a);
-      lights.push({ ...p, y: y + 2.6, a: a + Math.PI / 2, len: 2.6, wall: true });
-      // A sealed door under every fourth light (the second pass: Aaron, most side doors sealed).
-      if (k % 4 === (i % 2) * 2) details.push({ kind: 'sealed', ...polar(R - 0.02, a), y, a: a + Math.PI });
+      lights.push({ ...p, y: y + 2.6, a: a + Math.PI / 2, len: 2.2, wall: true }); // (2.2 m: clear of the pillars either side)
+      // A sealed door under every fourth light (the second pass: Aaron, most side doors sealed), unless a console or
+      // a crate stands in front of it.
+      const door = polar(R - 0.02, a);
+      const blocked = solids.some((o) => (o.style === 'console' || o.style === 'crate') && Math.abs(o.y0 - y) < 0.5 && Math.hypot(o.x - door.x, o.z - door.z) < 3.4);
+      if (k % 4 === (i % 2) * 2 && !blocked) details.push({ kind: 'sealed', ...door, y, a: a + Math.PI });
     }
     const zone = ['floor', 'deck1', 'deck2', 'deck3', 'top'][i];
     for (let k = 0; k < 24; k++) {
@@ -404,6 +422,15 @@ export function buildShipTower() {
   for (const x of [-9, 9]) strips.push({ zone: 'lounge', x: x * 0.98, z: 21.5, y: LY + 0.12, a: 0, len: 13, along: true });
   for (const z of [-6.95, 6.95]) strips.push({ zone: 'workshop', x: 21.5, z, y: TOP + 0.12, a: Math.PI / 2, len: 12, along: true });
   for (const z of [-9.95, 9.95]) strips.push({ zone: 'hangar', x: 37, z, y: TOP + 0.12, a: Math.PI / 2, len: 17, along: true });
+
+  // ---- pillars and ribs that never cross a door (Aaron, Nov 26: "you'll get a pillar right in the middle of a
+  // door"). The shaft's pillars stand between the panels, half a step off the lights and doors; and every door,
+  // hatch, vent, junction box, wall light and opening keeps its own stretch of wall clear, so a pillar or a rib
+  // stops above and starts below anything in its way. ----
+  const clear = clearZones(details, lights, openings);
+  const pillars = hullPillars(clear);
+  const ribs = wallRibs(solids.filter((o) => o.style === 'wall' && o.kind === 'box'), clear);
+  const pipesUp = hullPipes(clear);
 
   // ---- places ----
   const places = {
@@ -489,6 +516,10 @@ export function buildShipTower() {
     lights,
     strips,
     details,
+    clear,
+    pillars,
+    ribs,
+    pipesUp,
     places,
     posts,
     zones,
@@ -544,4 +575,109 @@ function shaftWall(add, openings) {
     }
     if (y < ROOF + 1) add({ kind: 'ring', x: 0, z: 0, r0: R, r1: R + WALL, a0, a1, y0: y, y1: ROOF + 1, style: 'hull' });
   }
+}
+
+// ---- what keeps clear of pillars ------------------------------------------------------------------
+
+// How much wall each kind of detail needs: half its width along the wall, and its height from its own y.
+export const CLEAR = {
+  sealed: { half: 1.15, y0: 0, y1: 2.8 },
+  hatch: { half: 0.62, y0: -0.8, y1: 0.8 },
+  junction: { half: 0.36, y0: -0.25, y1: 1.15 },
+  vent: { half: 0.66, y0: -0.3, y1: 0.3 },
+};
+
+// { x, z, half, y0, y1 } for every door, hatch, vent, junction box and wall light, and every opening in the shaft.
+export function clearZones(details, lights, openings) {
+  const out = [];
+  for (const d of details) {
+    const c = CLEAR[d.kind];
+    if (c) out.push({ kind: d.kind, x: d.x, z: d.z, half: c.half, y0: d.y + c.y0, y1: d.y + c.y1 });
+  }
+  for (const l of lights) if (l.wall) out.push({ kind: 'light', x: l.x, z: l.z, half: l.len / 2 + 0.17, y0: l.y - 0.2, y1: l.y + 0.2 }); // (the tube and its end caps)
+  for (const o of openings) out.push({ kind: 'opening', ...polar(R, o.a), half: o.half * R + 0.25, y0: o.y0 - 0.1, y1: o.y1 + 0.35 });
+  return out;
+}
+
+// [y0, y1] less the blocked intervals; pieces shorter than `min` dropped.
+export function spansLess(y0, y1, blocked, min = 0.4) {
+  const out = [];
+  let at = y0;
+  for (const [b0, b1] of [...blocked].sort((a, b) => a[0] - b[0])) {
+    if (b1 <= at) continue;
+    if (b0 > at) out.push([at, Math.min(b0, y1)]);
+    at = Math.max(at, b1);
+    if (at >= y1) break;
+  }
+  if (at < y1) out.push([at, y1]);
+  return out.filter(([a, b]) => b - a >= min);
+}
+
+// The shaft's pillars: 32 round, half a step off the lights and doors (so each light and door sits between two),
+// each cut round anything still in its way (the openings, the wells' doors).
+export function hullPillars(clear, n = 32, width = 0.34) {
+  const out = [];
+  const onHull = clear.filter((z) => Math.abs(Math.hypot(z.x, z.z) - R) < 1.2);
+  for (let k = 0; k < n; k++) {
+    const a = (k + 0.5) * (TAU / n); // (the lights and doors are at odd multiples of TAU / 32: each sits centred between two of these)
+    const blocked = [];
+    for (const z of onHull) {
+      const d = Math.abs(Math.atan2(Math.sin(a - Math.atan2(z.x, z.z)), Math.cos(a - Math.atan2(z.x, z.z)))) * R;
+      if (d < z.half + width / 2) blocked.push([z.y0, z.y1]);
+    }
+    for (const [y0, y1] of spansLess(0, ROOF, blocked)) out.push({ ...polar(R - 0.1, a), a, y0, y1, w: width });
+  }
+  return out;
+}
+
+// Vertical pipes up the shaft's wall (six), cut round what's in their way.
+export function hullPipes(clear) {
+  const out = [];
+  const onHull = clear.filter((z) => Math.abs(Math.hypot(z.x, z.z) - R) < 1.2);
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * TAU + TAU / 64;
+    const blocked = [];
+    for (const z of onHull) {
+      const d = Math.abs(Math.atan2(Math.sin(a - Math.atan2(z.x, z.z)), Math.cos(a - Math.atan2(z.x, z.z)))) * R;
+      if (d < z.half + 0.35) blocked.push([z.y0 - 0.3, z.y1 + 0.3]);
+    }
+    for (const [y0, y1] of spansLess(0, ROOF, blocked, 1)) out.push({ ...polar(R - 0.45, a), a, y0, y1, r: 0.2 });
+  }
+  return out;
+}
+
+// Ribs on both faces of each straight wall (the wells, the lounge, the workshop, the hangar), every ~2.4 m, cut
+// round what's on that face. Each: { x, z, a (the wall's turn), w (across x), d (across z), y0, y1 }.
+export function wallRibs(walls, clear) {
+  const out = [];
+  for (const s of walls) {
+    const longZ = s.hz >= s.hx;
+    const L = longZ ? s.hz * 2 : s.hx * 2;
+    if (L < 2.5 || s.y1 - s.y0 < 2) continue;
+    const a = s.a ?? 0;
+    const xd = { x: Math.cos(a), z: -Math.sin(a) };
+    const zd = { x: Math.sin(a), z: Math.cos(a) };
+    const along = longZ ? zd : xd;
+    const across = longZ ? xd : zd;
+    const thick = longZ ? s.hx : s.hz;
+    const n = Math.floor(L / 2.4);
+    for (let i = 1; i < n; i++) {
+      const t = -L / 2 + (L * i) / n;
+      for (const side of [-1, 1]) {
+        const off = side * (thick + 0.06);
+        const x = s.x + along.x * t + across.x * off;
+        const z = s.z + along.z * t + across.z * off;
+        const blocked = [];
+        for (const c of clear) {
+          const dx = c.x - x;
+          const dz = c.z - z;
+          const out1 = Math.abs(dx * across.x + dz * across.z); // how far off this face's plane
+          const lat = Math.abs(dx * along.x + dz * along.z); // how far along it
+          if (out1 < 0.45 && lat < c.half + 0.12) blocked.push([c.y0, c.y1]);
+        }
+        for (const [y0, y1] of spansLess(s.y0, s.y1, blocked)) out.push({ x, z, a, w: longZ ? 0.12 : 0.2, d: longZ ? 0.2 : 0.12, y0, y1 });
+      }
+    }
+  }
+  return out;
 }

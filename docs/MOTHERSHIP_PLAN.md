@@ -10,6 +10,7 @@ Aaron sent four concept pictures for the inside of the alien mothership and aske
 | 2. The core hall: a tall round chamber round a glowing reactor column, ring catwalks, tiered balconies, consoles, crew in purple | `concept-art/mothership-core-hall.jpg` | **The tower itself**: the shaft round the reactor's glass column, a deck every 9 m |
 | 3. A lounge: huge angled windows on space, curved sofas, holo consoles, crew relaxing | `concept-art/mothership-lounge.jpg` | **The lounge** off deck 3: windows over the Earth, off-duty greys on the sofas, a mezzanine and ramps up to the top |
 | 4. A workshop: the quad on a lift, two greys at it with tools, holo blueprints, shelves of Earth curios, a porthole | `concept-art/mothership-workshop.jpg` | **The workshop** at the top: Earl's quad on its lift, the mechanics, the curios; and a **hangar** past it (no picture) with the beam down |
+| 5. The core hall again (Nov 26, the current reference): an industrial reactor (plasma in the glass, a frame of thick pipes, a bulky base), hanging cables, neon circuits and door frames, grating and neon rings on a wet floor, dark steel and teal; a mechanical spider on the reactor | `concept-art/mothership-core-hall-2.jpg` | The reactor, walls, doors, floor and palette redone after it (below); the spider and the cables later |
 
 ## Aaron's answers
 
@@ -68,3 +69,7 @@ The shaft is 30 m across (the wall at 15 m), the reactor's glass column 3 m in r
 ## The second pass (Nov 26)
 
 Aaron's picks: picture 1's detail, and the crashed saucer outside to match the ship. Built: the service wells' landings and side rooms dressed like picture 1 (a hatch of glowing cables behind glass, a junction box throwing sparks, a vent, pipes along the ceiling, a sealed door); the broken stair's torn ends sparking; sealed doors round the decks under the wall lights; the saucer's rim, pad and beam in cyan and purple. Also: the objective text aboard rewritten for the tower, far-off greys posed less often. All from the layout's `details` (OPEN_QUESTIONS #833-837).
+
+## The core hall after the new picture (Nov 26)
+
+Aaron sent a second core-hall picture: "we're iterating... trying to make things look better", and a note that the wall's pillars sometimes stood in the middle of a door. His picks: the reactor, the neon walls and doors, the floor and grating; the palette toward the picture; the mechanical spider on the reactor left for later (a boss or guardian, once the story's settled); the hanging cables and dripping coolant not this time. Built: pillars half a step off the doors and lights and cut round anything in their way; the reactor's plasma, frame, pipes, base, steam and a sparking pipe; neon circuits and door frames; grating on every deck and neon rings round the reactor's foot; dark steel and teal. OPEN_QUESTIONS #839-845.

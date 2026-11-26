@@ -890,6 +890,13 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 **Round 105: the greys aboard can be killed (Nov 26, your note).** Debug menu, Story: The mothership: go up.
 - [ ] **Shoot or club a grey:** it flashes, falls and drops 3 alien shells. A pistol takes about 5 shots, the shotgun about 2, the spike maul about 3 swings (70 health; the mechanics 30).
 
+**Round 106: the core hall after your new picture (Nov 26).** Debug menu, Story: The mothership: go up (look up at the reactor from the pad).
+- [ ] **No pillar through a door** anywhere: the decks' sealed doors, the openings, the corridors' hatches and doors.
+- [ ] **The reactor:** plasma crawling inside the glass, the thick pipes round it (walk round them), the base with its vents and steam, the low pipes across the floor (step over them), the split pipe sparking. After the core's taken it dims and stutters.
+- [ ] **Neon:** circuit traces on the wall panels, neon-framed doors. **The floor:** grating on every deck, the neon rings round the reactor's foot.
+- [ ] **The colours:** dark steel and teal now. Closer to the picture? Too dark on the tablet anywhere?
+- [ ] **Speed:** the ship has more in it (about 141,000 triangles). Any slowdown aboard?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

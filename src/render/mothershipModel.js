@@ -187,7 +187,7 @@ function bakeLight(geometry, tint, wallTint) {
     let glow = 0;
     let wall = 0;
     if (r < 16 && y < 46) {
-      glow = 0.5 * Math.exp(-Math.max(0, r - 3) / 5.5);
+      glow = 0.7 * Math.exp(-Math.max(0, r - 3) / 7); // (Nov 26: the reactor lights more of the hall, as in the new picture)
       const dy = ((y % 9) + 9) % 9;
       wall = 0.35 * Math.exp(-Math.abs(dy - 2.6) / 1.6) * Math.exp(-Math.max(0, 15 - r) / 3.5);
     } else {
@@ -216,13 +216,14 @@ export function buildMothership(look, ship) {
     if (!b.parts.has(color)) b.parts.set(color, []);
     b.parts.get(color).push(g2);
   };
+  const grated = []; // the decks' tops, in the grating (the new core-hall picture): their own textured mesh
   const glowBox = (w, h, d, color, x, y, z, ry = 0, rx = 0) => glow.push({ geo: at(new THREE.BoxGeometry(w, h, d), x, y, z, ry, rx), color });
 
   // ---- each solid, drawn by its style ----
   for (const s of ship.solids) {
     switch (s.style) {
       case 'floor':
-        if (s.kind === 'cyl') putGeo(at(new THREE.RingGeometry(2.9, s.r, 72, 12).rotateX(-Math.PI / 2), s.x, s.y1, s.z), c.deck); // (rings of vertices: the baked light falls off smoothly)
+        if (s.kind === 'cyl') grated.push(colourGeo(at(new THREE.RingGeometry(2.9, s.r, 72, 12).rotateX(-Math.PI / 2), s.x, s.y1, s.z), c.deck)); // (rings of vertices: the baked light falls off smoothly)
         else b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.deckDark, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
         break;
       case 'roof':
@@ -231,18 +232,13 @@ export function buildMothership(look, ship) {
       case 'column':
         break; // the reactor, below
       case 'catwalk':
-        putGeo(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1), c.deck);
+        grated.push(colourGeo(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1), c.deck));
         glow.push({ geo: sectorGeo(s.r1 - 0.06, s.r1 + 0.005, s.a0, s.a1, s.y1 - 0.12, s.y1 + 0.01, { bottom: false, inner: false, ends: false }), color: g.cyan });
         break;
       case 'balcony':
         if (s.kind === 'ring') {
-          putGeo(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1), c.deck);
+          grated.push(colourGeo(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1), c.deck)); // (the grating's its plating now)
           glow.push({ geo: sectorGeo(s.r0 - 0.005, s.r0 + 0.06, s.a0, s.a1, s.y1 - 0.12, s.y1 + 0.01, { bottom: false, outer: false, ends: false }), color: g.purple });
-          // plates: a seam every 10 degrees
-          for (let a = Math.ceil(s.a0 / (TAU / 36)) * (TAU / 36); a < s.a1; a += TAU / 36) {
-            const m = P((s.r0 + s.r1) / 2, a, s.y1 + 0.005);
-            b.box(0.05, 0.012, s.r1 - s.r0, c.deckDark, m.x, m.y, m.z, a);
-          }
         } else b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.deck, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
         break;
       case 'net': {
@@ -283,7 +279,7 @@ export function buildMothership(look, ship) {
         if (s.style !== 'corridor') floorLines(glow, s, g);
         break;
       case 'wall':
-        drawWall(b, s, c, ship);
+        drawWall(b, s, c);
         break;
       case 'ceiling':
         b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hullDark, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
@@ -331,33 +327,88 @@ export function buildMothership(look, ship) {
     }
   }
 
-  // ---- the reactor: the glass column, the glowing core up its middle, its frame; the crown's socket ----
+  // ---- the reactor (Nov 26, after the new core-hall picture): plasma crackling inside the glass, panes in a frame of
+  // mullions, heavy collars at each deck, eight thick pipes hugging it, a machinery base at its foot with pipes out
+  // across the floor, steam rising off the base ----
   const col = ship.solids.find((s) => s.style === 'column');
   const reactor = new THREE.Group();
-  const coreMat = new THREE.MeshBasicMaterial({ color: g.reactor });
-  const inner = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, col.y1 - 1.5, 24, 1, true), coreMat);
-  inner.position.y = (col.y1 + 1.5) / 2;
-  reactor.add(inner);
+  const plasmaMat = plasmaMaterial(g.plasma ?? g.reactor);
+  const plasma = new THREE.Mesh(new THREE.CylinderGeometry(col.r - 0.45, col.r - 0.45, col.y1 - 1.2, 40, 1, true), plasmaMat);
+  plasma.position.y = 1.2 + (col.y1 - 1.2) / 2;
+  reactor.add(plasma);
   const glassMat = new THREE.MeshBasicMaterial({ color: g.reactor, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   const shell = new THREE.Mesh(new THREE.CylinderGeometry(col.r - 0.05, col.r - 0.05, col.y1, 32, 1, true), glassMat);
   shell.position.y = col.y1 / 2;
   reactor.add(shell);
-  // pods up the core (picture 2): dark clamps and rings, every 3 m
-  for (let y = 2; y < col.y1 - 1; y += 3) {
-    b.put(new THREE.TorusGeometry(1.45, 0.16, 8, 28).rotateX(Math.PI / 2), c.hullPale, 0, y, 0);
-    for (let k = 0; k < 4; k++) {
-      const a = (k / 4) * TAU + y * 0.3;
-      b.box(0.3, 0.9, 0.3, c.hullDark, Math.sin(a) * 1.4, y, Math.cos(a) * 1.4, a);
+  // the panes' frame: sixteen mullions, a thin band every 3 m, a heavy collar at each deck and at the floor
+  for (let k = 0; k < 16; k++) {
+    const a = (k / 16) * TAU;
+    b.box(0.08, col.y1, 0.1, c.glassRim, Math.sin(a) * (col.r - 0.02), col.y1 / 2, Math.cos(a) * (col.r - 0.02), a);
+  }
+  for (let y = 3; y < col.y1; y += 3) putGeo(sectorGeo(col.r - 0.05, col.r + 0.03, 0, TAU, y - 0.04, y + 0.04), c.glassRim);
+  // what the plasma stands on inside the glass: a plinth, its top ringed in light (and the floor under it closed)
+  putGeo(sectorGeo(0, col.r - 0.05, 0, TAU, -0.05, 1.2), c.hullDark);
+  glow.push({ geo: sectorGeo(col.r - 0.75, col.r - 0.6, 0, TAU, 1.2, 1.215, { bottom: false, ends: false }), color: g.cyan });
+  for (const y of [...ship.levels.slice(1), 44]) {
+    putGeo(sectorGeo(col.r - 0.1, col.r + 0.55, 0, TAU, y - 1.0, y - 0.35), c.hullDark);
+    putGeo(sectorGeo(col.r - 0.1, col.r + 0.42, 0, TAU, y - 1.15, y - 1.0), c.hullPale);
+    for (let k = 0; k < 24; k++) {
+      const a = (k / 24) * TAU;
+      const m = P(col.r + 0.56, a, y - 0.68);
+      b.box(0.08, 0.08, 0.06, c.rail, m.x, m.y, m.z, a); // its bolts
     }
   }
-  // the glass's frame: struts, a ring at each deck and a heavy one at the floor
-  for (let k = 0; k < 10; k++) {
-    const a = (k / 10) * TAU;
-    b.box(0.16, col.y1, 0.16, c.glassRim, Math.sin(a) * col.r, col.y1 / 2, Math.cos(a) * col.r, a);
+  for (let y = 4.5; y < col.y1; y += 9) glow.push({ geo: sectorGeo(col.r + 0.005, col.r + 0.03, 0, TAU, y, y + 0.06, { top: false, bottom: false, inner: false, ends: false }), color: g.cyan });
+  // the eight pipes up it, collared every 2.25 m, each bending out into the base at the foot
+  for (const s of ship.solids.filter((x) => x.style === 'reactorPipe')) {
+    const a = Math.atan2(s.x, s.z);
+    b.put(new THREE.CylinderGeometry(s.r, s.r, s.y1 - 1.6, 10), c.pipe, s.x, 1.6 + (s.y1 - 1.6) / 2, s.z);
+    for (let y = 2.4; y < s.y1 - 0.5; y += 2.25) b.put(new THREE.CylinderGeometry(s.r + 0.06, s.r + 0.06, 0.16, 10), c.hullDark, s.x, y, s.z);
+    const bend = new THREE.TorusGeometry(0.45, s.r, 8, 10, Math.PI / 2);
+    bend.rotateY(Math.PI / 2);
+    b.push(s.x, 1.6, s.z, a);
+    b.put(bend, c.pipe, 0, 0, 0.45, 0, 0, Math.PI);
+    b.pop();
   }
-  for (const y of [...ship.levels, 1.2, 44]) putGeo(sectorGeo(col.r - 0.08, col.r + 0.08, 0, TAU, y + 0.6, y + 1.0), c.glassRim);
-  putGeo(sectorGeo(col.r - 0.1, col.r + 0.45, 0, TAU, 0, 1.1), c.hullDark);
-  for (let y = 4.5; y < col.y1; y += 9) glow.push({ geo: sectorGeo(col.r + 0.005, col.r + 0.03, 0, TAU, y, y + 0.08, { top: false, bottom: false, inner: false, ends: false }), color: g.cyan });
+  // the base: a ring of machinery, vents glowing in its face, valves and boxes on top
+  for (const s of ship.solids.filter((x) => x.style === 'reactorBase')) {
+    putGeo(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1), c.hullDark);
+    putGeo(sectorGeo(s.r1 - 0.02, s.r1 + 0.04, s.a0, s.a1, s.y1 - 0.12, s.y1, { ends: false }), c.hullPale);
+    for (let a = s.a0 + 0.2; a < s.a1 - 0.15; a += 0.42) {
+      const m = P(s.r1 + 0.01, a, 0.5);
+      glow.push({ geo: at(new THREE.BoxGeometry(0.5, 0.18, 0.02), m.x, m.y, m.z, a), color: g.cyanDim });
+      const top = P((s.r0 + s.r1) / 2 + 0.2, a + 0.2, s.y1 + 0.15);
+      b.box(0.34, 0.3, 0.3, c.console, top.x, top.y, top.z, a);
+      const v = P((s.r0 + s.r1) / 2 - 0.25, a, s.y1 + 0.22);
+      b.put(new THREE.CylinderGeometry(0.12, 0.12, 0.44, 8), c.pipe, v.x, v.y, v.z);
+      b.put(new THREE.TorusGeometry(0.14, 0.03, 5, 12).rotateX(Math.PI / 2), c.rail, v.x, v.y + 0.24, v.z);
+    }
+  }
+  // pipes out across the floor, each sinking into a collar in the deck at its end
+  for (const s of ship.solids.filter((x) => x.style === 'floorPipe')) {
+    b.push(s.x, 0, s.z, s.a);
+    b.put(new THREE.CylinderGeometry(0.15, 0.15, s.hz * 2, 10).rotateX(Math.PI / 2), c.pipe, 0, 0.16, 0);
+    for (let t = -s.hz + 0.5; t < s.hz; t += 1.0) b.box(0.38, 0.06, 0.12, c.hullDark, 0, 0.02, t);
+    b.put(new THREE.CylinderGeometry(0.24, 0.28, 0.12, 10), c.hullDark, 0, 0.06, s.hz);
+    b.pop();
+  }
+  const steam = buildSteam(ship);
+  // The reactor's light lying on the wet floor round it (the new core-hall picture): a pool fading out by 11 m.
+  const poolGeo = new THREE.RingGeometry(col.r + 1.3, 11, 72, 6).rotateX(-Math.PI / 2);
+  const pc = new Float32Array(poolGeo.getAttribute('position').count * 3);
+  const pp = poolGeo.getAttribute('position');
+  const poolCol = new THREE.Color(g.reactor);
+  for (let i = 0; i < pp.count; i++) {
+    const r = Math.hypot(pp.getX(i), pp.getZ(i));
+    const k = Math.pow(Math.max(0, 1 - (r - col.r - 1.3) / (11 - col.r - 1.3)), 1.6) * 0.2;
+    pc.set([poolCol.r * k, poolCol.g * k, poolCol.b * k], i * 3);
+  }
+  poolGeo.setAttribute('color', new THREE.BufferAttribute(pc, 3));
+  const pool = new THREE.Mesh(poolGeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  pool.position.y = 0.02;
+  pool.renderOrder = 1;
+  reactor.add(pool);
+
   // the crown's socket, facing the bridge to the workshop: a cradle on the glass, the core in it
   const sock = ship.places.socket;
   b.box(0.7, 2.0, 1.5, c.hullDark, sock.x + 0.3, sock.y, sock.z);
@@ -385,6 +436,14 @@ export function buildMothership(look, ship) {
       glowBox(0.08, o.y1 - o.y0, 0.08, g.cyan, m.x, m.y, m.z, a);
     }
     glow.push({ geo: sectorGeo(14.9, 14.97, o.a - o.half, o.a + o.half, o.y1 - 0.05, o.y1 + 0.03, { bottom: false, outer: false, ends: false }), color: g.cyan });
+    // the purple outline outside it (the new core-hall picture's doors)
+    const pad2 = 0.16 / 15;
+    for (const side of [-1, 1]) {
+      const a = o.a + side * (o.half + pad2);
+      const m = P(14.96, a, (o.y0 + o.y1 + 0.2) / 2);
+      glowBox(0.04, o.y1 - o.y0 + 0.2, 0.03, g.purple, m.x, m.y, m.z, a);
+    }
+    glow.push({ geo: sectorGeo(14.93, 14.97, o.a - o.half - pad2, o.a + o.half + pad2, o.y1 + 0.17, o.y1 + 0.21, { bottom: false, outer: false, ends: false }), color: g.purple });
   }
   for (const y of ship.levels) {
     // a pipe round the wall over each deck, and its brackets
@@ -398,18 +457,26 @@ export function buildMothership(look, ship) {
       }
     }
   }
-  // vertical pipes up the wall where there's no door
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * TAU + 0.21;
-    if (ship.openings.some((o) => Math.abs(Math.atan2(Math.sin(a - o.a), Math.cos(a - o.a))) < o.half + 0.12)) continue;
-    const m = P(14.55, a, 23);
-    b.put(new THREE.CylinderGeometry(0.2, 0.2, 46, 8), c.pipe, m.x, m.y, m.z);
+  // Nov 26 (Aaron: "a pillar right in the middle of a door"): the pillars, the walls' ribs and the pipes up the wall
+  // are the layout's, placed between the panels and cut round every door, hatch, vent, light and opening.
+  for (const pl of ship.pillars ?? []) {
+    const h = pl.y1 - pl.y0;
+    const m = P(Math.hypot(pl.x, pl.z), pl.a, (pl.y0 + pl.y1) / 2);
+    b.box(pl.w, h, 0.3, c.panel, m.x, m.y, m.z, pl.a + Math.PI / 2);
+    const f = P(Math.hypot(pl.x, pl.z) - 0.16, pl.a, (pl.y0 + pl.y1) / 2);
+    b.box(pl.w * 0.45, h, 0.04, c.hullPale, f.x, f.y, f.z, pl.a + Math.PI / 2);
+  }
+  for (const r of ship.ribs ?? []) b.box(r.w, r.y1 - r.y0, r.d, c.hullPale, r.x, (r.y0 + r.y1) / 2, r.z, r.a);
+  for (const pu of ship.pipesUp ?? []) {
+    b.put(new THREE.CylinderGeometry(pu.r, pu.r, pu.y1 - pu.y0, 8), c.pipe, pu.x, (pu.y0 + pu.y1) / 2, pu.z);
+    for (let y = pu.y0 + 1.5; y < pu.y1 - 0.5; y += 3) b.put(new THREE.CylinderGeometry(pu.r + 0.05, pu.r + 0.05, 0.14, 8), c.hullDark, pu.x, y, pu.z);
   }
 
   // ---- what's on the walls (the second pass; picture 1): hatches of cables, junction boxes that spark, vents,
   // sealed doors, pipes; the broken stair's torn ends ----
   const emitters = [];
   for (const d of ship.details ?? []) drawDetail(b, glow, glass, putGeo, emitters, d, c, g);
+  drawCircuits(glow, ship, g);
 
   // ---- the floor's circuit lines (pictures 2 and 4): cyan traces out from the column ----
   for (let k = 0; k < 24; k++) {
@@ -423,7 +490,19 @@ export function buildMothership(look, ship) {
     const f = P(r1, bend, 0.012);
     glowBox(0.05, 0.01, e.distanceTo(f), g.cyanDim, (e.x + f.x) / 2, 0.012, (e.z + f.z) / 2, Math.atan2(f.x - e.x, f.z - e.z));
   }
-  for (const r of [6.5, 12.5]) glow.push({ geo: sectorGeo(r - 0.03, r + 0.03, 0, TAU, 0.005, 0.015, { bottom: false, ends: false }), color: g.violet });
+  // The big neon rings round the reactor's foot (the new core-hall picture): cyan inside, purple out, ticks between.
+  const ring = (r, w, color, y = 0.014) => glow.push({ geo: sectorGeo(r - w / 2, r + w / 2, 0, TAU, y - 0.008, y, { bottom: false, ends: false }), color });
+  ring(5.95, 0.1, g.cyan);
+  ring(6.25, 0.03, g.cyanDim);
+  ring(7.7, 0.12, g.purple);
+  ring(8.05, 0.04, g.violet);
+  ring(9.4, 0.05, g.cyan);
+  ring(12.5, 0.04, g.violet);
+  for (let k = 0; k < 64; k++) {
+    const a = (k / 64) * TAU;
+    const m = P(k % 4 === 0 ? 6.95 : 7.0, a, 0.013);
+    glowBox(0.05, 0.008, k % 4 === 0 ? 1.1 : 0.45, k % 2 ? g.purple : g.cyan, m.x, m.y, m.z, a);
+  }
   // the arrival pad
   const pad = ship.places.pad;
   b.put(new THREE.CylinderGeometry(1.6, 1.8, 0.12, 32), c.hullPale, pad.x, 0.06, pad.z);
@@ -463,6 +542,15 @@ export function buildMothership(look, ship) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;
   const glowM = glowMesh(glow);
+  // The decks in their grating: baked light like the rest, a tiled texture over it.
+  const grateGeo = mergeGeometries(grated.map((x) => (x.index ? x.toNonIndexed() : x)));
+  grated.forEach((x) => x.dispose());
+  planarUV(grateGeo, 1.1);
+  bakeLight(grateGeo, g.reactor, g.cyan);
+  const grateTex = gratingTexture();
+  const grateMat = new THREE.MeshLambertMaterial({ vertexColors: true, map: grateTex });
+  const grateM = new THREE.Mesh(grateGeo, grateMat);
+  grateM.receiveShadow = true;
   const netMat = new THREE.MeshBasicMaterial({ color: g.net, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   const netGeo = nets.length ? mergeGeometries(nets.map((x) => (x.deleteAttribute('normal'), x))) : new THREE.BufferGeometry();
   nets.forEach((x) => x.dispose());
@@ -539,12 +627,11 @@ export function buildMothership(look, ship) {
   // ---- sparks: a burst from each emitter now and then, falling slow in the low gravity ----
   const sparks = buildSparks(emitters);
 
-  group.add(sky.group, mesh, glowM, reactor, core, beamCol, ...stripMeshes, liftGroup, curioGroup, netM, winM, sparks.group);
+  group.add(sky.group, mesh, grateM, glowM, reactor, core, beamCol, ...stripMeshes, liftGroup, curioGroup, netM, winM, sparks.group, steam.group);
   for (const { grp } of lootMeshes.values()) group.add(grp);
 
   let time = 0;
   let power = 1;
-  const reactorColour = new THREE.Color(g.reactor);
   const red = new THREE.Color(g.red);
   const calm = new THREE.Color(g.violet);
   const api = {
@@ -558,7 +645,7 @@ export function buildMothership(look, ship) {
     // The reactor's brightness (1 full; taken: dim).
     setReactor(k) {
       power = k;
-      coreMat.color.copy(reactorColour).multiplyScalar(0.25 + 0.75 * k);
+      plasmaMat.uniforms.power.value = k;
       glassMat.opacity = 0.04 + 0.06 * k;
     },
     setZoneAlert(zone, on) {
@@ -589,8 +676,10 @@ export function buildMothership(look, ship) {
       time += dt;
       core.rotation.y += dt * 0.9;
       core.children[1].scale.setScalar(1 + Math.sin(time * 3) * 0.08);
-      const pulse = 0.85 + 0.15 * Math.sin(time * 1.7);
-      coreMat.color.copy(reactorColour).multiplyScalar((0.25 + 0.75 * power) * (power < 1 ? 0.7 + 0.3 * Math.abs(Math.sin(time * 9)) : pulse));
+      plasmaMat.uniforms.time.value = time;
+      // Taken: it stutters (power flickers round its dimmed level).
+      plasmaMat.uniforms.power.value = power < 1 ? power * (0.6 + 0.4 * Math.abs(Math.sin(time * 9))) : 1;
+      steam.update(dt);
       const blink = 0.55 + 0.45 * Math.abs(Math.sin(time * 3.2));
       for (const s of stripMats.values()) if (s.on) s.mat.color.copy(red).multiplyScalar(blink);
       if (camera) sky.group.position.copy(camera.position).sub(group.position);
@@ -599,6 +688,9 @@ export function buildMothership(look, ship) {
       group.removeFromParent();
       geometry.dispose();
       material.dispose();
+      grateGeo.dispose();
+      grateMat.dispose();
+      grateTex.dispose();
       glowM.geometry.dispose();
       glowM.material.dispose();
       netGeo.dispose();
@@ -610,7 +702,7 @@ export function buildMothership(look, ship) {
         m.material.dispose();
       }
       group.traverse((o) => {
-        if (o === mesh || o === glowM || o === netM || o === winM || stripMeshes.includes(o)) return;
+        if (o === mesh || o === grateM || o === glowM || o === netM || o === winM || stripMeshes.includes(o)) return;
         if (o.isMesh || o.isPoints) {
           o.geometry?.dispose();
           o.material?.dispose?.();
@@ -683,52 +775,17 @@ function drawSteps(b, s, c) {
   b.pop();
 }
 
-function drawWall(b, s, c, ship) {
+function drawWall(b, s, c) {
   b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hull, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
-  // ribs along it
-  const long = s.hz >= s.hx;
-  const L = long ? s.hz * 2 : s.hx * 2;
-  if (L < 2.5 || s.y1 - s.y0 < 2) return;
-  b.push(s.x, 0, s.z, s.a ?? 0);
-  const n = Math.floor(L / 2.4);
-  const thick = long ? s.hx : s.hz;
-  for (let i = 1; i < n; i++) {
-    const t = -L / 2 + (L * i) / n;
-    for (const side of [-1, 1]) {
-      const off = side * (thick + 0.06);
-      b.box(long ? 0.12 : 0.2, s.y1 - s.y0, long ? 0.2 : 0.12, c.hullPale, long ? off : t, (s.y0 + s.y1) / 2, long ? t : off);
-    }
-  }
-  b.pop();
+  // (its ribs come from the layout: ship.ribs, cut round the doors and hatches on it)
 }
 
 function drawHull(b, glow, s, c, g) {
   b.put(sectorGeo(s.r0, s.r1, s.a0, s.a1, s.y0, s.y1, { top: false, bottom: false }), c.hull);
   // panels: a seam every 3 m up, ribs every 11.25 degrees round
   for (let y = Math.ceil((s.y0 + 0.01) / 3) * 3; y < s.y1; y += 3) b.put(sectorGeo(s.r0 - 0.03, s.r0, s.a0, s.a1, y - 0.03, y + 0.03, { ends: false }), c.hullDark);
-  const step = TAU / 32;
-  for (let a = Math.ceil(s.a0 / step) * step; a < s.a1 - 0.01; a += step) {
-    if (a - s.a0 < 0.02) continue;
-    const m = P(s.r0 - 0.08, a, (s.y0 + s.y1) / 2);
-    b.box(0.3, s.y1 - s.y0, 0.16, c.panel, m.x, m.y, m.z, a + Math.PI / 2);
-  }
-  // circuit lines on the panels (the pictures' walls): a few short violet traces, up then across
-  const span = s.a1 - s.a0;
-  if (span < 0.1 || s.y1 - s.y0 < 2) return;
-  const n = Math.min(6, Math.floor((span * 15 * (s.y1 - s.y0)) / 60));
-  for (let i = 0; i < n; i++) {
-    const h1 = Math.sin(i * 12.9898 + s.a0 * 78.233) * 43758.5453;
-    const u = h1 - Math.floor(h1);
-    const h2 = Math.sin(i * 39.346 + s.y0 * 11.135) * 24634.6345;
-    const v = h2 - Math.floor(h2);
-    const a = s.a0 + span * (0.1 + 0.8 * u);
-    const y = s.y0 + (s.y1 - s.y0) * (0.15 + 0.7 * v);
-    const m = P(s.r0 - 0.012, a, y);
-    glow.push({ geo: at(new THREE.BoxGeometry(0.04, 1.4, 0.01), m.x, m.y, m.z, a), color: g.violet });
-    const da = 0.6 / s.r0;
-    const e = P(s.r0 - 0.012, a + da / 2, y + 0.7);
-    glow.push({ geo: at(new THREE.BoxGeometry(0.6, 0.04, 0.01), e.x, e.y, e.z, a + da / 2), color: g.violet });
-  }
+  // (its pillars come from the layout: ship.pillars, between the panels and cut round the doors)
+  // (its neon circuits are drawn panel by panel: drawCircuits)
 }
 
 function drawWindow(b, glass, s, c) {
@@ -982,7 +1039,20 @@ function drawDetail(b, glow, glass, putGeo, emitters, d, c, g) {
       b.box(1.7, 0.1, 0.12, c.panel, 0, 0.05, 0.06);
       gl(new THREE.BoxGeometry(0.03, 2.2, 0.01), g.violet, 0, 1.15, 0.055);
       gl(new THREE.BoxGeometry(0.14, 0.14, 0.01), g.purple, 0.62, 1.25, 0.06);
-      for (const sx of [-1, 1]) gl(new THREE.BoxGeometry(0.02, 2.3, 0.01), g.cyanDim, sx * 0.84, 1.25, 0.2);
+      // its neon frame (the new core-hall picture): a bright cyan outline, a purple one outside it
+      for (const sx of [-1, 1]) gl(new THREE.BoxGeometry(0.06, 2.5, 0.02), g.cyan, sx * 0.84, 1.25, 0.21);
+      gl(new THREE.BoxGeometry(1.74, 0.06, 0.02), g.cyan, 0, 2.5, 0.21);
+      for (const sx of [-1, 1]) gl(new THREE.BoxGeometry(0.04, 2.75, 0.02), g.purple, sx * 1.07, 1.38, 0.05);
+      gl(new THREE.BoxGeometry(2.18, 0.04, 0.02), g.purple, 0, 2.76, 0.05);
+      break;
+    }
+    case 'pipeSparks': {
+      // A reactor pipe split open: a torn collar, the pipe's end bent out, sparking (the new core-hall picture).
+      b.box(0.5, 0.18, 0.5, c.hullDark, 0, 0, -0.1, 0.4, 0.3);
+      b.box(0.14, 0.4, 0.14, c.pipe, 0.12, -0.25, 0.05, 0, 0.5, 0.3);
+      gl(new THREE.BoxGeometry(0.16, 0.05, 0.01), 0xff9a40, 0, 0.02, 0.17);
+      emitters.push({ p: b.point(0, 0.02, 0.2), dir: new THREE.Vector3(Math.sin(d.a), 0.4, Math.cos(d.a)) });
+      emitters.push({ p: b.point(0.1, -0.4, 0.15), dir: new THREE.Vector3(Math.sin(d.a), -0.2, Math.cos(d.a)) });
       break;
     }
     case 'sparks': {
@@ -1059,4 +1129,199 @@ function buildSparks(emitters, per = 14) {
       geo.getAttribute('position').needsUpdate = true;
     },
   };
+}
+
+// ---- the reactor's plasma, the base's steam ----------------------------------------------------------
+
+// Electric veins crawling up the inside of the glass (the new core-hall picture): three layers of bright,
+// wandering filaments over a dim cyan body. uniforms: time (s), power (0..1: the core taken dims and stutters it).
+export function plasmaMaterial(colour) {
+  return new THREE.ShaderMaterial({
+    uniforms: { time: { value: 0 }, power: { value: 1 }, colA: { value: new THREE.Color(colour) }, colB: { value: new THREE.Color(0xe6ffff) } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      uniform float time;
+      uniform float power;
+      uniform vec3 colA;
+      uniform vec3 colB;
+      varying vec2 vUv;
+      float vein(vec2 p, float s, float t, float k) {
+        float x = p.x * s + sin(p.y * k + t) * 0.9 + sin(p.y * k * 2.3 - t * 1.3) * 0.35;
+        return 0.04 / (abs(sin(x)) + 0.04);
+      }
+      void main() {
+        vec2 p = vec2(vUv.x * 6.2832, vUv.y * 44.0);
+        float t = time;
+        float v = vein(p, 2.0, t * 2.1, 0.45) + vein(p + vec2(1.7, 3.1), 3.0, -t * 1.6, 0.7) * 0.8 + vein(p + vec2(4.1, 7.0), 5.0, t * 2.7, 1.1) * 0.5;
+        float flick = 0.85 + 0.15 * sin(t * 13.0 + p.y * 0.5);
+        vec3 body = colA * (0.3 + 0.12 * sin(p.y * 0.8 - t * 3.0) + 0.06 * sin(p.x * 3.0 + t));
+        float bright = clamp(v * 0.3, 0.0, 1.0);
+        vec3 c = body + mix(colA, colB, bright) * bright * 0.85 * flick;
+        gl_FragColor = vec4(c * (0.2 + 0.8 * power), 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+    side: THREE.FrontSide,
+  });
+}
+
+// Steam off the reactor's base: soft puffs rising slow from its vents, spreading and fading (additive, so a
+// darker colour is a fainter puff).
+function buildSteam(ship, per = 10) {
+  const vents = [];
+  for (const s of ship.solids.filter((x) => x.style === 'reactorBase')) for (let a = s.a0 + 0.3; a < s.a1 - 0.2; a += 0.9) vents.push(P(s.r1 - 0.3, a, s.y1));
+  const n = Math.max(1, vents.length * per);
+  const pos = new Float32Array(n * 3).fill(-1e4);
+  const col = new Float32Array(n * 3);
+  const age = new Float32Array(n).map((_, i) => (i / n) * 4.5);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const size = 64;
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = Math.hypot(x - size / 2 + 0.5, y - size / 2 + 0.5) / (size / 2);
+      const v = Math.max(0, 1 - d);
+      data.set([255, 255, 255, Math.round(255 * v * v)], (y * size + x) * 4);
+    }
+  }
+  const tex = new THREE.DataTexture(data, size, size);
+  tex.needsUpdate = true;
+  const points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 2.2, map: tex, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  points.frustumCulled = false;
+  points.renderOrder = 2;
+  const group = new THREE.Group();
+  group.add(points);
+  const LIFE = 4.5;
+  return {
+    group,
+    update(dt) {
+      for (let i = 0; i < n; i++) {
+        age[i] += dt;
+        const v = vents[Math.floor(i / per)];
+        if (age[i] >= LIFE) age[i] -= LIFE;
+        const k = age[i] / LIFE;
+        const drift = i * 2.39;
+        pos[i * 3] = v.x + Math.sin(drift) * k * 0.9;
+        pos[i * 3 + 1] = v.y + k * 3.2;
+        pos[i * 3 + 2] = v.z + Math.cos(drift) * k * 0.9;
+        const a = Math.sin(Math.PI * k) * 0.05;
+        col[i * 3] = a * 0.75;
+        col[i * 3 + 1] = a * 0.95;
+        col[i * 3 + 2] = a;
+      }
+      geo.getAttribute('position').needsUpdate = true;
+      geo.getAttribute('color').needsUpdate = true;
+    },
+  };
+}
+
+// ---- the second look (the new core-hall picture): grating, circuits --------------------------------------
+
+// A geometry with a flat vertex colour (for meshes baked outside SetBuilder).
+function colourGeo(geo, hex) {
+  const g = geo.index ? geo.toNonIndexed() : geo;
+  if (g !== geo) geo.dispose();
+  if (g.getAttribute('uv')) g.deleteAttribute('uv');
+  if (!g.getAttribute('normal')) g.computeVertexNormals();
+  const c = new THREE.Color(hex);
+  const n = g.getAttribute('position').count;
+  const cols = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) cols.set([c.r, c.g, c.b], i * 3);
+  g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  return g;
+}
+
+// UVs from x and z (tile metres a side): the grating lies the same way on every deck.
+function planarUV(geo, tile) {
+  const p = geo.getAttribute('position');
+  const uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) uv.set([p.getX(i) / tile, p.getZ(i) / tile], i * 2);
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+}
+
+// A deck plate's grating (made, not loaded): rows of slots between bars, each slot's lip catching the light.
+export function gratingTexture(size = 64) {
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const sx = x % 16;
+      const sy = y % 8;
+      let v = 0.66; // the plate
+      if (sx > 1 && sx < 15 && sy > 1 && sy < 6) v = 0.18; // a slot
+      if (sx > 1 && sx < 15 && sy === 1) v = 0.98; // its lip
+      if (x % 32 === 0 || y % 32 === 0) v = 0.55; // the plate's seam
+      const n = 0.94 + 0.06 * Math.sin(x * 12.9898 + y * 78.233);
+      const k = Math.round(255 * Math.min(1, v * n));
+      data.set([k, k, k, 255], (y * size + x) * 4);
+    }
+  }
+  const tex = new THREE.DataTexture(data, size, size);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+// The walls' neon circuits (the new core-hall picture): on each panel between two pillars, a bold trace or two in
+// cyan or purple (up, across, up, to a node), low on each deck's wall and a sparser band higher up. Nothing goes
+// over a door, a hatch, a light or an opening (the layout's clear zones).
+function drawCircuits(glow, ship, g) {
+  const RW = 14.965;
+  const onHull = (ship.clear ?? []).filter((z) => Math.abs(Math.hypot(z.x, z.z) - 15) < 1.2);
+  const free = (a, y0, y1) =>
+    !onHull.some((z) => {
+      const d = Math.abs(Math.atan2(Math.sin(a - Math.atan2(z.x, z.z)), Math.cos(a - Math.atan2(z.x, z.z)))) * 15;
+      return d < z.half + 1.3 && y0 < z.y1 && z.y0 < y1;
+    });
+  // Does the hull stand here? (an opening's gap has none)
+  const hull = ship.solids.filter((x) => x.style === 'hull');
+  const walled = (a, y) => hull.some((h) => y >= h.y0 && y <= h.y1 && ((((a - h.a0) % TAU) + TAU) % TAU) <= h.a1 - h.a0);
+  const seg = (a, u0, v0, u1, v1, y, colour, w) => {
+    if (Math.abs(u1 - u0) < 1e-6) {
+      const m = P(RW, a + u0 / RW, y + (v0 + v1) / 2);
+      glow.push({ geo: at(new THREE.BoxGeometry(w, Math.abs(v1 - v0) + w, 0.012), m.x, m.y, m.z, a + u0 / RW), color: colour });
+    } else {
+      const am = a + (u0 + u1) / 2 / RW;
+      const m = P(RW, am, y + v0);
+      glow.push({ geo: at(new THREE.BoxGeometry(Math.abs(u1 - u0) + w, w, 0.012), m.x, m.y, m.z, am), color: colour });
+    }
+  };
+  const node = (a, u, v, y, colour) => {
+    const m = P(RW - 0.004, a + u / RW, y + v);
+    glow.push({ geo: at(new THREE.BoxGeometry(0.13, 0.13, 0.014), m.x, m.y, m.z, a + u / RW), color: colour });
+  };
+  const PATTERNS = [
+    [[-0.8, 0, -0.8, 0.9], [-0.8, 0.9, 0.3, 0.9], [0.3, 0.9, 0.3, 1.6]],
+    [[0.7, 0.2, 0.7, 0.6], [0.7, 0.6, -0.4, 0.6], [-0.4, 0.6, -0.4, 1.4], [-0.4, 1.4, 0.2, 1.4]],
+    [[-0.9, 1.2, 0.9, 1.2], [-0.3, 1.2, -0.3, 0.3], [0.5, 1.2, 0.5, 1.8]],
+  ];
+  ship.levels.forEach((ly, li) => {
+    for (let k = 0; k < 32; k++) {
+      const a = (k / 32) * TAU;
+      const bands = [[0.35, 2.15]];
+      if ((k + li) % 3 === 0) bands.push([3.6, 5.4]);
+      bands.forEach(([b0, b1], bi) => {
+        const y = ly + b0;
+        if (!walled(a, y + 0.9) || !free(a, y, ly + b1)) return;
+        const pat = PATTERNS[(k + li * 2 + bi) % PATTERNS.length];
+        const colour = (k + li) % 2 ? g.purple : g.cyan;
+        for (const [u0, v0, u1, v1] of pat) seg(a, u0, v0, u1, v1, y, colour, 0.055);
+        const end = pat[pat.length - 1];
+        node(a, end[2], end[3], y, colour);
+        // a fainter twin beside the bold trace
+        for (const [u0, v0, u1, v1] of pat) seg(a, u0 + 0.12, v0 - 0.1, u1 + 0.12, v1 - 0.1, y, (k + li) % 2 ? g.violet : g.cyanDim, 0.025);
+      });
+    }
+  });
 }

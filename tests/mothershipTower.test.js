@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { config } from '../src/config.js';
 import { towerShape, stepBody } from '../src/world/towerShape.js';
-import { buildShipTower, arcsMinus, LEVELS, R, TAU } from '../src/world/mothershipTower.js';
+import { buildShipTower, arcsMinus, spansLess, CLEAR, LEVELS, R, TAU } from '../src/world/mothershipTower.js';
 
 const SHIP = buildShipTower();
 const tower = towerShape(SHIP.solids);
@@ -68,6 +68,12 @@ describe('the tower', () => {
       if (s.kind !== 'ramp') expect(s.y1).toBeGreaterThan(s.y0);
     }
     expect(SHIP.solids.length).toBeGreaterThan(150);
+  });
+
+  it('cuts a span round what blocks it', () => {
+    expect(spansLess(0, 10, [])).toEqual([[0, 10]]);
+    expect(spansLess(0, 10, [[2, 4], [3, 5], [8, 12]])).toEqual([[0, 2], [5, 8]]);
+    expect(spansLess(0, 10, [[0.2, 9.9]])).toEqual([]); // the slivers left are too short to keep
   });
 
   it('cuts holes out of a circle (wrapping round 0)', () => {
@@ -172,7 +178,7 @@ describe('climbing it, in low gravity', () => {
 
   it('goes up the discs from deck 0 to 1 and 1 to 2', () => {
     const b = climber(SHIP.places.pad);
-    walk(b, [{ x: 0, z: -12 }, polar(11, 0.9 * Math.PI), polar(9.5, -0.2 * Math.PI), polar(8.25, -0.035 * Math.PI)]);
+    walk(b, [{ x: 0, z: -12 }, polar(11, 1.15 * Math.PI), polar(10.5, 1.45 * Math.PI), polar(9.5, -0.2 * Math.PI), polar(8.25, -0.035 * Math.PI)]); // (round the reactor's base)
     expect(b.y).toBe(0);
     for (const d of SHIP.discs.slice(0, 3)) {
       jumpTo(b, d);
@@ -225,6 +231,42 @@ describe('climbing it, in low gravity', () => {
     expect(c.y).toBeCloseTo(LEVELS[4], 1);
     jumpTo(c, polar(8.5, Math.PI / 2 + 0.6));
     expect(c.y).toBeCloseTo(LEVELS[3], 1);
+  });
+
+  // Aaron, Nov 26: "the spaces of the pillars on the outer wall of the ship sometimes overlap with the doors".
+  it('never stands a pillar or a rib in front of a door, hatch, vent, light or opening', () => {
+    const overlapY = (a0, a1, b0, b1) => a0 < b1 - 0.01 && b0 < a1 - 0.01;
+    const ang = (x, z) => Math.atan2(x, z);
+    const dAng = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+    // the doors themselves, as drawn: a 2 m frame, 2.7 m tall
+    const doors = SHIP.details.filter((d) => d.kind === 'sealed');
+    expect(doors.length).toBeGreaterThan(8);
+    for (const p of SHIP.pillars) {
+      for (const d of doors) {
+        if (Math.abs(Math.hypot(d.x, d.z) - R) > 1) continue;
+        if (dAng(p.a, ang(d.x, d.z)) * R < 1.01 + p.w / 2) expect(overlapY(p.y0, p.y1, d.y, d.y + 2.7)).toBe(false);
+      }
+      for (const o of SHIP.openings) if (dAng(p.a, o.a) * R < o.half * R + p.w / 2) expect(overlapY(p.y0, p.y1, o.y0, o.y1)).toBe(false);
+      for (const l of SHIP.lights.filter((x) => x.wall)) if (dAng(p.a, ang(l.x, l.z)) * R < l.len / 2 + 0.15 + p.w / 2) expect(overlapY(p.y0, p.y1, l.y - 0.1, l.y + 0.1)).toBe(false);
+    }
+    // the lights and doors sit between two pillars: no pillar within a door's half-width of its middle
+    for (const d of doors) {
+      if (Math.abs(Math.hypot(d.x, d.z) - R) > 1) continue;
+      const near = SHIP.pillars.filter((p) => dAng(p.a, ang(d.x, d.z)) * R < 1.2 && overlapY(p.y0, p.y1, d.y, d.y + 2.7));
+      expect(near).toEqual([]);
+    }
+    // the walls' ribs: none on top of a detail on its face
+    for (const r of SHIP.ribs) {
+      for (const d of SHIP.details) {
+        const c = CLEAR[d.kind];
+        if (!c) continue;
+        const lat = Math.hypot(r.x - d.x, r.z - d.z);
+        if (lat < c.half + 0.05 && lat > 0) expect(overlapY(r.y0, r.y1, d.y + c.y0, d.y + c.y1)).toBe(false);
+      }
+    }
+    // and there are still pillars all round, most of them the full height
+    expect(SHIP.pillars.filter((p) => p.y0 < 0.5 && p.y1 > 45).length).toBeGreaterThan(15);
+    expect(new Set(SHIP.pillars.map((p) => p.a.toFixed(3))).size).toBe(32);
   });
 
   it("leaves the bay door open its full width (the quad's ride goes through it)", () => {
