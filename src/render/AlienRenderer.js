@@ -10,7 +10,8 @@
 //  - sneak: a low creep, for hiding behind cover; walk: upright;
 //  - ambush: springs up out of a crouch (timer: seconds in);
 //  - aim, fire: the shotgun up (fire: the kick, each timer from the shot);
-//  - flinch: rocks back; dying: its knees go, it falls back; corpse.
+//  - flinch: rocks back; dying: its knees go, it falls back; corpse;
+//  - Nov 26 (the mothership): work (at a console, both hands busy), sit (on a sofa), run, rise.
 // Through the heat scope it reads faint and cold (config: thermalGlow).
 //
 // Nov 17 (Aaron: the crashed plane's cutscenes were too dark): opts.watch fits a dull glowing watch on its
@@ -250,6 +251,63 @@ export class AlienRenderer {
         set('head', 0.25 - kick * 0.1, -0.1, 0.12);
         break;
       }
+      // Nov 26 (the mothership's crew): at a console, working with both hands, head down over it.
+      case 'work': {
+        this.poseIdle(set, t, 0.2);
+        const tap = Math.sin(t * 7.3);
+        const tap2 = Math.sin(t * 6.1 + 1.3);
+        set('chest', 0.14, 0, 0);
+        set('neck', 0.18, 0, 0);
+        set('head', 0.22, Math.sin(t * 0.5) * 0.15, 0);
+        set('shoulderL', -0.85 + tap * 0.06, 0, 0.12);
+        set('elbowL', -1.05 + tap * 0.1);
+        set('shoulderR', -0.85 + tap2 * 0.06, 0, -0.12);
+        set('elbowR', -1.05 + tap2 * 0.1);
+        set('wristR', 0.2);
+        break;
+      }
+      // Off duty on a sofa: sat back, legs out, the shotgun across its lap.
+      case 'sit': {
+        const breath = Math.sin(t * 1.4);
+        set('hipL', -1.45, 0, -0.08);
+        set('hipR', -1.45, 0, 0.08);
+        set('kneeL', 1.35);
+        set('kneeR', 1.25);
+        set('ankleL', -0.15);
+        set('ankleR', -0.15);
+        set('spine', -0.12 + 0.01 * breath);
+        set('chest', -0.08);
+        set('head', 0.05, Math.sin(t * 0.3) * 0.25, 0.08);
+        set('shoulderL', -0.35, 0, 0.15);
+        set('elbowL', -0.9);
+        set('shoulderR', -0.45, 0, -0.1);
+        set('elbowR', -1.1);
+        set('wristR', 1.2);
+        p[ROOT_Y] = -0.4 * h;
+        break;
+      }
+      // Running (a mechanic for the alarm): a long stride, leaning in, its arms pumping.
+      case 'run': {
+        const s = (a.walked ?? 0) * this.cfg.walkRate * 1.2;
+        const sin = Math.sin(s);
+        set('hipL', -sin * 0.8 - 0.1);
+        set('hipR', sin * 0.8 - 0.1);
+        set('kneeL', (0.5 + 0.5 * Math.sin(s - 1.2)) * 1.4);
+        set('kneeR', (0.5 + 0.5 * Math.sin(s + Math.PI - 1.2)) * 1.4);
+        set('spine', 0.22);
+        set('chest', 0.1);
+        set('head', -0.1, 0, 0);
+        set('shoulderL', sin * 0.9, 0, 0.12);
+        set('elbowL', -1.2);
+        set('shoulderR', -sin * 0.9, 0, -0.12);
+        set('elbowR', -1.2);
+        p[ROOT_Y] = -Math.abs(Math.cos(s)) * 0.05 * h;
+        break;
+      }
+      case 'rise':
+        this.poseIdle(set, t, 0.6);
+        this.holdGunLow(set);
+        break;
       case 'flinch':
         this.poseIdle(set, t, 0);
         set('chest', -0.35);

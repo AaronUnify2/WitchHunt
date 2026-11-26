@@ -78,7 +78,7 @@ export class CarArmory {
       this.aliens = new AlienRenderer(this.cfg.aliens.grey);
       this.aliens.init(this.scene, 1);
     }
-    this.sheriff = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, flash: 0, stage: KIT_STAGES.length - 1 };
+    this.sheriff = { active: true, x: 0, y: 0, z: 0, facing: 0, state: 'idle', timer: 0, walked: 0, flash: 0, stage: KIT_STAGES.findIndex((k) => k.id === 'gunslinger') }; // (Nov 26: by name: the mothership's kits come after it)
     this.bus.on('player:respawned', () => this.reset());
     this.reset();
   }

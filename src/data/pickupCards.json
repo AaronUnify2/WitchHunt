@@ -6,6 +6,9 @@
     {"id": "planeCell", "name": "What the grey dropped", "card": {"look": "device", "color": "#1c3a3c", "label": "#7ae0e8", "line": "A small power cell, warm and humming. The pilot's sidearm. Alien shells (hold B to choose them). An alien med kit."}},
     {"id": "earlShotgun", "name": "Earl's twelve-gauge", "card": {"look": "rifle", "color": "#3a2a1c", "label": "#4a4e52", "line": "Off the pegs in the Pruitts' kitchen, a box of shells beside it. Up close, nothing stays standing."}},
     {"id": "outpostRounds", "name": "Hunting rifle rounds", "card": {"look": "tape", "color": "#4a3c22", "label": "#c8b070", "line": "A box of rounds that fit Earl's hunting rifle, on the shelf in the comms hut."}},
-    {"id": "outpostCharge", "name": "An explosive charge, with its detonator", "card": {"look": "device", "color": "#3a3a2a", "label": "#c04030", "line": "Army issue, from the comms hut. Set it, walk away, press the button. Save it for something big."}}
+    {"id": "outpostCharge", "name": "An explosive charge, with its detonator", "card": {"look": "device", "color": "#3a3a2a", "label": "#c04030", "line": "Army issue, from the comms hut. Set it, walk away, press the button. Save it for something big."}},
+    {"id": "curioFigures", "name": "Little plastic cowboys", "card": {"look": "doll", "color": "#8a6a40", "label": "#c8a060", "line": "A handful of toy cowboys, the kind that come fifty to a bag, lined up along the shelf. Each one has been measured: tiny marks scratched along its base."}},
+    {"id": "curioStar", "name": "A tin star", "card": {"look": "tags", "color": "#9a8a50", "label": "#e0d090", "line": "A toy sheriff's badge, its pin bent. Someone has polished it. It sits on a little stand of its own, as if it matters."}},
+    {"id": "curioTrailCam", "name": "A trail camera", "card": {"look": "device", "color": "#3a4a2a", "label": "#7a8a5a", "line": "Earl's: his initials scratched in the case, the strap cut clean. The last picture on its little screen is the quad, parked where Tom left it, and a long grey hand on the handlebar."}}
   ]
 }

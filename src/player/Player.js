@@ -12,6 +12,7 @@
 import * as THREE from 'three';
 import { Stamina } from './Stamina.js';
 import { resolveCircles } from '../world/collision.js';
+import { stepBody } from '../world/towerShape.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const TWO_PI = Math.PI * 2;
@@ -161,9 +162,12 @@ export class Player {
     this.updateLook(input);
     this.updateFeedback(dt);
     this.updateStance(input);
-    if (this.glide) this.updateGlide(dt);
-    else this.updateMovement(dt, input);
-    this.updateVertical(dt, input);
+    if (this.platform?.tower && !this.glide) this.updateTower(dt, input); // Nov 26: the mothership's tower (floors at every height, low gravity)
+    else {
+      if (this.glide) this.updateGlide(dt);
+      else this.updateMovement(dt, input);
+      this.updateVertical(dt, input);
+    }
     this.updateEyeHeight(dt);
     this.updateHeadBob(dt);
     this.applyCamera();
@@ -233,7 +237,8 @@ export class Player {
     if (g.t >= g.seconds) this.glide = null;
   }
 
-  updateMovement(dt, input) {
+  // The stick as a wished-for velocity (m/s, flat), with sprint, stamina, crouch, the aim's slowdown.
+  wishVelocity(dt, input) {
     const c = this.cfg;
     const raw = input.getMove();
     const move = this.scrambleT > 0 ? { x: -raw.x, y: -raw.y } : raw; // the grey's ray: W is back, A is right
@@ -256,8 +261,12 @@ export class Player {
     // Stick direction relative to where the player faces, flat on the ground.
     const sin = Math.sin(this.yaw);
     const cos = Math.cos(this.yaw);
-    const targetX = (cos * move.x - sin * move.y) * speed;
-    const targetZ = (-sin * move.x - cos * move.y) * speed;
+    return { x: (cos * move.x - sin * move.y) * speed, z: (-sin * move.x - cos * move.y) * speed };
+  }
+
+  updateMovement(dt, input) {
+    const c = this.cfg;
+    const { x: targetX, z: targetZ } = this.wishVelocity(dt, input);
 
     const speeding = Math.hypot(targetX, targetZ) >= Math.hypot(this.velocity.x, this.velocity.z);
     const maxDelta = (speeding ? c.acceleration : c.deceleration) * dt;
@@ -298,6 +307,7 @@ export class Player {
   // (x, z) on the ground with platform null.
   setPlatform(platform, x, z) {
     this.platform = platform;
+    this.towerSafe = null;
     this.position.x = x;
     this.position.z = z;
     this.position.y = platform ? platform.y : this.ground.heightAt(x, z);
@@ -346,6 +356,57 @@ export class Player {
     } else {
       this.position.y = floor; // walk over the hills
     }
+  }
+
+  // Nov 26: in the mothership's tower (world/towerShape.js on the room platform: pl.tower, pl.physics):
+  // whatever's under his feet is the floor, decks overhead are ceilings, and gravity is low. The same step
+  // the tests climb with (stepBody). The tower's frame is the platform's (pl.x, pl.z; heights from pl.y).
+  updateTower(dt, input) {
+    const c = this.cfg;
+    const pl = this.platform;
+    const p = this.position;
+    const ph = pl.physicsAt ? pl.physicsAt(p) : pl.physics;
+    const wish = this.wishVelocity(dt, input);
+    let jump = false;
+    if (input.wasPressed('jump') && this.onGround && !this.rooted) {
+      if (this.crouched) this.crouched = false; // jump from a crouch just stands up
+      else jump = true;
+    }
+    const sv = this.shoveV;
+    const push = sv.x || sv.z ? { x: sv.x * dt, z: sv.z * dt } : null;
+    if (push) {
+      const fade = Math.exp(-(c.shove?.decay ?? 5) * dt);
+      sv.x *= fade;
+      sv.z *= fade;
+      if (Math.hypot(sv.x, sv.z) < 0.05) sv.x = sv.z = 0;
+    }
+    const b = (this.towerBody ??= { x: 0, y: 0, z: 0, vx: 0, vz: 0, vy: 0, onGround: true });
+    b.x = p.x - pl.x;
+    b.z = p.z - pl.z;
+    b.y = p.y - pl.y;
+    b.vx = this.velocity.x;
+    b.vz = this.velocity.z;
+    b.vy = this.verticalSpeed;
+    b.onGround = this.onGround;
+    const phys = (this.towerPhys ??= {});
+    Object.assign(phys, ph, { accel: c.acceleration, decel: c.deceleration, radius: c.radius, height: this.crouched ? ph.crouchHeight ?? 1.2 : ph.height ?? 1.8 });
+    stepBody(b, wish, jump, dt, pl.tower, phys, push);
+    // Fallen out of everything (it shouldn't happen): back where he last stood.
+    if (b.y < (pl.tower.bounds?.y0 ?? 0) - (ph.catchBelow ?? 6) && this.towerSafe) {
+      Object.assign(b, this.towerSafe, { vx: 0, vz: 0, vy: 0, onGround: true });
+    } else if (b.onGround) {
+      this.towerSafe ??= { x: 0, y: 0, z: 0 };
+      this.towerSafe.x = b.x;
+      this.towerSafe.y = b.y;
+      this.towerSafe.z = b.z;
+    }
+    p.x = pl.x + b.x;
+    p.z = pl.z + b.z;
+    p.y = pl.y + b.y;
+    this.velocity.x = b.vx;
+    this.velocity.z = b.vz;
+    this.verticalSpeed = b.vy;
+    this.onGround = b.onGround;
   }
 
   updateEyeHeight(dt) {

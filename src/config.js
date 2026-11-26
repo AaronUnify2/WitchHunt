@@ -4420,6 +4420,10 @@ export const config = {
         vest: 0x3a2418,
         boots: 0x3a2214,
         spur: 0x8a8a84,
+        // Nov 26 (the mothership's crew and mechanics, the concept art).
+        suit: 0x3a2a62,
+        suitTrim: 0x3ee8f0,
+        harness: 0x24262e,
       },
     },
   },
@@ -4816,12 +4820,49 @@ export const config = {
   mothership: {
     beamRange: 2.2, // metres from the beam's middle on the ground: "step into the light"
     interactRange: 1.6,
-    light: { ambientDay: 2.4, ambientNight: 2.4, ambientColor: 0x9a8ac8, fogColor: 0x14101e, fogNear: 6, fogFar: 60 },
-    look: { glow: { green: 0x3ad08a, purple: 0x8a4ad0, core: 0xb8ffe0 }, colors: { deck: 0x555963, hull: 0x666a74, hullPale: 0x7a7e88, hullDark: 0x3a3d45, crate: 0x4a3e2e, crateDark: 0x3a3026 } },
-    // The greys aboard: [x, z, kit stage] each, in the ship's frame (the further in, the more cowboy). They see Tom
-    // within `see` metres, aim for `aim` seconds, fire (hitChance, damage, within range), wait `after`, sidestep
-    // `strafe` metres for `step` seconds at `speed`, and aim again.
-    greys: { posts: [[0.8, 23, 1], [-4, 33, 2], [4.5, 39, 2], [-4, 50, 3], [6, 61, 3]], health: 70, see: 15, aim: 0.9, after: 0.4, step: 0.8, strafe: 1.6, speed: 2.4, range: 30, hitChance: 0.4, damage: 9, shells: 3 },
+    light: { ambientDay: 1.9, ambientNight: 1.9, ambientColor: 0x8078c8, fogColor: 0x0a0818, fogNear: 18, fogFar: 95 },
+    // Nov 26 (Aaron: "make this whole dungeon a gravity limited tower climb"; world/mothershipTower.js): low gravity
+    // aboard. A jump goes about 3.2 m up and hangs about 2.5 s (on the ground: 0.8 m, 0.7 s). In the air he
+    // steers only a little (airAccel) and never faster sideways than airSpeed, so a sprint-jump can't skip the climb.
+    physics: { gravity: 4.2, jumpSpeed: 5.2, airSpeed: 4.2, airAccel: 6, step: 0.45, height: 1.8, crouchHeight: 1.2, catchBelow: 6 },
+    // The hook for gravity by zone (Aaron: leave room for taking the core to make it flicker; nothing uses it yet):
+    // zone id -> { gravity, jumpSpeed } over physics.
+    gravityZones: {},
+    look: {
+      glow: { cyan: 0x3ee8f0, cyanDim: 0x1a7a90, purple: 0x9a5af0, violet: 0x5a3aa8, red: 0xff3a4a, redDim: 0x5a1a28, core: 0xc8fff4, reactor: 0x46f0e0, net: 0x2ad8e8, earth: 0x2a5a8a, earthLand: 0x24402a, atmosphere: 0x6ab8ff, holo: 0x58e8ff, quadNeon: 0x48ff9a },
+      colors: { deck: 0x30344a, deckDark: 0x1e2132, hull: 0x2a2d48, hullPale: 0x3e4266, hullDark: 0x181a2c, panel: 0x34305a, pipe: 0x3a4060, rail: 0x5a6080, glassRim: 0x4a5a78, console: 0x262a3e, consoleTop: 0x3a4058, sofa: 0x2a2838, sofaPale: 0x4a4860, bench: 0x2e2c34, wood: 0x4a3828, crate: 0x3a3448, lift: 0x3a3c44, liftDark: 0x22242a, shelf: 0x2a2630, toy: 0x8a6a40, toyRed: 0x8a2a24, toyBlue: 0x2a4a8a, star: 0xb8a060, tyre: 0x141414, stair: 0x363a54 },
+    },
+    // The greys aboard (posts: world/mothershipTower.js). Busy greys (workers at consoles, loungers on the sofas)
+    // notice Tom within `notice[role].range` (crouched: `crouched`) inside their view (cone: radians either side of
+    // where they face), with a clear line, after `react` seconds; within `touch` they notice whatever way they face.
+    // A shot alerts every grey within `hear` and its whole zone; a grey hit alerts its zone. Once alert, each aims
+    // (`aim` s), fires (hitChance, damage, within range, with a clear line), waits `after`, sidesteps `strafe` metres
+    // for `step` s at `speed`, and aims again. The mechanics are unarmed: they run for the alarm panel.
+    greys: {
+      health: 70,
+      see: 22,
+      aim: 0.9,
+      after: 0.4,
+      step: 0.8,
+      strafe: 1.6,
+      speed: 2.4,
+      range: 34,
+      hitChance: 0.4,
+      damage: 9,
+      shells: 3,
+      touch: 2.2,
+      hear: 16,
+      notice: {
+        worker: { range: 12, crouched: 5, cone: 1.2, react: 0.8 },
+        guard: { range: 20, crouched: 10, cone: 1.7, react: 0.35 },
+        lounger: { range: 9, crouched: 4, cone: 1.4, react: 2.4 },
+        mechanic: { range: 9, crouched: 4, cone: 1.5, react: 0.4 },
+      },
+      mechanic: { health: 30, runSpeed: 3.4, panelSeconds: 0.6 },
+    },
+    // The quad's ride from the workshop to the hangar's beam (it's on the ship's own floor: Mothership.ShipRide).
+    ride: { maxSpeed: 8.5, accel: 5.5, brake: 10, coast: 3, reverse: 2.5, steerRate: 1.9, steerFullAt: 2.5, radius: 0.9, eyeHeight: 1.45, seatBack: 0.25, lowerSeconds: 1.1, beamWithin: 2.2 },
+    curioRange: 1.4,
   },
 
   // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js; story spine, beat 8).

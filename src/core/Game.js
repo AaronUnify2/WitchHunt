@@ -1044,7 +1044,7 @@ export class Game {
     this.megaNight.init({ scene: this.scene, ground: this.world.ground, player: this.player, quad: this.quad, station: this.station, enemies: this.combat.enemies, world: this.world, combat: this.combat, clock: this.clock, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify, skipToNight: () => { this.skipToPhase('night'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); }, skipToDawn: () => { this.skipToPhase('dawn'); this.nightWatch.forecastDue = false; this.nightWatch.closeForecast?.(); } });
     // Build queue item 5: the crashed UFO and the mothership (encounters/Mothership.js).
     this.mothership = new Mothership(this.cfg, this.bus);
-    this.mothership.init({ scene: this.scene, world: this.world, site: this.ufoSite, interiors: this.interiors, player: this.player, combat: this.combat, station: this.station, megaNight: this.megaNight, alienQuad: this.alienQuad, flashlight: this.flashlight, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, notify });
+    this.mothership.init({ scene: this.scene, world: this.world, site: this.ufoSite, interiors: this.interiors, player: this.player, combat: this.combat, station: this.station, megaNight: this.megaNight, alienQuad: this.alienQuad, flashlight: this.flashlight, dialogue: this.dialogue, subtitles: this.subtitles, progress: this.progress, demo: this.demo, sfx: this.combat.sfx, card: this.card, notify });
     this.combat.promptSources.push(this.mothership.hud);
     this.vehicles.busy?.push(this.mothership.hud);
     this.bus.on('station:shipCore', () => this.dialogue.play('ship.fitted.ellen'));

@@ -66,6 +66,10 @@ export const KIT_STAGES = [
   // Session 25 (Aaron: "a bit weird to wear a belt without pants; just make sure they're not skin tight"): trousers from the belt on.
   { id: 'belt', name: 'Gun belt, holster and trousers', shotgun: true, hat: true, bandana: true, belt: true, holsters: 1, trousers: true },
   { id: 'gunslinger', name: 'Full saloon gunslinger', shotgun: true, hat: true, bandana: true, belt: true, holsters: 2, vest: true, boots: true, trousers: true },
+  // Nov 26 (the mothership's workshop, Aaron's concept art): the mechanics, unarmed, in a work vest, a wrench in hand.
+  { id: 'mechanic', name: 'Mechanic (the mothership)', harness: true, wrench: true },
+  // Nov 26 (the concept art's crew at their consoles): a purple suit, the pilot's kind of pistol.
+  { id: 'crew', name: 'Crew suit (the mothership)', pistol: true, suit: true },
 ];
 
 // The figure-kit spec. alien: config.aliens.grey; kit: one of KIT_STAGES.
@@ -185,6 +189,34 @@ export function alienSpec(alien, kit = KIT_STAGES[0]) {
     // in a V down the front (painted), the shoulders bare through its armholes.
     tubes.push(['spine', 0, 0.96, 0.004, 0, 1.24, 0.004, 0.108, 0.104, 'vest', 0.8, 0.05]);
     masses.push(['chest', 'spine', 0, 1.235, 0.004, 0.106, 0.1, 0.082, 'vest']);
+  }
+  if (kit.suit) {
+    // A close-fitting suit (the concept art's crew): legs, a body standing a little off the ribs, sleeves to the elbow.
+    masses.push(['hips', null, 0, 0.89, -0.004, 0.095, 0.078, 0.074, 'suit']);
+    tubes.push(['spine', 0, 0.94, 0.004, 0, 1.25, 0.004, 0.098, 0.096, 'suit', 0.8, 0.04]);
+    masses.push(['chest', 'spine', 0, 1.23, 0.004, 0.098, 0.105, 0.074, 'suit']);
+    for (const side of [-1, 1]) {
+      const n = side < 0 ? 'R' : 'L';
+      limbs.push([`hip${n}`, `knee${n}`, 0.05, 0.042, 'suit', 0.05]);
+      limbs.push([`knee${n}`, `ankle${n}`, 0.038, 0.03, 'suit', 0.1]);
+      limbs.push([`shoulder${n}`, `elbow${n}`, 0.036, 0.03, 'suit', 0.05]);
+    }
+    rings.push(['neck', 0, 1.36, 0.004, 0.034, 0.012, 'suitTrim', flat]);
+    rings.push(['hips', 0, 0.905, 0, 0.08, 0.01, 'suitTrim', flat]);
+  }
+  if (kit.harness) {
+    // A mechanic's work vest (the concept art's workshop): dark, padded, a glowing trim.
+    tubes.push(['spine', 0, 0.98, 0.004, 0, 1.25, 0.004, 0.104, 0.1, 'harness', 0.8, 0.05]);
+    masses.push(['chest', 'spine', 0, 1.23, 0.004, 0.1, 0.1, 0.08, 'harness']);
+    rings.push(['spine', 0, 1.0, 0.004, 0.1, 0.01, 'suitTrim', flat]);
+    masses.push(['chest', null, -0.05, 1.18, 0.085, 0.03, 0.04, 0.01, 'suitTrim']);
+  }
+  if (kit.wrench) {
+    // A long wrench in its right hand.
+    const [, , x, y, z] = ALIEN_JOINTS[8];
+    const gy = y - 0.08;
+    tubes.push(['wristR', x, gy + 0.02, z - 0.04, x, gy + 0.02, z + 0.3, 0.01, 0.01, 'gunMetal']);
+    masses.push(['wristR', null, x, gy + 0.02, z + 0.32, 0.03, 0.012, 0.03, 'gunMetal']);
   }
   if (kit.boots) {
     // Cowboy boots, too big for its spindly legs: wide shafts to mid-shin,

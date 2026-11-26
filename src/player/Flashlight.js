@@ -103,8 +103,11 @@ export class Flashlight {
         this.ray.addScaledVector(this.right, Math.cos(a) * spread).addScaledVector(this.up, Math.sin(a) * spread).normalize();
       }
       nearestHit(origin, this.ray, nearby, g.fullDistance, this.hit, room ? NO_GROUND : this.ground, g.groundStep);
-      if (this.platform) this.platformHit(origin, this.ray, this.platform, g.platform);
-      if (room) this.wallHit(origin, this.ray, room);
+      if (room?.tower) this.towerHit(origin, this.ray, room, g.fullDistance); // Nov 26: the mothership's tower: its own decks and walls
+      else {
+        if (this.platform) this.platformHit(origin, this.ray, this.platform, g.platform);
+        if (room) this.wallHit(origin, this.ray, room);
+      }
       const strength = this.hit.facing / Math.pow(Math.max(this.hit.distance, g.minDistance), decay);
       if (strength > strongest) {
         strongest = strength;
@@ -134,6 +137,20 @@ export class Flashlight {
     if (Math.abs(origin.x + dir.x * t - pl.x) > half || Math.abs(origin.z + dir.z * t - pl.z) > half) return;
     this.hit.distance = t;
     this.hit.facing = Math.abs(dir.y);
+  }
+
+  // Nov 26: a tower's solids (world/towerShape.js), in the platform's frame.
+  towerHit(origin, dir, pl, max) {
+    const o = (this.towerOrigin ??= { x: 0, y: 0, z: 0 });
+    o.x = origin.x - pl.x;
+    o.y = origin.y - pl.y;
+    o.z = origin.z - pl.z;
+    const out = (this.towerOut ??= {});
+    const d = pl.tower.ray(o, dir, Math.min(max, this.hit.distance), out, 'see');
+    if (out.solid && d < this.hit.distance) {
+      this.hit.distance = d;
+      this.hit.facing = out.facing;
+    }
   }
 
   // Session 21: a room's four walls (in its own frame: right rx, rz; ahead fx, fz).

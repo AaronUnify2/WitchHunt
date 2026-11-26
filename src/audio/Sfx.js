@@ -993,6 +993,14 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 1800, q: 1.2, gain: 0.25, attack: 0.02 });
     for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.16, wave: 'square', freq: 990, gain: 0.18 }), 380 + i * 230);
   },
+  // Nov 26: the mothership's alarm (a zone goes red): an alien howl, rising and falling twice through the hull.
+  shipAlarm(s) {
+    const o = s.out(undefined, undefined, 0.7);
+    for (let i = 0; i < 2; i++) {
+      setTimeout(() => s.ready && s.tone(o, { seconds: 0.7, wave: 'sawtooth', freq: 180, endFreq: 520, gain: 0.12, attack: 0.08, vibrato: 9 }), i * 760);
+      setTimeout(() => s.ready && s.tone(o, { seconds: 0.7, wave: 'triangle', freq: 360, endFreq: 1040, gain: 0.08, attack: 0.08 }), i * 760 + 20);
+    }
+  },
   // M8: a radio call opens with a short crackle.
   radioCrackle(s) {
     const o = s.out(undefined, undefined, 0.6);
