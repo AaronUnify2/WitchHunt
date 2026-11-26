@@ -181,8 +181,8 @@ function bakeLight(geometry, tint, wallTint) {
     const z = pos.getZ(i);
     const ny = nor ? nor.getY(i) : 0;
     const r = Math.hypot(x, z);
-    let k = 0.8;
-    if (ny < -0.5) k *= 0.55;
+    let k = 1.0;
+    if (ny < -0.5) k *= 0.6;
     else if (ny > 0.5) k *= 1.05;
     let glow = 0;
     let wall = 0;
@@ -191,7 +191,7 @@ function bakeLight(geometry, tint, wallTint) {
       const dy = ((y % 9) + 9) % 9;
       wall = 0.35 * Math.exp(-Math.abs(dy - 2.6) / 1.6) * Math.exp(-Math.max(0, 15 - r) / 3.5);
     } else {
-      wall = 0.18; // the rooms: their ceiling lights, all over
+      wall = 0.32; // the rooms: their ceiling lights, all over
     }
     const cr = col.getX(i) * k + t.r * glow * 0.45 + w.r * wall * 0.5;
     const cg = col.getY(i) * k + t.g * glow * 0.45 + w.g * wall * 0.5;
@@ -222,7 +222,7 @@ export function buildMothership(look, ship) {
   for (const s of ship.solids) {
     switch (s.style) {
       case 'floor':
-        if (s.kind === 'cyl') putGeo(at(new THREE.CircleGeometry(s.r, 72).rotateX(-Math.PI / 2), s.x, s.y1, s.z), c.deck);
+        if (s.kind === 'cyl') putGeo(at(new THREE.RingGeometry(2.9, s.r, 72, 12).rotateX(-Math.PI / 2), s.x, s.y1, s.z), c.deck); // (rings of vertices: the baked light falls off smoothly)
         else b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.deckDark, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
         break;
       case 'roof':
@@ -848,7 +848,8 @@ function buildEarthSky(g) {
   const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xdfe8ff, size: 1.6, sizeAttenuation: false, depthWrite: false, depthTest: false, fog: false }));
   stars.renderOrder = -1.5;
   // the Earth: a cap below the horizon, the dark forest and its cloud, the limb's blue glow
-  const earthGeo = new THREE.SphereGeometry(R * 0.96, 96, 28, 0, TAU, Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
+  const DIP = 0.035; // the horizon's dip below level, from this high
+  const earthGeo = new THREE.SphereGeometry(R * 0.96, 96, 28, 0, TAU, Math.PI / 2 + DIP, Math.PI / 2 - DIP);
   const ep = earthGeo.getAttribute('position');
   const ec = new Float32Array(ep.count * 3);
   const land = new THREE.Color(g.earthLand);
@@ -860,7 +861,7 @@ function buildEarthSky(g) {
     const x = ep.getX(i) / R;
     const y = ep.getY(i) / R;
     const z = ep.getZ(i) / R;
-    const below = -y; // 0.1 at the limb .. 1 straight down
+    const below = -y; // DIP at the limb .. 1 straight down
     // ground coordinates: project onto a plane under the ship (the forest spread out below)
     const k = 1 / Math.max(0.12, below);
     const gx = x * k * 3;
@@ -870,7 +871,7 @@ function buildEarthSky(g) {
     tmp.copy(n1 > 0.55 ? sea : land).multiplyScalar(0.55 + 0.25 * n2);
     const cl = Math.max(0, Math.sin(gx * 0.8 + n2 * 1.5) * Math.sin(gz * 0.9 - gx * 0.3) - 0.35) * 1.6;
     tmp.lerp(cloud, Math.min(0.8, cl));
-    const limb = Math.max(0, 1 - (below - 0.1) / 0.18);
+    const limb = Math.max(0, 1 - (below - DIP) / 0.12);
     tmp.lerp(air, limb * 0.75);
     tmp.multiplyScalar(0.75);
     ec.set([tmp.r, tmp.g, tmp.b], i * 3);
@@ -878,15 +879,28 @@ function buildEarthSky(g) {
   earthGeo.setAttribute('color', new THREE.BufferAttribute(ec, 3));
   const earth = new THREE.Mesh(earthGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, depthTest: false, fog: false }));
   earth.renderOrder = -1;
-  // the atmosphere's band over the limb
-  const haloGeo = new THREE.SphereGeometry(R * 0.97, 96, 4, 0, TAU, Math.PI / 2 - 0.06, 0.18);
-  const halo = new THREE.Mesh(haloGeo, new THREE.MeshBasicMaterial({ color: g.atmosphere, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false, depthTest: false, fog: false }));
-  halo.renderOrder = -0.9;
   // the moon
   const moon = new THREE.Mesh(new THREE.CircleGeometry(1.6, 24), new THREE.MeshBasicMaterial({ color: 0xe8ecf0, depthWrite: false, depthTest: false, fog: false }));
   moon.position.set(-0.35 * R * 0.9, 0.42 * R * 0.9, 0.84 * R * 0.9);
   moon.lookAt(0, 0, 0);
   moon.renderOrder = -1.2;
-  group.add(stars, earth, halo, moon);
+  // space behind it all: near black, a little violet toward the top
+  const backGeo = new THREE.SphereGeometry(R * 1.02, 48, 64);
+  const bp = backGeo.getAttribute('position');
+  const bc = new Float32Array(bp.count * 3);
+  const deep = new THREE.Color(0x020208);
+  const violet = new THREE.Color(0x0c0820);
+  const glowAir = new THREE.Color(g.atmosphere);
+  for (let i = 0; i < bp.count; i++) {
+    const y = bp.getY(i) / (R * 1.02);
+    tmp.copy(deep).lerp(violet, Math.max(0, y));
+    // the atmosphere's glow just over the limb (opaque: a see-through band here would draw over the ship)
+    tmp.lerp(glowAir, 0.55 * Math.exp(-Math.abs(y + DIP * 0.5) / 0.035));
+    bc.set([tmp.r, tmp.g, tmp.b], i * 3);
+  }
+  backGeo.setAttribute('color', new THREE.BufferAttribute(bc, 3));
+  const back = new THREE.Mesh(backGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, depthTest: false, fog: false }));
+  back.renderOrder = -1.8;
+  group.add(back, stars, earth, moon);
   return { group };
 }

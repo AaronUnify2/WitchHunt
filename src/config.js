@@ -4820,7 +4820,7 @@ export const config = {
   mothership: {
     beamRange: 2.2, // metres from the beam's middle on the ground: "step into the light"
     interactRange: 1.6,
-    light: { ambientDay: 1.9, ambientNight: 1.9, ambientColor: 0x8078c8, fogColor: 0x0a0818, fogNear: 18, fogFar: 95 },
+    light: { ambientDay: 2.9, ambientNight: 2.9, ambientColor: 0x9690dc, fogColor: 0x0a0818, fogNear: 22, fogFar: 100 },
     // Nov 26 (Aaron: "make this whole dungeon a gravity limited tower climb"; world/mothershipTower.js): low gravity
     // aboard. A jump goes about 3.2 m up and hangs about 2.5 s (on the ground: 0.8 m, 0.7 s). In the air he
     // steers only a little (airAccel) and never faster sideways than airSpeed, so a sprint-jump can't skip the climb.
@@ -4830,7 +4830,7 @@ export const config = {
     gravityZones: {},
     look: {
       glow: { cyan: 0x3ee8f0, cyanDim: 0x1a7a90, purple: 0x9a5af0, violet: 0x5a3aa8, red: 0xff3a4a, redDim: 0x5a1a28, core: 0xc8fff4, reactor: 0x46f0e0, net: 0x2ad8e8, earth: 0x2a5a8a, earthLand: 0x24402a, atmosphere: 0x6ab8ff, holo: 0x58e8ff, quadNeon: 0x48ff9a },
-      colors: { deck: 0x30344a, deckDark: 0x1e2132, hull: 0x2a2d48, hullPale: 0x3e4266, hullDark: 0x181a2c, panel: 0x34305a, pipe: 0x3a4060, rail: 0x5a6080, glassRim: 0x4a5a78, console: 0x262a3e, consoleTop: 0x3a4058, sofa: 0x2a2838, sofaPale: 0x4a4860, bench: 0x2e2c34, wood: 0x4a3828, crate: 0x3a3448, lift: 0x3a3c44, liftDark: 0x22242a, shelf: 0x2a2630, toy: 0x8a6a40, toyRed: 0x8a2a24, toyBlue: 0x2a4a8a, star: 0xb8a060, tyre: 0x141414, stair: 0x363a54 },
+      colors: { deck: 0x3a3f5a, deckDark: 0x262a40, hull: 0x343a5e, hullPale: 0x4a5080, hullDark: 0x1e2136, panel: 0x423a70, pipe: 0x464e74, rail: 0x6a7296, glassRim: 0x566a8c, console: 0x2e3350, consoleTop: 0x46506e, sofa: 0x3a3650, sofaPale: 0x5a5878, bench: 0x3a3842, wood: 0x4a3828, crate: 0x3a3448, lift: 0x3a3c44, liftDark: 0x22242a, shelf: 0x2a2630, toy: 0x8a6a40, toyRed: 0x8a2a24, toyBlue: 0x2a4a8a, star: 0xb8a060, tyre: 0x141414, stair: 0x363a54 },
     },
     // The greys aboard (posts: world/mothershipTower.js). Busy greys (workers at consoles, loungers on the sofas)
     // notice Tom within `notice[role].range` (crouched: `crouched`) inside their view (cone: radians either side of
@@ -4863,6 +4863,7 @@ export const config = {
     // The quad's ride from the workshop to the hangar's beam (it's on the ship's own floor: Mothership.ShipRide).
     ride: { maxSpeed: 8.5, accel: 5.5, brake: 10, coast: 3, reverse: 2.5, steerRate: 1.9, steerFullAt: 2.5, radius: 0.9, eyeHeight: 1.45, seatBack: 0.25, lowerSeconds: 1.1, beamWithin: 2.2 },
     curioRange: 1.4,
+    greyAlbedo: 0.6, // the greys' colours x this aboard (outdoors 0.3: the torch blows them white; here the light is dim and blue)
   },
 
   // Build queue item 4: the missing quad and the mega night (encounters/MegaNight.js; story spine, beat 8).

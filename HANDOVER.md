@@ -1,6 +1,26 @@
 # Handover
 
-## Newest: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
+## Newest: the mothership as a low-gravity tower climb (Nov 26)
+
+**Where things stand:** on branch `ccr-a731960e-o2vv56` (not merged to `main`). **1641 tests pass** and the build is clean. Aaron sent four concept pictures for the mothership (`docs/concept-art/mothership-corridor.jpg`, `-core-hall`, `-lounge`, `-workshop`) and answered questions one picture at a time; the plan and his answers are docs/MOTHERSHIP_PLAN.md. **He said the story beats come after the dungeon's settled:** the lines aboard are placeholders. **Waiting on:** his climb of it (PLAYTEST round 103).
+
+**What's new to know:**
+- **Floors at every height** (`world/towerShape.js`): a space as solids (`box`, `ramp`, `cyl`, `ring` sectors; flags `walk`, `shots`, `see`). `stepBody(body, wish, jump, dt, tower, phys, push)` is the one low-gravity step: the Player uses it (`Player.updateTower`, when the room platform has `tower`) and the tests climb with it, so a route the test climbs is one Tom can.
+- **The ship's layout is data** (`world/mothershipTower.js` `buildShipTower()`): change it there and both the collision and the model follow. Angles go from +z toward +x (`atan2(x, z)`). The lift is a solid whose `y1` the encounter moves (`Mothership.setLift`).
+- **A room platform can carry a tower** (`tower`, `physics`, `physicsAt`): the torch's glare (`Flashlight.towerHit`) and the weapons (`spaceRays`) read it.
+- **Gravity by zone** is a hook (`config.mothership.gravityZones`, `Mothership.physicsAt`): empty. Aaron may want taking the core to make it flicker.
+- **The greys aboard:** roles `worker`, `guard`, `lounger`, `mechanic` (posts in the layout); zones alert (`alertZone`); a shot alerts its zone and greys within 16 m (`weapon:fired`). Two new kits (`crew`, `mechanic`) come after `gunslinger` in `KIT_STAGES`: **pick a kit by id, not by `length - 1`** (Sheriff was).
+- **The ride** is `ShipRide` in `encounters/Mothership.js`: a `Player.riding` object (`drive`, `eject`) on the tower's floor; reaching the beam calls `takeQuad`, which leaves and mounts Tom on the alien quad outside.
+- **The Earth and stars** behind the windows are drawn first round the camera without depth (`buildEarthSky`); anything see-through there would draw over the ship (three.js draws transparent things last), so it's all opaque.
+- **Debug:** Story, "The mothership: go up", and "The mothership: put me on" each deck and room.
+
+**Headless gotchas (new):** a new game's opening cutscene freezes the world: stop it (`g.cutscenes.stop(true)`) on every step, or greys and the Player never update. The layout module is shared: `import('/src/encounters/Mothership.js')` in the page gives the game's own `SHIP`.
+
+**What the next session does:** ask Aaron for his notes on the climb (rule 10). Then the story beats aboard, with him. Left for the design session: docs/MOTHERSHIP_PLAN.md "Left for the design session".
+
+**Logging:** PLAYTEST round 103, OPEN_QUESTIONS #812-832. Next numbers: OPEN_QUESTIONS #833, PLAYTEST round 104.
+
+## Before that: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
 
 **Where things stand:** everything is on `main`. **1556 tests pass** and the build is clean. (Late Nov 24 also: the witch flits on the trail cams; the Pruitt house pared down, its roof righted, and its scarecrow, `render/scarecrowModel.js`.) (Late Nov 24: Day 2's dawn Screamer stays at the fire until it's taken 500: `config.campsite.dawnFigure`. Keep-out areas for the dead (`EnemyManager.addKeepOut`): the gas station's shop.) Aaron play-tested and sent notes all day; every one is built and pushed (PLAYTEST round 85, OPEN_QUESTIONS #789-796). **Waiting on:** his play of the new camcorder tape, and his Suno credits for **test 3** (`docs/AUDIO_CUES.md`: the tape's nine sounds, `tomBreath`, and test 2's gaps).
 

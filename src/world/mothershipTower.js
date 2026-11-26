@@ -310,7 +310,7 @@ export function buildShipTower() {
   room(HG, 'hangar');
   // Between them: the bay door's frame.
   const bayHalf = 2.6;
-  add({ kind: 'box', x: WK.x1 + 0.2, z: (WK.z0 - bayHalf) / 2, hx: 0.2, hz: (bayHalf - WK.z0) / 2, y0: TOP - 0.5, y1: WK.ceil, ...wallS });
+  add({ kind: 'box', x: WK.x1 + 0.2, z: (WK.z0 - bayHalf) / 2, hx: 0.2, hz: (-bayHalf - WK.z0) / 2, y0: TOP - 0.5, y1: WK.ceil, ...wallS });
   add({ kind: 'box', x: WK.x1 + 0.2, z: (WK.z1 + bayHalf) / 2, hx: 0.2, hz: (WK.z1 - bayHalf) / 2, y0: TOP - 0.5, y1: WK.ceil, ...wallS });
   add({ kind: 'box', x: WK.x1 + 0.2, z: 0, hx: 0.2, hz: bayHalf, y0: TOP + 4.4, y1: WK.ceil, ...wallS });
   add({ kind: 'box', x: WK.x1 + 0.2, z: (HG.z0 + WK.z0) / 2 - 0.2, hx: 0.2, hz: (WK.z0 - HG.z0) / 2 + 0.2, y0: TOP - 0.5, y1: HG.ceil, ...wallS });

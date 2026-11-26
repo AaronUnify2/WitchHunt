@@ -227,6 +227,17 @@ describe('climbing it, in low gravity', () => {
     expect(c.y).toBeCloseTo(LEVELS[3], 1);
   });
 
+  it("leaves the bay door open its full width (the quad's ride goes through it)", () => {
+    for (const z of [-1.6, 0, 1.6]) {
+      const p = { x: 28.2, z };
+      const before = { ...p };
+      tower.confine(p, config.mothership.ride.radius, LEVELS[4], 1.4);
+      expect(Math.hypot(p.x - before.x, p.z - before.z)).toBeLessThan(0.01);
+    }
+    const q = { x: 28.2, z: 3.2 };
+    expect(tower.confine(q, 0.35, LEVELS[4], 1.8)).toBe(true); // its frame is solid
+  });
+
   it('every zone is somewhere, and the places are in the right ones', () => {
     const zoneAt = (p) => SHIP.zones.find((z) => tower.contains(z.solid, p.x, p.y + 0.5, p.z))?.id;
     expect(zoneAt(SHIP.places.pad)).toBe('floor');

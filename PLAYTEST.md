@@ -868,6 +868,18 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Her charms are gone** (your call): no stick figures or bones at her waist or crown.
 - [ ] **Every move:** gliding, the ritual crouch, the hex, the swipe, fleeing, her death burst. Does she still read as a silhouette at night?
 
+**Round 103: the mothership as a low-gravity tower climb (Nov 26, after your four pictures).** Debug menu, Story: **The mothership: go up** (it sets the mega night done and takes you up the beam). To jump about: **The mothership: put me on** deck 1, deck 2, deck 3, the lounge, the top (the core), the workshop, the hangar. The whole plan: docs/MOTHERSHIP_PLAN.md.
+- [ ] **The core hall** (picture 2): the glass column glowing up the middle, the decks round it every 9 m, the energy nets you see down through, the discs floating. Does it feel like a tower, and like the picture?
+- [ ] **Low gravity:** jumps go about 3.2 m and hang 2.5 s, with only a little steering in the air. Too floaty, not floaty enough? Can you judge the hover discs' jumps?
+- [ ] **The climb:** up the spiral stair (the second flight has a gap to jump), the discs in each deck's hole, the two service wells (picture 1) with their side rooms, the lounge's ramps to the top. Do you ever get lost? How long does it take you (aiming for 15-20 minutes)?
+- [ ] **Falling:** miss a disc and you land a deck down, never hurt. Off the top's bridges you drop to deck 3's net.
+- [ ] **The greys:** workers at consoles, loungers on the sofas (slow), guards watching; crouch and they see you nearer. Shoot and the zone goes red (its strips blink); a knife or maul is silent. Deck 2 is red from the start.
+- [ ] **The lounge** (picture 3): the Earth's curve and the stars through the windows. Sneak past the cowboys on the sofas, or take them.
+- [ ] **The workshop** (picture 4): the quad on its lift, the mechanics running for the alarm panel (stop them and the hangar stays quiet), the blueprints, the three curios on the shelf (hold X: a card each).
+- [ ] **The core:** on the crown, in its cradle on the glass: hold X. The reactor dims and every light goes red.
+- [ ] **The ride:** back in the workshop, hold X at the quad; the lift lowers; drive through the bay door into the hangar onto the beam. You should land at the crash site on the alien quad.
+- [ ] **Too dark, too bright?** The ship is lit only by its own glow (no lights): say if parts are hard to read on the tablet.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

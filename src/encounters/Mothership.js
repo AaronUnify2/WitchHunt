@@ -36,6 +36,7 @@
 //
 // Events: 'ship:entered', 'ship:alarm' { zone }, 'ship:core', 'ship:quad', 'ship:left'.
 
+import * as THREE from 'three';
 import { HoldAction } from '../player/HoldAction.js';
 import { AlienRenderer } from '../render/AlienRenderer.js';
 import { buildMothership } from '../render/mothershipModel.js';
@@ -405,7 +406,7 @@ export class Mothership {
     this.model.setReactor(this.has('shipCoreTaken') ? 0.25 : 1);
     for (const [id, flag] of Object.entries(LOOT_FLAGS)) if (this.has(flag)) this.model.setLooted(id);
     scene.add(this.model.group);
-    this.renderer = new AlienRenderer(this.cfg.aliens.grey);
+    this.renderer = new AlienRenderer({ ...this.cfg.aliens.grey, albedo: this.sc.greyAlbedo ?? this.cfg.aliens.grey.albedo }); // (paler aboard: the ship's light is dim and blue)
     this.renderer.init(scene, this.greys.length);
     // Earl's quad on its lift: the alien quad's own model, standing still until he rides it.
     this.setLift(this.has('quadReturned') ? LIFT_DOWN : LIFT_UP);
@@ -414,6 +415,14 @@ export class Mothership {
       const at = this.toWorld(SHIP_PLACES.quad.x, SHIP_PLACES.quad.z);
       this.quadShow.root.position.set(at.x, floorY + TOP + LIFT_UP, at.z);
       this.quadShow.root.rotation.y = -Math.PI / 2;
+      // Lit by the workshop's glow (no lights are added aboard): a faint cast of its own so it reads on the lift.
+      this.quadShow.root.traverse((o) => {
+        if (o.material?.emissive && !o.material.userData.shipLit) {
+          o.material = o.material.clone();
+          o.material.emissive.lerp(new THREE.Color(this.sc.look.glow.cyanDim), 0.35);
+          o.material.userData.shipLit = true;
+        }
+      });
       scene.add(this.quadShow.root);
     }
     for (const g of this.greys) g.target.targetable = g.alive;
@@ -534,7 +543,7 @@ export class Mothership {
     if (this.inside && this.model) {
       if (playing) this.updateGreys(dt);
       if (!this.inside || !this.model) return;
-      this.model.update(dt);
+      this.model.update(dt, this.player.camera);
       this.renderer.update(this.greys.map((g) => g.look), dt);
       this.updateTold();
     }
