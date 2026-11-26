@@ -151,21 +151,28 @@ export class AlienRenderer {
 
   update(aliens, dt = 0) {
     this.time += dt;
+    this.frame = (this.frame ?? 0) + 1;
     let n = 0;
     for (const a of aliens) {
       if (!a.active || n >= this.pool.length) continue;
+      const slot = n;
       const one = this.pool[n++];
       const body = this.bodyOf(a.stage ?? 0).geometry;
       if (one.mesh.geometry !== body) one.mesh.geometry = body;
-      const t = this.tmp;
-      t.fill(0);
-      this.targetPose(a, t);
-      if (!a.alienPose) a.alienPose = Float32Array.from(t);
-      const cur = a.alienPose;
-      const k = Math.min(1, dt * this.cfg.poseRate);
-      for (let i = 0; i < POSE_SIZE; i++) cur[i] += (t[i] - cur[i]) * k;
-      one.list.forEach((b, i) => b.rotation.set(cur[i * 3], cur[i * 3 + 1], cur[i * 3 + 2]));
-      one.root.position.y = cur[ROOT_Y];
+      // Nov 26: one marked far (the mothership's, across the shaft) gets its pose every fourth frame, a quarter the work.
+      const fresh = !a.far || !a.alienPose || one.posed !== a || (this.frame + slot) % 4 === 0;
+      if (fresh) {
+        const t = this.tmp;
+        t.fill(0);
+        this.targetPose(a, t);
+        if (!a.alienPose) a.alienPose = Float32Array.from(t);
+        const cur = a.alienPose;
+        const k = Math.min(1, dt * (a.far ? 4 : 1) * this.cfg.poseRate);
+        for (let i = 0; i < POSE_SIZE; i++) cur[i] += (t[i] - cur[i]) * k;
+        one.list.forEach((b, i) => b.rotation.set(cur[i * 3], cur[i * 3 + 1], cur[i * 3 + 2]));
+        one.root.position.y = cur[ROOT_Y];
+        one.posed = a;
+      }
       one.mesh.position.set(a.x, a.y, a.z);
       one.mesh.rotation.set(0, a.facing, 0);
       const f = a.flash > 0 ? Math.min(1, a.flash / this.cfg.hitFlashSeconds) : 0;

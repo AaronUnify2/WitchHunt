@@ -4815,7 +4815,7 @@ export const config = {
   // story spine, beat 9). Scaffolding: every number a first guess. Their look: render/mothershipModel.js.
   crashedUfo: {
     radius: 26, // metres from its middle the set reaches (for drawing it)
-    look: { beamOpacity: 0.16, glow: { green: 0x3ad08a, purple: 0x8a4ad0 }, colors: { earth: 0x2e261c, char: 0x1a1612, hull: 0x4a4e56, hullPale: 0x62666e, hullDark: 0x2c2f35 } },
+    look: { beamOpacity: 0.16, glow: { cyan: 0x3ee8f0, purple: 0x9a5af0 }, colors: { earth: 0x2e261c, char: 0x1a1612, hull: 0x3e4260, hullPale: 0x565c80, hullDark: 0x262a3e } }, // Nov 26 (Aaron): the ship's cyan and purple, to match inside (was green and purple)
   },
   mothership: {
     beamRange: 2.2, // metres from the beam's middle on the ground: "step into the light"
@@ -4863,6 +4863,8 @@ export const config = {
     // The quad's ride from the workshop to the hangar's beam (it's on the ship's own floor: Mothership.ShipRide).
     ride: { maxSpeed: 8.5, accel: 5.5, brake: 10, coast: 3, reverse: 2.5, steerRate: 1.9, steerFullAt: 2.5, radius: 0.9, eyeHeight: 1.45, seatBack: 0.25, lowerSeconds: 1.1, beamWithin: 2.2 },
     curioRange: 1.4,
+    sparkHear: 11, // metres: a junction box's crackle is heard within this (the second pass)
+    greyFar: 30, // metres: a grey further off gets its pose every fourth frame
     greyAlbedo: 0.6, // the greys' colours x this aboard (outdoors 0.3: the torch blows them white; here the light is dim and blue)
   },
 

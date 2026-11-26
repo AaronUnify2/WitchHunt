@@ -79,7 +79,7 @@ export function buildCrashedUfo(look, { heightAt = null } = {}) {
     if (i % 5 === 3) continue;
     const a = (i / 24) * Math.PI * 2;
     const p = b.point(Math.sin(a) * (S.r - 0.15), 0, Math.cos(a) * (S.r - 0.15));
-    glow.push({ geo: at(new THREE.BoxGeometry(0.5, 0.12, 0.2), p.x, p.y, p.z, a + 0.4), color: i % 2 ? look.glow.green : look.glow.purple });
+    glow.push({ geo: at(new THREE.BoxGeometry(0.5, 0.12, 0.2), p.x, p.y, p.z, a + 0.4), color: i % 2 ? look.glow.cyan : look.glow.purple });
   }
   b.pop();
   b.post(S.x, 0, S.z, S.r * 0.72, 3.5);
@@ -90,7 +90,7 @@ export function buildCrashedUfo(look, { heightAt = null } = {}) {
   b.spot('beam', 0, 0, 0);
   const pad = b.point(0, 0.1, 0);
   b.pop();
-  glow.push({ geo: at(new THREE.TorusGeometry(B.r + 0.2, 0.06, 6, 28).rotateX(Math.PI / 2), pad.x, pad.y, pad.z), color: look.glow.green });
+  glow.push({ geo: at(new THREE.TorusGeometry(B.r + 0.2, 0.06, 6, 28).rotateX(Math.PI / 2), pad.x, pad.y, pad.z), color: look.glow.cyan });
   const geometry = bakeParts(b.parts, { weather: null, baseAt: (x, y, z) => b.heightAt(x, z), seed: 91 });
   const material = new THREE.MeshLambertMaterial({ vertexColors: true });
   const mesh = new THREE.Mesh(geometry, material);
@@ -100,7 +100,7 @@ export function buildCrashedUfo(look, { heightAt = null } = {}) {
   // The beam itself: a tall, faint column (added on), brighter at its foot.
   const beamGeo = new THREE.CylinderGeometry(B.r * 0.7, B.r, B.height, 18, 1, true);
   beamGeo.translate(0, B.height / 2, 0);
-  const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: look.glow.green, transparent: true, opacity: look.beamOpacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+  const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: look.glow.cyan, transparent: true, opacity: look.beamOpacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
   beam.position.set(pad.x, pad.y, pad.z);
   const group = new THREE.Group();
   group.name = 'crashedUfo';
@@ -406,6 +406,11 @@ export function buildMothership(look, ship) {
     b.put(new THREE.CylinderGeometry(0.2, 0.2, 46, 8), c.pipe, m.x, m.y, m.z);
   }
 
+  // ---- what's on the walls (the second pass; picture 1): hatches of cables, junction boxes that spark, vents,
+  // sealed doors, pipes; the broken stair's torn ends ----
+  const emitters = [];
+  for (const d of ship.details ?? []) drawDetail(b, glow, glass, putGeo, emitters, d, c, g);
+
   // ---- the floor's circuit lines (pictures 2 and 4): cyan traces out from the column ----
   for (let k = 0; k < 24; k++) {
     const a = (k / 24) * TAU + 0.07;
@@ -531,7 +536,10 @@ export function buildMothership(look, ship) {
 
   const group = new THREE.Group();
   group.name = 'mothership';
-  group.add(sky.group, mesh, glowM, reactor, core, beamCol, ...stripMeshes, liftGroup, curioGroup, netM, winM);
+  // ---- sparks: a burst from each emitter now and then, falling slow in the low gravity ----
+  const sparks = buildSparks(emitters);
+
+  group.add(sky.group, mesh, glowM, reactor, core, beamCol, ...stripMeshes, liftGroup, curioGroup, netM, winM, sparks.group);
   for (const { grp } of lootMeshes.values()) group.add(grp);
 
   let time = 0;
@@ -574,7 +582,10 @@ export function buildMothership(look, ship) {
       const l = lootMeshes.get(id);
       if (l) l.seam.material.color.setHex(0x1a1a22);
     },
+    // Called with each burst's spot (the ship's frame): the encounter plays its crackle if Tom's near.
+    onSpark: null,
     update(dt, camera = null) {
+      sparks.update(dt, (p) => api.onSpark?.(p));
       time += dt;
       core.rotation.y += dt * 0.9;
       core.children[1].scale.setScalar(1 + Math.sin(time * 3) * 0.08);
@@ -903,4 +914,149 @@ function buildEarthSky(g) {
   back.renderOrder = -1.8;
   group.add(back, stars, earth, moon);
   return { group };
+}
+
+// ---- the second pass's wall details ------------------------------------------------------------------
+
+// One detail ({ kind, x, y, z, a }: a faces out from its wall), in its own frame: x across the wall, y up, z out.
+function drawDetail(b, glow, glass, putGeo, emitters, d, c, g) {
+  if (d.kind === 'pipe') {
+    const from = new THREE.Vector3(d.from.x, d.from.y, d.from.z);
+    const to = new THREE.Vector3(d.to.x, d.to.y, d.to.z);
+    const dir = new THREE.Vector3().subVectors(to, from);
+    const len = dir.length();
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+    const mid = from.clone().add(to).multiplyScalar(0.5);
+    putGeo(new THREE.CylinderGeometry(d.r, d.r, len, 8).applyMatrix4(new THREE.Matrix4().compose(mid, q, new THREE.Vector3(1, 1, 1))), c.pipe);
+    for (let t = 1; t < len; t += 2) {
+      const p = from.clone().addScaledVector(dir, t / len);
+      putGeo(new THREE.CylinderGeometry(d.r + 0.04, d.r + 0.04, 0.12, 8).applyMatrix4(new THREE.Matrix4().compose(p, q, new THREE.Vector3(1, 1, 1))), c.hullDark);
+    }
+    return;
+  }
+  b.push(d.x, d.y, d.z, d.a);
+  const gl = (geo, color, x, y, z, rx = 0) => {
+    const p = b.point(x, y, z);
+    glow.push({ geo: at(geo, p.x, p.y, p.z, d.a, rx), color });
+  };
+  switch (d.kind) {
+    case 'hatch': {
+      // A panel left open behind glass: cables looping down inside it, glowing (picture 1, the left wall).
+      b.box(0.85, 1.3, 0.04, c.hullDark, 0, 0, 0.02);
+      for (const sy of [-1, 1]) b.box(0.97, 0.08, 0.14, c.hullPale, 0, sy * 0.69, 0.07);
+      for (const sx of [-1, 1]) b.box(0.08, 1.46, 0.14, c.hullPale, sx * 0.47, 0, 0.07);
+      b.box(0.05, 0.22, 0.06, c.rail, 0.38, 0, 0.17); // its handle
+      const cols = [g.cyan, 0xc8f8ff, g.purple];
+      cols.forEach((col, i) => {
+        const x0 = -0.25 + i * 0.22;
+        const pts = [];
+        for (let k = 0; k <= 8; k++) {
+          const t = k / 8;
+          pts.push(b.point(x0 + Math.sin(t * Math.PI * 2 + i) * 0.12, 0.6 - t * 1.2, 0.06 + Math.sin(t * Math.PI * 3 + i * 2) * 0.03));
+        }
+        glow.push({ geo: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.022, 5, false), color: col });
+      });
+      const gp = b.point(0, 0, 0.13);
+      glass.push(at(new THREE.PlaneGeometry(0.85, 1.3), gp.x, gp.y, gp.z, d.a));
+      break;
+    }
+    case 'junction': {
+      // A junction box, its lid sprung, something inside it shorting (picture 1).
+      b.box(0.44, 0.36, 0.2, c.console, 0, 0, 0.1);
+      b.box(0.44, 0.04, 0.26, c.hullPale, 0, 0.2, 0.17, 0, -0.5);
+      b.box(0.07, 0.9, 0.07, c.pipe, 0.12, 0.62, 0.04);
+      gl(new THREE.BoxGeometry(0.3, 0.2, 0.01), 0xff9a40, 0, -0.02, 0.205);
+      emitters.push({ p: b.point(0, 0, 0.26), dir: new THREE.Vector3(Math.sin(d.a), 0, Math.cos(d.a)) });
+      break;
+    }
+    case 'vent': {
+      b.box(1.12, 0.44, 0.06, c.hullDark, 0, 0, 0.03);
+      for (let i = 0; i < 5; i++) b.box(1.02, 0.035, 0.09, c.hullPale, 0, -0.16 + i * 0.08, 0.05, 0, 0.5);
+      break;
+    }
+    case 'sealed': {
+      // A door that doesn't open: a recess, two leaves, its seam and lock glowing violet. The wall light over it is its lamp.
+      b.box(1.7, 2.42, 0.05, c.hullDark, 0, 1.21, 0.02);
+      for (const sx of [-1, 1]) b.box(0.16, 2.6, 0.22, c.hullPale, sx * 0.93, 1.3, 0.09);
+      b.box(2.02, 0.18, 0.22, c.hullPale, 0, 2.6, 0.09);
+      b.box(1.7, 0.1, 0.12, c.panel, 0, 0.05, 0.06);
+      gl(new THREE.BoxGeometry(0.03, 2.2, 0.01), g.violet, 0, 1.15, 0.055);
+      gl(new THREE.BoxGeometry(0.14, 0.14, 0.01), g.purple, 0.62, 1.25, 0.06);
+      for (const sx of [-1, 1]) gl(new THREE.BoxGeometry(0.02, 2.3, 0.01), g.cyanDim, sx * 0.84, 1.25, 0.2);
+      break;
+    }
+    case 'sparks': {
+      // The stair's torn end: bent tread plates hanging, a cable down from it, sparking.
+      b.box(1.2, 0.08, 0.5, c.stair, -0.3, -0.25, 0.1, 0, 0.5, 0.2);
+      b.box(0.8, 0.06, 0.4, c.stair, 0.5, -0.4, 0.05, 0.3, 0.8, -0.3);
+      b.box(0.5, 0.05, 0.3, c.hullDark, 0.1, -0.55, -0.05, 0, 1.1);
+      b.put(new THREE.CylinderGeometry(0.025, 0.025, 1.4, 6), c.liftDark, 0.25, -0.95, 0.05, 0, 0.12);
+      emitters.push({ p: b.point(0.25, -1.62, 0.12), dir: new THREE.Vector3(0, -0.3, 0) });
+      emitters.push({ p: b.point(-0.2, -0.2, 0.3), dir: new THREE.Vector3(Math.sin(d.a), 0, Math.cos(d.a)) });
+      break;
+    }
+    default:
+      break;
+  }
+  b.pop();
+}
+
+// Sparks: each emitter bursts every 0.9-3.2 s; its sparks fly out along its facing, fall at the ship's 4.2 m/s², die.
+function buildSparks(emitters, per = 14) {
+  const n = Math.max(1, emitters.length * per);
+  const pos = new Float32Array(n * 3).fill(-1e4);
+  const vel = new Float32Array(n * 3);
+  const life = new Float32Array(n);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const points = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffc878, size: 0.07, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  points.frustumCulled = false;
+  points.renderOrder = 2;
+  const group = new THREE.Group();
+  group.add(points);
+  const flashGeo = new THREE.SphereGeometry(0.22, 8, 6);
+  let seed = 31;
+  const rnd = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  for (const e of emitters) {
+    e.t = 0.3 + rnd() * 2.5;
+    e.flash = new THREE.Mesh(flashGeo, new THREE.MeshBasicMaterial({ color: 0xffd8a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    e.flash.position.copy(e.p);
+    group.add(e.flash);
+  }
+  return {
+    group,
+    update(dt, onBurst) {
+      emitters.forEach((e, ei) => {
+        e.t -= dt;
+        e.flash.material.opacity = Math.max(0, e.flash.material.opacity - dt * 6);
+        if (e.t > 0) return;
+        e.t = 0.9 + rnd() * 2.3;
+        e.flash.material.opacity = 0.9;
+        for (let k = 0; k < per; k++) {
+          const i = ei * per + k;
+          pos.set([e.p.x, e.p.y, e.p.z], i * 3);
+          const sp = 0.6 + rnd() * 1.8;
+          vel.set([e.dir.x * sp + (rnd() - 0.5) * 2.2, e.dir.y * sp + rnd() * 1.6, e.dir.z * sp + (rnd() - 0.5) * 2.2], i * 3);
+          life[i] = 0.35 + rnd() * 0.55;
+        }
+        onBurst?.(e.p);
+      });
+      for (let i = 0; i < n; i++) {
+        if (life[i] <= 0) continue;
+        life[i] -= dt;
+        if (life[i] <= 0) {
+          pos[i * 3 + 1] = -1e4;
+          continue;
+        }
+        vel[i * 3 + 1] -= 4.2 * dt;
+        pos[i * 3] += vel[i * 3] * dt;
+        pos[i * 3 + 1] += vel[i * 3 + 1] * dt;
+        pos[i * 3 + 2] += vel[i * 3 + 2] * dt;
+      }
+      geo.getAttribute('position').needsUpdate = true;
+    },
+  };
 }

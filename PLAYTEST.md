@@ -880,6 +880,13 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The ride:** back in the workshop, hold X at the quad; the lift lowers; drive through the bay door into the hangar onto the beam. You should land at the crash site on the alien quad.
 - [ ] **Too dark, too bright?** The ship is lit only by its own glow (no lights): say if parts are hard to read on the tablet.
 
+**Round 104: the mothership's second pass (Nov 26; your picks: picture 1's detail, the saucer to match).** Debug menu, Story: The mothership: go up (then put me on deck 1 for the broken stair).
+- [ ] **The service wells** (picture 1): at each landing and side room, a hatch of glowing cables behind glass, a junction box throwing sparks, a vent, pipes along the ceiling, a sealed door. Closer to the picture now?
+- [ ] **Sparks** at the junction boxes and the broken stair's torn ends: they fall slowly (low gravity) and crackle when you're near. Too often, too quiet?
+- [ ] **Sealed doors** round every deck under the wall lights. Should any of them open?
+- [ ] **The crashed saucer and its beam** outside are cyan and purple now, like the ship.
+- [ ] **The objective** aboard says to climb to the top, then to ride the quad from the workshop into the hangar.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

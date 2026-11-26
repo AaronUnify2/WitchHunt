@@ -427,6 +427,11 @@ export class Mothership {
     }
     for (const g of this.greys) g.target.targetable = g.alive;
     this.applyAlerts();
+    // The second pass: a junction box or a torn cable shorting: its crackle, if he's near enough to hear it.
+    this.model.onSpark = (p) => {
+      const t = this.tom();
+      if (Math.hypot(p.x - t.x, p.y - t.y, p.z - t.z) < this.sc.sparkHear) this.sfx?.play('shipSpark', this.toWorld(p.x, p.z));
+    };
     return {
       update: () => {},
       dispose: () => {
@@ -586,6 +591,7 @@ export class Mothership {
           g.sees = dist < a.see * 1.4 && TOWER.clear({ x: g.x, y: g.y + EYE, z: g.z }, tomEye);
         }
         this.stepGrey(g, tom, dt, dist);
+        k.far = dist > this.sc.greyFar; // far off: its pose refreshes less often (render/AlienRenderer.js)
       }
       const w = this.toWorld(g.x, g.z);
       k.x = w.x;

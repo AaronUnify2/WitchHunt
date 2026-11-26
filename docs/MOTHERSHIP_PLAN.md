@@ -59,8 +59,12 @@ The shaft is 30 m across (the wall at 15 m), the reactor's glass column 3 m in r
 ## Left for the design session
 
 - The story beats aboard (the lines are the scaffolding's drafts and a few toasts).
-- Picture 1's sparking junction box and other damage; more side rooms behind the sealed doors.
+- ~~Picture 1's sparking junction box and other damage~~ (the second pass, below); more rooms behind the sealed doors.
 - Greys that move between posts or call each other up and down the shaft.
 - The ship's own sounds (its hum, the nets, the discs); the alarm is a synthesised placeholder.
 - The ride's plasma guns (no shooting from the saddle for now).
 - Gravity by zone (the hook is `config.mothership.gravityZones`; taking the core could make it flicker).
+
+## The second pass (Nov 26)
+
+Aaron's picks: picture 1's detail, and the crashed saucer outside to match the ship. Built: the service wells' landings and side rooms dressed like picture 1 (a hatch of glowing cables behind glass, a junction box throwing sparks, a vent, pipes along the ceiling, a sealed door); the broken stair's torn ends sparking; sealed doors round the decks under the wall lights; the saucer's rim, pad and beam in cyan and purple. Also: the objective text aboard rewritten for the tower, far-off greys posed less often. All from the layout's `details` (OPEN_QUESTIONS #833-837).

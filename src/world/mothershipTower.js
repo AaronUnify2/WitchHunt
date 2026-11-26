@@ -95,6 +95,10 @@ export function buildShipTower() {
   const openings = []; // in the shaft's wall: { a, half, y0, y1 }
   const lights = []; // cyan tube lights (unlit glow, drawn): { x, y, z, a, len }
   const strips = []; // the alarm strips, by zone: { zone, x, y, z, a, len }
+  // Nov 26 (the second pass; picture 1): what's drawn on the walls, not solid: { kind, x, y, z, a } (a: the way it
+  // faces, out from its wall). kinds: hatch (cables glowing behind glass), junction (a box that sparks), vent,
+  // sealed (a door that doesn't open, its lamp over it), pipe ({ from, to, r }), sparks (a torn edge sparking).
+  const details = [];
   const add = (s) => {
     solids.push(s);
     return s;
@@ -138,6 +142,12 @@ export function buildShipTower() {
   };
   helix(Math.PI / 2, Math.PI, 0, 9, [], 's1');
   helix((3 * Math.PI) / 2, Math.PI, 9, 18, [3, 4], 's2');
+  // The broken flights' torn ends spark (the second pass).
+  for (const [k, y] of [[3, 9 + 3 * 1.125], [5, 9 + 5 * 1.125]]) {
+    const ang = (3 * Math.PI) / 2 + (k * Math.PI) / STAIR.n;
+    const c = polar(4.5, ang);
+    details.push({ kind: 'sparks', ...c, y: y - 0.15, a: ang + (k === 3 ? Math.PI / 2 : -Math.PI / 2), torn: true });
+  }
 
   // ---- the hover discs: three up each net's hole, staggered round the shaft ----
   const discs = [];
@@ -251,6 +261,20 @@ export function buildShipTower() {
     // Lights down each lane's ceiling; the room's.
     for (const lx of [-W / 2 - 0.2, W / 2 + 0.2]) lights.push({ ...f.at(lx, (zIn + zFar) / 2), y: top - 0.3, a, len: zFar - zIn - 1 });
     lights.push({ ...f.at(0, (room.z0 + room.z1) / 2), y: dy0 + 3.4, a, len: room.z1 - room.z0 - 1 });
+    // Picture 1's corridor: a hatch of cables behind glass, a junction box throwing sparks, a vent, a sealed door,
+    // pipes along the ceiling's corners.
+    const land = yL + 4.5;
+    const faceIn = (lx) => (lx < 0 ? a + Math.PI / 2 : a - Math.PI / 2);
+    const onWall = (kind, lx, lz, y, extra = {}) => details.push({ kind, ...f.at(lx, lz), y, a: faceIn(lx), ...extra });
+    onWall('hatch', -W - 0.2, 26.5, land + 1.5);
+    onWall('junction', W + 0.2, 26.1, land + 1.8);
+    details.push({ kind: 'vent', ...f.at(2.1, zFar), y: land + 0.32, a: a + Math.PI });
+    onWall('hatch', -room.half, room.z0 + 1.6, land + 1.5);
+    onWall('vent', room.half, room.z0 + 2.4, land + 0.32);
+    onWall('sealed', room.half, room.z1 - 1.5, land);
+    onWall('junction', -room.half, room.z1 - 1.9, land + 1.9);
+    for (const lx of [-W - 0.2 + 0.25, -0.45, 0.45, W + 0.2 - 0.25]) details.push({ kind: 'pipe', from: { ...f.at(lx, zIn), y: top - 0.32 }, to: { ...f.at(lx, zFar), y: top - 0.32 }, r: 0.1 });
+    for (const lx of [-room.half + 0.25, room.half - 0.25]) details.push({ kind: 'pipe', from: { ...f.at(lx, room.z0), y: land + 3.3 }, to: { ...f.at(lx, room.z1), y: land + 3.3 }, r: 0.09 });
     const w = { id, a, yL, frame: f, room: { ...f.at(0, (room.z0 + room.z1) / 2), y: dy0 }, landing: { ...f.at(0, (zLand + zFar) / 2), y: yL + 4.5 }, doorIn: { ...f.at(-W / 2 - 0.2, R - 1.5), y: yL }, doorOut: { ...f.at(W / 2 + 0.2, R - 1.5), y: yL + 9 } };
     wells.push(w);
     return w;
@@ -363,6 +387,8 @@ export function buildShipTower() {
       if (openings.some((o) => Math.abs(norm(a - o.a + Math.PI) - Math.PI) < o.half + 0.12 && y + 2.6 >= o.y0 && y + 2.6 <= o.y1 + 1)) continue;
       const p = polar(R - 0.08, a);
       lights.push({ ...p, y: y + 2.6, a: a + Math.PI / 2, len: 2.6, wall: true });
+      // A sealed door under every fourth light (the second pass: Aaron, most side doors sealed).
+      if (k % 4 === (i % 2) * 2) details.push({ kind: 'sealed', ...polar(R - 0.02, a), y, a: a + Math.PI });
     }
     const zone = ['floor', 'deck1', 'deck2', 'deck3', 'top'][i];
     for (let k = 0; k < 24; k++) {
@@ -462,6 +488,7 @@ export function buildShipTower() {
     openings,
     lights,
     strips,
+    details,
     places,
     posts,
     zones,

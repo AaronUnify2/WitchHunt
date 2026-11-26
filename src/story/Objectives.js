@@ -335,9 +335,10 @@ export class Objectives {
     const ms = g.mothership;
     if (has('megaNightDone') && ms?.ready && !has('shipCoreFitted')) {
       if (ms.inside) {
-        if (!has('shipCoreTaken')) return step('shipCore', "Find what drives the ship. Deeper in.");
-        if (!has('quadReturned')) return step('shipQuad', 'Your quad is in the hangar, at the far end.');
-        return step('shipDown', 'Back to the pad, and down.');
+        // Nov 26: the tower climb (encounters/Mothership.js): the core and the quad are both at the top.
+        if (!has('shipCoreTaken')) return step('shipCore', 'Climb. Whatever drives the ship is up at the top of that glass column.');
+        if (!has('quadReturned')) return step('shipQuad', 'Your quad is in the workshop at the top. Ride it into the hangar and onto the beam.');
+        return step('shipDown', 'The beam in the hangar, or the pad at the bottom: down.');
       }
       if (!has('shipCoreTaken')) return step(has('shipEntered') ? 'shipBack' : 'ufoGo', has('shipEntered') ? 'Go back up the beam for the core.' : 'Find the ship that came down in the south. Ellen wants what drives it for the fence.', ms.beamAt);
       return step('coreFit', "Take the ship's core home and fit it to the fence box.", L.fenceBox);

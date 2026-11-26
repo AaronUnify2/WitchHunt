@@ -993,6 +993,12 @@ const RECIPES = {
     s.noiseBurst(o, { seconds: 0.35, type: 'bandpass', freq: 1800, q: 1.2, gain: 0.25, attack: 0.02 });
     for (let i = 0; i < 3; i++) setTimeout(() => s.ready && s.tone(o, { seconds: 0.16, wave: 'square', freq: 990, gain: 0.18 }), 380 + i * 230);
   },
+  // Nov 26 (the second pass): a junction box or a torn cable shorting aboard the mothership: a snap and a crackle.
+  shipSpark(s, pos) {
+    const o = s.out(pos?.x, pos?.z, 0.55);
+    s.noiseBurst(o, { seconds: 0.05, type: 'highpass', freq: 3200, gain: 0.55 });
+    for (let i = 1; i < 5; i++) setTimeout(() => s.ready && s.noiseBurst(o, { seconds: 0.025 + (i % 2) * 0.02, type: 'bandpass', freq: 2600 + i * 500, q: 3, gain: 0.3 / i }), i * 45 + (i % 3) * 20);
+  },
   // Nov 26: the mothership's alarm (a zone goes red): an alien howl, rising and falling twice through the hull.
   shipAlarm(s) {
     const o = s.out(undefined, undefined, 0.7);

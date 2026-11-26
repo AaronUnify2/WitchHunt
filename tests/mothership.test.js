@@ -63,6 +63,41 @@ describe('the ship', () => {
     expect(crashedUfoPlacement({ clearings: [], paths: [] })).toBeNull();
   });
 
+  it("dresses the walls like picture 1: hatches, junction boxes that spark, vents, sealed doors, pipes", () => {
+    const kinds = {};
+    for (const d of SHIP.details) kinds[d.kind] = (kinds[d.kind] ?? 0) + 1;
+    expect(kinds.hatch).toBeGreaterThanOrEqual(4);
+    expect(kinds.junction).toBeGreaterThanOrEqual(4);
+    expect(kinds.vent).toBeGreaterThanOrEqual(4);
+    expect(kinds.sealed).toBeGreaterThanOrEqual(10);
+    expect(kinds.sparks).toBe(2); // the broken stair's two torn ends
+    // Each sits against a wall: a ray out of its face, backwards, meets something within a few centimetres.
+    for (const d of SHIP.details.filter((x) => x.kind !== 'pipe' && x.kind !== 'sparks')) {
+      const o = { x: d.x + Math.sin(d.a) * 0.3, y: d.y + (d.kind === 'sealed' ? 1.2 : 0), z: d.z + Math.cos(d.a) * 0.3 };
+      const back = TOWER.ray(o, { x: -Math.sin(d.a), y: 0, z: -Math.cos(d.a) }, 2);
+      expect(back).toBeLessThan(0.5);
+    }
+    // The sealed doors on the decks stand on their deck.
+    for (const d of SHIP.details.filter((x) => x.kind === 'sealed')) expect([0, 9, 18, 27, 36, 22.5, 4.5]).toContain(d.y);
+  });
+
+  it('bursts sparks now and then, and says where', () => {
+    const m = buildMothership(config.mothership.look, SHIP);
+    const bursts = [];
+    m.onSpark = (p) => bursts.push(p);
+    for (let i = 0; i < 120; i++) m.update(1 / 30, null);
+    expect(bursts.length).toBeGreaterThan(3);
+    for (const p of bursts) expect(Number.isFinite(p.x + p.y + p.z)).toBe(true);
+    m.dispose();
+  });
+
+  it('the crashed saucer and its beam are in the ship\'s cyan and purple now', () => {
+    const u = buildCrashedUfo(config.crashedUfo.look, {});
+    expect(u.beam.material.color.getHex()).toBe(config.mothership.look.glow.cyan);
+    expect(config.crashedUfo.look.glow.green).toBeUndefined();
+    u.dispose();
+  });
+
   it('makes a sector of a ring with its faces facing out', () => {
     const g = sectorGeo(2, 3, 0, Math.PI / 2, 0, 1);
     const n = g.getAttribute('normal');

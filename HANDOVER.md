@@ -2,7 +2,7 @@
 
 ## Newest: the mothership as a low-gravity tower climb (Nov 26)
 
-**Where things stand:** on branch `ccr-a731960e-o2vv56` (not merged to `main`). **1641 tests pass** and the build is clean. Aaron sent four concept pictures for the mothership (`docs/concept-art/mothership-corridor.jpg`, `-core-hall`, `-lounge`, `-workshop`) and answered questions one picture at a time; the plan and his answers are docs/MOTHERSHIP_PLAN.md. **He said the story beats come after the dungeon's settled:** the lines aboard are placeholders. **Waiting on:** his climb of it (PLAYTEST round 103).
+**Where things stand:** on `main` (and `ccr-a731960e-o2vv56`). **1644 tests pass** and the build is clean. A second pass followed (Aaron's picks: picture 1's detail in the wells, the saucer recoloured to match; PLAYTEST round 104, OPEN_QUESTIONS #833-837). Aaron sent four concept pictures for the mothership (`docs/concept-art/mothership-corridor.jpg`, `-core-hall`, `-lounge`, `-workshop`) and answered questions one picture at a time; the plan and his answers are docs/MOTHERSHIP_PLAN.md. **He said the story beats come after the dungeon's settled:** the lines aboard are placeholders. **Waiting on:** his climb of it (PLAYTEST round 103).
 
 **What's new to know:**
 - **Floors at every height** (`world/towerShape.js`): a space as solids (`box`, `ramp`, `cyl`, `ring` sectors; flags `walk`, `shots`, `see`). `stepBody(body, wish, jump, dt, tower, phys, push)` is the one low-gravity step: the Player uses it (`Player.updateTower`, when the room platform has `tower`) and the tests climb with it, so a route the test climbs is one Tom can.
@@ -13,12 +13,13 @@
 - **The ride** is `ShipRide` in `encounters/Mothership.js`: a `Player.riding` object (`drive`, `eject`) on the tower's floor; reaching the beam calls `takeQuad`, which leaves and mounts Tom on the alien quad outside.
 - **The Earth and stars** behind the windows are drawn first round the camera without depth (`buildEarthSky`); anything see-through there would draw over the ship (three.js draws transparent things last), so it's all opaque.
 - **Debug:** Story, "The mothership: go up", and "The mothership: put me on" each deck and room.
+- **Wall details are data too** (`details` in the layout: `hatch`, `junction`, `vent`, `sealed`, `pipe`, `sparks`), drawn by `drawDetail`; junctions and sparks are spark emitters (`buildSparks`), and the model calls `onSpark(p)` on each burst (the encounter plays `shipSpark` near Tom).
 
 **Headless gotchas (new):** a new game's opening cutscene freezes the world: stop it (`g.cutscenes.stop(true)`) on every step, or greys and the Player never update. The layout module is shared: `import('/src/encounters/Mothership.js')` in the page gives the game's own `SHIP`.
 
 **What the next session does:** ask Aaron for his notes on the climb (rule 10). Then the story beats aboard, with him. Left for the design session: docs/MOTHERSHIP_PLAN.md "Left for the design session".
 
-**Logging:** PLAYTEST round 103, OPEN_QUESTIONS #812-832. Next numbers: OPEN_QUESTIONS #833, PLAYTEST round 104.
+**Logging:** PLAYTEST rounds 103-104, OPEN_QUESTIONS #812-837. Next numbers: OPEN_QUESTIONS #838, PLAYTEST round 105.
 
 ## Before that: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
 
