@@ -4379,7 +4379,7 @@ export const config = {
         width: 0.95,
         head: 1.32, // a child's head, big for her height
         idle: 'hug',
-        colours: { skin: 0xd0a88c, top: 0x56406e, sleeve: 0x56406e, forearm: 0x56406e, trousers: 0x2a2a2e, shoes: 0x3a3230, hair: 0x4a3020, tie: 0x3a2a24, rabbit: 0x9a9080, eyes: 0x141010, brows: 0x5a3a24 },
+        colours: { skin: 0xd0a88c, top: 0x4c3c5e, sleeve: 0x4c3c5e, forearm: 0x4c3c5e, trousers: 0x2c2c32, shoes: 0x56524c, sole: 0x3a3632, hair: 0x30201a, tie: 0x2a1e18, rabbit: 0x9a9080, nose: 0x8a5a5a, eyes: 0x1e1612, brows: 0x3a2618, white: 0x9c948a, lid: 0x3a2418, lips: 0xa06a5c }, // Nov 26 (the art close up): the jumper muted, grey sneakers, darker hair; her face's own colours
       },
     },
   },

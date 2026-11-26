@@ -69,11 +69,11 @@ describe('the campers', () => {
 // Nov 26 (Aaron's concept art, close up): Ellen's own face, on her alone.
 describe("Ellen's face and coat (Nov 26)", () => {
   const ellen = familySpec('ellen', config.family.people.ellen);
-  const junie = familySpec('junie', config.family.people.junie);
+  const mib = familySpec('mib', {});
   it('has her own features (lips, eye whites, lids), and the shared face is unchanged on the others', () => {
     for (const key of ['lips', 'white', 'lid']) {
       expect(ellen.masses.some((m) => m[8] === key), key).toBe(true);
-      expect(junie.masses.some((m) => m[8] === key), key).toBe(false); // (Wyatt has his own since Nov 26 too)
+      expect(mib.masses.some((m) => m[8] === key), key).toBe(false); // (Wyatt and Junie have their own since Nov 26 too)
       expect(config.family.people.ellen.colours[key], key).toBeTruthy();
     }
     expect(ellen.head).toBe(1); // natural, as in the art
@@ -91,12 +91,8 @@ describe("Ellen's face and coat (Nov 26)", () => {
 // Nov 26 (Aaron's concept art, close up): Wyatt's own face, hair, hands and jeans.
 describe("Wyatt's face, hair and jeans (Nov 26)", () => {
   const wyatt = familySpec('wyatt', config.family.people.wyatt);
-  const junie = familySpec('junie', config.family.people.junie);
-  it('has his own features and fingers; Junie keeps the shared face', () => {
-    for (const key of ['lips', 'white', 'lid']) {
-      expect(wyatt.masses.some((m) => m[8] === key), key).toBe(true);
-      expect(junie.masses.some((m) => m[8] === key), key).toBe(false);
-    }
+  it('has his own features and fingers', () => {
+    for (const key of ['lips', 'white', 'lid']) expect(wyatt.masses.some((m) => m[8] === key), key).toBe(true);
     expect(wyatt.tubes.filter((t) => t[0] === 'wristR' && t[9] === 'skin').length).toBe(5); // four fingers and a thumb
     expect(wyatt.masses.some((m) => m[0] === 'head' && Math.abs(m[2]) > 0.08 && m[8] === 'skin')).toBe(true); // his ears kept
   });
@@ -107,5 +103,21 @@ describe("Wyatt's face, hair and jeans (Nov 26)", () => {
     const shin = wyatt.limbs.find((l) => l[0] === 'kneeR');
     expect(thigh[2]).toBeLessThan(0.09);
     expect(Math.abs(shin[2] - shin[3])).toBeLessThan(0.01); // straight
+  });
+});
+
+// Nov 26 (Aaron's concept art, close up): Junie's own face, hair and hands; she keeps her rabbit (Aaron).
+describe("Junie's face, hair and rabbit (Nov 26)", () => {
+  const junie = familySpec('junie', config.family.people.junie);
+  it('has her own child\'s face, fingers, and still holds her rabbit', () => {
+    for (const key of ['lips', 'white', 'lid']) {
+      expect(junie.masses.some((m) => m[8] === key), key).toBe(true);
+      expect(config.family.people.junie.colours[key], key).toBeTruthy();
+    }
+    expect(junie.tubes.filter((t) => t[0] === 'wristL' && t[9] === 'skin').length).toBe(5);
+    const rabbit = junie.masses.filter((m) => m[8] === 'rabbit');
+    expect(rabbit.length).toBeGreaterThanOrEqual(4);
+    expect(Math.min(...rabbit.map((m) => m[4]))).toBeGreaterThan(0.18); // held out in front of her chest, where it shows
+    expect(config.family.people.junie.idle).toBe('hug');
   });
 });

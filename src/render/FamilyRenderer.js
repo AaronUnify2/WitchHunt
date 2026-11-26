@@ -405,11 +405,13 @@ export class FamilyRenderer {
         set('shoulderL', -0.2, -0.55, -0.12);
         set('elbowL', -0.85);
         break;
-      case 'hug': // hugging her rabbit to her chest
-        set('shoulderR', -0.55, 0.9, 0.15);
-        set('elbowR', -1.95);
-        set('shoulderL', -0.5, -0.95, -0.15);
-        set('elbowL', -1.9);
+      case 'hug': // hugging her rabbit to her chest (Nov 26: one arm under it, the other hand on its back, so it shows)
+        set('shoulderR', -0.45, 0.75, 0.16);
+        set('elbowR', -1.5);
+        set('wristR', 0.4, 0, 0.6); // curled round its bottom
+        set('shoulderL', -0.45, -0.6, -0.18);
+        set('elbowL', -1.65);
+        set('wristL', 0.5, 0, -0.5); // on its back
         break;
       default:
         set('shoulderR', 0.02 * breath, 0, -0.06);

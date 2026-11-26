@@ -223,6 +223,32 @@ function fingerTubes(tubes) {
   }
 }
 
+// Junie's face (Nov 26, Aaron's concept art): a 9-year-old's, on the shared head (her ears kept): wide dark eyes
+// set low, brows lifted at their inner ends (worried), a small soft nose, a small mouth, the lower lip full.
+function JUNIE_FACE() {
+  const m = [];
+  const f = (x, y, lift, rx, ry, rz, key, turn = null) => m.push(['head', null, x, y, onShared(x, y, lift), rx, ry, rz, key, turn, true]);
+  f(0, 1.588, -0.004, 0.0068, 0.014, 0.008, 'skin'); // the nose's bridge, short
+  f(0, 1.574, 0.004, 0.0088, 0.0085, 0.0088, 'skin'); // its tip
+  for (const s of [-1, 1]) f(s * 0.0095, 1.571, -0.001, 0.0062, 0.0052, 0.0058, 'skin');
+  for (const s of [-1, 1]) {
+    const x = s * 0.034;
+    f(x, 1.602, -0.005, 0.0168, 0.0108, 0.005, 'white', [0, s * 0.3, 0]);
+    f(x, 1.6015, -0.0034, 0.0092, 0.0092, 0.004, 'eyes');
+    f(x, 1.6118, -0.0018, 0.016, 0.0016, 0.005, 'lid', [0, s * 0.3, 0]);
+    f(s * 0.036, 1.626, -0.001, 0.016, 0.0024, 0.006, 'brows', [0, s * 0.3, -s * 0.2]); // lifted at the inner end (rotateZ: -s lifts the inner end)
+  }
+  f(0, 1.548, -0.0025, 0.0118, 0.0026, 0.004, 'lips');
+  f(0, 1.5412, -0.0025, 0.011, 0.0046, 0.0046, 'lips');
+  f(0, 1.5448, -0.0013, 0.0122, 0.0009, 0.004, 'lid');
+  return m;
+}
+// Dirt: a smudge field (0..1), patchy.
+function smudge(q) {
+  const v = Math.sin(q.x * 61 + q.y * 37) * Math.sin(q.y * 53 - q.z * 29) * Math.sin(q.z * 47 + q.x * 23);
+  return v * 0.5 + 0.5;
+}
+
 const LOOKS = {
   ellen(p) {
     const b = body({ sh: 0.84, hip: 1.12, waist: 0.8, female: true, loose: 1.22, legs: 'fitted' }); // (fitted: under a skirt)
@@ -362,29 +388,62 @@ const LOOKS = {
   junie() {
     // Nov 25 (Aaron's concept art): a purple knit jumper, a little big on her (was a hoodie), dark leggings, her
     // hair tied back messily with strands loose round her face.
-    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.1, hand: 'skin', legs: 'fitted' });
-    b.masses.push(['neck', 'chest', 0, 1.458, 0, 0.064, 0.02, 0.062, 'top']);
-    b.masses.push(hairCap(1.63, -0.012));
-    b.masses.push(['head', null, 0, 1.6, -0.1, 0.042, 0.038, 0.036, 'hair'], ['head', null, 0, 1.6, -0.075, 0.026, 0.01, 0.018, 'tie']);
-    for (const [x, y, z, r] of [[-0.085, 1.56, 0.04, 0.014], [0.088, 1.57, 0.03, 0.013], [-0.06, 1.66, 0.075, 0.016], [0.04, 1.675, 0.08, 0.015], [0.09, 1.62, -0.03, 0.017]])
-      b.masses.push(['head', null, x, y, z, r, r * 1.8, r, 'hair']);
-    // Her stuffed rabbit, held to her chest.
+    // Nov 26 (the art again, close up): rebuilt to it. Her own face (JUNIE_FACE: a child's, wide dark eyes,
+    // worried brows, a small nose, a small pouting mouth, dirt on her cheeks; her ears kept); her hair loosely tied
+    // back, a messy fringe and strands loose round her face; hands with fingers; the jumper muted and grubby with
+    // its ribbed bands; slim charcoal trousers; grey sneakers. She keeps her rabbit (Aaron), held out where it shows.
+    const b = body({ sh: 0.92, hip: 0.95, bulk: 1.06, hand: 'skin', legs: 'fitted' });
+    b.masses = b.masses.filter((m) => !(m[0] === 'head' && m[8] !== 'skin') && !(m[0] === 'head' && m[5] < 0.05 && Math.abs(m[2]) < 0.05)); // the shared face's nose, eyes, brows (not the ears)
+    b.masses = b.masses.filter((m) => !((m[0] === 'wristR' || m[0] === 'wristL') && m[8] === 'skin')); // the shared paddle hands
+    b.masses.push(...JUNIE_FACE(), ...hands());
+    fingerTubes(b.tubes);
+    b.masses.push(['neck', 'chest', 0, 1.458, 0, 0.064, 0.02, 0.062, 'top']); // the crew neck
+    b.masses.push(['hips', null, 0, 1.0, -0.008, 0.162, 0.045, 0.118, 'top']); // the ribbed hem
+    for (const s of [-1, 1]) b.masses.push([s < 0 ? 'ankleR' : 'ankleL', null, s * 0.1, 0.02, 0.06, 0.062, 0.02, 0.13, 'sole']); // the sneakers' soles
+    // Her hair: loosely tied back in a low knot, a messy fringe swept across her forehead, strands loose round her face.
+    b.masses.push(hairCap(1.633, -0.018, [0.097, 0.1, 0.106]));
+    b.masses.push(['head', null, 0, 1.585, -0.1, 0.04, 0.04, 0.035, 'hair'], ['head', null, 0, 1.59, -0.074, 0.026, 0.01, 0.018, 'tie']);
+    b.masses.push(['head', null, -0.012, 1.668, 0.07, 0.072, 0.026, 0.04, 'hair', [-0.3, 0, -0.12]]); // the fringe, swept to her left
+    for (const [x0, y0, x1, y1, r] of [
+      [-0.045, 1.678, -0.012, 1.643, 0.016], [-0.008, 1.682, 0.028, 1.647, 0.015], [-0.062, 1.672, -0.048, 1.64, 0.014], // its locks, messy
+      [-0.072, 1.655, -0.086, 1.545, 0.013], [0.072, 1.655, 0.086, 1.555, 0.012], [-0.064, 1.66, -0.075, 1.58, 0.01], [0.066, 1.66, 0.078, 1.59, 0.01], // strands loose by her face
+    ])
+      tubeOnHead(b.tubes, x0, y0, x1, y1, r, 0.003, 'hair');
+    for (const s of [-1, 1]) b.masses.push(['head', null, s * 0.082, 1.585, -0.03, 0.022, 0.062, 0.058, 'hair', [0.25, 0, -s * 0.1]]); // her hair pulled back over her ears
+    // Her stuffed rabbit, held out against her chest in both arms: its body, its head above her arms, long ears, a nose.
     b.masses.push(
-      ['chest', null, 0, 1.22, 0.175, 0.05, 0.065, 0.042, 'rabbit'],
-      ['chest', null, 0, 1.31, 0.18, 0.04, 0.038, 0.036, 'rabbit'],
-      ['chest', null, -0.017, 1.37, 0.175, 0.011, 0.042, 0.009, 'rabbit'],
-      ['chest', null, 0.017, 1.37, 0.175, 0.011, 0.042, 0.009, 'rabbit'],
-      ['chest', null, -0.014, 1.315, 0.214, 0.006, 0.006, 0.004, 'eyes'],
-      ['chest', null, 0.014, 1.315, 0.214, 0.006, 0.006, 0.004, 'eyes'],
+      ['chest', null, 0, 1.2, 0.205, 0.056, 0.07, 0.046, 'rabbit'],
+      ['chest', null, 0, 1.315, 0.215, 0.042, 0.04, 0.038, 'rabbit'],
+      ['chest', null, -0.02, 1.385, 0.205, 0.012, 0.048, 0.009, 'rabbit', [0, 0, 0.18]],
+      ['chest', null, 0.02, 1.385, 0.205, 0.012, 0.048, 0.009, 'rabbit', [0, 0, -0.18]],
+      ['chest', null, -0.015, 1.322, 0.25, 0.0065, 0.0065, 0.004, 'eyes', null, true],
+      ['chest', null, 0.015, 1.322, 0.25, 0.0065, 0.0065, 0.004, 'eyes', null, true],
+      ['chest', null, 0, 1.305, 0.253, 0.007, 0.005, 0.005, 'nose', null, true],
+      ['chest', null, -0.03, 1.14, 0.235, 0.02, 0.016, 0.022, 'rabbit', null, true],
+      ['chest', null, 0.03, 1.14, 0.235, 0.02, 0.016, 0.022, 'rabbit', null, true],
     );
     return {
       ...b,
-      // The knit: fine ribs, the bands at its hem and cuffs.
-      paint(key, q, out) {
+      paint(key, q, out, c) {
+        if (key === 'hair') {
+          if (Math.sin(q.x * 360 + q.y * 90) > 0.55) out.multiplyScalar(0.8); // strands
+          return;
+        }
+        if (key === 'skin') {
+          if (q.y > 1.5 && q.z > 0.05) {
+            socketShade(q, out);
+            // Dirt on her cheeks and brow.
+            if (smudge(q) > 0.62) out.multiplyScalar(0.84);
+          }
+          return;
+        }
         if (key !== 'top' && key !== 'sleeve' && key !== 'forearm') return;
+        // The knit: fine ribs, the bands at its neck, hem and cuffs; grubby; a little mark on her chest.
         const rib = frac((q.x + q.z) * 60) < 0.4 ? 0.9 : 1;
-        const band = (key === 'top' && (q.y < 1.03 || q.y > 1.44)) || (key === 'forearm' && q.y < 0.86) ? 0.85 : 1;
+        const band = (key === 'top' && (q.y < 1.04 || q.y > 1.445)) || (key === 'forearm' && q.y < 0.9) ? 0.82 : 1;
         out.multiplyScalar(rib * band);
+        if (smudge(q) > 0.66) out.multiplyScalar(0.85);
+        if (key === 'top' && q.z > 0.08 && Math.hypot(q.x - 0.06, q.y - 1.385) < 0.01) out.multiplyScalar(0.6);
       },
     };
   },

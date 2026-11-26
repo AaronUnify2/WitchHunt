@@ -852,6 +852,11 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The jumper** a regular fit (no puffed shoulders or big chest), ribbed at the neck, hem and cuffs; **the jeans** slim at the hip, straight-legged, a faded mid-blue (lighter down the thighs and knees), a fly and pocket seams; **hands** with fingers.
 - [ ] **With his rifle in the tower:** do the new hands and slimmer shoulders still hold it right?
 
+**Round 100: Junie after your concept art (Nov 26).** Debug menu, Models, View: The family (Y: Junie; Light: Day), then at home.
+- [ ] **Her face:** her own now, a child's: wide dark eyes, brows lifted in the middle (worried), a small nose and mouth, a little dirt on her cheeks.
+- [ ] **Her hair:** dark, loosely tied back, a messy fringe and strands loose by her face.
+- [ ] **Her rabbit** (you kept it): held out against her chest now, one arm under it, a hand on its back, its head and ears above her arms (before, it hid behind her hands). **Hands** with fingers; the jumper muted and grubby with ribbed bands; slim charcoal trousers; grey sneakers.
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
