@@ -28,6 +28,12 @@
 // spines down her back and a ragged point at each shoulder, so her profile is serrated. Small bones on
 // threads from the crown's tips. All of it in the parts she already had: no more draw calls.
 //
+// Nov 26 (Aaron's concept art: a thing of twisted, thorny wood): rebuilt in vines. No hood or cloak: a body
+// of braided, thorned vines, a narrow waist and ribcage, twisted arms with ragged strands streaming from them
+// and long jointed branch fingers, a crown that forks and forks again, and below the waist a bundle of vines
+// splaying into root-tendrils that stream behind her (the old cloak's flutter, now theirs). Her charms are
+// gone (Aaron). Rounder red eyes. Same joints, poses and moves.
+//
 // Ten draw calls (skirt, torso, head, eyes, three per arm) plus the torch
 // shadow, only while she's out and near. The ritual ring (two glowing
 // rings on the ground) is two more.
@@ -117,9 +123,9 @@ export class WitchRenderer {
     // Narrow slits slanting down to the middle (Aaron: square eyes read
     // as glasses): thin diamonds, tilted.
     const eye = (side) => {
-      const g = new THREE.OctahedronGeometry(0.5, 0);
-      g.scale(0.055, 0.011, 0.012);
-      g.rotateZ(side * 0.42);
+      const g = new THREE.SphereGeometry(0.5, 10, 6);
+      g.scale(0.042, 0.03, 0.016); // Nov 26 (the art): bigger, round glows (were thin slits)
+      g.rotateZ(side * 0.3);
       g.translate(side * 0.042, 0.165, 0.176);
       return g;
     };
@@ -203,185 +209,151 @@ export class WitchRenderer {
     return merged;
   }
 
-  // The cloak from the ground to the waist (Session 13): an open cone, as
-  // wide as her chest at the top, its hem cut into long uneven strips that
-  // flutter and trail (the vertex shader: aFlutter grows down the cloak).
+  // Nov 26 (Aaron's concept art: a thing of twisted, thorny wood, no hood or cloak; red eyes): her body is
+  // vines, braided and thorned. Still unlit black: only her outline and her eyes read.
+
+  // Her lower body (Session 13's cloak, gone): a bundle of vines twisting down from her waist, splaying into
+  // long root-tendrils that thin to points and stream behind her (the flutter grows down them), a dark core
+  // through the middle, and a train of tendrils trailing on the ground behind.
   skirtGeometry(thin) {
     const rng = this.rng;
     const c = this.cfg.rags;
-    const height = 1.4;
-    const radial = c.cloakStrips * 2; // a strip and a notch each
-    const cloak = new THREE.CylinderGeometry(0.19, 0.46, height, radial, 6, true).toNonIndexed();
-    const pos = cloak.attributes.position;
-    // Each column's tear: strips hang long, notches are cut up into the cloak.
-    const tears = Array.from({ length: radial + 1 }, (_, k) => (k % 2 === 0 ? rng.range(0.05, c.cloakTear) : -rng.range(0.05, c.cloakNotch)));
-    tears[radial] = tears[0];
-    for (let i = 0; i < pos.count; i++) {
-      const y = pos.getY(i);
-      const below = (height / 2 - y) / height; // 0 at the waist, 1 at the hem
-      if (below > 0.55) {
-        const a = Math.atan2(pos.getZ(i), pos.getX(i));
-        const k = Math.round(((a / (Math.PI * 2) + 1) % 1) * radial);
-        const deep = (below - 0.55) / 0.45;
-        pos.setY(i, y - tears[k] * deep * deep);
-        const out = 1 + rng.range(-0.06, 0.1) * deep;
-        pos.setX(i, pos.getX(i) * out);
-        pos.setZ(i, pos.getZ(i) * out);
-      }
+    const parts = [];
+    const top = 1.42;
+    const hang = (x, y) => Math.pow(Math.max(0, top - y) / top, 1.4);
+    const add = (g) => parts.push(cloth(g, hang, rng));
+    const core = new THREE.CylinderGeometry(0.13, 0.07, 0.62, 8, 3, true).toNonIndexed();
+    core.translate(0, top - 0.31, 0);
+    add(core);
+    for (let i = 0; i < c.vines; i++) {
+      const a0 = (i / c.vines) * Math.PI * 2 + rng.range(-0.25, 0.25);
+      const turn = rng.range(0.9, 1.6) * (i % 2 ? 1 : -1);
+      const tipY = rng.range(0.02, 0.3);
+      const pts = [top + 0.02, 1.12, 0.82, 0.52, tipY].map((y, k) => {
+        const r = [0.08, 0.12, 0.16, 0.24, 0.34 + rng.range(0, 0.12)][k];
+        const a = a0 + turn * (k / 4);
+        return new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r * 0.8 - [0, 0.02, 0.06, 0.14, 0.32][k]);
+      });
+      const r0 = rng.range(0.048, 0.062);
+      add(vine(pts, r0, 0.006, 5, 14));
+      for (const t of thornsOn(pts, r0, 0.006, c.thorns, rng, 0.05)) add(t);
     }
-    cloak.translate(0, 0.72, 0);
-    cloth(cloak, (x, y, z) => Math.pow(Math.max(0, 1.42 - y) / 1.4, 1.6), rng);
-    const under = new THREE.CylinderGeometry(0.16, 0.26, 1.1, 6);
-    under.translate(0, 0.55, 0);
-    // Round 2: the cord round her waist, and what hangs from it: stick figures and bones on threads, each
-    // swinging free of the cloak (its flutter grows down its thread).
-    const extras = [];
-    const belt = new THREE.CylinderGeometry(0.205, 0.215, 0.03, 10, 1, true).toNonIndexed();
-    belt.translate(0, 1.34, 0);
-    extras.push(belt);
-    const charms = 6;
-    for (let i = 0; i < charms; i++) {
-      const a = (i / charms) * Math.PI * 2 + rng.range(-0.3, 0.3);
-      const drop = rng.range(0.16, 0.42);
-      const r = 0.265 + drop * 0.26; // the cloak widens under it
-      const isBone = i % 3 === 2;
-      const parts = (isBone ? boneCharm(rng) : stickCharm(rng)).map((p) => bony(p, isBone ? 1 : 0.55));
-      const thread = new THREE.BoxGeometry(0.008, drop, 0.008).toNonIndexed();
-      thread.translate(0, -drop / 2, 0);
-      for (const g of [thread, ...parts.map((p) => p.translate(0, -drop, 0))]) {
-        g.rotateY(-a + Math.PI / 2 + rng.range(-0.5, 0.5));
-        g.translate(Math.cos(a) * r, 1.33, Math.sin(a) * r);
-        cloth(g, (x, y) => Math.min(1, Math.max(0, 1.33 - y) * 1.5), rng);
-        extras.push(g);
-      }
+    // Thinner tendrils from the bundle, longer behind.
+    for (let i = 0; i < c.tendrils; i++) {
+      const a = rng.range(0, Math.PI * 2);
+      const y0 = rng.range(0.75, 1.2);
+      const back = Math.max(0, -Math.sin(a)) * 0.3 + 0.08;
+      const len = rng.range(0.45, 0.9);
+      const pts = [0, 0.33, 0.66, 1].map((k) => new THREE.Vector3(Math.cos(a) * (0.12 + k * 0.18), y0 - k * len, Math.sin(a) * (0.1 + k * 0.12) - k * k * back - 0.03));
+      if (pts[3].y < 0.02) pts[3].y = 0.02;
+      add(vine(pts, 0.018, 0.003, 4, 10));
     }
-    // The train: long rags from the back of the cloak, down and out behind her along the ground.
-    for (let i = 0; i < 5; i++) {
-      const len = rng.range(0.7, 1.25);
-      const w = rng.range(0.05, 0.11);
-      const g = new THREE.PlaneGeometry(w, len, 1, 5).toNonIndexed();
-      const p = g.attributes.position;
-      for (let k = 0; k < p.count; k++) {
-        const t = 0.5 - p.getY(k) / len; // 0 at its top, 1 at its end
-        p.setX(k, p.getX(k) * (1 - t * 0.75) + Math.sin(t * 5 + i) * 0.02);
-        p.setZ(k, -t * t * (0.35 + i * 0.05)); // it lies back as it falls
-      }
-      g.translate((i - 2) * 0.1 + rng.range(-0.03, 0.03), 0.62 - len / 2 + rng.range(0, 0.2), -0.3);
-      cloth(g, (x, y) => Math.min(1, Math.max(0, 0.9 - y) * 1.3), rng);
-      extras.push(g);
+    // The train: long tendrils from the back, down and out behind her along the ground.
+    for (let i = 0; i < c.train; i++) {
+      const x = (i - (c.train - 1) / 2) * 0.09 + rng.range(-0.03, 0.03);
+      const len = rng.range(0.7, 1.2);
+      const pts = [0, 0.33, 0.66, 1].map((k) => new THREE.Vector3(x * (1 + k), 0.62 - k * 0.56, -0.18 - k * len + Math.sin(k * 4 + i) * 0.03));
+      add(vine(pts, 0.022, 0.003, 4, 10));
     }
-    return this.merge([cloak, under, ...extras], thin);
+    return this.merge(parts, thin);
   }
 
-  // Chest and shawl, from the waist up (the waist joint is the origin).
+  // Her chest from the waist up (the waist joint is the origin): vines twisting up from a narrow waist round
+  // a ribcage, parting to her shoulders and her neck; vines wrapping across her ribs; thorns down her back.
   torsoGeometry(thin) {
     const rng = this.rng;
-    // Narrow-waisted, the shoulders sloping (not a box).
-    const chest = new THREE.CylinderGeometry(0.15, 0.1, 0.66, 6);
-    chest.scale(1, 1, 0.7);
-    chest.translate(0, 0.31, 0);
-    const shawl = new THREE.ConeGeometry(0.33, 0.62, 12, 2, true).toNonIndexed();
-    const sp = shawl.attributes.position;
-    for (let i = 0; i < sp.count; i++) if (sp.getY(i) < -0.2) sp.setY(i, sp.getY(i) - rng.range(0, 0.22));
-    shawl.translate(0, 0.42, 0.02);
-    cloth(shawl, (x, y) => Math.max(0, 0.35 - y) * 0.9, rng);
-    const neck = new THREE.BoxGeometry(0.06, 0.16, 0.06);
-    neck.translate(0, 0.68, 0.05);
-    // Round 2: knuckled spines down her back, through the shawl, the longest between her shoulders; and a
-    // ragged point of the shawl standing up at each shoulder.
-    const extras = [];
+    const c = this.cfg.rags;
+    const parts = [];
+    const core = new THREE.CylinderGeometry(0.12, 0.075, 0.66, 8); // inside the vines: they make her outline
+    core.scale(1, 1, 0.75);
+    core.translate(0, 0.31, 0);
+    parts.push(core);
+    const targets = [
+      [-0.21, 0.6, 0.0], [-0.17, 0.62, -0.02], [0.21, 0.6, 0.0], [0.17, 0.62, -0.02], [0, 0.72, 0.05], [0.025, 0.7, 0.0], [-0.025, 0.7, 0.0],
+    ];
+    targets.forEach(([tx, ty, tz], i) => {
+      const a = (i / targets.length) * Math.PI * 2;
+      const pts = [
+        new THREE.Vector3(Math.cos(a) * 0.07, -0.1, Math.sin(a) * 0.05),
+        new THREE.Vector3(Math.cos(a + 0.7) * 0.15, 0.2, Math.sin(a + 0.7) * 0.11),
+        new THREE.Vector3(Math.cos(a + 1.2) * 0.19, 0.42, Math.sin(a + 1.2) * 0.13),
+        new THREE.Vector3(tx + rng.range(-0.02, 0.02), ty, tz + rng.range(-0.02, 0.02)),
+      ];
+      parts.push(vine(pts, 0.044, 0.03, 5, 10));
+      for (const t of thornsOn(pts, 0.044, 0.03, c.thorns + 1, rng, 0.075)) parts.push(t);
+      parts.push(...knotsOn(pts, 0.044, 2, rng));
+    });
+    // Vines wrapping across her ribs, round the front and sides.
+    for (const [y, r] of [[0.2, 0.15], [0.31, 0.175], [0.42, 0.185]]) {
+      const pts = [];
+      for (let k = 0; k <= 6; k++) {
+        const a = -1.9 + (k / 6) * 3.8; // round the front
+        pts.push(new THREE.Vector3(Math.sin(a) * r, y - Math.abs(Math.sin(a)) * 0.05, Math.cos(a) * r * 0.78));
+      }
+      parts.push(vine(pts, 0.016, 0.016, 4, 14));
+      for (const t of thornsOn(pts, 0.016, 0.016, 3, rng, 0.035)) parts.push(t);
+    }
+    // Round 2's ridge of spines down her back: thorns now.
     for (let i = 0; i < 6; i++) {
       const y = 0.12 + i * 0.1;
       const len = 0.07 + Math.sin((i / 5) * Math.PI) * 0.09 + rng.range(-0.01, 0.02);
       const spine = new THREE.ConeGeometry(0.022, len, 4).toNonIndexed();
       spine.rotateX(-Math.PI / 2 - 0.5 + i * 0.06);
-      spine.translate(rng.range(-0.012, 0.012), y, -0.11 - len * 0.42 - Math.sin((i / 5) * Math.PI) * 0.03);
-      extras.push(bony(spine, 0.7));
+      spine.translate(rng.range(-0.012, 0.012), y, -0.1 - len * 0.42 - Math.sin((i / 5) * Math.PI) * 0.03);
+      parts.push(spine);
     }
-    for (const s of [-1, 1]) {
-      const point = new THREE.ConeGeometry(0.06, rng.range(0.2, 0.3), 4, 2).toNonIndexed();
-      point.rotateZ(-s * 0.75);
-      point.translate(s * 0.27, 0.66, -0.01);
-      cloth(point, (x, y) => Math.max(0, y - 0.62) * 1.4, rng);
-      extras.push(point);
-    }
-    return this.merge([chest, shawl, neck, ...extras], thin);
+    return this.merge(parts, thin);
   }
 
-  // Head, jaw, a ragged hood with a drooping point, lank hair hanging to
-  // the chest, and the crown of gnarled sticks (the neck joint is the origin).
+  // Her head (the neck joint is the origin): a gnarled knot of a skull bound in vines, a few thorny twigs
+  // hanging at its sides, and the crown: branches spreading up and out, forking two and three times, thorned
+  // (kept full width: the silhouette's best feature).
   headGeometry(thin) {
     const rng = this.rng;
     const c = this.cfg.rags;
+    const tree = this.cfg.tree;
     const body = [];
-    const head = new THREE.BoxGeometry(0.15, 0.25, 0.18);
-    head.translate(0, 0.14, 0.08);
-    body.push(head);
-    const jaw = new THREE.BoxGeometry(0.09, 0.1, 0.12);
-    jaw.translate(0, 0.0, 0.11);
+    const skull = new THREE.IcosahedronGeometry(1, 1);
+    skull.scale(0.075, 0.13, 0.095);
+    skull.translate(0, 0.15, 0.08);
+    body.push(skull);
+    const jaw = new THREE.IcosahedronGeometry(1, 0);
+    jaw.scale(0.048, 0.05, 0.06);
+    jaw.translate(0, 0.03, 0.11);
     body.push(jaw);
-    // Nov 25 (Aaron's concept art: a thing of dead branches and roots, no hood): a gnarled knot of a skull instead
-    // (the old hood behind look.tree.hood).
-    const tree = this.cfg.tree ?? {};
-    if (tree.hood === false) {
-      for (const [x, y, z, s] of [[0, 0.3, 0.02, 0.1], [-0.06, 0.22, -0.04, 0.07], [0.06, 0.24, -0.03, 0.075], [0, 0.18, -0.08, 0.08]]) {
-        const knot = new THREE.DodecahedronGeometry(s, 0);
-        knot.translate(x, y, z);
-        body.push(knot);
-      }
+    for (const [x, y, z, s] of [[0, 0.28, 0.04, 0.085], [-0.055, 0.22, -0.03, 0.07], [0.055, 0.23, -0.02, 0.072], [0, 0.17, -0.06, 0.075]]) {
+      const knot = new THREE.DodecahedronGeometry(s, 0);
+      knot.translate(x, y, z);
+      body.push(knot);
     }
-    const hood = new THREE.ConeGeometry(0.17, 0.52, 10, 2, true).toNonIndexed();
-    const hp = hood.attributes.position;
-    for (let i = 0; i < hp.count; i++) {
-      if (hp.getY(i) < -0.2) hp.setY(i, hp.getY(i) - rng.range(0, 0.1)); // the torn rim
-      if (hp.getY(i) > 0.2) hp.setZ(i, hp.getZ(i) - 0.12); // the point droops back
+    // The neck: vines up from her chest into the skull.
+    for (let i = 0; i < 3; i++) {
+      const x = (i - 1) * 0.025;
+      body.push(vine([new THREE.Vector3(x, -0.1, 0.0), new THREE.Vector3(x * 1.4, 0.0, 0.04), new THREE.Vector3(x, 0.08, 0.06)], 0.022, 0.018, 5, 6));
     }
-    hood.rotateX(-0.45);
-    hood.translate(0, 0.27, 0.02);
-    if (tree.hood !== false) body.push(hood);
-    else hood.dispose();
-    // Hair: thin strands from under the hood, round the face to the chest.
-    for (let i = 0; i < c.hairStrands; i++) {
+    // Vines binding the skull, up over it from the jaw.
+    for (const s of [-1, 1]) body.push(vine([new THREE.Vector3(s * 0.05, 0.02, 0.1), new THREE.Vector3(s * 0.08, 0.14, 0.06), new THREE.Vector3(s * 0.05, 0.27, 0.0)], 0.014, 0.01, 4, 8));
+    // Thorny twigs hanging at the sides of her head (where her hair was).
+    for (let i = 0; i < c.hangingTwigs; i++) {
       const side = i % 2 === 0 ? -1 : 1;
-      const k = Math.floor(i / 2) / Math.max(1, Math.floor(c.hairStrands / 2) - 1); // front to back
-      const len = rng.range(0.35, 0.62);
-      const g = new THREE.BoxGeometry(rng.range(0.012, 0.022), len, 0.012).toNonIndexed();
-      g.translate(0, -len / 2, 0);
-      g.rotateZ(side * rng.range(0.02, 0.12));
-      g.translate(side * (0.08 + k * 0.02), 0.2, 0.14 - k * 0.16);
-      cloth(g, (x, y) => Math.max(0, 0.2 - y) * 0.6, rng);
+      const len = rng.range(0.25, 0.5);
+      const x0 = side * rng.range(0.06, 0.09);
+      const pts = [new THREE.Vector3(x0, 0.22, rng.range(-0.04, 0.06)), new THREE.Vector3(x0 + side * 0.06, 0.22 - len * 0.5, 0.0), new THREE.Vector3(x0 + side * 0.1, 0.22 - len, -0.04)];
+      const g = vine(pts, 0.01, 0.002, 4, 8);
+      cloth(g, (x, y) => Math.max(0, 0.22 - y) * 1.5, rng);
       body.push(g);
     }
-    // The crown: sticks splayed up and out like antlers (kept full width:
-    // the silhouette's best feature), each bending as it grows, with twigs.
+    // The crown.
     const crown = [];
-    // Nov 25 (the concept art): a great spreading crown of branches (look.tree: more of them, longer).
-    const sticks = tree.crownSticks ?? 7;
-    const [lo, hi] = tree.crownLength ?? [0.38, 0.62];
+    const sticks = tree.crownSticks;
+    const [lo, hi] = tree.crownLength;
     for (let i = 0; i < sticks; i++) {
       const t = i / (sticks - 1) - 0.5; // -0.5..0.5, left to right
-      const len = rng.range(lo, hi) * (1 - Math.abs(t) * 0.5);
-      const splay = -t * 2.2 + rng.range(-0.15, 0.15);
-      gnarledStick(crown, rng, { x: t * 0.12, y: 0.27, z: 0.06 - (i % 2) * 0.06 }, splay, rng.range(-0.4, 0.15), len, 0.026, Math.abs(t) > 0.1 ? 3 : 2);
+      const len = rng.range(lo, hi) * (1 - Math.abs(t) * 0.45);
+      const dir = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(rng.range(-0.45, 0.15), 0, -t * 2.4 + rng.range(-0.15, 0.15)));
+      branch(crown, rng, new THREE.Vector3(t * 0.13, 0.27, 0.05 - (i % 3) * 0.04), dir, len, 0.024, tree.crownForks, c.thorns > 0);
     }
     for (const g of crown) rigid(g);
-    // Round 2: small bones on threads from the crown, turning in the air.
-    for (let i = 0; i < 4; i++) {
-      const t = (i + 0.5) / 4 - 0.5;
-      const x = t * 0.62 + rng.range(-0.04, 0.04);
-      const top = 0.52 + rng.range(-0.06, 0.1) - Math.abs(t) * 0.12;
-      const drop = rng.range(0.1, 0.2);
-      const thread = new THREE.BoxGeometry(0.006, drop, 0.006).toNonIndexed();
-      thread.translate(x, top - drop / 2, 0.04);
-      const bone = new THREE.BoxGeometry(0.014, 0.07, 0.014).toNonIndexed();
-      bone.rotateZ(rng.range(-0.5, 0.5));
-      bone.translate(x, top - drop - 0.03, 0.04);
-      bony(bone);
-      for (const g of [thread, bone]) {
-        cloth(g, (px, py) => Math.min(1, Math.max(0, top - py) * 3), rng);
-        crown.push(g);
-      }
-    }
     // The body is thinned; the crown keeps its full width.
     const thinned = body.map((g) => {
       const f = g.index ? g.toNonIndexed() : g;
@@ -394,69 +366,77 @@ export class WitchRenderer {
     return merged;
   }
 
-  // An arm in three pieces, each hanging from its joint (the origin) down
-  // -y: a thin sleeve to the elbow; the forearm in a wide, tattered sleeve
-  // that hangs past the wrist and flaps; and a narrow hand with five long,
-  // two-jointed fingers ending in thin claws.
+  // An arm in three pieces, each hanging from its joint (the origin) down -y: the upper arm and the forearm
+  // each a few vines twisted round a thin core, thorned, with ragged strands streaming from the forearm; and a
+  // hand of long, tapering, jointed branch fingers ending in claws.
   armGeometries(thin) {
     const rng = this.rng;
     const c = this.cfg.rags;
-    const sleeve = new THREE.BoxGeometry(0.085, UPPER_ARM + 0.04, 0.085);
-    sleeve.translate(0, -UPPER_ARM / 2, 0);
-    const forearm = new THREE.BoxGeometry(0.045, FOREARM + 0.03, 0.045);
-    forearm.translate(0, -FOREARM / 2, 0);
-    // The hanging sleeve: an open bell from the elbow, its hem torn into strips.
-    const bellLength = FOREARM + c.sleeveHang;
-    const bell = new THREE.CylinderGeometry(0.05, 0.15, bellLength, 12, 4, true).toNonIndexed(); // narrow at the elbow, flaring at the wrist
-    bell.translate(0, -bellLength / 2, 0);
-    const bp = bell.attributes.position;
-    const tears = Array.from({ length: 13 }, (_, k) => (k % 2 === 0 ? rng.range(0.02, 0.16) : -rng.range(0.02, 0.1)));
-    tears[12] = tears[0];
-    for (let i = 0; i < bp.count; i++) {
-      const y = bp.getY(i);
-      const below = -y / bellLength;
-      if (below > 0.6) {
-        const k = Math.round((((Math.atan2(bp.getZ(i), bp.getX(i)) / (Math.PI * 2)) + 1) % 1) * 12);
-        bp.setY(i, y - tears[k] * ((below - 0.6) / 0.4));
+    const tree = this.cfg.tree;
+    const limb = (length, r0, r1, n) => {
+      const parts = [];
+      const core = new THREE.CylinderGeometry(r1 * 0.7, r0 * 0.7, length + 0.03, 6); // inside the vines
+      core.translate(0, -length / 2, 0);
+      parts.push(core);
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const pts = [0, 0.33, 0.66, 1].map((k) => {
+          const aa = a + k * 2.2;
+          const rr = r0 + (r1 - r0) * k;
+          return new THREE.Vector3(Math.cos(aa) * rr, 0.015 - k * (length + 0.03), Math.sin(aa) * rr);
+        });
+        parts.push(vine(pts, r0 * 0.7, r1 * 0.7, 4, 10));
+        for (const t of thornsOn(pts, r0 * 0.7, r1 * 0.7, c.thorns, rng, 0.07)) parts.push(t);
+        parts.push(...knotsOn(pts, r0 * 0.8, 2, rng));
       }
-      bp.setZ(i, bp.getZ(i) - below * 0.05); // it hangs back a little
+      return parts;
+    };
+    const upper = limb(UPPER_ARM, 0.056, 0.042, 3);
+    const fore = limb(FOREARM, 0.042, 0.028, 3);
+    // Ragged strands streaming from the forearm (where the wide sleeve hung).
+    for (let i = 0; i < c.streamers; i++) {
+      const y0 = -rng.range(0.08, 0.38);
+      const len = rng.range(0.35, 0.75);
+      const a = rng.range(0, Math.PI * 2);
+      const pts = [0, 0.33, 0.66, 1].map((k) => new THREE.Vector3(Math.cos(a) * 0.03 + k * 0.03 * Math.cos(a), y0 - k * len, Math.sin(a) * 0.03 - k * k * 0.12));
+      const g = vine(pts, 0.012, 0.002, 4, 10);
+      cloth(g, (x, y) => Math.pow(Math.max(0, y0 - y) / len, 1.2) * 0.9, rng);
+      fore.push(g);
     }
-    cloth(bell, (x, y) => Math.pow(Math.max(0, -y) / bellLength, 1.5) * 0.8, rng);
-    const parts = [];
-    const palm = new THREE.BoxGeometry(0.06, 0.09, 0.025);
+    // Thorny twigs off her forearms.
+    const twigs = [];
+    for (let i = 0; i < tree.armTwigs; i++) {
+      const side = i % 2 ? 1 : -1;
+      const dir = new THREE.Vector3(0, -1, 0).applyEuler(new THREE.Euler(rng.range(-0.6, 0.3), 0, side * rng.range(1.2, 2.2)));
+      branch(twigs, rng, new THREE.Vector3(side * 0.025, -FOREARM * rng.range(0.2, 0.85), rng.range(-0.02, 0.03)), dir, rng.range(0.12, 0.22), 0.01, 1, true);
+    }
+    fore.push(...twigs);
+    // The hand: a knot of a palm, four long fingers and a thumb, each three tapering joints, curling, the last a claw.
+    const hand = [];
+    const palm = new THREE.DodecahedronGeometry(1, 0);
+    palm.scale(0.035, 0.05, 0.016);
     palm.translate(0, -0.045, 0);
-    parts.push(palm);
-    // Four fingers and a thumb: two joints each, curled in, then a claw.
+    hand.push(palm);
     for (let i = 0; i < 5; i++) {
       const thumb = i === 4;
-      const spread = thumb ? 0.6 : (i - 1.5) * 0.13;
-      const base = { x: thumb ? 0.03 : (i - 1.5) * 0.016, y: thumb ? -0.03 : -0.085, z: 0.005 };
-      const fk = this.cfg.tree?.fingers ?? 1; // Nov 25: long twig fingers
-      const l1 = (thumb ? 0.09 : rng.range(0.12, 0.15)) * fk;
-      const l2 = (thumb ? 0.07 : rng.range(0.11, 0.14)) * fk;
+      const spread = thumb ? 0.6 : (i - 1.5) * 0.15;
+      let at = new THREE.Vector3(thumb ? 0.03 : (i - 1.5) * 0.016, thumb ? -0.03 : -0.085, 0.005);
+      const fk = tree.fingers;
+      const lens = thumb ? [0.09 * fk, 0.07 * fk, c.claw * 0.8] : [rng.range(0.12, 0.15) * fk, rng.range(0.11, 0.14) * fk, c.claw];
       const curl = thumb ? 0.3 : rng.range(0.15, 0.3);
-      const seg = (len, w, x, y, z, bendX) => {
-        const g = new THREE.BoxGeometry(w, len, w);
-        g.translate(0, -len / 2, 0);
-        g.rotateX(bendX);
-        g.rotateZ(spread);
-        g.translate(x, y, z);
-        parts.push(g);
-        // The segment's end (turned as the segment is), for the next.
-        const end = new THREE.Vector3(0, -len, 0).applyAxisAngle(X_AXIS, bendX).applyAxisAngle(Z_AXIS, spread);
-        return { x: x + end.x, y: y + end.y, z: z + end.z };
-      };
-      const k1 = seg(l1, 0.014, base.x, base.y, base.z, curl);
-      const k2 = seg(l2, 0.011, k1.x, k1.y, k1.z, curl * 2.2);
-      seg(c.claw, 0.006, k2.x, k2.y, k2.z, curl * 3.2);
+      const widths = [0.015, 0.011, 0.007, 0.0015];
+      const pts = [at.clone()];
+      let bend = 0;
+      for (let k = 0; k < 3; k++) {
+        bend += curl * (1 + k * 1.1);
+        const d = new THREE.Vector3(0, -1, 0).applyAxisAngle(X_AXIS, bend).applyAxisAngle(Z_AXIS, spread);
+        at = at.clone().addScaledVector(d, lens[k]);
+        pts.push(at);
+      }
+      hand.push(vine(pts, widths[0], widths[3], 4, 9));
+      for (const t of thornsOn(pts, widths[0], widths[3], thumb ? 0 : 1, rng, 0.022)) hand.push(t);
     }
-    // Nov 25 (the concept art): thorny twigs off her forearms.
-    const twigs = [];
-    for (let i = 0; i < (this.cfg.tree?.armTwigs ?? 0); i++) {
-      const side = i % 2 ? 1 : -1;
-      gnarledStick(twigs, rng, { x: side * 0.03, y: -FOREARM * rng.range(0.2, 0.85), z: rng.range(-0.02, 0.03) }, side * rng.range(1.2, 2.2), rng.range(-0.6, 0.3), rng.range(0.12, 0.24), 0.012, 1);
-    }
-    return { upper: this.merge([sleeve], thin), fore: this.merge([forearm, bell, ...twigs], thin), hand: this.merge(parts, thin) };
+    return { upper: this.merge(upper, thin), fore: this.merge(fore, thin), hand: this.merge(hand, thin) };
   }
 
   // ---- posing --------------------------------------------------------------------
@@ -881,67 +861,84 @@ function rigid(g) {
   return g;
 }
 
-// Round 2: a stick figure tied from twigs, hanging from the origin (its top) down -y: a body, a crossed
-// pair of arms, two splayed legs, a loop of a head. Returns its pieces (non-indexed, unmarked).
-function stickCharm(rng) {
-  const w = 0.017;
-  const h = rng.range(0.19, 0.27);
-  const out = [];
-  const stick = (len, x, y, rot) => {
-    const g = new THREE.BoxGeometry(w, len, w).toNonIndexed();
-    g.rotateZ(rot);
-    g.translate(x, y, 0);
-    out.push(g);
-  };
-  stick(h * 0.62, 0, -h * 0.4, rng.range(-0.08, 0.08)); // the body
-  stick(h * 0.6, 0, -h * 0.3, Math.PI / 2 + rng.range(-0.2, 0.2)); // the arms
-  stick(h * 0.5, -h * 0.13, -h * 0.84, 0.5); // the legs
-  stick(h * 0.5, h * 0.13, -h * 0.84, -0.5);
-  for (const [x, y, rot] of [[-0.03, -0.06, 0.6], [0.03, -0.06, -0.6], [0, -0.02, Math.PI / 2]]) stick(h * 0.3, x * (h / 0.16), y * (h / 0.16), rot); // the head: a triangle
-  return out;
+// Nov 26: a tapering vine along a smooth curve through `points` (Vector3s), radius r0 at its start to r1 at
+// its end (non-indexed, unmarked).
+function vine(points, r0, r1, radial = 5, segments = 10) {
+  const curve = new THREE.CatmullRomCurve3(points);
+  const g = new THREE.TubeGeometry(curve, segments, 1, radial, false);
+  const p = g.attributes.position;
+  const c = new THREE.Vector3();
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    curve.getPointAt(t, c);
+    const r = r0 + (r1 - r0) * t;
+    for (let j = 0; j <= radial; j++) {
+      const k = i * (radial + 1) + j;
+      p.setXYZ(k, c.x + (p.getX(k) - c.x) * r, c.y + (p.getY(k) - c.y) * r, c.z + (p.getZ(k) - c.z) * r);
+    }
+  }
+  const f = g.toNonIndexed();
+  g.dispose();
+  return f;
 }
 
-// Round 2: two small bones tied crosswise, hanging from the origin.
-function boneCharm(rng) {
+// Nov 26: `n` thorns along a vine (as vine() takes it), each a small cone standing out from its surface,
+// raked toward its tip.
+function thornsOn(points, r0, r1, n, rng, len) {
   const out = [];
-  for (const rot of [rng.range(0.3, 0.7), -rng.range(0.6, 1.1)]) {
-    const g = new THREE.BoxGeometry(0.018, rng.range(0.09, 0.13), 0.018).toNonIndexed();
-    g.rotateZ(rot);
-    g.translate(0, -0.05, 0);
+  if (!(n > 0)) return out;
+  const curve = new THREE.CatmullRomCurve3(points);
+  const up = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i < n; i++) {
+    const t = rng.range(0.08, 0.92);
+    const c = curve.getPointAt(t);
+    const tangent = curve.getTangentAt(t);
+    const side = new THREE.Vector3(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1)).cross(tangent);
+    if (side.lengthSq() < 1e-4) continue;
+    side.normalize();
+    const r = r0 + (r1 - r0) * t;
+    const l = len * rng.range(0.6, 1.2);
+    const dir = side.clone().multiplyScalar(0.85).addScaledVector(tangent, 0.45).normalize();
+    const g = new THREE.ConeGeometry(Math.max(0.004, l * 0.22), l, 3).toNonIndexed();
+    g.translate(0, l / 2, 0);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir));
+    g.translate(c.x + side.x * r * 0.8, c.y + side.y * r * 0.8, c.z + side.z * r * 0.8);
     out.push(g);
   }
   return out;
 }
 
-// A gnarled stick of the crown into `out`: three bending segments from
-// `base`, splayed (about z) and tilted (about x), with `twigs` forking off.
-function gnarledStick(out, rng, base, splay, tilt, len, width, twigs) {
-  const up = new THREE.Vector3(0, 1, 0);
-  const dir = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(tilt, 0, splay));
-  let at = new THREE.Vector3(base.x, base.y, base.z);
-  const segments = 3;
-  for (let k = 0; k < segments; k++) {
-    const l = len / segments;
-    const w = width * (1 - k * 0.25);
-    const g = new THREE.BoxGeometry(w, l + w, w).toNonIndexed();
-    g.translate(0, l / 2, 0);
-    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir));
-    g.translate(at.x, at.y, at.z);
+// Nov 26: `n` knots swelling a vine (as vine() takes it): small gnarls that break its outline.
+function knotsOn(points, r, n, rng) {
+  const curve = new THREE.CatmullRomCurve3(points);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const c = curve.getPointAt(rng.range(0.15, 0.85));
+    const g = new THREE.DodecahedronGeometry(r * rng.range(1.1, 1.5), 0).toNonIndexed();
+    g.translate(c.x + rng.range(-0.3, 0.3) * r, c.y, c.z + rng.range(-0.3, 0.3) * r);
     out.push(g);
-    const end = at.clone().addScaledVector(dir, l);
-    // A twig from this joint, further out.
-    if (k < twigs) {
-      const twigDir = dir.clone().applyEuler(new THREE.Euler(rng.range(-0.4, 0.4), 0, Math.sign(splay || 1) * rng.range(0.5, 0.9)));
-      const tl = l * rng.range(0.5, 0.8);
-      const t = new THREE.BoxGeometry(w * 0.6, tl, w * 0.6).toNonIndexed();
-      t.translate(0, tl / 2, 0);
-      t.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, twigDir));
-      t.translate(end.x, end.y, end.z);
-      out.push(t);
-    }
-    // Bend for the next segment.
-    dir.applyEuler(new THREE.Euler(rng.range(-0.35, 0.35), 0, rng.range(-0.35, 0.35))).normalize();
-    at = end;
+  }
+  return out;
+}
+
+// Nov 26: a branch of the crown (or a twig) into `out`: a bending vine from `base` along `dir`, thorned, forking
+// `forks` times more (two children, or one), each shorter and thinner.
+function branch(out, rng, base, dir, len, width, forks, thorny) {
+  const d = dir.clone().normalize();
+  const p1 = base.clone().addScaledVector(d, len * 0.5);
+  const bent = d.clone().applyEuler(new THREE.Euler(rng.range(-0.4, 0.4), 0, rng.range(-0.4, 0.4))).normalize();
+  const p2 = p1.clone().addScaledVector(bent, len * 0.5);
+  const pts = [base.clone(), p1, p2];
+  out.push(vine(pts, width, width * 0.25, 4, 6));
+  if (thorny) out.push(...thornsOn(pts, width, width * 0.25, Math.round(len * 10), rng, Math.max(0.015, width * 1.2)));
+  if (forks <= 0) return;
+  const n = forks >= 2 || rng.next() < 0.6 ? 2 : 1;
+  for (let i = 0; i < n; i++) {
+    const t = rng.range(0.4, 0.85);
+    const at = t < 0.5 ? base.clone().lerp(p1, t * 2) : p1.clone().lerp(p2, (t - 0.5) * 2);
+    const side = i % 2 ? 1 : -1;
+    const cd = bent.clone().applyEuler(new THREE.Euler(rng.range(-0.5, 0.5), 0, side * rng.range(0.5, 1.0))).normalize();
+    branch(out, rng, at, cd, len * rng.range(0.4, 0.6), width * 0.6, forks - 1, thorny);
   }
 }
 

@@ -665,3 +665,34 @@ describe('her traps', async () => {
     expect(env2.alerts).toEqual([]);
   });
 });
+
+// Nov 26 (Aaron's concept art: a thing of twisted, thorny wood): her model rebuilt in vines.
+describe("the witch's model (Nov 26)", () => {
+  it('is vines and thorns: ten parts, light enough, no charms, round eyes, a crown that forks', async () => {
+    const { config } = await import('../src/config.js');
+    const { WitchRenderer } = await import('../src/render/WitchRenderer.js');
+    const w = new WitchRenderer(config.witch.look, new Rng(5));
+    w.init(new THREE.Scene());
+    const meshes = [];
+    w.root.traverse((o) => o.isMesh && meshes.push(o));
+    expect(meshes.length).toBe(10); // skirt, torso, head, eyes, three per arm
+    let tris = 0;
+    let bone = 0;
+    for (const m of meshes) {
+      const g = m.geometry;
+      tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      const b = g.getAttribute('aBone');
+      if (b) for (let i = 0; i < b.count; i++) if (b.getX(i) > 0) bone++;
+    }
+    expect(tris).toBeLessThan(25000);
+    expect(bone).toBe(0); // her charms (stick figures, bones) are gone: nothing on her is tinted as bone
+    const eyes = meshes.find((m) => m.material === w.eyeMaterial).geometry;
+    eyes.computeBoundingBox();
+    const half = (eyes.boundingBox.max.x - eyes.boundingBox.min.x) / 2;
+    expect(half / (eyes.boundingBox.max.y - eyes.boundingBox.min.y)).toBeLessThan(2.5); // round glows, not slits
+    const head = meshes.find((m) => m.parent === w.neck && m.material !== w.eyeMaterial).geometry;
+    head.computeBoundingBox();
+    expect(head.boundingBox.max.y).toBeGreaterThan(0.6); // the crown spreads high above her skull
+    expect(head.boundingBox.max.x - head.boundingBox.min.x).toBeGreaterThan(0.8); // and wide
+  });
+});

@@ -862,6 +862,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Roomier trousers** for both (Junie's were leggings-tight).
 - [ ] **Wyatt with his rifle in the tower** and **Junie hugging her rabbit**: do the bigger sleeves clip?
 
+**Round 102: the witch after your concept art (Nov 26).** Debug menu, Models, View: The witch (Light: Day for her outline in the fog, then Night, torch); then meet her at night.
+- [ ] **Her body** is twisted, thorny vines now: no hood or cloak; a narrow waist and ribcage, knotted arms with ragged strands streaming from them, long jointed branch claws.
+- [ ] **The crown** forks two and three times, thorned. **Below the waist** a bundle of vines splaying into root-tendrils that stream behind her as she glides and flies. **Her eyes** bigger, round red glows (they were slits).
+- [ ] **Her charms are gone** (your call): no stick figures or bones at her waist or crown.
+- [ ] **Every move:** gliding, the ritual crouch, the hex, the swipe, fleeing, her death burst. Does she still read as a silhouette at night?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

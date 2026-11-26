@@ -96,7 +96,7 @@ export const VIEWER_MODELS = [
   {
     id: 'witch',
     name: 'The witch',
-    note: 'Still only a silhouette (Session 13: rags that flutter, wide sleeves, claws, hair, a gnarled crown).',
+    note: 'Still only a silhouette (Nov 26: rebuilt after Aaron\'s concept art in twisted, thorny vines: a forking crown, branch claws, root-tendrils streaming behind).',
     height: (cfg) => cfg.witch.look.height,
     variants: null,
     poses: [
