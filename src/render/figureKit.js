@@ -39,12 +39,15 @@ const HEIGHT = 1.7; // the skeleton's height, as built
 // scale), head (the head's own scale, about the neck), colours: { key: hex },
 // masses: [[bone, other bone or null, x, y, z, rx, ry, rz, key, turn (optional:
 // [x, y, z] radians, the ellipsoid turned before it's placed), lo (optional:
-// true for a coarser sphere, for many small pieces such as a ruff's pleats)]],
+// true for a coarser sphere, for many small pieces such as a ruff's pleats),
+// seg (optional: [width, height] segments, finer or coarser than either;
+// Nov 26: fine enough to paint stripes on)]],
 // limbs: [[from joint, to joint, r0, r1, key, bulge, flat (depth / width:
 // an oval, for a trunk), knob (the joint's knob, as a share of r0: default
-// 1.01, none for a trunk)]], tubes: [[bone, ax,
+// 1.01, none for a trunk), seg (optional: [radial, rings] segments; default
+// [12, 6])]], tubes: [[bone, ax,
 // ay, az, bx, by, bz, r0, r1, key, flat, bulge (optional, as limbs': a
-// garment's shell)]], rings: [[bone, x, y, z, radius, tube,
+// garment's shell), seg (optional: [radial, rings])]], rings: [[bone, x, y, z, radius, tube,
 // key, turn (optional, as masses')]] (facing +z unturned), sheets: [{ bone,
 // other (optional), geometry (yours: positions and, for painting, uv), key,
 // from, to ([x, y, z]: skinned to `bone` at from, blending to `other` by
@@ -60,23 +63,23 @@ export function buildFigure(spec) {
   const colours = Object.fromEntries(Object.entries(spec.colours).map(([k, hex]) => [k, new THREE.Color(hex)]));
   const parts = [];
   const add = (g, o) => parts.push(finish(g, { ...o, joints, colours, paint: spec.paint, glow: spec.glow }));
-  for (const [bone, other, x, y, z, rx, ry, rz, key, turn, lo] of spec.masses) {
-    const g = lo ? new THREE.SphereGeometry(1, 8, 6) : new THREE.SphereGeometry(1, 16, 12); // Session 26: lo for many small pieces (pleats)
+  for (const [bone, other, x, y, z, rx, ry, rz, key, turn, lo, seg] of spec.masses) {
+    const g = seg ? new THREE.SphereGeometry(1, seg[0], seg[1]) : lo ? new THREE.SphereGeometry(1, 8, 6) : new THREE.SphereGeometry(1, 16, 12); // Session 26: lo for many small pieces (pleats)
     g.scale(rx, ry, rz);
     if (turn) g.rotateX(turn[0]).rotateY(turn[1]).rotateZ(turn[2]);
     g.translate(x, y, z);
     add(g, { bone, other, share: other ? 0.5 : 0, key });
   }
-  for (const [from, to, r0, r1, key, bulge = 0, flat = 1, knob = flat === 1 ? 1.01 : 0] of spec.limbs) {
+  for (const [from, to, r0, r1, key, bulge = 0, flat = 1, knob = flat === 1 ? 1.01 : 0, seg] of spec.limbs) {
     const a = joints[from].p;
     const b = joints[to].p;
-    add(tube(a, b, r0, r1, 12, 6, bulge, flat), { bone: from, other: joints[from].parent, blendStart: true, from: a, to: b, key });
+    add(tube(a, b, r0, r1, seg?.[0] ?? 12, seg?.[1] ?? 6, bulge, flat), { bone: from, other: joints[from].parent, blendStart: true, from: a, to: b, key });
     // A knob over the joint it starts from (not a trunk's: it would show below the hips).
     if (knob) add(new THREE.SphereGeometry(r0 * knob, 12, 8).translate(a.x, a.y, a.z), { bone: from, other: joints[from].parent, share: 0.5, key });
   }
-  for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key, flat = 1, bulge = 0] of spec.tubes ?? []) {
+  for (const [bone, ax, ay, az, bx, by, bz, r0, r1, key, flat = 1, bulge = 0, seg] of spec.tubes ?? []) {
     const shell = flat !== 1 || bulge;
-    add(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, shell ? 40 : 8, shell ? 10 : 4, bulge, flat), { bone, key }); // a shell: fine enough to paint
+    add(tube(new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz), r0, r1, seg?.[0] ?? (shell ? 40 : 8), seg?.[1] ?? (shell ? 10 : 4), bulge, flat), { bone, key }); // a shell: fine enough to paint
   }
   for (const [bone, x, y, z, radius, thickness, key, turn] of spec.rings ?? []) {
     const g = new THREE.TorusGeometry(radius, thickness, 6, 20);

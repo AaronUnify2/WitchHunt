@@ -825,7 +825,12 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The campground** on Day 1; **home's** porch and door lamp at dusk.
 - [ ] **The family**, **the Witch**, **the mutant**, **the Mothman and moths**, **the beetle**, **the grey**: in the model viewer (debug menu) and in play.
 - [ ] **Zombies:** the deputy with his star, the muted crowd, the bandaged ones (one citizen in six), the snake-woman Screamer.
-- [ ] **Milo:** try `milo.clownStyle: 'art'` in config if you want the art's clown; say which you prefer.
+- [x] ~~**Milo:** try `milo.clownStyle: 'art'` in config if you want the art's clown; say which you prefer.~~ (Settled Nov 26: the art's clown, round 96.)
+
+**Round 96: Milo after your concept art (Nov 26).** Debug menu, Models, View: Milo (Light: Night, torch); then his barn.
+- [ ] **The clown** as your picture has him: the off-white jumpsuit with narrow rust stripes, grimy and blotched with old blood; the two-tier scalloped collar over his shoulders; three big red buttons; rust cuffs at the wrists and ankles; a bald white head, big frizzy green puffs of hair round the sides and back, a red ball nose, a red smirk, sleepy eyes under thin painted arches; bare, bony hands. Close enough?
+- [ ] **Kept from before** (your picks): the huge shoes (now red-brown laced leather), the eyes' faint yellow glow, the knife in his right hand, wrists below his knees. The two knives tucked in his suit are gone (they'd sit over the buttons). His bounce at rest, and 1.45 m.
+- [ ] **Every pose** (D-pad up/down): the throw, the dance, the bow: does the suit hold together at the joints?
 
 ## 1. The main menu
 

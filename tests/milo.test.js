@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { config } from '../src/config.js';
 import { lumaOf } from '../src/render/propKit.js';
 import { PosedFigure } from '../src/render/PosedFigure.js';
-import { miloSpec, miloPose, MILO_LOOKS, MILO_JOINTS, dotAt } from '../src/render/miloModel.js';
+import { miloSpec, miloPose, MILO_LOOKS, MILO_JOINTS, STRIPES, stripeAt, bloodAt } from '../src/render/miloModel.js';
 import { ANIMALS, BARN_ANIMALS } from '../src/render/barnAnimals.js';
 
 const mc = config.milo;
@@ -44,10 +44,9 @@ describe('Milo', () => {
     });
   }
 
-  // Session 25 (Aaron, with the reference picture): shorter, big feet, long arms.
-  // Session 26 (Aaron): the suit read skin tight and the wig wasn't clowny; a green-haired
-  // creepy killer clown for inspiration, a little supernatural; the man's clothes too tight, his belt too loose.
-  it('the clown: shorter, very long arms, very big shoes, baggy and ruffled', () => {
+  // Nov 26 (Aaron's concept art: "match this image as closely as possible"). Kept on his word: very big
+  // shoes, very long arms, glowing eyes, the knife in his hand.
+  it('the clown: the concept art, with his long arms, big shoes, glowing eyes and knife kept', () => {
     expect(mc.height).toBeLessThanOrEqual(1.8);
     const spec = miloSpec(mc, 'clown');
     const J = Object.fromEntries(spec.joints.map(([n, , x, y, z]) => [n, { x, y, z }]));
@@ -55,44 +54,53 @@ describe('Milo', () => {
     const shoe = spec.masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
     const manShoe = miloSpec(mc, 'man').masses.find((q) => q[0] === 'ankleR' && q[8] === 'shoes');
     expect(shoe[7]).toBeGreaterThan(manShoe[7] * 2); // the clown's shoes, far past a man's
-    // Not skin tight: the sleeves and the pantaloons puff out (bulge), the legs balloon.
-    const thigh = spec.limbs.find((l) => l[0] === 'hipR');
-    const upper = spec.limbs.find((l) => l[0] === 'shoulderR');
-    const shin = spec.limbs.find((l) => l[0] === 'kneeR');
-    expect(thigh[2]).toBeGreaterThan(0.12);
-    expect(upper[2]).toBeGreaterThan(0.08);
-    for (const l of [thigh, upper, shin]) expect(l[5]).toBeGreaterThanOrEqual(0.3);
-    expect(shin[3]).toBeLessThan(shin[2] * 0.6); // gathered at the ankle
-    // Ruffles: the ruff (two rows), the peplum, the cuffs; pom-poms.
-    expect(spec.masses.filter((q) => q[8] === 'ruffle' || q[8] === 'ruffle2').length).toBeGreaterThan(60);
-    expect(spec.masses.filter((q) => q[8] === 'pom').length).toBeGreaterThanOrEqual(5);
-    // Clown hair: wild tufts bursting from the sides (tapered locks), round a bald crown, not a cap.
-    expect(spec.tubes.filter((t) => t[10 - 1] === 'wig').length).toBeGreaterThanOrEqual(20);
-    const top = spec.masses.filter((q) => q[8] === 'wig' && Math.abs(q[2]) < 0.03 && q[3] > 1.64);
-    expect(top.length).toBe(0); // nothing over the crown: it's bald
-    // The mouth itself a normal width (Session 25), the painted lines reaching up from it.
-    const lips = spec.masses.filter((q) => q[8] === 'grin' && Math.abs(q[3] - 1.545) < 0.01);
-    const xs = lips.map((q) => q[2]);
-    expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(0.06);
-    expect(spec.masses.filter((q) => q[8] === 'socket').length).toBe(2);
-    // A little supernatural: his eyes glow (no light added: the figure's own shader).
     expect(spec.glow.eyes).toBeGreaterThan(0);
     expect(miloSpec(mc, 'man').glow).toBeUndefined();
-    // The dots: sparse, red and blue.
-    let dots = 0;
-    let n = 0;
-    const seen = new Set();
-    for (let x = -0.3; x <= 0.3; x += 0.01) for (let y = 0.5; y <= 1.5; y += 0.01) {
-      n++;
-      const d = dotAt({ x, y, z: 0.14 }); // on a plane of cells (a surface passes through them)
-      if (d) {
-        dots++;
-        seen.add(d);
+    expect(spec.tubes.filter((t) => t[0] === 'wristR' && t[9] === 'steel').length).toBe(1); // the knife in his hand, no others on him
+    // A one-piece suit, loose but not ballooning, gathered into rust cuffs at the wrists and ankles.
+    const thigh = spec.limbs.find((l) => l[0] === 'hipR');
+    const upper = spec.limbs.find((l) => l[0] === 'shoulderR');
+    expect(thigh[2]).toBeGreaterThan(0.09);
+    expect(thigh[2]).toBeLessThan(0.12);
+    expect(upper[5]).toBeGreaterThan(0); // not skin tight
+    expect(spec.tubes.filter((t) => t[9] === 'cuff').length).toBe(4);
+    // Three big red buttons; a two-tier scalloped collar.
+    expect(spec.masses.filter((q) => q[8] === 'button').length).toBe(3);
+    expect(spec.masses.filter((q) => q[8] === 'collar').length).toBeGreaterThanOrEqual(30);
+    // A red ball nose.
+    expect(spec.masses.filter((q) => q[8] === 'nose').length).toBe(1);
+    // The hair: puffs round the sides and the back of a bald crown.
+    const puffs = spec.sheets.filter((sh) => sh.key === 'wig');
+    expect(puffs.length).toBe(3);
+    const head = spec.masses.find((q) => q[0] === 'head' && q[8] === 'face');
+    const crown = head[3] + head[6];
+    for (const sh of puffs) {
+      const p = sh.geometry.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        if (Math.abs(p.getX(i)) < 0.05) expect(p.getY(i)).toBeLessThan(crown - 0.02); // nothing over the top: he's bald
+        expect(p.getZ(i)).toBeLessThan(head[4] + head[7] * 0.9); // behind his face
       }
     }
-    expect(dots / n).toBeLessThan(0.25);
-    expect(dots / n).toBeGreaterThan(0.01);
-    expect([...seen].sort()).toEqual([1, 2]);
+    // Every striped part is built with a column of vertices for each edge of each stripe (or they'd blur away).
+    for (const [key, n] of [['suit', STRIPES.suit], ['armR', STRIPES.arm], ['legR', STRIPES.leg]]) {
+      for (const l of spec.limbs.filter((x) => x[4] === key)) expect(l[8][0] % (n * 4), key).toBe(0);
+    }
+  });
+
+  it('the clown\'s stripes and blood: narrow stripes, and blotches of blood on part of the suit', () => {
+    let on = 0;
+    const N = 400;
+    for (let i = 0; i < N; i++) on += stripeAt((i / N) * Math.PI * 2, STRIPES.suit);
+    expect(on / N).toBeGreaterThan(0.15);
+    expect(on / N).toBeLessThan(0.35);
+    let blood = 0;
+    let n = 0;
+    for (let x = -0.2; x <= 0.2; x += 0.01) for (let y = 0.2; y <= 1.4; y += 0.01) {
+      n++;
+      if (bloodAt({ x, y, z: 0.13 }, mc.clown) > 0.5) blood++;
+    }
+    expect(blood / n).toBeGreaterThan(0.05);
+    expect(blood / n).toBeLessThan(0.5);
   });
 
   it('the man: loose clothes, and a belt that fits his waist', () => {

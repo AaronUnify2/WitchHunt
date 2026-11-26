@@ -4454,39 +4454,40 @@ export const config = {
   milo: {
     height: 1.45, // Aaron (after Session 26): about a foot shorter ("it's funnier if he's short"); 1.75 was (Session 25), 1.9 before that
     manHeight: 1.75, // the man the morning after (Aaron: he stays 1.75 m, a head taller than the clown: "it'll be funnier, trust me")
-    widths: { clown: 0.94, man: 1.02 }, // the story: broad-shouldered as the man; in full kit his frame seems to narrow and his arms to lengthen
-    // Nov 25: which clown. 'story': Aaron's Milo from The Lone Clown (the white suit with dots, no nose). 'art': his Nov 25
-    // concept art (a grimy brown-and-cream striped suit, a brown ruff, a red ball nose, red-brown boots). Aaron to choose.
-    clownStyle: 'story',
-    clown: { top: 1, shoe: 0.2 }, // Session 26: the baggy suit is built in (render/miloModel.js clownBody); top widens the smock; the shoes about twice as long
+    widths: { clown: 1.04, man: 1.02 }, // the story: broad-shouldered as the man (Nov 26: the clown as broad, as in the art; 0.94 was)
+    clown: { shoe: 0.2, blood: 0.55 }, // Session 26: the shoes about twice as long. Nov 26: blood: how much old blood is on the suit (lower is more; render/miloModel.js bloodAt)
     eyeGlow: 1.3, // Session 26: how strongly his eyes glow in their own colour (seen in the dark; no light added)
     albedo: 0.3, // the torch is strong up close (Session 26: the baggier white suit catches more of it: 0.34 was)
     poseRate: 14, // quick
     throwSeconds: 0.9, // the wind-up, the throw and its follow-through (for the viewer's loop)
     looks: {
-      // The Lone Clown's Milo (Aaron's story). All dull enough for the torch (the glare rule).
+      // The clown, Nov 26: as Aaron's concept art has him. All dull enough for the torch (the glare rule).
       clown: {
         skin: 0x6a4e40,
         face: 0x706c64, // white greasepaint
-        grin: 0x7a1c14, // Session 25: a small red mouth
+        scalp: 0x76665e, // his bald crown, a shade pinker than the paint
+        grin: 0x7a1c14, // the red smirk, and the lines from it up to his nose
+        nose: 0x8a1810, // the red ball nose
         eyes: 0x6a5a22, // Session 26: a dull yellow that glows faintly of its own (eyeGlow): a little supernatural
-        socket: 0x161214, // Session 26: the dark diamonds painted through his eyes
-        wig: 0x2e7a2a, // Session 26: wild clown hair, green, bursting from the sides of a bald crown
-        ruffle: 0x7a1c14, // Session 26: the ruff's, the cuffs' and the peplum's pleats, red...
-        ruffle2: 0x62605a, // ...and off-white
-        pom: 0x7a1c14, // the pom-poms down his front and on his toes
-        shirt: 0x62605a, // Session 26: a shade duller (the bigger suit caught the torch). Session 25 (Aaron, seeing the reference): the white suit with dots; a grey-white (an off-white read as bare skin under the torch)...
-        trousers: 0x62605a,
-        dot: 0x7a1c14, // ...and its dots, red and blue, sparse
-        dot2: 0x24405a,
-        collar: 0x7a1c14, // the red collar
-        shoes: 0x5e1c16,
-        gloves: 0x6c6860, // white gloves
+        socket: 0x2c2828, // the grey shadow round his sleepy eyes
+        brow: 0x1c1214, // the painted arches over them, and the heavy lids
+        wig: 0x2e5220, // the frizzy green puffs of hair...
+        wig2: 0x1a3010, // ...their darker depths...
+        wig3: 0x3e6a28, // ...and the frizz's lighter wisps
+        suit: 0x4a403c, // the jumpsuit, an off-white gone grey with dirt...
+        stripe: 0x3c0e0c, // ...its narrow rust stripes
+        grime: 0x3a3028,
+        stain: 0x260807, // old blood
+        collar: 0x3a120e, // the scalloped collar, rust
+        cuff: 0x5a1c14, // the rust cuffs at his wrists and ankles
+        button: 0x5a100c, // three big red buttons
+        hand: 0x524440, // bare, pale, bony
+        shoes: 0x46200f, // red-brown leather
+        sole: 0x1c1410,
+        lace: 0x2a1a12,
         leather: 0x2e2218,
         steel: 0x5e6062,
       },
-      // Nov 25: the concept art's clown (clownStyle 'art'), over the story's colours.
-      clownArt: { shirt: 0x5c5444, trousers: 0x5c5444, stripe: 0x3e2a1e, stain: 0x2a0c0a, ruffle: 0x4a3426, ruffle2: 0x5c5444, collar: 0x4a3426, pom: 0x7a1c14, nose: 0x8a1810, shoes: 0x4a2418 },
       man: { skin: 0x6a4e40, face: 0x6a4e40, eyes: 0x14100e, hair: 0x16130f, shirt: 0x5e1e18, check: 0x1a1816, trousers: 0x2a3446, shoes: 0x3a2a1c, leather: 0x1c140e, tin: 0x5a5c5c, coffee: 0x1a120c }, // Session 26: the belt darker than the boots, so it reads against the jeans
     },
   },

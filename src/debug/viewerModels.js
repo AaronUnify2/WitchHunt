@@ -232,7 +232,7 @@ export const VIEWER_MODELS = [
   {
     id: 'milo',
     name: 'Milo',
-    note: "Session 24: the knife thrower from The Lone Clown. Y: the clown, or the man the morning after. One draw call. He can't be hurt. His barn: Session 28.",
+    note: "Session 24: the knife thrower from The Lone Clown (Nov 26: the clown as Aaron's concept art has him). Y: the clown, or the man the morning after. One draw call. He can't be hurt. His barn: Session 28.",
     height: (cfg) => cfg.milo.height,
     startDistance: (cfg) => cfg.modelViewer.milo.distance,
     variants: () => ['The clown', 'The man (the morning after)'],
