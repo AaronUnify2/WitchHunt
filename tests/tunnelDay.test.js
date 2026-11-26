@@ -69,20 +69,22 @@ describe('Day 3: the tunnel (Nov 25)', () => {
     expect(flags.has('tunnelSeen')).toBe(false); // not there yet
   });
 
-  it("the Pile's cutscene waits for them to finish if he gets there first", () => {
+  it("still talking when the Pile's cutscene begins, they're cut off", () => {
     const played = [];
+    let cleared = 0;
     const { t, flags, said } = rig();
     flags.add('tunnelCall');
     t.pile = { start() {}, stop() {}, beginFight() {}, alive: false };
     t.cutscenes = { active: false, play: (id) => (played.push(id), true) };
-    t.player.position = { x: 100 - config.tunnel.seeAt + 1, z: 0 };
-    t.subtitles.busy = true; // (still talking)
+    t.subtitles = { busy: true, clear: () => cleared++ }; // (still talking)
+    t.player.position = { x: 100 - config.tunnel.talkAt + 1, z: 0 };
     t.update(0.1, true);
     expect(said).toEqual(['tunnel.seen.wyatt']);
-    expect(played).toEqual([]);
-    t.subtitles.busy = false;
+    t.player.position = { x: 100 - config.tunnel.seeAt + 1, z: 0 };
     t.update(0.1, true);
     expect(played).toEqual(['pile.emerge']);
+    expect(cleared).toBe(1);
+    t.update(0.1, true);
     expect(said).toEqual(['tunnel.seen.wyatt']); // not again
   });
 

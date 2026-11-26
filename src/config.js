@@ -5950,7 +5950,7 @@ export const config = {
   // the dawn after Night 2 before Ellen sends Tom there; seeAt: metres from the army's barrier that he's seen it.
   // Nov 26 (Aaron: Wyatt's line about the tunnel ran over the Pile's cutscene): talkAt: metres from the barrier that
   // Wyatt and Ellen talk about the caved-in tunnel, far enough out to be done before he's at seeAt (the cutscene,
-  // which waits for them if he gets there first: on the quad, say).
+  // which cuts them off if they're still talking: on the quad, say).
   tunnel: { call: { after: 8 }, talkAt: 130, seeAt: 30, pileOut: 9 }, // pileOut: metres south of the barrier the Pile comes up
   // Nov 25 (Aaron): the Pile, Day 3's fight at the tunnel (ai/Pile.js; render/PileRenderer.js). A first pass, to tune
   // in play. bodies: its size at the start (Aaron: 30); magic: its real health (charges and seams only).

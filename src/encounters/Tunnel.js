@@ -8,7 +8,7 @@
 //     the tunnel's open (it's the only road out).
 //  2. The tunnel (tunnelSeen): talkAt metres out on the road (Nov 26), Wyatt says the rock's fresh, brought down on
 //     purpose, and Ellen works out what it means; within seeAt metres of the army's barrier in front of it
-//     (world/roadNorth.js), once they're done, the Pile's cutscene.
+//     (world/roadNorth.js), the Pile's cutscene (cutting them off if they're still talking).
 //  3. The Pile (ai/Pile.js; Aaron, Nov 25): the bodies of the people the army buried with the tunnel, one swirling
 //     mass held together by her magic, heaves up out of the rubble. Its end: tunnelCleared. Left mid-fight (a
 //     load, a death), it comes up again whole the next time he's there.
@@ -132,15 +132,15 @@ export class Tunnel {
     const b = this.barrier;
     const p = this.player?.position;
     if (!b || !p) return;
-    const d = Math.hypot(p.x - b.x, p.z - b.z);
-    if (d > this.tc.seeAt) return;
-    // The cutscene waits for Wyatt and Ellen to finish (unless he's right on top of where it comes up).
-    if (this.subtitles?.busy && d > this.tc.pileOut + 6) return;
+    if (Math.hypot(p.x - b.x, p.z - b.z) > this.tc.seeAt) return;
     this.set('tunnelSeen');
     this.bus.emit('tunnel:seen', { x: b.x, z: b.z });
     // Nov 25 (Aaron): the first time, its cutscene (pile.emerge): the tunnel, the tendrils, the heave, an eye.
     const at = this.pileSpot(b);
     if (this.pile && !this.has('pileSeen') && this.cutscenes && !this.cutscenes.active) {
+      // Nov 26 (Aaron: "if the cutscene has begun the dialogue is stopped"): Wyatt and Ellen cut off if they're
+      // still talking (on the quad, say), so nothing runs over it.
+      this.subtitles?.clear?.();
       this.pile.start(at.x, at.z, 0, { intro: true });
       if (this.cutscenes.play?.('pile.emerge', { anchors: { pile: { x: at.x, z: at.z, yaw: 0 } }, onDone: () => this.pile.beginFight() })) {
         this.set('pileSeen');
