@@ -15,11 +15,13 @@
 - **Debug:** Story, "The mothership: go up", and "The mothership: put me on" each deck and room.
 - **Wall details are data too** (`details` in the layout: `hatch`, `junction`, `vent`, `sealed`, `pipe`, `sparks`), drawn by `drawDetail`; junctions and sparks are spark emitters (`buildSparks`), and the model calls `onSpark(p)` on each burst (the encounter plays `shipSpark` near Tom).
 
+**Fixed after Aaron's play (Nov 26):** the greys aboard were invulnerable: `onEnter` runs after `load` and its reset (`resetGrey`) switched their targets off. If you add a reset, keep `target.targetable` true while `this.model` exists. Testing a fight headless means firing a real weapon (`weapons.select`, input `attack`), not just casting the ship's ray: the first check cast the ray and missed this.
+
 **Headless gotchas (new):** a new game's opening cutscene freezes the world: stop it (`g.cutscenes.stop(true)`) on every step, or greys and the Player never update. The layout module is shared: `import('/src/encounters/Mothership.js')` in the page gives the game's own `SHIP`.
 
 **What the next session does:** ask Aaron for his notes on the climb (rule 10). Then the story beats aboard, with him. Left for the design session: docs/MOTHERSHIP_PLAN.md "Left for the design session".
 
-**Logging:** PLAYTEST rounds 103-104, OPEN_QUESTIONS #812-837. Next numbers: OPEN_QUESTIONS #838, PLAYTEST round 105.
+**Logging:** PLAYTEST rounds 103-105, OPEN_QUESTIONS #812-838. Next numbers: OPEN_QUESTIONS #839, PLAYTEST round 106.
 
 ## Before that: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
 

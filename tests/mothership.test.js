@@ -3,7 +3,9 @@
 import { describe, it, expect } from 'vitest';
 import { config } from '../src/config.js';
 import { sectionShape } from '../src/world/sectionShape.js';
-import { SHIP, SHIP_PLACES, SHIP_FLAGS, LOOT_FLAGS, TOWER, greyStep, noticeStep, runStep, zoneAt } from '../src/encounters/Mothership.js';
+import * as THREE from 'three';
+import { SHIP, SHIP_PLACES, SHIP_FLAGS, LOOT_FLAGS, TOWER, greyStep, noticeStep, runStep, zoneAt, Mothership } from '../src/encounters/Mothership.js';
+import { EventBus } from '../src/core/EventBus.js';
 import { buildCrashedUfo, buildMothership, sectorGeo } from '../src/render/mothershipModel.js';
 import { crashedUfoPlacement } from '../src/world/CrashedUfoSite.js';
 import { laterFlags } from '../src/debug/storyStart.js';
@@ -163,6 +165,80 @@ describe('a grey aboard', () => {
     expect(zoneAt(SHIP_PLACES.panelStand)).toBe('workshop');
     expect(TOWER.floorAt(SHIP_PLACES.panelStand.x, SHIP_PLACES.panelStand.z, SHIP_PLACES.panelStand.y + 0.1)).toBeCloseTo(SHIP_PLACES.panelStand.y, 1);
     for (const way of SHIP_PLACES.fleeFrom) for (const w of way) expect(TOWER.floorAt(w.x, w.z, 36.1)).toBeCloseTo(36, 1);
+  });
+});
+
+// Aboard for real (the encounter, with stand-ins round it): Aaron, Nov 26: "I can't actually kill the aliens".
+function boarded() {
+  const bus = new EventBus();
+  const scene = new THREE.Scene();
+  const flags = new Set();
+  const extraTargets = [];
+  const shells = [];
+  const interiors = {
+    id: null,
+    define(def) {
+      this.def = def;
+    },
+    enter(id) {
+      this.space = this.def.load(scene, -1200);
+      this.id = id;
+      this.def.onEnter();
+      return true;
+    },
+    leave() {
+      this.space?.dispose();
+      this.id = null;
+    },
+  };
+  const m = new Mothership(config, bus);
+  m.init({
+    scene,
+    world: { ground: { heightAt: () => 0 } },
+    site: { spots: { beam: { x: 100, y: 0, z: 50 } } },
+    interiors,
+    player: { position: new THREE.Vector3(100, -1200, 41), eyeHeight: 1.7, crouched: false, riding: null, camera: null },
+    combat: { weapons: { extraTargets, spaceRays: new Map(), addAmmo: (type, n) => (shells.push(n), true) }, hud: { pickup() {} }, hurtPlayer() {}, inventory: {} },
+    progress: { has: (f) => flags.has(f), setFlag: (f, v = true) => (v ? flags.add(f) : flags.delete(f)) },
+    notify() {},
+  });
+  flags.add('megaNightDone');
+  return { m, extraTargets, shells, interiors };
+}
+
+describe('the greys can be killed', () => {
+  it('are targets once Tom is aboard (and not while he is outside)', () => {
+    const { m, extraTargets, interiors } = boarded();
+    expect(extraTargets.length).toBe(m.greys.length);
+    expect(extraTargets.every((t) => !t.targetable)).toBe(true);
+    m.enter();
+    expect(m.inside).toBe(true);
+    expect(extraTargets.every((t) => t.targetable)).toBe(true);
+    // where each is, from the moment he's aboard (before the first update)
+    const g = m.greys[0];
+    expect(g.target.x).toBeCloseTo(100 + g.x);
+    expect(g.target.y).toBeCloseTo(-1200 + g.y);
+    m.leave();
+    expect(interiors.id).toBe(null);
+    expect(extraTargets.every((t) => !t.targetable)).toBe(true);
+  });
+
+  it('die from enough hits, drop their shells, and stay dead', () => {
+    const { m, extraTargets, shells } = boarded();
+    m.enter();
+    const g = m.greys.find((x) => x.role === 'guard');
+    let killed = false;
+    for (let i = 0; i < 10 && !killed; i++) killed = g.target.takeHit(25);
+    expect(killed).toBe(true);
+    expect(g.alive).toBe(false);
+    expect(g.target.targetable).toBe(false);
+    expect(shells.length).toBe(1);
+    expect(g.target.takeHit(25)).toBe(false); // no second death
+    // the mechanics die too (no shells)
+    const mech = m.greys.find((x) => x.role === 'mechanic');
+    while (mech.alive) mech.target.takeHit(20);
+    expect(shells.length).toBe(1);
+    expect(extraTargets.filter((t) => t.targetable).length).toBe(m.greys.length - 2);
   });
 });
 

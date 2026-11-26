@@ -363,7 +363,13 @@ export class Mothership {
     g.state = this.alerts?.has(g.zone) && !mech && g.role !== 'lounger' ? 'post' : 'busy';
     g.look.state = 'idle';
     g.look.timer = 0;
-    g.target.targetable = false;
+    // A target while the ship's loaded (Aaron, Nov 26: "I can't actually kill the aliens": onEnter's reset, which
+    // runs after load, used to switch every grey off here, so rounds and blows went straight through them).
+    g.target.targetable = Boolean(this.model);
+    if (this.model && this.beamAt) {
+      const w = this.toWorld(g.x, g.z);
+      Object.assign(g.target, { x: w.x, y: this.floorY + g.y, z: w.z });
+    }
   }
 
   // ---- the interior ---------------------------------------------------------------------------

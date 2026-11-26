@@ -887,6 +887,9 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The crashed saucer and its beam** outside are cyan and purple now, like the ship.
 - [ ] **The objective** aboard says to climb to the top, then to ride the quad from the workshop into the hangar.
 
+**Round 105: the greys aboard can be killed (Nov 26, your note).** Debug menu, Story: The mothership: go up.
+- [ ] **Shoot or club a grey:** it flashes, falls and drops 3 alien shells. A pistol takes about 5 shots, the shotgun about 2, the spike maul about 3 swings (70 health; the mechanics 30).
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.
