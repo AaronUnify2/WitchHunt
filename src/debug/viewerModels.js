@@ -75,7 +75,7 @@ export const VIEWER_MODELS = [
   {
     id: 'mutant',
     name: 'Mutant',
-    note: 'A skinned giant built in code (Session 13): one draw call each. The weak spot is the glowing sac on its back.',
+    note: 'A skinned giant built in code (Session 13; Nov 26: rebuilt after Aaron\'s concept art): one draw call each. The weak spot is the glowing sac on its back.',
     height: (cfg) => cfg.mutant.height,
     variants: null,
     poses: [

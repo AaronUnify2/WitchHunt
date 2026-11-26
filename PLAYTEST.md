@@ -832,6 +832,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **Kept from before** (your picks): the huge shoes (now red-brown laced leather), the eyes' faint yellow glow, the knife in his right hand, wrists below his knees. The two knives tucked in his suit are gone (they'd sit over the buttons). His bounce at rest, and 1.45 m.
 - [ ] **Every pose** (D-pad up/down): the throw, the dance, the bow: does the suit hold together at the joints?
 
+**Round 97: the mutant after your concept art (Nov 26).** Debug menu, Models, View: Mutant (Light: Night, torch); then meet one (the gas station, or Enemies > Zombies: spawn a mutant).
+- [ ] **The body:** a muscled man's, not a pot belly: a broad V of a trunk, a pec, a six-pack, huge traps. **The chest** torn open over its left ribs: bare ribs over dented, dark meat, a torn bloody rim, blood run down from it.
+- [ ] **The head:** a skull's face under a swollen, lobed cranium: deep sockets with small pale eyes, a hole for a nose, a lipless snarl with both rows of teeth, horns. It's a bit smaller than in the picture: it has to stay inside the head's hit zone (headshots), so it sits low between the traps. Bigger?
+- [ ] **The club side:** a tumorous growth swallowing the shoulder, a blind eye in it and a crown of spurs; a swollen, tumorous, spurred forearm down to the club. **The left arm** a man's, the hand open.
+- [ ] **The jeans** full length now, ragged at the hem, torn open over a bloody right knee. A bare foot with toes.
+- [ ] **Kept** (your picks): the dead third arm, the tumour on its skull, the work boot, the belt and the shirt's rags (the strip now runs from the club shoulder to the other hip, under the wound). The back (the hump, the glowing sac, the spine's spurs) is unchanged.
+- [ ] **In a fight:** the slam, the charge, its death and the gas station's crouch: does it hold together? Can you still hit the sac and the head?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

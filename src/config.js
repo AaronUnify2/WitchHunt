@@ -1942,19 +1942,21 @@ export const config = {
     look: {
       modelHeight: 2.46, // the model as built (stretched to height)
       albedo: 0.34, // its colours x this (as config.zombies.albedoScale: the torch blows out anything light)
-      skin: 0x646a58, // Nov 25 (Aaron's concept art): paler, grey-green (was 0x4a5040)
-      skinDark: 0x3c4234,
+      skin: 0x4c5442, // Nov 26 (the art again): grey-green, a shade darker so the torch doesn't blow it out white (Nov 25: 0x646a58; before: 0x4a5040)
+      skinDark: 0x30362a,
       raw: 0x561a16, // raw patches and tumours (redder, wetter: the concept art)
       sac: 0x5a1410, // the weak spot's sac (it glows weakSpot.color)
       mouth: 0x140606,
       eyes: 0x9a9470,
       eyesGlow: 0x2a2818, // a faint glow, so they catch the eye in the dark
       bone: 0x7a7260, // spurs and claws
-      jeans: 0x1c2638, // its torn jeans
-      shirt: 0x3a3830, // the strip of shirt left on it
+      jeans: 0x1e2534, // its torn jeans (Nov 26: a little less blue, faded)
+      shirt: 0x2c2a24, // the strip of shirt left on it (Nov 26: darker, or it reads as bare skin by torch)
       belt: 0x1a1410, // Round 2: his belt and his boot's sole
       buckle: 0x6a644e,
       boot: 0x241a12, // the one work boot left on it
+      growth: 0x463e32, // Nov 26 (the art): the club side's tumorous growth, grey-brown
+      eyeball: 0x6e6a56, // the blind eye in it
       hitFlash: [2.2, 0.6, 0.6], // its colour while flashing
       poseRate: 14, // how fast it blends into a new pose (per second)
       slamSeconds: 0.12, // the club coming down once the swipe lands
