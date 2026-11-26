@@ -31,6 +31,7 @@ const rig = () => {
 describe('Day 3: the tunnel (Nov 25)', () => {
   it('Ellen sends Tom to the tunnel a few seconds into the dawn after Night 2', () => {
     const { t, flags, said } = rig();
+    t.player.position = { x: -200, z: 0 }; // (home: well down the road from the tunnel)
     t.update(1, true);
     expect(said).toEqual([]);
     for (let i = 0; i < 10; i++) t.update(1, true);
@@ -51,6 +52,38 @@ describe('Day 3: the tunnel (Nov 25)', () => {
     expect(by.get('tunnel.seen.wyatt').next).toBe('tunnel.seen.ellen');
     expect(by.get('tunnel.seen.ellen').text).toMatch(/outpost/);
     expect(by.get('tunnel.seen.ellen').text).toMatch(/sealed/);
+  });
+
+  // Nov 26 (Aaron: Wyatt's line about the tunnel ran over the Pile's cutscene).
+  it('Wyatt and Ellen talk about it far out on the road, once, before he is there', () => {
+    const { t, flags, said } = rig();
+    flags.add('tunnelCall');
+    expect(config.tunnel.talkAt).toBeGreaterThan(config.tunnel.seeAt + 60);
+    t.player.position = { x: 100 - config.tunnel.talkAt - 1, z: 0 };
+    t.update(0.1, true);
+    expect(said).toEqual([]);
+    t.player.position = { x: 100 - config.tunnel.talkAt + 1, z: 0 };
+    t.update(0.1, true);
+    t.update(0.1, true);
+    expect(said).toEqual(['tunnel.seen.wyatt']);
+    expect(flags.has('tunnelSeen')).toBe(false); // not there yet
+  });
+
+  it("the Pile's cutscene waits for them to finish if he gets there first", () => {
+    const played = [];
+    const { t, flags, said } = rig();
+    flags.add('tunnelCall');
+    t.pile = { start() {}, stop() {}, beginFight() {}, alive: false };
+    t.cutscenes = { active: false, play: (id) => (played.push(id), true) };
+    t.player.position = { x: 100 - config.tunnel.seeAt + 1, z: 0 };
+    t.subtitles.busy = true; // (still talking)
+    t.update(0.1, true);
+    expect(said).toEqual(['tunnel.seen.wyatt']);
+    expect(played).toEqual([]);
+    t.subtitles.busy = false;
+    t.update(0.1, true);
+    expect(played).toEqual(['pile.emerge']);
+    expect(said).toEqual(['tunnel.seen.wyatt']); // not again
   });
 
   it('has its flags declared', () => {

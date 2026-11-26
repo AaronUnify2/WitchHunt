@@ -6,8 +6,9 @@
 //
 //  1. The call (tunnelCall): a few seconds into the dawn after Night 2, Ellen sends Tom up the road north to see if
 //     the tunnel's open (it's the only road out).
-//  2. The tunnel (tunnelSeen): coming within seeAt metres of the army's barrier in front of it (world/roadNorth.js):
-//     the rock's fresh, brought down on purpose; Wyatt says so, Ellen works out what it means.
+//  2. The tunnel (tunnelSeen): talkAt metres out on the road (Nov 26), Wyatt says the rock's fresh, brought down on
+//     purpose, and Ellen works out what it means; within seeAt metres of the army's barrier in front of it
+//     (world/roadNorth.js), once they're done, the Pile's cutscene.
 //  3. The Pile (ai/Pile.js; Aaron, Nov 25): the bodies of the people the army buried with the tunnel, one swirling
 //     mass held together by her magic, heaves up out of the rubble. Its end: tunnelCleared. Left mid-fight (a
 //     load, a death), it comes up again whole the next time he's there.
@@ -42,6 +43,7 @@ export class Tunnel {
 
   reset() {
     this.callT = 0;
+    this.talkPlayed = false;
     this.pile?.stop?.();
   }
 
@@ -75,7 +77,10 @@ export class Tunnel {
       this.updateCall(dt);
       return;
     }
-    if (!this.has('tunnelSeen')) this.updateSee();
+    if (!this.has('tunnelSeen')) {
+      this.updateTalk();
+      this.updateSee();
+    }
     else if (!this.has('tunnelCleared')) this.updatePile();
   }
 
@@ -106,12 +111,31 @@ export class Tunnel {
     this.bus.emit('tunnel:call');
   }
 
+  // Has Wyatt said his piece about the tunnel (this run, or heard in a save)?
+  get talked() {
+    return Boolean(this.talkPlayed || this.dialogue?.heard?.has?.('tunnel.seen.wyatt'));
+  }
+
+  // 2a: on the way up (Nov 26, Aaron: it ran over the Pile's cutscene): talkAt metres out, Wyatt on the fresh rock and
+  // Ellen on what it means, done before he's there.
+  updateTalk() {
+    const b = this.barrier;
+    const p = this.player?.position;
+    if (!b || !p || this.talked) return;
+    if (Math.hypot(p.x - b.x, p.z - b.z) > (this.tc.talkAt ?? this.tc.seeAt)) return;
+    this.talkPlayed = true;
+    this.dialogue?.play('tunnel.seen.wyatt');
+  }
+
   // 2: the barrier in sight.
   updateSee() {
     const b = this.barrier;
     const p = this.player?.position;
     if (!b || !p) return;
-    if (Math.hypot(p.x - b.x, p.z - b.z) > this.tc.seeAt) return;
+    const d = Math.hypot(p.x - b.x, p.z - b.z);
+    if (d > this.tc.seeAt) return;
+    // The cutscene waits for Wyatt and Ellen to finish (unless he's right on top of where it comes up).
+    if (this.subtitles?.busy && d > this.tc.pileOut + 6) return;
     this.set('tunnelSeen');
     this.bus.emit('tunnel:seen', { x: b.x, z: b.z });
     // Nov 25 (Aaron): the first time, its cutscene (pile.emerge): the tunnel, the tendrils, the heave, an eye.
@@ -124,7 +148,10 @@ export class Tunnel {
       }
       this.pile.stop();
     }
-    this.dialogue?.play('tunnel.seen.wyatt');
+    if (!this.talked) {
+      this.talkPlayed = true;
+      this.dialogue?.play('tunnel.seen.wyatt');
+    }
     this.wake(b);
   }
 
