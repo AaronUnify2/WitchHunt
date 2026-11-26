@@ -355,9 +355,9 @@ export function buildShipTower() {
   add({ kind: 'box', x: WK.x1 + 0.2, z: (HG.z0 + WK.z0) / 2 - 0.2, hx: 0.2, hz: (WK.z0 - HG.z0) / 2 + 0.2, y0: TOP - 0.5, y1: HG.ceil, ...wallS });
   add({ kind: 'box', x: WK.x1 + 0.2, z: (HG.z1 + WK.z1) / 2 + 0.2, hx: 0.2, hz: (HG.z1 - WK.z1) / 2 + 0.2, y0: TOP - 0.5, y1: HG.ceil, ...wallS });
   add({ kind: 'box', x: WK.x1 + 0.2, z: 0, hx: 0.2, hz: WK.z1, y0: WK.ceil, y1: HG.ceil, ...wallS });
-  // The hangar's open end: a field across it (see through, not through it).
-  add({ kind: 'box', x: HG.x1 + 0.2, z: 0, hx: 0.2, hz: HG.z1 + 0.4, y0: TOP - 0.5, y1: TOP + 0.6, ...wallS });
-  add({ kind: 'box', x: HG.x1 + 0.2, z: 0, hx: 0.2, hz: HG.z1 + 0.4, y0: TOP + 0.6, y1: HG.ceil, style: 'field', see: false });
+  // The hangar's far end opens on the runway (Nov 26, Aaron: the escape "needs to be possibly 300 meters longer",
+  // with jumps for the boost and a track that takes some skill): a vast hall, the track winding through it over a drop.
+  const runway = buildRunway(add, { x: HG.x1, z: 0, y: TOP, hangar: HG });
   // The workshop's lift (it stands raised, the quad on it), benches, the shelves of curios.
   const lift = add({ kind: 'box', x: 21, z: 0, hx: 1.25, hz: 1.7, y0: TOP, y1: TOP + 1.3, style: 'lift', tag: 'lift' });
   const benches = [
@@ -438,7 +438,7 @@ export function buildShipTower() {
     core: { x: COLUMN + 1.35, y: TOP, z: 0 }, // where Tom stands to take it: on the crown, at the socket
     socket: { x: COLUMN + 0.05, y: TOP + 1.25, z: 0 },
     quad: { x: 21, y: TOP + 1.3, z: 0 },
-    beam: { x: 40, y: TOP, z: 0 },
+    beam: { ...runway.exit }, // the beam down, at the runway's far end
     panel: { x: 14.8, y: TOP + 1.3, z: 6.95 }, // the alarm panel on the workshop's wall; the mechanics run here:
     panelStand: { x: 14.8, y: TOP, z: 6.15 },
     // Their ways there, round the lift and the benches.
@@ -447,6 +447,7 @@ export function buildShipTower() {
     lounge: { x: 0, y: LY, z: 21 },
     workshop: { x: 18.5, y: TOP, z: 0 },
     hangar: { x: 34, y: TOP, z: 0 },
+    runway: { ...runway.checkpoints[0] },
     wells: Object.fromEntries(wells.map((w) => [w.id, w])),
   };
 
@@ -489,6 +490,7 @@ export function buildShipTower() {
     { id: 'well2', solid: wellVolume(W2) },
     { id: 'lounge', solid: { kind: 'box', x: 0, z: (L.z0 + L.z1) / 2 + 0.6, hx: L.x1 + 0.2, hz: (L.z1 - L.z0) / 2 + 0.2, y0: LY - 1, y1: L.ceil } },
     { id: 'workshop', solid: { kind: 'box', x: 21.2, z: 0, hx: 7.1, hz: WK.z1, y0: TOP - 1, y1: WK.ceil } },
+    { id: 'runway', solid: runway.zone },
     { id: 'hangar', solid: { kind: 'box', x: (HG.x0 + HG.x1) / 2 + 0.2, z: 0, hx: (HG.x1 - HG.x0) / 2, hz: HG.z1, y0: TOP - 1, y1: HG.ceil } },
     { id: 'floor', solid: { kind: 'cyl', x: 0, z: 0, r: R + 1, y0: -2, y1: 7.5 } },
     { id: 'deck1', solid: { kind: 'cyl', x: 0, z: 0, r: R + 1, y0: 7.5, y1: 16.5 } },
@@ -534,6 +536,7 @@ export function buildShipTower() {
     hangar: HG,
     lift,
     benches,
+    runway,
     levels: LEVELS,
     bands: BANDS,
   };
@@ -680,4 +683,167 @@ export function wallRibs(walls, clear) {
     }
   }
   return out;
+}
+
+// ---- the runway: the quad's escape (Nov 26) ------------------------------------------------------
+//
+// Laid like a turtle walking: each piece starts where the last ended, heading h (from +z toward +x), at height y.
+// Pieces: deck (flat), ramp (a slope up you launch off), slope (a long climb or descent), gap (nothing: a jump),
+// turn (an arc of short decks, a kerb on its outside), checkpoint. Every top is solid (the track), every gap open
+// over the hall's drop. Jumps are sized for the quad's numbers at normal gravity (config.mothership.ride; the
+// runway is its own gravity zone): jump 1 at its top speed, jump 2 and the finale only with the boost.
+export function buildRunway(add, start) {
+  const T = 0.6; // the track's thickness
+  const st = { x: start.x, z: start.z, h: Math.PI / 2, y: start.y, w: 8 };
+  const pieces = [];
+  const checkpoints = [];
+  const line = []; // the centreline, every ~2 m: { x, y, z, s (metres along), gap?, boost? }
+  let sAlong = 0;
+  const dir = (h) => ({ x: Math.sin(h), z: Math.cos(h) });
+  const mark = (len, extra = {}) => {
+    const d = dir(st.h);
+    for (let t = 0; t < len; t += 2) line.push({ x: st.x + d.x * t, y: extra.yAt ? extra.yAt(t) : st.y, z: st.z + d.z * t, s: sAlong + t, ...extra.flags });
+    sAlong += len;
+  };
+  const box = (len, w, y0, y1, style, extra = {}) => {
+    const d = dir(st.h);
+    const c = { x: st.x + d.x * (len / 2), z: st.z + d.z * (len / 2) };
+    return add({ kind: 'box', x: c.x, z: c.z, hx: w / 2, hz: len / 2 + 0.15, a: st.h, y0, y1, style, ...extra });
+  };
+  const advance = (len) => {
+    const d = dir(st.h);
+    st.x += d.x * len;
+    st.z += d.z * len;
+  };
+  const piece = (kind, extra) => pieces.push({ kind, x: st.x, z: st.z, y: st.y, h: st.h, s: sAlong, ...extra });
+  const B = {
+    deck(len, w = st.w, flags = {}) {
+      piece('deck', { len, w });
+      box(len, w, st.y - T, st.y, 'track', flags.boost ? { boost: true } : {});
+      mark(len, { flags });
+      advance(len);
+    },
+    ramp(len, rise, w = st.w, flags = {}) {
+      piece('ramp', { len, rise, w });
+      const d = dir(st.h);
+      const y0 = st.y;
+      add({ kind: 'ramp', x: st.x + d.x * (len / 2), z: st.z + d.z * (len / 2), hx: w / 2, hz: len / 2, a: st.h, y0, y1: y0 + rise, thick: T, style: 'trackRamp', ...(flags.boost ? { boost: true } : {}) });
+      mark(len, { yAt: (t) => y0 + (rise * t) / len, flags });
+      advance(len);
+      st.y += rise;
+    },
+    slope(len, dy, w = st.w) {
+      piece('slope', { len, dy, w });
+      const d = dir(st.h);
+      const y0 = st.y;
+      add({ kind: 'ramp', x: st.x + d.x * (len / 2), z: st.z + d.z * (len / 2), hx: w / 2, hz: len / 2 + 0.1, a: st.h, y0, y1: y0 + dy, thick: T, style: 'trackSlope' });
+      mark(len, { yAt: (t) => y0 + (dy * t) / len });
+      advance(len);
+      st.y += dy;
+    },
+    gap(len, land) {
+      piece('gap', { len, land, from: st.y });
+      mark(len, { flags: { gap: true } });
+      advance(len);
+      st.y = land;
+    },
+    turn(angle, r, n = 9, w = st.w) {
+      piece('turn', { angle, r, w });
+      const step = angle / n;
+      const chord = 2 * r * Math.sin(Math.abs(step) / 2);
+      for (let i = 0; i < n; i++) {
+        st.h += step / 2;
+        box(chord + 0.5, w, st.y - T, st.y, 'track');
+        // a kerb on the outside of the bend
+        const d = dir(st.h);
+        const out = step > 0 ? -1 : 1; // (a turn toward +h bends left: the kerb is on the right)
+        const rx = Math.cos(st.h) * out;
+        const rz = -Math.sin(st.h) * out;
+        add({ kind: 'box', x: st.x + d.x * (chord / 2) + rx * (w / 2 + 0.2), z: st.z + d.z * (chord / 2) + rz * (w / 2 + 0.2), hx: 0.2, hz: chord / 2 + 0.3, a: st.h, y0: st.y, y1: st.y + 0.8, walk: false, style: 'kerb' });
+        mark(chord);
+        advance(chord);
+        st.h += step / 2;
+      }
+    },
+    checkpoint(name) {
+      checkpoints.push({ name, x: st.x + dir(st.h).x * 0.5, y: st.y, z: st.z + dir(st.h).z * 0.5, h: st.h, s: sAlong + 0.5 });
+    },
+  };
+
+  // The run-up and jump 1 (clears at the quad's top speed).
+  B.checkpoint('start');
+  B.deck(26);
+  B.ramp(7, 1.2);
+  B.gap(9, st.y - 1.2);
+  B.checkpoint('jump 1');
+  B.deck(24);
+  // A sweeping left, then jump 2: 20 m, only with the boost (a long landing: a full boost flies about 50 m).
+  B.turn(Math.PI / 2, 20);
+  B.deck(10, st.w, { boost: true });
+  B.ramp(8, 2.0, st.w, { boost: true });
+  B.gap(20, st.y - 2.0);
+  B.checkpoint('jump 2');
+  B.deck(32);
+  // A right, onto the floating platforms: each lower than the last, kickers at their ends, narrow.
+  B.turn(-Math.PI / 2, 14);
+  B.checkpoint('platforms');
+  B.deck(4);
+  B.ramp(4, 0.8);
+  B.gap(8, st.y - 1.8);
+  B.deck(12, 6);
+  B.ramp(4, 0.8, 6);
+  B.gap(10, st.y - 1.8);
+  B.deck(12, 6);
+  B.ramp(4, 0.8, 6);
+  B.gap(10, st.y - 1.8);
+  B.checkpoint('the climb');
+  B.deck(8, 7);
+  // A left, a narrow climb to the high deck, a left again.
+  B.turn(Math.PI / 2, 12);
+  B.slope(26, 6, 5);
+  B.deck(4, 6);
+  B.turn(Math.PI / 2, 12);
+  // The finale: down the run, the big ramp, a 32 m chasm (the boost), a long landing, the beam.
+  B.checkpoint('the finale');
+  B.slope(24, -2, 7);
+  B.deck(6, 7, { boost: true });
+  B.ramp(8, 2.4, 7, { boost: true });
+  B.gap(32, st.y - 6.4);
+  B.deck(40, 9);
+  const exit = { x: st.x + dir(st.h).x * 3, y: st.y, z: st.z + dir(st.h).z * 3, h: st.h };
+  B.deck(8, 9);
+
+  // The hall round it all: walls, a ceiling, the drop's floor far below (landing there is a fall), the hangar's
+  // end opening into it.
+  let x0 = Infinity;
+  let x1 = -Infinity;
+  let z0 = Infinity;
+  let z1 = -Infinity;
+  for (const p of line) {
+    x0 = Math.min(x0, p.x);
+    x1 = Math.max(x1, p.x);
+    z0 = Math.min(z0, p.z);
+    z1 = Math.max(z1, p.z);
+  }
+  const M = 14;
+  const hall = { x0: start.x, x1: x1 + M, z0: z0 - M, z1: Math.max(z1 + M, start.hangar.z1 + 4), floor: start.y - 22, ceil: start.y + 28 };
+  const cx = (hall.x0 + hall.x1) / 2;
+  const cz = (hall.z0 + hall.z1) / 2;
+  const hx = (hall.x1 - hall.x0) / 2;
+  const hz = (hall.z1 - hall.z0) / 2;
+  const W = { style: 'hallWall' };
+  add({ kind: 'box', x: cx, z: cz, hx: hx + 1, hz: hz + 1, y0: hall.floor - 1, y1: hall.floor, style: 'abyss' });
+  add({ kind: 'box', x: cx, z: cz, hx: hx + 1, hz: hz + 1, y0: hall.ceil, y1: hall.ceil + 1, style: 'hallCeiling' });
+  add({ kind: 'box', x: hall.x1 + 0.5, z: cz, hx: 0.5, hz: hz + 1, y0: hall.floor, y1: hall.ceil, ...W });
+  add({ kind: 'box', x: cx, z: hall.z0 - 0.5, hx: hx + 1, hz: 0.5, y0: hall.floor, y1: hall.ceil, style: 'hallWindow', see: false });
+  add({ kind: 'box', x: cx, z: hall.z1 + 0.5, hx: hx + 1, hz: 0.5, y0: hall.floor, y1: hall.ceil, ...W });
+  // the west wall, open where the hangar meets it
+  const hg = start.hangar;
+  const wx = hall.x0 + 0.4;
+  add({ kind: 'box', x: wx, z: (hall.z0 + hg.z0) / 2, hx: 0.4, hz: (hg.z0 - hall.z0) / 2, y0: hall.floor, y1: hall.ceil, ...W });
+  add({ kind: 'box', x: wx, z: (hall.z1 + hg.z1) / 2, hx: 0.4, hz: (hall.z1 - hg.z1) / 2, y0: hall.floor, y1: hall.ceil, ...W });
+  add({ kind: 'box', x: wx, z: 0, hx: 0.4, hz: hg.z1, y0: hg.ceil, y1: hall.ceil, ...W });
+  add({ kind: 'box', x: wx, z: 0, hx: 0.4, hz: hg.z1, y0: hall.floor, y1: start.y - 0.6, ...W });
+  const zone = { kind: 'box', x: cx, z: cz, hx, hz, y0: hall.floor - 2, y1: hall.ceil };
+  return { pieces, checkpoints, line, exit, hall, zone, length: sAlong, fallBelow: hall.floor + 4 };
 }

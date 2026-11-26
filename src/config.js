@@ -4827,7 +4827,9 @@ export const config = {
     physics: { gravity: 4.2, jumpSpeed: 5.2, airSpeed: 4.2, airAccel: 6, step: 0.45, height: 1.8, crouchHeight: 1.2, catchBelow: 6 },
     // The hook for gravity by zone (Aaron: leave room for taking the core to make it flicker; nothing uses it yet):
     // zone id -> { gravity, jumpSpeed } over physics.
-    gravityZones: {},
+    gravityZones: {
+      runway: { gravity: 9.8, jumpSpeed: 4.8 }, // Nov 26: the runway's plates hold everything down: normal gravity for Tom on foot there (the quad's is ride.gravity)
+    },
     look: {
       glow: { cyan: 0x3ee8f0, cyanDim: 0x1a7a90, purple: 0x9a5af0, violet: 0x5a3aa8, red: 0xff3a4a, redDim: 0x5a1a28, core: 0xc8fff4, reactor: 0x46f0e0, plasma: 0x22c8f0, net: 0x2ad8e8, earth: 0x2a5a8a, earthLand: 0x24402a, atmosphere: 0x6ab8ff, holo: 0x58e8ff, quadNeon: 0x48ff9a },
       // Nov 26 (the new core-hall picture): dark steel and teal under the neon (was a saturated navy and violet).
@@ -4861,8 +4863,12 @@ export const config = {
       },
       mechanic: { health: 30, runSpeed: 3.4, panelSeconds: 0.6 },
     },
-    // The quad's ride from the workshop to the hangar's beam (it's on the ship's own floor: Mothership.ShipRide).
-    ride: { maxSpeed: 8.5, accel: 5.5, brake: 10, coast: 3, reverse: 2.5, steerRate: 1.9, steerFullAt: 2.5, radius: 0.9, eyeHeight: 1.45, seatBack: 0.25, lowerSeconds: 1.1, beamWithin: 2.2 },
+    // The quad's escape (encounters/shipRide.js): off the workshop's lift, through the hangar, down the runway's
+    // track (world/mothershipTower.js buildRunway) to the beam at its far end. It drives on the alien quad's own
+    // numbers (config.alienQuad: 15 m/s, the boost 30 m/s for 3 s); here: the runway's gravity (normal: Aaron's
+    // pick), how much it steers in the air, a wall's knock, a hard landing's cost; `fallSeconds` of black after a
+    // fall before it's back at the last checkpoint.
+    ride: { gravity: 9.8, airSteer: 0.3, radius: 0.9, height: 1.4, step: 0.45, bumpSpeed: 2, bumpKeep: 0.45, hardLanding: 9, hardKeep: 0.85, lowerSeconds: 1.1, beamWithin: 3.2, fallSeconds: 0.6 },
     curioRange: 1.4,
     sparkHear: 11, // metres: a junction box's crackle is heard within this (the second pass)
     greyFar: 30, // metres: a grey further off gets its pose every fourth frame

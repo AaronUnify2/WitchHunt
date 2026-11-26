@@ -170,10 +170,12 @@ describe('climbing it, in low gravity', () => {
     const low = walk(b, [polar(12.6, 0.1 * Math.PI), polar(12.6, 0.3 * Math.PI), polar(12.6, 0.5 * Math.PI), SHIP.places.core]);
     expect(low).toBeGreaterThan(LEVELS[4] - 0.5);
     expect(Math.hypot(b.x - SHIP.places.core.x, b.z - SHIP.places.core.z)).toBeLessThan(0.5);
-    // Out to the workshop, past the lift, through the bay door to the beam.
-    const low2 = walk(b, [polar(12.6, 0.5 * Math.PI), { x: 16, z: 0 }, { x: 18.5, z: 3 }, { x: 24, z: 3 }, { x: 27, z: 0 }, SHIP.places.beam]);
+    // Out to the workshop, past the lift, through the bay door into the hangar, to the runway's start (its beam is
+    // at the far end, for the quad: tests/runway.test.js).
+    const start = SHIP.runway.checkpoints[0];
+    const low2 = walk(b, [polar(12.6, 0.5 * Math.PI), { x: 16, z: 0 }, { x: 18.5, z: 3 }, { x: 24, z: 3 }, { x: 27, z: 0 }, SHIP.places.hangar, start]);
     expect(low2).toBeGreaterThan(LEVELS[4] - 0.5);
-    expect(Math.hypot(b.x - SHIP.places.beam.x, b.z - SHIP.places.beam.z)).toBeLessThan(0.5);
+    expect(Math.hypot(b.x - start.x, b.z - start.z)).toBeLessThan(0.5);
   });
 
   it('goes up the discs from deck 0 to 1 and 1 to 2', () => {
@@ -286,7 +288,8 @@ describe('climbing it, in low gravity', () => {
     expect(zoneAt(SHIP.places.core)).toBe('top');
     expect(zoneAt(SHIP.places.lounge)).toBe('lounge');
     expect(zoneAt(SHIP.places.workshop)).toBe('workshop');
-    expect(zoneAt(SHIP.places.beam)).toBe('hangar');
+    expect(zoneAt(SHIP.places.hangar)).toBe('hangar');
+    expect(zoneAt(SHIP.places.beam)).toBe('runway');
     for (const w of SHIP.wells) expect(zoneAt(w.room)).toBe(w.id);
     for (const g of SHIP.posts) expect(zoneAt(g)).toBe(g.zone);
   });

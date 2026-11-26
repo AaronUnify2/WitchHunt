@@ -897,6 +897,14 @@ Round 55 (Session 26: the whole stretch in one go). From the plane's end to Juni
 - [ ] **The colours:** dark steel and teal now. Closer to the picture? Too dark on the tablet anywhere?
 - [ ] **Speed:** the ship has more in it (about 141,000 triangles). Any slowdown aboard?
 
+**Round 107: the quad's escape down the runway (Nov 26, your ask).** Debug menu, Story: **The mothership: ride the runway from start** (or from jump 1, jump 2, the platforms, the climb, the finale). Or take the core and get on the quad in the workshop as normal.
+- [ ] **The hall:** one vast space, the track winding through it on bridges over a drop, the beam's tall light at the far end. Can you read the course ahead?
+- [ ] **Jump 1:** keep your speed up and you clear it. **Jump 2** and **the finale** need the boost (L3/A, Shift/Space): too early and it runs out, too late and you're short.
+- [ ] **Braking cuts the boost** so you can make the bends after a boosted landing. Do the bends feel fair?
+- [ ] **The platforms:** narrow, each lower than the last; top speed clears them, boosting overshoots.
+- [ ] **Falls:** back at the last checkpoint gate on the quad, boost full. Too punishing, too forgiving?
+- [ ] **The feel:** normal gravity, how the quad lands, how much it steers in the air (30%). Too long overall (about 450 m)? Which bits are fun, which are a chore?
+
 ## 1. The main menu
 
 - [ ] The title sits over a slow, grey CCTV feed of the woods from the station gate: STATION CAM 01, REC blinking, panning slowly.

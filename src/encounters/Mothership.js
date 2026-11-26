@@ -43,6 +43,7 @@ import { buildMothership } from '../render/mothershipModel.js';
 import { buildAlienQuad } from '../render/alienQuadModel.js';
 import { buildShipTower, LEVELS } from '../world/mothershipTower.js';
 import { towerShape } from '../world/towerShape.js';
+import { stepRide, newRide } from './shipRide.js';
 import { DEBUG } from '../debug/DebugMenu.js';
 
 export const ID = 'mothership';
@@ -51,6 +52,7 @@ export const LOOT_FLAGS = { well1: 'shipLootWell1', well2: 'shipLootWell2', deck
 export const SHIP = buildShipTower();
 export const TOWER = towerShape(SHIP.solids);
 export const SHIP_PLACES = SHIP.places;
+export const RUNWAY = SHIP.runway;
 const TOP = LEVELS[4];
 const EYE = 1.3; // a grey's eyes above its feet
 const LIFT_UP = 1.3;
@@ -143,107 +145,180 @@ export function runStep(g, way, dt, speed) {
   return true;
 }
 
-// ---- the quad's ride out (Player.riding while it's on: drive / eject) ---------------------------
+// ---- the quad's escape (Player.riding while it's on: drive / eject) -------------------------------
+// Off the workshop's lift, through the hangar, down the runway's track to the beam at its far end (Nov 26, Aaron:
+// 300 m more, jumps for the boost, some skill). Its physics: stepRide (encounters/shipRide.js). A fall puts it back
+// at the last checkpoint it passed.
 
 class ShipRide {
   constructor(ship) {
     this.ship = ship;
     this.riding = false;
-    this.speed = 0;
+    this.q = null;
+    this.cp = 0;
+    this.falls = 0;
   }
 
-  // On, at the lift: it lowers first (seconds), then he drives.
-  start() {
+  get speed() {
+    return this.q?.speed ?? 0;
+  }
+
+  // On, at the lift: it lowers first (seconds), then he drives. Or straight onto a checkpoint (the debug menu's).
+  start(atCheckpoint = null) {
     const s = this.ship;
     const rc = s.sc.ride;
     this.riding = true;
-    this.speed = 0;
-    this.x = SHIP_PLACES.quad.x;
-    this.z = SHIP_PLACES.quad.z;
-    this.y = TOP + LIFT_UP;
-    this.heading = -Math.PI / 2; // facing the bay door (+x)
-    this.lowering = rc.lowerSeconds;
+    this.falls = 0;
+    this.fov = 1;
+    if (atCheckpoint !== null) {
+      this.cp = atCheckpoint;
+      this.respawn();
+      this.lowering = 0;
+      s.setLift(LIFT_DOWN);
+    } else {
+      this.cp = 0;
+      this.q = newRide({ x: SHIP_PLACES.quad.x, y: TOP + LIFT_UP, z: SHIP_PLACES.quad.z }, -Math.PI / 2); // facing the bay door (+x)
+      this.lowering = rc.lowerSeconds;
+    }
     const p = s.player;
     p.riding = this;
     p.crouched = false;
     p.sprinting = false;
-    p.yaw = this.heading;
+    p.yaw = this.q.heading;
     p.pitch = 0;
     s.sfx?.play('carDoor', p.position);
     s.sfx?.engine?.(true, 0);
-    s.combat?.hud?.pickup?.(s.device === 'gamepad' ? 'Left stick to ride: through the bay door, onto the beam' : 'WASD to ride: through the bay door, onto the beam');
+    const pad = s.device === 'gamepad';
+    s.combat?.hud?.pickup?.(pad ? 'Left stick to ride, L3 or A to boost (brake to cut it short). Down the runway to the beam: the jumps need speed, the big ones the boost' : 'WASD to ride, Shift or Space to boost (brake to cut it short). Down the runway to the beam: the jumps need speed, the big ones the boost');
     this.place(0);
+  }
+
+  // Back at the last checkpoint: stopped, facing down the track, the boost full.
+  respawn() {
+    const c = RUNWAY.checkpoints[this.cp] ?? RUNWAY.checkpoints[0];
+    this.q = newRide({ x: c.x, y: c.y + 0.05, z: c.z }, c.h + Math.PI);
   }
 
   drive(dt, input, player) {
     const s = this.ship;
     const rc = s.sc.ride;
-    if (this.lowering > 0) {
+    const q = this.q;
+    if (this.blackout > 0) {
+      // A fall: a moment's dark, then back at the checkpoint.
+      this.blackout -= dt;
+      if (this.blackout <= 0) {
+        this.respawn();
+        s.notify?.(`Back at the checkpoint: ${RUNWAY.checkpoints[this.cp]?.name ?? 'the start'}`);
+      }
+    } else if (this.lowering > 0) {
       this.lowering = Math.max(0, this.lowering - dt);
       const k = 1 - this.lowering / rc.lowerSeconds;
       const h = LIFT_UP + (LIFT_DOWN - LIFT_UP) * (k * k * (3 - 2 * k));
       s.setLift(h);
-      this.y = TOP + h;
+      q.y = TOP + h;
     } else {
       const move = input.getMove();
-      const throttle = move.y;
-      const steer = move.x;
-      let target = 0;
-      if (throttle > 0.1) target = throttle * rc.maxSpeed;
-      else if (throttle < -0.1) target = this.speed > 0.4 ? 0 : throttle * rc.reverse;
-      const braking = (throttle < -0.1 && this.speed > 0.4) || (target === 0 && this.speed !== 0);
-      const rate = braking ? (throttle < -0.1 ? rc.brake : rc.coast) : rc.accel;
-      this.speed += Math.max(-rate * dt, Math.min(rate * dt, target - this.speed));
-      const grip = Math.min(1, Math.abs(this.speed) / rc.steerFullAt);
-      const turn = -steer * rc.steerRate * grip * Math.sign(this.speed) * dt;
-      this.heading += turn;
-      player.yaw += turn;
-      const ax = -Math.sin(this.heading);
-      const az = -Math.cos(this.heading);
-      const want = { x: this.x + ax * this.speed * dt, z: this.z + az * this.speed * dt };
-      const pos = { ...want };
-      TOWER.confine(pos, rc.radius, TOP, 1.4, 0.45);
-      if (Math.hypot(pos.x - want.x, pos.z - want.z) > Math.abs(this.speed) * dt * 0.5 && Math.abs(this.speed) > 2) {
-        player.shake(0.4);
-        s.sfx?.play('impact', player.position);
-        this.speed *= 0.4;
+      const inp = { throttle: move.y, steer: move.x, boost: input.wasPressed('sprint') || input.wasPressed('jump') };
+      const yawWas = q.heading;
+      const ev = stepRide(q, inp, dt, TOWER, rc, s.cfg.alienQuad, RUNWAY.fallBelow);
+      player.yaw += q.heading - yawWas;
+      if (ev.boosted) {
+        s.sfx?.play('boost', player.position);
+        player.shake(0.6);
       }
-      this.x = pos.x;
-      this.z = pos.z;
-      this.y = TOP + Math.max(0, TOWER.floorAt(this.x, this.z, TOP + 0.3) - TOP);
-      if (Math.hypot(this.x - SHIP_PLACES.beam.x, this.z - SHIP_PLACES.beam.z) < rc.beamWithin) {
+      if (ev.boostEnded) s.sfx?.play('boostEnd', player.position);
+      if (ev.landed !== undefined && ev.landed > 4) {
+        player.shake(Math.min(1, ev.landed / 12));
+        s.sfx?.play('impact', player.position);
+      }
+      if (ev.bumped) {
+        player.shake(0.5);
+        s.sfx?.play('impact', player.position);
+      }
+      // Past a checkpoint (on the ground): the next fall comes back to it.
+      if (q.onGround) {
+        const along = this.progress();
+        while (this.cp + 1 < RUNWAY.checkpoints.length && along >= RUNWAY.checkpoints[this.cp + 1].s - 0.5) this.cp++;
+      }
+      if (ev.fell) {
+        this.falls++;
+        this.blackout = rc.fallSeconds;
+        s.sfx?.play('boostEnd', player.position);
+        return;
+      }
+      if (Math.hypot(q.x - RUNWAY.exit.x, q.z - RUNWAY.exit.z) < rc.beamWithin && Math.abs(q.y - RUNWAY.exit.y) < 1.5) {
         this.place(dt);
         s.takeQuad();
         return;
       }
     }
     this.place(dt);
-    const ax = -Math.sin(this.heading);
-    const az = -Math.cos(this.heading);
-    const w = s.toWorld(this.x - ax * rc.seatBack, this.z - az * rc.seatBack);
-    player.position.set(w.x, s.floorY + this.y + rc.eyeHeight - player.eyeHeight, w.z);
-    player.velocity.x = ax * this.speed;
-    player.velocity.z = az * this.speed;
+    const ax = -Math.sin(q.heading);
+    const az = -Math.cos(q.heading);
+    const aq = s.cfg.alienQuad; // (sat as on the alien quad outdoors)
+    const w = s.toWorld(q.x - ax * aq.seatBack, q.z - az * aq.seatBack);
+    player.position.set(w.x, s.floorY + q.y + aq.eyeHeight - player.eyeHeight, w.z);
+    player.velocity.x = q.vx;
+    player.velocity.z = q.vz;
     player.onGround = true;
     player.verticalSpeed = 0;
-    s.sfx?.engine?.(true, Math.min(1, Math.abs(this.speed) / rc.maxSpeed), Math.abs(input.getMove().y));
+    // The view widens while it burns (as the alien quad's).
+    const b = s.cfg.alienQuad.boost;
+    this.fov += ((q.boosting ? b.fov : 1) - this.fov) * Math.min(1, dt * (q.boosting ? 8 : 3));
+    player.fovMultiplier = this.fov;
+    if (q.boosting) player.shake(b.shake * 0.5);
+    s.sfx?.engine?.(true, Math.min(1, Math.abs(q.speed) / s.cfg.alienQuad.maxSpeed), Math.abs(input.getMove().y));
+    const pad = input.activeDevice === 'gamepad';
+    s.vhud?.show(this, 'alien', {
+      speed: Math.abs(q.speed) * 3.6,
+      boost: q.meter,
+      boosting: q.boosting ? 1 : 0,
+      cells: 0,
+      cellsMax: 0,
+      charge: 0,
+      canOrb: false,
+      inArc: true,
+      hint: `${pad ? 'L3/A boost · brake to cut it' : 'Shift/Space boost · brake to cut it'} · checkpoint: ${RUNWAY.checkpoints[this.cp]?.name ?? '-'}${this.falls ? ` · falls ${this.falls}` : ''}`,
+    });
+  }
+
+  // How far down the track it's got (metres along the centreline, the nearest point ahead of the checkpoint).
+  progress() {
+    const q = this.q;
+    const from = RUNWAY.checkpoints[this.cp]?.s ?? 0;
+    let best = -1;
+    let bd = 6;
+    for (const p of RUNWAY.line) {
+      if (p.s < from - 2) continue;
+      const d = Math.hypot(p.x - q.x, p.z - q.z) + Math.abs(p.y - q.y);
+      if (d < bd) {
+        bd = d;
+        best = p.s;
+      }
+    }
+    return best;
   }
 
   place(dt) {
-    const q = this.ship.quadShow;
-    if (!q) return;
-    const w = this.ship.toWorld(this.x, this.z);
-    q.root.position.set(w.x, this.ship.floorY + this.y, w.z);
-    q.root.rotation.set(0, this.heading, 0);
-    q.spin = (q.spin ?? 0) + this.speed * dt;
+    const qs = this.ship.quadShow;
+    const q = this.q;
+    if (!qs || !q) return;
+    const w = this.ship.toWorld(q.x, q.z);
+    qs.root.position.set(w.x, this.ship.floorY + q.y, w.z);
+    // nose up as it climbs off a ramp, down as it falls
+    const pitch = q.onGround ? 0 : Math.max(-0.5, Math.min(0.4, q.vy * 0.05));
+    qs.root.rotation.set(pitch, q.heading, 0, 'YXZ');
   }
 
   eject() {
     if (!this.riding) return;
     this.riding = false;
-    this.speed = 0;
-    if (this.ship.player?.riding === this) this.ship.player.riding = null;
-    this.ship.sfx?.engine?.(false);
+    this.blackout = 0;
+    const s = this.ship;
+    if (s.player?.riding === this) s.player.riding = null;
+    if (s.player) s.player.fovMultiplier = 1;
+    s.vhud?.hide(this);
+    s.sfx?.engine?.(false);
   }
 }
 
@@ -557,6 +632,17 @@ export class Mothership {
       this.model.update(dt, this.player.camera);
       this.renderer.update(this.greys.map((g) => g.look), dt);
       this.updateTold();
+      // Off the runway's track on foot (it's no place to walk): back at the hangar's end.
+      if (!this.ride.riding) {
+        const t = this.tom();
+        if (t.y < RUNWAY.fallBelow + 2 && zoneAt(t) === 'runway') {
+          const w = this.toWorld(SHIP_PLACES.hangar.x, SHIP_PLACES.hangar.z);
+          this.player.position.set(w.x, this.floorY + SHIP_PLACES.hangar.y + 0.2, w.z);
+          this.player.onGround = false;
+          this.player.verticalSpeed = 0;
+          this.notify?.("That drop's a long one. The runway's for the quad");
+        }
+      }
     }
     const best = canInteract && input && playing && !this.ride.riding ? this.pick(input.activeDevice === 'gamepad' ? 'X' : 'E') : null;
     const key = best?.act ? best.key : null;
@@ -820,6 +906,8 @@ export class Mothership {
         this.player.verticalSpeed = 0;
       });
     }
+    // The runway (Nov 26: for Aaron's play-tests): on the quad at any checkpoint, the core taken.
+    RUNWAY.checkpoints.forEach((c, i) => cat.addItem(`The mothership: ride the runway from ${c.name}`, () => this.debugRide(i)));
     cat.addItem('The mothership: kill the greys aboard', () => this.greys.forEach((g) => this.hitGrey(g, 1e6)));
     cat.addItem('The mothership: start it again (flags cleared)', () => {
       this.leave();
@@ -828,10 +916,25 @@ export class Mothership {
     });
   }
 
+  // On the quad at a runway checkpoint (debug): aboard, the core taken, the quad back on its lift.
+  debugRide(i) {
+    this.set('megaNightDone');
+    this.set('shipCoreTaken');
+    this.progress?.setFlag('quadReturned', false);
+    this.ride.eject();
+    if (this.inside) this.leave();
+    this.enter();
+    if (!this.inside) return;
+    this.model?.setCore(false);
+    this.model?.setReactor(0.25);
+    this.ride.start(i);
+  }
+
   overlayLine() {
     if (!this.inside) return `ship -${this.has('shipCoreTaken') ? ' core' : ''}`;
     const t = this.tom();
-    return `ship ${zoneAt(t) ?? '?'} y ${t.y.toFixed(1)} greys ${this.greys.filter((g) => g.alive).length} alert ${[...this.alerts].join(',')}${this.has('shipCoreTaken') ? ' core' : ''}`;
+    const r = this.ride.riding && this.ride.q ? ` ride ${this.ride.q.speed.toFixed(1)}m/s boost ${(this.ride.q.meter * 100).toFixed(0)}% cp ${RUNWAY.checkpoints[this.ride.cp]?.name} falls ${this.ride.falls}` : '';
+    return `ship ${zoneAt(t) ?? '?'} y ${t.y.toFixed(1)}${r} greys ${this.greys.filter((g) => g.alive).length} alert ${[...this.alerts].join(',')}${this.has('shipCoreTaken') ? ' core' : ''}`;
   }
 
   dispose() {

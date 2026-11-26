@@ -319,6 +319,29 @@ export function buildMothership(look, ship) {
         glow.push({ geo: at(new THREE.BoxGeometry(s.hx * 2 + 0.02, 0.04, 0.06), ...b.point(0, -0.25, s.hz + 0.005).toArray(), s.a ?? 0), color: g.purple });
         b.pop();
         break;
+      // ---- the runway (Nov 26) ----
+      case 'track':
+      case 'trackRamp':
+      case 'trackSlope':
+        drawTrack(b, glow, grated, s, c, g);
+        break;
+      case 'kerb':
+        b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hullDark, s.x, (s.y0 + s.y1) / 2, s.z, s.a ?? 0);
+        glow.push({ geo: at(new THREE.BoxGeometry(s.hx * 2 + 0.02, 0.06, s.hz * 2), s.x, s.y1 + 0.01, s.z, s.a ?? 0), color: g.purple });
+        break;
+      case 'abyss':
+        drawAbyss(b, glow, s, c, g);
+        break;
+      case 'hallCeiling':
+        b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hullDark, s.x, (s.y0 + s.y1) / 2, s.z);
+        for (let z = s.z - s.hz + 10; z < s.z + s.hz; z += 20) glowBox(s.hx * 2 - 20, 0.12, 0.5, g.cyanDim, s.x, s.y0 - 0.08, z);
+        break;
+      case 'hallWall':
+        drawHallWall(b, glow, s, c, g);
+        break;
+      case 'hallWindow':
+        drawHallWindow(b, glass, s, c);
+        break;
       case 'lift':
         b.box(3.0, 0.16, 3.8, c.liftDark, s.x, s.y0 + 0.08, s.z); // its base on the floor (the top moves: below)
         break;
@@ -513,8 +536,23 @@ export function buildMothership(look, ship) {
   const beamAt = ship.places.beam;
   b.put(new THREE.CylinderGeometry(2.2, 2.4, 0.12, 32), c.hullPale, beamAt.x, beamAt.y + 0.06, beamAt.z);
   glow.push({ geo: at(new THREE.TorusGeometry(2.1, 0.06, 6, 44).rotateX(Math.PI / 2), beamAt.x, beamAt.y + 0.13, beamAt.z), color: g.cyan });
-  const beamCol = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.1, 9.8, 24, 1, true), new THREE.MeshBasicMaterial({ color: g.cyan, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-  beamCol.position.set(beamAt.x, beamAt.y + 4.9, beamAt.z);
+  // (Nov 26: at the runway's far end now, and tall: you see where you're going from across the hall)
+  const beamH = ship.runway ? ship.runway.hall.ceil - beamAt.y : 9.8;
+  const beamCol = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.1, beamH, 24, 1, true), new THREE.MeshBasicMaterial({ color: g.cyan, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  beamCol.position.set(beamAt.x, beamAt.y + beamH / 2, beamAt.z);
+  // the runway's checkpoints: a lit gate over the track at each
+  for (const cp of ship.runway?.checkpoints ?? []) {
+    b.push(cp.x, cp.y, cp.z, cp.h);
+    for (const sx of [-1, 1]) {
+      b.box(0.35, 4.8, 0.35, c.hullPale, sx * 5.2, 2.4, 0);
+      const p0 = b.point(sx * 5.0, 2.4, 0);
+      glow.push({ geo: at(new THREE.BoxGeometry(0.06, 4.6, 0.06), p0.x, p0.y, p0.z, cp.h), color: g.cyan });
+    }
+    b.box(10.8, 0.4, 0.4, c.hullPale, 0, 4.9, 0);
+    const p1 = b.point(0, 4.65, 0);
+    glow.push({ geo: at(new THREE.BoxGeometry(10.2, 0.08, 0.06), p1.x, p1.y, p1.z, cp.h), color: g.cyan });
+    b.pop();
+  }
 
   // ---- the workshop (picture 4): the alarm panel; holo blueprints of the quad over the benches; the porthole ----
   const pn = ship.places.panel;
@@ -1324,4 +1362,78 @@ function drawCircuits(glow, ship, g) {
       });
     }
   });
+}
+
+// ---- the runway's pieces (Nov 26) ------------------------------------------------------------------
+
+// A deck, a ramp or a slope of the track: grated on top, a dark truss under it, cyan neon down both edges;
+// chevrons on its ramps (purple; cyan, brighter, on a boost's run-up and ramp) pointing the way.
+function drawTrack(b, glow, grated, s, c, g) {
+  const a = s.a ?? 0;
+  const rise = s.kind === 'ramp' ? s.y1 - s.y0 : 0;
+  const L = s.hz * 2;
+  const thick = s.kind === 'ramp' ? s.thick ?? 0.6 : s.y1 - s.y0;
+  const top = (lz) => (s.kind === 'ramp' ? s.y0 + (rise * (lz + s.hz)) / L : s.y1);
+  const len = Math.hypot(L, rise);
+  const pitch = Math.atan2(rise, L);
+  const midTop = top(0);
+  grated.push(colourGeo(at(new THREE.BoxGeometry(s.hx * 2, thick, len), s.x, midTop - thick / 2, s.z, a, -pitch), c.deck));
+  // the truss under it (narrower, deeper)
+  b.box(s.hx * 1.1, 1.0, len, c.hullDark, s.x, midTop - thick - 0.5, s.z, a, -pitch);
+  // its edges
+  b.push(s.x, 0, s.z, a);
+  for (const sx of [-1, 1]) {
+    const p = b.point(sx * (s.hx - 0.08), midTop + 0.012, 0);
+    glow.push({ geo: at(new THREE.BoxGeometry(0.1, 0.03, len - 0.2), p.x, p.y, p.z, a, -pitch), color: g.cyan });
+  }
+  // chevrons
+  const chev = s.boost ? g.cyan : g.purple;
+  if (s.style === 'trackRamp' || s.boost) {
+    for (let lz = -s.hz + 1.2; lz < s.hz - 0.6; lz += 2.4) {
+      for (const sx of [-1, 1]) {
+        const p = b.point(sx * 0.7, top(lz) + 0.02, lz);
+        const ang = a + sx * 0.9;
+        glow.push({ geo: at(new THREE.BoxGeometry(0.16, 0.02, 1.6), p.x, p.y, p.z, ang, -pitch), color: chev });
+      }
+    }
+  }
+  b.pop();
+}
+
+// The drop's floor, far below the track: dark, a faint cyan grid every 10 m.
+function drawAbyss(b, glow, s, c, g) {
+  b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hullDark, s.x, (s.y0 + s.y1) / 2, s.z);
+  for (let x = s.x - s.hx + 10; x < s.x + s.hx; x += 10) glow.push({ geo: at(new THREE.BoxGeometry(0.12, 0.02, s.hz * 2), x, s.y1 + 0.01, s.z), color: g.violet });
+  for (let z = s.z - s.hz + 10; z < s.z + s.hz; z += 10) glow.push({ geo: at(new THREE.BoxGeometry(s.hx * 2, 0.02, 0.12), s.x, s.y1 + 0.01, z), color: g.cyanDim });
+}
+
+// The hall's walls: dark steel, a pillar every 12 m, neon bands at the track's height and above.
+function drawHallWall(b, glow, s, c, g) {
+  b.box(s.hx * 2, s.y1 - s.y0, s.hz * 2, c.hull, s.x, (s.y0 + s.y1) / 2, s.z);
+  const longX = s.hx >= s.hz;
+  const L = longX ? s.hx * 2 : s.hz * 2;
+  if (L < 6) return;
+  const face = longX ? s.hz : s.hx;
+  for (const side of [-1, 1]) {
+    for (let t = -L / 2 + 6; t < L / 2; t += 12) {
+      const x = longX ? s.x + t : s.x + side * (face + 0.4);
+      const z = longX ? s.z + side * (face + 0.4) : s.z + t;
+      b.box(longX ? 1.2 : 0.8, s.y1 - s.y0, longX ? 0.8 : 1.2, c.panel, x, (s.y0 + s.y1) / 2, z);
+    }
+    for (const y of [36.6, 48]) {
+      if (y < s.y0 || y > s.y1) continue;
+      const x = longX ? s.x : s.x + side * (face + 0.02);
+      const z = longX ? s.z + side * (face + 0.02) : s.z;
+      glow.push({ geo: at(new THREE.BoxGeometry(longX ? L : 0.04, 0.1, longX ? 0.04 : L), x, y, z), color: y < 40 ? g.cyan : g.violet });
+    }
+  }
+}
+
+// The hall's great window (its far side): glass floor to ceiling, framed every 10 m, the Earth beyond.
+function drawHallWindow(b, glass, s, c) {
+  const W = s.hx * 2;
+  const H = s.y1 - s.y0;
+  glass.push(at(new THREE.PlaneGeometry(W, H), s.x, (s.y0 + s.y1) / 2, s.z + s.hz));
+  for (let x = s.x - s.hx; x <= s.x + s.hx + 0.01; x += 10) b.box(0.8, H, 0.8, c.hullPale, x, (s.y0 + s.y1) / 2, s.z + s.hz);
+  for (const y of [s.y0 + H * 0.35, s.y0 + H * 0.7]) b.box(W, 0.5, 0.8, c.hullPale, s.x, y, s.z + s.hz);
 }

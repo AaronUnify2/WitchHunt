@@ -67,6 +67,7 @@ export class VehicleHud {
     this.mode = '';
     this.cache = {};
     this.cellCount = 0;
+    this.cellEls = []; // (Nov 26: a vehicle with no cells, the mothership's ride, showed before any were made)
   }
 
   // Set only what changed (a DOM write a frame per value is wasteful).

@@ -15,7 +15,9 @@
 - **Debug:** Story, "The mothership: go up", and "The mothership: put me on" each deck and room.
 - **Wall details are data too** (`details` in the layout: `hatch`, `junction`, `vent`, `sealed`, `pipe`, `sparks`), drawn by `drawDetail`; junctions and sparks are spark emitters (`buildSparks`), and the model calls `onSpark(p)` on each burst (the encounter plays `shipSpark` near Tom).
 
-**The core hall after Aaron's new picture (Nov 26, latest):** `docs/concept-art/mothership-core-hall-2.jpg` is the reference now (the spider on its reactor is for a later session, Aaron's call). **Pillars, ribs and pipes on the walls come from the layout** (`hullPillars`, `wallRibs`, `hullPipes`), cut round `clearZones` (every detail with a `CLEAR` size, every wall light, every opening): add a new wall detail kind to `CLEAR` or pillars will cross it. The reactor's plasma is a `ShaderMaterial` (`plasmaMaterial`: uniforms `time`, `power`); the decks' grating is a code-made `DataTexture` on its own mesh (`grateM`). PLAYTEST round 106, OPEN_QUESTIONS #839-845.
+**The quad's escape down the runway (Nov 26, latest; Aaron will play-test and iterate on it):** `buildRunway` in `world/mothershipTower.js` lays the track like a turtle (deck, ramp, slope, gap, turn, checkpoint) and builds the hall round it; change the course there (the bot test, `tests/runway.test.js`, tells you if it's still beatable, needs the boost where it should, and doesn't cross itself). The ride is `ShipRide` in `encounters/Mothership.js` on the pure `stepRide` (`encounters/shipRide.js`); debug: "The mothership: ride the runway from" each checkpoint. The runway is gravity zone `runway` (normal gravity). PLAYTEST round 107, OPEN_QUESTIONS #846-853.
+
+**The core hall after Aaron's new picture (Nov 26):** `docs/concept-art/mothership-core-hall-2.jpg` is the reference now (the spider on its reactor is for a later session, Aaron's call). **Pillars, ribs and pipes on the walls come from the layout** (`hullPillars`, `wallRibs`, `hullPipes`), cut round `clearZones` (every detail with a `CLEAR` size, every wall light, every opening): add a new wall detail kind to `CLEAR` or pillars will cross it. The reactor's plasma is a `ShaderMaterial` (`plasmaMaterial`: uniforms `time`, `power`); the decks' grating is a code-made `DataTexture` on its own mesh (`grateM`). PLAYTEST round 106, OPEN_QUESTIONS #839-845.
 
 **Fixed after Aaron's play (Nov 26):** the greys aboard were invulnerable: `onEnter` runs after `load` and its reset (`resetGrey`) switched their targets off. If you add a reset, keep `target.targetable` true while `this.model` exists. Testing a fight headless means firing a real weapon (`weapons.select`, input `attack`), not just casting the ship's ray: the first check cast the ray and missed this.
 
@@ -23,7 +25,7 @@
 
 **What the next session does:** ask Aaron for his notes on the climb (rule 10). Then the story beats aboard, with him. Left for the design session: docs/MOTHERSHIP_PLAN.md "Left for the design session".
 
-**Logging:** PLAYTEST rounds 103-106, OPEN_QUESTIONS #812-845. Next numbers: OPEN_QUESTIONS #846, PLAYTEST round 107.
+**Logging:** PLAYTEST rounds 103-107, OPEN_QUESTIONS #812-853. Next numbers: OPEN_QUESTIONS #854, PLAYTEST round 108.
 
 ## Before that: Aaron's gas station notes, debug spawns, Bigfoot carved, the camcorder's tape rebuilt (Nov 24)
 
